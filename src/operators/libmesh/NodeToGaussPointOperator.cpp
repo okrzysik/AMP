@@ -96,8 +96,7 @@ void NodeToGaussPointOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
     AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = subsetOutputVector( r );
     PROFILE_STOP( "subsetOutputVector" );
 
-    AMP_ASSERT( nodalVec->getUpdateStatus() ==
-                AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+    AMP_ASSERT( nodalVec->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     PROFILE_START( "getDOFManager" );
     std::shared_ptr<AMP::Discretization::DOFManager> dof_map         = nodalVec->getDOFManager();

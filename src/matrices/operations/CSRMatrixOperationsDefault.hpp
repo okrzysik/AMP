@@ -30,9 +30,9 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
 {
     AMP_ASSERT( in && out );
 
-    if ( in->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED )
+    if ( in->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
         std::const_pointer_cast<Vector>( in )->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
@@ -75,7 +75,7 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
         offset += nCols;
     }
 
-    out->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 template<typename Policy>
@@ -86,9 +86,9 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
     // this is not meant to be an optimized version. It is provided for completeness
     AMP_ASSERT( in && out );
 
-    if ( in->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED )
+    if ( in->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
         std::const_pointer_cast<Vector>( in )->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     out->zero();
 
@@ -133,7 +133,7 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
     }
 
     // consistent add because some values might be remote
-    out->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+    out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 template<typename Policy>

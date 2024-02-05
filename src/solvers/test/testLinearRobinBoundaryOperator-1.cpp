@@ -166,7 +166,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
             variableFluxVec->setValuesByGlobalID( 1, &gid[0], &val );
         }
     }
-    RightHandSideVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    RightHandSideVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     correctionParameters->d_variableFlux = variableFluxVec;
     robinBoundaryOp->reset( correctionParameters );
@@ -255,7 +255,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
         double exact = fun_T0( px, py, pz, 1.0 );
         exactVec->setValuesByGlobalID( 1, &gid[0], &exact );
     }
-    exactVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    exactVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     diffVec->subtract( *exactVec, *TemperatureInKelvinVec );
 

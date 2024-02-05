@@ -23,9 +23,8 @@ void PelletStackMechanicsSolver::resetOperator(
 void PelletStackMechanicsSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
     std::shared_ptr<const AMP::LinearAlgebra::Vector> fInternal = f;
     if ( d_pelletStackOp->useScaling() ) {
         if ( d_fbuffer1 == nullptr ) {

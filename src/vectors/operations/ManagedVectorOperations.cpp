@@ -48,7 +48,7 @@ void ManagedVectorOperations::copy( const VectorData &src, VectorData &dst )
         VectorOperationsDefault::copy( src, dst );
     }
     dst_managed->dataChanged();
-    dst_managed->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
+    dst_managed->makeConsistent( ScatterType::CONSISTENT_SET );
 }
 
 void ManagedVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
@@ -56,7 +56,7 @@ void ManagedVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
     auto xm = getManagedVectorData( x );
     xm->getVectorEngine()->setToScalar( alpha );
     xm->dataChanged();
-    xm->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
+    xm->makeConsistent( ScatterType::CONSISTENT_SET );
 }
 
 void ManagedVectorOperations::setRandomValues( VectorData &x )
@@ -64,7 +64,7 @@ void ManagedVectorOperations::setRandomValues( VectorData &x )
     auto xm = getManagedVectorData( x );
     xm->getVectorEngine()->setRandomValues();
     xm->dataChanged();
-    xm->makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
+    xm->makeConsistent( ScatterType::CONSISTENT_SET );
 }
 
 void ManagedVectorOperations::scale( const Scalar &alpha, const VectorData &x, VectorData &y )

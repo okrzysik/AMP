@@ -316,13 +316,13 @@ void MultiVectorData::makeConsistent( ScatterType t )
             data->makeConsistent( t );
         }
     }
-    *d_UpdateState = VectorData::UpdateState::UNCHANGED;
+    *d_UpdateState = UpdateState::UNCHANGED;
 }
-VectorData::UpdateState MultiVectorData::getUpdateStatus() const
+UpdateState MultiVectorData::getUpdateStatus() const
 {
-    VectorData::UpdateState state = *d_UpdateState;
+    UpdateState state = *d_UpdateState;
     for ( const auto &data : d_data ) {
-        VectorData::UpdateState sub_state = data->getUpdateStatus();
+        UpdateState sub_state = data->getUpdateStatus();
         if ( sub_state == UpdateState::UNCHANGED ) {
             continue;
         } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == UpdateState::UNCHANGED ) {

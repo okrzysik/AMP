@@ -369,10 +369,10 @@ void Writer::syncVectors()
     PROFILE_START( "makeConsistent", 1 );
     for ( auto &elem : d_vectorsMesh ) {
         auto localState = elem->getUpdateStatus();
-        if ( localState == AMP::LinearAlgebra::VectorData::UpdateState::ADDING )
-            elem->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+        if ( localState == AMP::LinearAlgebra::UpdateState::ADDING )
+            elem->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
         else
-            elem->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            elem->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
     PROFILE_STOP( "makeConsistent", 1 );
 }

@@ -58,7 +58,7 @@ void VectorTests::CopyVectorConsistency( AMP::UnitTest *ut )
         PASS_FAIL( std::equal( t1, t1 + numGhosts, t2 ), "Ghosts are the same (1)" );
     }
 
-    vec1->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    vec1->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     vec3->copyVector( vec1 );
     if ( numGhosts ) {
         vec1->getValuesByGlobalID( numGhosts, ndx, t1 );
@@ -102,7 +102,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *ut )
 {
     auto vector = d_factory->getVector();
     vector->setToScalar( 0. );
-    vector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     ut->passes( "setToScalar ran to completion " + d_factory->name() );
     bool fail = false;
     if ( vector->getVectorData()->isType<double>() ) {
@@ -120,7 +120,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *ut )
     PASS_FAIL( !fail, "Set data to 0" );
     fail = false;
     vector->setToScalar( 5. );
-    vector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     if ( vector->getVectorData()->isType<double>() ) {
         fail = vectorValuesNotEqual<double>( vector, 5.0 );
     } else if ( vector->getVectorData()->isType<float>() ) {
@@ -855,7 +855,7 @@ void VectorTests::VerifyVectorGhostCreate( AMP::UnitTest *ut )
 
 void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *ut )
 {
-    using UpdateState = AMP::LinearAlgebra::VectorData::UpdateState;
+    using UpdateState = AMP::LinearAlgebra::UpdateState;
     AMP_MPI globalComm( AMP_COMM_WORLD );
     auto vector = d_factory->getVector();
     auto dofmap = vector->getDOFManager();
@@ -895,7 +895,7 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *ut )
     }
 
     // Perform a makeConsistent ADD and check the result
-    vector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+    vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     if ( vector->getUpdateStatus() != UpdateState::UNCHANGED )
         ut->failure( "makeConsistent leaves vector in UpdateState::UNCHANGED state " +
                      d_factory->name() );
@@ -909,7 +909,7 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *ut )
 
     // Zero the vector
     vector->zero();
-    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED )
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
         ut->failure( "zero leaves vector in UpdateState::UNCHANGED state " + d_factory->name() );
 
     // Set and add local values by global id (this should not interfere with the add)
@@ -918,7 +918,7 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *ut )
         vector->setLocalValuesByGlobalID( 1, &i, &val );
         vector->addLocalValuesByGlobalID( 1, &i, &val );
     }
-    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED )
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED )
         ut->failure( "local set/add leaves vector in UpdateState::LOCAL_CHANGED state " +
                      d_factory->name() + " - " + vector->type() );
 
@@ -927,15 +927,15 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *ut )
         const auto val = double( i );
         vector->setValuesByGlobalID( 1, &i, &val );
     }
-    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED &&
-         vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::SETTING )
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED &&
+         vector->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::SETTING )
         ut->failure( "setValueByGlobalID leaves vector in UpdateState::SETTING or "
                      "UpdateState::LOCAL_CHANGED state " +
                      d_factory->name() );
 
     // Perform a makeConsistent SET and check the result
-    vector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED )
+    vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
         ut->failure( "makeConsistent leaves vector in UpdateState::UNCHANGED state " +
                      d_factory->name() );
     if ( vector->getGhostSize() > 0 ) {

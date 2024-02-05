@@ -55,7 +55,7 @@ void VectorOperationsDefault<TYPE>::zero( VectorData &x )
             ghosts[i] = 0;
     }
     // Override the status state since we set the ghost values
-    *( x.getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
+    *( x.getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
 }
 
 template<typename TYPE>
@@ -74,7 +74,7 @@ void VectorOperationsDefault<TYPE>::setToScalar( const Scalar &alpha_in, VectorD
             ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
-    *( x.getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
+    *( x.getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
 }
 
 template<typename TYPE>
@@ -102,7 +102,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues( VectorData &x )
         AMP_ERROR( "Not finished" );
     }
     // Call makeConsistent to leave the vector in a consistent state
-    x.makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
+    x.makeConsistent( ScatterType::CONSISTENT_SET );
 }
 
 

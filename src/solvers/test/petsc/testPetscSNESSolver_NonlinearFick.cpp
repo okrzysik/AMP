@@ -137,8 +137,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     siloWriter->writeFile( exeName, 0 );
 

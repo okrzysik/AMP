@@ -122,8 +122,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         double scaleValue = ( (double) step + 1.0 ) / NumberOfLoadingSteps;
         mechNlScaledRhsVec->scale( scaleValue, *mechNlRhsVec );
-        mechNlScaledRhsVec->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        mechNlScaledRhsVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         AMP::pout << "L2 Norm of RHS at loading step " << ( step + 1 ) << " is "
                   << mechNlScaledRhsVec->L2Norm() << std::endl;
 

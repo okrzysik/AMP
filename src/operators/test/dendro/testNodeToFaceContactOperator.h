@@ -220,7 +220,7 @@ static void applyCustomDirichletCondition(
                 dir->setLocalValueByGlobalID( dofIndices[jt->first], jt->second );
             } // end for
         }     // end for
-        dir->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        dir->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         mat->mult( dir, cor );
         for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
             dofManager->getDOFs( it->first, dofIndices );

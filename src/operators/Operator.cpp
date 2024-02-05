@@ -66,7 +66,7 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
         rInternal->scale( -1.0 );
     }
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 
@@ -172,7 +172,7 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 void Operator::makeConsistent( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 {
     AMP_ASSERT( vec );
-    vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 } // namespace AMP::Operator

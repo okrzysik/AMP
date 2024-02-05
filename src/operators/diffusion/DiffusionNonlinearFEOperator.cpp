@@ -78,7 +78,7 @@ void DiffusionNonlinearFEOperator::setVector( const std::string &name,
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
     auto mVec = frozenVec->select( meshSelector, frozenVec->getName() );
     auto vec  = mVec->subsetVectorForVariable( name );
-    vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     it->second.frozen = vec;
 }
 
@@ -119,8 +119,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
             data.vec = data.frozen;
         }
         if ( data.vec )
-            AMP_ASSERT( data.vec->getUpdateStatus() ==
-                        AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+            AMP_ASSERT( data.vec->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     }
 
     d_outVariable.reset(
@@ -144,14 +143,13 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
         if ( data.isFrozen ) {
             data.vec = data.frozen;
             std::const_pointer_cast<AMP::LinearAlgebra::Vector>( data.frozen )
-                ->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                ->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         } else {
             data.vec = u_meshVec->subsetVectorForVariable( name );
         }
 
         AMP_ASSERT( data.vec );
-        AMP_ASSERT( data.vec->getUpdateStatus() ==
-                    AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+        AMP_ASSERT( data.vec->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
         if ( d_iDebugPrintInfoLevel > 5 )
             std::cout << "Max Value inside preAssembly: " << data.vec->max() << std::endl;
     }
@@ -172,7 +170,7 @@ void DiffusionNonlinearFEOperator::postAssembly()
         AMP::pout << "DiffusionNonlinearFEOperator::postAssembly, entering" << std::endl;
 
     d_transportModel->postNonlinearAssembly();
-    d_outVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+    d_outVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::postAssembly, leaving" << std::endl;
@@ -266,8 +264,7 @@ void DiffusionNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
         auto it = d_active.find( name );
         if ( it != d_active.end() ) {
             it->second.vec = vec;
-            AMP_ASSERT( vec->getUpdateStatus() ==
-                        AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+            AMP_ASSERT( vec->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
         }
     }
 
@@ -279,7 +276,7 @@ void DiffusionNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
         if ( it->second.isFrozen ) {
             it->second.vec = it->second.frozen;
             AMP_ASSERT( it->second.vec->getUpdateStatus() ==
-                        AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+                        AMP::LinearAlgebra::UpdateState::UNCHANGED );
         }
     }
 }
@@ -327,7 +324,7 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
         } else {
             auto vec = std::const_pointer_cast<AMP::LinearAlgebra::Vector>(
                 u_meshVec->subsetVectorForVariable( name ) );
-            vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             outParams->d_inputVecs[name] = vec;
         }
     }
