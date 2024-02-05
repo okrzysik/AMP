@@ -82,11 +82,6 @@ public:
     void write( const std::string &filename, Compression compress = Compression::None );
 
     /**
-     * \brief close restart file
-     */
-    void close();
-
-    /**
      * \brief  Register data with the restart manager
      * \details This function registers an object with the restart manager
      * @param[in] name      Name to use for object
