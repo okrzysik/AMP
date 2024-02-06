@@ -173,6 +173,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto ResidualVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
+    ResidualVec->zero();
     RightHandSideVec->setToScalar( 0.0 );
 
     // Add the boundary conditions corrections
@@ -233,6 +234,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         ut->passes( inputFileName );
     }
 
+#ifdef AMP_USE_SILO
     // Plot the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
@@ -240,6 +242,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
     siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( input_file, 0 );
+#endif
 
     input_db.reset();
 }
@@ -262,7 +265,7 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
 
 #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );

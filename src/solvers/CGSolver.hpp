@@ -120,7 +120,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto w = r->clone();
     p->copyVector( z );
 
-    for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
+    for ( d_iNumberIterations = 0; d_iNumberIterations < d_iMaxIterations; ++d_iNumberIterations ) {
 
         AMP::Scalar beta{ static_cast<T>( 1.0 ) };
 
@@ -145,8 +145,8 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // compute the current residual norm
         current_res = r->L2Norm();
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "CG: iteration " << ( iter + 1 ) << ", residual " << current_res
-                      << std::endl;
+            std::cout << "CG: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
+                      << current_res << std::endl;
         }
         // check if converged
         if ( current_res < terminate_tol ) {

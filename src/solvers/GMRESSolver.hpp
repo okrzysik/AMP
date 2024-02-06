@@ -166,7 +166,9 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto v_norm = beta;
 
     int k = 0;
-    for ( int iter = 0; ( iter < d_iMaxIterations ) && ( v_norm > terminate_tol ); ++iter ) {
+    for ( d_iNumberIterations = 0;
+          ( d_iNumberIterations < d_iMaxIterations ) && ( v_norm > terminate_tol );
+          ++d_iNumberIterations ) {
 
         AMP::LinearAlgebra::Vector::shared_ptr v;
         AMP::LinearAlgebra::Vector::shared_ptr zb;
@@ -256,12 +258,12 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v_norm = std::fabs( d_dw[k + 1] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "GMRES: iteration " << ( iter + 1 ) << ", residual " << v_norm
-                      << std::endl;
+            std::cout << "GMRES: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
+                      << v_norm << std::endl;
         }
 
         ++k;
-        if ( ( k == d_iMaxKrylovDimension ) && ( iter != d_iMaxIterations - 1 ) ) {
+        if ( ( k == d_iMaxKrylovDimension ) && ( d_iNumberIterations != d_iMaxIterations - 1 ) ) {
             if ( d_bRestart ) {
                 // with restarts, you start over with the last solution as new initial guess to
                 // compute the residal: r^new = Ax^old - b
