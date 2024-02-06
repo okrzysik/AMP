@@ -495,7 +495,7 @@ simpleDOFManager::simpleDOFManager( int64_t fid, AMP::IO::RestartManager *manage
     readHDF5( fid, "remote_id", d_remote_id );
     readHDF5( fid, "remote_dof", d_remote_dof );
 #else
-    AMP_ERROR( "Requires HDF5");
+    AMP_ERROR( "Requires HDF5" );
 #endif
     d_mesh          = manager->getData<AMP::Mesh::Mesh>( d_meshID.getHash() );
     d_localIterator = *manager->getData<AMP::Mesh::MeshIterator>( localIteratorID );
