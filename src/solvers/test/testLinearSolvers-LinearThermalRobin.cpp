@@ -52,7 +52,8 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
         auto name = db->getString( "name" );
 
         if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ||
-             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ) {
+             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ||
+             ( name == "HyprePCGSolver" ) ) {
 
             // check if we need to construct a preconditioner
             auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
@@ -254,10 +255,13 @@ int main( int argc, char *argv[] )
 
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML

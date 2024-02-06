@@ -64,7 +64,8 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
         auto name = db->getString( "name" );
 
         if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ||
-             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" )
+             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ||
+             ( name == "HyprePCGSolver" )
 #if defined( AMP_USE_PETSC )
              || ( name == "PetscKrylovSolver" ) ) {
 #else
@@ -380,6 +381,8 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
     #endif
