@@ -115,12 +115,12 @@ LinearSolver{
   max_iterations = 100
   max_error = 1e-10
   ksp_type = "fgmres"
-  absolute_tolerance = 1.0e-14
+  absolute_tolerance = 1.0e-12
   relative_tolerance = 1.0e-12
   divergence_tolerance = 1.0e03
   max_krylov_dimension = 40
   uses_preconditioner=FALSE
-  KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1.0e-12 -ksp_atol 1.0e-14"
+  KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1.0e-12 -ksp_atol 1.0e-12"
 }
 
 SourcePhysicsModel {

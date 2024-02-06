@@ -372,6 +372,9 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // vector is a petsc managed vector being passed back to PETSc
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
+    HYPRE_BoomerAMGGetNumIterations( d_solver, &d_iNumberIterations );
+    HYPRE_BoomerAMGGetFinalRelativeResidualNorm( d_solver, &d_dResidualNorm );
+
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "BoomerAMGSolver : after solve solution norm: " << std::setprecision( 15 )
                   << u->L2Norm() << std::endl;

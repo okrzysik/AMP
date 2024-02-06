@@ -144,7 +144,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> p_hat, s, s_hat, t;
 
-    for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
+    for ( d_iNumberIterations = 0; d_iNumberIterations < d_iMaxIterations; ++d_iNumberIterations ) {
 
         rho[1] = static_cast<T>( r_tilde->dot( *res ) );
 
@@ -165,7 +165,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             continue;
         }
 
-        if ( iter == 0 ) {
+        if ( d_iNumberIterations == 0 ) {
 
             p->copyVector( res );
         } else {
@@ -241,8 +241,8 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         res_norm = static_cast<T>( res->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "BiCGSTAB: iteration " << ( iter + 1 ) << ", residual " << res_norm
-                      << std::endl;
+            std::cout << "BiCGSTAB: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
+                      << res_norm << std::endl;
         }
 
         // break if the residual is already low enough
