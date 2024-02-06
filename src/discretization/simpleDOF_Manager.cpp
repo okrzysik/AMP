@@ -468,7 +468,7 @@ void simpleDOFManager::writeRestart( int64_t fid ) const
     writeHDF5( fid, "remote_id", d_remote_id );
     writeHDF5( fid, "remote_dof", d_remote_dof );
 #else
-    AMP_ERROR( "Requires HDF5");
+    AMP_ERROR( "Requires HDF5" );
 #endif
 }
 simpleDOFManager::simpleDOFManager( int64_t fid, AMP::IO::RestartManager *manager )
