@@ -479,8 +479,8 @@ simpleDOFManager::simpleDOFManager( int64_t fid, AMP::IO::RestartManager *manage
 
 #ifdef AMP_USE_HDF5
     uint64_t commHash;
-    auto comm = manager->getComm( commHash );
     readHDF5( fid, "comm", commHash );
+    auto comm = manager->getComm( commHash );
     readHDF5( fid, "begin", d_begin );
     readHDF5( fid, "end", d_end );
     readHDF5( fid, "global", d_global );
