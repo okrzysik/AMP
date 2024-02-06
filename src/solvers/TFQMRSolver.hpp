@@ -170,13 +170,13 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     u[0]->copyVector( v );
 
-    int k = 0;
+    d_iNumberIterations = 0;
 
     bool converged = false;
 
-    while ( k < d_iMaxIterations ) {
+    while ( d_iNumberIterations < d_iMaxIterations ) {
 
-        ++k;
+        ++d_iNumberIterations;
         auto sigma = static_cast<T>( res->dot( *v ) );
 
         // replace by soft-equal
@@ -206,7 +206,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 d_pOperator->apply( z, u[1] );
             }
 
-            const int m = 2 * k - 1 + j;
+            const int m = 2 * d_iNumberIterations - 1 + j;
             w->axpy( -alpha, *u[j], *w );
             d->axpy( ( theta * theta * eta / alpha ), *d, *y[j] );
 
@@ -222,8 +222,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             if ( tau * ( std::sqrt( (T) ( m + 1 ) ) ) <= terminate_tol ) {
 
                 if ( d_iDebugPrintInfoLevel > 0 ) {
-                    std::cout << "TFQMR: iteration " << ( k + 1 ) << ", residual " << tau
-                              << std::endl;
+                    std::cout << "TFQMR: iteration " << ( d_iNumberIterations ) << ", residual "
+                              << tau << std::endl;
                 }
 
                 converged = true;
@@ -240,6 +240,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 z = delta;
             }
             x->axpy( 1.0, *z, *x );
+            x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             return;
         }
 
@@ -272,7 +273,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v->axpy( beta, *v, *u[0] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "TFQMR: iteration " << ( k + 1 ) << ", residual " << tau << std::endl;
+            std::cout << "TFQMR: iteration " << ( d_iNumberIterations + 1 ) << ", residual " << tau
+                      << std::endl;
         }
     }
 

@@ -110,31 +110,12 @@ VolumeIntegralOperator{
 }
 
 LinearSolver{
-  name = "PetscKrylovSolver"
-  print_info_level = 0
-  max_iterations = 100
-  max_error = 1e-10
-  ksp_type = "fgmres"
+  name = "HyprePCGSolver"
+  uses_preconditioner = FALSE
   absolute_tolerance = 1.0e-12
   relative_tolerance = 1.0e-12
-  divergence_tolerance = 1.0e03
-  max_krylov_dimension = 40
-  uses_preconditioner=TRUE
-  pc_type = "shell"
-  pc_side = "RIGHT"
-  KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1.0e-12 -ksp_atol 1.0e-12"
-}
-
-Preconditioner{
-  name = "BoomerAMGSolver"
-  max_iterations = 1
-  max_error = 1e-10
-  min_coarse_size = 10
-  strong_threshold = 0.5
-  relax_type = 16
-  coarsen_type = 10
-  interp_type = 17
-  relax_order = 0
+  max_iterations = 20  
+  print_info_level = 2
 }
 
 SourcePhysicsModel {
