@@ -45,6 +45,8 @@
     #include <cuda_runtime_api.h>
 #endif
 
+#include "reference_solver_solutions.h"
+
 std::shared_ptr<AMP::Solver::SolverStrategy>
 buildSolver( std::shared_ptr<AMP::Database> input_db,
              const std::string &solver_name,
@@ -307,6 +309,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     // Check the L2 norm of the final residual.
     auto finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
+
+    // commented till necessary infrastructure in place
+    //    checkConvergence( linearSolver.get(), inputFileName, *ut );
+
     std::cout << "Final Residual Norm using CSR: " << std::setprecision( 15 ) << finalResidualNorm
               << std::endl;
 
@@ -383,6 +389,7 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
     #endif

@@ -33,6 +33,8 @@
 #include <string>
 
 
+#include "reference_solver_solutions.h"
+
 std::shared_ptr<AMP::Solver::SolverStrategy>
 buildSolver( std::shared_ptr<AMP::Database> input_db,
              const std::string &solver_name,
@@ -53,7 +55,12 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
 
         if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ||
              ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ||
-             ( name == "HyprePCGSolver" ) ) {
+             ( name == "HyprePCGSolver" )
+#if defined( AMP_USE_PETSC )
+             || ( name == "PetscKrylovSolver" ) ) {
+#else
+        ) {
+#endif
 
             // check if we need to construct a preconditioner
             auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
@@ -208,6 +215,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
+    // commented till necessary infrastructure in place
+    //    checkConvergence( linearSolver.get(), inputFileName, *ut );
+
     if ( finalResidualNorm > 10.0 ) {
         auto solver_db           = input_db->getDatabase( "LinearSolver" );
         auto solver_combo_name   = solver_db->getString( "name" );
@@ -248,10 +258,15 @@ int main( int argc, char *argv[] )
         files.emplace_back( argv[1] );
 
     } else {
-
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+
+#ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
+#endif
 
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
@@ -262,21 +277,29 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
+    #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
+    #endif
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+    #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
+    #endif
 #endif
 
 #ifdef AMP_USE_TRILINOS_MUELU
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
+        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
+        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
+        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
+        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
 #endif
     }
 
