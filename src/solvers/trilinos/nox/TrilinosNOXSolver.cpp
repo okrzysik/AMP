@@ -163,7 +163,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
             .sublist( "Preconditioning" )
             .set( "Precondition", d_precOp );
         Teuchos::RCP<NOX::StatusTest::RelativeNormF> relresid(
-            new NOX::StatusTest::RelativeNormF( static_cast<double>( d_dRelativeTolerance> ) );
+            new NOX::StatusTest::RelativeNormF( static_cast<double>( d_dRelativeTolerance > ) ) );
         d_status->addStatusTest( relresid );
         Teuchos::RCP<AndersonStatusTest> andersonTest(
             new AMP::Solver::AndersonStatusTest( nonlinear_db ) );
