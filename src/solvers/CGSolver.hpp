@@ -68,7 +68,8 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     if ( f_norm == static_cast<T>( 0.0 ) )
         return;
 
-    const auto terminate_tol = d_dRelativeTolerance * f_norm;
+    const auto terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
+                                         static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         std::cout << "CGSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -171,6 +172,14 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
+
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    if ( d_bComputeResidual ) {
+        d_pOperator->residual( f, u, r );
+        d_dResidualNorm = static_cast<T>( r->L2Norm() );
+    } else
+        d_dResidualNorm = current_res;
 
     PROFILE_STOP( "solve" );
 }

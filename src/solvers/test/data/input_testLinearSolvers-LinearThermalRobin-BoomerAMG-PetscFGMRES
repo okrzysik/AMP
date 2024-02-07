@@ -112,7 +112,7 @@ VolumeIntegralOperator{
 LinearSolver{
   name = "PetscKrylovSolver"
   print_info_level = 0
-  max_iterations = 100
+  max_iterations = 25
   max_error = 1e-10
   ksp_type = "fgmres"
   absolute_tolerance = 1.0e-12
@@ -122,7 +122,7 @@ LinearSolver{
   uses_preconditioner=TRUE
   pc_type = "shell"
   pc_side = "RIGHT"
-  KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1.0e-12 -ksp_atol 1.0e-12"
+  KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 25 -ksp_rtol 1.0e-12 -ksp_atol 1.0e-12"
 }
 
 Preconditioner{

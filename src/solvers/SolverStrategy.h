@@ -177,16 +177,16 @@ public:
     /*!
      *  Get absolute tolerance for solver.
      */
-    double getAbsoluteTolerance() const { return ( d_dAbsoluteTolerance ); }
+    AMP::Scalar getAbsoluteTolerance() const { return ( d_dAbsoluteTolerance ); }
 
     /*!
      *  Set absolute tolerance for nonlinear solver.
      */
-    virtual void setAbsoluteTolerance( double abs_tol ) { d_dAbsoluteTolerance = abs_tol; }
+    virtual void setAbsoluteTolerance( AMP::Scalar abs_tol ) { d_dAbsoluteTolerance = abs_tol; }
 
-    double getRelativeTolerance() const { return ( d_dRelativeTolerance ); }
+    AMP::Scalar getRelativeTolerance() const { return ( d_dRelativeTolerance ); }
 
-    virtual void setRelativeTolerance( double rel_tol ) { d_dRelativeTolerance = rel_tol; }
+    virtual void setRelativeTolerance( AMP::Scalar rel_tol ) { d_dRelativeTolerance = rel_tol; }
 
     /**
      * Set the maximum number of iterations for the solver
@@ -210,7 +210,7 @@ public:
     /**
      * Return the residual norm.
      */
-    virtual double getResidualNorm( void ) const { return d_dResidualNorm; }
+    virtual AMP::Scalar getResidualNorm( void ) const { return d_dResidualNorm; }
 
     /**
      * returns whether the solver has converged or not
@@ -241,15 +241,17 @@ protected:
 
     int d_iMaxIterations = 100;
 
-    double d_dResidualNorm    = 0.0;
-    double d_dInitialResidual = 0.0;
+    AMP::Scalar d_dResidualNorm;
+    AMP::Scalar d_dInitialResidual;
 
-    double d_dAbsoluteTolerance = 1.0e-14;
-    double d_dRelativeTolerance = 1.0e-09;
+    AMP::Scalar d_dAbsoluteTolerance;
+    AMP::Scalar d_dRelativeTolerance;
 
     int d_iDebugPrintInfoLevel = 0;
 
     bool d_bUseZeroInitialGuess;
+
+    bool d_bComputeResidual = false;
 
     int d_iObjectId;
 

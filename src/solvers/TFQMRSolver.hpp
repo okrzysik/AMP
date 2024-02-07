@@ -77,7 +77,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         f_norm = static_cast<T>( 1.0 );
     }
 
-    const T terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
+                                      static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "TFQMRSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
@@ -277,6 +278,14 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                       << std::endl;
         }
     }
+
+    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    if ( d_bComputeResidual ) {
+        d_pOperator->residual( f, x, res );
+        d_dResidualNorm = static_cast<T>( res->L2Norm() );
+    } else
+        d_dResidualNorm = tau;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "L2Norm of solution: " << x->L2Norm() << std::endl;
