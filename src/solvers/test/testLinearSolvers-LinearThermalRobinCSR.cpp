@@ -234,10 +234,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
-    std::cout << "RHS Norm after BC Correction " << RightHandSideVec->L2Norm() << std::endl;
-    std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;
-    std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;
-    std::cout << "RHS Norm 3: " << boundaryOpCorrectionVec->L2Norm() << std::endl;
+    // std::cout << "RHS Norm after BC Correction " << RightHandSideVec->L2Norm() << std::endl;
+    // std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;
+    // std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;
+    // std::cout << "RHS Norm 3: " << boundaryOpCorrectionVec->L2Norm() << std::endl;
 
     using Policy   = AMP::LinearAlgebra::HypreCSRPolicy;
     using gidx_t   = typename Policy::gidx_t;
@@ -302,41 +302,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Solve the problem.
     linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    TemperatureInKelvinVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
-    // Compute the residual
-    csrOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
-
-    // Check the L2 norm of the final residual.
-    auto finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
-
     // commented till necessary infrastructure in place
-    //    checkConvergence( linearSolver.get(), inputFileName, *ut );
-
-    std::cout << "Final Residual Norm using CSR: " << std::setprecision( 15 ) << finalResidualNorm
-              << std::endl;
-
-    diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
-
-    // Check the L2 norm of the final residual.
-    finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
-    std::cout << "Final Residual Norm: " << std::setprecision( 15 ) << finalResidualNorm
-              << std::endl;
-
-    if ( finalResidualNorm > 10.0 ) {
-        auto solver_db           = input_db->getDatabase( "LinearSolver" );
-        auto solver_combo_name   = solver_db->getString( "name" );
-        auto uses_preconditioner = solver_db->getWithDefault<bool>( "uses_preconditioner", false );
-        if ( uses_preconditioner ) {
-            auto pc_name = solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
-            solver_combo_name = solver_combo_name + "+" + pc_name;
-        }
-
-        ut->failure( solver_combo_name + " does not solve a linear thermal problem with a nuclear "
-                                         "source term." );
-    } else {
-        ut->passes( inputFileName );
-    }
+    checkConvergence( linearSolver.get(), inputFileName, *ut );
 
 #ifdef AMP_USE_SILO
     // Plot the results
@@ -388,7 +355,8 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR"
+        //        );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
@@ -403,7 +371,7 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
 
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );

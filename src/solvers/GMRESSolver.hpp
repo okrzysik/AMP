@@ -106,7 +106,8 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         f_norm = static_cast<T>( 1.0 );
     }
 
-    const T terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
+                                      static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "GMRESSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -294,10 +295,18 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // update the current approximation with the correction
         addCorrection( k - 1, z, z1, u );
     }
-    if ( d_iDebugPrintInfoLevel > 2 ) {
+
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    if ( d_bComputeResidual || ( d_iDebugPrintInfoLevel > 2 ) ) {
         d_pOperator->residual( f, u, res );
-        std::cout << "GMRES: Final residual: " << res->L2Norm() << std::endl;
-        std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
+        d_dResidualNorm = static_cast<T>( res->L2Norm() );
+    } else
+        d_dResidualNorm = v_norm;
+
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        AMP::pout << "GMRES: Final residual: " << d_dResidualNorm << std::endl;
+        AMP::pout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 
     PROFILE_STOP( "solve" );

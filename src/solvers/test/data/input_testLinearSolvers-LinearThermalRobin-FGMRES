@@ -113,7 +113,6 @@ LinearSolver{
   name = "GMRESSolver"
   flexible_gmres = TRUE
   uses_preconditioner = FALSE
-  print_info_level = 1
   max_iterations = 30
   absolute_tolerance = 1.0e-12
   relative_tolerance = 1.0e-12

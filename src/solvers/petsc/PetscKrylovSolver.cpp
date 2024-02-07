@@ -149,9 +149,9 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     checkErr( KSPSetInitialGuessNonzero( d_KrylovSolver, useNonzeroGuess ) );
 
     checkErr( KSPSetTolerances( d_KrylovSolver,
-                                d_dRelativeTolerance,
-                                d_dAbsoluteTolerance,
-                                d_dDivergenceTolerance,
+                                static_cast<PetscReal>( d_dRelativeTolerance ),
+                                static_cast<PetscReal>( d_dAbsoluteTolerance ),
+                                static_cast<PetscReal>( d_dDivergenceTolerance ),
                                 d_iMaxIterations ) );
     if ( d_bKSPCreatedInternally ) {
         //        checkErr( KSPSetFromOptions( d_KrylovSolver ) );
@@ -271,6 +271,11 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         AMP::pout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
     }
 
+    PetscReal ksp_norm;
+    KSPGetResidualNorm( d_KrylovSolver, &ksp_norm );
+    d_dResidualNorm = ksp_norm;
+
+    KSPGetIterationNumber( d_KrylovSolver, &d_iNumberIterations );
     // Reset the solvers
     KSPReset( d_KrylovSolver );
     PROFILE_STOP( "solve" );

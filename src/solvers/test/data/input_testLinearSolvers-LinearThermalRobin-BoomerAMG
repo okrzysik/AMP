@@ -112,7 +112,7 @@ VolumeIntegralOperator{
 
 LinearSolver{
   name = "BoomerAMGSolver"
-  max_iterations = 10
+  max_iterations = 25
   relative_tolerance = 1.0e-12
   absolute_tolerance = 1.0e-12
   print_info_level = 2

@@ -288,7 +288,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
         HYPRE_BoomerAMGSetKeepTranspose( d_solver, d_keep_transpose );
     }
 
-    HYPRE_BoomerAMGSetTol( d_solver, d_dRelativeTolerance );
+    HYPRE_BoomerAMGSetTol( d_solver, static_cast<HYPRE_Real>( d_dRelativeTolerance ) );
     HYPRE_BoomerAMGSetMaxIter( d_solver, d_iMaxIterations );
     HYPRE_BoomerAMGSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );
 
@@ -373,7 +373,9 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     HYPRE_BoomerAMGGetNumIterations( d_solver, &d_iNumberIterations );
-    HYPRE_BoomerAMGGetFinalRelativeResidualNorm( d_solver, &d_dResidualNorm );
+    HYPRE_Real hypre_norm;
+    HYPRE_BoomerAMGGetFinalRelativeResidualNorm( d_solver, &hypre_norm );
+    d_dResidualNorm = hypre_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "BoomerAMGSolver : after solve solution norm: " << std::setprecision( 15 )

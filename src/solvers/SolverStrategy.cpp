@@ -54,6 +54,7 @@ void SolverStrategy::getFromInput( std::shared_ptr<AMP::Database> db )
     d_bUseZeroInitialGuess = db->getWithDefault<bool>( "zero_initial_guess", true );
     d_dAbsoluteTolerance   = db->getWithDefault<double>( "absolute_tolerance", 1.0e-14 );
     d_dRelativeTolerance   = db->getWithDefault<double>( "relative_tolerance", 1.0e-09 );
+    d_bComputeResidual     = db->getWithDefault<bool>( "compute_residual", false );
 }
 
 void SolverStrategy::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
