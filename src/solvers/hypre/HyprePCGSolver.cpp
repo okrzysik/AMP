@@ -55,16 +55,15 @@ void HyprePCGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
         HYPRE_PCGSetLogging( d_solver, logging );
     }
 
-    HYPRE_PCGSetTol( d_solver, d_dRelativeTolerance );
-    HYPRE_PCGSetAbsoluteTol( d_solver, d_dAbsoluteTolerance );
+    HYPRE_PCGSetTol( d_solver, static_cast<HYPRE_Real>( d_dRelativeTolerance ) );
+    HYPRE_PCGSetAbsoluteTol( d_solver, static_cast<HYPRE_Real>( d_dAbsoluteTolerance ) );
     HYPRE_PCGSetMaxIter( d_solver, d_iMaxIterations );
     HYPRE_PCGSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );
 
     d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
     d_bDiagScalePC        = db->getWithDefault<bool>( "diag_scale_pc", false );
 
-    if ( db->keyExists( "compute_residual" ) ) {
-        d_bComputeResidual = true;
+    if ( d_bComputeResidual ) {
         HYPRE_PCGSetRecomputeResidual( d_solver, d_bComputeResidual );
     }
 
@@ -185,7 +184,9 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     HYPRE_PCGGetNumIterations( d_solver, &d_iNumberIterations );
-    HYPRE_PCGGetFinalRelativeResidualNorm( d_solver, &d_dResidualNorm );
+    HYPRE_Real hypre_norm;
+    HYPRE_PCGGetFinalRelativeResidualNorm( d_solver, &hypre_norm );
+    d_dResidualNorm = hypre_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "HyprePCGSolver : after solve solution norm: " << std::setprecision( 15 )

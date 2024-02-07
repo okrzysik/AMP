@@ -241,9 +241,9 @@ void PetscSNESSolver::initializePetscObjects()
     }
 
     checkErr( SNESSetTolerances( d_SNESSolver,
-                                 d_dAbsoluteTolerance,
-                                 d_dRelativeTolerance,
-                                 d_dStepTolerance,
+                                 static_cast<PetscReal>( d_dAbsoluteTolerance ),
+                                 static_cast<PetscReal>( d_dRelativeTolerance ),
+                                 static_cast<PetscReal>( d_dStepTolerance ),
                                  d_iMaxIterations,
                                  d_iMaximumFunctionEvals ) );
 

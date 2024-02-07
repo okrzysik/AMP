@@ -75,7 +75,8 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         f_norm = static_cast<T>( 1.0 );
     }
 
-    const T terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
+                                      static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "QMRCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
