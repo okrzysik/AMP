@@ -227,7 +227,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                               << tau << std::endl;
                 }
 
-                converged = true;
+                d_dResidualNorm = tau;
+                converged       = true;
                 break;
             }
         }
@@ -274,7 +275,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v->axpy( beta, *v, *u[0] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "TFQMR: iteration " << ( d_iNumberIterations + 1 ) << ", residual " << tau
+            std::cout << "TFQMR: iteration " << ( d_iNumberIterations ) << ", residual " << tau
                       << std::endl;
         }
     }

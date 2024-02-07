@@ -69,15 +69,6 @@ void TrilinosMLSolver::getFromInput( std::shared_ptr<AMP::Database> db )
     if ( d_bUseEpetra ) {
         convertMLoptionsToTeuchosParameterList();
     }
-
-    // override defaults with options from input
-    // THIS IS INCOMPLETE!!
-    if ( db->keyExists( "smoother_pre_or_post" ) ) {
-        d_MLParameterList.set( "smoother: pre or post", db->getString( "smoother_pre_or_post" ) );
-    }
-    if ( db->keyExists( "coarse_max_size" ) ) {
-        d_MLParameterList.set( "coarse: max size", db->getScalar<int>( "coarse_max_size" ) );
-    }
 }
 
 void TrilinosMLSolver::convertMLoptionsToTeuchosParameterList()
