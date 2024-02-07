@@ -111,7 +111,7 @@ VolumeIntegralOperator{
 LinearSolver{
   name = "TrilinosMLSolver"
   print_info_level = 1
-  max_iterations = 10
+  max_iterations = 20
   max_error = 1e-10
   problem_symmetric =TRUE
   smoother_pre_or_post = "both"

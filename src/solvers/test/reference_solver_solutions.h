@@ -39,7 +39,21 @@ std::map<std::string, std::tuple<int, double, double>> conv_map{
     { "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG",
       std::make_tuple( 5, 1.20157627947399e-16, 1.0e-15 ) },
     { "input_testLinearSolvers-LinearThermalRobin-HypreCG",
-      std::make_tuple( 25, 1.45084840704152e-15, 1.0e-14 ) }
+      std::make_tuple( 25, 1.45084840704152e-15, 1.0e-14 ) },
+    //    { "input_testLinearSolvers-LinearThermalRobin-ML",
+    //      std::make_tuple( 14, 3.90003330750106e-13, 4.0e-13 ) },
+    { "input_testLinearSolvers-LinearThermalRobin-ML-CG",
+      std::make_tuple( 0, 2.55995674768853e-09, 2.0e-09 ) },
+    { "input_testLinearSolvers-LinearThermalRobin-ML-GMRES",
+      std::make_tuple( 1, 2.01677528883695e-09, 2.0e-9 ) },
+    { "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES",
+      std::make_tuple( 1, 2.01677528883695e-09, 2.0e-9 ) },
+    { "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB",
+      std::make_tuple( 0, 1.03221e-21, 1.0e-12 ) },
+    //    { "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR",
+    //      std::make_tuple( 6, 7.93552e-10, 1.0e-11 ) },
+    { "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES",
+      std::make_tuple( 1, 2.00917711909309e-09, 2.0e-09 ) }
 };
 
 // Function to get the "solution" convergence rate and iteration count for the
