@@ -364,14 +364,14 @@ void testWriterMesh( AMP::UnitTest &ut,
 
     // Initialize the data
     rank_vec->setToScalar( globalComm.getRank() );
-    rank_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    rank_vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     std::vector<size_t> dofs;
     for ( auto elem : DOF_vector->getIterator() ) {
         DOF_vector->getDOFs( elem.globalID(), dofs );
         auto pos = elem.coord();
         position->setValuesByGlobalID( dofs.size(), dofs.data(), pos.data() );
     }
-    position->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    position->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     block_vec->setToScalar( -1 );
     for ( auto &id : mesh->getBlockIDs() ) {
         double val = double( id );
@@ -380,7 +380,7 @@ void testWriterMesh( AMP::UnitTest &ut,
             block_vec->setValuesByGlobalID( 1, &dofs[0], &val );
         }
     }
-    block_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    block_vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     globalComm.barrier();
     double t5 = AMP::AMP_MPI::time();
 

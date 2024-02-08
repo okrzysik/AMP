@@ -63,12 +63,10 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     PROFILE_START( "solve" );
 
     // Check input vector states
-    AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( x->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( x->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -79,7 +77,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         f_norm = static_cast<T>( 1.0 );
     }
 
-    const T terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
+                                      static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "TFQMRSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
@@ -166,19 +165,19 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         z = y[0];
     }
 
-    z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     d_pOperator->apply( z, v );
 
     u[0]->copyVector( v );
 
-    int k = 0;
+    d_iNumberIterations = 0;
 
     bool converged = false;
 
-    while ( k < d_iMaxIterations ) {
+    while ( d_iNumberIterations < d_iMaxIterations ) {
 
-        ++k;
+        ++d_iNumberIterations;
         auto sigma = static_cast<T>( res->dot( *v ) );
 
         // replace by soft-equal
@@ -203,12 +202,12 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                     z = y[1];
                 }
 
-                z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
                 d_pOperator->apply( z, u[1] );
             }
 
-            const int m = 2 * k - 1 + j;
+            const int m = 2 * d_iNumberIterations - 1 + j;
             w->axpy( -alpha, *u[j], *w );
             d->axpy( ( theta * theta * eta / alpha ), *d, *y[j] );
 
@@ -224,11 +223,12 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             if ( tau * ( std::sqrt( (T) ( m + 1 ) ) ) <= terminate_tol ) {
 
                 if ( d_iDebugPrintInfoLevel > 0 ) {
-                    std::cout << "TFQMR: iteration " << ( k + 1 ) << ", residual " << tau
-                              << std::endl;
+                    std::cout << "TFQMR: iteration " << ( d_iNumberIterations ) << ", residual "
+                              << tau << std::endl;
                 }
 
-                converged = true;
+                d_dResidualNorm = tau;
+                converged       = true;
                 break;
             }
         }
@@ -242,6 +242,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 z = delta;
             }
             x->axpy( 1.0, *z, *x );
+            x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             return;
         }
 
@@ -266,7 +267,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             z = y[0];
         }
 
-        z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         d_pOperator->apply( z, u[0] );
 
@@ -274,9 +275,18 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v->axpy( beta, *v, *u[0] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "TFQMR: iteration " << ( k + 1 ) << ", residual " << tau << std::endl;
+            std::cout << "TFQMR: iteration " << ( d_iNumberIterations ) << ", residual " << tau
+                      << std::endl;
         }
     }
+
+    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    if ( d_bComputeResidual ) {
+        d_pOperator->residual( f, x, res );
+        d_dResidualNorm = static_cast<T>( res->L2Norm() );
+    } else
+        d_dResidualNorm = tau;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "L2Norm of solution: " << x->L2Norm() << std::endl;

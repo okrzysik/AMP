@@ -137,8 +137,7 @@ void NeumannVectorCorrection::addRHScorrection(
             unsigned int numDofIds = d_dofIds[j].size();
 
             if ( !d_isConstantFlux ) {
-                d_variableFlux->makeConsistent(
-                    AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                d_variableFlux->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             }
 
             for ( unsigned int k = 0; k < numDofIds; k++ ) {
@@ -218,7 +217,7 @@ void NeumannVectorCorrection::addRHScorrection(
         }
     }
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+    rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     myRhs->add( *myRhs, *rInternal );
 }
 

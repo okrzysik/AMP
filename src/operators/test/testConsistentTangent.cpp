@@ -114,7 +114,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
 
     solVec->setRandomValues();
     solVec->scale( 100.0 );
-    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     solNorm = static_cast<double>( solVec->L2Norm() );
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
@@ -144,7 +144,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     tmpLinVec->scale( 10.0 );
 
     solVec->scale( 10.0 );
-    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     solNorm = static_cast<double>( solVec->L2Norm() );
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 

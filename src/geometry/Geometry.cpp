@@ -155,7 +155,7 @@ AMP::IO::RestartManager::DataStoreType<AMP::Geometry::Geometry>::read(
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
     using namespace AMP::Geometry;
-    hid_t gid = openGroup( fid, name );
+    int64_t gid = openGroup( fid, name );
     std::string type;
     readHDF5( gid, "GeomType", type );
     std::shared_ptr<AMP::Geometry::Geometry> geom;

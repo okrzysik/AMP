@@ -1016,7 +1016,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
         }
     } // end loop over lateral faces
 
-    d_matrix->makeConsistent();
+    d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     // loop over lateral faces separately (PETSc matrices do not mix setValue and addValue)
     face = d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ); // iterator for cells of mesh
@@ -1031,7 +1031,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
             d_matrix->setValueByGlobalID( gapDofs[0], gapDofs[0], 1.0 );
         }
     }
-    d_matrix->makeConsistent();
+    d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     PROFILE_STOP( "reset" );
 } // end of reset function
 

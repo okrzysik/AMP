@@ -135,7 +135,7 @@ void TrilinosMatrixShellOperator::getColumn( int column,
     auto idx         = size_t( column );
     const double val = 1.0;
     inVec->setValuesByGlobalID( 1, &idx, &val );
-    inVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    inVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     d_operator->apply( inVec, outVec );

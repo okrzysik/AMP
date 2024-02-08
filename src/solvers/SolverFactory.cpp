@@ -35,6 +35,7 @@ responsibility for the use of this software.
 
 #ifdef AMP_USE_HYPRE
     #include "AMP/solvers/hypre/BoomerAMGSolver.h"
+    #include "AMP/solvers/hypre/HyprePCGSolver.h"
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML
@@ -76,6 +77,7 @@ void registerSolverFactories()
 
 #ifdef AMP_USE_HYPRE
     solverFactory.registerFactory( "BoomerAMGSolver", BoomerAMGSolver::createSolver );
+    solverFactory.registerFactory( "HyprePCGSolver", HyprePCGSolver::createSolver );
 #endif
 
 #ifdef AMP_USE_PETSC

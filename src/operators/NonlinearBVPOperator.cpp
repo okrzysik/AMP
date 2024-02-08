@@ -24,8 +24,7 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
     PROFILE_START( "apply" );
 
     if ( u )
-        AMP_ASSERT( u->getUpdateStatus() ==
-                    AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     AMP_INSIST( r, "NULL Residual Vector" );
 

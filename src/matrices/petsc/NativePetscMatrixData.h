@@ -74,7 +74,7 @@ public:
 
     std::vector<size_t> getColumnIDs( size_t row ) const override;
 
-    void makeConsistent() override;
+    void makeConsistent( AMP::LinearAlgebra::ScatterType t ) override;
 
     std::shared_ptr<Vector> getRightVector() const;
     std::shared_ptr<Vector> getLeftVector() const;

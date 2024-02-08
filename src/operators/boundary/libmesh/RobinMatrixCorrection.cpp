@@ -244,7 +244,7 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
 
         } // end for nid
 
-        inputMatrix->makeConsistent();
+        inputMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     } // skip matrix
 }

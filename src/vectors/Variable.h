@@ -14,6 +14,16 @@ class RestartManager;
 
 namespace AMP::LinearAlgebra {
 
+/**\brief Flag to choose algorithm for makeConsistent
+ *\see makeConsistent
+ */
+enum class ScatterType { CONSISTENT_ADD, CONSISTENT_SET };
+
+/**\brief The four states a Vector can be in
+ *\see makeConsistent
+ */
+enum class UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
+
 
 class VectorSelector;
 

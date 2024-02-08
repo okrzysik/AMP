@@ -5,19 +5,7 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
-
-extern "C" {
-#include "HYPRE_utilities.h"
-}
-
-// Forward declares
-struct hypre_Solver_struct;
-struct hypre_IJMatrix_struct;
-struct hypre_IJVector_struct;
-typedef struct hypre_Solver_struct *HYPRE_Solver;
-typedef struct hypre_IJMatrix_struct *HYPRE_IJMatrix;
-typedef struct hypre_IJVector_struct *HYPRE_IJVector;
-
+#include "AMP/solvers/hypre/HypreSolver.h"
 
 namespace AMP::LinearAlgebra {
 class HypreMatrixAdaptor;
@@ -26,7 +14,7 @@ class HypreMatrixAdaptor;
 namespace AMP::Solver {
 
 
-typedef SolverStrategyParameters BoomerAMGSolverParameters;
+using BoomerAMGSolverParameters = SolverStrategyParameters;
 
 
 /**
@@ -36,7 +24,7 @@ typedef SolverStrategyParameters BoomerAMGSolverParameters;
  * users to use the black box BoomerAMG preconditioner.
  */
 
-class BoomerAMGSolver : public SolverStrategy
+class BoomerAMGSolver final : public HypreSolver
 {
 
 public:
@@ -86,75 +74,9 @@ public:
      */
     void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
 
-    /**
-     * Register the operator that the solver will use during solves
-     @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
-     */
-    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
-
-    /**
-     * Resets the associated operator internally with new parameters if necessary
-     * @param [in] params
-     *        OperatorParameters object that is NULL by default
-     */
-    void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
-
-    /**
-     * Resets the solver internally with new parameters if necessary
-     * @param [in] params
-     *        SolverStrategyParameters object that is NULL by default
-     * Currently every call to reset destroys the BoomerAMG preconditioner object
-     * and recreates it based on the parameters object. See constructor for
-     * fields required for parameter object.
-     */
-    void reset( std::shared_ptr<SolverStrategyParameters> params ) override;
-
     void getFromInput( std::shared_ptr<const AMP::Database> db );
 
-    /**
-     * Set the desired HYPRE memory location for HYPRE objects
-     */
-    void setMemoryLocation( HYPRE_MemoryLocation location ) { d_memory_location = location; }
-
-    /**
-     * Set the desired HYPRE execution policy for the solver
-     */
-    void setExecutionPolicy( HYPRE_ExecutionPolicy policy ) { d_exec_policy = policy; }
-
 private:
-    /**
-     * create the internal HYPRE_IJMatrix based on the AMP matrix
-     */
-    void createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix );
-
-    /**
-     * create and initialize the internal hypre vectors for rhs and solution
-     */
-    void createHYPREVectors();
-
-    /**
-     *  copy values from amp vector to hypre vector
-     */
-    void copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector> amp_v,
-                      HYPRE_IJVector hypre_v );
-
-    /**
-     *  copy values from hypre vector to amp vector
-     */
-    void copyFromHypre( HYPRE_IJVector hypre_v, std::shared_ptr<AMP::LinearAlgebra::Vector> amp_v );
-
-
-    void setParameters( void ); //! set BoomerAMG parameters based on internally set variables
-
-    AMP_MPI d_comm;
-
-    std::shared_ptr<AMP::LinearAlgebra::HypreMatrixAdaptor> d_HypreMatrixAdaptor;
-
-    HYPRE_IJMatrix d_ijMatrix  = nullptr; //! pointer to HYPRE matrix struct
-    HYPRE_IJVector d_hypre_rhs = nullptr; //! pointer to HYPRE representation of rhs
-    HYPRE_IJVector d_hypre_sol = nullptr; //! pointer to HYPRE representation of solution
-    HYPRE_Solver d_solver      = nullptr; //! pointer to HYPRE BoomerAMG solver
-
     bool d_bComputeResidual = false; //! whether to compute the residual  before and after solve
 
     int d_num_functions        = 1;
@@ -196,9 +118,6 @@ private:
     int d_debug_flag           = 0;
     int d_rap2                 = 0;
     int d_keep_transpose       = 1;
-
-    HYPRE_MemoryLocation d_memory_location;
-    HYPRE_ExecutionPolicy d_exec_policy;
 
     double d_strong_threshold      = 0.25;
     double d_max_row_sum           = 0.9;

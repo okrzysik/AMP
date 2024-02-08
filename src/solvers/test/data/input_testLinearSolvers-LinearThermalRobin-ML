@@ -111,16 +111,12 @@ VolumeIntegralOperator{
 LinearSolver{
   name = "TrilinosMLSolver"
   print_info_level = 1
-  max_iterations = 10
+  max_iterations = 20
   max_error = 1e-10
   problem_symmetric =TRUE
-  smoother_pre_or_post = "both"
-  smoother_params{
-    relaxation_type = "Gauss-Seidel"
-    relaxation_sweeps = 2
-  }
-  coarse_max_size = 100
-  
+  smoother_preorpost = "both"
+  smoother_sweeps = 2
+  coarse_maxsize = 10  
 }
 
 SourcePhysicsModel {

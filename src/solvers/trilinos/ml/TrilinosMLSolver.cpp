@@ -74,7 +74,7 @@ void TrilinosMLSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 void TrilinosMLSolver::convertMLoptionsToTeuchosParameterList()
 {
     // output level, 0 being silent and 10 verbose
-    d_MLParameterList.set( "ML output", std::max( d_iDebugPrintInfoLevel - 2, 0 ) );
+    d_MLParameterList.set( "ML output", std::max( d_iDebugPrintInfoLevel, 0 ) );
 
     // maximum number of levels
     d_MLParameterList.set( "max levels", d_mlOptions->d_maxLevels );
@@ -289,7 +289,7 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
     //    u->getVectorData()->fireDataChange();
-    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "TrilinosMLSolver : after solve solution norm: " << std::setprecision( 15 )

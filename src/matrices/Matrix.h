@@ -217,7 +217,10 @@ public:
     /** \brief  Perform communication to ensure values in the
      * matrix are the same across cores.
      */
-    void makeConsistent() { return d_matrixData->makeConsistent(); }
+    void makeConsistent( AMP::LinearAlgebra::ScatterType t )
+    {
+        return d_matrixData->makeConsistent( t );
+    }
 
     /** \brief  Get the number of local rows in the matrix
      * \return  The number of local rows

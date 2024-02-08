@@ -420,7 +420,7 @@ getCladHydraulicDiameter( std::shared_ptr<AMP::Mesh::Mesh> clad,
         diameter->setValuesByGlobalID( 1, &dofs[0], &hydraulic_diam[ix + iy * Nx] );
         ++it;
     }
-    diameter->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    diameter->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     return diameter;
 }
 } // namespace AMP::Operator::Subchannel

@@ -4,6 +4,7 @@
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
 #include "AMP/vectors/CommunicationList.h"
+#include "AMP/vectors/Variable.h"
 #include "AMP/vectors/data/DataChangeFirer.h"
 
 #include <memory>
@@ -32,18 +33,6 @@ class VectorDataIterator;
 
 class VectorData : public DataChangeFirer, public AMP::enable_shared_from_this<VectorData>
 {
-public: // enums
-    /**\brief Flag to choose algorithm for makeConsistent
-     *\see makeConsistent
-     */
-    enum class ScatterType { CONSISTENT_ADD, CONSISTENT_SET };
-
-    /**\brief The four states a Vector can be in
-     *\see makeConsistent
-     */
-    enum class UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
-
-
 public: // Get basic information
     //! Virtual destructor
     virtual ~VectorData() {}

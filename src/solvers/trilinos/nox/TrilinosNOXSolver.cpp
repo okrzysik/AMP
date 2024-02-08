@@ -136,12 +136,13 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     d_thyraModel->set_W_factory( d_lowsFactory );
     // Create the convergence tests (these will need to be on the input database)
     Teuchos::RCP<NOX::StatusTest::NormF> absresid(
-        new NOX::StatusTest::NormF( d_dAbsoluteTolerance ) );
+        new NOX::StatusTest::NormF( static_cast<double>( d_dAbsoluteTolerance ) ) );
     Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters(
         new NOX::StatusTest::MaxIters( d_iMaxIterations ) );
     Teuchos::RCP<NOX::StatusTest::FiniteValue> fv( new NOX::StatusTest::FiniteValue );
     Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms(
-        new NOX::StatusTest::NormWRMS( d_dAbsoluteTolerance, d_dAbsoluteTolerance ) );
+        new NOX::StatusTest::NormWRMS( static_cast<double>( d_dAbsoluteTolerance ),
+                                       static_cast<double>( d_dAbsoluteTolerance ) ) );
     d_status = Teuchos::rcp( new NOX::StatusTest::Combo( NOX::StatusTest::Combo::OR ) );
     d_status->addStatusTest( fv );
     d_status->addStatusTest( absresid );
@@ -162,7 +163,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
             .sublist( "Preconditioning" )
             .set( "Precondition", d_precOp );
         Teuchos::RCP<NOX::StatusTest::RelativeNormF> relresid(
-            new NOX::StatusTest::RelativeNormF( d_dRelativeTolerance ) );
+            new NOX::StatusTest::RelativeNormF( static_cast<double>( d_dRelativeTolerance ) ) );
         d_status->addStatusTest( relresid );
         Teuchos::RCP<AndersonStatusTest> andersonTest(
             new AMP::Solver::AndersonStatusTest( nonlinear_db ) );

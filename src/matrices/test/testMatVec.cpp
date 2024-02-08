@@ -69,7 +69,7 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
 
     fillWithPseudoLaplacian( matrix, scalarDOFs );
 
-    matrix->makeConsistent();
+    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     auto nGlobalRows1 = matrix->numGlobalRows();
     auto nLocalRows1  = matrix->numLocalRows();
@@ -112,7 +112,7 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
 
     x->setToScalar( 1.0 );
     // this shouldn't be necessary, but evidently is!
-    x->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     y1->zero();
     y2->zero();
@@ -132,7 +132,7 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
 #if defined( AMP_USE_HYPRE )
 
     csrMatrix->mult( x, y2 );
-    y2->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    y2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     auto y2Norm = static_cast<scalar_t>( y2->L1Norm() );
 
@@ -144,7 +144,7 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
         ut->failure( "Fails 1 norm test with pseudo Laplacian with CSR matvec" );
     }
 
-    y1->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    y1->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     y1->subtract( *y1, *y2 );
 
     auto maxNorm = static_cast<scalar_t>( y1->maxNorm() );

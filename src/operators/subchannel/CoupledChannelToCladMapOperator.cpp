@@ -83,10 +83,8 @@ void CoupledChannelToCladMapOperator::apply( AMP::LinearAlgebra::Vector::const_s
             ++face;
         }
 
-        d_subchannelTemperature->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-        d_subchannelDensity->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        d_subchannelTemperature->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        d_subchannelDensity->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
 
     // Map the temperature and density back to the clad

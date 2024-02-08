@@ -23,7 +23,7 @@ inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
             std::tie( scale, shift ) = it->second;
         vec->scale( scale );
         vec->addScalar( *vec, shift );
-        vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
 }
 

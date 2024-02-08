@@ -702,15 +702,15 @@ public: // VectorData operations
     }
     inline void swapData( VectorData &rhs ) { d_VectorData->swapData( rhs ); }
     inline std::shared_ptr<VectorData> cloneData() const { return d_VectorData->cloneData(); }
-    inline AMP::LinearAlgebra::VectorData::UpdateState getUpdateStatus() const
+    inline AMP::LinearAlgebra::UpdateState getUpdateStatus() const
     {
         return d_VectorData->getUpdateStatus();
     }
-    inline void setUpdateStatus( AMP::LinearAlgebra::VectorData::UpdateState state )
+    inline void setUpdateStatus( AMP::LinearAlgebra::UpdateState state )
     {
         d_VectorData->setUpdateStatus( state );
     }
-    inline void makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType t )
+    inline void makeConsistent( AMP::LinearAlgebra::ScatterType t )
     {
         d_VectorData->makeConsistent( t );
     }

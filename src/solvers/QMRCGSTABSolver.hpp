@@ -61,12 +61,10 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     PROFILE_START( "solve" );
 
     // Check input vector states
-    AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( x->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( x->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -77,7 +75,8 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         f_norm = static_cast<T>( 1.0 );
     }
 
-    const T terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
+                                      static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "QMRCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
@@ -205,7 +204,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
             z = s;
         }
 
-        z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         d_pOperator->apply( z, t );
 
@@ -264,7 +263,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
             z = p;
         }
 
-        z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         d_pOperator->apply( z, v );
         rho1 = rho2;
 

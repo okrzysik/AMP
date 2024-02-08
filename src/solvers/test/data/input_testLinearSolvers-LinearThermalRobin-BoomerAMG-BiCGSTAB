@@ -112,8 +112,10 @@ VolumeIntegralOperator{
 LinearSolver{
   name = "BiCGSTABSolver"
   uses_preconditioner = TRUE
-  max_iterations = 10
-  max_error = 1e-10
+  absolute_tolerance = 1.0e-13
+  relative_tolerance = 1.0e-13
+  print_info_level = 1
+  max_iterations = 25
 }
 
 Preconditioner{

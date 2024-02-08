@@ -1088,7 +1088,7 @@ void DendroSearch::interpolate( AMP::AMP_MPI comm,
     interpolateBeginTime = MPI_Wtime();
 
     AMP_DEBUG_ASSERT( vectorField->getUpdateStatus() ==
-                      AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+                      AMP::LinearAlgebra::UpdateState::UNCHANGED );
     std::shared_ptr<AMP::Discretization::DOFManager> dofManager = vectorField->getDOFManager();
 
     for ( int i = 0; i < npes; ++i ) {

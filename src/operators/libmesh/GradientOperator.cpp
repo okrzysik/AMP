@@ -144,7 +144,7 @@ void GradientOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             sol->addValuesByGlobalID( dofs.size(), dofs.data(), g );
         }
     }
-    sol->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    sol->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 

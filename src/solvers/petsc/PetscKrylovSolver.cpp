@@ -49,8 +49,8 @@ static inline PCSide getPCSide( const std::string &pc_side )
 static inline void checkUpdateStatus( std::shared_ptr<const AMP::LinearAlgebra::Vector> x )
 {
     auto status = x->getUpdateStatus();
-    AMP_ASSERT( ( status == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-                ( status == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( status == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( status == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 }
 
 
@@ -149,9 +149,9 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     checkErr( KSPSetInitialGuessNonzero( d_KrylovSolver, useNonzeroGuess ) );
 
     checkErr( KSPSetTolerances( d_KrylovSolver,
-                                d_dRelativeTolerance,
-                                d_dAbsoluteTolerance,
-                                d_dDivergenceTolerance,
+                                static_cast<PetscReal>( d_dRelativeTolerance ),
+                                static_cast<PetscReal>( d_dAbsoluteTolerance ),
+                                static_cast<PetscReal>( d_dDivergenceTolerance ),
                                 d_iMaxIterations ) );
     if ( d_bKSPCreatedInternally ) {
         //        checkErr( KSPSetFromOptions( d_KrylovSolver ) );
@@ -271,6 +271,11 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         AMP::pout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
     }
 
+    PetscReal ksp_norm;
+    KSPGetResidualNorm( d_KrylovSolver, &ksp_norm );
+    d_dResidualNorm = ksp_norm;
+
+    KSPGetIterationNumber( d_KrylovSolver, &d_iNumberIterations );
     // Reset the solvers
     KSPReset( d_KrylovSolver );
     PROFILE_STOP( "solve" );
@@ -453,8 +458,8 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     auto sp_z = PETSC::getAMP( z );
 
     // Make sure the vectors are in a consistent state
-    sp_r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    sp_z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    sp_r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    sp_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // these tests were helpful in finding a bug
     if ( solver->getDebugPrintInfoLevel() > 5 ) {

@@ -55,12 +55,10 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     PROFILE_START( "solve" );
 
     // Check input vector states
-    AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -70,7 +68,8 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     if ( f_norm == static_cast<T>( 0.0 ) )
         return;
 
-    const auto terminate_tol = d_dRelativeTolerance * f_norm;
+    const auto terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
+                                         static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         std::cout << "CGSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -122,11 +121,11 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto w = r->clone();
     p->copyVector( z );
 
-    for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
+    for ( d_iNumberIterations = 0; d_iNumberIterations < d_iMaxIterations; ++d_iNumberIterations ) {
 
         AMP::Scalar beta{ static_cast<T>( 1.0 ) };
 
-        p->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        p->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         // w = Ap
         d_pOperator->apply( p, w );
 
@@ -147,8 +146,8 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // compute the current residual norm
         current_res = r->L2Norm();
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "CG: iteration " << ( iter + 1 ) << ", residual " << current_res
-                      << std::endl;
+            std::cout << "CG: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
+                      << current_res << std::endl;
         }
         // check if converged
         if ( current_res < terminate_tol ) {
@@ -173,6 +172,14 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
+
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    if ( d_bComputeResidual ) {
+        d_pOperator->residual( f, u, r );
+        d_dResidualNorm = static_cast<T>( r->L2Norm() );
+    } else
+        d_dResidualNorm = current_res;
 
     PROFILE_STOP( "solve" );
 }

@@ -41,8 +41,8 @@ static void testGrad( std::shared_ptr<AMP::Operator::GradientOperator> op,
         rhsVec->setValuesByGlobalID( dofs1.size(), dofs1.data(), &f0 );
         ansVec->setValuesByGlobalID( dofs3.size(), dofs3.data(), g0.data() );
     }
-    rhsVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    ansVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    rhsVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    ansVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Apply
     op->apply( rhsVec, solVec );

@@ -72,7 +72,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
 
     // copy values from one vector to another
     std::copy( userVector->begin(), userVector->end(), ampVector->begin() );
-    ampVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    ampVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     // concludes demonstrating how to initialize an AMP vector from a user vector
     // ************************************************************************************************
 
@@ -91,7 +91,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     linearOp->setVariables( copyVariable, copyVariable );
 
     ampMat->axpy( 1.0, *userMat );
-    ampMat->makeConsistent();
+    ampMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************
@@ -105,7 +105,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     // form the difference of the matrices
     // COMMENT: simple add, subtract routines would be nice for matrices
     ampMat->axpy( -1.0, userMat );
-    ampMat->makeConsistent();
+    ampMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     const auto matL1Norm = static_cast<double>( ampMat->L1Norm() );
     auto passed          = ( matL1Norm <= std::numeric_limits<double>::min() );
 

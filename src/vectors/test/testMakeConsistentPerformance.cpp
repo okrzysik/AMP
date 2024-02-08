@@ -50,7 +50,7 @@ static void runTest( AMP::UnitTest *ut )
     // Time makeConsistentSet
     globalComm.barrier();
     double start_time = AMP::AMP_MPI::time();
-    v1->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    v1->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     globalComm.barrier();
     double end_time = AMP::AMP_MPI::time();
 

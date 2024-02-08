@@ -42,7 +42,8 @@ void DirichletMatrixCorrection::reset( std::shared_ptr<const OperatorParameters>
 
     d_inputMatrix = myParams->d_inputMatrix;
     AMP_INSIST( d_inputMatrix, "NULL matrix" );
-    d_inputMatrix->makeConsistent(); // Check that we can call makeConsistent
+    d_inputMatrix->makeConsistent(
+        AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD ); // Check that we can call makeConsistent
 
     if ( d_skipRHSsetCorrection )
         AMP_ASSERT( d_skipRHSaddCorrection );
@@ -158,7 +159,7 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
     }
 
     // This does consistent for both "Sum-into" and "set".
-    d_inputMatrix->makeConsistent();
+    d_inputMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 

@@ -112,7 +112,7 @@ public:
     /** \brief  Perform communication to ensure values in the
      * matrix are the same across cores.
      */
-    void makeConsistent() override;
+    void makeConsistent( AMP::LinearAlgebra::ScatterType t ) override;
 
     /** \brief Get the DOFManager associated with a right vector ( For
      * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$

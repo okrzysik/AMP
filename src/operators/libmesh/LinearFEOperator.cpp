@@ -43,8 +43,7 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
         auto outVec = AMP::LinearAlgebra::createVector( d_outDofMap, getOutputVariable(), true );
         d_matrix    = AMP::LinearAlgebra::createMatrix( inVec, outVec );
         d_matrix->zero();
-        d_matrix->makeConsistent();
-        d_matrix->makeConsistent();
+        d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     }
     AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getLeftDOFManager() ) );
     AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getRightDOFManager() ) );

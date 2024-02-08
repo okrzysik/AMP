@@ -91,12 +91,10 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     PROFILE_START( "solve" );
 
     // Check input vector states
-    AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -108,7 +106,8 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         f_norm = static_cast<T>( 1.0 );
     }
 
-    const T terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
+                                      static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "GMRESSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -168,7 +167,9 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto v_norm = beta;
 
     int k = 0;
-    for ( int iter = 0; ( iter < d_iMaxIterations ) && ( v_norm > terminate_tol ); ++iter ) {
+    for ( d_iNumberIterations = 0;
+          ( d_iNumberIterations < d_iMaxIterations ) && ( v_norm > terminate_tol );
+          ++d_iNumberIterations ) {
 
         AMP::LinearAlgebra::Vector::shared_ptr v;
         AMP::LinearAlgebra::Vector::shared_ptr zb;
@@ -189,7 +190,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
             d_pOperator->apply( d_vBasis[k], z );
-            z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             // construct the Krylov vector
             d_pPreconditioner->apply( z, v );
         } else {
@@ -200,21 +201,19 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 if ( !d_bFlexibleGMRES ) {
                     d_pPreconditioner->apply( d_vBasis[k], z );
                     //                    if ( z->getUpdateStatus() !=
-                    //                         AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED
+                    //                         AMP::LinearAlgebra::UpdateState::UNCHANGED
                     //                         )
-                    z->makeConsistent(
-                        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                    z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( z, v );
                 } else {
                     d_pPreconditioner->apply( d_vBasis[k], zb );
                     d_zBasis.push_back( zb );
-                    zb->makeConsistent(
-                        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                    zb->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( zb, v );
                 }
             } else {
                 z = d_vBasis[k];
-                z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                 d_pOperator->apply( z, v );
             }
         }
@@ -228,7 +227,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // check for happy breakdown
         if ( v_norm != static_cast<T>( 0.0 ) ) {
             v->scale( static_cast<T>( 1.0 ) / v_norm );
-            v->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            v->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         }
 
         // apply all previous Givens rotations to
@@ -260,12 +259,12 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v_norm = std::fabs( d_dw[k + 1] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "GMRES: iteration " << ( iter + 1 ) << ", residual " << v_norm
-                      << std::endl;
+            std::cout << "GMRES: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
+                      << v_norm << std::endl;
         }
 
         ++k;
-        if ( ( k == d_iMaxKrylovDimension ) && ( iter != d_iMaxIterations - 1 ) ) {
+        if ( ( k == d_iMaxKrylovDimension ) && ( d_iNumberIterations != d_iMaxIterations - 1 ) ) {
             if ( d_bRestart ) {
                 // with restarts, you start over with the last solution as new initial guess to
                 // compute the residal: r^new = Ax^old - b
@@ -296,10 +295,18 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // update the current approximation with the correction
         addCorrection( k - 1, z, z1, u );
     }
-    if ( d_iDebugPrintInfoLevel > 2 ) {
+
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    if ( d_bComputeResidual || ( d_iDebugPrintInfoLevel > 2 ) ) {
         d_pOperator->residual( f, u, res );
-        std::cout << "GMRES: Final residual: " << res->L2Norm() << std::endl;
-        std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
+        d_dResidualNorm = static_cast<T>( res->L2Norm() );
+    } else
+        d_dResidualNorm = v_norm;
+
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        AMP::pout << "GMRES: Final residual: " << d_dResidualNorm << std::endl;
+        AMP::pout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 
     PROFILE_STOP( "solve" );
@@ -324,7 +331,7 @@ void GMRESSolver<T>::orthogonalize( const int k, std::shared_ptr<AMP::LinearAlge
         AMP_ERROR( "Unknown orthogonalization method in GMRES" );
     }
 
-    v->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    v->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // h_{k+1, k}
     const auto v_norm         = static_cast<T>( v->L2Norm() );
@@ -481,6 +488,6 @@ void GMRESSolver<T>::addCorrection( const int nr,
             u->axpy( d_dy[i], *d_vBasis[i], *u );
         }
     }
-    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 } // namespace AMP::Solver

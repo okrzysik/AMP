@@ -68,12 +68,10 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     PROFILE_START( "solve" );
 
     // Check input vector states
-    AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -84,7 +82,8 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         f_norm = static_cast<T>( 1.0 );
     }
 
-    const T terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
+                                      static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "BiCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -146,7 +145,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> p_hat, s, s_hat, t;
 
-    for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
+    for ( d_iNumberIterations = 0; d_iNumberIterations < d_iMaxIterations; ++d_iNumberIterations ) {
 
         rho[1] = static_cast<T>( r_tilde->dot( *res ) );
 
@@ -156,7 +155,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         if ( angle < eps * r_tilde_norm ) {
             // the method breaks down as the vectors are orthogonal to r0
             // attempt to restart with a new r0
-            u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             d_pOperator->residual( f, u, res );
             r_tilde->copyVector( res );
             p->copyVector( res );
@@ -167,7 +166,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             continue;
         }
 
-        if ( iter == 0 ) {
+        if ( d_iNumberIterations == 0 ) {
 
             p->copyVector( res );
         } else {
@@ -189,7 +188,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             p_hat->copyVector( p );
         }
 
-        p_hat->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        p_hat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         d_pOperator->apply( p_hat, v );
 
         alpha = static_cast<T>( r_tilde->dot( *v ) );
@@ -201,7 +200,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         }
         s->axpy( -alpha, *v, *res );
 
-        const auto s_norm = static_cast<T>( s->L2Norm() );
+        const auto s_norm = s->L2Norm();
 
         if ( s_norm < d_dRelativeTolerance ) {
             // early convergence
@@ -227,7 +226,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             t = res->clone();
         }
 
-        s_hat->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        s_hat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         d_pOperator->apply( s_hat, t );
 
         auto t_sqnorm = static_cast<T>( t->dot( *t ) );
@@ -243,8 +242,8 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         res_norm = static_cast<T>( res->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "BiCGSTAB: iteration " << ( iter + 1 ) << ", residual " << res_norm
-                      << std::endl;
+            std::cout << "BiCGSTAB: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
+                      << res_norm << std::endl;
         }
 
         // break if the residual is already low enough
@@ -266,6 +265,14 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
         rho[0] = rho[1];
     }
+
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    if ( d_bComputeResidual ) {
+        d_pOperator->residual( f, u, res );
+        d_dResidualNorm = static_cast<T>( res->L2Norm() );
+    } else
+        d_dResidualNorm = res_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;

@@ -262,7 +262,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
 
     // Apply make consistent
     PROFILE_START( "makeConsistent" );
-    d_ResultVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    d_ResultVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     PROFILE_STOP( "makeConsistent" );
 
     PROFILE_STOP( "applyFinish" );

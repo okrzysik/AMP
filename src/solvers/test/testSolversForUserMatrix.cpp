@@ -126,7 +126,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
 
     // copy values from one vector to another
     std::copy( userVector->begin(), userVector->end(), ampVector->begin() );
-    ampVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    ampVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     // concludes demonstrating how to initialize an AMP vector from a user vector
     // ************************************************************************************************
 
@@ -145,7 +145,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     linearOp->setVariables( copyVariable, copyVariable );
 
     ampMat->axpy( 1.0, userMat );
-    ampMat->makeConsistent();
+    ampMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************

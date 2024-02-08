@@ -342,7 +342,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Power Vector" );
     AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL PowerWithShape Vector" );
-    AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+    AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     constexpr double PI = 3.14159265359;
     double newval, val;
@@ -440,7 +440,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "End Power Shape Loop over : " << countGP << " Gauss Points."
@@ -497,7 +497,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processing GP #: " << countGP << std::endl;
@@ -561,7 +561,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processing GP #: " << countGP << std::endl;
@@ -601,7 +601,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
             AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
@@ -652,7 +652,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         "The denominator is zero - not good." );
             r->scale( double( unodalPower->L1Norm() ) / double( rnodalPower->L1Norm() ) );
 
-            r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
 
@@ -706,7 +706,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
@@ -755,7 +755,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 } // end for gauss-points
                 destroyCurrentLibMeshElement();
             } // end for elements
-            r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
