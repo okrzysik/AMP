@@ -66,7 +66,7 @@ void DiffusionLinearFEOperator::postAssembly()
 
     d_transportModel->postLinearAssembly();
 
-    d_matrix->makeConsistent();
+    d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     if ( d_iDebugPrintInfoLevel > 7 ) {
         AMP::pout << "DiffusionLinearFEOperator::postAssembly, leaving" << std::endl;

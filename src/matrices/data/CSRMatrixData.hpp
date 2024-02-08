@@ -271,7 +271,7 @@ std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const
 }
 
 template<typename Policy>
-void CSRMatrixData<Policy>::makeConsistent()
+void CSRMatrixData<Policy>::makeConsistent( AMP::LinearAlgebra::ScatterType )
 {
     AMP_ERROR( "Not implemented" );
 }

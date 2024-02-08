@@ -42,7 +42,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest &ut,
 
     // Run some tests
     vector1->setRandomValues();
-    matrixa->makeConsistent();
+    matrixa->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     matrixa->mult( vector1, vector2 );
     if ( vector2->L1Norm() < 0.00000001 )
         ut.passes( "obtained 0 matrix from mesh" );
@@ -54,7 +54,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest &ut,
     auto matrixb = AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
     vector2->setToScalar( 1. );
-    matrixb->makeConsistent();
+    matrixb->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     matrixb->setDiagonal( vector2 );
     matrixb->mult( vector1, vector2 );
     vector1->subtract( *vector1, *vector2 );
@@ -92,7 +92,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Me
     auto comm = mesh->getComm();
     for ( int p = 0; p < comm.getSize(); p++ ) {
         matrix->setScalar( -1.0 );
-        matrix->makeConsistent();
+        matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
         // Processor p should fill the values
         if ( p == comm.getRank() ) {
             try {
@@ -152,7 +152,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Me
         }
 
         // Apply make consistent
-        matrix->makeConsistent();
+        matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
         /*// Test that each matrix entry has the proper value
         bool passes = true;

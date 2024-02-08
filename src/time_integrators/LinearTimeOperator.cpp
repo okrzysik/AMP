@@ -72,8 +72,7 @@ void LinearTimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorPar
         }
 
         d_matrix->zero();
-        d_matrix->makeConsistent();
-        d_matrix->makeConsistent();
+        d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
         d_matrix->axpy( 1.0, *pMatrix );
     }
@@ -90,7 +89,7 @@ void LinearTimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorPar
         d_matrix->axpy( d_dScalingFactor, *pMassMatrix );
     }
 
-    d_matrix->makeConsistent();
+    d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 std::shared_ptr<AMP::Operator::OperatorParameters>

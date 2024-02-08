@@ -7,6 +7,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
+#include "AMP/vectors/Variable.h"
 
 namespace AMP::Discretization {
 class DOFManager;
@@ -153,7 +154,7 @@ public:
     /** \brief  Perform communication to ensure values in the
      * matrix are the same across cores.
      */
-    virtual void makeConsistent() = 0;
+    virtual void makeConsistent( AMP::LinearAlgebra::ScatterType t ) = 0;
 
     /** \brief Get the DOFManager associated with a right vector ( For
      * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$
