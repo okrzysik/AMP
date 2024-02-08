@@ -101,6 +101,11 @@ public:
         return d_prev_solutions;
     }
 
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getTimeHistorySourceTerm() override
+    {
+        return d_integrator_source_vector;
+    }
+
 protected:
     /*
      * Helper functions.
