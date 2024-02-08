@@ -74,7 +74,7 @@ void TrilinosMLSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 void TrilinosMLSolver::convertMLoptionsToTeuchosParameterList()
 {
     // output level, 0 being silent and 10 verbose
-    d_MLParameterList.set( "ML output", std::max( d_iDebugPrintInfoLevel - 2, 0 ) );
+    d_MLParameterList.set( "ML output", std::max( d_iDebugPrintInfoLevel, 0 ) );
 
     // maximum number of levels
     d_MLParameterList.set( "max levels", d_mlOptions->d_maxLevels );
