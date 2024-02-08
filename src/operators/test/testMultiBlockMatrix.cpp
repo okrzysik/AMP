@@ -72,13 +72,11 @@ static void LinearTimeOperatorTest( AMP::UnitTest *ut )
     auto massMat = massOperator->getMatrix();
     auto diffMat = linearOperator->getMatrix();
     auto sinMat  = diffMat->clone();
-    sinMat->makeConsistent();
+    sinMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     sinMat->zero();
 
     sinMat->axpy( 1.0, diffMat );
-    sinMat->makeConsistent();
-    // diffMat->axpy(1.0/0.01, massMat);
-    // diffMat->makeConsistent();
+    sinMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     AMP::IO::AsciiWriter sinMatWriter;
     sinMatWriter.registerMatrix( sinMat );

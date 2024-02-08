@@ -52,7 +52,7 @@ void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix
         }
     }
 
-    matrix->makeConsistent();
+    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
@@ -227,7 +227,7 @@ void MatrixTests::VerifyExtractDiagonal( AMP::UnitTest *utils )
             break;
         matrix->setValueByGlobalID( row, row, static_cast<double>( row + 1 ) );
     }
-    matrix->makeConsistent(); // required by PETSc
+    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD ); // required by PETSc
     auto diag         = matrix->extractDiagonal();
     double l1norm     = static_cast<double>( diag->L1Norm() );
     auto numRows      = static_cast<double>( matrix->numGlobalRows() );
@@ -391,7 +391,7 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
         }
         ++it;
     }
-    matrix->makeConsistent();
+    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     // Call makeConsistent a second time
     // This can illustrate a bug where the fill pattern of remote data has changed
@@ -402,7 +402,7 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
     //   will cause asymettric behavior that create a deadlock with one process waiting
     //   for the failed process
     // The current workaround is to disable the GLIBCXX_DEBUG flags?
-    matrix->makeConsistent();
+    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     // Check the values
     bool pass = true;

@@ -69,7 +69,7 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
 
     fillWithPseudoLaplacian( matrix, scalarDOFs );
 
-    matrix->makeConsistent();
+    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     auto nGlobalRows1 = matrix->numGlobalRows();
     auto nLocalRows1  = matrix->numLocalRows();

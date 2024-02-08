@@ -368,7 +368,7 @@ void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParamet
         }
 
     } // end of isub
-    d_matrix->makeConsistent();
+    d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     PROFILE_STOP( "reset" );
 }
 

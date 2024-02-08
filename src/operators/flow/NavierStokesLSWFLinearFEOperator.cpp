@@ -92,7 +92,10 @@ void NavierStokesLSWFLinearFEOperator::preAssembly(
     d_matrix->zero();
 }
 
-void NavierStokesLSWFLinearFEOperator::postAssembly() { d_matrix->makeConsistent(); }
+void NavierStokesLSWFLinearFEOperator::postAssembly()
+{
+    d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+}
 
 void NavierStokesLSWFLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
 {

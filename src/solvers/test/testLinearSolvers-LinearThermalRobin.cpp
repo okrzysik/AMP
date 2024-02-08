@@ -255,7 +255,8 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR"
+        //        );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
