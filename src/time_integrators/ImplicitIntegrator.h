@@ -247,6 +247,11 @@ public:
 
     double getGamma( void ) const override;
 
+    virtual std::shared_ptr<AMP::LinearAlgebra::Vector> getTimeHistorySourceTerm()
+    {
+        return nullptr;
+    };
+
 protected:
     /**
      * Set the initial guess for the time advanced solution at the start
