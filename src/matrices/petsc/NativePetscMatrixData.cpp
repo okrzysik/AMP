@@ -296,7 +296,7 @@ void NativePetscMatrixData::copyFromMat( Mat m ) { MatCopy( m, d_Mat, SAME_NONZE
 /********************************************************
  * makeConsistent                                        *
  ********************************************************/
-void NativePetscMatrixData::makeConsistent()
+void NativePetscMatrixData::makeConsistent( AMP::LinearAlgebra::ScatterType )
 {
     MatAssemblyBegin( d_Mat, MAT_FINAL_ASSEMBLY );
     MatAssemblyEnd( d_Mat, MAT_FINAL_ASSEMBLY );

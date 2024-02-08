@@ -68,7 +68,7 @@ void MassLinearFEOperator::postAssembly()
 {
     d_densityModel->postLinearAssembly();
 
-    d_matrix->makeConsistent();
+    d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 

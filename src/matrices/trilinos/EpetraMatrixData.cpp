@@ -75,7 +75,7 @@ EpetraMatrixData::EpetraMatrixData( const EpetraMatrixData &rhs )
     }
     d_RangeMap  = rhs.d_RangeMap;
     d_DomainMap = rhs.d_DomainMap;
-    makeConsistent();
+    makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 std::shared_ptr<MatrixData> EpetraMatrixData::cloneMatrixData() const
@@ -466,11 +466,14 @@ std::vector<size_t> EpetraMatrixData::getColumnIDs( size_t row ) const
 /********************************************************
  * makeConsistent                                        *
  ********************************************************/
-void EpetraMatrixData::makeConsistent()
+void EpetraMatrixData::makeConsistent( AMP::LinearAlgebra::ScatterType t )
 {
-    auto *mat = dynamic_cast<Epetra_FECrsMatrix *>( d_epetraMatrix );
+    const auto mode = ( t == AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD ) ?
+                          Epetra_CombineMode::Add :
+                          Epetra_CombineMode::Insert;
+    auto *mat       = dynamic_cast<Epetra_FECrsMatrix *>( d_epetraMatrix );
     if ( mat ) {
-        VerifyEpetraReturn( mat->GlobalAssemble( false ), "makeParallelConsistent" );
+        VerifyEpetraReturn( mat->GlobalAssemble( false, mode ), "makeParallelConsistent" );
         fillComplete();
     }
     setOtherData();

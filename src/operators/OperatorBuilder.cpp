@@ -484,7 +484,7 @@ Operator::shared_ptr OperatorBuilder::createLinearDiffusionOperator(
     auto diffusionOp = std::make_shared<DiffusionLinearFEOperator>( diffusionOpParams );
 
     auto matrix = diffusionOp->getMatrix();
-    matrix->makeConsistent();
+    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     return diffusionOp;
 }

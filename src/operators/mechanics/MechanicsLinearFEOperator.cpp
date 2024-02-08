@@ -174,7 +174,7 @@ void MechanicsLinearFEOperator::postElementOperation()
 void MechanicsLinearFEOperator::postAssembly()
 {
     d_materialModel->postLinearAssembly();
-    d_matrix->makeConsistent();
+    d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 void MechanicsLinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vector::shared_ptr disp,

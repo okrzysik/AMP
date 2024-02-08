@@ -105,6 +105,6 @@ void MassMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> para
     }                 // end for k
 
     // This does consistent for both "Sum-into" and "set".
-    inputMatrix->makeConsistent();
+    inputMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 } // namespace AMP::Operator

@@ -80,7 +80,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         newMatrixData->fillComplete();
         auto newMatrix = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( newMatrixData );
         newMatrix->zero();
-        newMatrix->makeConsistent();
+        newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
         return newMatrix;
 #else
         NULL_USE( leftVec );
@@ -123,7 +123,7 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( data );
     // Initialize the matrix
     newMatrix->zero();
-    newMatrix->makeConsistent();
+    newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     return newMatrix;
 }
 
@@ -161,7 +161,7 @@ createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::NativePetscMatrix>( params );
     // Initialize the matrix
     //    newMatrix->zero();
-    newMatrix->makeConsistent();
+    newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     return newMatrix;
 #else
     NULL_USE( leftVec );

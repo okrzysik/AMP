@@ -145,7 +145,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     linearOp->setVariables( copyVariable, copyVariable );
 
     ampMat->axpy( 1.0, userMat );
-    ampMat->makeConsistent();
+    ampMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************

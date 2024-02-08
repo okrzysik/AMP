@@ -147,7 +147,7 @@ public:
      * \param[in]  row Which row
      */
     std::vector<size_t> getColumnIDs( size_t row ) const override;
-    void makeConsistent() override;
+    void makeConsistent( AMP::LinearAlgebra::ScatterType t ) override;
     size_t numLocalRows() const override;
     size_t numGlobalRows() const override;
     size_t numLocalColumns() const override;
