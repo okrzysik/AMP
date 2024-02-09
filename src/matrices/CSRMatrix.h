@@ -7,7 +7,6 @@
 
 namespace AMP::LinearAlgebra {
 
-
 /** \class CSRMatrix
  * \brief  An concrete class for dealing with dense serial matrices
  * \details  This is a concrete class that stores a dense local matrix.

@@ -54,7 +54,6 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
     auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
     d_memory_location = d_pParameters->d_memory_location;
-    size_t N          = d_last_row - d_first_row;
 
     if ( csrParams ) {
         // add check for memory location etc and migrate if necessary
@@ -69,6 +68,8 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         d_manage_cols   = false;
         d_manage_nnz    = false;
         d_manage_coeffs = false;
+
+        size_t N = d_last_row - d_first_row;
 
         auto memType = AMP::Utilities::getMemoryType( d_cols );
 
@@ -108,6 +109,7 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         d_last_row  = d_leftDOFManager->endDOF();
         d_first_col = d_rightDOFManager->beginDOF();
         d_last_col  = d_rightDOFManager->endDOF();
+        size_t N    = d_last_row - d_first_row;
 
         auto *nnzPerRow = matParams->entryList();
         auto &cols      = matParams->getColumns();
@@ -116,12 +118,16 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
 
             d_manage_nnz    = false;
             d_manage_coeffs = true;
+            d_manage_cols   = cols.empty() ? false : true;
             d_nnz_per_row   = nnzPerRow;
-            d_nnz           = cols.size();
+            d_nnz           = cols.empty() ? cols.size() : NNZ<Policy>( N, d_nnz_per_row );
 
             if constexpr ( std::is_same_v<decltype( d_cols ), decltype( cols.data() )> ) {
-                d_manage_cols = false;
-                d_cols        = cols.data();
+                if ( d_manage_cols ) {
+                    d_cols = allocate<gidx_t, std::allocator>( d_nnz );
+                } else {
+                    d_cols = cols.data();
+                }
             } else {
                 d_manage_cols = true;
                 d_cols        = allocate<gidx_t, std::allocator>( d_nnz );
@@ -468,7 +474,8 @@ void CSRMatrixData<Policy>::getValuesByGlobalID( size_t num_rows,
 template<typename Policy>
 void CSRMatrixData<Policy>::makeConsistent( AMP::LinearAlgebra::ScatterType )
 {
-    AMP_ERROR( "Not implemented" );
+    // at present do nothing since the way AMP is dealing with face/vertex values
+    // seems to preclude the need at present
 }
 
 template<typename Policy>
@@ -498,12 +505,6 @@ std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const
     } else {
         AMP_ERROR( "CSRMatrixData:getColumnIDs not implemented for device memory" );
     }
-}
-
-template<typename Policy>
-void CSRMatrixData<Policy>::makeConsistent()
-{
-    AMP_ERROR( "Not implemented" );
 }
 
 template<typename Policy>

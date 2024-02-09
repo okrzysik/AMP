@@ -1,7 +1,10 @@
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/matrices/CSRMatrix.h"
+#include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/DenseSerialMatrix.h"
 #include "AMP/matrices/MatrixParameters.h"
+#include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/data/DenseSerialMatrixData.h"
 #include "AMP/utils/Utilities.h"
 
@@ -94,6 +97,42 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         return nullptr;
     }
 }
+
+/********************************************************
+ * Build a CSRMatrix                                    *
+ ********************************************************/
+template<typename Policy>
+std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+                 AMP::LinearAlgebra::Vector::shared_ptr rightVec )
+{
+    // Get the DOFs
+    auto leftDOF  = leftVec->getDOFManager();
+    auto rightDOF = rightVec->getDOFManager();
+    if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
+        AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
+                   "be fixed" );
+    AMP_MPI comm = leftDOF->getComm();
+    if ( comm.getSize() == 1 )
+        comm = AMP_MPI( AMP_COMM_SELF );
+    // Create the matrix parameters
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
+    params->d_VariableLeft  = leftVec->getVariable();
+    params->d_VariableRight = rightVec->getVariable();
+    // Create the matrix
+    auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy>>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( data );
+    // Initialize the matrix
+    newMatrix->zero();
+    newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+    return newMatrix;
+}
+
+using DefaultCSRPolicy = CSRPolicy<size_t, int, double>;
+
+template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix<DefaultCSRPolicy>( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+                                   AMP::LinearAlgebra::Vector::shared_ptr rightVec );
 
 
 /********************************************************
@@ -232,6 +271,9 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         test( matrix );
     } else if ( type2 == "NativePetscMatrix" ) {
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
+        test( matrix );
+    } else if ( type2 == "CSRMatrix" ) {
+        matrix = createCSRMatrix<DefaultCSRPolicy>( leftVec, rightVec );
         test( matrix );
     } else if ( type2 == "DenseSerialMatrix" ) {
         matrix = createDenseSerialMatrix( leftVec, rightVec );

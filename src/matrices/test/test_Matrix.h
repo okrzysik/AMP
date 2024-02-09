@@ -67,6 +67,8 @@ public:
             return "DenseSerialMatrix";
         } else if ( TYPE == 3 ) {
             return "NativePetscMatrix";
+        } else if ( TYPE == 4 ) {
+            return "CSRMatrix";
         }
         return "unknown";
     }

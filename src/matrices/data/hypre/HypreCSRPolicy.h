@@ -1,6 +1,8 @@
 #ifndef included_HypreCSRPolicy_h
 #define included_HypreCSRPolicy_h
 
+#include "AMP/matrices/CSRPolicy.h"
+
 extern "C" {
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
@@ -8,12 +10,7 @@ extern "C" {
 }
 
 namespace AMP::LinearAlgebra {
-
-struct HypreCSRPolicy {
-    using gidx_t   = HYPRE_BigInt;
-    using lidx_t   = HYPRE_Int;
-    using scalar_t = HYPRE_Real;
-};
+using HypreCSRPolicy = CSRPolicy<HYPRE_BigInt, HYPRE_Int, HYPRE_Real>;
 
 } // namespace AMP::LinearAlgebra
 

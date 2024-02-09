@@ -165,6 +165,15 @@ public:
 
     bool isSquare() const noexcept { return d_is_square; }
 
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getLeftVariable()
+    {
+        return d_pParameters->d_VariableLeft;
+    }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getRightVariable()
+    {
+        return d_pParameters->d_VariableRight;
+    }
+
 protected:
     bool d_is_square;
     gidx_t d_first_row;
