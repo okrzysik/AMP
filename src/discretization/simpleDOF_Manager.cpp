@@ -444,9 +444,9 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
 void simpleDOFManager::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     // Register the mesh
-    manager->registerData( d_mesh );
-    manager->registerData( d_localIterator.shared_from_this() );
-    manager->registerData( d_ghostIterator.shared_from_this() );
+    manager->registerObject( d_mesh );
+    manager->registerObject( d_localIterator.shared_from_this() );
+    manager->registerObject( d_ghostIterator.shared_from_this() );
 }
 void simpleDOFManager::writeRestart( int64_t fid ) const
 {

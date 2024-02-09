@@ -130,12 +130,9 @@ Geometry::Geometry( int64_t fid ) { readHDF5( fid, "physicalDim", d_physicalDim 
  ********************************************************/
 template<>
 AMP::IO::RestartManager::DataStoreType<AMP::Geometry::Geometry>::DataStoreType(
-    const std::string &name,
-    std::shared_ptr<const AMP::Geometry::Geometry> geom,
-    RestartManager *manager )
+    std::shared_ptr<const AMP::Geometry::Geometry> geom, RestartManager *manager )
     : d_data( geom )
 {
-    d_name = name;
     d_hash = d_data->getID();
     // Register child objects
     geom->registerChildObjects( manager );

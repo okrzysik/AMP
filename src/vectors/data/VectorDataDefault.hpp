@@ -249,8 +249,10 @@ void VectorDataDefault<TYPE, Allocator>::swapData( VectorData &rhs )
  * Write/Read restart data                                       *
  ****************************************************************/
 template<typename TYPE, class Allocator>
-void VectorDataDefault<TYPE, Allocator>::registerChildObjects( AMP::IO::RestartManager * ) const
+void VectorDataDefault<TYPE, Allocator>::registerChildObjects(
+    AMP::IO::RestartManager *manager ) const
 {
+    VectorData::registerChildObjects( manager );
 }
 template<typename TYPE, class Allocator>
 void VectorDataDefault<TYPE, Allocator>::writeRestart( int64_t fid ) const

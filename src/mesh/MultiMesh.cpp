@@ -946,7 +946,7 @@ void MultiMesh::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     Mesh::registerChildObjects( manager );
     for ( auto mesh : d_meshes )
-        manager->registerData( mesh );
+        manager->registerObject( mesh );
 }
 void MultiMesh::writeRestart( int64_t fid ) const
 {

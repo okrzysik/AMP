@@ -70,17 +70,14 @@ Variable::Variable( int64_t fid )
  ********************************************************/
 template<>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Variable>::DataStoreType(
-    const std::string &name,
-    std::shared_ptr<const AMP::LinearAlgebra::Variable> var,
-    RestartManager *manager )
+    std::shared_ptr<const AMP::LinearAlgebra::Variable> var, RestartManager *manager )
     : d_data( var )
 {
-    d_name        = name;
     d_hash        = var->getID();
     auto multivar = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVariable>( var );
     if ( multivar ) {
         for ( auto var2 : *multivar )
-            manager->registerData( var2 );
+            manager->registerObject( var2 );
     }
 }
 template<>

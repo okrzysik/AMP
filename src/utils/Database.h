@@ -94,9 +94,9 @@ public:
 protected:
     KeyData() {}
     KeyData( const Units &unit ) : d_unit( unit ) {}
-    KeyData( KeyData && )      = delete;
-    KeyData( const KeyData & ) = delete;
-    KeyData &operator=( KeyData && ) = delete;
+    KeyData( KeyData && )                 = delete;
+    KeyData( const KeyData & )            = delete;
+    KeyData &operator=( KeyData && )      = delete;
     KeyData &operator=( const KeyData & ) = delete;
 
 protected:
@@ -539,6 +539,12 @@ public:
      * @param check     Check if the key exists
      */
     void erase( std::string_view key, bool check = true );
+
+
+    /**
+     * Clear all keys from the database
+     */
+    void clear();
 
 
     /**

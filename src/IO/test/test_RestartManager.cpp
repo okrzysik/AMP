@@ -40,7 +40,7 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "vec" );
     auto vec = AMP::LinearAlgebra::createVector( DOFs, var, true );
-    vec->setToScalar( 100 );
+    vec->setRandomValues();
 
     // Create the restart manager and register data
     int int_v    = 13;
@@ -77,6 +77,8 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
         record( ut, *mesh == *mesh2, "Mesh match" );
     auto vec2 = reader.getData<AMP::LinearAlgebra::Vector>( "vec" );
     record( ut, vec2 != nullptr, "Load Vector" );
+    if ( vec2 )
+        record( ut, vec->L2Norm() == vec2->L2Norm(), "vec->L2Norm() matches" );
 }
 
 

@@ -277,23 +277,59 @@ uint64_t VectorData::getID() const
 /****************************************************************
  * Write/Read restart data                                       *
  ****************************************************************/
-void VectorData::registerChildObjects( AMP::IO::RestartManager * ) const
+void VectorData::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
-    AMP_ERROR( "Need to implement registerChildObjects for " + VectorDataName() );
+    if ( d_CommList ) {
+        auto id = manager->registerObject( d_CommList );
+        AMP_ASSERT( id == reinterpret_cast<uint64_t>( d_CommList.get() ) );
+    }
+    if ( d_UpdateState ) {
+        auto id = manager->registerObject( d_UpdateState );
+        AMP_ASSERT( id == reinterpret_cast<uint64_t>( d_UpdateState.get() ) );
+    }
+    if ( d_Ghosts ) {
+        auto id = manager->registerObject( d_Ghosts );
+        AMP_ASSERT( id == reinterpret_cast<uint64_t>( d_Ghosts.get() ) );
+    }
+    if ( d_AddBuffer ) {
+        auto id = manager->registerObject( d_AddBuffer );
+        AMP_ASSERT( id == reinterpret_cast<uint64_t>( d_AddBuffer.get() ) );
+    }
 }
 void VectorData::writeRestart( int64_t fid ) const
 {
-    writeHDF5( fid, "d_localSize", d_localSize );
-    writeHDF5( fid, "d_globalSize", d_globalSize );
-    writeHDF5( fid, "d_localStart", d_localStart );
+    uint64_t commListID  = reinterpret_cast<uint64_t>( d_CommList.get() );
+    uint64_t updateID    = reinterpret_cast<uint64_t>( d_UpdateState.get() );
+    uint64_t ghostID     = reinterpret_cast<uint64_t>( d_Ghosts.get() );
+    uint64_t addBufferID = reinterpret_cast<uint64_t>( d_AddBuffer.get() );
+    writeHDF5( fid, "localSize", d_localSize );
+    writeHDF5( fid, "globalSize", d_globalSize );
+    writeHDF5( fid, "localStart", d_localStart );
+    writeHDF5( fid, "commListID", commListID );
+    writeHDF5( fid, "updateID", updateID );
+    writeHDF5( fid, "ghostID", ghostID );
+    writeHDF5( fid, "addBufferID", addBufferID );
 }
+
 
 VectorData::VectorData( int64_t fid, AMP::IO::RestartManager *manager )
 {
-    readHDF5( fid, "d_localSize", d_localSize );
-    readHDF5( fid, "d_globalSize", d_globalSize );
-    readHDF5( fid, "d_localStart", d_localStart );
-    // incomplete at this point
+    uint64_t commListID, updateID, ghostID, addBufferID;
+    readHDF5( fid, "localSize", d_localSize );
+    readHDF5( fid, "globalSize", d_globalSize );
+    readHDF5( fid, "localStart", d_localStart );
+    readHDF5( fid, "commListID", commListID );
+    readHDF5( fid, "updateID", updateID );
+    readHDF5( fid, "ghostID", ghostID );
+    readHDF5( fid, "addBufferID", addBufferID );
+    if ( commListID != 0 )
+        d_CommList = manager->getData<CommunicationList>( commListID );
+    if ( updateID != 0 )
+        d_UpdateState = manager->getData<UpdateState>( updateID );
+    if ( ghostID != 0 )
+        d_Ghosts = manager->getData<std::vector<double>>( ghostID );
+    if ( addBufferID != 0 )
+        d_AddBuffer = manager->getData<std::vector<double>>( addBufferID );
 }
 
 } // namespace AMP::LinearAlgebra
@@ -304,18 +340,15 @@ VectorData::VectorData( int64_t fid, AMP::IO::RestartManager *manager )
  ********************************************************/
 template<>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::DataStoreType(
-    const std::string &name,
-    std::shared_ptr<const AMP::LinearAlgebra::VectorData> data,
-    RestartManager *manager )
+    std::shared_ptr<const AMP::LinearAlgebra::VectorData> data, RestartManager *manager )
     : d_data( data )
 {
-    d_name = name;
     d_hash = data->getID();
     d_data->registerChildObjects( manager );
     // Register the communication list
     auto commList = data->getCommunicationList();
     if ( commList )
-        manager->registerData( commList );
+        manager->registerObject( commList );
 }
 template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::write(
@@ -338,4 +371,28 @@ AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::read(
     auto vecData = AMP::LinearAlgebra::VectorDataFactory::create( gid, manager );
     closeGroup( gid );
     return vecData;
+}
+template<>
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::UpdateState>::DataStoreType(
+    std::shared_ptr<const AMP::LinearAlgebra::UpdateState> data, RestartManager * )
+    : d_data( data )
+{
+    d_hash = reinterpret_cast<uint64_t>( d_data.get() );
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::UpdateState>::write(
+    hid_t fid, const std::string &name ) const
+{
+    int value = static_cast<int>( *d_data );
+    writeHDF5( fid, name, value );
+}
+template<>
+std::shared_ptr<AMP::LinearAlgebra::UpdateState>
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::UpdateState>::read(
+    hid_t fid, const std::string &name, RestartManager * ) const
+{
+    int value;
+    readHDF5( fid, name, value );
+    auto state = static_cast<AMP::LinearAlgebra::UpdateState>( value );
+    return std::make_shared<AMP::LinearAlgebra::UpdateState>( state );
 }

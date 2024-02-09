@@ -145,12 +145,9 @@ void VectorOperations::writeRestart( int64_t ) const
  ********************************************************/
 template<>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorOperations>::DataStoreType(
-    const std::string &name,
-    std::shared_ptr<const AMP::LinearAlgebra::VectorOperations> data,
-    RestartManager *manager )
+    std::shared_ptr<const AMP::LinearAlgebra::VectorOperations> data, RestartManager *manager )
     : d_data( data )
 {
-    d_name = name;
     d_hash = data->getID();
     d_data->registerChildObjects( manager );
 }
