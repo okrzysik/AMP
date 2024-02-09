@@ -10,6 +10,8 @@
 #include <cstring>
 #include <memory>
 #include <string_view>
+#include <tuple>
+#include <vector>
 
 
 // Include the headers and define some basic types
@@ -40,8 +42,8 @@ enum class Compression : uint8_t { None, GZIP, SZIP };
  *                          If a file with the same name already exists, its contents
  *                          are discarded and the file is treated as a new empty file.
  *                      "rw" read+write: Open file for reading and writing.  The file must exist.
- * @param[in] compress  Default compression
- * @return              Return a handle to the file.
+ * @param[in] compress      Default compression
+ * @return                  Return a handle to the file.
  */
 hid_t openHDF5( const std::string_view &filename,
                 const char *mode,
@@ -51,15 +53,16 @@ hid_t openHDF5( const std::string_view &filename,
 /**
  * \brief Open an HDF5 file
  * \details This function opens and HDF5 file for reading/writing
- * @param[in] fid       File to open
+ * @param[in] fid           File to open
+ * @param[in] printLeaks    Print the resource leaks
  */
-void closeHDF5( hid_t fid );
+void closeHDF5( hid_t fid, bool printLeaks = false );
 
 
 /**
  * \brief Retrun the the default compression
  * \details This function returns the default compression used when the file was created
- * @param[in] fid       File/Group id
+ * @param[in] fid           File/Group id
  */
 Compression defaultCompression( hid_t fid );
 
@@ -67,10 +70,10 @@ Compression defaultCompression( hid_t fid );
 /**
  * \brief Open an HDF5 file
  * \details This function create a chunk for HDF5
- * @param[in] dims      Chunk size
- * @param[in] compress  Compression to use
- * @param[in] objSize   Optional number of bytes of an object
- * @return              Return a handle to the file.
+ * @param[in] dims          Chunk size
+ * @param[in] compress      Compression to use
+ * @param[in] objSize       Optional number of bytes of an object
+ * @return                  Return a handle to the file.
  */
 hid_t createChunk( AMP::ArraySize dims, Compression compress, size_t objSize = 0 );
 
@@ -81,9 +84,9 @@ hid_t createChunk( AMP::ArraySize dims, Compression compress, size_t objSize = 0
  *    This is a templated function and users can implement their own data
  *    types by creating explicit instantiations for a given type.
  *    There is no default instantiation except when compiled without HDF5 which is a no-op.
- * @param[in] fid       File or group to write to
- * @param[in] name      The name of the variable
- * @param[in] data      The structure to write
+ * @param[in] fid           File or group to write to
+ * @param[in] name          The name of the variable
+ * @param[in] data          The structure to write
  */
 template<class T>
 void writeHDF5( hid_t fid, const std::string_view &name, const T &data );
@@ -95,9 +98,9 @@ void writeHDF5( hid_t fid, const std::string_view &name, const T &data );
  *    This is a templated function and users can implement their own data
  *    types by creating explicit instantiations for a given type.
  *    There is no default instantiation except when compiled without HDF5 which is a no-op.
- * @param[in] fid       File or group to read from
- * @param[in] name      The name of the variable
- * @param[out] data     The structure to read
+ * @param[in] fid           File or group to read from
+ * @param[in] name          The name of the variable
+ * @param[out] data         The structure to read
  */
 template<class T>
 void readHDF5( hid_t fid, const std::string_view &name, T &data );
@@ -109,9 +112,9 @@ void readHDF5( hid_t fid, const std::string_view &name, T &data );
  *    This is a templated function and users can implement their own data
  *    types by creating explicit instantiations for a given type.
  *    There is no default instantiation except when compiled without HDF5 which is a no-op.
- * @param[in] fid       File or group to read from
- * @param[in] name      The name of the variable
- * @param[in] comm      The communicator of the object
+ * @param[in] fid           File or group to read from
+ * @param[in] name          The name of the variable
+ * @param[in] comm          The communicator of the object
  */
 template<class T>
 std::unique_ptr<T>
@@ -121,10 +124,10 @@ readHDF5( hid_t fid, const std::string_view &name, AMP_MPI comm = AMP_COMM_SELF 
 /**
  * \brief Write data to HDF5
  * \details This function writes a fixed number of bytes from HDF5.
- * @param[in] fid       File or group to write to
- * @param[in] name      The name of the variable
- * @param[in] N_bytes   The number of bytes to write
- * @param[in] data      The data to write
+ * @param[in] fid           File or group to write to
+ * @param[in] name          The name of the variable
+ * @param[in] N_bytes       The number of bytes to write
+ * @param[in] data          The data to write
  */
 void writeHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, const void *data );
 
@@ -132,10 +135,10 @@ void writeHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, const v
 /**
  * \brief Read data from HDF5
  * \details This function reads a fixed number of bytes from HDF5.
- * @param[in] fid       File or group to write to
- * @param[in] name      The name of the variable
- * @param[in] N_bytes   The number of bytes to write
- * @param[out] data     The data to read
+ * @param[in] fid           File or group to write to
+ * @param[in] name          The name of the variable
+ * @param[in] N_bytes       The number of bytes to write
+ * @param[out] data         The data to read
  */
 void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *data );
 
@@ -143,8 +146,8 @@ void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *da
 /**
  * \brief Check if group exists
  * \details This function checks if an HDF5 group exists in the file
- * @param[in] fid       ID of group or database to read
- * @param[in] name      The name of the group
+ * @param[in] fid           ID of group or database to read
+ * @param[in] name          The name of the group
  */
 bool H5Gexists( hid_t fid, const std::string_view &name );
 
@@ -152,8 +155,8 @@ bool H5Gexists( hid_t fid, const std::string_view &name );
 /**
  * \brief Check if dataset exists
  * \details This function checks if an HDF5 dataset exists in the file
- * @param[in] fid       File to open
- * @param[in] name      The name of the dataset
+ * @param[in] fid           File to open
+ * @param[in] name          The name of the dataset
  */
 bool H5Dexists( hid_t fid, const std::string_view &name );
 
@@ -182,6 +185,21 @@ hid_t openGroup( hid_t fid, const std::string_view &name );
  * @param[in] fid       Group to close
  */
 void closeGroup( hid_t fid );
+
+
+/**
+ * \brief Close a group
+ * \details This function closes an HDF5 group
+ * \return  Returns the list of open objects associated with the file:
+ *          [files,datasets,groups,datatypes,attributes]
+ * @param[in] fid       Group to close
+ */
+std::tuple<std::vector<hid_t>,
+           std::vector<hid_t>,
+           std::vector<hid_t>,
+           std::vector<hid_t>,
+           std::vector<hid_t>>
+openObjects( hid_t fid );
 
 
 /**
