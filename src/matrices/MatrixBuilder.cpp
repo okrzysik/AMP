@@ -104,7 +104,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 template<typename Policy>
 std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
-                 AMP::LinearAlgebra::Vector::shared_ptr rightVec )
+                 AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+                 const std::function<std::vector<size_t>( size_t )> &getRow )
 {
     // Get the DOFs
     auto leftDOF  = leftVec->getDOFManager();
@@ -119,6 +120,16 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
+
+    // Add the row sizes and local columns to the matrix parameters
+    std::set<size_t> columns;
+    size_t row_start = leftDOF->beginDOF();
+    size_t row_end   = leftDOF->endDOF();
+    for ( size_t row = row_start; row < row_end; row++ ) {
+        auto cols = getRow( row );
+        params->setEntriesInRow( row - row_start, cols.size() );
+        params->addColumns( cols );
+    }
     // Create the matrix
     auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy>>( params );
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( data );
@@ -132,7 +143,8 @@ using DefaultCSRPolicy = CSRPolicy<size_t, int, double>;
 
 template std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createCSRMatrix<DefaultCSRPolicy>( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
-                                   AMP::LinearAlgebra::Vector::shared_ptr rightVec );
+                                   AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+                                   const std::function<std::vector<size_t>( size_t )> &getRow );
 
 
 /********************************************************
@@ -273,7 +285,7 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
         test( matrix );
     } else if ( type2 == "CSRMatrix" ) {
-        matrix = createCSRMatrix<DefaultCSRPolicy>( leftVec, rightVec );
+        matrix = createCSRMatrix<DefaultCSRPolicy>( leftVec, rightVec, getRow );
         test( matrix );
     } else if ( type2 == "DenseSerialMatrix" ) {
         matrix = createDenseSerialMatrix( leftVec, rightVec );

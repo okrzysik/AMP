@@ -113,14 +113,14 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
 
         auto *nnzPerRow = matParams->entryList();
         auto &cols      = matParams->getColumns();
+        d_nnz           = cols.empty() ? NNZ<Policy>( N, nnzPerRow ) : cols.size();
 
         if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
 
             d_manage_nnz    = false;
             d_manage_coeffs = true;
-            d_manage_cols   = cols.empty() ? false : true;
+            d_manage_cols   = cols.empty() ? true : false;
             d_nnz_per_row   = nnzPerRow;
-            d_nnz           = cols.empty() ? cols.size() : NNZ<Policy>( N, d_nnz_per_row );
 
             if constexpr ( std::is_same_v<decltype( d_cols ), decltype( cols.data() )> ) {
                 if ( d_manage_cols ) {
@@ -146,8 +146,6 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
             d_manage_cols   = true;
             d_manage_nnz    = true;
             d_manage_coeffs = true;
-
-            d_nnz = cols.size();
 
 #ifdef AMP_USE_UMPIRE
             auto &resourceManager = umpire::ResourceManager::getInstance();
@@ -380,20 +378,23 @@ void CSRMatrixData<Policy>::addValuesByGlobalID(
     if ( getTypeID<scalar_t>() == id ) {
         if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
 
-            if ( num_rows == 1 && num_cols == 1 ) {
+            if ( num_rows == 1 ) {
 
                 const auto local_row = ( *rows ) - d_first_row;
                 const auto start     = d_row_starts[local_row];
                 const auto end       = d_row_starts[local_row + 1];
-
-                for ( lidx_t i = start; i < end; ++i ) {
-                    if ( d_cols[i] == static_cast<lidx_t>( *cols ) ) {
-                        d_coeffs[i] += *( reinterpret_cast<scalar_t *>( values ) );
+                // O(nnz_per_row)^2 because we don't assume order
+                // not sure it's worth optimizing for our use cases
+                for ( size_t icol = 0; icol < num_cols; ++icol ) {
+                    for ( lidx_t i = start; i < end; ++i ) {
+                        if ( d_cols[i] == static_cast<lidx_t>( cols[icol] ) ) {
+                            d_coeffs[i] += ( reinterpret_cast<scalar_t *>( values )[icol] );
+                        }
                     }
                 }
+
             } else {
-                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1 || "
-                           "num_cols > 1" );
+                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1" );
             }
 
         } else {
@@ -411,20 +412,23 @@ void CSRMatrixData<Policy>::setValuesByGlobalID(
     if ( getTypeID<scalar_t>() == id ) {
         if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
 
-            if ( num_rows == 1 && num_cols == 1 ) {
+            if ( num_rows == 1 ) {
 
                 const auto local_row = ( *rows ) - d_first_row;
                 const auto start     = d_row_starts[local_row];
                 const auto end       = d_row_starts[local_row + 1];
 
-                for ( lidx_t i = start; i < end; ++i ) {
-                    if ( d_cols[i] == static_cast<lidx_t>( *cols ) ) {
-                        d_coeffs[i] = *( reinterpret_cast<scalar_t *>( values ) );
+                // O(nnz_per_row)^2 because we don't assume order
+                // not sure it's worth optimizing for our use cases
+                for ( size_t icol = 0; icol < num_cols; ++icol ) {
+                    for ( lidx_t i = start; i < end; ++i ) {
+                        if ( d_cols[i] == static_cast<lidx_t>( cols[icol] ) ) {
+                            d_coeffs[i] = ( reinterpret_cast<scalar_t *>( values )[icol] );
+                        }
                     }
                 }
             } else {
-                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1 || "
-                           "num_cols > 1" );
+                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1 " );
             }
 
         } else {
@@ -468,7 +472,6 @@ void CSRMatrixData<Policy>::getValuesByGlobalID( size_t num_rows,
     } else {
         AMP_ERROR( "Not implemented" );
     }
-    AMP_ERROR( "Not implemented" );
 }
 
 template<typename Policy>

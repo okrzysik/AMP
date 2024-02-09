@@ -165,7 +165,7 @@ void CSRMatrixOperationsDefault<Policy>::matMultiply( MatrixData const &Am,
                                                       MatrixData const &Bm,
                                                       MatrixData &Cm )
 {
-    AMP_ERROR( "SpGEMM for CSRMatrixOperationsDefault not implemented" );
+    AMP_WARNING( "SpGEMM for CSRMatrixOperationsDefault not implemented" );
 }
 
 template<typename Policy>
@@ -306,7 +306,29 @@ void CSRMatrixOperationsDefault<Policy>::setIdentity( MatrixData &A )
 template<typename Policy>
 AMP::Scalar CSRMatrixOperationsDefault<Policy>::L1Norm( MatrixData const &A ) const
 {
-    AMP_ERROR( "Not implemented" );
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
+
+    auto [nnz_per_row, cols, coeffs] = csrData->getCSRData();
+
+    auto memType = AMP::Utilities::getMemoryType( cols );
+    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
+
+    const auto ncols = static_cast<lidx_t>( csrData->numLocalColumns() );
+    auto begin_col   = csrData->beginCol();
+
+    const auto nnz = static_cast<lidx_t>( csrData->numberOfNonZeros() );
+
+    std::vector<scalar_t> col_norms( ncols, 0.0 );
+    for ( size_t i = 0; i < nnz; ++i ) {
+        const auto col = cols[i] - begin_col;
+        col_norms[col] += std::abs( coeffs[i] );
+    }
+
+    return *std::max_element( col_norms.begin(), col_norms.end() );
 }
 
 } // namespace AMP::LinearAlgebra

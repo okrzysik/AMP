@@ -158,6 +158,8 @@ public:
      */
     size_t endRow() const override;
 
+    size_t beginCol() const { return d_first_col; }
+
     std::tuple<lidx_t *, gidx_t const *, scalar_t const *> getCSRData()
     {
         return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
@@ -173,6 +175,8 @@ public:
     {
         return d_pParameters->d_VariableRight;
     }
+
+    auto numberOfNonZeros() const { return d_nnz; }
 
 protected:
     bool d_is_square;

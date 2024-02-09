@@ -371,7 +371,7 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
     auto it  = mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     auto end = it.end();
     std::vector<size_t> dofs;
-    dofs.reserve( 24 );
+    dofs.reserve( 40 );
     while ( it != end ) {
         auto nodes = it->getElements( AMP::Mesh::GeomType::Vertex );
         dofs.clear();
@@ -380,7 +380,17 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
             dofmap->getDOFs( node.globalID(), dofsNode );
             for ( auto &elem : dofsNode )
                 dofs.push_back( elem );
+#if 0            
+            const auto row = node.globalID().meshID().getData();
+            for ( size_t c = 0; c < dofs.size(); ++c ) {
+                double val = -1.0;
+                if ( row == c )
+                    val = dofs.size() - 1;
+                matrix->addValueByGlobalID( row, dofs[c], val );
+            }
+#endif
         }
+#if 1
         for ( size_t r = 0; r < dofs.size(); r++ ) {
             for ( size_t c = 0; c < dofs.size(); c++ ) {
                 double val = -1.0;
@@ -389,6 +399,7 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
                 matrix->addValueByGlobalID( dofs[r], dofs[c], val );
             }
         }
+#endif
         ++it;
     }
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
