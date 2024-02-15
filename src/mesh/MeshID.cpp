@@ -117,23 +117,23 @@ static_assert( sizeof( AMP::Mesh::GeomType ) == sizeof( uint8_t ) );
 template<>
 hid_t AMP::getHDF5datatype<AMP::Mesh::GeomType>()
 {
-    return getHDF5datatype<uint16_t>();
+    return getHDF5datatype<uint8_t>();
 }
 template<>
 void AMP::writeHDF5Array<AMP::Mesh::GeomType>( hid_t fid,
                                                const std::string_view &name,
                                                const AMP::Array<AMP::Mesh::GeomType> &data )
 {
-    AMP::Array<uint16_t> data2( data.size(), reinterpret_cast<const uint16_t *>( data.data() ) );
-    writeHDF5Array<uint16_t>( fid, name, data2 );
+    AMP::Array<uint8_t> data2( data.size(), reinterpret_cast<const uint8_t *>( data.data() ) );
+    writeHDF5Array<uint8_t>( fid, name, data2 );
 }
 template<>
 void AMP::readHDF5Array<AMP::Mesh::GeomType>( hid_t fid,
                                               const std::string_view &name,
                                               AMP::Array<AMP::Mesh::GeomType> &data )
 {
-    AMP::Array<uint16_t> data2;
-    AMP::readHDF5Array<uint16_t>( fid, name, data2 );
+    AMP::Array<uint8_t> data2;
+    AMP::readHDF5Array<uint8_t>( fid, name, data2 );
     data.resize( data2.size() );
     for ( size_t i = 0; i < data.length(); i++ )
         data( i ) = static_cast<AMP::Mesh::GeomType>( data2( i ) );
@@ -143,15 +143,15 @@ void AMP::writeHDF5Scalar<AMP::Mesh::GeomType>( hid_t fid,
                                                 const std::string_view &name,
                                                 const AMP::Mesh::GeomType &data )
 {
-    writeHDF5Scalar<uint16_t>( fid, name, static_cast<uint16_t>( data ) );
+    writeHDF5Scalar<uint8_t>( fid, name, static_cast<uint8_t>( data ) );
 }
 template<>
 void AMP::readHDF5Scalar<AMP::Mesh::GeomType>( hid_t fid,
                                                const std::string_view &name,
                                                AMP::Mesh::GeomType &data )
 {
-    uint16_t data2;
-    readHDF5Scalar<uint16_t>( fid, name, data2 );
+    uint8_t data2;
+    readHDF5Scalar<uint8_t>( fid, name, data2 );
     data = static_cast<AMP::Mesh::GeomType>( data2 );
 }
 #endif
@@ -165,21 +165,21 @@ static_assert( sizeof( AMP::Mesh::MeshIterator::Type ) == sizeof( uint8_t ) );
 template<>
 hid_t AMP::getHDF5datatype<AMP::Mesh::MeshIterator::Type>()
 {
-    return getHDF5datatype<uint16_t>();
+    return getHDF5datatype<uint8_t>();
 }
 template<>
 void AMP::writeHDF5Array<AMP::Mesh::MeshIterator::Type>(
     hid_t fid, const std::string_view &name, const AMP::Array<AMP::Mesh::MeshIterator::Type> &data )
 {
-    AMP::Array<uint16_t> data2( data.size(), reinterpret_cast<const uint16_t *>( data.data() ) );
-    writeHDF5Array<uint16_t>( fid, name, data2 );
+    AMP::Array<uint8_t> data2( data.size(), reinterpret_cast<const uint8_t *>( data.data() ) );
+    writeHDF5Array<uint8_t>( fid, name, data2 );
 }
 template<>
 void AMP::readHDF5Array<AMP::Mesh::MeshIterator::Type>(
     hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::MeshIterator::Type> &data )
 {
-    AMP::Array<uint16_t> data2;
-    AMP::readHDF5Array<uint16_t>( fid, name, data2 );
+    AMP::Array<uint8_t> data2;
+    AMP::readHDF5Array<uint8_t>( fid, name, data2 );
     data.resize( data2.size() );
     for ( size_t i = 0; i < data.length(); i++ )
         data( i ) = static_cast<AMP::Mesh::MeshIterator::Type>( data2( i ) );
@@ -188,15 +188,15 @@ template<>
 void AMP::writeHDF5Scalar<AMP::Mesh::MeshIterator::Type>(
     hid_t fid, const std::string_view &name, const AMP::Mesh::MeshIterator::Type &data )
 {
-    writeHDF5Scalar<uint16_t>( fid, name, static_cast<uint16_t>( data ) );
+    writeHDF5Scalar<uint8_t>( fid, name, static_cast<uint8_t>( data ) );
 }
 template<>
 void AMP::readHDF5Scalar<AMP::Mesh::MeshIterator::Type>( hid_t fid,
                                                          const std::string_view &name,
                                                          AMP::Mesh::MeshIterator::Type &data )
 {
-    uint16_t data2;
-    readHDF5Scalar<uint16_t>( fid, name, data2 );
+    uint8_t data2;
+    readHDF5Scalar<uint8_t>( fid, name, data2 );
     data = static_cast<AMP::Mesh::MeshIterator::Type>( data2 );
 }
 #endif
