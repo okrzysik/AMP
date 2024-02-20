@@ -574,7 +574,7 @@ void MultiVectorOperations::resetVectorOperations(
 void MultiVectorOperations::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     for ( auto ops : d_operations )
-        manager->registerData( ops );
+        manager->registerObject( ops );
 }
 void MultiVectorOperations::writeRestart( int64_t fid ) const
 {

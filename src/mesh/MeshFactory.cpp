@@ -98,10 +98,9 @@ std::shared_ptr<Mesh> MeshFactory::create( std::shared_ptr<MeshParameters> param
  ********************************************************/
 template<>
 AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::DataStoreType(
-    const std::string &name, std::shared_ptr<const AMP::Mesh::Mesh> mesh, RestartManager *manager )
+    std::shared_ptr<const AMP::Mesh::Mesh> mesh, RestartManager *manager )
     : d_data( mesh )
 {
-    d_name = name;
     d_hash = d_data->meshID().getHash();
     // Register the comm
     manager->registerComm( mesh->getComm() );

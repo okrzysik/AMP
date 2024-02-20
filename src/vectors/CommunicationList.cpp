@@ -290,12 +290,9 @@ const AMP_MPI &CommunicationList::getComm() const { return d_comm; }
  ********************************************************/
 template<>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::CommunicationList>::DataStoreType(
-    const std::string &name,
-    std::shared_ptr<const AMP::LinearAlgebra::CommunicationList> data,
-    RestartManager *manager )
+    std::shared_ptr<const AMP::LinearAlgebra::CommunicationList> data, RestartManager *manager )
     : d_data( data )
 {
-    d_name = name;
     d_hash = data->getID();
     manager->registerComm( data->getComm() );
 }

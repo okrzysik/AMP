@@ -369,10 +369,10 @@ std::ostream &operator<<( std::ostream &out, const Vector &v )
  ********************************************************/
 void Vector::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
-    manager->registerData( d_Variable );
-    manager->registerData( d_DOFManager );
-    manager->registerData( d_VectorData );
-    manager->registerData( d_VectorOps );
+    manager->registerObject( d_Variable );
+    manager->registerObject( d_DOFManager );
+    manager->registerObject( d_VectorData );
+    manager->registerObject( d_VectorOps );
 }
 void Vector::writeRestart( int64_t fid ) const
 {
@@ -406,18 +406,15 @@ Vector::Vector( int64_t fid, AMP::IO::RestartManager *manager )
  ********************************************************/
 template<>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::DataStoreType(
-    const std::string &name,
-    std::shared_ptr<const AMP::LinearAlgebra::Vector> vec,
-    RestartManager *manager )
+    std::shared_ptr<const AMP::LinearAlgebra::Vector> vec, RestartManager *manager )
     : d_data( vec )
 {
-    d_name = name;
     d_hash = vec->getID();
     d_data->registerChildObjects( manager );
     auto multivec = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( vec );
     if ( multivec ) {
         for ( auto vec2 : *multivec )
-            manager->registerData( vec2 );
+            manager->registerObject( vec2 );
     }
 }
 template<>

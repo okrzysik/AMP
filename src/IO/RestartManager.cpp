@@ -19,12 +19,40 @@ namespace AMP::IO {
 /********************************************************
  *  Constructor/destructor                               *
  ********************************************************/
-RestartManager::RestartManager() : d_writer( true ), d_fid( -1 ) {}
-RestartManager::RestartManager( const std::string &name ) : d_writer( false ), d_fid( -1 )
+RestartManager::RestartManager() : d_fid( -1 ) {}
+RestartManager::RestartManager( const std::string &name ) : d_fid( -1 ) { load( name ); }
+RestartManager::RestartManager( RestartManager &&rhs ) : d_fid( -1 )
+{
+    std::swap( d_fid, rhs.d_fid );
+    std::swap( d_data, rhs.d_data );
+    std::swap( d_names, rhs.d_names );
+    std::swap( d_comms, rhs.d_comms );
+}
+RestartManager &RestartManager::operator=( RestartManager &&rhs )
+{
+    if ( this == &rhs )
+        return *this;
+    std::swap( d_fid, rhs.d_fid );
+    std::swap( d_data, rhs.d_data );
+    std::swap( d_names, rhs.d_names );
+    std::swap( d_comms, rhs.d_comms );
+    return *this;
+}
+RestartManager::~RestartManager() { reset(); }
+void RestartManager::reset()
+{
+    if ( d_fid != hid_t( -1 ) )
+        closeHDF5( d_fid );
+    d_fid   = hid_t( -1 );
+    d_data  = {};
+    d_names = {};
+    d_comms = {};
+}
+void RestartManager::load( const std::string &name )
 {
     PROFILE_START( "load" );
+    reset(); // Clear existing data
     int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
-    AMP_INSIST( d_fid == hid_t( -1 ), "User must close file before opening a new one" );
     d_data.clear();
     d_names.clear();
     auto file = name + "." + AMP::Utilities::nodeToString( rank ) + ".h5";
@@ -37,12 +65,6 @@ RestartManager::RestartManager( const std::string &name ) : d_writer( false ), d
         d_names[names[i]] = ids[i];
     readCommData( name );
     PROFILE_STOP( "load" );
-}
-RestartManager::~RestartManager()
-{
-    if ( d_fid != hid_t( -1 ) )
-        closeHDF5( d_fid );
-    d_fid = hid_t( -1 );
 }
 
 
@@ -76,17 +98,20 @@ void RestartManager::write( const std::string &name, Compression compress )
 /********************************************************
  *  Register/load communicators                          *
  ********************************************************/
-void RestartManager::registerComm( const AMP::AMP_MPI &comm )
+uint64_t RestartManager::registerComm( const AMP::AMP_MPI &comm )
 {
+    AMP_INSIST( d_fid == hid_t( -1 ),
+                "We cannot register new items while a restart file is being read" );
     auto hash = comm.hash();
     // No need to register known comms
     if ( hash == AMP_MPI::hashNull || hash == AMP_MPI::hashSelf || hash == AMP_MPI::hashWorld ||
          hash == AMP_MPI::hashMPI )
-        return;
+        return hash;
     // Check if we have previously registered the comm and do so
     if ( d_comms.find( hash ) != d_comms.end() )
-        return;
+        return hash;
     d_comms[hash] = comm;
+    return hash;
 }
 AMP_MPI RestartManager::getComm( uint64_t hash )
 {
@@ -203,6 +228,7 @@ void RestartManager::readCommData( const std::string &name )
     PROFILE_STOP( "readCommData" );
 }
 
+
 /********************************************************
  *  Register data with the manager                       *
  ********************************************************/
@@ -228,13 +254,11 @@ bool AMP::IO::RestartManager::isRegistered( uint64_t hash )
  *  Explicit instantiations                              *
  ********************************************************/
 template<class TYPE>
-AMP::IO::RestartManager::DataStoreType<TYPE>::DataStoreType( const std::string &name,
-                                                             std::shared_ptr<const TYPE> data,
+AMP::IO::RestartManager::DataStoreType<TYPE>::DataStoreType( std::shared_ptr<const TYPE> data,
                                                              RestartManager * )
     : d_data( data )
 {
-    d_name = name;
-    d_hash = AMP::Utilities::hash_char( d_name.data() );
+    d_hash = reinterpret_cast<uint64_t>( data.get() );
 }
 template<class TYPE>
 void RestartManager::DataStoreType<TYPE>::write( hid_t fid, const std::string &name ) const
@@ -277,6 +301,7 @@ INSTANTIATE( std::byte );
 INSTANTIATE( std::string );
 INSTANTIATE( std::string_view );
 INSTANTIATE( AMP::Database );
+INSTANTIATE( std::vector<double> );
 
 
 } // namespace AMP::IO

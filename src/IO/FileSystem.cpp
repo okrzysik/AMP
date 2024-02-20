@@ -99,11 +99,11 @@ void AMP::IO::recursiveMkdir( const std::string &path, mode_t mode, bool only_no
     // Create the parent directories (if they exist)
     bool createPath = comm.getRank() == 0 || !only_node_zero_creates;
     if ( !path.empty() && createPath ) {
-        auto is_dir = []( char c ) { return c == '/' || c == 92; };
-        auto it     = std::find_if( path.begin(), path.end(), is_dir );
-        for ( ; it != path.end(); ++it ) {
-            auto path2 = path.substr( 0, std::distance( path.begin(), it ) );
-            create( path2 );
+        std::string split = "\\/";
+        size_t pos        = path.find_first_of( split, 0 );
+        while ( pos != std::string::npos ) {
+            create( path.substr( 0, pos ) );
+            pos = path.find_first_of( split, pos + 1 );
         }
         create( path );
     }

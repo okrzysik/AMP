@@ -17,12 +17,12 @@ namespace AMP::LinearAlgebra {
 /**\brief Flag to choose algorithm for makeConsistent
  *\see makeConsistent
  */
-enum class ScatterType { CONSISTENT_ADD, CONSISTENT_SET };
+enum class ScatterType : uint8_t { CONSISTENT_ADD, CONSISTENT_SET };
 
 /**\brief The four states a Vector can be in
  *\see makeConsistent
  */
-enum class UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
+enum class UpdateState : uint8_t { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
 
 
 class VectorSelector;

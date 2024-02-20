@@ -177,7 +177,7 @@ void MultiVariable::registerChildObjects( AMP::IO::RestartManager *manager ) con
 {
     Variable::registerChildObjects( manager );
     for ( auto var : d_vVariables )
-        manager->registerData( var );
+        manager->registerObject( var );
 }
 void MultiVariable::writeRestart( int64_t fid ) const
 {
