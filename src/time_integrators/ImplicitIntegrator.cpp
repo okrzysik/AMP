@@ -121,7 +121,10 @@ int ImplicitIntegrator::advanceSolution( const double dt,
     // coefficients are used there
     setTimeHistoryScalings();
 
-    return integratorSpecificAdvanceSolution( dt, first_step, in, out );
+    auto rval = integratorSpecificAdvanceSolution( dt, first_step, in, out );
+
+    d_time_history_initialized = false;
+    return rval;
 }
 
 // provide a default implementation
@@ -153,6 +156,7 @@ int ImplicitIntegrator::integratorSpecificAdvanceSolution(
     d_solver_retcode = d_solver->getConvergenceStatus();
 
     out->copyVector( d_solution_vector );
+
     return d_solver_retcode;
 }
 
@@ -308,8 +312,13 @@ void ImplicitIntegrator::printStatistics( std::ostream &os )
  *************************************************************************
  */
 
-double ImplicitIntegrator::getGamma( void ) const
+double ImplicitIntegrator::getGamma( void )
 {
+    if ( !d_time_history_initialized ) {
+        setTimeHistoryScalings();
+        d_time_history_initialized = true;
+    }
+
     auto op = std::dynamic_pointer_cast<TimeOperator>( d_operator );
     AMP_ASSERT( op );
     return op->getGamma();
