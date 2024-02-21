@@ -245,7 +245,7 @@ public:
         d_fTimeScalingFnPtr = fnPtr;
     }
 
-    double getGamma( void ) const override;
+    double getGamma( void ) override;
 
     virtual std::shared_ptr<AMP::LinearAlgebra::Vector> getTimeHistorySourceTerm()
     {
@@ -290,6 +290,7 @@ protected:
 
     bool d_first_step = true; //! whether it is the first step
 
+    bool d_time_history_initialized = false;
 
     //! allows for specialization of advanceSolution for classes of time
     //! integrators

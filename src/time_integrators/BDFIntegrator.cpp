@@ -304,6 +304,15 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
     }
 }
 
+std::vector<double> BDFIntegrator::getTimeHistoryScalings( void )
+{
+    if ( !d_time_history_initialized ) {
+        setTimeHistoryScalings();
+        d_time_history_initialized = true;
+    }
+    return d_a;
+}
+
 void BDFIntegrator::setTimeHistoryScalings( void )
 {
     const auto &current_integrator = d_integrator_names[d_integrator_index];
@@ -1190,6 +1199,8 @@ void BDFIntegrator::estimateTimeDerivative( void )
 void BDFIntegrator::integratorSpecificUpdateSolution( const double new_time )
 {
     PROFILE_START( "integratorSpecificUpdateSolution" );
+
+    d_time_history_initialized = false;
 
     d_new_time = d_current_time = new_time;
 

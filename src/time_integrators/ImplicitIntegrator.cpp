@@ -308,8 +308,13 @@ void ImplicitIntegrator::printStatistics( std::ostream &os )
  *************************************************************************
  */
 
-double ImplicitIntegrator::getGamma( void ) const
+double ImplicitIntegrator::getGamma( void )
 {
+    if ( !d_time_history_initialized ) {
+        setTimeHistoryScalings();
+        d_time_history_initialized = true;
+    }
+
     auto op = std::dynamic_pointer_cast<TimeOperator>( d_operator );
     AMP_ASSERT( op );
     return op->getGamma();
