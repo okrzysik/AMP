@@ -1200,8 +1200,6 @@ void BDFIntegrator::integratorSpecificUpdateSolution( const double new_time )
 {
     PROFILE_START( "integratorSpecificUpdateSolution" );
 
-    d_time_history_initialized = false;
-
     d_new_time = d_current_time = new_time;
 
     // increment the counter for the number of timesteps after regrid

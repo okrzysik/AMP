@@ -121,7 +121,10 @@ int ImplicitIntegrator::advanceSolution( const double dt,
     // coefficients are used there
     setTimeHistoryScalings();
 
-    return integratorSpecificAdvanceSolution( dt, first_step, in, out );
+    auto rval = integratorSpecificAdvanceSolution( dt, first_step, in, out );
+
+    d_time_history_initialized = false;
+    return rval;
 }
 
 // provide a default implementation
@@ -153,6 +156,7 @@ int ImplicitIntegrator::integratorSpecificAdvanceSolution(
     d_solver_retcode = d_solver->getConvergenceStatus();
 
     out->copyVector( d_solution_vector );
+
     return d_solver_retcode;
 }
 
