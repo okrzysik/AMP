@@ -259,6 +259,8 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     // Determine the type of matrix to build
     std::string type2 = type;
     if ( type == "auto" ) {
+        type2 = "CSRMatrix";
+
 #if defined( AMP_USE_TRILINOS )
         type2 = "ManagedEpetraMatrix";
 #elif defined( AMP_USE_PETSC )
