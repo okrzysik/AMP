@@ -201,54 +201,58 @@ template<typename Policy>
 CSRMatrixData<Policy>::~CSRMatrixData()
 {
     AMPManager::decrementResource( "CSRMatrixData" );
+    auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
-    // tackle this case for now
-    if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
+    if ( matParams ) {
+        // tackle this case for now
+        if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
 
-        if ( d_row_starts ) {
-            std::allocator<lidx_t> allocator_l;
-            allocator_l.deallocate( d_row_starts, d_last_row - d_first_row + 1 );
-        }
-        if ( d_manage_cols ) {
-            std::allocator<gidx_t> allocator_g;
-            allocator_g.deallocate( d_cols, d_nnz );
-        }
+            if ( d_row_starts ) {
+                std::allocator<lidx_t> allocator_l;
+                allocator_l.deallocate( d_row_starts, d_last_row - d_first_row + 1 );
+            }
+            if ( d_manage_cols ) {
+                std::allocator<gidx_t> allocator_g;
+                allocator_g.deallocate( d_cols, d_nnz );
+            }
 
-        if ( d_manage_nnz ) {
-            std::allocator<lidx_t> allocator_l;
-            allocator_l.deallocate( d_nnz_per_row, d_last_row - d_first_row );
-        }
+            if ( d_manage_nnz ) {
+                std::allocator<lidx_t> allocator_l;
+                allocator_l.deallocate( d_nnz_per_row, d_last_row - d_first_row );
+            }
 
-        if ( d_manage_coeffs ) {
-            std::allocator<scalar_t> allocator_s;
-            allocator_s.deallocate( d_coeffs, d_nnz );
-        }
-    } else if ( ( d_memory_location == AMP::Utilities::MemoryType::managed ) ||
-                ( d_memory_location == AMP::Utilities::MemoryType::device ) ) {
+            if ( d_manage_coeffs ) {
+                std::allocator<scalar_t> allocator_s;
+                allocator_s.deallocate( d_coeffs, d_nnz );
+            }
+        } else if ( ( d_memory_location == AMP::Utilities::MemoryType::managed ) ||
+                    ( d_memory_location == AMP::Utilities::MemoryType::device ) ) {
 
 #ifdef AMP_USE_UMPIRE
-        auto &resourceManager = umpire::ResourceManager::getInstance();
-        auto allocator        = ( d_memory_location == AMP::Utilities::MemoryType::managed ) ?
-                                    resourceManager.getAllocator( "UM" ) :
-                                    resourceManager.getAllocator( "DEVICE" );
+            auto &resourceManager = umpire::ResourceManager::getInstance();
+            auto allocator        = ( d_memory_location == AMP::Utilities::MemoryType::managed ) ?
+                                        resourceManager.getAllocator( "UM" ) :
+                                        resourceManager.getAllocator( "DEVICE" );
 
-        allocator.deallocate( d_row_starts );
+            allocator.deallocate( d_row_starts );
 
-        if ( d_manage_cols )
-            allocator.deallocate( d_cols );
+            if ( d_manage_cols )
+                allocator.deallocate( d_cols );
 
-        if ( d_manage_nnz )
-            allocator.deallocate( d_nnz_per_row );
+            if ( d_manage_nnz )
+                allocator.deallocate( d_nnz_per_row );
 
-        if ( d_manage_coeffs )
-            allocator.deallocate( d_coeffs );
+            if ( d_manage_coeffs )
+                allocator.deallocate( d_coeffs );
 #else
-        AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been "
-                   "implemented as yet" );
+            AMP_ERROR(
+                "CSRMatrixData: managed and device memory handling without Umpire has not been "
+                "implemented as yet" );
 #endif
 
-    } else {
-        AMP_ERROR( "CSRMatrixData: memory space undefined" );
+        } else {
+            AMP_ERROR( "CSRMatrixData: memory space undefined" );
+        }
     }
 }
 
