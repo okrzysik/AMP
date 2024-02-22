@@ -147,7 +147,7 @@ bool MultiGeometry::operator==( const Geometry &rhs ) const
 void MultiGeometry::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     for ( auto geom : d_geom )
-        manager->registerData( geom );
+        manager->registerObject( geom );
 }
 void MultiGeometry::writeRestart( int64_t fid ) const
 {

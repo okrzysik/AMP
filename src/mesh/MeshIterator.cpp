@@ -355,11 +355,8 @@ MeshElement &MeshIterator::operator[]( int i )
  ********************************************************/
 template<>
 AMP::IO::RestartManager::DataStoreType<AMP::Mesh::MeshIterator>::DataStoreType(
-    const std::string &name,
-    std::shared_ptr<const AMP::Mesh::MeshIterator> data,
-    RestartManager *manager )
+    std::shared_ptr<const AMP::Mesh::MeshIterator> data, RestartManager *manager )
 {
-    d_name = name;
     d_hash = data->getID();
     if ( d_hash == AMP::Mesh::MeshIteratorType )
         d_data = std::make_shared<AMP::Mesh::MeshIterator>();

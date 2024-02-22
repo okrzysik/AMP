@@ -50,6 +50,13 @@ public:
     //! Return the name of the variable
     inline const std::string &name() const { return d_name; }
 
+    //! Check if two objects are equal
+    virtual bool operator==( const HDF5data &rhs ) const = 0;
+
+    //! Check if two objects are not equal
+    inline bool operator!=( const HDF5data &rhs ) const { return !operator==( rhs ); }
+
+
 protected:
     HDF5data( hid_t fid, const std::string_view &name ) : d_fid( fid ), d_name( name ) {}
 

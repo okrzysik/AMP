@@ -303,7 +303,7 @@ structuredMeshIterator::getElements() const
  ****************************************************************/
 void structuredMeshIterator::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
-    manager->registerData( d_mesh->shared_from_this() );
+    manager->registerObject( d_mesh->shared_from_this() );
 }
 void structuredMeshIterator::writeRestart( int64_t fid ) const
 {

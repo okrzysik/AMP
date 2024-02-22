@@ -542,6 +542,12 @@ public:
 
 
     /**
+     * Clear all keys from the database
+     */
+    void clear();
+
+
+    /**
      * Print the data to a stream
      * @param os        Output stream
      * @param indent    Indenting to use before each line

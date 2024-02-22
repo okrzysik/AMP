@@ -353,7 +353,7 @@ void MultiVector::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     Vector::registerChildObjects( manager );
     for ( auto vec : d_vVectors )
-        manager->registerData( vec );
+        manager->registerObject( vec );
 }
 void MultiVector::writeRestart( int64_t fid ) const
 {

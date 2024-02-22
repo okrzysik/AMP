@@ -248,6 +248,13 @@ void Database::erase( std::string_view key, bool check )
     d_keys.pop_back();
     d_data.pop_back();
 }
+void Database::clear()
+{
+    d_hash.clear();
+    d_keys.clear();
+    d_data.clear();
+    d_used.clear();
+}
 
 
 /********************************************************************

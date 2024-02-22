@@ -273,12 +273,9 @@ void DOFManager::registerChildObjects( AMP::IO::RestartManager * ) const {}
  ********************************************************/
 template<>
 AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::DataStoreType(
-    const std::string &name,
-    std::shared_ptr<const AMP::Discretization::DOFManager> data,
-    RestartManager *manager )
+    std::shared_ptr<const AMP::Discretization::DOFManager> data, RestartManager *manager )
     : d_data( data )
 {
-    d_name = name;
     d_hash = data->getID();
     // Register the comm
     manager->registerComm( data->getComm() );

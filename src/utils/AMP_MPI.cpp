@@ -376,6 +376,42 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
 
 
 /************************************************************************
+ *  Hash an MPI communicator                                             *
+ ************************************************************************/
+static inline uint64_t hashComm( MPI_Comm comm )
+{
+    if ( comm == MPI_COMM_NULL ) {
+        return MPI_CLASS::hashNull;
+    } else if ( comm == MPI_COMM_SELF ) {
+        return MPI_CLASS::hashSelf;
+    } else if ( comm == MPI_COMM_WORLD ) {
+        return MPI_CLASS::hashMPI;
+    } else if ( comm == MPI_CLASS::commWorld ) {
+        return MPI_CLASS::hashWorld;
+    }
+    uint64_t r = AMP::AMPManager::getCommWorld().getRank();
+    uint64_t h = 0x6dac47f99495c90e + ( r << 32 ) + r;
+    uint64_t x;
+    if constexpr ( sizeof( comm ) == 4 ) {
+        uint32_t y;
+        memcpy( &y, &comm, sizeof( comm ) );
+        x = y;
+    } else if constexpr ( sizeof( comm ) == 8 ) {
+        uint64_t y;
+        memcpy( &y, &comm, sizeof( comm ) );
+        x = y;
+    } else {
+        throw std::logic_error( "Not finished" );
+    }
+    uint64_t hash = h ^ x;
+#if USE_MPI
+    MPI_Bcast( &hash, 1, MPI_UINT64_T, 0, comm );
+#endif
+    return hash;
+}
+
+
+/************************************************************************
  *  Constructor from existing MPI communicator                           *
  ************************************************************************/
 static int d_global_currentTag_world1[2]     = { 1, 1 };
@@ -465,27 +501,7 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     }
     d_call_abort = true;
     // Create the hash
-    if ( d_comm == MPI_COMM_NULL ) {
-        d_hash = hashNull;
-    } else if ( d_comm == MPI_COMM_SELF ) {
-        d_hash = hashSelf;
-    } else if ( d_comm == MPI_COMM_WORLD ) {
-        d_hash = hashMPI;
-    } else if ( d_comm == commWorld ) {
-        d_hash = hashWorld;
-    } else {
-        uint64_t r = AMP::AMPManager::getCommWorld().getRank();
-        uint64_t h = 0x6dac47f99495c90e + ( r << 32 ) + r;
-        uint64_t x;
-        if constexpr ( sizeof( d_comm ) == 4 ) {
-            x = *reinterpret_cast<const uint32_t *>( &d_comm );
-        } else if constexpr ( sizeof( d_comm ) == 8 ) {
-            x = *reinterpret_cast<const uint64_t *>( &d_comm );
-        } else {
-            throw std::logic_error( "Not finished" );
-        }
-        d_hash = bcast( h ^ x, 0 );
-    }
+    d_hash = hashComm( d_comm );
 }
 
 

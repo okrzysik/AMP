@@ -98,7 +98,7 @@ private:
 
     bool d_bComputeResidual = false; //! whether to compute the residual  before and after solve
 
-    bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
+    bool d_bCreationPhase = true; /**< set to true if the PC is not ready and false otherwise. */
 };
 } // namespace AMP::Solver
 

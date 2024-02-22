@@ -4,6 +4,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/typeid.h"
 
 #include <cstddef>
 #include <set>
@@ -31,29 +32,86 @@ static inline std::string HDF5_getMemberName( hid_t id, unsigned idx )
 }
 
 
-// Function to get type name
-template<class TYPE>
-static const char *getTypeName()
+// Function to get type id
+static typeID getType( hid_t tid )
 {
-    if constexpr ( std::is_same_v<TYPE, char> )
-        return "char";
-    else if constexpr ( std::is_same_v<TYPE, int> )
-        return "int";
-    else if constexpr ( std::is_same_v<TYPE, uint32_t> )
-        return "uint32_t";
-    else if constexpr ( std::is_same_v<TYPE, int64_t> )
-        return "int64_t";
-    else if constexpr ( std::is_same_v<TYPE, uint64_t> )
-        return "uint64_t";
-    else if constexpr ( std::is_same_v<TYPE, float> )
-        return "float";
-    else if constexpr ( std::is_same_v<TYPE, double> )
-        return "double";
-    else if constexpr ( std::is_same_v<TYPE, std::complex<float>> )
-        return "std::complex<float>";
-    else if constexpr ( std::is_same_v<TYPE, std::complex<double>> )
-        return "std::complex<double>";
-    return typeid( TYPE ).name();
+    if ( H5Tequal( tid, getHDF5datatype<char>() ) ) {
+        return getTypeID<char>();
+    } else if ( H5Tequal( tid, getHDF5datatype<unsigned char>() ) ) {
+        return getTypeID<unsigned char>();
+    } else if ( H5Tequal( tid, getHDF5datatype<int>() ) ) {
+        return getTypeID<int>();
+    } else if ( H5Tequal( tid, getHDF5datatype<unsigned int>() ) ) {
+        return getTypeID<unsigned int>();
+    } else if ( H5Tequal( tid, getHDF5datatype<long int>() ) ) {
+        return getTypeID<long int>();
+    } else if ( H5Tequal( tid, getHDF5datatype<unsigned long int>() ) ) {
+        return getTypeID<unsigned long int>();
+    } else if ( H5Tequal( tid, getHDF5datatype<uint8_t>() ) ) {
+        return getTypeID<uint8_t>();
+    } else if ( H5Tequal( tid, getHDF5datatype<int8_t>() ) ) {
+        return getTypeID<int8_t>();
+    } else if ( H5Tequal( tid, getHDF5datatype<uint16_t>() ) ) {
+        return getTypeID<uint16_t>();
+    } else if ( H5Tequal( tid, getHDF5datatype<int16_t>() ) ) {
+        return getTypeID<int16_t>();
+    } else if ( H5Tequal( tid, getHDF5datatype<uint32_t>() ) ) {
+        return getTypeID<uint32_t>();
+    } else if ( H5Tequal( tid, getHDF5datatype<int32_t>() ) ) {
+        return getTypeID<int32_t>();
+    } else if ( H5Tequal( tid, getHDF5datatype<uint64_t>() ) ) {
+        return getTypeID<uint64_t>();
+    } else if ( H5Tequal( tid, getHDF5datatype<int64_t>() ) ) {
+        return getTypeID<int64_t>();
+    } else if ( H5Tequal( tid, getHDF5datatype<float>() ) ) {
+        return getTypeID<float>();
+    } else if ( H5Tequal( tid, getHDF5datatype<double>() ) ) {
+        return getTypeID<double>();
+    } else {
+        AMP_ERROR( "Unknown data" );
+    }
+}
+static typeID getType( const std::string &type )
+{
+    if ( type == "char" ) {
+        return getTypeID<char>();
+    } else if ( type == "unsigned char" ) {
+        return getTypeID<unsigned char>();
+    } else if ( type == "int" ) {
+        return getTypeID<int>();
+    } else if ( type == "unsigned int" ) {
+        return getTypeID<unsigned int>();
+    } else if ( type == "long int" ) {
+        return getTypeID<long int>();
+    } else if ( type == "unsigned long int" ) {
+        return getTypeID<unsigned long int>();
+    } else if ( type == "uint8_t" ) {
+        return getTypeID<uint8_t>();
+    } else if ( type == "int8_t" ) {
+        return getTypeID<int8_t>();
+    } else if ( type == "uint16_t" ) {
+        return getTypeID<uint16_t>();
+    } else if ( type == "int16_t" ) {
+        return getTypeID<int16_t>();
+    } else if ( type == "uint32_t" ) {
+        return getTypeID<uint32_t>();
+    } else if ( type == "int32_t" ) {
+        return getTypeID<int32_t>();
+    } else if ( type == "uint64_t" ) {
+        return getTypeID<uint64_t>();
+    } else if ( type == "int64_t" ) {
+        return getTypeID<int64_t>();
+    } else if ( type == "float" ) {
+        return getTypeID<float>();
+    } else if ( type == "double" ) {
+        return getTypeID<double>();
+    } else if ( type == "std::complex<float>" ) {
+        return getTypeID<std::complex<float>>();
+    } else if ( type == "std::complex<double>" ) {
+        return getTypeID<std::complex<double>>();
+    } else {
+        AMP_ERROR( "Unknown data: " + type );
+    }
 }
 
 
@@ -88,6 +146,15 @@ public:
         return nullptr;
     }
     std::vector<std::string> getNames() const override { return std::vector<std::string>(); }
+    bool operator==( const HDF5data &rhs_ ) const override
+    {
+        auto rhs = dynamic_cast<const HDF5_null *>( &rhs_ );
+        if ( !rhs )
+            return false;
+        if ( d_name != rhs->d_name )
+            return false;
+        return d_type == rhs->d_type;
+    }
     void print( int, const std::string_view &prefix ) const override
     {
         printf( "%s%s - Unfinished %s\n", prefix.data(), d_name.data(), d_type.data() );
@@ -106,7 +173,7 @@ public:
     ~HDF5_primitive() override = default;
     std::string type() const override
     {
-        return AMP::Utilities::stringf( "HDF5_primitive<%f>", getTypeName<TYPE>() );
+        return AMP::Utilities::stringf( "HDF5_primitive<%f>", getTypeID<TYPE>() );
     }
     size_t size() const override { return 1; }
     std::shared_ptr<HDF5data> getData( size_t i, const std::string_view &name ) override
@@ -121,9 +188,19 @@ public:
     }
     AMP::ArraySize getDataSize() const override { return d_data.size(); }
     const AMP::Array<TYPE> &getData() const { return d_data; }
+    bool operator==( const HDF5data &rhs_ ) const override
+    {
+        auto rhs = dynamic_cast<const HDF5_primitive<TYPE> *>( &rhs_ );
+        if ( !rhs )
+            return false;
+        if ( d_name != rhs->d_name )
+            return false;
+        return d_data == rhs->d_data;
+    }
     void print( int level, const std::string_view &prefix = "" ) const override
     {
-        printf( "%s%s (%s)", prefix.data(), d_name.data(), getTypeName<TYPE>() );
+        auto type = getTypeID<TYPE>();
+        printf( "%s%s (%s)", prefix.data(), d_name.data(), type.name );
         if ( d_data.empty() ) {
             printf( " []\n" );
         } else if ( d_data.length() == 1 ) {
@@ -169,6 +246,21 @@ public:
         return d_data( j, i );
     }
     std::vector<std::string> getNames() const override { return d_names; }
+    bool operator==( const HDF5data &rhs_ ) const override
+    {
+        auto rhs = dynamic_cast<const HDF5_group *>( &rhs_ );
+        if ( !rhs )
+            return false;
+        if ( d_name != rhs->d_name )
+            return false;
+        if ( d_names != rhs->d_names || d_data.size() != rhs->d_data.size() )
+            return false;
+        for ( size_t i = 0; i < d_data.length(); i++ ) {
+            if ( *d_data( i ) != *rhs->d_data( i ) )
+                return false;
+        }
+        return true;
+    }
     void print( int level, const std::string_view &prefix = "" ) const override
     {
         if ( d_data.empty() )
@@ -216,45 +308,66 @@ public:
     size_t size() const override { return d_size.length(); }
     AMP::ArraySize getDataSize() const override { return d_size; }
     using HDF5data::getData;
+    template<class TYPE>
+    std::shared_ptr<HDF5_primitive<TYPE>> make_primitive( std::string_view name,
+                                                          const std::byte *ptr )
+    {
+        return std::make_shared<HDF5_primitive<TYPE>>( name,
+                                                       *reinterpret_cast<const TYPE *>( ptr ) );
+    }
     std::shared_ptr<HDF5data> getData( size_t i, const std::string_view &name ) override
     {
         int j = find( d_names, name );
         if ( j == -1 )
             return nullptr;
-        auto ptr = &d_data( d_offset[j], i );
-        if ( d_types[j] == getTypeName<char>() ) {
-            return std::make_shared<HDF5_primitive<char>>( name, *reinterpret_cast<char *>( ptr ) );
-        } else if ( d_types[j] == getTypeName<unsigned char>() ) {
-            return std::make_shared<HDF5_primitive<unsigned char>>(
-                name, *reinterpret_cast<unsigned char *>( ptr ) );
-        } else if ( d_types[j] == getTypeName<int>() ) {
-            return std::make_shared<HDF5_primitive<int>>( name, *reinterpret_cast<int *>( ptr ) );
-        } else if ( d_types[j] == getTypeName<unsigned>() ) {
-            return std::make_shared<HDF5_primitive<unsigned>>(
-                name, *reinterpret_cast<unsigned *>( ptr ) );
-        } else if ( d_types[j] == getTypeName<long>() ) {
-            return std::make_shared<HDF5_primitive<long>>( name, *reinterpret_cast<long *>( ptr ) );
-        } else if ( d_types[j] == getTypeName<unsigned long>() ) {
-            return std::make_shared<HDF5_primitive<unsigned long>>(
-                name, *reinterpret_cast<unsigned long *>( ptr ) );
-        } else if ( d_types[j] == getTypeName<float>() ) {
-            return std::make_shared<HDF5_primitive<float>>( name,
-                                                            *reinterpret_cast<float *>( ptr ) );
-        } else if ( d_types[j] == getTypeName<double>() ) {
-            return std::make_shared<HDF5_primitive<double>>( name,
-                                                             *reinterpret_cast<double *>( ptr ) );
-        } else if ( d_types[j] == getTypeName<std::complex<float>>() ) {
-            return std::make_shared<HDF5_primitive<std::complex<float>>>(
-                name, *reinterpret_cast<std::complex<float> *>( ptr ) );
-        } else if ( d_types[j] == getTypeName<std::complex<double>>() ) {
-            return std::make_shared<HDF5_primitive<std::complex<double>>>(
-                name, *reinterpret_cast<std::complex<double> *>( ptr ) );
+        auto ptr  = &d_data( d_offset[j], i );
+        auto type = getType( d_types[j] );
+        if ( type == getTypeID<char>() ) {
+            return make_primitive<char>( name, ptr );
+        } else if ( type == getTypeID<unsigned char>() ) {
+            return make_primitive<unsigned char>( name, ptr );
+        } else if ( type == getTypeID<uint8_t>() ) {
+            return make_primitive<uint8_t>( name, ptr );
+        } else if ( type == getTypeID<int8_t>() ) {
+            return make_primitive<int8_t>( name, ptr );
+        } else if ( type == getTypeID<uint16_t>() ) {
+            return make_primitive<uint16_t>( name, ptr );
+        } else if ( type == getTypeID<int16_t>() ) {
+            return make_primitive<int16_t>( name, ptr );
+        } else if ( type == getTypeID<uint32_t>() ) {
+            return make_primitive<uint32_t>( name, ptr );
+        } else if ( type == getTypeID<int32_t>() ) {
+            return make_primitive<int32_t>( name, ptr );
+        } else if ( type == getTypeID<uint64_t>() ) {
+            return make_primitive<uint64_t>( name, ptr );
+        } else if ( type == getTypeID<int64_t>() ) {
+            return make_primitive<int8_t>( name, ptr );
+        } else if ( type == getTypeID<float>() ) {
+            return make_primitive<float>( name, ptr );
+        } else if ( type == getTypeID<double>() ) {
+            return make_primitive<double>( name, ptr );
+        } else if ( type == getTypeID<std::complex<float>>() ) {
+            return make_primitive<std::complex<float>>( name, ptr );
+        } else if ( type == getTypeID<std::complex<double>>() ) {
+            return make_primitive<std::complex<double>>( name, ptr );
         } else {
             AMP_ERROR( "Internal error" );
         }
         return nullptr;
     }
     std::vector<std::string> getNames() const override { return d_names; }
+    bool operator==( const HDF5data &rhs_ ) const override
+    {
+        auto rhs = dynamic_cast<const HDF5_compound *>( &rhs_ );
+        if ( !rhs )
+            return false;
+        if ( d_name != rhs->d_name )
+            return false;
+        if ( d_size != rhs->d_size )
+            return false;
+        return d_names == rhs->d_names && d_types == rhs->d_types && d_offset == rhs->d_offset &&
+               d_data == rhs->d_data;
+    }
     void print( int level, const std::string_view &prefix = "" ) const override
     {
         if ( d_data.empty() )
@@ -317,14 +430,22 @@ void HDF5data::getData( AMP::Array<TYPE> &data ) const
         data.copy( dynamic_cast<const HDF5_primitive<char> *>( this )->getData() );
     } else if ( dynamic_cast<const HDF5_primitive<unsigned char> *>( this ) != nullptr ) {
         data.copy( dynamic_cast<const HDF5_primitive<unsigned char> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<int> *>( this ) != nullptr ) {
-        data.copy( dynamic_cast<const HDF5_primitive<int> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<unsigned int> *>( this ) != nullptr ) {
-        data.copy( dynamic_cast<const HDF5_primitive<unsigned int> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<long int> *>( this ) != nullptr ) {
-        data.copy( dynamic_cast<const HDF5_primitive<long int> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<unsigned long int> *>( this ) != nullptr ) {
-        data.copy( dynamic_cast<const HDF5_primitive<unsigned long int> *>( this )->getData() );
+    } else if ( dynamic_cast<const HDF5_primitive<int8_t> *>( this ) != nullptr ) {
+        data.copy( dynamic_cast<const HDF5_primitive<int8_t> *>( this )->getData() );
+    } else if ( dynamic_cast<const HDF5_primitive<uint8_t> *>( this ) != nullptr ) {
+        data.copy( dynamic_cast<const HDF5_primitive<uint8_t> *>( this )->getData() );
+    } else if ( dynamic_cast<const HDF5_primitive<int16_t> *>( this ) != nullptr ) {
+        data.copy( dynamic_cast<const HDF5_primitive<int16_t> *>( this )->getData() );
+    } else if ( dynamic_cast<const HDF5_primitive<uint16_t> *>( this ) != nullptr ) {
+        data.copy( dynamic_cast<const HDF5_primitive<uint16_t> *>( this )->getData() );
+    } else if ( dynamic_cast<const HDF5_primitive<int32_t> *>( this ) != nullptr ) {
+        data.copy( dynamic_cast<const HDF5_primitive<int32_t> *>( this )->getData() );
+    } else if ( dynamic_cast<const HDF5_primitive<uint32_t> *>( this ) != nullptr ) {
+        data.copy( dynamic_cast<const HDF5_primitive<uint32_t> *>( this )->getData() );
+    } else if ( dynamic_cast<const HDF5_primitive<int64_t> *>( this ) != nullptr ) {
+        data.copy( dynamic_cast<const HDF5_primitive<int64_t> *>( this )->getData() );
+    } else if ( dynamic_cast<const HDF5_primitive<uint64_t> *>( this ) != nullptr ) {
+        data.copy( dynamic_cast<const HDF5_primitive<uint64_t> *>( this )->getData() );
     } else if ( dynamic_cast<const HDF5_primitive<float> *>( this ) != nullptr ) {
         data.copy( dynamic_cast<const HDF5_primitive<float> *>( this )->getData() );
     } else if ( dynamic_cast<const HDF5_primitive<double> *>( this ) != nullptr ) {
@@ -333,14 +454,18 @@ void HDF5data::getData( AMP::Array<TYPE> &data ) const
         AMP_ERROR( "Unable to get data: " + type() );
     }
 }
-template void HDF5data::getData<int>( AMP::Array<int> & ) const;
+template void HDF5data::getData<unsigned char>( AMP::Array<unsigned char> & ) const;
 template void HDF5data::getData<char>( AMP::Array<char> & ) const;
-template void HDF5data::getData<long>( AMP::Array<long> & ) const;
+template void HDF5data::getData<int8_t>( AMP::Array<int8_t> & ) const;
+// template void HDF5data::getData<uint8_t>( AMP::Array<uint8_t> & ) const;
+template void HDF5data::getData<int16_t>( AMP::Array<int16_t> & ) const;
+template void HDF5data::getData<uint16_t>( AMP::Array<uint16_t> & ) const;
+template void HDF5data::getData<int32_t>( AMP::Array<int32_t> & ) const;
+template void HDF5data::getData<uint32_t>( AMP::Array<uint32_t> & ) const;
+template void HDF5data::getData<int64_t>( AMP::Array<int64_t> & ) const;
+template void HDF5data::getData<uint64_t>( AMP::Array<uint64_t> & ) const;
 template void HDF5data::getData<float>( AMP::Array<float> & ) const;
 template void HDF5data::getData<double>( AMP::Array<double> & ) const;
-template void HDF5data::getData<unsigned int>( AMP::Array<unsigned int> & ) const;
-template void HDF5data::getData<unsigned char>( AMP::Array<unsigned char> & ) const;
-template void HDF5data::getData<unsigned long>( AMP::Array<unsigned long> & ) const;
 
 
 /************************************************************************
@@ -367,28 +492,49 @@ static std::unique_ptr<HDF5data> readPrimitive( hid_t fid, const std::string_vie
 {
     hid_t id  = H5Dopen( fid, name.data(), H5P_DEFAULT );
     hid_t tid = H5Dget_type( id );
+    auto type = getType( tid );
     std::unique_ptr<HDF5data> data;
-    if ( H5Tequal( tid, getHDF5datatype<char>() ) ) {
+    if ( type == getTypeID<char>() ) {
         data.reset( new HDF5_primitive<char>( fid, name ) );
-    } else if ( H5Tequal( tid, getHDF5datatype<unsigned char>() ) ) {
+    } else if ( type == getTypeID<unsigned char>() ) {
         data.reset( new HDF5_primitive<unsigned char>( fid, name ) );
-    } else if ( H5Tequal( tid, getHDF5datatype<int>() ) ) {
+    } else if ( type == getTypeID<int>() ) {
         data.reset( new HDF5_primitive<int>( fid, name ) );
-    } else if ( H5Tequal( tid, getHDF5datatype<unsigned int>() ) ) {
+    } else if ( type == getTypeID<unsigned int>() ) {
         data.reset( new HDF5_primitive<unsigned int>( fid, name ) );
-    } else if ( H5Tequal( tid, getHDF5datatype<long int>() ) ) {
+    } else if ( type == getTypeID<long int>() ) {
         data.reset( new HDF5_primitive<long int>( fid, name ) );
-    } else if ( H5Tequal( tid, getHDF5datatype<unsigned long int>() ) ) {
+    } else if ( type == getTypeID<unsigned long int>() ) {
         data.reset( new HDF5_primitive<unsigned long int>( fid, name ) );
-    } else if ( H5Tequal( tid, getHDF5datatype<float>() ) ) {
+    } else if ( type == getTypeID<uint8_t>() ) {
+        data.reset( new HDF5_primitive<uint8_t>( fid, name ) );
+    } else if ( type == getTypeID<int8_t>() ) {
+        data.reset( new HDF5_primitive<int8_t>( fid, name ) );
+    } else if ( type == getTypeID<uint16_t>() ) {
+        data.reset( new HDF5_primitive<uint16_t>( fid, name ) );
+    } else if ( type == getTypeID<int16_t>() ) {
+        data.reset( new HDF5_primitive<int16_t>( fid, name ) );
+    } else if ( type == getTypeID<uint32_t>() ) {
+        data.reset( new HDF5_primitive<uint32_t>( fid, name ) );
+    } else if ( type == getTypeID<int32_t>() ) {
+        data.reset( new HDF5_primitive<int32_t>( fid, name ) );
+    } else if ( type == getTypeID<uint64_t>() ) {
+        data.reset( new HDF5_primitive<uint64_t>( fid, name ) );
+    } else if ( type == getTypeID<int64_t>() ) {
+        data.reset( new HDF5_primitive<int64_t>( fid, name ) );
+    } else if ( type == getTypeID<float>() ) {
         data.reset( new HDF5_primitive<float>( fid, name ) );
-    } else if ( H5Tequal( tid, getHDF5datatype<double>() ) ) {
+    } else if ( type == getTypeID<double>() ) {
         data.reset( new HDF5_primitive<double>( fid, name ) );
-    } else if ( H5Tequal( tid, getHDF5datatype<std::complex<double>>() ) ) {
-        data.reset( new HDF5_primitive<double>( fid, name ) );
+    } else if ( type == getTypeID<std::complex<float>>() ) {
+        data.reset( new HDF5_primitive<std::complex<float>>( fid, name ) );
+    } else if ( type == getTypeID<std::complex<double>>() ) {
+        data.reset( new HDF5_primitive<std::complex<double>>( fid, name ) );
     } else {
-        AMP_WARNING( "Unknown data" );
+        AMP_WARNING( "Unknown data: " + std::string( type.name ) );
     }
+    H5Dclose( id );
+    H5Tclose( tid );
     return data;
 }
 static std::unique_ptr<HDF5data> readDatabase( hid_t fid, const std::string_view &name )
@@ -422,6 +568,8 @@ static std::unique_ptr<HDF5data> readDatabase( hid_t fid, const std::string_view
     } else {
         AMP_WARNING( "Unknown data" );
     }
+    H5Dclose( id );
+    H5Tclose( tid );
     return data;
 }
 
@@ -541,27 +689,10 @@ HDF5_compound::HDF5_compound( hid_t fid, const std::string_view &name ) : HDF5da
         hid_t tid2    = H5Tget_member_type( tid, i );
         auto name2    = HDF5_getMemberName( tid, i );
         size_t offset = H5Tget_member_offset( tid, i );
+        auto type     = getType( tid2 );
         d_names[i]    = name2;
         d_offset[i]   = offset;
-        if ( H5Tequal( tid2, getHDF5datatype<char>() ) ) {
-            d_types[i] = getTypeName<char>();
-        } else if ( H5Tequal( tid2, getHDF5datatype<unsigned char>() ) ) {
-            d_types[i] = getTypeName<unsigned char>();
-        } else if ( H5Tequal( tid2, getHDF5datatype<int>() ) ) {
-            d_types[i] = getTypeName<int>();
-        } else if ( H5Tequal( tid2, getHDF5datatype<unsigned int>() ) ) {
-            d_types[i] = getTypeName<unsigned int>();
-        } else if ( H5Tequal( tid2, getHDF5datatype<long int>() ) ) {
-            d_types[i] = getTypeName<long int>();
-        } else if ( H5Tequal( tid2, getHDF5datatype<unsigned long int>() ) ) {
-            d_types[i] = getTypeName<unsigned long int>();
-        } else if ( H5Tequal( tid2, getHDF5datatype<float>() ) ) {
-            d_types[i] = getTypeName<float>();
-        } else if ( H5Tequal( tid2, getHDF5datatype<double>() ) ) {
-            d_types[i] = getTypeName<double>();
-        } else {
-            AMP_ERROR( "Unknown data" );
-        }
+        d_types[i]    = type.name;
     }
     H5Dclose( id );
     H5Tclose( tid );

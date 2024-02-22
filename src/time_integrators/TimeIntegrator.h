@@ -252,7 +252,7 @@ public:
     }
     virtual AMP::LinearAlgebra::Vector::shared_ptr getSourceTerm( void ) { return d_pSourceTerm; }
 
-    virtual double getGamma( void ) const { return d_current_dt; }
+    virtual double getGamma( void ) { return d_current_dt; }
 
     /**
      * \brief  Scaling factors for previous time history vectors
@@ -260,7 +260,7 @@ public:
      * multistep methods this vector can consist of multiple scalings with the first
      * entry being the scaling for $y^{n-1}$, the next being for $y^{n-2}$ etc
      */
-    virtual std::vector<double> getTimeHistoryScalings( void ) const
+    virtual std::vector<double> getTimeHistoryScalings( void )
     {
         return std::vector<double>( 1, 1.0 );
     }

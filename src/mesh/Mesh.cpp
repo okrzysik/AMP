@@ -513,7 +513,7 @@ void Mesh::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     manager->registerComm( d_comm );
     if ( d_geometry )
-        manager->registerData( d_geometry );
+        manager->registerObject( d_geometry );
 }
 void Mesh::writeRestart( int64_t fid ) const
 {

@@ -519,10 +519,10 @@ void MultiVectorData::registerChildObjects( AMP::IO::RestartManager *manager ) c
 {
     manager->registerComm( d_comm );
     for ( auto data : d_data )
-        manager->registerData( data->shared_from_this() );
-    manager->registerData( d_globalDOFManager->shared_from_this() );
+        manager->registerObject( data->shared_from_this() );
+    manager->registerObject( d_globalDOFManager->shared_from_this() );
     for ( auto dofs : d_subDOFManager )
-        manager->registerData( dofs->shared_from_this() );
+        manager->registerObject( dofs->shared_from_this() );
 }
 void MultiVectorData::writeRestart( int64_t fid ) const
 {
