@@ -106,8 +106,9 @@ void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
     auto memType = AMP::Utilities::getMemoryType( csr_ja );
 
     HYPRE_BigInt *row_ids_p = nullptr;
+    std::vector<HYPRE_BigInt> row_ids;
     if ( memType <= AMP::Utilities::MemoryType::host ) {
-        std::vector<HYPRE_BigInt> row_ids( nrows );
+        row_ids.resize( nrows );
         row_ids_p = row_ids.data();
     } else if ( memType == AMP::Utilities::MemoryType::managed ) {
 
