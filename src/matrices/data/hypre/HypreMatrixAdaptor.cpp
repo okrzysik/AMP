@@ -1,8 +1,13 @@
 #include "AMP/matrices/data/hypre/HypreMatrixAdaptor.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
+
+#ifdef USE_CUDA
+    #include "AMP/utils/cuda/CudaAllocator.h"
+#endif
 
 #include <numeric>
 
@@ -85,6 +90,12 @@ void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
 {
     const auto nrows = last_row - first_row + 1;
 
+#ifdef USE_CUDA
+    AMP::CudaManagedAllocator<HYPRE_BigInt> managedAllocator;
+#else
+    AMP_ERROR( "Cuda not enabled" );
+#endif
+
     HYPRE_IJMatrixSetRowSizes( d_matrix, nnz_per_row );
 
     // The next 2 lines affect efficiency and should be resurrected at some point
@@ -95,13 +106,30 @@ void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
     HYPRE_IJMatrixInitialize( d_matrix );
 
     auto memType = AMP::Utilities::getMemoryType( csr_ja );
-    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
-                "Currently only implemented for host accessible memory" );
 
-    std::vector<HYPRE_BigInt> row_ids( nrows );
-    set_row_ids_( first_row, nrows, row_ids.data() );
-    HYPRE_IJMatrixSetValues( d_matrix, nrows, nnz_per_row, row_ids.data(), csr_ja, csr_aa );
+    HYPRE_BigInt *row_ids_p = nullptr;
+    if ( memType <= AMP::Utilities::MemoryType::host ) {
+        std::vector<HYPRE_BigInt> row_ids( nrows );
+        row_ids_p = row_ids.data();
+    } else if ( memType == AMP::Utilities::MemoryType::managed ) {
+
+#ifdef USE_CUDA
+        row_ids_p = managedAllocator.allocate( nrows );
+#endif
+
+    } else if ( memType == AMP::Utilities::MemoryType::device ) {
+        AMP_ERROR( "Currently only implemented for host accessible memory" );
+    }
+
+    set_row_ids_( first_row, nrows, row_ids_p );
+    HYPRE_IJMatrixSetValues( d_matrix, nrows, nnz_per_row, row_ids_p, csr_ja, csr_aa );
     HYPRE_IJMatrixAssemble( d_matrix );
+
+    if ( memType == AMP::Utilities::MemoryType::managed ) {
+#ifdef USE_CUDA
+        managedAllocator.deallocate( row_ids_p, nrows );
+#endif
+    }
 }
 
 } // namespace AMP::LinearAlgebra
