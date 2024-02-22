@@ -92,8 +92,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
 
 #ifdef USE_CUDA
     AMP::CudaManagedAllocator<HYPRE_BigInt> managedAllocator;
-#else
-    AMP_ERROR( "Cuda not enabled" );
 #endif
 
     HYPRE_IJMatrixSetRowSizes( d_matrix, nnz_per_row );
