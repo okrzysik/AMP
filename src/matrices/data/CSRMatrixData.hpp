@@ -320,19 +320,23 @@ void CSRMatrixData<Policy>::extractDiagonal( std::shared_ptr<Vector> buf ) const
 
     auto *rawVecData  = buf->getRawDataBlock<scalar_t>();
     auto vDataMemType = AMP::Utilities::getMemoryType( rawVecData );
-    if ( vDataMemType == d_memory_location ) {
-        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
 
-            const size_t N = d_last_row - d_first_row;
-            for ( size_t i = 0; i < N; ++i ) {
-                rawVecData[i] = d_coeffs[d_row_starts[i]];
+        const size_t N = d_last_row - d_first_row;
+        for ( size_t i = 0; i < N; ++i ) {
+            const auto start = d_row_starts[i];
+            const auto end   = d_row_starts[i + 1];
+            // colums are unordered at present
+            for ( lidx_t j = start; j < end; ++j ) {
+                if ( d_cols[j] == static_cast<lidx_t>( i ) ) {
+                    rawVecData[i] = d_coeffs[j];
+                    break;
+                }
             }
-
-        } else {
-            AMP_ERROR(
-                "CSRMatrixData<Policy>::extractDiagonal not implemented for vec and matrix in "
-                "different memory spaces" );
         }
+    } else {
+        AMP_ERROR( "CSRMatrixData<Policy>::extractDiagonal not implemented for vec and matrix in "
+                   "different memory spaces" );
     }
 }
 template<typename Policy>
