@@ -11,6 +11,7 @@
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/time_integrators/TimeOperator.h"
 #include "AMP/time_integrators/TimeOperatorParameters.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/Vector.h"
 
 namespace AMP::TimeIntegrator {
@@ -19,6 +20,7 @@ ImplicitIntegrator::ImplicitIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::TimeIntegrator( params )
 {
+    AMPManager::incrementResource( "ImplicitIntegrator" );
     AMP_ASSERT( params != nullptr );
 
     auto timeIntegratorDB = params->d_db;
@@ -322,6 +324,21 @@ double ImplicitIntegrator::getGamma( void )
     auto op = std::dynamic_pointer_cast<TimeOperator>( d_operator );
     AMP_ASSERT( op );
     return op->getGamma();
+}
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void ImplicitIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    TimeIntegrator::registerChildObjects( manager );
+}
+void ImplicitIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::writeRestart( fid ); }
+
+ImplicitIntegrator::ImplicitIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
+    : TimeIntegrator( fid, manager )
+{
+    AMPManager::incrementResource( "ImplicitIntegrator" );
 }
 
 } // namespace AMP::TimeIntegrator

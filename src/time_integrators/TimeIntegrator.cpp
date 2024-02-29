@@ -26,11 +26,12 @@ namespace AMP::TimeIntegrator {
 
 TimeIntegrator::TimeIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
+    : d_pParameters( parameters )
 {
     AMPManager::incrementResource( "TimeIntegrator" );
-    AMP_INSIST( parameters, "Null parameter" );
+    AMP_INSIST( d_pParameters, "Null parameter" );
 
-    initialize( parameters );
+    initialize( d_pParameters );
 }
 
 TimeIntegrator::~TimeIntegrator() = default;
@@ -42,8 +43,11 @@ std::string TimeIntegrator::type() const { return "TimeIntegrator"; }
 
 uint64_t TimeIntegrator::getID() const
 {
-    AMP_ERROR( "Generate a good ID!!" );
-    return 0;
+    // The approach followed below assumes
+    // the initial condition vector has been set
+    // Not the greatest, but will do for now
+    AMP_ASSERT( d_ic_vector );
+    return d_ic_vector->getComm().bcast( reinterpret_cast<uint64_t>( this ), 0 );
 }
 
 /*
@@ -226,10 +230,14 @@ void TimeIntegrator::printClassData( std::ostream &os ) const
 void TimeIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     manager->registerObject( d_solution_vector );
+    manager->registerData( d_pParameters->d_db, "ti_db" );
+    manager->registerData( d_pParameters->d_global_db, "global_db" );
 }
 void TimeIntegrator::writeRestart( int64_t fid ) const
 {
     writeHDF5( fid, "ic_vec", d_solution_vector->getID() );
+    writeHDF5( fid, "ti_db", *( d_pParameters->d_db.get() ) );
+    writeHDF5( fid, "global_db", *( d_pParameters->d_global_db.get() ) );
 }
 TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
 {

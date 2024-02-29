@@ -46,7 +46,7 @@ public:
     /**
      * Initialize from parameter list.
      */
-    virtual void initialize(
+    void initialize(
         std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters ) override;
 
     /**
@@ -54,28 +54,30 @@ public:
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    virtual void reset(
+    void reset(
         std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify next time step to use.
      */
-    virtual double getNextDt( const bool good_solution ) override;
+    double getNextDt( const bool good_solution ) override;
 
     /**
      * Determine whether time advanced solution is satisfactory.
      */
-    virtual bool checkNewSolution( void ) override;
+    bool checkNewSolution( void ) override;
 
     /**
      * Update state of the solution.
      */
-    virtual void updateSolution( void ) override;
+    void updateSolution( void ) override;
 
-    virtual int advanceSolution( const double dt,
-                                 const bool first_step,
-                                 std::shared_ptr<AMP::LinearAlgebra::Vector> in,
-                                 std::shared_ptr<AMP::LinearAlgebra::Vector> out ) override;
+    int advanceSolution( const double dt,
+                         const bool first_step,
+                         std::shared_ptr<AMP::LinearAlgebra::Vector> in,
+                         std::shared_ptr<AMP::LinearAlgebra::Vector> out ) override;
+
+    std::string type() const override { return "RK34"; }
 
 private:
     /**

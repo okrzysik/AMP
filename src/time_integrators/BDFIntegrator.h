@@ -106,6 +106,31 @@ public:
         return d_integrator_source_vector;
     }
 
+    std::string type() const override { return "BDFIntegrator"; }
+
+public: // Write/read restart data
+    /**
+     * \brief    Register any child objects
+     * \details  This function will register child objects with the manager
+     * \param manager   Restart manager
+     */
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    void writeRestart( int64_t fid ) const override;
+
+    /**
+     * \brief    Read restart data to file
+     * \details  This function will create a variable from the restart file
+     * \param fid    File identifier to write
+     * \param manager   Restart manager
+     */
+    BDFIntegrator( int64_t fid, AMP::IO::RestartManager *manager );
+
 protected:
     /*
      * Helper functions.

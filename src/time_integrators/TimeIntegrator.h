@@ -299,6 +299,11 @@ protected:
      */
     std::string d_object_name;
 
+    /**
+     * pointer to parameters
+     */
+    std::shared_ptr<TimeIntegratorParameters> d_pParameters;
+
     /*
      * Initial conditions vector
      */
