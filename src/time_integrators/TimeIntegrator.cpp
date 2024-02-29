@@ -1,6 +1,10 @@
 #include "AMP/time_integrators/TimeIntegrator.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/operators/Operator.h"
+#include "AMP/time_integrators/TimeIntegratorFactory.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 
@@ -23,12 +27,24 @@ namespace AMP::TimeIntegrator {
 TimeIntegrator::TimeIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
+    AMPManager::incrementResource( "TimeIntegrator" );
     AMP_INSIST( parameters, "Null parameter" );
 
     initialize( parameters );
 }
 
 TimeIntegrator::~TimeIntegrator() = default;
+
+/****************************************************************
+ * Get the default name                                          *
+ ****************************************************************/
+std::string TimeIntegrator::type() const { return "TimeIntegrator"; }
+
+uint64_t TimeIntegrator::getID() const
+{
+    AMP_ERROR( "Generate a good ID!!" );
+    return 0;
+}
 
 /*
 *************************************************************************
@@ -202,4 +218,56 @@ void TimeIntegrator::printClassData( std::ostream &os ) const
     os << "d_integrator_step = " << d_integrator_step << std::endl;
     os << "d_max_integrator_steps = " << d_max_integrator_steps << std::endl;
 }
+
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void TimeIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    manager->registerObject( d_solution_vector );
+}
+void TimeIntegrator::writeRestart( int64_t fid ) const
+{
+    writeHDF5( fid, "ic_vec", d_solution_vector->getID() );
+}
+TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    AMPManager::incrementResource( "TimeIntegrator" );
+    uint64_t vecID;
+    AMP::readHDF5( fid, "ic_vec", vecID );
+    d_ic_vector = manager->getData<AMP::LinearAlgebra::Vector>( vecID );
+}
+
 } // namespace AMP::TimeIntegrator
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+template<>
+AMP::IO::RestartManager::DataStoreType<AMP::TimeIntegrator::TimeIntegrator>::DataStoreType(
+    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegrator> ti, RestartManager *manager )
+    : d_data( ti )
+{
+    d_hash = ti->getID();
+    d_data->registerChildObjects( manager );
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::TimeIntegrator::TimeIntegrator>::write(
+    hid_t fid, const std::string &name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    writeHDF5( gid, "type", d_data->type() );
+    d_data->writeRestart( gid );
+    closeGroup( gid );
+}
+template<>
+std::shared_ptr<AMP::TimeIntegrator::TimeIntegrator>
+AMP::IO::RestartManager::DataStoreType<AMP::TimeIntegrator::TimeIntegrator>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
+{
+    hid_t gid       = openGroup( fid, name );
+    auto integrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( gid, manager );
+    closeGroup( gid );
+    return integrator;
+}

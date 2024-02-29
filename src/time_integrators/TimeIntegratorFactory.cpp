@@ -16,6 +16,8 @@ implied, or assumes any liability or
 responsibility for the use of this software.
 */
 #include "AMP/time_integrators/TimeIntegratorFactory.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/time_integrators/BDFIntegrator.h"
 #include "AMP/time_integrators/ExplicitEuler.h"
 #include "AMP/time_integrators/RK12TimeIntegrator.h"
@@ -43,6 +45,15 @@ TimeIntegratorFactory::create( std::shared_ptr<TimeIntegratorParameters> paramet
         objectName, parameters );
 }
 
+std::shared_ptr<TimeIntegrator> TimeIntegratorFactory::create( int64_t fid,
+                                                               AMP::IO::RestartManager *manager )
+{
+    std::string type;
+    AMP::readHDF5( fid, "type", type );
+    std::shared_ptr<TimeIntegrator> ti;
+    AMP_ERROR( "Not implemented" );
+    return ti;
+}
 
 // register all known time integrator factories
 void registerTimeIntegratorFactories()

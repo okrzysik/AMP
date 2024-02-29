@@ -13,6 +13,7 @@
 // Declare some classes
 namespace AMP::IO {
 class Writer;
+class RestartManager;
 } // namespace AMP::IO
 
 
@@ -50,6 +51,13 @@ public:
      * Empty destructor for TimeIntegrator
      */
     virtual ~TimeIntegrator();
+
+    /** \brief Return the name of the TimeIntegrator
+     */
+    virtual std::string type() const;
+
+    //! Get a unique id hash for the vector
+    uint64_t getID() const;
 
     /**
      * @brief  Initialize state of time integrator.
@@ -346,6 +354,29 @@ protected:
     std::shared_ptr<AMP::IO::Writer> d_writer;
 
     TimeIntegrator() = default;
+
+public: // Write/read restart data
+    /**
+     * \brief    Register any child objects
+     * \details  This function will register child objects with the manager
+     * \param manager   Restart manager
+     */
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    virtual void writeRestart( int64_t fid ) const;
+
+    /**
+     * \brief    Read restart data to file
+     * \details  This function will create a variable from the restart file
+     * \param fid    File identifier to write
+     * \param manager   Restart manager
+     */
+    TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager );
 
 private:
     // The following are not implemented:
