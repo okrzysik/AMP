@@ -14,6 +14,7 @@
 
 #include "AMP/time_integrators/RK4TimeIntegrator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/utils/AMPManager.h"
 
 #include "ProfilerApp.h"
 
@@ -30,6 +31,7 @@ RK4TimeIntegrator::RK4TimeIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
     : AMP::TimeIntegrator::TimeIntegrator( parameters )
 {
+    AMPManager::incrementResource( "RK4TimeIntegrator" );
     initialize( parameters );
 }
 
@@ -175,6 +177,21 @@ void RK4TimeIntegrator::updateSolution()
         AMP::pout << "Simulation time is " << d_current_time << std::endl;
         AMP::pout << "++++++++++++++++++++++++++++++++++++++++++++++++\n" << std::endl;
     }
+}
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void RK4TimeIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    TimeIntegrator::registerChildObjects( manager );
+}
+void RK4TimeIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::writeRestart( fid ); }
+
+RK4TimeIntegrator::RK4TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
+    : TimeIntegrator( fid, manager )
+{
+    AMPManager::incrementResource( "RK4TimeIntegrator" );
 }
 
 } // namespace AMP::TimeIntegrator

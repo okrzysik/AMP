@@ -39,12 +39,7 @@ public:
 
     virtual ~TimeIntegratorParameters();
 
-    /**
-     * String used to identify specific class instantiation of the time integrator
-     */
-    std::string d_object_name;
-
-    AMP::AMP_MPI d_comm; // Comm for this object
+  //    AMP::AMP_MPI d_comm; // Comm for this object
 
     /**
      * Initial conditions vector

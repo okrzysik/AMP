@@ -66,8 +66,6 @@ uint64_t TimeIntegrator::getID() const
 
 void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    d_object_name = parameters->d_object_name;
-
     // for now the solution is set to the initial conditions by Jungho
     d_ic_vector = parameters->d_ic_vector;
     AMP_ASSERT( d_ic_vector );
@@ -129,6 +127,12 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     AMP_ASSERT( db );
 
+    if ( db->keyExists( "name" ) ) {
+        d_object_name = db->getString( "name" );
+    } else {
+        AMP_ERROR( " -- Key data `name' missing in input." );
+    }
+
     if ( db->keyExists( "initial_time" ) ) {
         d_initial_time = db->getScalar<double>( "initial_time" );
     } else {
@@ -170,12 +174,6 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
-
-    if ( db->keyExists( "name" ) ) {
-        d_object_name = db->getString( "name" );
-    } else {
-        AMP_ERROR( " -- Key data `name' missing in input." );
-    }
 
     d_current_dt = d_initial_dt;
     d_old_dt     = d_initial_dt;
@@ -249,6 +247,8 @@ TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     readHDF5( fid, "global_db", db_global );
     d_pParameters->d_db        = std::make_shared<AMP::Database>( db );
     d_pParameters->d_global_db = std::make_shared<AMP::Database>( db_global );
+
+}
 
 } // namespace AMP::TimeIntegrator
 
