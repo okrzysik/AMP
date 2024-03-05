@@ -8,7 +8,9 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/VectorBuilder.h"
-
+#include "AMP/time_integrators/TimeIntegrator.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/time_integrators/TimeIntegratorFactory.h"
 
 #include <complex>
 
@@ -42,6 +44,17 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     auto vec = AMP::LinearAlgebra::createVector( DOFs, var, true );
     vec->setRandomValues();
 
+    bool enable_ti = false;
+    std::shared_ptr<AMP::TimeIntegrator::TimeIntegrator> timeIntegrator;   
+    if ( db->keyExists( "TimeIntegrator" ) ) {
+        enable_ti = true;
+        auto ti_db = db->getDatabase( "TimeIntegrator" );
+	auto ti_params = std::make_shared<AMP::TimeIntegrator::TimeIntegratorParameters>( ti_db  );
+	ti_params->d_global_db = db;
+	ti_params->d_ic_vector = vec;
+	timeIntegrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( ti_params );
+    }
+    
     // Create the restart manager and register data
     int int_v    = 13;
     double dbl_v = 15.3;
@@ -54,7 +67,8 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     writer.registerData( str_v, "string" );
     writer.registerData( db, "inputs" );
     writer.registerData( mesh, "mesh" );
-    writer.registerData( vec, "vec" );
+    writer.registerData( vec, "vec" );    
+    writer.registerData( timeIntegrator, "TI" );
 
     // Write the restart data
     writer.write( "testRestartData" );
@@ -86,6 +100,8 @@ int main( int argc, char **argv )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+
+    AMP::TimeIntegrator::registerTimeIntegratorFactories();
 
     if ( argc != 2 )
         std::cerr << "test_RestartManager <input>\n";

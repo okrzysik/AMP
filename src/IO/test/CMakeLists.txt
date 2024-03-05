@@ -8,6 +8,8 @@ COPY_TEST_FILE( input_AMP_mesh_zoo_2D ${AMP_SOURCE_DIR}/mesh/test/data )
 COPY_TEST_FILE( input_AMP_mesh_zoo_3D ${AMP_SOURCE_DIR}/mesh/test/data )
 COPY_TEST_FILE( input_crystal_circular_tri ${AMP_SOURCE_DIR}/mesh/test/data )
 COPY_TEST_FILE( CRYSTAL_FINAL_2mm.STL ${AMP_SOURCE_DIR}/mesh/test/data )
+COPY_TEST_FILE( input_RK12-1 ${AMP_SOURCE_DIR}/time_integrators/test/data )
+
 # Copy meshes
 IF ( AMP_DATA )
     COPY_MESH_FILE( pellet_1x.e )
@@ -44,6 +46,7 @@ IF ( USE_HDF5 )
     ADD_AMP_TEST( test_RestartManager input_AMP_mesh_zoo_3D )
     ADD_AMP_TEST( test_RestartManagerComms )
     ADD_AMP_TEST( test_RestartManagerComms PROCS 4 )
+    ADD_AMP_TEST( test_RestartManager input_RK12-1 )
 ENDIF()
 
 
