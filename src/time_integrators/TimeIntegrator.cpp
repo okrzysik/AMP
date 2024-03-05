@@ -231,8 +231,10 @@ void TimeIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) co
 }
 void TimeIntegrator::writeRestart( int64_t fid ) const
 {
+    d_pParameters->d_db->putScalar<double>( "initial_time", d_current_time );
+    d_pParameters->d_db->putScalar<double>( "initial_dt", d_current_dt );
+    writeHDF5( fid, "ti_db", *( d_pParameters->d_db ) );    
     writeHDF5( fid, "ic_vec", d_solution_vector->getID() );
-    writeHDF5( fid, "ti_db", *( d_pParameters->d_db ) );
     writeHDF5( fid, "global_db", *( d_pParameters->d_global_db ) );
 }
 TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
@@ -240,14 +242,15 @@ TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     AMPManager::incrementResource( "TimeIntegrator" );
     uint64_t vecID;
     AMP::readHDF5( fid, "ic_vec", vecID );
-    d_ic_vector = manager->getData<AMP::LinearAlgebra::Vector>( vecID );
+    auto ic_vector = manager->getData<AMP::LinearAlgebra::Vector>( vecID );
 
     AMP::Database db, db_global;
     readHDF5( fid, "ti_db", db );
     readHDF5( fid, "global_db", db_global );
-    d_pParameters->d_db        = std::make_shared<AMP::Database>( db );
+    d_pParameters = std::make_shared<TimeIntegratorParameters>( std::make_shared<AMP::Database>( db )  );
     d_pParameters->d_global_db = std::make_shared<AMP::Database>( db_global );
-
+    d_pParameters->d_ic_vector = ic_vector;
+    initialize( d_pParameters );
 }
 
 } // namespace AMP::TimeIntegrator

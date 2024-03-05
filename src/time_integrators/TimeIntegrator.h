@@ -136,7 +136,7 @@ public:
     {
         return d_solution_vector;
     }
-
+  
     /**
      * @brief  Return time increment for next solution advance.
      * @details Return time increment for next solution advance.  Timestep selection
@@ -237,7 +237,7 @@ public:
      */
     void putToDatabase( std::shared_ptr<AMP::Database> db );
 
-    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_operator = op; }
+    virtual void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_operator = op; }
 
     std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_operator; }
 

@@ -142,6 +142,11 @@ public:
     void reset(
         std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters ) override;
 
+    /*! 
+     * Registers an operator for the rhs
+    */
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
+
     /*!
      * @brief Integrate entire patch hierarchy through the
      * specified time increment.
@@ -300,6 +305,8 @@ protected:
                                        std::shared_ptr<AMP::LinearAlgebra::Vector> in,
                                        std::shared_ptr<AMP::LinearAlgebra::Vector> out );
 
+    void createSolver( void );
+  
     std::function<void( AMP::Scalar )> d_fTimeScalingFnPtr;
 
 public: // Write/read restart data
