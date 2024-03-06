@@ -304,6 +304,15 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
     }
 }
 
+std::vector<double> BDFIntegrator::getTimeHistoryScalings( void )
+{
+    if ( !d_time_history_initialized ) {
+        setTimeHistoryScalings();
+        d_time_history_initialized = true;
+    }
+    return d_a;
+}
+
 void BDFIntegrator::setTimeHistoryScalings( void )
 {
     const auto &current_integrator = d_integrator_names[d_integrator_index];
