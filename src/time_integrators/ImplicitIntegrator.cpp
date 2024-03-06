@@ -20,7 +20,6 @@ ImplicitIntegrator::ImplicitIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::TimeIntegrator( params )
 {
-    AMPManager::incrementResource( "ImplicitIntegrator" );
     registerOperator( d_operator );
     createSolver();
 }
@@ -352,7 +351,6 @@ void ImplicitIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::wri
 ImplicitIntegrator::ImplicitIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : TimeIntegrator( fid, manager )
 {
-    AMPManager::incrementResource( "ImplicitIntegrator" );
     createSolver();
 }
 
