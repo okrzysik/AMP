@@ -14,6 +14,7 @@
 
 #include "AMP/time_integrators/RK34TimeIntegrator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/utils/AMPManager.h"
 
 #include "ProfilerApp.h"
 
@@ -254,5 +255,19 @@ double RK34TimeIntegrator::getNextDt( const bool good_solution )
     }
 
     return next_dt;
+}
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void RK34TimeIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    TimeIntegrator::registerChildObjects( manager );
+}
+void RK34TimeIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::writeRestart( fid ); }
+
+RK34TimeIntegrator::RK34TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
+    : TimeIntegrator( fid, manager )
+{
 }
 } // namespace AMP::TimeIntegrator

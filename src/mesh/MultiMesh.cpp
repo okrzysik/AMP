@@ -585,6 +585,17 @@ bool MultiMesh::isMember( const MeshElementID &id ) const
     }
     return false;
 }
+MeshIterator MultiMesh::isMember( const MeshIterator &iterator ) const
+{
+    std::vector<MeshIterator> iterators;
+    iterators.reserve( d_meshes.size() );
+    for ( auto &mesh : d_meshes ) {
+        auto it = mesh->isMember( iterator );
+        if ( it.size() > 0 )
+            iterators.push_back( it );
+    }
+    return MultiIterator( iterators );
+}
 
 
 /********************************************************

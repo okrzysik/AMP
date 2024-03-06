@@ -14,25 +14,27 @@ using KeyDataFactory = AMP::FactoryStrategy<AMP::KeyData>;
 void AMP::Database::writeHDF5( int64_t fid, std::string_view name ) const
 {
     hid_t gid = createGroup( fid, name );
-    AMP::writeHDF5( gid, "check", d_check );
-    AMP::writeHDF5( gid, "name", d_name );
-    AMP::writeHDF5( gid, "keys", d_keys );
     std::vector<std::string> types( d_data.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         types[i] = d_data[i]->getClassType().name;
-    AMP::writeHDF5( gid, "types", types );
-    for ( size_t i = 0; i < d_data.size(); i++ )
+    AMP::writeHDF5( gid, "AMP::Database::check", d_check );
+    AMP::writeHDF5( gid, "AMP::Database::name", d_name );
+    AMP::writeHDF5( gid, "AMP::Database::keys", d_keys );
+    AMP::writeHDF5( gid, "AMP::Database::types", types );
+    for ( size_t i = 0; i < d_data.size(); i++ ) {
+        AMP_ASSERT( d_keys[i].find( "AMP::Database::" ) == std::string::npos );
         d_data[i]->writeHDF5( gid, d_keys[i] );
+    }
     closeGroup( gid );
 }
 void AMP::Database::readHDF5( int64_t fid, std::string_view name )
 {
     hid_t gid = openGroup( fid, name );
     std::vector<std::string> types;
-    AMP::readHDF5( gid, "check", d_check );
-    AMP::readHDF5( gid, "name", d_name );
-    AMP::readHDF5( gid, "keys", d_keys );
-    AMP::readHDF5( gid, "types", types );
+    AMP::readHDF5( gid, "AMP::Database::check", d_check );
+    AMP::readHDF5( gid, "AMP::Database::name", d_name );
+    AMP::readHDF5( gid, "AMP::Database::keys", d_keys );
+    AMP::readHDF5( gid, "AMP::Database::types", types );
     d_data.clear();
     d_data.resize( d_keys.size() );
     d_hash.resize( d_keys.size(), 0 );

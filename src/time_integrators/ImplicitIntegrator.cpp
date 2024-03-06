@@ -11,6 +11,7 @@
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/time_integrators/TimeOperator.h"
 #include "AMP/time_integrators/TimeOperatorParameters.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/Vector.h"
 
 namespace AMP::TimeIntegrator {
@@ -19,44 +20,8 @@ ImplicitIntegrator::ImplicitIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::TimeIntegrator( params )
 {
-    AMP_ASSERT( params != nullptr );
-
-    auto timeIntegratorDB = params->d_db;
-    AMP_ASSERT( timeIntegratorDB.get() != nullptr );
-
-    auto globalDB = params->d_global_db;
-    AMP_ASSERT( globalDB.get() != nullptr );
-
-    std::string solverName;
-    if ( timeIntegratorDB->keyExists( "solver_name" ) ) {
-        solverName = timeIntegratorDB->getString( "solver_name" );
-    } else {
-        AMP_ERROR( "Field solver_name missing in time integrator database" );
-    }
-
-    // check if the operator is a TimeOperator
-    bool isTimeOperator = ( std::dynamic_pointer_cast<TimeOperator>( d_operator ) != nullptr );
-
-    if ( !isTimeOperator ) {
-        auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
-        timeOperator_db->putScalar( "name", "TimeOperator" );
-        timeOperator_db->putScalar( "print_info_level", d_iDebugPrintInfoLevel );
-
-        auto timeOperatorParameters =
-            std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
-        timeOperatorParameters->d_pRhsOperator = d_operator;
-        timeOperatorParameters->d_Mesh         = d_operator->getMesh();
-
-        d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
-    }
-
-    auto solverDB = globalDB->getDatabase( solverName );
-
-    solverDB->print( AMP::plog );
-    auto solver_params = std::make_shared<AMP::Solver::SolverStrategyParameters>( solverDB );
-    solver_params->d_pOperator = d_operator;
-    solver_params->d_global_db = globalDB;
-    d_solver                   = AMP::Solver::SolverFactory::create( solver_params );
+    registerOperator( d_operator );
+    createSolver();
 }
 
 ImplicitIntegrator::~ImplicitIntegrator() = default;
@@ -81,6 +46,56 @@ void ImplicitIntegrator::initialize() { integratorSpecificInitialize(); }
 void ImplicitIntegrator::integratorSpecificInitialize()
 {
     AMP_ERROR( "This should be defined in the derived class!!" );
+}
+
+void ImplicitIntegrator::createSolver( void )
+{
+    auto timeIntegratorDB = d_pParameters->d_db;
+    AMP_ASSERT( timeIntegratorDB );
+
+    auto globalDB = d_pParameters->d_global_db;
+    AMP_ASSERT( globalDB );
+
+    std::string solverName;
+    if ( timeIntegratorDB->keyExists( "solver_name" ) ) {
+        solverName = timeIntegratorDB->getString( "solver_name" );
+    } else {
+        AMP_ERROR( "Field solver_name missing in time integrator database" );
+    }
+
+    auto solverDB = globalDB->getDatabase( solverName );
+
+    solverDB->print( AMP::plog );
+    auto solver_params = std::make_shared<AMP::Solver::SolverStrategyParameters>( solverDB );
+    solver_params->d_pOperator = d_operator;
+    solver_params->d_global_db = globalDB;
+    d_solver                   = AMP::Solver::SolverFactory::create( solver_params );
+}
+
+
+void ImplicitIntegrator::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
+{
+    d_operator = op;
+    AMP_INSIST( d_operator, "Operator is null" );
+
+    // check if the operator is a TimeOperator
+    bool isTimeOperator = ( std::dynamic_pointer_cast<TimeOperator>( d_operator ) != nullptr );
+
+    if ( !isTimeOperator ) {
+        auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
+        timeOperator_db->putScalar( "name", "TimeOperator" );
+        timeOperator_db->putScalar( "print_info_level", d_iDebugPrintInfoLevel );
+
+        auto timeOperatorParameters =
+            std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
+        timeOperatorParameters->d_pRhsOperator = d_operator;
+        timeOperatorParameters->d_Mesh         = d_operator->getMesh();
+
+        d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
+    }
+
+    if ( d_solver )
+        d_solver->registerOperator( d_operator );
 }
 
 /*
@@ -322,6 +337,21 @@ double ImplicitIntegrator::getGamma( void )
     auto op = std::dynamic_pointer_cast<TimeOperator>( d_operator );
     AMP_ASSERT( op );
     return op->getGamma();
+}
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void ImplicitIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    TimeIntegrator::registerChildObjects( manager );
+}
+void ImplicitIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::writeRestart( fid ); }
+
+ImplicitIntegrator::ImplicitIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
+    : TimeIntegrator( fid, manager )
+{
+    createSolver();
 }
 
 } // namespace AMP::TimeIntegrator

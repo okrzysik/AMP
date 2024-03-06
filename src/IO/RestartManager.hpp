@@ -84,6 +84,8 @@ uint64_t RestartManager::registerObject( const TYPE &data )
     } else if constexpr ( !std::is_const_v<typename TYPE::element_type> ) {
         return registerObject( std::const_pointer_cast<const typename TYPE::element_type>( data ) );
     } else {
+        if ( !data )
+            return 0;
         std::shared_ptr<DataStore> obj;
         using TYPE2 = remove_cvref_t<typename TYPE::element_type>;
         if constexpr ( std::is_base_of_v<DataStore, TYPE2> || std::is_same_v<TYPE2, DataStore> ) {
@@ -133,6 +135,8 @@ std::shared_ptr<TYPE> RestartManager::getData( const std::string &name )
 template<class TYPE>
 std::shared_ptr<TYPE> RestartManager::getData( uint64_t hash )
 {
+    if ( hash == 0 )
+        return std::shared_ptr<TYPE>();
     using AMP::Discretization::DOFManager;
     using AMP::LinearAlgebra::Matrix;
     using AMP::LinearAlgebra::Vector;

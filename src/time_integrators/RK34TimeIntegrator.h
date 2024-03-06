@@ -46,7 +46,7 @@ public:
     /**
      * Initialize from parameter list.
      */
-    virtual void initialize(
+    void initialize(
         std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters ) override;
 
     /**
@@ -54,28 +54,53 @@ public:
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    virtual void reset(
+    void reset(
         std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify next time step to use.
      */
-    virtual double getNextDt( const bool good_solution ) override;
+    double getNextDt( const bool good_solution ) override;
 
     /**
      * Determine whether time advanced solution is satisfactory.
      */
-    virtual bool checkNewSolution( void ) override;
+    bool checkNewSolution( void ) override;
 
     /**
      * Update state of the solution.
      */
-    virtual void updateSolution( void ) override;
+    void updateSolution( void ) override;
 
-    virtual int advanceSolution( const double dt,
-                                 const bool first_step,
-                                 std::shared_ptr<AMP::LinearAlgebra::Vector> in,
-                                 std::shared_ptr<AMP::LinearAlgebra::Vector> out ) override;
+    int advanceSolution( const double dt,
+                         const bool first_step,
+                         std::shared_ptr<AMP::LinearAlgebra::Vector> in,
+                         std::shared_ptr<AMP::LinearAlgebra::Vector> out ) override;
+
+    std::string type() const override { return "RK34"; }
+
+public: // Write/read restart data
+    /**
+     * \brief    Register any child objects
+     * \details  This function will register child objects with the manager
+     * \param manager   Restart manager
+     */
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    void writeRestart( int64_t fid ) const override;
+
+    /**
+     * \brief    Read restart data to file
+     * \details  This function will create a variable from the restart file
+     * \param fid    File identifier to write
+     * \param manager   Restart manager
+     */
+    RK34TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager );
 
 private:
     /**

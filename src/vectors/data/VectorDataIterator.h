@@ -30,6 +30,13 @@ class VectorData;
 template<class TYPE = double>
 class VectorDataIterator final
 {
+public: // iterator_traits
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type        = TYPE;
+    using difference_type   = ptrdiff_t;
+    using pointer           = const TYPE *;
+    using reference         = const TYPE &;
+
 private:
     using TYPE2 = typename AMP::remove_cvref_t<TYPE>;
     size_t d_N_blocks, d_CurBlock, d_CurOffset, d_pos, d_size;
@@ -43,22 +50,6 @@ private:
     void recede( size_t );
 
 public:
-    //!  Required typedef for iterator_traits
-    typedef int difference_type;
-
-    //!  Required typedef for iterator_traits
-    typedef TYPE value_type;
-
-    //!  Required typedef for iterator_traits
-    typedef TYPE *pointer;
-
-    //!  Required typedef for iterator_traits
-    typedef TYPE &reference;
-
-    //!  Required typedef for iterator_traits
-    typedef std::random_access_iterator_tag iterator_category;
-
-
     //!  Default constructor
     VectorDataIterator();
 

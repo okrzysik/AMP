@@ -12,10 +12,10 @@ Writer::WriterProperties NullWriter::getProperties() const
     WriterProperties properties;
     properties.type                   = "Null";
     properties.extension              = "";
-    properties.registerMesh           = false;
-    properties.registerVector         = false;
-    properties.registerVectorWithMesh = false;
-    properties.registerMatrix         = false;
+    properties.registerMesh           = true;
+    properties.registerVector         = true;
+    properties.registerVectorWithMesh = true;
+    properties.registerMatrix         = true;
     return properties;
 }
 
