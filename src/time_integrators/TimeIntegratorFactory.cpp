@@ -52,22 +52,22 @@ std::shared_ptr<TimeIntegrator> TimeIntegratorFactory::create( int64_t fid,
     AMP::readHDF5( fid, "type", type );
     std::shared_ptr<TimeIntegrator> ti;
     if ( type == "RK12" )
-      ti = std::make_shared<RK12TimeIntegrator>( fid, manager );
+        ti = std::make_shared<RK12TimeIntegrator>( fid, manager );
     else if ( type == "RK23" )
-      ti = std::make_shared<RK23TimeIntegrator>( fid, manager );
+        ti = std::make_shared<RK23TimeIntegrator>( fid, manager );
     else if ( type == "RK34" )
-      ti = std::make_shared<RK34TimeIntegrator>( fid, manager );
+        ti = std::make_shared<RK34TimeIntegrator>( fid, manager );
     else if ( type == "RK45" )
-      ti = std::make_shared<RK45TimeIntegrator>( fid, manager );
+        ti = std::make_shared<RK45TimeIntegrator>( fid, manager );
     else if ( type == "RK2" )
-      ti = std::make_shared<RK2TimeIntegrator>( fid, manager );
+        ti = std::make_shared<RK2TimeIntegrator>( fid, manager );
     else if ( type == "RK4" )
-      ti = std::make_shared<RK4TimeIntegrator>( fid, manager );
+        ti = std::make_shared<RK4TimeIntegrator>( fid, manager );
     else if ( type == "BDFIntegrator" )
-      ti = std::make_shared<BDFIntegrator>( fid, manager );
+        ti = std::make_shared<BDFIntegrator>( fid, manager );
     else {
-      ti = FactoryStrategy<TimeIntegrator, int64_t, AMP::IO::RestartManager *>::create(
-										       type, fid, manager );
+        ti = FactoryStrategy<TimeIntegrator, int64_t, AMP::IO::RestartManager *>::create(
+            type, fid, manager );
     }
     return ti;
 }

@@ -75,29 +75,29 @@ void ImplicitIntegrator::createSolver( void )
 
 void ImplicitIntegrator::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
-  d_operator = op;
-  AMP_INSIST( d_operator, "Operator is null");
+    d_operator = op;
+    AMP_INSIST( d_operator, "Operator is null" );
 
-  // check if the operator is a TimeOperator
-  bool isTimeOperator = ( std::dynamic_pointer_cast<TimeOperator>( d_operator ) != nullptr );
+    // check if the operator is a TimeOperator
+    bool isTimeOperator = ( std::dynamic_pointer_cast<TimeOperator>( d_operator ) != nullptr );
 
-  if ( !isTimeOperator ) {
-      auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
-      timeOperator_db->putScalar( "name", "TimeOperator" );
-      timeOperator_db->putScalar( "print_info_level", d_iDebugPrintInfoLevel );
-      
-      auto timeOperatorParameters =
-	std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
-      timeOperatorParameters->d_pRhsOperator = d_operator;
-      timeOperatorParameters->d_Mesh         = d_operator->getMesh();
-      
-      d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
-  }
+    if ( !isTimeOperator ) {
+        auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
+        timeOperator_db->putScalar( "name", "TimeOperator" );
+        timeOperator_db->putScalar( "print_info_level", d_iDebugPrintInfoLevel );
 
-  if ( d_solver) d_solver->registerOperator( d_operator);
+        auto timeOperatorParameters =
+            std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
+        timeOperatorParameters->d_pRhsOperator = d_operator;
+        timeOperatorParameters->d_Mesh         = d_operator->getMesh();
 
+        d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
+    }
+
+    if ( d_solver )
+        d_solver->registerOperator( d_operator );
 }
-  
+
 /*
  *************************************************************************
  *

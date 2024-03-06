@@ -13,8 +13,8 @@
 
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 
-#include "AMP/vectors/Vector.h"
 #include "AMP/utils/AMPManager.h"
+#include "AMP/vectors/Vector.h"
 
 #include "ProfilerApp.h"
 

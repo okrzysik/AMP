@@ -142,9 +142,9 @@ public:
     void reset(
         std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters ) override;
 
-    /*! 
+    /*!
      * Registers an operator for the rhs
-    */
+     */
     void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /*!
@@ -306,7 +306,7 @@ protected:
                                        std::shared_ptr<AMP::LinearAlgebra::Vector> out );
 
     void createSolver( void );
-  
+
     std::function<void( AMP::Scalar )> d_fTimeScalingFnPtr;
 
 public: // Write/read restart data

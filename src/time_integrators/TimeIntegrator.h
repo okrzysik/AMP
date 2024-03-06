@@ -1,14 +1,14 @@
 #ifndef included_AMP_TimeIntegrator
-#define included_AMP_TimeIntegrator
+    #define included_AMP_TimeIntegrator
 
-#include "AMP/operators/Operator.h"
-#include "AMP/time_integrators/TimeIntegratorParameters.h"
-#include "AMP/utils/Database.h"
-#include "AMP/vectors/Vector.h"
+    #include "AMP/operators/Operator.h"
+    #include "AMP/time_integrators/TimeIntegratorParameters.h"
+    #include "AMP/utils/Database.h"
+    #include "AMP/vectors/Vector.h"
 
-#include <memory>
-#include <cstdint>
-#include <string>
+    #include <cstdint>
+    #include <memory>
+    #include <string>
 
 
 // Declare some classes
@@ -136,7 +136,7 @@ public:
     {
         return d_solution_vector;
     }
-  
+
     /**
      * @brief  Return time increment for next solution advance.
      * @details Return time increment for next solution advance.  Timestep selection
@@ -237,7 +237,10 @@ public:
      */
     void putToDatabase( std::shared_ptr<AMP::Database> db );
 
-    virtual void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) { d_operator = op; }
+    virtual void registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
+    {
+        d_operator = op;
+    }
 
     std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_operator; }
 

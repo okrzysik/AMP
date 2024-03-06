@@ -34,10 +34,7 @@ TimeIntegrator::TimeIntegrator(
     initialize( d_pParameters );
 }
 
-TimeIntegrator::~TimeIntegrator()
-{
-    AMPManager::decrementResource( "TimeIntegrator" );
-}
+TimeIntegrator::~TimeIntegrator() { AMPManager::decrementResource( "TimeIntegrator" ); }
 
 /****************************************************************
  * Get the default name                                          *
@@ -236,7 +233,7 @@ void TimeIntegrator::writeRestart( int64_t fid ) const
 {
     d_pParameters->d_db->putScalar<double>( "initial_time", d_current_time );
     d_pParameters->d_db->putScalar<double>( "initial_dt", d_current_dt );
-    writeHDF5( fid, "ti_db", *( d_pParameters->d_db ) );    
+    writeHDF5( fid, "ti_db", *( d_pParameters->d_db ) );
     writeHDF5( fid, "ic_vec", d_solution_vector->getID() );
     writeHDF5( fid, "global_db", *( d_pParameters->d_global_db ) );
 }
@@ -250,7 +247,8 @@ TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     AMP::Database db, db_global;
     readHDF5( fid, "ti_db", db );
     readHDF5( fid, "global_db", db_global );
-    d_pParameters = std::make_shared<TimeIntegratorParameters>( std::make_shared<AMP::Database>( db )  );
+    d_pParameters =
+        std::make_shared<TimeIntegratorParameters>( std::make_shared<AMP::Database>( db ) );
     d_pParameters->d_global_db = std::make_shared<AMP::Database>( db_global );
     d_pParameters->d_ic_vector = ic_vector;
     initialize( d_pParameters );
