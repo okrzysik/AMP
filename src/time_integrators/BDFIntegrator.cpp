@@ -21,7 +21,6 @@ BDFIntegrator::BDFIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::ImplicitIntegrator( params )
 {
-    AMPManager::incrementResource( "BDFIntegrator" );
     d_object_name = "BDFIntegrator";
     auto parameters =
         std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( params );
@@ -2047,7 +2046,6 @@ void BDFIntegrator::writeRestart( int64_t fid ) const { ImplicitIntegrator::writ
 BDFIntegrator::BDFIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : ImplicitIntegrator( fid, manager )
 {
-    AMPManager::incrementResource( "BDFIntegrator" );
 }
 
 } // namespace AMP::TimeIntegrator

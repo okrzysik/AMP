@@ -29,7 +29,6 @@ RK23TimeIntegrator::RK23TimeIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
     : AMP::TimeIntegrator::TimeIntegrator( parameters )
 {
-    AMPManager::incrementResource( "RK23TimeIntegrator" );
     initialize( parameters );
 }
 
@@ -273,7 +272,6 @@ void RK23TimeIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::wri
 RK23TimeIntegrator::RK23TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : TimeIntegrator( fid, manager )
 {
-    AMPManager::incrementResource( "RK23TimeIntegrator" );
 }
 
 } // namespace AMP::TimeIntegrator

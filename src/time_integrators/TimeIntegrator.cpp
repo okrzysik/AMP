@@ -34,7 +34,10 @@ TimeIntegrator::TimeIntegrator(
     initialize( d_pParameters );
 }
 
-TimeIntegrator::~TimeIntegrator() = default;
+TimeIntegrator::~TimeIntegrator()
+{
+    AMPManager::decrementResource( "TimeIntegrator" );
+}
 
 /****************************************************************
  * Get the default name                                          *

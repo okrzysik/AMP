@@ -68,7 +68,9 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     writer.registerData( db, "inputs" );
     writer.registerData( mesh, "mesh" );
     writer.registerData( vec, "vec" );
-    writer.registerData( timeIntegrator, "TI" );
+
+    if ( enable_ti )
+        writer.registerData( timeIntegrator, "TI" );
 
     // Write the restart data
     writer.write( "testRestartData" );
