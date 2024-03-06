@@ -3,11 +3,91 @@
 
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/mesh/MultiIterator.h"
+#include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/SubsetMesh.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/vectors/Vector.h"
 
 namespace AMP::Mesh {
+
+
+/************************************************************************
+ * Subroutine to search a sorted list for a mesh element id              *
+ ************************************************************************/
+static bool binarySearch( const std::vector<MeshElement> &x, MeshElementID y )
+{
+    if ( x.empty() )
+        return false;
+    // Check if value is within the range of x
+    if ( ( y <= x[0].globalID() ) || ( y > x.back().globalID() ) )
+        return y == x[0].globalID();
+    // Perform the search
+    size_t lower = 0;
+    size_t upper = x.size() - 1;
+    size_t index;
+    while ( ( upper - lower ) != 1 ) {
+        index = ( upper + lower ) / 2;
+        if ( x[index].globalID() >= y )
+            upper = index;
+        else
+            lower = index;
+    }
+    index = upper;
+    return y == x[index].globalID();
+}
+
+
+/********************************************************
+ * Create the subset mesh                                *
+ ********************************************************/
+std::shared_ptr<Mesh> SubsetMesh::create( std::shared_ptr<const Mesh> mesh,
+                                          const AMP::Mesh::MeshIterator &iterator,
+                                          bool isGlobal )
+{
+    // Check that all elements are contained within the mesh
+    auto mesh_ids = mesh->getBaseMeshIDs();
+    for ( const auto &elem : iterator ) {
+        MeshID id  = elem.globalID().meshID();
+        bool found = false;
+        for ( auto &mesh_id : mesh_ids ) {
+            if ( id == mesh_id )
+                found = true;
+        }
+        if ( !found )
+            AMP_ERROR( "Iterator contains elements not found in parent meshes" );
+    }
+    // Create the subsets
+    std::set<MeshID> allMeshIDs;
+    std::vector<std::shared_ptr<Mesh>> subsets;
+    for ( auto &mesh_id : mesh_ids ) {
+        auto mesh2 = mesh->Subset( mesh_id );
+        if ( !mesh2->isBaseMesh() )
+            continue;
+        auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
+        elements->reserve( iterator.size() );
+        for ( const auto &elem : iterator ) {
+            if ( elem.globalID().meshID() == mesh_id )
+                elements->push_back( elem );
+        }
+        if ( elements->empty() )
+            continue;
+        allMeshIDs.insert( mesh_id );
+        auto it2 = AMP::Mesh::MultiVectorIterator( elements, 0 );
+        subsets.emplace_back( new SubsetMesh( mesh2, it2, isGlobal ) );
+    }
+    // Create the multimesh and return the appropriate subset
+    AMP::AMP_MPI comm = isGlobal ? mesh->getComm() : AMP_COMM_SELF;
+    comm.setGather( allMeshIDs );
+    if ( allMeshIDs.size() == 0 )
+        return nullptr;
+    if ( allMeshIDs.size() == 1 ) {
+        if ( subsets.empty() )
+            return nullptr;
+        else
+            return subsets[0];
+    }
+    return std::make_shared<MultiMesh>( mesh->getName(), comm, subsets );
+}
 
 
 /********************************************************
@@ -16,8 +96,9 @@ namespace AMP::Mesh {
 SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
                         const AMP::Mesh::MeshIterator &iterator_in,
                         bool isGlobal )
-    : d_parent_mesh( mesh )
+    : d_parentMesh( mesh ), d_parentMeshID( mesh->meshID() )
 {
+    AMP_INSIST( d_parentMesh->isBaseMesh(), "SubsetMesh only supports base meshes" );
     if ( isGlobal ) {
         this->d_comm = mesh->getComm();
     } else {
@@ -43,19 +124,8 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
     if ( type != GeomType::Nullity && type2 != (int) type )
         AMP_ERROR( "Subset mesh requires all of the elements to be the same type" );
     this->GeomDim = static_cast<GeomType>( type2 );
-    auto mesh_ids = mesh->getBaseMeshIDs();
-    for ( const auto &elem : iterator_in ) {
-        MeshID id  = elem.globalID().meshID();
-        bool found = false;
-        for ( auto &mesh_id : mesh_ids ) {
-            if ( id == mesh_id )
-                found = true;
-        }
-        if ( !found )
-            AMP_ERROR( "Iterator contains elements not found in parent meshes" );
-    }
     // Create a list of all elements of the desired type
-    d_max_gcw = d_parent_mesh->getMaxGhostWidth();
+    d_max_gcw = d_parentMesh->getMaxGhostWidth();
     d_elements =
         std::vector<std::vector<std::shared_ptr<std::vector<MeshElement>>>>( (int) GeomDim + 1 );
     for ( int i = 0; i <= static_cast<int>( GeomDim ); i++ ) {
@@ -139,8 +209,8 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
         d_comm.allGather( send_ptr, (int) N_ghost_local, recv_ptr );
         AMP::Utilities::unique( ghost_global );
         // For each ghost, check if we own it, and add it to the list if necessary
-        MeshID my_mesh_id    = d_parent_mesh->meshID();
-        unsigned int my_rank = d_parent_mesh->getComm().getRank();
+        MeshID my_mesh_id    = d_parentMesh->meshID();
+        unsigned int my_rank = d_parentMesh->getComm().getRank();
         bool changed         = false;
         for ( auto &elem : ghost_global ) {
             AMP_ASSERT( my_mesh_id == elem.meshID() );
@@ -155,7 +225,7 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
                 if ( !found ) {
                     MeshElementID tmp = elem;
                     tmp.set_is_local( true ); // We do own this element
-                    MeshElement element = d_parent_mesh->getElement( tmp );
+                    MeshElement element = d_parentMesh->getElement( tmp );
                     AMP_ASSERT( element.globalID() != MeshElementID() );
                     AMP_ASSERT( element.globalID() == elem );
                     d_elements[t][0]->push_back( element );
@@ -165,6 +235,12 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
         }
         if ( changed )
             AMP::Utilities::quicksort( *d_elements[t][0] );
+    }
+    // Sort the elements for fast searching
+    for ( auto &t1 : d_elements ) {
+        for ( auto &t2 : t1 ) {
+            std::sort( t2->begin(), t2->end() );
+        }
     }
     // Count the number of elements of each type
     N_global = std::vector<size_t>( (int) GeomDim + 1 );
@@ -193,7 +269,7 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
         d_box[2 * j + 1] = d_comm.maxReduce( d_box[2 * j + 1] );
     }
     // Create the boundary id sets
-    auto boundary_ids = d_parent_mesh->getBoundaryIDs();
+    auto boundary_ids = d_parentMesh->getBoundaryIDs();
     std::set<int> new_boundary_ids;
     for ( int t = 0; t <= (int) GeomDim; t++ ) {
         for ( auto &boundary_id : boundary_ids ) {
@@ -203,7 +279,7 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
                               // libmesh yet
                 auto iterator1 = MultiVectorIterator( d_elements[t][gcw], 0 );
                 auto iterator2 =
-                    d_parent_mesh->getBoundaryIDIterator( (GeomType) t, boundary_id, gcw );
+                    d_parentMesh->getBoundaryIDIterator( (GeomType) t, boundary_id, gcw );
                 auto iterator = Mesh::getIterator( SetOP::Intersection, iterator1, iterator2 );
                 std::shared_ptr<std::vector<MeshElement>> elements;
                 if ( iterator.size() == 0 ) {
@@ -250,7 +326,7 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
         d_surface[t] = std::vector<std::shared_ptr<std::vector<MeshElement>>>( d_max_gcw + 1 );
         for ( gcw = 0; gcw <= d_max_gcw; gcw++ ) {
             auto iterator1 = MultiVectorIterator( d_elements[t][gcw], 0 );
-            auto iterator2 = d_parent_mesh->getSurfaceIterator( (GeomType) t, gcw );
+            auto iterator2 = d_parentMesh->getSurfaceIterator( (GeomType) t, gcw );
             auto iterator  = Mesh::getIterator( SetOP::Intersection, iterator1, iterator2 );
             std::shared_ptr<std::vector<MeshElement>> elements;
             if ( iterator.size() == 0 ) {
@@ -268,9 +344,9 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
         }
     }
     // Create the block id sets
-    if ( GeomDim == d_parent_mesh->getGeomType() ) {
+    if ( GeomDim == d_parentMesh->getGeomType() ) {
         // Currently only elements support the block IDs
-        std::vector<int> block_ids = d_parent_mesh->getBlockIDs();
+        std::vector<int> block_ids = d_parentMesh->getBlockIDs();
         std::set<int> new_block_ids;
         for ( const auto &elem : getIterator( GeomDim, 0 ) ) {
             for ( auto &block_id : block_ids ) {
@@ -305,7 +381,7 @@ SubsetMesh::~SubsetMesh() = default;
  ********************************************************/
 std::string SubsetMesh::meshClass() const
 {
-    return "SubsetMesh<" + d_parent_mesh->meshClass() + ">";
+    return "SubsetMesh<" + d_parentMesh->meshClass() + ">";
 }
 
 
@@ -324,22 +400,22 @@ std::unique_ptr<Mesh> SubsetMesh::clone() const
  ********************************************************/
 std::vector<MeshID> SubsetMesh::getAllMeshIDs() const
 {
-    auto ids = d_parent_mesh->getAllMeshIDs();
+    auto ids = d_parentMesh->getAllMeshIDs();
     ids.push_back( d_meshID );
     AMP::Utilities::quicksort( ids );
     return ids;
 }
-std::vector<MeshID> SubsetMesh::getBaseMeshIDs() const { return d_parent_mesh->getBaseMeshIDs(); }
+std::vector<MeshID> SubsetMesh::getBaseMeshIDs() const { return d_parentMesh->getBaseMeshIDs(); }
 std::vector<MeshID> SubsetMesh::getLocalMeshIDs() const
 {
-    auto ids = d_parent_mesh->getLocalMeshIDs();
+    auto ids = d_parentMesh->getLocalMeshIDs();
     ids.push_back( d_meshID );
     AMP::Utilities::quicksort( ids );
     return ids;
 }
 std::vector<MeshID> SubsetMesh::getLocalBaseMeshIDs() const
 {
-    return d_parent_mesh->getLocalBaseMeshIDs();
+    return d_parentMesh->getLocalBaseMeshIDs();
 }
 
 
@@ -348,7 +424,7 @@ std::vector<MeshID> SubsetMesh::getLocalBaseMeshIDs() const
  ********************************************************/
 std::shared_ptr<Mesh> SubsetMesh::Subset( MeshID meshID ) const
 {
-    if ( d_meshID == meshID || d_parent_mesh->meshID() == meshID )
+    if ( d_meshID == meshID || d_parentMesh->meshID() == meshID )
         return std::const_pointer_cast<Mesh>( shared_from_this() );
     else
         return std::shared_ptr<Mesh>();
@@ -360,7 +436,7 @@ std::shared_ptr<Mesh> SubsetMesh::Subset( MeshID meshID ) const
  ********************************************************/
 std::shared_ptr<Mesh> SubsetMesh::Subset( std::string name ) const
 {
-    if ( d_name == name || d_parent_mesh->getName() == name )
+    if ( d_name == name || d_parentMesh->getName() == name )
         return std::const_pointer_cast<Mesh>( shared_from_this() );
     else
         return std::shared_ptr<Mesh>();
@@ -450,20 +526,40 @@ SubsetMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw
  ********************************************************/
 bool SubsetMesh::isMember( const MeshElementID &id ) const
 {
-    if ( !d_parent_mesh->isMember( id ) )
+    if ( id.meshID() != d_parentMeshID )
         return false;
     auto type = static_cast<int>( id.type() );
     if ( type >= static_cast<int>( d_elements.size() ) )
         return false;
-    for ( auto &elem : d_elements[type] ) {
-        if ( elem == nullptr )
+    for ( auto &tmp : d_elements[type] ) {
+        if ( tmp == nullptr )
             continue;
-        for ( auto &element : *elem.get() ) {
-            if ( element == id )
-                return true;
-        }
+        if ( binarySearch( *tmp, id ) )
+            return true;
     }
     return false;
+}
+MeshIterator SubsetMesh::isMember( const MeshIterator &iterator ) const
+{
+    PROFILE_SCOPED( timer, "isMember" );
+    auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
+    elements->reserve( iterator.size() );
+    int size = static_cast<int>( d_elements.size() );
+    for ( const auto &elem : iterator ) {
+        auto id = elem.globalID();
+        if ( id.meshID() != d_parentMeshID )
+            continue;
+        int type = static_cast<int>( id.type() );
+        if ( type >= size )
+            continue;
+        for ( auto &tmp : d_elements[type] ) {
+            if ( tmp == nullptr )
+                continue;
+            if ( binarySearch( *tmp, id ) )
+                elements->push_back( elem );
+        }
+    }
+    return AMP::Mesh::MultiVectorIterator( elements, 0 );
 }
 
 
@@ -472,7 +568,7 @@ bool SubsetMesh::isMember( const MeshElementID &id ) const
  ********************************************************/
 MeshElement SubsetMesh::getElement( const MeshElementID &elem_id ) const
 {
-    return d_parent_mesh->getElement( elem_id );
+    return d_parentMesh->getElement( elem_id );
 }
 
 
@@ -482,7 +578,7 @@ MeshElement SubsetMesh::getElement( const MeshElementID &elem_id ) const
 std::vector<MeshElement> SubsetMesh::getElementParents( const MeshElement &elem,
                                                         const GeomType type ) const
 {
-    return d_parent_mesh->getElementParents( elem, type );
+    return d_parentMesh->getElementParents( elem, type );
 }
 
 
@@ -506,7 +602,7 @@ size_t SubsetMesh::numGhostElements( const GeomType type, int gcw ) const
         AMP_ERROR( "Maximum ghost width exceeded" );
     return d_elements[(int) type][gcw]->size();
 }
-uint64_t SubsetMesh::positionHash() const { return d_parent_mesh->positionHash(); }
+uint64_t SubsetMesh::positionHash() const { return d_parentMesh->positionHash(); }
 Mesh::Movable SubsetMesh::isMeshMovable() const { return Mesh::Movable::Fixed; }
 void SubsetMesh::displaceMesh( const std::vector<double> & )
 {
@@ -531,7 +627,7 @@ bool SubsetMesh::operator==( const Mesh &rhs ) const
     if ( !mesh )
         return false;
     // Perform comparison on sub-meshes
-    if ( d_parent_mesh != mesh->d_parent_mesh )
+    if ( d_parentMesh != mesh->d_parentMesh )
         return false;
     AMP_ERROR( "Not finished" );
     return false;

@@ -417,6 +417,7 @@ void testWriterMesh( AMP::UnitTest &ut,
     }
 
     ut.passes( writerName + " test ran to completion" );
+    PROFILE_SAVE( "test_Writer", true );
 }
 
 
