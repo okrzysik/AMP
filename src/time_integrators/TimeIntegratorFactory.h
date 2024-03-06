@@ -24,6 +24,10 @@ responsibility for the use of this software.
 #include <memory>
 
 
+namespace AMP::IO {
+class RestartManager;
+}
+
 namespace AMP::TimeIntegrator {
 
 class TimeIntegrator;
@@ -37,6 +41,9 @@ class TimeIntegratorFactory :
 public:
     static std::unique_ptr<TimeIntegrator>
     create( std::shared_ptr<TimeIntegratorParameters> parameters );
+
+    //! Create the vector from the restart file
+    static std::shared_ptr<TimeIntegrator> create( int64_t fid, AMP::IO::RestartManager *manager );
 };
 
 

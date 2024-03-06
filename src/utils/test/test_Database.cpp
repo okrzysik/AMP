@@ -321,7 +321,7 @@ void runFileTests( UnitTest &ut, const std::string &filename )
         checkResult( ut, pass, "Found material" );
     }
     if ( filename == "library.yml" ) {
-        auto name = ( *db )("3d") ("plastics") ( "pmma" ).getString( "name" );
+        auto name = ( *db )( "3d" )( "plastics" )( "pmma" ).getString( "name" );
         bool pass = name == "PMMA - Poly(methyl methacrylate)";
         checkResult( ut, pass, "Found material" );
     }

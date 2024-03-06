@@ -16,6 +16,8 @@ implied, or assumes any liability or
 responsibility for the use of this software.
 */
 #include "AMP/time_integrators/TimeIntegratorFactory.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/time_integrators/BDFIntegrator.h"
 #include "AMP/time_integrators/ExplicitEuler.h"
 #include "AMP/time_integrators/RK12TimeIntegrator.h"
@@ -43,6 +45,32 @@ TimeIntegratorFactory::create( std::shared_ptr<TimeIntegratorParameters> paramet
         objectName, parameters );
 }
 
+std::shared_ptr<TimeIntegrator> TimeIntegratorFactory::create( int64_t fid,
+                                                               AMP::IO::RestartManager *manager )
+{
+    std::string type;
+    AMP::readHDF5( fid, "type", type );
+    std::shared_ptr<TimeIntegrator> ti;
+    if ( type == "RK12" )
+        ti = std::make_shared<RK12TimeIntegrator>( fid, manager );
+    else if ( type == "RK23" )
+        ti = std::make_shared<RK23TimeIntegrator>( fid, manager );
+    else if ( type == "RK34" )
+        ti = std::make_shared<RK34TimeIntegrator>( fid, manager );
+    else if ( type == "RK45" )
+        ti = std::make_shared<RK45TimeIntegrator>( fid, manager );
+    else if ( type == "RK2" )
+        ti = std::make_shared<RK2TimeIntegrator>( fid, manager );
+    else if ( type == "RK4" )
+        ti = std::make_shared<RK4TimeIntegrator>( fid, manager );
+    else if ( type == "BDFIntegrator" )
+        ti = std::make_shared<BDFIntegrator>( fid, manager );
+    else {
+        ti = FactoryStrategy<TimeIntegrator, int64_t, AMP::IO::RestartManager *>::create(
+            type, fid, manager );
+    }
+    return ti;
+}
 
 // register all known time integrator factories
 void registerTimeIntegratorFactories()

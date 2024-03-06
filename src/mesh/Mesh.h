@@ -285,6 +285,15 @@ public:
 
 
     /**
+     * \brief    Check if elements are in the mesh
+     * \details  This function queries the mesh to determine if each of the given elements
+     *           is a member of the mesh and returns an iterator over those elements
+     * \param id    Mesh element id we are querying.
+     */
+    virtual MeshIterator isMember( const MeshIterator &it ) const;
+
+
+    /**
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.
      *    This function is only required to return an element if the id is local.

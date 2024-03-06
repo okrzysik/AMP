@@ -26,10 +26,15 @@ namespace AMP::Mesh {
  *   the random access iterators, but does so using the increment/decrement routines.
  *   Derived classes may (or may not) override these routines for performance optimizations.
  */
-class MeshIterator :
-    public std::iterator<std::random_access_iterator_tag, AMP::Mesh::MeshElement>,
-    public AMP::enable_shared_from_this<AMP::Mesh::MeshIterator>
+class MeshIterator : public AMP::enable_shared_from_this<AMP::Mesh::MeshIterator>
 {
+public: // iterator_traits
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type        = AMP::Mesh::MeshElement;
+    using difference_type   = ptrdiff_t;
+    using pointer           = const AMP::Mesh::MeshElement *;
+    using reference         = const AMP::Mesh::MeshElement &;
+
 public:
     /**
      *\typedef shared_ptr

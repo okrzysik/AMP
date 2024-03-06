@@ -2,8 +2,8 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/time_integrators/TimeOperator.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-
 #include "AMP/vectors/Vector.h"
 
 #include <algorithm>
@@ -2031,6 +2031,21 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     out->copyVector( d_solution_vector );
 
     return d_solver_retcode;
+}
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void BDFIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    ImplicitIntegrator::registerChildObjects( manager );
+}
+
+void BDFIntegrator::writeRestart( int64_t fid ) const { ImplicitIntegrator::writeRestart( fid ); }
+
+BDFIntegrator::BDFIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
+    : ImplicitIntegrator( fid, manager )
+{
 }
 
 } // namespace AMP::TimeIntegrator

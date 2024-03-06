@@ -11,6 +11,7 @@
 #include "AMP/time_integrators/RK23TimeIntegrator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 
+#include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/Vector.h"
 
 #include "ProfilerApp.h"
@@ -257,6 +258,20 @@ double RK23TimeIntegrator::getNextDt( const bool good_solution )
     }
 
     return next_dt;
+}
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void RK23TimeIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    TimeIntegrator::registerChildObjects( manager );
+}
+void RK23TimeIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::writeRestart( fid ); }
+
+RK23TimeIntegrator::RK23TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
+    : TimeIntegrator( fid, manager )
+{
 }
 
 } // namespace AMP::TimeIntegrator
