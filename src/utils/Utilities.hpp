@@ -369,7 +369,8 @@ void unique( std::vector<T> &X, std::vector<size_t> &I, std::vector<size_t> &J )
 template<class T>
 size_t findfirst( size_t n, const T *x, const T &value )
 {
-    AMP_INSIST( n > 0, "x must not be empty" );
+    if ( n == 0 )
+        return 0;
     // Check if value is within the range of x
     if ( value <= x[0] )
         return 0;

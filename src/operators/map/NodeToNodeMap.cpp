@@ -302,7 +302,10 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
             std::pair<Point, Point> pair( elem, surfacePts[index] );
             d_localPairsMesh2.push_back( pair );
         } else if ( requireAllPaired ) {
-            AMP_ERROR( "All points are required to be paired, and some points were not found" );
+            std::string msg;
+            msg += "All points are required to be paired, and some points were not found\n";
+            msg += "   Error matching " + d_mesh1->getName() + " and " + d_mesh2->getName();
+            AMP_ERROR( msg );
         }
     }
     surfacePts.clear();
@@ -338,7 +341,10 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
             std::pair<Point, Point> pair( elem, surfacePts[index] );
             d_localPairsMesh1.push_back( pair );
         } else if ( requireAllPaired ) {
-            AMP_ERROR( "All points are required to be paired, and some points were not found" );
+            std::string msg;
+            msg += "All points are required to be paired, and some points were not found\n";
+            msg += "   Error matching " + d_mesh1->getName() + " and " + d_mesh2->getName();
+            AMP_ERROR( msg );
         }
     }
     surfacePts.clear();

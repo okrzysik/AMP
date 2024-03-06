@@ -17,6 +17,8 @@
 
 #include <cmath>
 
+#include "ProfilerApp.h"
+
 
 namespace AMP::Mesh {
 
@@ -136,8 +138,7 @@ std::shared_ptr<Mesh> Mesh::Subset( const MeshIterator &iterator, bool isGlobal 
     } else if ( iterator.size() == 0 ) {
         return std::shared_ptr<Mesh>();
     }
-    auto mesh = std::make_shared<SubsetMesh>( shared_from_this(), iterator, isGlobal );
-    return mesh;
+    return SubsetMesh::create( shared_from_this(), iterator, isGlobal );
 }
 
 
@@ -196,6 +197,17 @@ AMP::LinearAlgebra::Vector::shared_ptr Mesh::getPositionVector( std::string name
  * Check if the element is a member of the mesh          *
  ********************************************************/
 bool Mesh::isMember( const MeshElementID &id ) const { return id.meshID() == d_meshID; }
+MeshIterator Mesh::isMember( const MeshIterator &iterator ) const
+{
+    PROFILE_SCOPED( timer, "isMember" );
+    auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
+    elements->reserve( iterator.size() );
+    for ( const auto &elem : iterator ) {
+        if ( isMember( elem.globalID() ) )
+            elements->push_back( elem );
+    }
+    return AMP::Mesh::MultiVectorIterator( elements, 0 );
+}
 
 
 /********************************************************
@@ -357,118 +369,84 @@ int Mesh::compare( const Mesh &a, const Mesh &b )
  ********************************************************/
 MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshIterator &B )
 {
+    PROFILE_SCOPED( timer, "getIterator" );
+    // Get a list of ids to keep
+    std::vector<MeshElementID> ids;
     if ( OP == SetOP::Union ) {
         // Perform a union: A U B
+        PROFILE_SCOPED( timer, "getIterator::Union" );
+        if ( A.size() == 0 )
+            return B.begin();
+        if ( B.size() == 0 )
+            return A.begin();
         // Get the union using the mesh IDs
-        std::set<MeshElementID> union_set;
+        ids.reserve( A.size() + B.size() );
         for ( auto &elem : A )
-            union_set.insert( elem.globalID() );
+            ids.push_back( elem.globalID() );
         for ( auto &elem : B )
-            union_set.insert( elem.globalID() );
-        std::vector<MeshElementID> union_ids( union_set.begin(), union_set.end() );
-        // Create the iterator
-        if ( union_ids.size() == A.size() ) {
-            return MeshIterator( A.begin() );
-        } else if ( union_ids.size() == B.size() ) {
-            return MeshIterator( B.begin() );
-        } else {
-            auto elements = std::make_shared<std::vector<MeshElement>>( union_ids.size() );
-            for ( auto &elem : A ) {
-                MeshElementID idA = elem.globalID();
-                size_t index      = Utilities::findfirst( union_ids, idA );
-                if ( index == union_ids.size() ) {
-                    index--;
-                }
-                if ( union_ids[index] == idA )
-                    ( *elements )[index] = elem;
-            }
-            for ( auto &elem : B ) {
-                MeshElementID idB = elem.globalID();
-                size_t index      = Utilities::findfirst( union_ids, idB );
-                if ( index == union_ids.size() ) {
-                    index--;
-                }
-                if ( union_ids[index] == idB )
-                    ( *elements )[index] = elem;
-            }
-            return MultiVectorIterator( elements, 0 );
-        }
+            ids.push_back( elem.globalID() );
+        Utilities::unique( ids );
     } else if ( OP == SetOP::Intersection ) {
         // Perform a intersection: A n B
         // Get the intersection using the mesh IDs
+        PROFILE_SCOPED( timer, "getIterator::Intersection" );
         if ( A.size() == 0 || B.size() == 0 )
             return MeshIterator();
-        std::vector<MeshElementID> idA( A.size() );
-        auto it = A.begin();
-        for ( size_t i = 0; i < A.size(); ++i, ++it )
-            idA[i] = it->globalID();
+        std::vector<MeshElementID> idA, idB;
+        idA.reserve( A.size() );
+        idB.reserve( B.size() );
+        for ( auto &elem : A )
+            idA.push_back( elem.globalID() );
+        for ( auto &elem : B )
+            idB.push_back( elem.globalID() );
         Utilities::quicksort( idA );
-        std::vector<MeshElementID> intersection;
-        intersection.reserve( B.size() );
-        for ( auto &elem : B ) {
-            MeshElementID idB = elem.globalID();
-            size_t index      = Utilities::findfirst( idA, idB );
-            if ( index == idA.size() ) {
-                index--;
-            }
-            if ( idA[index] == idB )
-                intersection.push_back( idB );
-        }
-        if ( intersection.empty() )
-            return MeshIterator();
-        // Sort the intersection and check for duplicates
-        Utilities::quicksort( intersection );
-        for ( size_t i = 1; i < intersection.size(); i++ )
-            AMP_ASSERT( intersection[i] != intersection[i - 1] );
-        // Create the iterator
-        if ( intersection.size() == A.size() ) {
-            return MeshIterator( A.begin() );
-        } else if ( intersection.size() == B.size() ) {
-            return MeshIterator( B.begin() );
-        } else {
-            auto elements = std::make_shared<std::vector<MeshElement>>( intersection.size() );
-            for ( auto &elem : B ) {
-                MeshElementID idB = elem.globalID();
-                size_t index      = Utilities::findfirst( intersection, idB );
-                if ( index == intersection.size() ) {
-                    index--;
-                }
-                if ( intersection[index] == idB )
-                    ( *elements )[index] = elem;
-            }
-            return MultiVectorIterator( elements, 0 );
-        }
+        Utilities::quicksort( idB );
+        ids.resize( std::min( A.size(), B.size() ) );
+        auto it =
+            std::set_intersection( idA.begin(), idA.end(), idB.begin(), idB.end(), ids.begin() );
+        ids.resize( it - ids.begin() );
+        if ( ids.size() == A.size() )
+            return A.begin();
+        else if ( ids.size() == B.size() )
+            return B.begin();
     } else if ( OP == SetOP::Complement ) {
         // Perform a SetOP::Complement:  A - B
         // Get the compliment using the mesh IDs
+        PROFILE_SCOPED( timer, "getIterator::Complement" );
         std::set<MeshElementID> compliment_set;
         for ( auto &elem : A )
             compliment_set.insert( elem.globalID() );
         for ( auto &elem : B )
             compliment_set.erase( elem.globalID() );
-        std::vector<MeshElementID> compliment( compliment_set.begin(), compliment_set.end() );
-        if ( compliment.empty() )
-            return MeshIterator();
-        // Create the iterator
-        if ( compliment.size() == A.size() ) {
-            return MeshIterator( A.begin() );
-        } else {
-            auto elements = std::make_shared<std::vector<MeshElement>>( compliment.size() );
-            for ( auto &elem : A ) {
-                MeshElementID idA = elem.globalID();
-                size_t index      = Utilities::findfirst( compliment, idA );
-                if ( index == compliment.size() ) {
-                    index--;
-                }
-                if ( compliment[index] == idA )
-                    ( *elements )[index] = elem;
-            }
-            return MultiVectorIterator( elements, 0 );
-        }
+        ids = std::vector<MeshElementID>( compliment_set.begin(), compliment_set.end() );
     } else {
         AMP_ERROR( "Unknown set operation" );
     }
-    return MeshIterator();
+    // Create the iterator
+    if ( ids.empty() )
+        return MeshIterator();
+    size_t N      = 0;
+    auto elements = std::make_shared<std::vector<MeshElement>>( ids.size() );
+    for ( auto &elem : A ) {
+        auto idA = elem.globalID();
+        size_t i = std::min( Utilities::findfirst( ids, idA ), ids.size() - 1 );
+        if ( ids[i] == idA ) {
+            ( *elements )[i] = elem;
+            N++;
+        }
+    }
+    if ( N != elements->size() ) {
+        for ( auto &elem : B ) {
+            auto idB = elem.globalID();
+            size_t i = std::min( Utilities::findfirst( ids, idB ), ids.size() - 1 );
+            if ( ids[i] == idB ) {
+                ( *elements )[i] = elem;
+                N++;
+            }
+        }
+        AMP_ASSERT( N == elements->size() );
+    }
+    return MultiVectorIterator( elements, 0 );
 }
 
 

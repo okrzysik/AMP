@@ -1018,6 +1018,8 @@ std::vector<TYPE> MPI_CLASS::allGather( const std::vector<TYPE> &x ) const
         disp[i] = disp[i - 1] + count[i - 1];
         N += count[i];
     }
+    if ( N == 0 )
+        return {};
     std::vector<TYPE> data( N );
     allGather<TYPE>( x.data(), x.size(), data.data(), count.data(), disp.data(), true );
     return data;

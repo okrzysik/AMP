@@ -18,10 +18,18 @@ namespace AMP::Mesh {
 class SubsetMesh : public Mesh
 {
 public:
-    //! Default constructor
-    SubsetMesh( std::shared_ptr<const Mesh> mesh,
-                const AMP::Mesh::MeshIterator &iterator,
-                bool isGlobal );
+    /**
+     * \brief    Create a subset mesh
+     * \details  This function will create the desired subset mesh.
+     *           If the underlying mesh is a multimesh, it will return
+     *           a multimesh of the individual subset meshes
+     * \param mesh      Mesh to subset
+     * \param iterator  Iterator containing the desired mesh elements
+     * \param isGlobal  Do we want the communicator to span the provided mesh
+     */
+    static std::shared_ptr<Mesh> create( std::shared_ptr<const Mesh> mesh,
+                                         const AMP::Mesh::MeshIterator &iterator,
+                                         bool isGlobal );
 
 
     //! Deconstructor
@@ -149,6 +157,15 @@ public:
 
 
     /**
+     * \brief    Check if elements are in the mesh
+     * \details  This function queries the mesh to determine if each of the given elements
+     *           is a member of the mesh and returns an iterator over those elements
+     * \param id    Mesh element id we are querying.
+     */
+    MeshIterator isMember( const MeshIterator &it ) const override;
+
+
+    /**
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.
      *    This function is only required to return an element if the id is local.
@@ -263,9 +280,18 @@ public:
     // Needed to prevent problems with virtual functions
     using Mesh::Subset;
 
+
+protected:
+    //! Default constructor
+    SubsetMesh( std::shared_ptr<const Mesh> mesh,
+                const AMP::Mesh::MeshIterator &iterator,
+                bool isGlobal );
+
+
 protected:
     // Parent mesh for the subset
-    std::shared_ptr<const Mesh> d_parent_mesh;
+    std::shared_ptr<const Mesh> d_parentMesh;
+    MeshID d_parentMeshID;
 
     // Pointers to store the elements in the subset meshes [type][gcw][elem]
     std::vector<size_t> N_global;

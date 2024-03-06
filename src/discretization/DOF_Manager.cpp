@@ -162,20 +162,12 @@ std::shared_ptr<DOFManager> DOFManager::subset( const std::shared_ptr<AMP::Mesh:
     if ( mesh.get() == nullptr )
         return std::shared_ptr<DOFManager>();
     // Get a list of the elements in the mesh
-    auto iterator = getIterator();
-    std::vector<AMP::Mesh::MeshElement> element_list;
-    element_list.reserve( iterator.size() );
-    for ( const auto &elem : iterator ) {
-        if ( mesh->isMember( elem.globalID() ) )
-            element_list.push_back( elem );
-    }
-    // Create the element iterator
-    auto elements       = std::make_shared<std::vector<AMP::Mesh::MeshElement>>( element_list );
-    auto subsetIterator = AMP::Mesh::MultiVectorIterator( elements, 0 );
+    auto subsetIterator = mesh->isMember( getIterator() );
     // Get the DOFs
-    std::vector<AMP::Mesh::MeshElementID> id_list( elements->size() );
-    for ( size_t i = 0; i < elements->size(); i++ )
-        id_list[i] = elements->operator[]( i ).globalID();
+    std::vector<AMP::Mesh::MeshElementID> id_list;
+    id_list.reserve( subsetIterator.size() );
+    for ( auto &elem : subsetIterator )
+        id_list.push_back( elem.globalID() );
     std::vector<size_t> dofs;
     getDOFs( id_list, dofs );
     // Sort and check the DOFs for errors
