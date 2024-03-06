@@ -95,11 +95,13 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     record( ut, vec2 != nullptr, "Load Vector" );
     if ( vec2 )
         record( ut, vec->L2Norm() == vec2->L2Norm(), "vec->L2Norm() matches" );
-    auto ti2 = reader.getData<AMP::TimeIntegrator::TimeIntegrator>( "TI" );
-    if ( timeIntegrator ) {
-        record( ut, ti2 != nullptr, "Load Time Integrator" );
-    } else {
-        record( ut, ti2 == nullptr, "Load nullptr for Time Integrator" );
+    if ( enable_ti ){
+        auto ti2 = reader.getData<AMP::TimeIntegrator::TimeIntegrator>( "TI" );
+	if ( timeIntegrator ) {
+	    record( ut, ti2 != nullptr, "Load Time Integrator" );
+	} else {
+            record( ut, ti2 == nullptr, "Load nullptr for Time Integrator" );
+      }
     }
 }
 

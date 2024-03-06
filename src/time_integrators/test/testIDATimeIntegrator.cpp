@@ -97,7 +97,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         time_Params->d_pPreconditioner = pcSolver;
         time_Params->d_ic_vector       = initialCondition;
         time_Params->d_ic_vector_prime = initialConditionPrime;
-        time_Params->d_object_name     = "IDATimeIntegratorParameters";
+        time_Params->d_name            = "IDATimeIntegratorParameters";
         auto pIDATimeIntegrator =
             std::make_shared<AMP::TimeIntegrator::IDATimeIntegrator>( time_Params );
         if ( pIDATimeIntegrator.get() == nullptr ) {
