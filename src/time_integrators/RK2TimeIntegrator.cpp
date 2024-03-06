@@ -11,6 +11,7 @@
 #include "AMP/time_integrators/RK2TimeIntegrator.h"
 
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/Vector.h"
 
 #include "ProfilerApp.h"
@@ -156,6 +157,20 @@ void RK2TimeIntegrator::updateSolution()
         AMP::pout << "Simulation time is " << d_current_time << std::endl;
         AMP::pout << "++++++++++++++++++++++++++++++++++++++++++++++++\n" << std::endl;
     }
+}
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void RK2TimeIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    TimeIntegrator::registerChildObjects( manager );
+}
+void RK2TimeIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::writeRestart( fid ); }
+
+RK2TimeIntegrator::RK2TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
+    : TimeIntegrator( fid, manager )
+{
 }
 
 } // namespace AMP::TimeIntegrator

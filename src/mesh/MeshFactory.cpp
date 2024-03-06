@@ -7,6 +7,7 @@
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/mesh/structured/MovableBoxMesh.h"
+#include "AMP/mesh/structured/PureLogicalMesh.h"
 #include "AMP/mesh/structured/StructuredGeometryMesh.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
 
@@ -137,6 +138,8 @@ std::shared_ptr<AMP::Mesh::Mesh> AMP::Mesh::MeshFactory::create( int64_t fid,
         mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( fid, manager );
     } else if ( type == "MovableBoxMesh" ) {
         mesh = std::make_shared<AMP::Mesh::MovableBoxMesh>( fid, manager );
+    } else if ( type == "PureLogicalMesh" ) {
+        mesh = std::make_shared<AMP::Mesh::PureLogicalMesh>( fid, manager );
     } else {
         // Search for a mesh generator
         mesh =

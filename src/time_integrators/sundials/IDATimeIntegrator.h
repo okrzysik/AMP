@@ -210,6 +210,8 @@ public:
      */
     inline void *getIDAMem( void ) { return d_ida_mem; }
 
+    std::string type() const override { return "IDATimeIntegrator"; }
+
     /**
      * not sure why this variable exists and is public, BP
      */

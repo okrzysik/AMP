@@ -1,0 +1,19 @@
+Mesh {
+	MeshName = "logical"
+	MeshType = "AMP"
+	Generator = "logical"
+	Size = 780
+}
+
+TimeIntegrator{
+    name  = "RK12"
+    initial_time         = 0.0
+    final_time           = 0.1
+    max_integrator_steps = 1000
+    initial_dt     = 1.0e-04
+    min_dt               = 1.0e-10
+    max_dt               = 1.0
+    safety_factor        = 0.9
+    absolute_tolerance   = 1.0e-6
+    use_fixed_dt = FALSE
+}

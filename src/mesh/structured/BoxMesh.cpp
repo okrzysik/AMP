@@ -961,8 +961,12 @@ bool BoxMesh::operator==( const Mesh &rhs ) const
         return false;
     if ( d_surfaceId != mesh->d_surfaceId )
         return false;
-    if ( *d_geometry != *mesh->d_geometry )
-        return false;
+    if ( d_geometry != mesh->d_geometry ) {
+        if ( !d_geometry || !mesh->d_geometry )
+            return false;
+        if ( *d_geometry != *mesh->d_geometry )
+            return false;
+    }
     for ( int d = 0; d < 3; d++ ) {
         if ( d_startIndex[d] != mesh->d_startIndex[d] || d_endIndex[d] != mesh->d_endIndex[d] )
             return false;

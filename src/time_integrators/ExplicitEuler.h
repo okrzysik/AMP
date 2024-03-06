@@ -75,6 +75,8 @@ public:
                          std::shared_ptr<AMP::LinearAlgebra::Vector> in,
                          std::shared_ptr<AMP::LinearAlgebra::Vector> out ) override;
 
+    std::string type() const override { return "ExplicitEuler"; }
+
 private:
     /**
      * Constructor.
