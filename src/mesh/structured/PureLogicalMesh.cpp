@@ -123,11 +123,12 @@ bool PureLogicalMesh::operator==( const Mesh &rhs ) const
 
 
 /****************************************************************
- * Write restart data                                            *
+ * Write/Read restart data                                       *
  ****************************************************************/
-void PureLogicalMesh::writeRestart( int64_t ) const
+void PureLogicalMesh::writeRestart( int64_t fid ) const { BoxMesh::writeRestart( fid ); }
+PureLogicalMesh::PureLogicalMesh( int64_t fid, AMP::IO::RestartManager *manager )
+    : BoxMesh( fid, manager )
 {
-    AMP_ERROR( "writeRestart is not implimented for PureLogicalMesh" );
 }
 
 

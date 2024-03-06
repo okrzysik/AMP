@@ -36,13 +36,6 @@ public:
     //! Check if two meshes are equal
     bool operator==( const Mesh &mesh ) const override;
 
-    /**
-     * \brief    Write restart data to file
-     * \details  This function will write the mesh to an HDF5 file
-     * \param fid    File identifier to write
-     */
-    void writeRestart( int64_t fid ) const override;
-
 public: // Functions derived from BoxMesh
     Mesh::Movable isMeshMovable() const override;
     uint64_t positionHash() const override;
@@ -52,6 +45,9 @@ public: // Functions derived from BoxMesh
     void coord( const MeshElementIndex &index, double *pos ) const override;
     std::unique_ptr<Mesh> clone() const override;
 
+public: // Restart functions
+    void writeRestart( int64_t ) const override;
+    PureLogicalMesh( int64_t, AMP::IO::RestartManager * );
 
 protected: // Functions derived from BoxMesh
     virtual void createBoundingBox() override;

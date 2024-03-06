@@ -61,7 +61,9 @@ std::shared_ptr<VectorData> VectorDataDefault<TYPE, Allocator>::cloneData() cons
 {
     auto retVal = std::make_shared<VectorDataDefault<TYPE, Allocator>>(
         d_localStart, d_localSize, d_globalSize );
-    retVal->setCommunicationList( getCommunicationList() );
+    auto comm = getCommunicationList();
+    if ( comm )
+        retVal->setCommunicationList( comm );
     return retVal;
 }
 

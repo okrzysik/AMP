@@ -4,13 +4,13 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
+#include "AMP/time_integrators/TimeIntegrator.h"
+#include "AMP/time_integrators/TimeIntegratorFactory.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/time_integrators/TimeIntegrator.h"
-#include "AMP/time_integrators/TimeIntegratorParameters.h"
-#include "AMP/time_integrators/TimeIntegratorFactory.h"
 
 #include <complex>
 
@@ -45,16 +45,16 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     vec->setRandomValues();
 
     bool enable_ti = false;
-    std::shared_ptr<AMP::TimeIntegrator::TimeIntegrator> timeIntegrator;   
+    std::shared_ptr<AMP::TimeIntegrator::TimeIntegrator> timeIntegrator;
     if ( db->keyExists( "TimeIntegrator" ) ) {
-        enable_ti = true;
-        auto ti_db = db->getDatabase( "TimeIntegrator" );
-	auto ti_params = std::make_shared<AMP::TimeIntegrator::TimeIntegratorParameters>( ti_db  );
-	ti_params->d_global_db = db;
-	ti_params->d_ic_vector = vec;
-	timeIntegrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( ti_params );
+        enable_ti      = true;
+        auto ti_db     = db->getDatabase( "TimeIntegrator" );
+        auto ti_params = std::make_shared<AMP::TimeIntegrator::TimeIntegratorParameters>( ti_db );
+        ti_params->d_global_db = db;
+        ti_params->d_ic_vector = vec;
+        timeIntegrator         = AMP::TimeIntegrator::TimeIntegratorFactory::create( ti_params );
     }
-    
+
     // Create the restart manager and register data
     int int_v    = 13;
     double dbl_v = 15.3;
@@ -67,7 +67,7 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     writer.registerData( str_v, "string" );
     writer.registerData( db, "inputs" );
     writer.registerData( mesh, "mesh" );
-    writer.registerData( vec, "vec" );    
+    writer.registerData( vec, "vec" );
     writer.registerData( timeIntegrator, "TI" );
 
     // Write the restart data
@@ -93,6 +93,12 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     record( ut, vec2 != nullptr, "Load Vector" );
     if ( vec2 )
         record( ut, vec->L2Norm() == vec2->L2Norm(), "vec->L2Norm() matches" );
+    auto ti2 = reader.getData<AMP::TimeIntegrator::TimeIntegrator>( "TI" );
+    if ( timeIntegrator ) {
+        record( ut, ti2 != nullptr, "Load Time Integrator" );
+    } else {
+        record( ut, ti2 == nullptr, "Load nullptr for Time Integrator" );
+    }
 }
 
 
