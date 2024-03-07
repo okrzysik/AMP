@@ -89,7 +89,7 @@ public: // Virtual functions
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     typeID getType( size_t ) const override { return getTypeID<double>(); }
     void swapData( VectorData & ) override;
-    std::shared_ptr<VectorData> cloneData() const override;
+    std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
 
     /** \brief  Get the raw Epetra_Vector
      * \return  The Epetra_Vector currently used by this engine
