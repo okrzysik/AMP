@@ -251,7 +251,7 @@ std::shared_ptr<VectorData> ManagedVectorData::cloneData( const std::string &nam
 {
     auto vec = getVectorEngine();
     AMP_ASSERT( vec );
-    auto cname = ( name == "" ) ? "ManagedVectorClone" : name;
+    auto cname  = ( name == "" ) ? "ManagedVectorClone" : name;
     auto vec2   = vec->clone( cname );
     auto retVal = std::make_shared<ManagedVectorData>( vec2 );
     return retVal;
