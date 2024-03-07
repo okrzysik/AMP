@@ -147,7 +147,7 @@ public: // Advanced virtual functions
 
     /** \brief Clone the data
      */
-    std::shared_ptr<VectorData> cloneData() const override;
+    std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
 
 
 public: // Non-virtual functions

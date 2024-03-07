@@ -169,7 +169,7 @@ protected:
     typeID getType( size_t ) const override { return getTypeID<T>(); }
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     void swapData( VectorData & ) override;
-    std::shared_ptr<VectorData> cloneData( void ) const override;
+    std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
 };
 
 } // namespace AMP::LinearAlgebra

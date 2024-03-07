@@ -50,7 +50,7 @@ std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allo
  * Clone/Swap data                                               *
  ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
-inline std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::cloneData() const
+inline std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::cloneData( const std::string & ) const
 {
     auto retVal               = std::make_shared<ArrayVectorData<T, FUN, Allocator>>();
     retVal->d_array           = d_array;

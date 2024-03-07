@@ -79,7 +79,7 @@ public:
     uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     void swapData( VectorData & ) override;
-    std::shared_ptr<VectorData> cloneData() const override;
+    std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
     bool hasContiguousData() const override { return numberOfDataBlocks() > 1 ? false : true; }
     SubsetVectorData() {}
     explicit SubsetVectorData( std::shared_ptr<SubsetVectorParameters> params );
