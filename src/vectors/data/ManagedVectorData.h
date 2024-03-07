@@ -76,7 +76,7 @@ public: // Derived from VectorData
     void assemble() override;
     void dataChanged() override;
 
-    std::shared_ptr<VectorData> cloneData() const override;
+    std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
     bool hasContiguousData() const override;
 
 protected: // Derived from VectorData

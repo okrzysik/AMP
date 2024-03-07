@@ -181,7 +181,8 @@ void SubsetVectorData::swapData( VectorData &rhs )
     std::swap( d_dataBlockSize, s->d_dataBlockSize );
     std::swap( d_dataBlockPtr, s->d_dataBlockPtr );
 }
-std::shared_ptr<VectorData> SubsetVectorData::cloneData() const
+
+std::shared_ptr<VectorData> SubsetVectorData::cloneData( const std::string & ) const
 {
     AMP_ERROR( "Not finished" );
     return std::shared_ptr<VectorData>();

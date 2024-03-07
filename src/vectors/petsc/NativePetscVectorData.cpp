@@ -75,7 +75,7 @@ void NativePetscVectorData::swapData( VectorData &other )
     PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( otherData->getVec() ) );
 }
 
-std::shared_ptr<VectorData> NativePetscVectorData::cloneData() const
+std::shared_ptr<VectorData> NativePetscVectorData::cloneData( const std::string & ) const
 {
     resetArray();
     Vec new_petscVec;

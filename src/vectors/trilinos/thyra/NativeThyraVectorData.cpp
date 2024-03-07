@@ -43,7 +43,7 @@ NativeThyraVectorData::~NativeThyraVectorData() = default;
 /************************************************************************
  * Vector functions                                                      *
  ************************************************************************/
-std::shared_ptr<VectorData> NativeThyraVectorData::cloneData() const
+std::shared_ptr<VectorData> NativeThyraVectorData::cloneData( const std::string & ) const
 {
     return std::make_shared<NativeThyraVectorData>( d_thyraVec->clone_v(), d_localSize, getComm() );
 }

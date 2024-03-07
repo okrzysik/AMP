@@ -126,7 +126,7 @@ void EpetraVectorData::getRawData( void *out, const typeID &id ) const
     d_epetraVector.ExtractCopy( data );
 }
 
-std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
+std::shared_ptr<VectorData> EpetraVectorData::cloneData( const std::string & ) const
 {
     auto buffer =
         std::make_shared<VectorDataDefault<double>>( d_localStart, d_localSize, d_globalSize );

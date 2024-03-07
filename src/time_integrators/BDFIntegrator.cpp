@@ -1,4 +1,6 @@
 #include "AMP/time_integrators/BDFIntegrator.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/time_integrators/TimeOperator.h"
@@ -150,7 +152,9 @@ void BDFIntegrator::integratorSpecificInitialize( void )
 
     auto params = std::make_shared<AMP::Solver::SolverStrategyParameters>();
     params->d_vectors.push_back( d_solution_vector );
-    d_solver->initialize( params );
+
+    if ( d_solver )
+        d_solver->initialize( params );
 }
 
 void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_from_restart )
@@ -2046,6 +2050,9 @@ void BDFIntegrator::writeRestart( int64_t fid ) const { ImplicitIntegrator::writ
 BDFIntegrator::BDFIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : ImplicitIntegrator( fid, manager )
 {
+    d_object_name = "BDFIntegrator";
+    BDFIntegrator::getFromInput( d_pParameters->d_db, true );
+    BDFIntegrator::initialize();
 }
 
 } // namespace AMP::TimeIntegrator

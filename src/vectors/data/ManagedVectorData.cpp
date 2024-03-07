@@ -247,11 +247,12 @@ void ManagedVectorData::getRawData( void *in, const typeID &id ) const
 
 typeID ManagedVectorData::getType( size_t i ) const { return getEngineData( *this )->getType( i ); }
 
-std::shared_ptr<VectorData> ManagedVectorData::cloneData() const
+std::shared_ptr<VectorData> ManagedVectorData::cloneData( const std::string &name ) const
 {
     auto vec = getVectorEngine();
     AMP_ASSERT( vec );
-    auto vec2   = vec->clone( "ManagedVectorClone" );
+    auto cname  = ( name == "" ) ? "ManagedVectorClone" : name;
+    auto vec2   = vec->clone( cname );
     auto retVal = std::make_shared<ManagedVectorData>( vec2 );
     return retVal;
 }

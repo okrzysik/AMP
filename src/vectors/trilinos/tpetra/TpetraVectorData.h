@@ -39,7 +39,7 @@ public:
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( ST ); }
     typeID getType( size_t ) const override { return getTypeID<ST>(); }
     void swapData( VectorData & ) override;
-    std::shared_ptr<VectorData> cloneData() const override;
+    std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
 
     Teuchos::RCP<Tpetra::Vector<ST, LO, GO, NT>> getTpetraVector() { return d_pTpetraVector; }
     Teuchos::RCP<const Tpetra::Vector<ST, LO, GO, NT>> getTpetraVector() const

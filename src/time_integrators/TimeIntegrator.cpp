@@ -247,11 +247,12 @@ TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     AMP::Database db, db_global;
     readHDF5( fid, "ti_db", db );
     readHDF5( fid, "global_db", db_global );
+
     d_pParameters =
         std::make_shared<TimeIntegratorParameters>( std::make_shared<AMP::Database>( db ) );
     d_pParameters->d_global_db = std::make_shared<AMP::Database>( db_global );
     d_pParameters->d_ic_vector = ic_vector;
-    initialize( d_pParameters );
+    TimeIntegrator::initialize( d_pParameters );
 }
 
 } // namespace AMP::TimeIntegrator
