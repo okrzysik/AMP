@@ -57,7 +57,7 @@ public:
 
     /** \brief Clone the data
      */
-    std::shared_ptr<VectorData> cloneData() const override;
+    std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
 
     void assemble() override;
 

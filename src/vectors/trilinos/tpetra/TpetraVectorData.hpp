@@ -91,7 +91,7 @@ void TpetraVectorData<ST, LO, GO, NT>::swapData( VectorData &other )
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-std::shared_ptr<VectorData> TpetraVectorData<ST, LO, GO, NT>::cloneData() const
+std::shared_ptr<VectorData> TpetraVectorData<ST, LO, GO, NT>::cloneData( const std::string & ) const
 {
     return std::make_shared<TpetraVectorData<ST, LO, GO, NT>>( d_pDOFManager );
 }

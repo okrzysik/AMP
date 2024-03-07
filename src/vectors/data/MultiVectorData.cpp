@@ -360,7 +360,7 @@ void MultiVectorData::swapData( VectorData & ) { AMP_ERROR( "Not finished" ); }
 /****************************************************************
  * Clone raw data                                                *
  ****************************************************************/
-std::shared_ptr<VectorData> MultiVectorData::cloneData() const
+std::shared_ptr<VectorData> MultiVectorData::cloneData( const std::string & ) const
 {
     AMP_ERROR( "Not finished" );
     return std::shared_ptr<VectorData>();

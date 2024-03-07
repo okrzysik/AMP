@@ -111,7 +111,7 @@ public: // Advanced virtual functions
 
     /** \brief Clone the data
      */
-    std::shared_ptr<VectorData> cloneData() const override;
+    std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
 
     void
     dumpOwnedData( std::ostream &out, size_t GIDoffset = 0, size_t LIDoffset = 0 ) const override;
