@@ -158,12 +158,25 @@ public:
      */
     size_t endRow() const override;
 
+    size_t beginCol() const { return d_first_col; }
+
     std::tuple<lidx_t *, gidx_t const *, scalar_t const *> getCSRData()
     {
         return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
     }
 
     bool isSquare() const noexcept { return d_is_square; }
+
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getLeftVariable()
+    {
+        return d_pParameters->d_VariableLeft;
+    }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getRightVariable()
+    {
+        return d_pParameters->d_VariableRight;
+    }
+
+    auto numberOfNonZeros() const { return d_nnz; }
 
 protected:
     bool d_is_square;
@@ -172,6 +185,7 @@ protected:
     gidx_t d_first_col;
     gidx_t d_last_col;
     lidx_t *d_nnz_per_row;
+    lidx_t *d_row_starts;
     gidx_t *d_cols;
     scalar_t *d_coeffs;
 

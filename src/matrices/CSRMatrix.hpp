@@ -93,12 +93,14 @@ Vector::shared_ptr CSRMatrix<Policy>::extractDiagonal( Vector::shared_ptr buf ) 
 template<typename Policy>
 Vector::shared_ptr CSRMatrix<Policy>::getRightVector() const
 {
-    AMP_ERROR( "Not implemented" );
+    auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy>>( d_matrixData )->getRightVariable();
+    return createVector( getRightDOFManager(), var );
 }
 template<typename Policy>
 Vector::shared_ptr CSRMatrix<Policy>::getLeftVector() const
 {
-    AMP_ERROR( "Not implemented" );
+    auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy>>( d_matrixData )->getLeftVariable();
+    return createVector( getLeftDOFManager(), var );
 }
 
 
