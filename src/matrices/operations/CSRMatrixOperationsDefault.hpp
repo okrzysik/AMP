@@ -323,7 +323,7 @@ AMP::Scalar CSRMatrixOperationsDefault<Policy>::L1Norm( MatrixData const &A ) co
     const auto nnz = static_cast<lidx_t>( csrData->numberOfNonZeros() );
 
     std::vector<scalar_t> col_norms( ncols, 0.0 );
-    for ( size_t i = 0; i < nnz; ++i ) {
+    for ( size_t i = 0; i < static_cast<size_t>( nnz ); ++i ) {
         const auto col = cols[i] - begin_col;
         col_norms[col] += std::abs( coeffs[i] );
     }

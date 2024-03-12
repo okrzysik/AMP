@@ -319,8 +319,8 @@ void CSRMatrixData<Policy>::extractDiagonal( std::shared_ptr<Vector> buf ) const
     AMP_ASSERT( buf->isType<scalar_t>( 0 ) );
 
     auto *rawVecData  = buf->getRawDataBlock<scalar_t>();
-    auto vDataMemType = AMP::Utilities::getMemoryType( rawVecData );
-    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+    auto memType = AMP::Utilities::getMemoryType( rawVecData );
+    if ( memType < AMP::Utilities::MemoryType::device ) {
 
         const size_t N = d_last_row - d_first_row;
         for ( size_t i = 0; i < N; ++i ) {
@@ -328,7 +328,7 @@ void CSRMatrixData<Policy>::extractDiagonal( std::shared_ptr<Vector> buf ) const
             const auto end   = d_row_starts[i + 1];
             // colums are unordered at present
             for ( lidx_t j = start; j < end; ++j ) {
-                if ( d_cols[j] == static_cast<lidx_t>( i ) ) {
+                if ( d_cols[j] == static_cast<gidx_t>( i ) ) {
                     rawVecData[i] = d_coeffs[j];
                     break;
                 }
@@ -381,69 +381,82 @@ void CSRMatrixData<Policy>::getRowByGlobalID( size_t row,
 
 template<typename Policy>
 void CSRMatrixData<Policy>::addValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
     if ( getTypeID<scalar_t>() == id ) {
+      
         if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
 
-            if ( num_rows == 1 ) {
+	    auto values = reinterpret_cast<const scalar_t *>( vals );
 
-                const auto local_row = ( *rows ) - d_first_row;
-                const auto start     = d_row_starts[local_row];
-                const auto end       = d_row_starts[local_row + 1];
-                // O(nnz_per_row)^2 because we don't assume order
-                // not sure it's worth optimizing for our use cases
-                for ( size_t icol = 0; icol < num_cols; ++icol ) {
-                    for ( lidx_t i = start; i < end; ++i ) {
-                        if ( d_cols[i] == static_cast<lidx_t>( cols[icol] ) ) {
-                            d_coeffs[i] += ( reinterpret_cast<scalar_t *>( values )[icol] );
-                        }
-                    }
-                }
+	    for ( size_t i = 0u; i != num_rows; i++ ) {
+	      if ( rows[i] >= static_cast<size_t>( d_first_row ) && rows[i] < static_cast<size_t>( d_last_row ) ) {
 
-            } else {
-                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1" );
+		  const auto local_row = rows[i] - d_first_row;
+  		  const auto start     = d_row_starts[local_row];
+		  const auto end       = d_row_starts[local_row + 1];
+		 // Inefficient because we don't assume order
+		 // not sure it's worth optimizing for our use cases
+		 for ( size_t icol = 0; icol < num_cols; ++icol ) {
+                      for ( lidx_t j = start; j < end; ++j ) {
+                           if ( d_cols[j] == static_cast<gidx_t>( cols[icol] ) ) {
+                               d_coeffs[j] += values[num_cols * i + icol];
+			   }
+		      }
+		 }
+	      } else {
+		 for ( size_t icol = 0; icol < num_cols; ++icol ) {
+                      d_other_data[rows[i]][cols[icol]] += values[num_cols * i + icol];
+		 }
+	      }
             }
 
         } else {
             AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
         }
     } else {
-        AMP_ERROR( "Not implemented" );
+        AMP_ERROR( "Conversion not implemented" );
     }
 }
 
 template<typename Policy>
 void CSRMatrixData<Policy>::setValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
     if ( getTypeID<scalar_t>() == id ) {
         if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
 
-            if ( num_rows == 1 ) {
+	    auto values = reinterpret_cast<const scalar_t *>( vals );
 
-                const auto local_row = ( *rows ) - d_first_row;
-                const auto start     = d_row_starts[local_row];
-                const auto end       = d_row_starts[local_row + 1];
+	    for ( size_t i = 0u; i != num_rows; i++ ) {
 
-                // O(nnz_per_row)^2 because we don't assume order
-                // not sure it's worth optimizing for our use cases
-                for ( size_t icol = 0; icol < num_cols; ++icol ) {
-                    for ( lidx_t i = start; i < end; ++i ) {
-                        if ( d_cols[i] == static_cast<lidx_t>( cols[icol] ) ) {
-                            d_coeffs[i] = ( reinterpret_cast<scalar_t *>( values )[icol] );
-                        }
-                    }
-                }
-            } else {
-                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1 " );
-            }
-
+	      if ( rows[i] >= static_cast<size_t>( d_first_row ) && rows[i] < static_cast<size_t>( d_last_row ) ) {
+                  const auto local_row = rows[i] - d_first_row;
+		  const auto start     = d_row_starts[local_row];
+		  const auto end       = d_row_starts[local_row + 1];
+		  
+		  // Inefficient because we don't assume order
+		  // not sure it's worth optimizing for our use cases
+		  for ( size_t icol = 0; icol < num_cols; ++icol ) {
+		       for ( lidx_t j = start; j < end; ++j ) {
+                            if ( d_cols[j] == static_cast<gidx_t>( cols[icol] ) ) {
+                                d_coeffs[j] = values[num_cols * i + icol];
+			    }
+		       }
+		  } 
+	     
+	      } else {
+		 for ( size_t icol = 0; icol < num_cols; ++icol ) {
+                      d_ghost_data[rows[i]][cols[icol]] = values[num_cols * i + icol];
+		 }
+	      }
+	    }
+	    
         } else {
             AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
         }
     } else {
-        AMP_ERROR( "Not implemented" );
+        AMP_ERROR( "Conversion not implemented" );
     }
 }
 
@@ -460,12 +473,12 @@ void CSRMatrixData<Policy>::getValuesByGlobalID( size_t num_rows,
 
             if ( num_rows == 1 && num_cols == 1 ) {
 
-                const auto local_row = ( *rows ) - d_first_row;
+                const auto local_row = rows[0] - d_first_row;
                 const auto start     = d_row_starts[local_row];
                 const auto end       = d_row_starts[local_row + 1];
 
                 for ( lidx_t i = start; i < end; ++i ) {
-                    if ( d_cols[i] == static_cast<lidx_t>( *cols ) ) {
+                    if ( d_cols[i] == static_cast<gidx_t>( cols[0] ) ) {
                         *( reinterpret_cast<scalar_t *>( values ) ) = d_coeffs[i];
                     }
                 }
@@ -483,11 +496,84 @@ void CSRMatrixData<Policy>::getValuesByGlobalID( size_t num_rows,
 }
 
 template<typename Policy>
+void CSRMatrixData<Policy>::setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &other_data, AMP::LinearAlgebra::ScatterType t )
+{
+    AMP_MPI comm = getComm();
+    auto ndxLen     = other_data.size();
+    auto totNdxLen  = comm.sumReduce( ndxLen );
+    if ( totNdxLen == 0 ) {
+        return;
+    }
+    auto dataLen  = 0;
+    auto cur_row = other_data.begin();
+    while ( cur_row != other_data.end() ) {
+        dataLen += cur_row->second.size();
+        ++cur_row;
+    }
+    std::vector<gidx_t> rows( dataLen + 1 ); // Add one to have the new work
+    std::vector<gidx_t> cols( dataLen + 1 ); // Add one to have the new work
+    std::vector<scalar_t> data( dataLen + 1 ); // Add one to have the new work
+    size_t cur_ptr = 0;
+    cur_row     = other_data.begin();
+    while ( cur_row != other_data.end() ) {
+        auto cur_elem = cur_row->second.begin();
+        while ( cur_elem != cur_row->second.end() ) {
+            rows[cur_ptr] = cur_row->first;
+            cols[cur_ptr] = cur_elem->first;
+            data[cur_ptr] = cur_elem->second;
+            ++cur_ptr;
+            ++cur_elem;
+        }
+        ++cur_row;
+    }
+
+    auto totDataLen = comm.sumReduce( dataLen );
+
+    std::vector<gidx_t> aggregateRows( totDataLen );
+    std::vector<gidx_t> aggregateCols( totDataLen );
+    std::vector<scalar_t> aggregateData(totDataLen );
+
+    comm.allGather( rows.data(), dataLen, aggregateRows.data() );
+    comm.allGather( cols.data(), dataLen, aggregateCols.data() );
+    comm.allGather( data.data(), dataLen, aggregateData.data() );
+
+    if ( t == AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD ) {
+        for ( int i = 0; i != totDataLen; i++ ) {
+             if ( ( aggregateRows[i] >= d_first_row ) && ( aggregateRows[i] < d_last_row ) ) {
+                 addValuesByGlobalID( 1u,
+				      1u,
+				      (size_t *) &aggregateRows[i],
+				      (size_t *) &aggregateCols[i],
+				      &aggregateData[i],
+				      getTypeID<scalar_t>() );
+	     }
+	}	
+    } else {
+
+        if ( t == AMP::LinearAlgebra::ScatterType::CONSISTENT_SET ) {
+	    for ( int i = 0; i != totDataLen; i++ ) {
+                  if ( ( aggregateRows[i] >= d_first_row ) && ( aggregateRows[i] < d_last_row ) ) {
+                      setValuesByGlobalID( 1u,
+					   1u,
+					   (size_t *) &aggregateRows[i],
+					   (size_t *) &aggregateCols[i],
+					   &aggregateData[i],
+					   getTypeID<scalar_t>() );
+		  }
+	    }	
+	}
+    }
+    
+    other_data.clear();  
+}
+
+template<typename Policy>
 void CSRMatrixData<Policy>::makeConsistent( AMP::LinearAlgebra::ScatterType )
 {
-    // at present do nothing since the way AMP is dealing with face/vertex values
-    // seems to preclude the need at present
+    setOtherData( d_other_data, AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+    setOtherData( d_ghost_data, AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
+
 
 template<typename Policy>
 std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const

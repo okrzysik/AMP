@@ -4,6 +4,7 @@
 #include "AMP/matrices/data/MatrixData.h"
 
 #include <tuple>
+#include <map>
 
 namespace AMP::Discretization {
 class DOFManager;
@@ -199,6 +200,16 @@ protected:
 
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
     std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;
+
+    //!  \f$A_{i,j}\f$ storage of off core matrix data
+    std::map<gidx_t, std::map<gidx_t, scalar_t>> d_other_data;
+
+    //!  \f$A_{i,j}\f$ storage of off core matrix data to set
+    std::map<gidx_t, std::map<gidx_t, scalar_t>> d_ghost_data;
+
+    //!  Update matrix data off-core
+  void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &, AMP::LinearAlgebra::ScatterType );    
+
 };
 
 } // namespace AMP::LinearAlgebra
