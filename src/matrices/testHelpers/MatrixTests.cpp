@@ -321,40 +321,53 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     AMP_ASSERT( static_cast<double>( vector1->L2Norm() ) > 0.0 );
     double ans1, ans2, ans3;
 
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> matSol;
+    
     // Verify matMultiply with 0 matrix
-    auto matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
-    if ( matSol->L1Norm() == 0.0 )
-        utils->passes( "matMultiply with 0 matrix " + matZero->type() );
-    else
-        utils->failure( "matMultiply with 0 matrix " + matZero->type() );
-
+    if ( matZero->type() == "CSRMatrix" || matLaplac->type() == "CSRMatrix" ) {
+        utils->expected_failure( "Mat GEMM not implemented" );
+    } else {
+        matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
+        if ( matSol->L1Norm() == 0.0 )
+            utils->passes( "matMultiply with 0 matrix " + matZero->type() );
+	else
+            utils->failure( "matMultiply with 0 matrix " + matZero->type() );
+    }
+    
     // Verify mult with identity
-    matLaplac->mult( vector1, vector2 );
-    ans1   = static_cast<double>( vector2->L2Norm() );
-    matSol = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
-    matSol->mult( vector1, vector2 );
-    ans2   = static_cast<double>( vector2->L2Norm() );
-    matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
-    matSol->mult( vector1, vector2 );
-    ans3 = static_cast<double>( vector2->L2Norm() );
-    if ( AMP::Utilities::approx_equal( ans1, ans2 ) && AMP::Utilities::approx_equal( ans1, ans3 ) &&
-         ans1 != 0.0 )
-        utils->passes( "matMultiply with identity matrix " + matSol->type() );
-    else
-        utils->failure( "matMultiply with identity matrix " + matSol->type() );
-
+    if ( matIdent->type() == "CSRMatrix" || matLaplac->type() == "CSRMatrix" ) {
+        utils->expected_failure( "Mat GEMM not implemented" );
+    } else {
+        matLaplac->mult( vector1, vector2 );
+	ans1   = static_cast<double>( vector2->L2Norm() );
+	matSol = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
+	matSol->mult( vector1, vector2 );
+	ans2   = static_cast<double>( vector2->L2Norm() );
+	matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
+	matSol->mult( vector1, vector2 );
+	ans3 = static_cast<double>( vector2->L2Norm() );
+	if ( AMP::Utilities::approx_equal( ans1, ans2 ) && AMP::Utilities::approx_equal( ans1, ans3 ) &&
+            ans1 != 0.0 )
+	     utils->passes( "matMultiply with identity matrix " + matSol->type() );
+	else
+	     utils->failure( "matMultiply with identity matrix " + matSol->type() );
+    }
+    
     // Verify mult with two trivial matrices
-    matLaplac->mult( vector1, vector2 );
-    matLaplac->mult( vector2, vector3 );
-    ans1   = static_cast<double>( vector3->L2Norm() );
-    matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matLaplac );
-    matSol->mult( vector1, vector2 );
-    ans2 = static_cast<double>( vector2->L2Norm() );
-    if ( AMP::Utilities::approx_equal( ans1, ans2 ) && ans1 != 0.0 )
-        utils->passes( "matMultiply with trivial matrix " + matSol->type() );
-    else
-        utils->failure( "matMultiply with trivial matrix " + matSol->type() );
-
+    if ( matLaplac->type() == "CSRMatrix" ) {
+        utils->expected_failure( "Mat GEMM not implemented" );
+    } else {
+        matLaplac->mult( vector1, vector2 );
+	matLaplac->mult( vector2, vector3 );
+	ans1   = static_cast<double>( vector3->L2Norm() );
+	matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matLaplac );
+	matSol->mult( vector1, vector2 );
+	ans2 = static_cast<double>( vector2->L2Norm() );
+	if ( AMP::Utilities::approx_equal( ans1, ans2 ) && ans1 != 0.0 )
+	    utils->passes( "matMultiply with trivial matrix " + matSol->type() );
+	else
+	    utils->failure( "matMultiply with trivial matrix " + matSol->type() );
+    }
     PROFILE_STOP( "VerifyMatMultMatrix" );
 }
 

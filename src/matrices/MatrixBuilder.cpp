@@ -260,14 +260,6 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     std::string type2 = type;
     if ( type == "auto" ) {
         type2 = "CSRMatrix";
-
-#if defined( AMP_USE_TRILINOS )
-        type2 = "ManagedEpetraMatrix";
-#elif defined( AMP_USE_PETSC )
-        type2 = "NativePetscMatrix";
-#else
-        type2 = "DenseSerialMatrix";
-#endif
     }
     // Create the default getRow function (if not provided)
     if ( !getRow ) {
