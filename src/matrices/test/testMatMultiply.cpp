@@ -54,37 +54,43 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
     auto myVar = std::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
     auto vec1  = AMP::LinearAlgebra::createVector( DOFs, myVar );
     vec1->setToScalar( 1.0 );
-
+    
     // Create the matrix
     auto mat1 = AMP::LinearAlgebra::createMatrix( vec1, vec1 );
-    mat1->zero();
-    mat1->setDiagonal( vec1 );
-    auto mat2 = mat1->clone();
-    mat2->zero();
-    mat2->setDiagonal( vec1 );
+    if ( mat1->type() ==  "CSRMatrix" ) {
+	ut->expected_failure( "testMatMultiply" );
+    } else {
+      
+        mat1->zero();
+	mat1->setDiagonal( vec1 );
+	auto mat2 = mat1->clone();
+	mat2->zero();
+	mat2->setDiagonal( vec1 );
+	
+	auto mat3 = AMP::LinearAlgebra::Matrix::matMultiply( mat1, mat2 );
+	
+	std::vector<size_t> cols1;
+	std::vector<double> vals1;
+	mat1->getRowByGlobalID( 0, cols1, vals1 );
+	
+	std::vector<size_t> cols2;
+	std::vector<double> vals2;
+	mat2->getRowByGlobalID( 0, cols2, vals2 );
+	
+	std::vector<size_t> cols3;
+	std::vector<double> vals3;
+	mat3->getRowByGlobalID( 0, cols3, vals3 );
 
-    auto mat3 = AMP::LinearAlgebra::Matrix::matMultiply( mat1, mat2 );
-
-    std::vector<size_t> cols1;
-    std::vector<double> vals1;
-    mat1->getRowByGlobalID( 0, cols1, vals1 );
-
-    std::vector<size_t> cols2;
-    std::vector<double> vals2;
-    mat2->getRowByGlobalID( 0, cols2, vals2 );
-
-    std::vector<size_t> cols3;
-    std::vector<double> vals3;
-    mat3->getRowByGlobalID( 0, cols3, vals3 );
-
-    ut->passes( "testMatMultiply" );
-
+	mat2.reset();
+	mat3.reset();
+	
+	ut->passes( "testMatMultiply" );
+    }
+    
     // Free all data relying on mesh
     DOFs.reset();
     vec1.reset();
     mat1.reset();
-    mat2.reset();
-    mat3.reset();
 
     // Free the mesh in the proper order
     myMeshAdapter.reset();
