@@ -328,7 +328,7 @@ void CSRMatrixData<Policy>::extractDiagonal( std::shared_ptr<Vector> buf ) const
             const auto end   = d_row_starts[i + 1];
             // colums are unordered at present
             for ( lidx_t j = start; j < end; ++j ) {
-                if ( d_cols[j] == static_cast<gidx_t>( i ) ) {
+                if ( d_cols[j] == static_cast<gidx_t>( d_first_col + i ) ) {
                     rawVecData[i] = d_coeffs[j];
                     break;
                 }
