@@ -5,6 +5,7 @@
 
 #include <array>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -55,6 +56,9 @@ public:
      *    3 - Global call stack
      */
     int stack_trace_type = 3;
+
+    //! The set of unhandled signals to set
+    std::set<int> catch_signals;
 
     /*!
      *  MPI communicator to use for AMP_COMM_WORLD.  By default this should be set to

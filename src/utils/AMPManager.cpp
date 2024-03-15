@@ -142,8 +142,6 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
     d_argv       = copy_args( argc, argv );
     // Initialize the timers (default is disabled)
     PROFILE_DISABLE();
-    // Set the abort method
-    StackTrace::Utilities::setAbortBehavior( !d_properties.use_MPI_Abort, 3 );
     // Initialize MPI
     double MPI_start = Utilities::time();
     AMP_MPI::start_MPI( argc, argv, d_properties.profile_MPI_level );
@@ -160,15 +158,13 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
     double petsc_time = start_PETSc();
     // Initialize SAMRAI
     double SAMRAI_time = start_SAMRAI();
-    // Initialize call stack
+    // Initialize StackTrace
     if ( comm_world.getSize() == 1 )
         d_properties.stack_trace_type = std::min( d_properties.stack_trace_type, 2 );
+    StackTrace::Utilities::setAbortBehavior( !d_properties.use_MPI_Abort,
+                                             d_properties.stack_trace_type );
     if ( d_properties.stack_trace_type == 3 )
         StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
-    StackTrace::setDefaultStackType(
-        static_cast<StackTrace::printStackType>( d_properties.stack_trace_type ) );
-    // Set the signal/terminate handlers
-    StackTrace::Utilities::setErrorHandlers();
     setHandlers();
     // Initialization finished
     d_initialized = 1;
@@ -419,7 +415,11 @@ double AMPManager::start_CUDA()
 /****************************************************************************
  * Empty constructor to setup default AMPManagerProperties                   *
  ****************************************************************************/
-AMPManagerProperties::AMPManagerProperties() : COMM_WORLD( AMP_COMM_WORLD ) {}
+AMPManagerProperties::AMPManagerProperties() : COMM_WORLD( AMP_COMM_WORLD )
+{
+    auto defaultSignals = StackTrace::defaultSignalsToCatch();
+    catch_signals       = std::set( defaultSignals.begin(), defaultSignals.end() );
+}
 
 
 /****************************************************************************
