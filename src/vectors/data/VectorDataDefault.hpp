@@ -65,6 +65,14 @@ VectorDataDefault<TYPE, Allocator>::cloneData( const std::string &name ) const
     auto comm = getCommunicationList();
     if ( comm )
         retVal->setCommunicationList( comm );
+    if ( d_Ghosts && (!d_Ghosts->empty() ) ) {
+      retVal->d_Ghosts = std::make_shared<std::vector<double>>( d_Ghosts->size() );
+      retVal->copyGhostValues( *this );
+    }
+    if ( d_AddBuffer && (!d_Ghosts->empty() ) ) {
+      retVal->d_AddBuffer = std::make_shared<std::vector<double>>( d_AddBuffer->size() );
+      *(retVal->d_AddBuffer) = *d_AddBuffer;
+    }
     return retVal;
 }
 
