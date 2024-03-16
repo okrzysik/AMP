@@ -8,6 +8,7 @@
 #include "ProfilerApp.h"
 
 #include <complex>
+#include <cstddef>
 #include <set>
 #include <string>
 #include <vector>

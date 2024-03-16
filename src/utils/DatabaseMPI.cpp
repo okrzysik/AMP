@@ -1,6 +1,8 @@
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Database.hpp"
 
+#include <cstddef>
+
 
 using KeyDataFactory = AMP::FactoryStrategy<AMP::KeyData>;
 

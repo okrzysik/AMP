@@ -4,6 +4,7 @@
 #include "AMP/utils/Utilities.h"
 
 #include <complex>
+#include <cstddef>
 #include <sstream>
 #include <string>
 #include <vector>

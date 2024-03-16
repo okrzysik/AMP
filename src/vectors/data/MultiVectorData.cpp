@@ -9,6 +9,8 @@
 
 #include "ProfilerApp.h"
 
+#include <cstddef>
+
 
 namespace AMP::LinearAlgebra {
 
