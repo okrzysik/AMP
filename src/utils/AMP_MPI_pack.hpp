@@ -5,6 +5,7 @@
 #include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/UtilityMacros.h"
 
+#include <cstddef>
 #include <cstring>
 #include <limits>
 #include <tuple>

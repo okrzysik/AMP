@@ -7,6 +7,7 @@
 
 #include <array>
 #include <complex>
+#include <cstddef>
 #include <sstream>
 #include <string>
 #include <vector>

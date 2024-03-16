@@ -7,6 +7,7 @@
 #include "AMP/utils/FactoryStrategy.hpp"
 #include "AMP/utils/UtilityMacros.h"
 
+#include <cstddef>
 #include <iomanip>
 #include <limits>
 #include <tuple>

@@ -5,6 +5,8 @@
 #include "AMP/vectors/data/DataChangeListener.h"
 #include "AMP/vectors/data/VectorData.h"
 
+#include <cstddef>
+
 
 namespace AMP::LinearAlgebra {
 
