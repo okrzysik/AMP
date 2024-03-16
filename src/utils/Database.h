@@ -9,6 +9,7 @@
 
 #include "StackTrace/source_location.h"
 
+#include <cstddef>
 #include <iostream>
 #include <memory>
 #include <string>

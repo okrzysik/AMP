@@ -4,6 +4,7 @@
 #include "AMP/utils/typeid.h"
 
 #include <complex>
+#include <cstddef>
 
 
 namespace AMP {

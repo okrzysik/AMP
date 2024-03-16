@@ -4,6 +4,7 @@
 #include "AMP/utils/ArraySize.h"
 
 #include <array>
+#include <cstddef>
 #include <functional>
 #include <initializer_list>
 #include <iostream>
