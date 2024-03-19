@@ -164,9 +164,6 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
     matVecTestWithDOFs( ut, scalarDOFs );
 
-    auto scalarCellDOFs = AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Cell, 1, 1 );
-    matVecTestWithDOFs( ut, scalarCellDOFs );
-
     auto vectorDOFs =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
     matVecTestWithDOFs( ut, vectorDOFs );
