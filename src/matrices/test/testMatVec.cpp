@@ -26,38 +26,14 @@
 #include <iostream>
 #include <string>
 
-void matVecTest( AMP::UnitTest *ut, std::string input_file )
+void matVecTestWithDOFs( AMP::UnitTest *ut, std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-
-    std::string log_file = "output_testMatVec";
-    AMP::logOnlyNodeZero( log_file );
-
-    // Read the input file
-    auto input_db = AMP::Database::parseInputFile( input_file );
-
-    // Get the Mesh database and create the mesh parameters
-    auto database = input_db->getDatabase( "Mesh" );
-    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     auto comm     = AMP::AMP_MPI( AMP_COMM_WORLD );
-    params->setComm( comm );
-
-    // Create the meshes from the input database
-    auto mesh = AMP::Mesh::MeshFactory::create( params );
-
-    // Create the DOF manager
-    auto scalarDOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
-    //    AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Cell, 1, 1 );
-
-    //    auto vectorDOFs =
-    //        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3
-    //        );
-
     // Create the vectors
     auto inVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
     auto outVar = std::make_shared<AMP::LinearAlgebra::Variable>( "outputVar" );
-    auto inVec  = AMP::LinearAlgebra::createVector( scalarDOFs, inVar );
-    auto outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
+    auto inVec  = AMP::LinearAlgebra::createVector( dofManager, inVar );
+    auto outVec = AMP::LinearAlgebra::createVector( dofManager, outVar );
 
     std::string type;
 #ifdef AMP_USE_TRILINOS
@@ -76,7 +52,7 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
         ut->failure( "Unable to create a square matrix" );
     }
 
-    fillWithPseudoLaplacian( matrix, scalarDOFs );
+    fillWithPseudoLaplacian( matrix, dofManager );
 
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
@@ -163,6 +139,37 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
         AMP::pout << "maxNorm " << maxNorm << ", l2 norm " << l2Norm << std::endl;
         ut->failure( "Matvec with CSR matches fails to default matvec" );
     }
+}
+
+void matVecTest( AMP::UnitTest *ut, std::string input_file )
+{
+
+    std::string log_file = "output_testMatVec";
+    AMP::logOnlyNodeZero( log_file );
+
+    // Read the input file
+    auto input_db = AMP::Database::parseInputFile( input_file );
+
+    // Get the Mesh database and create the mesh parameters
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto comm     = AMP::AMP_MPI( AMP_COMM_WORLD );
+    params->setComm( comm );
+
+    // Create the meshes from the input database
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
+
+    // Create the DOF manager
+    auto scalarDOFs =
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
+    matVecTestWithDOFs( ut, scalarDOFs );
+
+    auto scalarCellDOFs = AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Cell, 1, 1 );
+    matVecTestWithDOFs( ut, scalarCellDOFs );
+
+    auto vectorDOFs =
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
+    matVecTestWithDOFs( ut, vectorDOFs );
 
 }
 
