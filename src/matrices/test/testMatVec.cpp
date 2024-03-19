@@ -134,11 +134,31 @@ void matVecTestWithDOFs( AMP::UnitTest *ut, std::shared_ptr<AMP::Discretization:
     auto l2Norm  = static_cast<scalar_t>( y1->L2Norm() );
 
     if ( maxNorm < 1.0e-14 && l2Norm < 1.0e-14 ) {
+        ut->passes( "Matvec with converted CSR matches default matvec" );
+    } else {
+        AMP::pout << "maxNorm " << maxNorm << ", l2 norm " << l2Norm << std::endl;
+        ut->failure( "Matvec with converted CSR matches fails to default matvec" );
+    }
+
+    auto csrMatrix2 = AMP::LinearAlgebra::createMatrix( inVec, outVec, "CSRMatrix" );
+    fillWithPseudoLaplacian( csrMatrix2, dofManager );
+    csrMatrix2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+    y1->zero();
+    y2->zero();
+    matrix->mult( x, y1 );
+    csrMatrix2->mult( x, y2 );
+    y1->subtract( *y1, *y2 );
+
+    maxNorm = static_cast<scalar_t>( y1->maxNorm() );
+    l2Norm  = static_cast<scalar_t>( y1->L2Norm() );
+
+    if ( maxNorm < 1.0e-14 && l2Norm < 1.0e-14 ) {
         ut->passes( "Matvec with CSR matches default matvec" );
     } else {
         AMP::pout << "maxNorm " << maxNorm << ", l2 norm " << l2Norm << std::endl;
         ut->failure( "Matvec with CSR matches fails to default matvec" );
     }
+
 }
 
 void matVecTest( AMP::UnitTest *ut, std::string input_file )

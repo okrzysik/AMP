@@ -122,7 +122,6 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     params->d_VariableRight = rightVec->getVariable();
 
     // Add the row sizes and local columns to the matrix parameters
-    std::set<size_t> columns;
     size_t row_start = leftDOF->beginDOF();
     size_t row_end   = leftDOF->endDOF();
     for ( size_t row = row_start; row < row_end; row++ ) {
