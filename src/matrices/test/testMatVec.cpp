@@ -59,8 +59,17 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
     auto inVec  = AMP::LinearAlgebra::createVector( scalarDOFs, inVar );
     auto outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
 
+    std::string type;
+#ifdef AMP_USE_TRILINOS
+    type = "ManagedEpetraMatrix";
+#elif AMP_USE_PETSC
+    type = "NativePetscMatrix";
+#else
+    AMP_ERROR( "This test requires either Trilinos or Petsc matrices to be enabled" );      
+#endif
+    
     // Create the matrix
-    auto matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec );
+    auto matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec, type );
     if ( matrix ) {
         ut->passes( "Able to create a square matrix" );
     } else {
@@ -75,8 +84,10 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
     auto nLocalRows1  = matrix->numLocalRows();
 
 #if defined( AMP_USE_HYPRE )
-
     using Policy   = AMP::LinearAlgebra::HypreCSRPolicy;
+#else
+    using Policy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
+#endif
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -104,8 +115,6 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
         ut->failure( "Number of local and global rows don't match for default and CSR matrices" );
     }
 
-#endif
-
     auto x  = matrix->getRightVector();
     auto y1 = matrix->getRightVector();
     auto y2 = matrix->getRightVector();
@@ -128,8 +137,6 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
                   << std::endl;
         ut->failure( "Fails 1 norm test with pseudo Laplacian with default matvec" );
     }
-
-#if defined( AMP_USE_HYPRE )
 
     csrMatrix->mult( x, y2 );
     y2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
@@ -156,7 +163,7 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
         AMP::pout << "maxNorm " << maxNorm << ", l2 norm " << l2Norm << std::endl;
         ut->failure( "Matvec with CSR matches fails to default matvec" );
     }
-#endif
+
 }
 
 int main( int argc, char *argv[] )
