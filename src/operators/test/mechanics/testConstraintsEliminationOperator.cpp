@@ -164,6 +164,7 @@ static void myTest( AMP::UnitTest *ut )
         if ( dummy ) {
             dirVec->zero();
             dirOp->addShiftToSlave( dirVec );
+            dirVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
             colOp->apply( dirVec, corVec );
             corVec->scale( -1.0 );
             colOp->append( dirOp );
