@@ -341,6 +341,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
             SolVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
         }
     }
+    SolVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
     // apply the operator
     subchannelOperator->apply( SolVec, ResVec );
 

@@ -112,6 +112,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     RightHandSideVec->copyVector( PowerInWattsVec );
 
     diffusionOperator->modifyRHSvector( RightHandSideVec );
+    RightHandSideVec->makeConsistent();
 
     std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;
     std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;

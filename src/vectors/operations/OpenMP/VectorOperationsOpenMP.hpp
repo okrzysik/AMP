@@ -46,7 +46,7 @@ void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
             ghosts[i] = 0;
     }
     // Override the status state since we set the ghost values
-    *( x.getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
+    x.setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 template<typename TYPE>
@@ -67,7 +67,7 @@ void VectorOperationsOpenMP<TYPE>::setToScalar( const Scalar &alpha_in, VectorDa
             ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
-    *( x.getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
+    x.setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 template<typename TYPE>

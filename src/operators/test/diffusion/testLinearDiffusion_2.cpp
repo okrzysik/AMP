@@ -132,6 +132,7 @@ static void linearTest( AMP::UnitTest *ut,
         diffSolVec->setValuesByGlobalID( 1, &i, &fval );
         ++curNode;
     }
+    diffSolVec->makeConsistent();
 
     // Compute finite element operator
     diffOp->apply( diffSolVec, diffResVec );

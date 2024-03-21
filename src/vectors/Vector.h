@@ -704,12 +704,13 @@ public: // VectorData operations
     inline std::shared_ptr<VectorData> cloneData() const { return d_VectorData->cloneData(); }
     inline AMP::LinearAlgebra::UpdateState getUpdateStatus() const
     {
-        return d_VectorData->getUpdateStatus();
+        return d_VectorData->getLocalUpdateStatus();
     }
     inline void setUpdateStatus( AMP::LinearAlgebra::UpdateState state )
     {
         d_VectorData->setUpdateStatus( state );
     }
+    inline void makeConsistent() { d_VectorData->makeConsistent(); }
     inline void makeConsistent( AMP::LinearAlgebra::ScatterType t )
     {
         d_VectorData->makeConsistent( t );

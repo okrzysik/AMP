@@ -9,6 +9,24 @@
 namespace AMP::Operator {
 
 
+static inline AMP::LinearAlgebra::UpdateState
+getState( AMP::LinearAlgebra::Vector::const_shared_ptr u )
+{
+    if ( u )
+        return u->getUpdateStatus();
+    return AMP::LinearAlgebra::UpdateState::UNCHANGED;
+}
+static inline void checkState( AMP::LinearAlgebra::UpdateState initial,
+                               AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                               std::shared_ptr<const Operator> op )
+{
+    auto UNCHANGED = AMP::LinearAlgebra::UpdateState::UNCHANGED;
+    if ( initial == UNCHANGED && u )
+        AMP_INSIST( u->getUpdateStatus() == UNCHANGED,
+                    op->type() + " left vector in an inconsistent state" );
+}
+
+
 /********************************************************
  * Constructors                                          *
  ********************************************************/
@@ -30,17 +48,25 @@ ColumnOperator::ColumnOperator( std::shared_ptr<const OperatorParameters> params
 void ColumnOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                             AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-    for ( auto &elem : d_operators ) {
-        elem->apply( u, f );
+    AMP_ASSERT( getState( u ) == AMP::LinearAlgebra::UpdateState::UNCHANGED );
+    auto state = getState( f );
+    for ( auto &op : d_operators ) {
+        AMP_INSIST( op, "ColumnOperator::operator component is NULL" );
+        op->apply( u, f );
+        checkState( state, f, op );
     }
 }
 void ColumnOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
                                AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    for ( auto &elem : d_operators ) {
-        AMP_INSIST( ( elem ), "ColumnOperator::operator component is NULL" );
-        elem->residual( f, u, r );
+    AMP_ASSERT( getState( f ) == AMP::LinearAlgebra::UpdateState::UNCHANGED );
+    AMP_ASSERT( getState( u ) == AMP::LinearAlgebra::UpdateState::UNCHANGED );
+    auto state = getState( f );
+    for ( auto &op : d_operators ) {
+        AMP_INSIST( op, "ColumnOperator::operator component is NULL" );
+        op->residual( f, u, r );
+        checkState( state, f, op );
     }
 }
 

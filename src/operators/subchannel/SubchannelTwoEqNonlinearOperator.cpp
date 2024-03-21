@@ -180,6 +180,8 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
     // ensure that solution and residual vectors aren't NULL
     AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
     AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
+    AMP_INSIST( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED,
+                "Input vector is in an inconsistent state" );
 
     // Constants
     const double pi = 4.0 * atan( 1.0 ); // pi
@@ -190,10 +192,10 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
         1.0 / Subchannel::scalePressure; // Scale to change the input vector back to correct units
 
     // Subset the vectors
-    AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
-    AMP::LinearAlgebra::Vector::shared_ptr outputVec      = subsetOutputVector( r );
+    auto inputVec  = subsetInputVector( u );
+    auto outputVec = subsetOutputVector( r );
 
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_manager = inputVec->getDOFManager();
+    auto dof_manager = inputVec->getDOFManager();
     std::shared_ptr<AMP::Discretization::DOFManager> cladDofManager;
     if ( d_source == "averageCladdingTemperature" ) {
         cladDofManager = d_cladTemperature->getDOFManager();
@@ -487,6 +489,7 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
         PROFILE_STOP( "apply-subchannel" );
     } // end of isub
 
+    outputVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     PROFILE_STOP( "apply" );
 }
 
