@@ -46,14 +46,6 @@ static inline PCSide getPCSide( const std::string &pc_side )
 }
 
 
-static inline void checkUpdateStatus( std::shared_ptr<const AMP::LinearAlgebra::Vector> x )
-{
-    auto status = x->getUpdateStatus();
-    AMP_ASSERT( ( status == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
-                ( status == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
-}
-
-
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
@@ -246,8 +238,8 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     auto uVecView = AMP::LinearAlgebra::PetscVector::view( u );
 
     // Check input vector states
-    checkUpdateStatus( f );
-    checkUpdateStatus( u );
+    AMP_ASSERT( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
+    u->makeConsistent(); // Force a makeConsistent, required communication
 
     AMP::pout << "Beginning PetscKrylovSolver::apply" << std::endl;
     if ( d_iDebugPrintInfoLevel > 1 ) {
@@ -266,6 +258,7 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     Vec fVec = fVecView->getVec();
     Vec uVec = uVecView->getVec();
     KSPSolve( d_KrylovSolver, fVec, uVec );
+    u->makeConsistent();
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
@@ -278,6 +271,7 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     KSPGetIterationNumber( d_KrylovSolver, &d_iNumberIterations );
     // Reset the solvers
     KSPReset( d_KrylovSolver );
+    AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     PROFILE_STOP( "solve" );
 }
 

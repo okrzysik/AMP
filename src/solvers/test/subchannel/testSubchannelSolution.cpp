@@ -121,6 +121,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto solVec          = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
     auto rhsVec          = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
     auto resVec          = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
+    rhsVec->zero();
 
     // Get the problem parameters
     auto box = subchannelMesh->getBoundingBox();
@@ -193,6 +194,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         ++face;
     }
     solVec->copyVector( manufacturedVec );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // get nonlinear solver database
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );

@@ -96,18 +96,6 @@ inline size_t VectorData::getGhostSize() const { return d_Ghosts->size(); }
 
 
 /****************************************************************
- * Update status                                                 *
- ****************************************************************/
-inline UpdateState VectorData::getUpdateStatus() const { return *d_UpdateState; }
-inline void VectorData::setUpdateStatus( UpdateState state ) { *d_UpdateState = state; }
-inline void VectorData::setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs )
-{
-    d_UpdateState = rhs;
-}
-inline std::shared_ptr<UpdateState> VectorData::getUpdateStatusPtr() const { return d_UpdateState; }
-
-
-/****************************************************************
  * Get/Set raw data                                              *
  ****************************************************************/
 template<class TYPE>

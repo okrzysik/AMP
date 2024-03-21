@@ -47,24 +47,22 @@ MultiVectorData *MultiVectorOperations::getMultiVectorData( VectorData &x )
 void MultiVectorOperations::zero( VectorData &x )
 {
     auto mData = getMultiVectorData( x );
-    for ( size_t i = 0; i != mData->getVectorDataSize(); ++i ) {
-
+    for ( size_t i = 0; i != mData->getVectorDataSize(); ++i )
         d_operations[i]->zero( *getVectorDataComponent( x, i ) );
-    }
+    x.setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 void MultiVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
 {
-    for ( size_t i = 0; i != d_operations.size(); i++ ) {
+    for ( size_t i = 0; i != d_operations.size(); i++ )
         d_operations[i]->setToScalar( alpha, *getVectorDataComponent( x, i ) );
-    }
+    x.setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 void MultiVectorOperations::setRandomValues( VectorData &x )
 {
-    for ( size_t i = 0; i != d_operations.size(); i++ ) {
+    for ( size_t i = 0; i != d_operations.size(); i++ )
         d_operations[i]->setRandomValues( *getVectorDataComponent( x, i ) );
-    }
 }
 
 void MultiVectorOperations::copy( const VectorData &x, VectorData &y )

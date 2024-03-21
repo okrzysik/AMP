@@ -233,6 +233,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
+    RightHandSideVec->makeConsistent();
 
     // std::cout << "RHS Norm after BC Correction " << RightHandSideVec->L2Norm() << std::endl;
     // std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;

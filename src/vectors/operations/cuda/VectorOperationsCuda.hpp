@@ -78,6 +78,7 @@ template<typename TYPE>
 void VectorOperationsCuda<TYPE>::zero( VectorData &x )
 {
     VectorOperationsCuda<TYPE>::setToScalar( 0.0, x );
+    x.setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 template<typename TYPE>
@@ -104,7 +105,7 @@ void VectorOperationsCuda<TYPE>::setToScalar( const Scalar &alpha_in, VectorData
             ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
-    *( x.getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
+    x.setUpdateStatus( UpdateState::UNCHANGED );
     // Wait for cuda data to complete
     if ( useGPU )
         cudaDeviceSynchronize();

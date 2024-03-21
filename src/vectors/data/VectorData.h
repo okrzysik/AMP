@@ -440,20 +440,37 @@ public:
 
 public: // Virtual functions dealing with the update status
     /** \brief  Return the current update state of the Vector
-     * \details  This returns the effective update state of the
-     *  vector, including any vectors it contains.  The effective
-     *  state is defined as:
-     *  UNCHANGED - All data and sub vectors are unchanged
-     *  LOCAL_CHANGED - Local data may be modified, sub vectors must either
-     *             be UNCHANGED or LOCAL_CHANGED.
-     *  ADDING - Local and ghost data may be modified through add operations,
-     *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or ADDING
-     *  SETTING - Local and ghost data may be modified through set operations,
-     *             sub vectors must be UNCHANGED, LOCAL_CHANGED, or SETTING
-     * If different subvectors have incompatible states ADDING and SETTING,
-     * this function will return MIXED
+     * \details  This returns the effective update state of the vector,
+     *    including any vectors it contains.  The effective state is defined as:
+     *       UNCHANGED - All data and sub vectors are unchanged
+     *       LOCAL_CHANGED - Local data may be modified, sub vectors must either
+     *                be UNCHANGED or LOCAL_CHANGED.
+     *       ADDING - Local and ghost data may be modified through add operations,
+     *                sub vectors must be UNCHANGED, LOCAL_CHANGED, or ADDING
+     *       SETTING - Local and ghost data may be modified through set operations,
+     *                sub vectors must be UNCHANGED, LOCAL_CHANGED, or SETTING
+     *   If different subvectors have incompatible states ADDING and SETTING,
+     *   this function will return MIXED
+     *   This version returns the local state only and does not involve communication
      */
-    virtual UpdateState getUpdateStatus() const;
+    virtual UpdateState getLocalUpdateStatus() const;
+
+
+    /** \brief  Return the current update state of the Vector
+     * \details  This returns the effective update state of the vector,
+     *    including any vectors it contains.  The effective state is defined as:
+     *       UNCHANGED - All data and sub vectors are unchanged
+     *       LOCAL_CHANGED - Local data may be modified, sub vectors must either
+     *                be UNCHANGED or LOCAL_CHANGED.
+     *       ADDING - Local and ghost data may be modified through add operations,
+     *                sub vectors must be UNCHANGED, LOCAL_CHANGED, or ADDING
+     *       SETTING - Local and ghost data may be modified through set operations,
+     *                sub vectors must be UNCHANGED, LOCAL_CHANGED, or SETTING
+     *   If different subvectors have incompatible states ADDING and SETTING,
+     *   this function will return MIXED
+     *   This version returns the global state and requires a collective communication
+     */
+    UpdateState getGlobalUpdateStatus() const;
 
 
     /** \brief  Sets the current update state of the Vector
@@ -479,6 +496,13 @@ public: // Virtual functions dealing with the update status
      * the BROADCAST should be used.
      */
     virtual void makeConsistent( ScatterType t );
+
+    /**
+     * \brief Update shared values on entire communicator
+     * \details  This version will check the state of the vector and then
+     *   call the appropriate version of makeConsistent
+     */
+    virtual void makeConsistent();
 
     //! Get the communicator
     virtual AMP_MPI getComm() const;

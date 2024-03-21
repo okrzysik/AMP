@@ -285,6 +285,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
         val = P_scale * 1.0;
         SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
+        SolVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         subchannelOperator->setFrozenVector( FrozenVec );
         subchannelOpParams->d_initialize = true;
