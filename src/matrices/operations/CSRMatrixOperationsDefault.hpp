@@ -29,10 +29,7 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
                                                std::shared_ptr<Vector> out )
 {
     AMP_ASSERT( in && out );
-
-    if ( in->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
-        std::const_pointer_cast<Vector>( in )->makeConsistent(
-            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    AMP_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
@@ -85,10 +82,7 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
 {
     // this is not meant to be an optimized version. It is provided for completeness
     AMP_ASSERT( in && out );
-
-    if ( in->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
-        std::const_pointer_cast<Vector>( in )->makeConsistent(
-            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    AMP_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     out->zero();
 
