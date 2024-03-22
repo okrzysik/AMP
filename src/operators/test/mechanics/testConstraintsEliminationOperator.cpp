@@ -164,6 +164,7 @@ static void myTest( AMP::UnitTest *ut )
         if ( dummy ) {
             dirVec->zero();
             dirOp->addShiftToSlave( dirVec );
+            dirVec->makeConsistent();
             colOp->apply( dirVec, corVec );
             corVec->scale( -1.0 );
             colOp->append( dirOp );
@@ -172,6 +173,7 @@ static void myTest( AMP::UnitTest *ut )
             dirOp->setSlaveToZero( rhsVec );
             dirOp->copyMasterToSlave( solVec );
         }
+        rhsVec->makeConsistent();
 
         auto linearSolverParams =
             std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );

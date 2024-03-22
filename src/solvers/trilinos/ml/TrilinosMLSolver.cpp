@@ -215,11 +215,19 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
                               std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
+
+    if ( f )
+        AMP_ASSERT( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
+
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator, "ERROR: TrilinosMLSolver::apply() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
+        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
+    } else {
+        u->makeConsistent();
+        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     }
 
     if ( d_bCreationPhase ) {
@@ -245,6 +253,8 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
 
     if ( computeResidual ) {
         r = f->clone();
+        AMP_ASSERT( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
+        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
         d_pOperator->residual( f, u, r );
         initialResNorm = static_cast<double>( r->L2Norm() );
 
@@ -315,6 +325,7 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
             reSolveWithLU( f, u );
         }
     }
+    AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 }
 
 

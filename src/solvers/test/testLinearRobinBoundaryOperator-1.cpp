@@ -197,6 +197,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "RHS Norm before BC Correction " << SourceVec->L2Norm() << std::endl;
 
     diffusionOperator->modifyRHSvector( SourceVec );
+    SourceVec->makeConsistent();
 
     auto rhsNorm = static_cast<double>( SourceVec->L2Norm() );
     std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;

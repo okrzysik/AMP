@@ -167,9 +167,21 @@ inline constexpr bool is_initializer_list_v = is_initializer_list<T>::value;
 template<class T>
 inline constexpr bool is_complex_v = is_complex<T>::value;
 
+
 // Remove const and reference
 template<typename T>
 using remove_cvref_t = typename std::remove_cv_t<typename std::remove_reference_t<T>>;
+
+
+// Return the number of arguments in a given function
+template<typename T>
+struct arg_count;
+template<typename T, typename... Args>
+struct arg_count<T( Args... )> {
+    static constexpr std::size_t value = sizeof...( Args );
+};
+template<class T>
+inline constexpr bool arg_count_v = arg_count<T>::value;
 
 
 } // namespace AMP

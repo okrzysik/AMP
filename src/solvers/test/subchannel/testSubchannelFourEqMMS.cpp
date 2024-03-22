@@ -98,6 +98,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto solVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, inputVariable, true );
     auto rhsVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
     auto resVec = AMP::LinearAlgebra::createVector( subchannelDOFManager, outputVariable, true );
+    rhsVec->zero();
 
     // get subchannel physics model
     auto subchannelPhysics_db = input_db->getDatabase( "SubchannelPhysicsModel" );
@@ -263,6 +264,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         }
     }
     solVec->copyVector( manufacturedVec );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     //=============================================================================
     // solve

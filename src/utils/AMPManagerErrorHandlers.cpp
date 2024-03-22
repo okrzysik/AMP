@@ -163,6 +163,8 @@ static PetscErrorCode petsc_err_handler( MPI_Comm,
 void AMPManager::setMPIErrorHandler()
 {
 #ifdef AMP_USE_MPI
+    StackTrace::setMPIErrorHandler( MPI_COMM_SELF );
+    StackTrace::setMPIErrorHandler( MPI_COMM_WORLD );
     StackTrace::setMPIErrorHandler( getCommWorld().getCommunicator() );
     #ifdef AMP_USE_SAMRAI
     auto comm = SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator();
@@ -204,9 +206,20 @@ public:
 /****************************************************************************
  * Functions to set/clear the error handlers                                 *
  ****************************************************************************/
+using functionPtr     = std::function<void( StackTrace::abort_error & )>;
+using setFunctionPtr1 = std::function<void( functionPtr )>;
+using setFunctionPtr2 = std::function<void( functionPtr, const std::vector<int> & )>;
+void setErrorHandler( setFunctionPtr1 routine, functionPtr abort, const std::vector<int> & )
+{
+    routine( abort );
+}
+void setErrorHandler( setFunctionPtr2 routine, functionPtr abort, const std::vector<int> &signals )
+{
+    routine( abort, signals );
+}
 void AMPManager::setHandlers()
 {
-    // Set the MPI error handler for comm_world
+    // Set the MPI error handler
     setMPIErrorHandler();
     // Set the error handlers for petsc
 #ifdef AMP_USE_PETSC
@@ -228,7 +241,11 @@ void AMPManager::setHandlers()
     H5Eset_auto2( error_stack, fun, nullptr );
 #endif
     // Set the terminate routine for runtime errors
-    StackTrace::Utilities::setErrorHandlers( terminate_AMP2 );
+    constexpr int funArgs = arg_count_v<decltype( StackTrace::setErrorHandler )>;
+    std::vector<int> signals( d_properties.catch_signals.begin(),
+                              d_properties.catch_signals.end() );
+    static_assert( funArgs == 1 );
+    setErrorHandler( StackTrace::setErrorHandler, terminate_AMP2, signals );
     // Set atexit function
     std::atexit( exitFun );
     int err = std::at_quick_exit( exitFun );

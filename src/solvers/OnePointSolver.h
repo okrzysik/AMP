@@ -25,15 +25,17 @@ public:
         // Assumption: primaryInputVar = outputVar
         // General solution: To avoid making the above assumption, we can replace
         // getInputVariable() with getPrimaryInputVariable() and use it for the u vector.
-        AMP::LinearAlgebra::Vector::shared_ptr myU =
-            u->subsetVectorForVariable( d_onePointOp->getOutputVariable() );
+        auto myU = u->subsetVectorForVariable( d_onePointOp->getOutputVariable() );
         if ( d_bUseZeroInitialGuess ) {
             myU->zero();
+        } else {
+            myU->makeConsistent();
         }
-        AMP::LinearAlgebra::Vector::shared_ptr r = myU->clone();
+        auto r = myU->clone();
         d_onePointOp->residual( f, u, r );
         double inverseConstant = 1.0 / ( d_onePointOp->getConstant() );
         myU->axpy( inverseConstant, *r, *myU );
+        myU->makeConsistent();
         // If you want to use an external solver library like Petsc or Trilinos here
         // then you will need to use the two functions defined in the
         // vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h file

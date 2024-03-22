@@ -55,7 +55,7 @@ void VectorOperationsDefault<TYPE>::zero( VectorData &x )
             ghosts[i] = 0;
     }
     // Override the status state since we set the ghost values
-    *( x.getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
+    x.setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 template<typename TYPE>
@@ -74,7 +74,7 @@ void VectorOperationsDefault<TYPE>::setToScalar( const Scalar &alpha_in, VectorD
             ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
-    *( x.getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
+    x.setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 template<typename TYPE>
