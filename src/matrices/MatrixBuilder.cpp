@@ -258,7 +258,14 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     // Determine the type of matrix to build
     std::string type2 = type;
     if ( type == "auto" ) {
+        // this is only meant to be in the short term
+        // once tests can use any matrix we should change
+        // exclusively to CSRMatrix
+#if defined( AMP_USE_TRILINOS )
+        type2 = "ManagedEpetraMatrix";
+#else
         type2 = "CSRMatrix";
+#endif
     }
     // Create the default getRow function (if not provided)
     if ( !getRow ) {
