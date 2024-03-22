@@ -105,14 +105,6 @@ public:
     //!  right vector )
     std::shared_ptr<CommunicationList> d_CommListRight;
 
-    //!  The variable for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left
-    //!  vector )
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableLeft;
-
-    //!  The variable for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right
-    //!  vector )
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableRight;
-
 protected:
     // The DOFManager for the left vector ( may be null )
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerLeft;

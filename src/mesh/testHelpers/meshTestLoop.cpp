@@ -78,12 +78,6 @@ void meshTests::MeshMatrixTestLoop( AMP::UnitTest &ut,
 {
     // Run the matrix tests
     bool run_tests = true;
-#if !defined( AMP_USE_TRILINOS )
-    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() > 1 ) {
-        ut.expected_failure( "No parallel matrix to test" );
-        run_tests = false;
-    }
-#endif
     if ( run_tests ) {
         PROFILE_START( "MeshMatrixTestLoop" );
         VerifyGetMatrixTrivialTest<1, true>( ut, mesh );

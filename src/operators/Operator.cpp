@@ -53,7 +53,6 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     AMP_INSIST( u, "NULL Solution Vector" );
     AMP_INSIST( r, "NULL Residual Vector" );
     AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-    AMP_ASSERT( r->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     apply( u, r );
 

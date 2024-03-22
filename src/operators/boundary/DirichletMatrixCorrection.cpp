@@ -159,7 +159,7 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
     }
 
     // This does consistent for both "Sum-into" and "set".
-    d_inputMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+    d_inputMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 

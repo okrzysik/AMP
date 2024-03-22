@@ -62,7 +62,7 @@ int main( int argc, char **argv )
     PROFILE_ENABLE();
 
     // Test some basic properties
-    std::vector<std::string> types = { "DenseSerialMatrix" };
+    std::vector<std::string> types = { "DenseSerialMatrix", "CSRMatrix" };
 #ifdef AMP_USE_TRILINOS
     types.emplace_back( "ManagedEpetraMatrix" );
 #endif
@@ -96,6 +96,10 @@ int main( int argc, char **argv )
     test_matrix_loop<DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 3>>( ut );
     #endif
 #endif
+
+    // Test the CSRMatrix
+    test_matrix_loop<DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 4>>( ut );
+    test_matrix_loop<DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 4>>( ut );
 
     ut.report();
     PROFILE_SAVE( "test_Matrix" );

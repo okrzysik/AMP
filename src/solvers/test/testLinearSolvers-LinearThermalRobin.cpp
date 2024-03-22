@@ -201,8 +201,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     // Check the initial L2 norm of the solution
     double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
-    std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
+    AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    AMP::pout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
+    AMP::pout << "System size: " << RightHandSideVec->getGlobalSize() << std::endl;
 
     // Use a random initial guess?
     linearSolver->setZeroInitialGuess( false );
