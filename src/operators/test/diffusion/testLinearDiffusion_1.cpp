@@ -73,6 +73,8 @@ static void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
         diffSolVec->setRandomValues();
         diffRhsVec->setRandomValues();
         diffResVec->setRandomValues();
+        diffRhsVec->makeConsistent();
+        diffSolVec->makeConsistent();
         diffOp->residual( diffRhsVec, diffSolVec, diffResVec );
     } // end for i
 

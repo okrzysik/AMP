@@ -318,8 +318,9 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     matIdent->setDiagonal( vector2 );
     fillWithPseudoLaplacian( matLaplac, d_factory );
     vector1->setRandomValues();
+    vector1->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    vector2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     AMP_ASSERT( static_cast<double>( vector1->L2Norm() ) > 0.0 );
-    double ans1, ans2, ans3;
 
     std::shared_ptr<AMP::LinearAlgebra::Matrix> matSol;
     
@@ -339,18 +340,20 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
         utils->expected_failure( "Mat GEMM not implemented" );
     } else {
         matLaplac->mult( vector1, vector2 );
-	ans1   = static_cast<double>( vector2->L2Norm() );
-	matSol = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
+        if ( vector2->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
+            utils->failure( "matMultiply leaves vector in an inconsistent state" );
+        auto ans1 = static_cast<double>( vector2->L2Norm() );
+	matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
 	matSol->mult( vector1, vector2 );
-	ans2   = static_cast<double>( vector2->L2Norm() );
-	matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
+	auto ans2 = static_cast<double>( vector2->L2Norm() );
+	matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
 	matSol->mult( vector1, vector2 );
-	ans3 = static_cast<double>( vector2->L2Norm() );
+	auto ans3 = static_cast<double>( vector2->L2Norm() );
 	if ( AMP::Utilities::approx_equal( ans1, ans2 ) && AMP::Utilities::approx_equal( ans1, ans3 ) &&
-            ans1 != 0.0 )
-	     utils->passes( "matMultiply with identity matrix " + matSol->type() );
+	     ans1 != 0.0 )
+	  utils->passes( "matMultiply with identity matrix " + matSol->type() );
 	else
-	     utils->failure( "matMultiply with identity matrix " + matSol->type() );
+	  utils->failure( "matMultiply with identity matrix " + matSol->type() );
     }
     
     // Verify mult with two trivial matrices
@@ -359,10 +362,10 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     } else {
         matLaplac->mult( vector1, vector2 );
 	matLaplac->mult( vector2, vector3 );
-	ans1   = static_cast<double>( vector3->L2Norm() );
+	auto ans1   = static_cast<double>( vector3->L2Norm() );
 	matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matLaplac );
 	matSol->mult( vector1, vector2 );
-	ans2 = static_cast<double>( vector2->L2Norm() );
+	auto ans2 = static_cast<double>( vector2->L2Norm() );
 	if ( AMP::Utilities::approx_equal( ans1, ans2 ) && ans1 != 0.0 )
 	    utils->passes( "matMultiply with trivial matrix " + matSol->type() );
 	else

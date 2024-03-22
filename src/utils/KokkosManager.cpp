@@ -10,7 +10,8 @@
 
 namespace AMP::Utilities {
 
-#ifdef USE_KOKKOS
+
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
 void initializeKokkos( int &argc_in, char *argv_in[] )
 {
     // Copy the input arguments, swap the kokkos arguments to the end,

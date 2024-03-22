@@ -28,6 +28,9 @@ IDATimeOperator::reset( std::shared_ptr<OperatorParameters> in_params)
 void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr r )
 {
+    if ( u )
+        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
+
     if ( d_cloningHappened == 0 ) {
         d_pScratchVector = r->clone();
         d_pScratchVector->zero();

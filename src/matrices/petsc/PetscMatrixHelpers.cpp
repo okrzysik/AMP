@@ -99,6 +99,7 @@ PetscErrorCode _AMP_Mult( Mat m, Vec i, Vec o )
     auto mat    = PETSC::getAMP( m );
     auto vecIn  = PETSC::getAMP( i );
     auto vecOut = PETSC::getAMP( o );
+    vecIn->makeConsistent(); // PETSc controls VecIn which may not be consistent
     mat->mult( vecIn, vecOut );
     return 0;
 }
@@ -108,6 +109,7 @@ PetscErrorCode _AMP_Mult_add( Mat m, Vec i, Vec a, Vec o )
     auto vecIn  = PETSC::getAMP( i );
     auto vecAdd = PETSC::getAMP( a );
     auto vecOut = PETSC::getAMP( o );
+    vecIn->makeConsistent(); // PETSc controls VecIn which may not be consistent
     mat->mult( vecIn, vecOut );
     vecOut->add( *vecOut, *vecAdd );
     return 0;

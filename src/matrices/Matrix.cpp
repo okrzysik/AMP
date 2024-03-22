@@ -95,13 +95,17 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
 void Matrix::mult( AMP::LinearAlgebra::Vector::const_shared_ptr in,
                    AMP::LinearAlgebra::Vector::shared_ptr out )
 {
+    AMP_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     d_matrixOps->mult( in, *getMatrixData(), out );
+    out->makeConsistent();
 }
 
 void Matrix::multTranspose( AMP::LinearAlgebra::Vector::const_shared_ptr in,
                             AMP::LinearAlgebra::Vector::shared_ptr out )
 {
+    AMP_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     d_matrixOps->multTranspose( in, *getMatrixData(), out );
+    out->makeConsistent();
 }
 
 void Matrix::scale( AMP::Scalar alpha ) { d_matrixOps->scale( alpha, *getMatrixData() ); }

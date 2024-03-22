@@ -6,6 +6,8 @@
 #include "AMP/vectors/data/VectorDataDefault.h"
 #include "AMP/vectors/data/VectorDataFactory.h"
 
+#include "ProfilerApp.h"
+
 
 namespace AMP::LinearAlgebra {
 
@@ -120,10 +122,43 @@ void VectorData::getGhostAddValuesByGlobalID( size_t N,
 
 
 /****************************************************************
- * makeConsistent                                                *
+ * makeConsistent / UpdateState                                  *
  ****************************************************************/
+UpdateState VectorData::getLocalUpdateStatus() const { return *d_UpdateState; }
+UpdateState VectorData::getGlobalUpdateStatus() const
+{
+    PROFILE_START( "getGlobalUpdateStatus" );
+    auto local = getComm().allGather<uint8_t>( static_cast<int8_t>( getLocalUpdateStatus() ) );
+    auto state = UpdateState::UNCHANGED;
+    for ( auto s : local ) {
+        auto s2 = static_cast<UpdateState>( s );
+        if ( s2 == UpdateState::UNCHANGED ) {
+            continue;
+        } else if ( s2 == UpdateState::LOCAL_CHANGED && state == UpdateState::UNCHANGED ) {
+            state = UpdateState::LOCAL_CHANGED;
+        } else if ( s2 == UpdateState::LOCAL_CHANGED ) {
+            continue;
+        } else if ( s2 == UpdateState::ADDING &&
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED ||
+                      state == UpdateState::ADDING ) ) {
+            state = UpdateState::ADDING;
+        } else if ( s2 == UpdateState::SETTING &&
+                    ( state == UpdateState::UNCHANGED || state == UpdateState::LOCAL_CHANGED ||
+                      state == UpdateState::SETTING ) ) {
+            state = UpdateState::SETTING;
+        } else {
+            state = UpdateState::MIXED;
+        }
+    }
+    PROFILE_STOP( "getGlobalUpdateStatus" );
+    return state;
+}
+void VectorData::setUpdateStatus( UpdateState state ) { *d_UpdateState = state; }
+void VectorData::setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs ) { d_UpdateState = rhs; }
+std::shared_ptr<UpdateState> VectorData::getUpdateStatusPtr() const { return d_UpdateState; }
 void VectorData::makeConsistent( ScatterType t )
 {
+    PROFILE_START( "makeConsistent" );
     if ( d_CommList ) {
         if ( t == ScatterType::CONSISTENT_ADD ) {
             AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
@@ -136,6 +171,20 @@ void VectorData::makeConsistent( ScatterType t )
         *d_UpdateState = UpdateState::UNCHANGED;
     }
     this->setUpdateStatus( UpdateState::UNCHANGED );
+    PROFILE_STOP( "makeConsistent" );
+}
+void VectorData::makeConsistent()
+{
+    auto state = getGlobalUpdateStatus();
+    if ( state == UpdateState::UNCHANGED ) {
+        return;
+    } else if ( state == UpdateState::LOCAL_CHANGED || state == UpdateState::SETTING ) {
+        makeConsistent( ScatterType::CONSISTENT_SET );
+    } else if ( state == UpdateState::ADDING || state == UpdateState::MIXED ) {
+        makeConsistent( ScatterType::CONSISTENT_ADD );
+    } else {
+        AMP_ERROR( "Unknown update status" );
+    }
 }
 
 

@@ -31,6 +31,9 @@ void LinearOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP_INSIST( f, "NULL Residual Vector" );
     AMP_INSIST( d_matrix, "NULL Matrix" );
 
+    AMP_INSIST( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED,
+                "Input vector is in an inconsistent state" );
+
     auto uInternal = subsetInputVector( u );
     auto fInternal = subsetOutputVector( f );
 

@@ -37,6 +37,7 @@ void ConstraintsEliminationOperator::setSlaveToZero( AMP::LinearAlgebra::Vector:
         u->setLocalValuesByGlobalID(
             d_SlaveIndices.size(), &( d_SlaveIndices[0] ), &( zeroSlaveValues[0] ) );
     } // end if
+    u->makeConsistent();
 }
 
 void ConstraintsEliminationOperator::addShiftToSlave( AMP::LinearAlgebra::Vector::shared_ptr u )

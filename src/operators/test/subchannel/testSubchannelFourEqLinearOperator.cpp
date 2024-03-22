@@ -654,6 +654,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
             SolVec->setValuesByGlobalID( 1, &gapDofs[0], &val );
         }
     }
+    SolVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     NULL_USE( gapFaces );
 
     // apply the operator
