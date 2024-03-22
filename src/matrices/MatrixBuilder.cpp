@@ -48,7 +48,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         // Get the DOFs
         auto leftDOF  = leftVec->getDOFManager();
         auto rightDOF = rightVec->getDOFManager();
-        if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
+        if ( leftDOF->getComm().compare( rightDOF->getComm() ) == 0 )
             AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested" );
         AMP_MPI comm = leftDOF->getComm();
         if ( comm.getSize() == 1 )
@@ -110,7 +110,7 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     // Get the DOFs
     auto leftDOF  = leftVec->getDOFManager();
     auto rightDOF = rightVec->getDOFManager();
-    if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
+    if ( leftDOF->getComm().compare( rightDOF->getComm() ) == 0 )
         AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
     AMP_MPI comm = leftDOF->getComm();
@@ -156,7 +156,7 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     // Get the DOFs
     auto leftDOF  = leftVec->getDOFManager();
     auto rightDOF = rightVec->getDOFManager();
-    if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
+    if ( leftDOF->getComm().compare( rightDOF->getComm() ) == 0 )
         AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
     AMP_MPI comm = leftDOF->getComm();
@@ -189,7 +189,7 @@ createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     // Get the DOFs
     auto leftDOF  = leftVec->getDOFManager();
     auto rightDOF = rightVec->getDOFManager();
-    if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
+    if ( leftDOF->getComm().compare( rightDOF->getComm() ) == 0 )
         AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
     AMP_MPI comm = leftDOF->getComm();
