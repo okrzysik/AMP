@@ -152,6 +152,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         SolVec->setValuesByGlobalID( 1, &dofs[0], &val );
         val = P_scale * 16.3e6;
         SolVec->setValuesByGlobalID( 1, &dofs[1], &val );
+        SolVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         subchannelOperator->apply( SolVec, ResVec );
         bool passedKnownTest = true;

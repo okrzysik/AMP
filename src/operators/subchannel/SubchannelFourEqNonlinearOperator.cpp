@@ -463,6 +463,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
     // ensure that solution and residual vectors aren't NULL
     AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
     AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
+    AMP_INSIST( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED,
+                "Input vector is in an inconsistent state" );
 
     // Constants
     const double pi      = 4.0 * atan( 1.0 ); // pi
@@ -1216,6 +1218,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             }
         }
     } // end loop over lateral faces
+    outputVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 } // end of apply function
 
 std::shared_ptr<OperatorParameters> SubchannelFourEqNonlinearOperator::getJacobianParameters(

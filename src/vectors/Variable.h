@@ -22,7 +22,13 @@ enum class ScatterType : uint8_t { CONSISTENT_ADD, CONSISTENT_SET };
 /**\brief The four states a Vector can be in
  *\see makeConsistent
  */
-enum class UpdateState : uint8_t { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
+enum class UpdateState : uint8_t {
+    UNCHANGED     = 0,
+    LOCAL_CHANGED = 1,
+    ADDING        = 2,
+    SETTING       = 3,
+    MIXED         = 4
+};
 
 
 class VectorSelector;

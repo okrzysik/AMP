@@ -117,6 +117,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto solVec          = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
     auto rhsVec          = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
     auto resVec          = AMP::LinearAlgebra::createVector( faceDOFManager, outputVariable, true );
+    rhsVec->zero();
 
     // Get the problem parameters
     auto box = subchannelMesh->getBoundingBox();
@@ -189,6 +190,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         ++face;
     }
     solVec->copyVector( manufacturedVec );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // get nonlinear solver database
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
@@ -307,8 +309,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // Print final solution
-    face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
-    std::cout << std::endl;
+    face        = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     int N_print = std::max( 1, (int) face.size() / 10 );
     for ( int i = 0; i < (int) face.size(); i++ ) {
         if ( i % N_print == 0 ) {
@@ -327,6 +328,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         }
         ++face;
     }
+    std::cout << "Delta T: " << ToutSol - TinSol << std::endl << std::endl;
     std::cout << "L2 Norm of Absolute Error: " << absErrorNorm << std::endl;
     std::cout << "L2 Norm of Relative Error: " << relErrorNorm << std::endl;
 

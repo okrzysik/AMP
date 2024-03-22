@@ -67,6 +67,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto rhsVec = AMP::LinearAlgebra::createSimpleVector<double>( 10, outputVariable );
     auto resVec = AMP::LinearAlgebra::createSimpleVector<double>( 10, outputVariable );
     auto tmpVec = AMP::LinearAlgebra::createSimpleVector<double>( 10, inputVariable );
+    rhsVec->zero();
 
     auto flowJacobian = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -113,6 +114,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << std::endl;
 
     solVec->setValuesByLocalID( 1, &idx, &val );
+    solVec->makeConsistent();
 
     auto mv_view_solVec = AMP::LinearAlgebra::MultiVector::view( solVec, globalComm );
     auto mv_view_rhsVec = AMP::LinearAlgebra::MultiVector::view( rhsVec, globalComm );

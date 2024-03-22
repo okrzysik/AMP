@@ -171,10 +171,24 @@ void simpleDOFManager::initialize()
 /****************************************************************
  * Subset the DOF manager                                        *
  ****************************************************************/
+static bool containsMesh( std::shared_ptr<const AMP::Mesh::Mesh> mesh, AMP::Mesh::MeshID id )
+{
+    if ( mesh->meshID() == id )
+        return true;
+    auto multimesh = std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        auto list = multimesh->getMeshes();
+        for ( auto &mesh2 : list ) {
+            auto mesh3 = containsMesh( mesh2, id );
+            if ( mesh3 )
+                return true;
+        }
+    }
+    return false;
+}
 std::shared_ptr<DOFManager> simpleDOFManager::subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                       bool useMeshComm )
 {
-
     // Check if we are dealing with a single mesh for both the internal and desired mesh
     if ( mesh->meshID() == d_meshID ) {
         // The mesh IDs match
@@ -190,15 +204,8 @@ std::shared_ptr<DOFManager> simpleDOFManager::subset( const std::shared_ptr<AMP:
             return std::shared_ptr<DOFManager>();
     }
     // Check if the desired mesh is a multimesh that contains the current mesh
-    if ( std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) != nullptr ) {
-        auto multimesh = std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
-        auto list      = multimesh->getMeshes();
-        std::shared_ptr<DOFManager> subset_DOFs;
-        bool found_local = false;
-        for ( auto &elem : list ) {
-            if ( d_meshID == elem->meshID() )
-                found_local = true;
-        }
+    if ( std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
+        bool found_local = containsMesh( mesh, d_meshID );
         AMP_MPI comm( AMP_COMM_NULL );
         if ( useMeshComm ) {
             comm = AMP_MPI::intersect( d_comm, mesh->getComm() );
@@ -206,7 +213,6 @@ std::shared_ptr<DOFManager> simpleDOFManager::subset( const std::shared_ptr<AMP:
             comm = d_comm;
         }
         found_local = comm.allReduce( found_local );
-        comm.reset();
         if ( found_local )
             return shared_from_this();
     }
