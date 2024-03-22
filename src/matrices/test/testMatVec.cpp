@@ -26,9 +26,10 @@
 #include <iostream>
 #include <string>
 
-void matVecTestWithDOFs( AMP::UnitTest *ut, std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
+void matVecTestWithDOFs( AMP::UnitTest *ut,
+                         std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-    auto comm     = AMP::AMP_MPI( AMP_COMM_WORLD );
+    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     // Create the vectors
     auto inVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
     auto outVar = std::make_shared<AMP::LinearAlgebra::Variable>( "outputVar" );
@@ -39,11 +40,11 @@ void matVecTestWithDOFs( AMP::UnitTest *ut, std::shared_ptr<AMP::Discretization:
 #ifdef AMP_USE_TRILINOS
     type = "ManagedEpetraMatrix";
 #elif AMP_USE_PETSC
-    type = "NativePetscMatrix";
+    type         = "NativePetscMatrix";
 #else
-    AMP_ERROR( "This test requires either Trilinos or Petsc matrices to be enabled" );      
+    AMP_ERROR( "This test requires either Trilinos or Petsc matrices to be enabled" );
 #endif
-    
+
     // Create the matrix
     auto matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec, type );
     if ( matrix ) {
@@ -60,7 +61,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut, std::shared_ptr<AMP::Discretization:
     auto nLocalRows1  = matrix->numLocalRows();
 
 #if defined( AMP_USE_HYPRE )
-    using Policy   = AMP::LinearAlgebra::HypreCSRPolicy;
+    using Policy = AMP::LinearAlgebra::HypreCSRPolicy;
 #else
     using Policy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
 #endif
@@ -158,7 +159,6 @@ void matVecTestWithDOFs( AMP::UnitTest *ut, std::shared_ptr<AMP::Discretization:
         AMP::pout << "maxNorm " << maxNorm << ", l2 norm " << l2Norm << std::endl;
         ut->failure( "Matvec with CSR matches fails to default matvec" );
     }
-
 }
 
 void matVecTest( AMP::UnitTest *ut, std::string input_file )
@@ -187,7 +187,6 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
     auto vectorDOFs =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
     matVecTestWithDOFs( ut, vectorDOFs );
-
 }
 
 int main( int argc, char *argv[] )
