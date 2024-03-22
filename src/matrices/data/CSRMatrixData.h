@@ -3,8 +3,8 @@
 
 #include "AMP/matrices/data/MatrixData.h"
 
-#include <tuple>
 #include <map>
+#include <tuple>
 
 namespace AMP::Discretization {
 class DOFManager;
@@ -208,8 +208,8 @@ protected:
     std::map<gidx_t, std::map<gidx_t, scalar_t>> d_ghost_data;
 
     //!  Update matrix data off-core
-  void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &, AMP::LinearAlgebra::ScatterType );    
-
+    void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &,
+                       AMP::LinearAlgebra::ScatterType );
 };
 
 } // namespace AMP::LinearAlgebra
