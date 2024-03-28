@@ -179,7 +179,7 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
 }
 
 std::shared_ptr<OperatorParameters>
-DirichletVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
+    DirichletVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
     auto db = std::make_shared<AMP::Database>( "Dummy" );
     db->putScalar( "name", "DirichletMatrixCorrection" );

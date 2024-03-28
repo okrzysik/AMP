@@ -61,7 +61,7 @@ static void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr ma
         unsigned int sId = slaveContactSet[i].d_id;
         auto msg         = AMP::Utilities::stringf(
             "Master point (%g, %g, %g) and Slave point (%g, %g, %g) differ.\n Master ID = %u "
-                    "and Slave ID = %u.\n",
+            "and Slave ID = %u.\n",
             mX,
             mY,
             mZ,

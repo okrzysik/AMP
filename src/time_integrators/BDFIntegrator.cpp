@@ -2015,7 +2015,9 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
 
-    auto rhs = in->clone();
+    if ( !d_scratch_function_vector )
+        d_scratch_function_vector = in->clone();
+    auto rhs = d_scratch_function_vector;
     rhs->scale( -1.0, *d_integrator_source_vector );
 
     if ( d_solution_scaling ) {

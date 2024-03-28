@@ -152,7 +152,7 @@ protected:
      * to give users more flexibility.
      */
     virtual std::shared_ptr<OperatorParameters>
-    getJacobianParameters( std::shared_ptr<const AMP::LinearAlgebra::Vector> )
+        getJacobianParameters( std::shared_ptr<const AMP::LinearAlgebra::Vector> )
     {
         return nullptr;
     }
