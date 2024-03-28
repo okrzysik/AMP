@@ -1298,39 +1298,15 @@ std::shared_ptr<Operator> OperatorBuilder::createIdentityOperator( std::shared_p
     return nullptr;
 }
 std::shared_ptr<Operator>
-OperatorBuilder::createLinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                std::shared_ptr<AMP::Database>,
-                                                std::shared_ptr<ElementPhysicsModel> )
+    OperatorBuilder::createLinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                    std::shared_ptr<AMP::Database>,
+                                                    std::shared_ptr<ElementPhysicsModel> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
 std::shared_ptr<Operator>
-OperatorBuilder::createNonlinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                   std::shared_ptr<AMP::Database>,
-                                                   std::shared_ptr<ElementPhysicsModel> )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-OperatorBuilder::createLinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                std::shared_ptr<AMP::Database>,
-                                                std::shared_ptr<ElementPhysicsModel> )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-OperatorBuilder::createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                   std::shared_ptr<AMP::Database>,
-                                                   std::shared_ptr<ElementPhysicsModel> )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-OperatorBuilder::createLinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+    OperatorBuilder::createNonlinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh>,
                                                        std::shared_ptr<AMP::Database>,
                                                        std::shared_ptr<ElementPhysicsModel> )
 {
@@ -1338,9 +1314,33 @@ OperatorBuilder::createLinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh
     return nullptr;
 }
 std::shared_ptr<Operator>
-OperatorBuilder::createNonlinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                          std::shared_ptr<AMP::Database>,
-                                                          std::shared_ptr<ElementPhysicsModel> )
+    OperatorBuilder::createLinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                    std::shared_ptr<AMP::Database>,
+                                                    std::shared_ptr<ElementPhysicsModel> )
+{
+    AMP_ERROR( "No libmesh" );
+    return nullptr;
+}
+std::shared_ptr<Operator>
+    OperatorBuilder::createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                       std::shared_ptr<AMP::Database>,
+                                                       std::shared_ptr<ElementPhysicsModel> )
+{
+    AMP_ERROR( "No libmesh" );
+    return nullptr;
+}
+std::shared_ptr<Operator>
+    OperatorBuilder::createLinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                           std::shared_ptr<AMP::Database>,
+                                                           std::shared_ptr<ElementPhysicsModel> )
+{
+    AMP_ERROR( "No libmesh" );
+    return nullptr;
+}
+std::shared_ptr<Operator>
+    OperatorBuilder::createNonlinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                              std::shared_ptr<AMP::Database>,
+                                                              std::shared_ptr<ElementPhysicsModel> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
@@ -1356,37 +1356,21 @@ std::shared_ptr<Operator> OperatorBuilder::createNonlinearFickSoretOperator(
     return nullptr;
 }
 std::shared_ptr<Operator>
-OperatorBuilder::createFlowFrapconOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                            std::shared_ptr<AMP::Database> )
+    OperatorBuilder::createFlowFrapconOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                std::shared_ptr<AMP::Database> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
 std::shared_ptr<Operator>
-OperatorBuilder::createFlowFrapconJacobian( std::shared_ptr<AMP::Mesh::Mesh>,
-                                            std::shared_ptr<AMP::Database> )
+    OperatorBuilder::createFlowFrapconJacobian( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                std::shared_ptr<AMP::Database> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
 std::shared_ptr<Operator>
-OperatorBuilder::createSubchannelTwoEqLinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                      std::shared_ptr<AMP::Database>,
-                                                      std::shared_ptr<ElementPhysicsModel> )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-OperatorBuilder::createSubchannelTwoEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                         std::shared_ptr<AMP::Database>,
-                                                         std::shared_ptr<ElementPhysicsModel> )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-OperatorBuilder::createSubchannelFourEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+    OperatorBuilder::createSubchannelTwoEqLinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
                                                           std::shared_ptr<AMP::Database>,
                                                           std::shared_ptr<ElementPhysicsModel> )
 {
@@ -1394,24 +1378,40 @@ OperatorBuilder::createSubchannelFourEqNonlinearOperator( std::shared_ptr<AMP::M
     return nullptr;
 }
 std::shared_ptr<Operator>
-OperatorBuilder::createNeutronicsRhsOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                              std::shared_ptr<AMP::Database> )
+    OperatorBuilder::createSubchannelTwoEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                             std::shared_ptr<AMP::Database>,
+                                                             std::shared_ptr<ElementPhysicsModel> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
 std::shared_ptr<Operator>
-OperatorBuilder::createMassLinearFEOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                             std::shared_ptr<AMP::Database>,
-                                             std::shared_ptr<ElementPhysicsModel> )
+    OperatorBuilder::createSubchannelFourEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                              std::shared_ptr<AMP::Database>,
+                                                              std::shared_ptr<ElementPhysicsModel> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
 std::shared_ptr<Operator>
-OperatorBuilder::createVolumeIntegralOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                               std::shared_ptr<AMP::Database>,
-                                               std::shared_ptr<ElementPhysicsModel> )
+    OperatorBuilder::createNeutronicsRhsOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                  std::shared_ptr<AMP::Database> )
+{
+    AMP_ERROR( "No libmesh" );
+    return nullptr;
+}
+std::shared_ptr<Operator>
+    OperatorBuilder::createMassLinearFEOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                 std::shared_ptr<AMP::Database>,
+                                                 std::shared_ptr<ElementPhysicsModel> )
+{
+    AMP_ERROR( "No libmesh" );
+    return nullptr;
+}
+std::shared_ptr<Operator>
+    OperatorBuilder::createVolumeIntegralOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                   std::shared_ptr<AMP::Database>,
+                                                   std::shared_ptr<ElementPhysicsModel> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
@@ -1437,17 +1437,17 @@ std::shared_ptr<Operator> OperatorBuilder::createNonlinearBVPOperator(
     return nullptr;
 }
 std::shared_ptr<BoundaryOperator>
-OperatorBuilder::createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                  std::shared_ptr<AMP::Database>,
-                                                  std::shared_ptr<ElementPhysicsModel> )
+    OperatorBuilder::createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                      std::shared_ptr<AMP::Database>,
+                                                      std::shared_ptr<ElementPhysicsModel> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
 std::shared_ptr<BoundaryOperator>
-OperatorBuilder::createPressureBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                 std::shared_ptr<AMP::Database>,
-                                                 std::shared_ptr<ElementPhysicsModel> )
+    OperatorBuilder::createPressureBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                     std::shared_ptr<AMP::Database>,
+                                                     std::shared_ptr<ElementPhysicsModel> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
