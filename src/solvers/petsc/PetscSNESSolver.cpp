@@ -306,12 +306,12 @@ void PetscSNESSolver::preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector
 {
     if ( d_bDestroyCachedVecs ) {
         SNESLineSearch snesLineSearch;
-	SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
-	// reset the SNES line search objet to deallocate previous vectors
-	// This is important when the solver is being re-used with only a change
-	// in the type of vectors being passed in as there will be a mismatch between the
-	// vectors created and cached by the linesearch and the input
-	SNESLineSearchReset( snesLineSearch );
+        SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
+        // reset the SNES line search objet to deallocate previous vectors
+        // This is important when the solver is being re-used with only a change
+        // in the type of vectors being passed in as there will be a mismatch between the
+        // vectors created and cached by the linesearch and the input
+        SNESLineSearchReset( snesLineSearch );
     }
 
     auto spv = AMP::LinearAlgebra::PetscVector::constView( v );
@@ -320,11 +320,11 @@ void PetscSNESSolver::preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         // a clone is done here even if d_pResidualVector is allocated
         // to guard against the possibility of two consecutive solves having
         // different vector types (see the test testPetscSNESSolver)
-        auto r            = spv->getManagedVec();
-	if ( d_bDestroyCachedVecs || (!d_pResidualVector) )
-  	    d_pResidualVector = r->clone();
-	if ( d_bDestroyCachedVecs || (!d_pScratchVector) )
-            d_pScratchVector  = d_pResidualVector->clone();
+        auto r = spv->getManagedVec();
+        if ( d_bDestroyCachedVecs || ( !d_pResidualVector ) )
+            d_pResidualVector = r->clone();
+        if ( d_bDestroyCachedVecs || ( !d_pScratchVector ) )
+            d_pScratchVector = d_pResidualVector->clone();
     }
 
     AMP_ASSERT( d_pResidualVector );

@@ -246,7 +246,7 @@ private:
     bool d_bPrintLinearResiduals      = false;
     bool d_bPetscInterfaceInitialized = false;
     bool d_bDestroyCachedVecs         = false;
-  
+
     int d_iMaximumFunctionEvals                = PETSC_DEFAULT;
     int d_iNumberOfLineSearchPreCheckAttempts  = 0;
     int d_operatorComponentToEnableBoundsCheck = 0;
