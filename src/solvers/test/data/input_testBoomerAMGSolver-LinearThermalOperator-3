@@ -10,13 +10,20 @@ Mesh{
     NumberOfElements = 27
 }
 
-Neutronics_Fuel{
+NeutronicsOperator{
   name="NeutronicsRhsOperator"
   type               = "Power"
+  OutputVariable     = "SpecificPowerInWattsPerGram" 
   numTimeSteps       = 2
   timeSteps          = 1, 10000.
   useFixedValue      = TRUE
   fixedValues        = 1.0, 2.0
+}
+
+DiffusionBVPOperator {
+    name="LinearBVPOperator"
+    VolumeOperator = "ThermalDiffusionOperator"
+    BoundaryOperator = "DirichletMatrixCorrection1"
 }
 
 ThermalDiffusionOperator{
@@ -49,7 +56,7 @@ DiffusionTransportModel {
     Default_Burnup   = 0.0
 }
 
-VolumeIntegralOperator1{
+VolumeIntegralOperator{
   name="VolumeIntegralOperator"
   ConstantSource   = FALSE
   InputVariable = "therm"

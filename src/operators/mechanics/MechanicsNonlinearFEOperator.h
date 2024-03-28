@@ -188,8 +188,13 @@ protected:
 
     std::shared_ptr<MechanicsNonlinearElement> d_mechNonlinElem; /**< Element operation. */
 
+    std::shared_ptr<ElementOperation> d_mechLinElem; /**< Element operation. */
+
     std::shared_ptr<MechanicsNonlinearUpdatedLagrangianElement>
         d_mechNULElem; /**< Nonlinear Updated Lagrangian Element operation. */
+
+    std::shared_ptr<ElementOperation>
+        d_mechLULElem; /**< Linear Updated Lagrangian Element operation. */
 
     std::shared_ptr<MechanicsMaterialModel> d_materialModel; /**< Material model. */
 

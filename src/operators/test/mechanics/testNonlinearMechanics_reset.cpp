@@ -73,6 +73,7 @@ static void myTest( AMP::UnitTest *ut )
         }
 
         auto nonLinElemOp_db = input_db->getDatabase( mechNonlinElemDbStr );
+        auto linElemOp_db    = input_db->getDatabase( mechLinElemDbStr );
         auto nonLinElemOpParams =
             std::make_shared<AMP::Operator::ElementOperationParameters>( nonLinElemOp_db );
         auto mechNonlinElem =
@@ -81,6 +82,8 @@ static void myTest( AMP::UnitTest *ut )
         AMP_INSIST( input_db->keyExists( "Mechanics_Nonlinear_Assembly" ),
                     "Key ''Mechanics_Nonlinear_Assembly'' is missing!" );
         auto mechNonlinAssembly_db = input_db->getDatabase( "Mechanics_Nonlinear_Assembly" );
+        mechNonlinAssembly_db->putDatabase( "MechanicsLinearElement",
+                                            linElemOp_db->cloneDatabase() );
         auto mechNonlinOpParams =
             std::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>(
                 mechNonlinAssembly_db );
@@ -93,7 +96,6 @@ static void myTest( AMP::UnitTest *ut )
 
         auto var = mechNonlinOp->getOutputVariable();
 
-        auto linElemOp_db = input_db->getDatabase( mechLinElemDbStr );
         auto linElemOpParams =
             std::make_shared<AMP::Operator::ElementOperationParameters>( linElemOp_db );
         auto mechLinElem =

@@ -474,8 +474,7 @@ PetscSNESSolver::createPreconditioner( const std::string &pc_solver_name )
     auto pcSolverParameters =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( pc_solver_db );
     if ( d_pOperator ) {
-        std::shared_ptr<AMP::LinearAlgebra::Vector> x;
-        auto pc_params = d_pOperator->getParameters( "Jacobian", x );
+        auto pc_params = d_pOperator->getParameters( "Jacobian", d_pSolutionVector );
         std::shared_ptr<AMP::Operator::Operator> pcOperator =
             AMP::Operator::OperatorFactory::create( pc_params );
         pcSolverParameters->d_pOperator = pcOperator;

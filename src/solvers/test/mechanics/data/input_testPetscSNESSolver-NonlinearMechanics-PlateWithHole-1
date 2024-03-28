@@ -10,6 +10,15 @@ NumberOfLoadingSteps = 10
 
 ExtractStressStrainData = FALSE
 
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
+
 nonlinearMechanicsBVPOperator {
   name="NonlinearBVPOperator"
     print_info_level = 1
@@ -36,7 +45,8 @@ MechanicsNonlinearFEOperator1 {
         QRULE_ORDER = "DEFAULT"
     }
 
-  LocalModel = "PericElastoViscoPlasticModel1"
+    MechanicsLinearElement = LinearMechanicsElement
+    LocalModel = "PericElastoViscoPlasticModel1"
 }
 
 DirichletVectorCorrection1 {
@@ -119,15 +129,7 @@ MechanicsLinearFEOperator2 {
     InputVariable = "displacement"
     OutputVariable = "displacement"
     isAttachedToNonlinearOperator = TRUE
-
-    MechanicsElement {
-      name="MechanicsLinearElement"
-        USE_REDUCED_INTEGRATION = FALSE 
-        FE_ORDER = "FIRST"  
-        FE_FAMILY = "LAGRANGE"
-        QRULE_TYPE = "QGAUSS"
-        QRULE_ORDER = "DEFAULT"
-    }
+    MechanicsElement = LinearMechanicsElement
 }
 
 DirichletMatrixCorrection2 {
@@ -212,7 +214,8 @@ Pressure_Boundary {
 }
 
 NonlinearSolver{
-  print_info_level = 2 
+    name = "PetscSNESSolver"
+    print_info_level = 2 
     max_iterations = 100
     max_error = 1e-10
 
@@ -225,7 +228,8 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.001"
 
     LinearSolver{
-      print_info_level = 1
+        name = "PetscKrylovSolver"
+        print_info_level = 1
         max_iterations = 10
         max_error = 1e-10
         ksp_type = "fgmres"
@@ -239,16 +243,17 @@ NonlinearSolver{
 
         KSPOptions = "-ksp_monitor -ksp_converged_reason"
 
-        Preconditioner{
-          print_info_level = 1
-            PDE_equations = 3
-            max_levels = 1
-            max_iterations = 1
-            max_error = 1.0e-15
-              aggregationtype = "Uncoupled"
-              smoothertype = "Chebyshev"
-              smoother_sweeps = 3
-        }
     }
 }
 
+Preconditior{
+    name = "TrilinosMLSolver"
+    print_info_level = 1
+    PDE_equations = 3
+    max_levels = 1
+    max_iterations = 1
+    max_error = 1.0e-15
+    aggregationtype = "Uncoupled"
+    smoothertype = "Chebyshev"
+    smoother_sweeps = 3
+}

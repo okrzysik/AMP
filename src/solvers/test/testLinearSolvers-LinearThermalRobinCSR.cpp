@@ -54,57 +54,28 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
              std::shared_ptr<AMP::Operator::Operator> op )
 {
 
-    std::shared_ptr<AMP::Solver::SolverStrategy> solver;
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
-
     AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
 
     auto db = input_db->getDatabase( solver_name );
+    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
 
-    if ( db->keyExists( "name" ) ) {
+    auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+    parameters->d_pOperator = op;
+    parameters->d_comm      = comm;
 
-        auto name = db->getString( "name" );
+    std::shared_ptr<AMP::Solver::SolverStrategy> nestedSolver;
 
-        if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ||
-             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ||
-             ( name == "HyprePCGSolver" )
-#if defined( AMP_USE_PETSC )
-             || ( name == "PetscKrylovSolver" ) ) {
-#else
-        ) {
-#endif
-            // check if we need to construct a preconditioner
-            auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
-            std::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
-
-            if ( uses_preconditioner ) {
-
-                auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
-
-                pcSolver = buildSolver( input_db, pc_name, comm, op );
-
-                AMP_INSIST( pcSolver, "null preconditioner" );
-            }
-
-            auto params             = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-            params->d_comm          = comm;
-            params->d_pNestedSolver = pcSolver;
-            parameters              = params;
-
-        } else {
-            parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-        }
-
-        AMP_INSIST( parameters != nullptr, "null parameter object" );
-        parameters->d_pOperator = op;
-
-    } else {
-        AMP_ERROR( "Key name does not exist in solver database" );
+    // check if we need to construct a preconditioner
+    auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
+    if ( uses_preconditioner ) {
+        auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
+        nestedSolver = buildSolver( input_db, pc_name, comm, op );
+        AMP_INSIST( nestedSolver, "null preconditioner" );
     }
 
-    solver = AMP::Solver::SolverFactory::create( parameters );
+    parameters->d_pNestedSolver = nestedSolver;
 
-    return solver;
+    return AMP::Solver::SolverFactory::create( parameters );
 }
 
 namespace AMP::LinearAlgebra {
@@ -266,8 +237,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     std::memcpy( cols_p, cols.data(), sizeof( gidx_t ) * cols.size() );
     std::memcpy( coeffs_p, coeffs.data(), sizeof( scalar_t ) * coeffs.size() );
 #else
-    nnz_p = nnz.data();
-    cols_p = cols.data();
+    nnz_p    = nnz.data();
+    cols_p   = cols.data();
     coeffs_p = coeffs.data();
 #endif
 

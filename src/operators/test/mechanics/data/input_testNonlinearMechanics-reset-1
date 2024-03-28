@@ -33,7 +33,8 @@ Mechanics_Nonlinear_Element_Reduced {
 }
 
 Mechanics_Linear_Element_Normal {
-  USE_REDUCED_INTEGRATION = FALSE 
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
     FE_ORDER = "FIRST"  
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
@@ -41,7 +42,8 @@ Mechanics_Linear_Element_Normal {
 }
 
 Mechanics_Linear_Element_Reduced {
-  USE_REDUCED_INTEGRATION = TRUE 
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = TRUE 
     FE_ORDER = "FIRST"  
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"

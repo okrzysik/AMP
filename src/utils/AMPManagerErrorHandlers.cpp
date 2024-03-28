@@ -206,7 +206,7 @@ public:
 /****************************************************************************
  * Functions to set/clear the error handlers                                 *
  ****************************************************************************/
-using functionPtr     = std::function<void( StackTrace::abort_error & )>;
+using functionPtr     = std::function<void( StackTrace::abort_error     &)>;
 using setFunctionPtr1 = std::function<void( functionPtr )>;
 using setFunctionPtr2 = std::function<void( functionPtr, const std::vector<int> & )>;
 void setErrorHandler( setFunctionPtr1 routine, functionPtr abort, const std::vector<int> & )
