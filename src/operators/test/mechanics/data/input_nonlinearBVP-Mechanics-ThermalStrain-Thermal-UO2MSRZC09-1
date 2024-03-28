@@ -45,6 +45,15 @@ testLinearThermalOperator {
 
 }
 
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
+
 MechanicsNonlinearFEOperator{
   name = "MechanicsNonlinearFEOperator"
     print_info_level = 1
@@ -66,6 +75,7 @@ MechanicsNonlinearFEOperator{
         QRULE_ORDER = "DEFAULT"
     }
 
+  MechanicsLinearElement = LinearMechanicsElement
   LocalModel = "MechanicsMaterialModel"
 }
 
@@ -98,15 +108,7 @@ MechanicsLinearFEOperator{
     reset_reuses_matrix = TRUE
     InputVariable = "disp"
     OutputVariable = "disp"
-
-    MechanicsElement {
-      name="MechanicsLinearElement"
-        USE_REDUCED_INTEGRATION = FALSE 
-        FE_ORDER = "FIRST"  
-        FE_FAMILY = "LAGRANGE"
-        QRULE_TYPE = "QGAUSS"
-        QRULE_ORDER = "DEFAULT"
-    }
+    MechanicsElement = LinearMechanicsElement
 }
 
 MechanicsDirichletMatrixCorrection{

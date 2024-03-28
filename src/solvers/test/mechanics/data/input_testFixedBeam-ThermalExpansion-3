@@ -83,6 +83,15 @@ NonlinearSolver{
     }
 }
 
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
+
 MechanicsNonlinearFEOperator{
       name = "MechanicsNonlinearFEOperator"
         print_info_level = 1
@@ -105,6 +114,7 @@ MechanicsNonlinearFEOperator{
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }
+        MechanicsLinearElement = LinearMechanicsElement
 	LocalModel = "MechanicsMaterialModel"
     }
 
@@ -145,15 +155,7 @@ MechanicsLinearFEOperator{
         OutputVariable = "displacement"
         isAttachedToNonlinearOperator = TRUE
         isNonlinearOperatorInitialized = FALSE
-
-        MechanicsElement {
-          name="MechanicsLinearElement"
-            USE_REDUCED_INTEGRATION = FALSE 
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }
+        MechanicsElement = LinearMechanicsElement
     }
 
 DirichletMatrixCorrection{

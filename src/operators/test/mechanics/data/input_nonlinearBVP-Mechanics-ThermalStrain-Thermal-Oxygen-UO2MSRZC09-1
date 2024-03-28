@@ -63,6 +63,14 @@ testLinearOxygenOperator {
    BoundaryOperator="OxygenDirichletMatrixCorrection"
 }
 
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
 
 MechanicsNonlinearFEOperator{
      name = "MechanicsNonlinearFEOperator"
@@ -87,6 +95,7 @@ MechanicsNonlinearFEOperator{
        QRULE_ORDER = "DEFAULT"
      }
 
+     MechanicsLinearElement = LinearMechanicsElement
      LocalModel = "MechanicsMaterialModel"
 
    }
@@ -130,15 +139,8 @@ MechanicsLinearFEOperator{
      reset_reuses_matrix = TRUE
      InputVariable = "displacement"
      OutputVariable = "displacement"
+     MechanicsElement = LinearMechanicsElement
 
-     MechanicsElement {
-       name="MechanicsLinearElement"
-       USE_REDUCED_INTEGRATION = FALSE 
-       FE_ORDER = "FIRST"  
-       FE_FAMILY = "LAGRANGE"
-       QRULE_TYPE = "QGAUSS"
-       QRULE_ORDER = "DEFAULT"
-     }
    }
 
 MechanicsDirichletMatrixCorrection{

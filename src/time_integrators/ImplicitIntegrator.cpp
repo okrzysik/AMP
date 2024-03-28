@@ -163,7 +163,7 @@ int ImplicitIntegrator::integratorSpecificAdvanceSolution(
         auto params = std::make_shared<AMP::Solver::SolverStrategyParameters>();
         params->d_vectors.push_back( d_solution_vector );
 
-        d_solver->initialize( params );
+        //        d_solver->initialize( params );
     }
 
     setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );

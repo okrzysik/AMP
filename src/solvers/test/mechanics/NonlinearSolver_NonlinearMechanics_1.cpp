@@ -4,17 +4,13 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
-#include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
-#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
-#include "AMP/solvers/hypre/BoomerAMGSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -24,10 +20,31 @@
 #include <iostream>
 #include <string>
 
-
-void myTest( AMP::UnitTest *ut, std::string exeName )
+std::shared_ptr<AMP::Solver::SolverStrategy>
+buildSolver( const std::string &solver_name,
+             std::shared_ptr<AMP::Database> input_db,
+             const AMP::AMP_MPI &comm,
+             std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess,
+             std::shared_ptr<AMP::Operator::Operator> op )
 {
-    std::string input_file = "input_" + exeName;
+
+    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
+
+    auto db = input_db->getDatabase( solver_name );
+    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
+
+    auto parameters             = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+    parameters->d_pOperator     = op;
+    parameters->d_comm          = comm;
+    parameters->d_pInitialGuess = initialGuess;
+    parameters->d_global_db     = input_db;
+
+    return AMP::Solver::SolverFactory::create( parameters );
+}
+
+static void myTest( AMP::UnitTest *ut, const std::string &exeName )
+{
+    std::string input_file = exeName;
     std::string log_file   = "output_" + exeName;
 
     AMP::logOnlyNodeZero( log_file );
@@ -49,14 +66,6 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     auto nonlinBvpOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "nonlinearMechanicsBVPOperator", input_db ) );
-    auto nonlinearMechanicsVolumeOperator =
-        std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-            nonlinBvpOperator->getVolumeOperator() );
-    auto elementPhysicsModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
-
-    auto linBvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "linearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
     // For RHS (Point Forces)
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
@@ -77,45 +86,19 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     auto mechNlResVec       = mechNlSolVec->clone();
     auto mechNlScaledRhsVec = mechNlSolVec->clone();
 
-    // Create the silo writer and register the data
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector(
-        mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector(
-        mechNlResVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );
     nonlinBvpOperator->modifyInitialSolutionVector( mechNlSolVec );
+
     nonlinBvpOperator->apply( mechNlSolVec, mechNlResVec );
-    linBvpOperator->reset( nonlinBvpOperator->getParameters( "Jacobian", mechNlSolVec ) );
 
     // Point forces
     mechNlRhsVec->setToScalar( 0.0 );
     dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );
-    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
-    // ---- first initialize the preconditioner
-    auto pcSolver_db    = linearSolver_db->getDatabase( "Preconditioner" );
-    auto pcSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcSolver_db );
-    pcSolverParams->d_pOperator = linBvpOperator;
-
-    auto pcSolver = std::make_shared<AMP::Solver::BoomerAMGSolver>( pcSolverParams );
-
-    auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
-
-    // change the next line to get the correct communicator out
-    nonlinearSolverParams->d_comm          = globalComm;
-    nonlinearSolverParams->d_pOperator     = nonlinBvpOperator;
-    nonlinearSolverParams->d_pInitialGuess = mechNlSolVec;
-
-    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
-
-    auto linearSolver = nonlinearSolver->getKrylovSolver();
-
-    linearSolver->setNestedSolver( pcSolver );
+    // Create the solver
+    auto nonlinearSolver =
+        buildSolver( "NonlinearSolver", input_db, globalComm, mechNlSolVec, nonlinBvpOperator );
 
     nonlinearSolver->setZeroInitialGuess( false );
 
@@ -151,26 +134,39 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
         auto tmpParams =
             std::make_shared<AMP::Operator::MechanicsNonlinearFEOperatorParameters>( tmp_db );
-        nonlinBvpOperator->getVolumeOperator()->reset( tmpParams );
+        ( nonlinBvpOperator->getVolumeOperator() )->reset( tmpParams );
         nonlinearSolver->setZeroInitialGuess( false );
     }
 
+
+#ifdef AMP_USE_SILO
+    // Create the silo writer and register the data
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
+    siloWriter->registerVector(
+        mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->registerVector(
+        mechNlResVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( exeName, 0 );
+#endif
 
     ut->passes( exeName );
 }
 
-int main( int argc, char *argv[] )
+int NonlinearSolver_NonlinearMechanics_1( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-
     AMP::Solver::registerSolverFactories();
-    std::vector<std::string> exeNames;
-    exeNames.emplace_back( "testPetscSNESSolver-JFNK-ML-NonlinearMechanics-1-normal" );
+    std::vector<std::string> inputNames;
+#ifdef AMP_USE_TRILINOS_ML
+    #ifdef AMP_USE_PETSC
+    inputNames.emplace_back( "input_testPetscSNESSolver-JFNK-ML-NonlinearMechanics-1-normal" );
+    #endif
+    inputNames.emplace_back( "input_NKASolver-ML-NonlinearMechanics-1-normal" );
+#endif
 
-    for ( auto &exeName : exeNames )
-        myTest( &ut, exeName );
+    for ( auto &inputName : inputNames )
+        myTest( &ut, inputName );
 
     ut.report();
 

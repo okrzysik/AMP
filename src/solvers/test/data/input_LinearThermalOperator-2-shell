@@ -1,9 +1,9 @@
 
 Mesh{
-    FileName = "halden_1_pellet_9mil.e"
+    FileName = "halden_1_clad.e"
+    dim = 3
     MeshType = "libMesh"
-    MeshName = "9mil_pellet"
-    dim      = 3
+    MeshName = "cylinder"
     x_offset = 0
     y_offset = 0
     z_offset = 0
@@ -22,6 +22,7 @@ NeutronicsOperator{
 
 DiffusionBVPOperator {
    name="LinearBVPOperator"
+   print_info_level = 1
    VolumeOperator = "DiffusionLinearFEOperator1"
    BoundaryOperator = "DirichletMatrixCorrection1"
 }
@@ -49,32 +50,24 @@ DirichletMatrixCorrection1 {
    skip_params = FALSE
    skip_rhs_correction = FALSE
    skip_rhs_add_correction = FALSE
-    number_of_ids = 1
+    number_of_ids = 2
    id_0             = 4
    number_of_dofs_0 =   1
    dof_0_0          =   0
    value_0_0        = 300.
-}
+   id_1             = 8
+   number_of_dofs_1 =   1
+   dof_1_0          =   0
+   value_1_0        = 500.
+ }
 
 DiffusionTransportModel1 {
      name="DiffusionTransportModel"
      Material = "Independent"
      Property = "ThermalConductivity"
-        Default_Concentration = .1
+     Default_Concentration = .1
      Default_Temperature   = 300.
      Default_Burnup   = 0.0
-   }
-
-LinearSolver{
-  max_iterations = 10
-  max_error = 1e-10
-
-  Preconditioner{
-    print_info_level = 0
-    max_iterations = 1
-    max_error = 1.0e-10
-    build_hierarchy_from_defaults = TRUE
-  }
 }
 
 VolumeIntegralOperator{
@@ -104,6 +97,4 @@ SourcePhysicsModel {
     Equation = "ThermalSource"
     USE_MATERIALS_LIBRARY = TRUE 
   }
-
-
 
