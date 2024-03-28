@@ -19,10 +19,12 @@
 namespace AMP::Solver {
 
 
-#if PETSC_VERSION_LT( 3, 7, 5 )
-    #error AMP only supports PETSc 3.7.5 or greater
-#endif
+static_assert( PETSC_VERSION_GE( 3, 15, 0 ), "AMP only supports PETSc 3.15.0 or greater" );
 
+#if PETSC_VERSION_LT( 3, 17, 0 )
+    #define SETERRQ SETERRQ1
+    #define PetscInfo PetscInfo3
+#endif
 
 static inline void checkErr( PetscErrorCode ierr )
 {
@@ -238,8 +240,7 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     auto uVecView = AMP::LinearAlgebra::PetscVector::view( u );
 
     // Check input vector states
-    AMP_ASSERT( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-    u->makeConsistent(); // Force a makeConsistent, required communication
+    AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     AMP::pout << "Beginning PetscKrylovSolver::apply" << std::endl;
     if ( d_iDebugPrintInfoLevel > 1 ) {

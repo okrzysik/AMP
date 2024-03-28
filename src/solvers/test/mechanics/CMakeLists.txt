@@ -124,6 +124,7 @@ COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermoMechanics-1 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermoMechanics-1a )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermoMechanics-1b )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermoMechanics-1c )
+COPY_TEST_FILE( input_NKASolver-ML-NonlinearMechanics-1-normal )
 
 
 # Copy test data
@@ -240,7 +241,7 @@ IF( USE_PETSC AND USE_LIBMESH AND USE_TRILINOS AND AMP_DATA )
     ADD_TB_TEST( testUpdatedLagrangianMechanics_FlanaganTaylorElement_1 )
     ADD_TB_TEST( testElementLevel_VonMisesPlasticity_LoadingUnloadingLoop )
     ADD_TB_TEST( testElementLevel_VonMisesPlasticity_LoadingUnloading )
-    ADD_TB_TEST_1_2_4( testPetscSNESSolver_JFNK_NonlinearMechanics_1 )
+    ADD_TB_TEST_1_2_4( NonlinearSolver_NonlinearMechanics_1 )
     ADD_TB_TEST_1_2_4( testMechElasticLUvsML )
     ADD_TB_TEST_1_2_4( testTrilinosMLSolver_LinearElasticityOperator_1 )
     ADD_TB_TEST( testLinearMechanics_PressureBoundary PROCS 4 )

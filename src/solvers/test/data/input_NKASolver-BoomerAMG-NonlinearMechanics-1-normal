@@ -1,11 +1,4 @@
 
-SET_FINAL_TEMP_EQUALS_INIT_TEMP = FALSE
-
-INIT_TEMP_CONST = 10.0
-FINAL_TEMP_CONST = 12.0
-
-NumberOfLoadingSteps = 10
-
 Mesh {
   MeshType = "libMesh"
     dim = 3
@@ -13,6 +6,14 @@ Mesh {
     FileName = "brick.e"
 }
 
+NumberOfLoadingSteps = 1
+
+nonlinearMechanicsBVPOperator {
+  name="NonlinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "MechanicsNonlinearFEOperator1"
+    BoundaryOperator = "DirichletVectorCorrection1"
+}
 
 LinearMechanicsElement {
     name="MechanicsLinearElement"
@@ -23,24 +24,15 @@ LinearMechanicsElement {
     QRULE_ORDER = "DEFAULT"
 }
 
-nonlinearMechanicsBVPOperator {
-  name="NonlinearBVPOperator"
-    print_info_level = 1
-    VolumeOperator = "MechanicsNonlinearFEOperator1"
-    BoundaryOperator = "DirichletVectorCorrection1"
-}
-
 MechanicsNonlinearFEOperator1 {
   name = "MechanicsNonlinearFEOperator"
     print_info_level = 1
     ActiveInputVariables {
-      DISPLACEMENT = "disp"
-        TEMPERATURE = "temperature"
+      DISPLACEMENT = "displacement"
     }
-  OutputVariable = "disp"
+  OutputVariable = "displacement"
     RESET_REUSES_RADIAL_RETURN = TRUE
     JACOBIAN_REUSES_RADIAL_RETURN = TRUE
-    FREEZE_TEMPERATURE = TRUE
 
     MechanicsElement {
       name="MechanicsNonlinearElement"
@@ -52,14 +44,14 @@ MechanicsNonlinearFEOperator1 {
     }
 
   MechanicsLinearElement = LinearMechanicsElement
-
-  LocalModel = "ThermalVonMisesMatModel"
+  LocalModel = "VonMisesElastoPlasticModel"
 }
 
 DirichletVectorCorrection1 {
   name = "DirichletVectorCorrection"
     print_info_level = 1
     skip_params = FALSE
+    isAttachedToVolumeOperator = TRUE
     number_of_ids = 1
     id_0 = 2
     number_of_dofs_0 = 3
@@ -71,41 +63,38 @@ DirichletVectorCorrection1 {
     value_0_2 = 0.0
 }
 
-ThermalVonMisesMatModel {
+VonMisesElastoPlasticModel {
   USE_MATERIALS_LIBRARY = FALSE
     Material = "UO2_MSRZC_09"
-    name="ThermalVonMisesMatModel"
-    Use_Thermal_Strain = TRUE
+    name="VonMisesElastoPlasticModel"
     Youngs_Modulus = 2.08e11
     Poissons_Ratio = 0.23
     Linear_Strain_Hardening = 2.10e9
     Elastic_Yield_Stress = 1.45e8
-    THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
-    THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
     Default_Temperature = 310.0
     Default_Burnup = 0.0
     Default_Oxygen_Concentration = .1
 }
 
 linearMechanicsBVPOperator {
-  name="LinearBVPOperator"
+    name="LinearBVPOperator"
     print_info_level = 1
     VolumeOperator = "MechanicsLinearFEOperator2"
     BoundaryOperator = "DirichletMatrixCorrection2"
 }
 
 MechanicsLinearFEOperator2 {
-  name = "MechanicsLinearFEOperator"
+    name = "MechanicsLinearFEOperator"
     print_info_level = 1
     reset_reuses_matrix = TRUE
-    InputVariable = "disp"
-    OutputVariable = "disp"
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
     isAttachedToNonlinearOperator = TRUE
     MechanicsElement = LinearMechanicsElement
 }
 
 DirichletMatrixCorrection2 {
-  name = "DirichletMatrixCorrection"
+    name = "DirichletMatrixCorrection"
     print_info_level = 1
     skip_params = FALSE
     skip_rhs_correction = TRUE
@@ -121,6 +110,7 @@ Load_Boundary {
   name = "DirichletVectorCorrection"
     print_info_level = 1
     skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
     number_of_ids = 1
     id_0 = 1
     number_of_dofs_0 = 1
@@ -128,61 +118,34 @@ Load_Boundary {
     value_0_0 = 10.0
 }
 
-Displacement_Boundary {
-  name = "DirichletVectorCorrection"
-    print_info_level = 1
-    skip_params = FALSE
-    number_of_ids = 1
-    id_0 = 2
-    number_of_dofs_0 = 3
-    dof_0_0 = 0
-    dof_0_1 = 1
-    dof_0_2 = 2
-    value_0_0 = 0.0
-    value_0_1 = 0.0
-    value_0_2 = 0.0
-}
-
 NonlinearSolver{
-  print_info_level = 7
-    max_iterations = 100
-    max_error = 1e-10
-
-    absolute_tolerance = 1.0e-12
-    relative_tolerance = 1.0e-12
-    stepTolerance = 1.0e-12
-    maximumFunctionEvals = 1000
-    usesJacobian=TRUE
-
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ls_alpha 0.01 -snes_stol=0"
-
-    LinearSolver{
-      print_info_level = 1
-        max_iterations = 12
-        max_error = 1e-10
-        ksp_type = "fgmres"
-        absolute_tolerance = 1.0e-9
-        relative_tolerance = 1.0e-2
-        divergence_tolerance = 1.0e03
-        max_krylov_dimension = 40
-        uses_preconditioner=TRUE
-        pc_type = "shell"
-        pc_side = "RIGHT"
-
-        KSPOptions = "-ksp_monitor -ksp_converged_reason"
-
-        Preconditioner{
-          problem_type = "SA"
-            print_info_level = 1
-            PDE_equations = 3
-            max_iterations = 1
-            max_error = 1.0e-10
-              aggregationtype = "Uncoupled"
-              smoothertype = "Chebyshev"
-              smoother_sweeps = 3
-        }
-
-    }
-
+  name = "NKASolver"
+  print_info_level = 1
+  max_iterations = 500
+  max_error = 1e-10
+  max_vectors = 3
+  angle_tolerance = 0.2
+  uses_preconditioner=TRUE
+  pc_solver_name = "Preconditioner"
+  freeze_pc = FALSE
+  zero_initial_guess = FALSE
+  absolute_tolerance = 1.0e-12
+  relative_tolerance = 1.0e-12
 }
-
+       
+Preconditioner{
+  name = "BoomerAMGSolver"
+  num_functions = 3
+  cycle_type = 2  // W cycle
+  relax_type = 3
+  number_sweeps = 2
+  coarsen_type = 10
+  interp_type = 6
+  agg_interp_type = 1
+  nodal = 0
+  strong_threshold = 0.9
+  P_max_elements = 0
+  max_iterations = 1
+  max_error = 1e-10
+}
+ 

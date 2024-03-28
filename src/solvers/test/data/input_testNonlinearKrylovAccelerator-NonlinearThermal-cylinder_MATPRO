@@ -148,12 +148,7 @@ LinearSolver{
         pc_type = "shell"
         pc_side = "RIGHT"
 
-        Preconditioner{
-          print_info_level = 0
-          max_iterations = 1
-          max_error = 1.0e-15
-        }
-}
+   }
 }
 
 

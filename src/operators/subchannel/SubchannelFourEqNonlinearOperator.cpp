@@ -1403,11 +1403,11 @@ void SubchannelFourEqNonlinearOperator::getAxialFaces( const AMP::Mesh::MeshElem
             else
                 // face is the lower axial face
                 if ( lowerFaceFound )
-                AMP_ERROR( "Two lower axial faces were found for the same cell." );
-            else {
-                lowerFace      = cellFace;
-                lowerFaceFound = true;
-            }
+                    AMP_ERROR( "Two lower axial faces were found for the same cell." );
+                else {
+                    lowerFace      = cellFace;
+                    lowerFaceFound = true;
+                }
         }
     } // end loop over faces of cell
     if ( !( upperFaceFound && lowerFaceFound ) )

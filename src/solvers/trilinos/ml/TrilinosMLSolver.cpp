@@ -216,19 +216,15 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
 {
     PROFILE_START( "solve" );
 
-    if ( f )
-        AMP_ASSERT( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator, "ERROR: TrilinosMLSolver::apply() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
-        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-    } else {
-        u->makeConsistent();
-        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     }
+
+    u->makeConsistent();
+    AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     if ( d_bCreationPhase ) {
         if ( d_bUseEpetra ) {

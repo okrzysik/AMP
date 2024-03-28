@@ -12,6 +12,7 @@
     #include "AMP/operators/boundary/libmesh/RobinMatrixCorrection.h"
     #include "AMP/operators/boundary/libmesh/RobinVectorCorrection.h"
     #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+    #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #endif
 
 
@@ -51,6 +52,7 @@ REGISTER_OPERATOR( DirichletMatrixCorrection );
 REGISTER_OPERATOR( DirichletVectorCorrection );
 #ifdef AMP_USE_LIBMESH
 REGISTER_OPERATOR( DiffusionLinearFEOperator );
+REGISTER_OPERATOR( MechanicsLinearFEOperator );
 REGISTER_OPERATOR( RobinMatrixCorrection );
 REGISTER_OPERATOR( RobinVectorCorrection );
 #endif

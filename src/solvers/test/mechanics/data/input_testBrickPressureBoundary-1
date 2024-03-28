@@ -8,6 +8,15 @@ Mesh{
 
 NumberOfLoadingSteps = 10
 
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
+
 nonlinearMechanicsBVPOperator {
   name="NonlinearBVPOperator"
     print_info_level = 1
@@ -34,6 +43,7 @@ MechanicsNonlinearFEOperator1 {
         QRULE_ORDER = "DEFAULT"
     }
 
+  MechanicsLinearElement = LinearMechanicsElement
   LocalModel = "VonMisesElastoPlasticModel"
 }
 
@@ -89,15 +99,7 @@ MechanicsLinearFEOperator2 {
     InputVariable = "displacement"
     OutputVariable = "displacement"
     isAttachedToNonlinearOperator = TRUE
-
-    MechanicsElement {
-      name="MechanicsLinearElement"
-        USE_REDUCED_INTEGRATION = TRUE 
-        FE_ORDER = "FIRST"  
-        FE_FAMILY = "LAGRANGE"
-        QRULE_TYPE = "QGAUSS"
-        QRULE_ORDER = "DEFAULT"
-    }
+    MechanicsElement = LinearMechanicsElement
 }
 
 DirichletMatrixCorrection2 {
