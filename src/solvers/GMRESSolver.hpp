@@ -1,5 +1,6 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/solvers/GMRESSolver.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "ProfilerApp.h"
 
 
@@ -34,8 +35,9 @@ template<typename T>
 void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
     AMP_ASSERT( parameters );
+    auto db = parameters->d_db;
 
-    getFromInput( parameters->d_db );
+    getFromInput( db );
 
     // maximum dimension to allocate storage for
     const int max_dim = std::min( d_iMaxKrylovDimension, d_iMaxIterations );
@@ -47,10 +49,20 @@ void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
     d_dw.resize( max_dim + 1, 0.0 );
     d_dy.resize( max_dim, 0.0 );
 
-    d_pPreconditioner = parameters->d_pNestedSolver;
-
-    if ( d_pOperator ) {
-        registerOperator( d_pOperator );
+    if ( parameters->d_pNestedSolver ) {
+        d_pPreconditioner = parameters->d_pNestedSolver;
+    } else {
+      if ( d_bUsesPreconditioner ) {
+	auto pcName = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+	std::shared_ptr<AMP::Database> outerDB;
+	outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
+	AMP_INSIST( outerDB, "Outer database containing preconditioner is NULL");
+	auto pcDB = outerDB->getDatabase( "Preconditioner" );
+	auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+	parameters->d_pOperator = d_pOperator;
+	d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+	AMP_ASSERT( d_pPreconditioner );
+      }
     }
 }
 

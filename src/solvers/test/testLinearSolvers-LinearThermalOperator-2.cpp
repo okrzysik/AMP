@@ -44,18 +44,7 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
     auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
     parameters->d_pOperator = op;
     parameters->d_comm      = comm;
-
-    std::shared_ptr<AMP::Solver::SolverStrategy> nestedSolver;
-
-    // check if we need to construct a preconditioner
-    auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
-    if ( uses_preconditioner ) {
-        auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
-        nestedSolver = buildSolver( input_db, pc_name, comm, op );
-        AMP_INSIST( nestedSolver, "null preconditioner" );
-    }
-
-    parameters->d_pNestedSolver = nestedSolver;
+    parameters->d_global_db = input_db;
 
     return AMP::Solver::SolverFactory::create( parameters );
 }
@@ -228,6 +217,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile )
         { "BiCGSTAB", "BoomerAMG" },
         { "TFQMR", "BoomerAMG" },
         { "BoomerAMG", "NoPC" },
+        { "HyprePCG", "NoPC" },
+        { "HyprePCG", "BoomerAMG" },
     #ifdef AMP_USE_PETSC
         { "PetscFGMRES", "BoomerAMG" },
     #endif

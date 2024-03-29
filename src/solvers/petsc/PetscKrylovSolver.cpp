@@ -380,23 +380,17 @@ void PetscKrylovSolver::initializePreconditioner(
         }
 
     } else {
-        // attempt to construct the preconditioner
-        // NOTE: at present a nested preconditioner database is not considered
-        // as we are trying to move away from it
-        if ( d_db->keyExists( "pc_solver_name" ) ) {
-            auto pc_solver_name = d_db->getString( "pc_solver_name" );
-            AMP_ASSERT( parameters->d_global_db );
-            auto global_db = parameters->d_global_db;
-            AMP_ASSERT( global_db->keyExists( pc_solver_name ) );
-            auto pc_solver_db       = global_db->getDatabase( pc_solver_name );
-            auto pcSolverParameters = std::make_shared<SolverStrategyParameters>( pc_solver_db );
-            if ( d_pOperator ) {
-                auto pcOperator                 = createPCOperator();
-                pcSolverParameters->d_pOperator = pcOperator;
-            }
-
-            d_pPreconditioner = SolverFactory::create( pcSolverParameters );
-        }
+        auto db = parameters->d_db;
+	auto pcName = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+	std::shared_ptr<AMP::Database> outerDB;
+	outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
+	AMP_INSIST( outerDB, "Outer database containing preconditioner is NULL");
+	auto pcDB = outerDB->getDatabase( "Preconditioner" );
+	auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+	parameters->d_pOperator = d_pOperator;
+	parameters->d_comm      = d_comm;
+	d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+	AMP_ASSERT( d_pPreconditioner );
     }
 }
 

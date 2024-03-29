@@ -28,6 +28,8 @@ struct SolverParameters {
             return getPetscFGMRESParameters( use_nested );
         } else if ( solver == "BoomerAMG" ) {
             return getBoomerAMGParameters( use_nested );
+        } else if ( solver == "HyprePCG" ) {
+            return getHyprePCGParameters( use_nested );
         } else if ( solver == "ML" ) {
             return getMLParameters( use_nested );
         } else if ( solver == "MueLu" ) {
@@ -118,6 +120,20 @@ struct SolverParameters {
         db->putScalar<std::string>( "KSPOptions",
                                     "-ksp_monitor -ksp_converged_reason -ksp_max_it 25 -ksp_rtol "
                                     "1.0e-12 -ksp_atol 1.0e-12" );
+        db->putScalar<bool>( "uses_preconditioner", use_nested );
+        db->putScalar<double>( "absolute_tolerance", 1.0e-12 );
+        db->putScalar<double>( "relative_tolerance", 1.0e-12 );
+        db->putScalar<int>( "print_info_level", 1 );
+        db->putScalar<int>( "max_iterations", 100 );
+        if ( use_nested )
+            db->putScalar<std::string>( "pc_solver_name", "Preconditioner" );
+        return db;
+    }
+
+    static std::unique_ptr<AMP::Database> getHyprePCGParameters( bool use_nested )
+    {
+        auto db = std::make_unique<AMP::Database>( "LinearSolver" );
+        db->putScalar<std::string>( "name", "HyprePCGSolver" );
         db->putScalar<bool>( "uses_preconditioner", use_nested );
         db->putScalar<double>( "absolute_tolerance", 1.0e-12 );
         db->putScalar<double>( "relative_tolerance", 1.0e-12 );
