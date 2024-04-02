@@ -70,10 +70,9 @@ void ImplicitIntegrator::createSolver( void )
     auto solver_params = std::make_shared<AMP::Solver::SolverStrategyParameters>( solverDB );
 
     solver_params->d_pOperator     = d_operator;
-    solver_params->d_pInitialGuess = d_solution_vector;
     solver_params->d_global_db     = globalDB;
-
-    d_solver                   = AMP::Solver::SolverFactory::create( solver_params );
+    solver_params->d_pInitialGuess = d_solution_vector;
+    d_solver                       = AMP::Solver::SolverFactory::create( solver_params );
 }
 
 
