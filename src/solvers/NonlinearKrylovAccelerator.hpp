@@ -134,10 +134,12 @@ void NonlinearKrylovAccelerator<T>::initialize(
     // temporary if-then-else till a cleanup
     if ( params->d_vectors.size() > 0 ) {
         d_solution_vector = params->d_vectors[0]->clone();
-        d_solution_vector->setToScalar( static_cast<T>( 0.0 ) );
-    } else
+        d_solution_vector->copyVector( params->d_vectors[0] );
+    } else {
         d_solution_vector = params->d_pInitialGuess;
-
+        AMP_INSIST( d_solution_vector, "Initial guess vector cannot be null" );
+      }
+    
     AMP_ASSERT( d_solution_vector );
 
     d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
