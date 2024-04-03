@@ -19,8 +19,10 @@ responsibility for the use of this software.
 
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/AMP_TPLs.h"
+#include "AMP/solvers/BandedSolver.h"
 #include "AMP/solvers/BiCGSTABSolver.h"
 #include "AMP/solvers/CGSolver.h"
+#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/GMRESSolver.h"
 #include "AMP/solvers/NonlinearKrylovAccelerator.h"
 #include "AMP/solvers/QMRCGSTABSolver.h"
@@ -112,6 +114,10 @@ void registerSolverFactories()
 
     solverFactory.registerFactory( "NKASolver<float>",
                                    NonlinearKrylovAccelerator<float>::createSolver );
+
+    solverFactory.registerFactory( "BandedSolver", BandedSolver::createSolver );
+
+    solverFactory.registerFactory( "ColumnSolver", ColumnSolver::createSolver );
 }
 
 

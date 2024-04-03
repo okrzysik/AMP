@@ -199,7 +199,8 @@ protected:
 private:
     void getFromInput( std::shared_ptr<const AMP::Database> db );
 
-    std::shared_ptr<SolverStrategy> createPreconditioner( const std::string &pc_solver_name );
+    std::shared_ptr<SolverStrategy>
+    createPreconditioner( std::shared_ptr<AMP::Database> pc_solver_db );
 
     static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
 

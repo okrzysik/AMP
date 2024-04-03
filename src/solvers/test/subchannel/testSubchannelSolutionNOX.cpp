@@ -94,11 +94,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
             AMP::Operator::OperatorBuilder::createOperator(
                 subchannelMesh, "SubchannelTwoEqNonlinearOperator", input_db, elementModel ) );
 
-    // create linear operator
-    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            subchannelMesh, "SubchannelTwoEqLinearOperator", input_db, elementModel ) );
-
     // pass creation test
     ut->passes( exeName + ": creation" );
     std::cout.flush();
@@ -195,35 +190,21 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // get nonlinear solver database
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
 
-    // get linear solver database
-    // auto linearSolver_db = nonlinearSolver_db->getDatabase( "LinearSolver" );
-
     // put manufactured RHS into resVec
     nonlinearOperator->reset( subchannelOpParams );
-    auto subchannelLinearParams =
-        std::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>(
-            nonlinearOperator->getParameters( "Jacobian", solVec ) );
-    subchannelLinearParams->d_initialize = false;
-    linearOperator->reset( subchannelLinearParams );
-    linearOperator->residual( rhsVec, solVec, resVec );
 
     // create nonlinear solver parameters
     auto nonlinearSolverParams =
         std::make_shared<AMP::Solver::TrilinosNOXSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
-    nonlinearSolverParams->d_comm            = globalComm;
-    nonlinearSolverParams->d_pOperator       = nonlinearOperator;
-    nonlinearSolverParams->d_pLinearOperator = nonlinearOperator;
-    nonlinearSolverParams->d_pInitialGuess   = solVec;
+    nonlinearSolverParams->d_comm          = globalComm;
+    nonlinearSolverParams->d_pOperator     = nonlinearOperator;
+    nonlinearSolverParams->d_pInitialGuess = solVec;
 
     // create nonlinear solver
     auto nonlinearSolver =
         std::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
-
-    // create linear solver
-    // nonlinearSolver->getKrylovSolver()->setNestedSolver(linearFlowPreconditioner);
-
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess( false );
@@ -331,8 +312,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Delta T: " << ToutSol - TinSol << std::endl << std::endl;
     std::cout << "L2 Norm of Absolute Error: " << absErrorNorm << std::endl;
     std::cout << "L2 Norm of Relative Error: " << relErrorNorm << std::endl;
-
-    input_db.reset();
 
     // Rescale the solution to get the correct units
     auto enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );

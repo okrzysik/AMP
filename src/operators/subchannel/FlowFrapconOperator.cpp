@@ -8,10 +8,11 @@
 namespace AMP::Operator {
 
 
-FlowFrapconOperator::FlowFrapconOperator(
-    std::shared_ptr<const FlowFrapconOperatorParameters> params )
-    : Operator( params ), d_boundaryId( 0 )
+FlowFrapconOperator::FlowFrapconOperator( std::shared_ptr<const OperatorParameters> in_params )
+    : Operator( in_params ), d_boundaryId( 0 )
 {
+    auto params = std::dynamic_pointer_cast<const FlowFrapconOperatorParameters>( in_params );
+
     std::string inpVar = params->d_db->getString( "InputVariable" );
     d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
 
@@ -124,7 +125,9 @@ FlowFrapconOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_sh
 {
     auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
 
-    tmp_db->putScalar( "name", "FlowFrapconOperator" );
+    tmp_db->putScalar( "name", "FlowFrapconJacobian" );
+    tmp_db->putScalar( "InputVariable", d_inpVariable->getName() );
+    tmp_db->putScalar( "OutputVariable", d_outVariable->getName() );
     tmp_db->putScalar( "numpoints", d_numpoints );
     tmp_db->putScalar( "Channel_Diameter", d_De );
     tmp_db->putScalar( "Mass_Flux", d_G );

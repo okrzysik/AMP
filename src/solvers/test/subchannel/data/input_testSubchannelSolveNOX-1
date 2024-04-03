@@ -766,7 +766,11 @@ NonlinearSolver {
         pc_type = "shell"
         pc_side = "RIGHT"
 
-        Preconditioner {
+        
+    }
+}
+
+Preconditioner {
           print_info_level = 1
             max_iterations = 1
             max_error = 1e-16
@@ -795,5 +799,3 @@ NonlinearSolver {
             }
 
         }
-    }
-}
