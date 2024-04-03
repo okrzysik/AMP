@@ -58,7 +58,8 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_type fgmres"
 
         Preconditioner{
-          print_info_level = 1
+	    name = "TrilinosMLSolver"
+            print_info_level = 1
             PDE_equations = 3
             max_iterations = 1
             max_error = 1e-15

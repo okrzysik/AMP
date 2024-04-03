@@ -45,24 +45,24 @@ void HyprePCGSolver::initialize( std::shared_ptr<const SolverStrategyParameters>
     AMP_ASSERT( parameters );
 
     auto db = parameters->d_db;
-    
+
     HyprePCGSolver::getFromInput( db );
 
     if ( parameters->d_pNestedSolver ) {
         d_pPreconditioner = parameters->d_pNestedSolver;
     } else {
-      if ( d_bUsesPreconditioner ) {
-	auto pcName = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
-	std::shared_ptr<AMP::Database> outerDB;
-	outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
-	AMP_INSIST( outerDB, "Outer database containing preconditioner is NULL");
-	auto pcDB = outerDB->getDatabase( "Preconditioner" );
-	auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
-	parameters->d_pOperator = d_pOperator;
-	parameters->d_comm      = d_comm;
-	d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
-	AMP_ASSERT( d_pPreconditioner );
-      }
+        if ( d_bUsesPreconditioner ) {
+            auto pcName = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+            std::shared_ptr<AMP::Database> outerDB;
+            outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
+            AMP_INSIST( outerDB, "Outer database containing preconditioner is NULL" );
+            auto pcDB       = outerDB->getDatabase( pcName );
+            auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+            parameters->d_pOperator = d_pOperator;
+            parameters->d_comm      = d_comm;
+            d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+            AMP_ASSERT( d_pPreconditioner );
+        }
     }
 }
 

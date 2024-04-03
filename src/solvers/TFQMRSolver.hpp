@@ -1,4 +1,5 @@
 #include "AMP/operators/LinearOperator.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/TFQMRSolver.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "ProfilerApp.h"
@@ -37,17 +38,17 @@ void TFQMRSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
     if ( parameters->d_pNestedSolver ) {
         d_pPreconditioner = parameters->d_pNestedSolver;
     } else {
-      if ( d_bUsesPreconditioner ) {
-	auto pcName = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
-	std::shared_ptr<AMP::Database> outerDB;
-	outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
-	AMP_INSIST( outerDB, "Outer database containing preconditioner is NULL");
-	auto pcDB = outerDB->getDatabase( "Preconditioner" );
-	auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
-	parameters->d_pOperator = d_pOperator;
-	d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
-	AMP_ASSERT( d_pPreconditioner );
-      }
+        if ( d_bUsesPreconditioner ) {
+            auto pcName = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+            std::shared_ptr<AMP::Database> outerDB;
+            outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
+            AMP_INSIST( outerDB, "Outer database containing preconditioner is NULL" );
+            auto pcDB       = outerDB->getDatabase( pcName );
+            auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+            parameters->d_pOperator = d_pOperator;
+            d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+            AMP_ASSERT( d_pPreconditioner );
+        }
     }
 }
 

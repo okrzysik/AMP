@@ -7,10 +7,10 @@
 namespace AMP::Operator {
 
 
-FlowFrapconJacobian::FlowFrapconJacobian(
-    std::shared_ptr<const FlowFrapconJacobianParameters> params )
-    : Operator( params ), dCp( 0 )
+FlowFrapconJacobian::FlowFrapconJacobian( std::shared_ptr<const OperatorParameters> in_params )
+    : Operator( in_params ), dCp( 0 )
 {
+    auto params = std::dynamic_pointer_cast<const FlowFrapconJacobianParameters>( in_params );
     std::string inpVar = params->d_db->getString( "InputVariable" );
     d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
 

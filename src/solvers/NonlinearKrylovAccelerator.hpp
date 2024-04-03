@@ -138,8 +138,8 @@ void NonlinearKrylovAccelerator<T>::initialize(
     } else {
         d_solution_vector = params->d_pInitialGuess;
         AMP_INSIST( d_solution_vector, "Initial guess vector cannot be null" );
-      }
-    
+    }
+
     AMP_ASSERT( d_solution_vector );
 
     d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );

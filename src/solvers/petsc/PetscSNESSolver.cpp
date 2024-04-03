@@ -174,9 +174,9 @@ void PetscSNESSolver::createPetscObjects(
             // check if the linearSolverDB specifies the name of the preconditioner
             // else assume the preconditioner will be created externally and set
             // later
-            if ( uses_preconditioner && linearSolverDB->keyExists( "pc_solver_name" ) ) {
-                snes_create_pc     = true;
-                preconditionerName = linearSolverDB->getScalar<std::string>( "pc_solver_name" );
+            if ( uses_preconditioner ) {
+                snes_create_pc = linearSolverDB->keyExists( "pc_solver_name" ) ||
+                                 linearSolverDB->keyExists( "Preconditioner" );
             }
             linearSolverDB->putScalar<bool>( "matrix_free", true );
         }
@@ -184,7 +184,13 @@ void PetscSNESSolver::createPetscObjects(
         std::shared_ptr<SolverStrategy> preconditionerSolver;
 
         if ( snes_create_pc ) {
-            preconditionerSolver = createPreconditioner( preconditionerName );
+
+            preconditionerName =
+                linearSolverDB->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+            auto pc_db           = linearSolverDB->keyExists( "pc_solver_name" ) ?
+                                       d_global_db->getDatabase( preconditionerName ) :
+                                       linearSolverDB->getDatabase( preconditionerName );
+            preconditionerSolver = createPreconditioner( pc_db );
         }
         AMP_ASSERT( linearSolverDB );
         auto linearSolverParams    = std::make_shared<SolverStrategyParameters>( linearSolverDB );
@@ -471,11 +477,12 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 }
 
 std::shared_ptr<SolverStrategy>
-PetscSNESSolver::createPreconditioner( const std::string &pc_solver_name )
+PetscSNESSolver::createPreconditioner( std::shared_ptr<AMP::Database> pc_solver_db )
 {
+    AMP_INSIST(
+        pc_solver_db,
+        "PetscSNESSolver::createPreconditioner: Database object for preconditioner is NULL" );
     std::shared_ptr<SolverStrategy> preconditionerSolver;
-    AMP_ASSERT( d_global_db && d_global_db->keyExists( pc_solver_name ) );
-    auto pc_solver_db = d_global_db->getDatabase( pc_solver_name );
     auto pcSolverParameters =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( pc_solver_db );
     if ( d_pOperator ) {
