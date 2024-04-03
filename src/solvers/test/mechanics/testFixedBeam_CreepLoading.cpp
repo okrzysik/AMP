@@ -18,10 +18,9 @@
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/operators/mechanics/ThermalStrainMaterialModel.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscSNESSolver.h"
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -33,7 +32,6 @@
 #include <iostream>
 #include <memory>
 #include <string>
-
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
@@ -144,27 +142,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         std::dynamic_pointer_cast<AMP::Operator::MechanicsMaterialModel>(
             mechanicsNonlinearVolumeOperator->getMaterialModel() );
 
-    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
+    // Create the solver
+    auto nonlinearSolver = AMP::Solver::Test::buildSolver(
+        "NonlinearSolver", input_db, globalComm, solVec, nonlinearMechanicsBVPoperator );
 
-    // initialize the nonlinear solver
-    auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
-    nonlinearSolverParams->d_comm          = globalComm;
-    nonlinearSolverParams->d_pOperator     = nonlinearMechanicsBVPoperator;
-    nonlinearSolverParams->d_pInitialGuess = solVec;
-    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
     nonlinearSolver->setZeroInitialGuess( false );
-
-    // ---- first initialize the preconditioner
-    auto pcSolver_db    = linearSolver_db->getDatabase( "Preconditioner" );
-    auto pcSolverParams = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( pcSolver_db );
-    pcSolverParams->d_pOperator = linearMechanicsBVPoperator;
-    auto pcSolver               = std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
-
-    // initialize the linear solver
-    auto linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setNestedSolver( pcSolver );
 
     double scaleValue = 1.0;
     scaledRhsVec->scale( scaleValue, *rhsVec );

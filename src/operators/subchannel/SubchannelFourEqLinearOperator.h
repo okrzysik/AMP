@@ -17,8 +17,7 @@ class SubchannelFourEqLinearOperator : public LinearOperator
 {
 public:
     //! Constructor
-    explicit SubchannelFourEqLinearOperator(
-        std::shared_ptr<const SubchannelOperatorParameters> params );
+    explicit SubchannelFourEqLinearOperator( std::shared_ptr<const OperatorParameters> params );
 
     //! Destructor
     virtual ~SubchannelFourEqLinearOperator() {}

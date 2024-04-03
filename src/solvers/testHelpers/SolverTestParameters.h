@@ -28,6 +28,8 @@ struct SolverParameters {
             return getPetscFGMRESParameters( use_nested );
         } else if ( solver == "BoomerAMG" ) {
             return getBoomerAMGParameters( use_nested );
+        } else if ( solver == "HyprePCG" ) {
+            return getHyprePCGParameters( use_nested );
         } else if ( solver == "ML" ) {
             return getMLParameters( use_nested );
         } else if ( solver == "MueLu" ) {
@@ -128,6 +130,20 @@ struct SolverParameters {
         return db;
     }
 
+    static std::unique_ptr<AMP::Database> getHyprePCGParameters( bool use_nested )
+    {
+        auto db = std::make_unique<AMP::Database>( "LinearSolver" );
+        db->putScalar<std::string>( "name", "HyprePCGSolver" );
+        db->putScalar<bool>( "uses_preconditioner", use_nested );
+        db->putScalar<double>( "absolute_tolerance", 1.0e-12 );
+        db->putScalar<double>( "relative_tolerance", 1.0e-12 );
+        db->putScalar<int>( "print_info_level", 1 );
+        db->putScalar<int>( "max_iterations", 100 );
+        if ( use_nested )
+            db->putScalar<std::string>( "pc_solver_name", "Preconditioner" );
+        return db;
+    }
+
     static std::unique_ptr<AMP::Database> getBoomerAMGParameters( bool use_nested )
     {
         auto db = std::make_unique<AMP::Database>( "LinearSolver" );
@@ -163,6 +179,28 @@ struct SolverParameters {
         return db;
     }
 };
+
+std::shared_ptr<AMP::Solver::SolverStrategy>
+buildSolver( const std::string &solver_name,
+             std::shared_ptr<AMP::Database> input_db,
+             const AMP::AMP_MPI &comm,
+             std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess,
+             std::shared_ptr<AMP::Operator::Operator> op )
+{
+
+    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
+
+    auto db = input_db->getDatabase( solver_name );
+    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
+
+    auto parameters             = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+    parameters->d_pOperator     = op;
+    parameters->d_comm          = comm;
+    parameters->d_pInitialGuess = initialGuess;
+    parameters->d_global_db     = input_db;
+
+    return AMP::Solver::SolverFactory::create( parameters );
+}
 
 } // namespace AMP::Solver::Test
 

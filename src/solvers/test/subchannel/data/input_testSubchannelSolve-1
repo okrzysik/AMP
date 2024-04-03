@@ -769,7 +769,11 @@ NonlinearSolver {
 
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 10000 -ksp_rtol 1.0e-1 -ksp_atol 1.0e-11 -ksp_gmres_restart 100"
 
-        Preconditioner {
+    }
+}
+
+
+Preconditioner {
             print_info_level = 1
             max_iterations = 1
             max_error = 1e-16
@@ -778,7 +782,8 @@ NonlinearSolver {
             divergence_tolerance = 1.0e03
 
             TrilinosPreconditioner{
-              print_info_level = 0
+  	        name = "TrilinosMLSolver"
+                print_info_level = 0
                 max_iterations = 1
                 max_levels = 10
                 max_error = 1.0e-15
@@ -797,5 +802,3 @@ NonlinearSolver {
                 PDE_equations = 2
             }
         }
-    }
-}

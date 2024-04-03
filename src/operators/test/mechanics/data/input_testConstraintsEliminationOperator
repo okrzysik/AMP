@@ -123,7 +123,7 @@ LinearSolver {
       print_info_level = 1
         max_iterations = 1
         max_error = 1.0e-16
-        uses_preconditioner = TRUE
+        uses_preconditioner = FALSE
         pc_type = "none"
         pc_side = "LEFT"
         ksp_type = "preonly"

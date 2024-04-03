@@ -496,16 +496,17 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
 std::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator::getJacobianParameters(
     AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
-    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
-
+    std::shared_ptr<AMP::Database> tmp_db = d_params->d_db->cloneDatabase();
     tmp_db->putScalar( "name", "SubchannelTwoEqLinearOperator" );
+    tmp_db->putScalar( "InputVariable", d_inpVariable->getName() );
+    tmp_db->putScalar( "OutputVariable", d_outVariable->getName() );
 
     auto outParams              = std::make_shared<SubchannelOperatorParameters>( tmp_db );
-    outParams->d_db             = d_params->d_db;
     auto u                      = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
     outParams->d_frozenSolution = subsetInputVector( u );
     outParams->d_initialize     = true;
     outParams->d_subchannelPhysicsModel = d_subchannelPhysicsModel;
+    outParams->d_Mesh                   = d_params->d_Mesh;
     outParams->clad_x                   = d_params->clad_x;
     outParams->clad_y                   = d_params->clad_y;
     outParams->clad_d                   = d_params->clad_d;

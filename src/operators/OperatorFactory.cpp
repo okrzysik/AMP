@@ -13,6 +13,10 @@
     #include "AMP/operators/boundary/libmesh/RobinVectorCorrection.h"
     #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
     #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+    #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
+    #include "AMP/operators/subchannel/FlowFrapconOperator.h"
+    #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
+    #include "AMP/operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #endif
 
 
@@ -55,7 +59,10 @@ REGISTER_OPERATOR( DiffusionLinearFEOperator );
 REGISTER_OPERATOR( MechanicsLinearFEOperator );
 REGISTER_OPERATOR( RobinMatrixCorrection );
 REGISTER_OPERATOR( RobinVectorCorrection );
+REGISTER_OPERATOR( FlowFrapconJacobian );
+REGISTER_OPERATOR( FlowFrapconOperator );
+REGISTER_OPERATOR( SubchannelTwoEqLinearOperator );
+REGISTER_OPERATOR( SubchannelFourEqLinearOperator );
 #endif
-
 
 } // namespace AMP::Operator

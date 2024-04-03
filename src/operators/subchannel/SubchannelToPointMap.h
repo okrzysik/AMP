@@ -25,6 +25,8 @@ public:
     //! Deconstructor
     virtual ~SubchannelToPointMap() {}
 
+    std::string type() const override { return "SubchannelToPointMap"; }
+
     /**
      * \brief Perform the map
      * \details  This performs the map of the output propertiy (Density or Temperature) to the given
