@@ -47,7 +47,7 @@ SubchannelToPointMap::SubchannelToPointMap(
 void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                   AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
     // Get the list of all subchannel face densities
     std::vector<double> output( N_subchannels * d_subchannel_z.size(), 0.0 );
     if ( d_Mesh != nullptr ) {
@@ -143,14 +143,13 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
     }
     if ( outputVec )
         outputVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    PROFILE_STOP( "apply" );
 }
 
 
 // Create the subchannel grid for all processors
 void SubchannelToPointMap::createGrid()
 {
-    PROFILE_START( "createGrid" );
+    PROFILE( "createGrid" );
     // Create the grid for all processors
     std::vector<double> x, y, z;
     int root = -1;
@@ -176,6 +175,5 @@ void SubchannelToPointMap::createGrid()
     for ( size_t i = 0; i < Ny; i++ )
         d_subchannel_y[i] = 0.5 * ( y[i + 1] + y[i] );
     N_subchannels = Nx * Ny;
-    PROFILE_STOP( "createGrid" );
 }
 } // namespace AMP::Operator

@@ -21,7 +21,6 @@ static void dtkConsruction( AMP::UnitTest *ut, std::string input_file )
 
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    // PROFILE_START("SetupDriver");
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 

@@ -231,7 +231,7 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "apply" );
 
     // Get petsc views of the vectors
     auto fVecView = AMP::LinearAlgebra::PetscVector::constView( f );
@@ -272,7 +272,6 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // Reset the solvers
     KSPReset( d_KrylovSolver );
     AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-    PROFILE_STOP( "solve" );
 }
 
 

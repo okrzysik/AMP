@@ -106,46 +106,49 @@ AMP::Array<double> readPoints( const char *filename )
 template<class TYPE>
 void testPointSearch( AMP::UnitTest *ut, const AMP::Array<TYPE> &x )
 {
+    PROFILE( "testPointSearch" );
     if ( x.empty() )
         return;
     // Test the nearest point search
-    PROFILE_START( "Test point search 1" );
     int ndim     = x.size( 0 );
     size_t N     = x.size( 1 );
     double dist1 = 1e100;
+    double dist2 = 0.0;
     std::pair<int, int> index1( -1, -1 );
-    for ( size_t i = 0; i < N; i++ ) {
-        for ( size_t j = i + 1; j < N; j++ ) {
-            double dist2 = 0.0;
-            for ( int d = 0; d < ndim; d++ ) {
-                auto tmp = static_cast<double>( x( d, i ) - x( d, j ) );
-                dist2 += tmp * tmp;
-            }
-            if ( dist2 < dist1 ) {
-                dist1  = dist2;
-                index1 = std::pair<int, int>( (int) i, (int) j );
+    std::pair<int, int> index2;
+    {
+        PROFILE( "Test point search 1" );
+        for ( size_t i = 0; i < N; i++ ) {
+            for ( size_t j = i + 1; j < N; j++ ) {
+                double dist2 = 0.0;
+                for ( int d = 0; d < ndim; d++ ) {
+                    auto tmp = static_cast<double>( x( d, i ) - x( d, j ) );
+                    dist2 += tmp * tmp;
+                }
+                if ( dist2 < dist1 ) {
+                    dist1  = dist2;
+                    index1 = std::pair<int, int>( (int) i, (int) j );
+                }
             }
         }
     }
-    PROFILE_STOP( "Test point search 1" );
-    PROFILE_START( "Test point search 2" );
-    std::pair<int, int> index2;
-    if ( ndim == 1 )
-        index2 = AMP::find_min_dist<1, TYPE>( N, x.data() );
-    else if ( ndim == 2 )
-        index2 = AMP::find_min_dist<2, TYPE>( N, x.data() );
-    else if ( ndim == 3 )
-        index2 = AMP::find_min_dist<3, TYPE>( N, x.data() );
-    else if ( ndim == 4 )
-        index2 = AMP::find_min_dist<4, TYPE>( N, x.data() );
-    else if ( ndim == 5 )
-        index2 = AMP::find_min_dist<5, TYPE>( N, x.data() );
-    double dist2 = 0.0;
-    for ( int d = 0; d < ndim; d++ ) {
-        auto tmp = static_cast<double>( x( d, index2.first ) - x( d, index2.second ) );
-        dist2 += tmp * tmp;
+    {
+        PROFILE( "Test point search 2" );
+        if ( ndim == 1 )
+            index2 = AMP::find_min_dist<1, TYPE>( N, x.data() );
+        else if ( ndim == 2 )
+            index2 = AMP::find_min_dist<2, TYPE>( N, x.data() );
+        else if ( ndim == 3 )
+            index2 = AMP::find_min_dist<3, TYPE>( N, x.data() );
+        else if ( ndim == 4 )
+            index2 = AMP::find_min_dist<4, TYPE>( N, x.data() );
+        else if ( ndim == 5 )
+            index2 = AMP::find_min_dist<5, TYPE>( N, x.data() );
+        for ( int d = 0; d < ndim; d++ ) {
+            auto tmp = static_cast<double>( x( d, index2.first ) - x( d, index2.second ) );
+            dist2 += tmp * tmp;
+        }
     }
-    PROFILE_STOP( "Test point search 2" );
     auto msg =
         AMP::Utilities::stringf( "Test point search (%i,%i,%s)", ndim, (int) N, getName<TYPE>() );
     if ( approx_equal( dist1, dist2, 1e-12 ) ) {
@@ -170,6 +173,7 @@ template<class TYPE>
 std::shared_ptr<AMP::DelaunayInterpolation<TYPE>>
 createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x )
 {
+    PROFILE( "createAndTestDelaunayInterpolation" );
     if ( x.empty() )
         return nullptr;
     int ndim = x.size( 0 );
@@ -177,11 +181,9 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
     auto msg = AMP::Utilities::stringf( "(%i,%i,%s)", ndim, (int) N, getName<TYPE>() );
 
     // Create the tessellation
-    PROFILE_START( "Create Tessellation" );
     auto data = std::make_shared<AMP::DelaunayInterpolation<TYPE>>();
     data->create_tessellation( x );
     size_t N_tri = data->get_N_tri();
-    PROFILE_STOP( "Create Tessellation" );
     if ( N_tri > 0 ) {
         ut->passes( "Created tessellation " + msg );
     } else {
@@ -205,8 +207,8 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
     }
 
     // Copy the tessellation
-    PROFILE_START( "Copy tessellation", 1 );
     {
+        PROFILE( "Copy tessellation", 1 );
         auto [x2, tri] = data->copy_tessellation();
         int N2         = x2.size( 1 );
         int N_tri2     = tri.size( 1 );
@@ -230,11 +232,10 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
         else
             ut->failure( "Copy of tessellation " + msg );
     }
-    PROFILE_STOP( "Copy tessellation", 1 );
 
     // Check the behavior of get_circumsphere and test_in_circumsphere
-    PROFILE_START( "Check circumsphere", 1 );
     {
+        PROFILE( "Check circumsphere", 1 );
         pass                = true;
         double R            = 0;
         auto tri            = data->get_tri();
@@ -282,11 +283,10 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
         else
             ut->expected_failure( "get_circumsphere and test_in_circumsphere " + msg );
     }
-    PROFILE_STOP( "Check circumsphere", 1 );
 
     // Check that the volume of each triangle is positive and > 0
-    PROFILE_START( "Check volume", 1 );
     {
+        PROFILE( "Check volume", 1 );
         auto tri       = data->get_tri();
         double vol_min = 1e100;
         double vol_max = 0.0;
@@ -311,14 +311,13 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
             ut->passes( "Tessellation volume is valid " + msg );
         else
             ut->failure( "Tessellation volume is invalid " + msg );
-        PROFILE_STOP( "Check volume", 1 );
     }
 
     // Perform a rigorous check of the tessellation by checking that no point in the
     // tessellation lies withing the circumsphere of any triangle
     // Note: This is an N^2 test and will only be run for "reasonable" problem sizes
     if ( N <= 5000 ) {
-        PROFILE_START( "Check tessellation", 1 );
+        PROFILE( "Check tessellation", 1 );
         auto tri               = data->get_tri();
         bool pass_circumsphere = true;
         for ( size_t i = 0; i < N_tri; i++ ) {
@@ -344,7 +343,6 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
             ut->passes( "Tessellation is valid " + msg );
         else
             ut->failure( "Tessellation is invalid " + msg );
-        PROFILE_STOP( "Check tessellation", 1 );
     }
 
     return data;
@@ -521,7 +519,6 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
     }
 
     // Test the nearest point search
-    PROFILE_START( "nearest point search", 1 );
     auto nearest      = data->find_nearest( x );
     bool pass_nearest = true;
     for ( size_t i = 0; i < N; i++ ) {
@@ -532,10 +529,8 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
         ut->passes( "Found nearest point" );
     else
         ut->failure( "Found nearest point" );
-    PROFILE_STOP( "nearest point search", 1 );
 
     // Test find_tri
-    PROFILE_START( "nearest triangle search", 1 );
     auto index1        = data->find_tri( x1, false );
     auto index2        = data->find_tri( x2, true );
     bool pass_find_tri = true;
@@ -548,7 +543,6 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
         ut->passes( "Found triangle centroids" );
     else
         ut->failure( "Found triangle centroids" );
-    PROFILE_STOP( "nearest triangle search", 1 );
 
     for ( int p = 0; p < 3; p++ ) {
         if ( N < 10 )
@@ -576,7 +570,6 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
                                             getName<TYPE>() );
 
         // Test the gradient
-        PROFILE_START( "test gradient", 1 );
         AMP::Array<double> grad( ndim, N );
         double error[4] = { 0 };
         for ( int method = 1; method <= 4; method++ ) {
@@ -602,10 +595,8 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
                 ut->failure( message );
         }
         NULL_USE( error );
-        PROFILE_STOP( "test gradient", 1 );
 
         // Test nearest-neighbor interpolation
-        PROFILE_START( "test nearest interpolation", 1 );
         auto fi                  = data->interp_nearest( f, x, nearest );
         bool pass_interp_nearest = true;
         for ( size_t i = 0; i < N; i++ ) {
@@ -616,7 +607,6 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
             ut->passes( "nearest-neighbor interpolation: " + msg );
         else
             ut->failure( "nearest-neighbor interpolation: " + msg );
-        PROFILE_STOP( "test nearest interpolation", 1 );
 
         // Allocate variables for interpolation
         AMP::Array<double> fi1, fi2, fi3, fi4, gi1, gi2, gi3, gi4;
@@ -633,7 +623,6 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
         }
 
         // Test the linear interpolation
-        PROFILE_START( "test linear interpolation", 1 );
         std::tie( fi1, std::ignore ) = data->interp_linear( f, x1, index1, false );
         std::tie( fi2, std::ignore ) = data->interp_linear( f, x2, index2, false );
         std::tie( fi3, std::ignore ) = data->interp_linear( f, x2, index2, true );
@@ -653,9 +642,7 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
             ut->passes( "linear interpolation: " + msg );
         else
             ut->failure( "linear interpolation: " + msg );
-        PROFILE_STOP( "test linear interpolation", 1 );
         // Test the cubic interpolation (using the exact gradient)
-        PROFILE_START( "test cubic interpolation", 1 );
         std::tie( fi1, gi1 )    = data->interp_cubic( f, g, x1, index1, false );
         std::tie( fi2, gi2 )    = data->interp_cubic( f, g, x2, index2, 0 );
         std::tie( fi3, gi3 )    = data->interp_cubic( f, g, x2, index2, 1 );
@@ -690,7 +677,6 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
         } else {
             ut->failure( "cubic interpolation: " + msg );
         }
-        PROFILE_STOP( "test cubic interpolation", 1 );
 
         // Free some memory
         delete[] f_mask;
@@ -839,7 +825,7 @@ AMP::Array<TYPE> createProblem( int problem )
 // Test the random number generator
 void testRandomNumber( AMP::UnitTest *ut, size_t N )
 {
-    PROFILE_START( "testRandomNumber" );
+    PROFILE( "testRandomNumber" );
     std::vector<double> data( N );
     for ( auto &elem : data )
         elem = rand_double();
@@ -861,7 +847,6 @@ void testRandomNumber( AMP::UnitTest *ut, size_t N )
         else
             ut->failure( message );
     }
-    PROFILE_STOP( "testRandomNumber" );
 }
 
 
@@ -891,7 +876,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
     srand( static_cast<unsigned int>( time( nullptr ) ) );
-    PROFILE_ENABLE( 3 ); // 0: code, 1: tests, 3: basic timers, 5: all timers
+    PROFILE_ENABLE( 5 ); // 0: code, 1: tests, 3: basic timers, 5: all timers
 
     // Check that we can create "random" points
     printp( "Running random number test\n" );
@@ -925,10 +910,9 @@ int main( int argc, char *argv[] )
     for ( int i = 1; i <= 6; i++ ) {
         printp( "Running predefined test %i\n", i );
         auto tmp = AMP::Utilities::stringf( "Problem %i", i );
-        PROFILE_START( tmp );
+        PROFILE2( tmp );
         testInterpolation( &ut, createProblem<int>( i ) );
         testInterpolation( &ut, createProblem<double>( i ) );
-        PROFILE_STOP( tmp );
     }
 
     // Run any input file problems

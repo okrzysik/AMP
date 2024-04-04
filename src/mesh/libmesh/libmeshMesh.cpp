@@ -39,7 +39,7 @@ namespace AMP::Mesh {
 libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params )
     : Mesh( params ), d_pos_hash( 0 )
 {
-    PROFILE_START( "constructor" );
+    PROFILE( "constructor" );
     this->d_max_gcw = 1;
     // Check for valid inputs
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
@@ -125,7 +125,6 @@ libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params )
     // Get the global ranks for the comm to make sure it is set
     auto globalRanks = getComm().globalRanks();
     AMP_ASSERT( !globalRanks.empty() );
-    PROFILE_STOP( "constructor" );
 }
 libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string &name )
     : d_pos_hash( 0 ), d_libMesh( mesh )
@@ -183,7 +182,7 @@ std::unique_ptr<Mesh> libmeshMesh::clone() const { return std::make_unique<libme
  ********************************************************/
 void libmeshMesh::initialize()
 {
-    PROFILE_START( "initialize" );
+    PROFILE( "initialize" );
     // Verify libmesh's rank and size agrees with the rank and size of the comm of the mesh
     AMP_INSIST( (int) d_libMesh->n_processors() == d_comm.getSize(),
                 "size of the mesh does not agree with libmesh" );
@@ -514,7 +513,6 @@ void libmeshMesh::initialize()
     for ( auto &elem : recv_list )
         block_ids.insert( elem );
     d_block_ids = std::vector<int>( block_ids.begin(), block_ids.end() );
-    PROFILE_STOP( "initialize" );
     // Test getting some common iterators
     auto it1 = getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto it2 = getIterator( this->GeomDim, 0 );

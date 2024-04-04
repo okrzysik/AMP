@@ -171,7 +171,7 @@ void SubchannelTwoEqNonlinearOperator::reset( std::shared_ptr<const OperatorPara
 void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                               AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
 
     // Check that the operator has been initialized
     if ( !d_initialized )
@@ -204,7 +204,7 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
     for ( size_t isub = 0; isub < d_numSubchannels; ++isub ) {
         if ( !d_ownSubChannel[isub] )
             continue;
-        PROFILE_START( "apply-subchannel" );
+        PROFILE( "apply-subchannel" );
 
         // Get the iterator over the faces in the local subchannel
         AMP::Mesh::MeshIterator localSubchannelIt =
@@ -486,11 +486,9 @@ void SubchannelTwoEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_
             outputVec->setValuesByGlobalID( 1, &dofs[1], &v2 );
             ++face;
         }
-        PROFILE_STOP( "apply-subchannel" );
     } // end of isub
 
     outputVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    PROFILE_STOP( "apply" );
 }
 
 std::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator::getJacobianParameters(

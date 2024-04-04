@@ -19,7 +19,7 @@
 // Note: this only runs the mesh tests, not the vector or matrix tests
 void testMeshGenerators( AMP::UnitTest &ut )
 {
-    PROFILE_START( "testMeshGenerators" );
+    PROFILE( "testMeshGenerators" );
     std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
     // AMP mesh generators
     generator = std::make_shared<AMP::unit_test::AMPCubeGenerator<4>>();
@@ -66,14 +66,13 @@ void testMeshGenerators( AMP::UnitTest &ut )
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
     #endif
 #endif
-    PROFILE_STOP( "testMeshGenerators" );
 }
 
 
 // Function to test the creation/destruction of a native AMP mesh
 void testAMPMesh( AMP::UnitTest &ut )
 {
-    PROFILE_START( "testAMPMesh" );
+    PROFILE( "testAMPMesh" );
     // Create the AMP mesh
     auto generator = std::make_shared<AMP::unit_test::AMPCubeGenerator<5>>();
     generator->build_mesh();
@@ -148,7 +147,6 @@ void testAMPMesh( AMP::UnitTest &ut )
     AMP::Mesh::meshTests::getParents( ut, mesh );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
-    PROFILE_STOP( "testAMPMesh" );
 }
 
 
@@ -156,7 +154,7 @@ void testAMPMesh( AMP::UnitTest &ut )
 void testSTKMesh( AMP::UnitTest &ut )
 {
 #if defined( AMP_USE_TRILINOS_STKCLASSIC ) && defined( USE_AMP_DATA )
-    PROFILE_START( "testSTKMesh" );
+    PROFILE( "testSTKMesh" );
     // Create a generic MeshParameters object
     auto database = std::make_shared<AMP::Database>( "Mesh" );
     database->putScalar( "dim", 3 );
@@ -174,7 +172,6 @@ void testSTKMesh( AMP::UnitTest &ut )
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
-    PROFILE_STOP( "testSTKMesh" );
 #else
     ut.expected_failure( "testSTKMesh disabled (compiled without STKClassic)" );
 #endif
@@ -186,7 +183,7 @@ void testSTKMesh( AMP::UnitTest &ut )
 void testlibMesh( AMP::UnitTest &ut )
 {
 #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
-    PROFILE_START( "testlibMesh" );
+    PROFILE( "testlibMesh" );
     // Create a generic MeshParameters object
     auto database = std::make_shared<AMP::Database>( "Mesh" );
     database->putScalar( "dim", 3 );
@@ -204,7 +201,6 @@ void testlibMesh( AMP::UnitTest &ut )
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
-    PROFILE_STOP( "testlibMesh" );
 #else
     ut.expected_failure( "testlibMesh disabled (compiled without libmesh)" );
 #endif
@@ -215,7 +211,7 @@ void testlibMesh( AMP::UnitTest &ut )
 void testMoabMesh( AMP::UnitTest &ut )
 {
 #if defined( AMP_USE_MOAB ) && defined( USE_AMP_DATA )
-    PROFILE_START( "testMoabMesh" );
+    PROFILE( "testMoabMesh" );
     // Create a generic MeshParameters object
     auto database = std::make_shared<AMP::Database>( "Mesh" );
     database->putScalar( "dim", 3 );
@@ -234,7 +230,6 @@ void testMoabMesh( AMP::UnitTest &ut )
     // MeshTestLoop( ut, mesh );
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
-    PROFILE_STOP( "testMoabMesh" );
 #else
     ut.expected_failure( "testMoabMesh disabled (compiled without MOAB)" );
 #endif
@@ -244,7 +239,7 @@ void testMoabMesh( AMP::UnitTest &ut )
 void testInputMesh( AMP::UnitTest &ut, std::string filename )
 {
 #ifdef USE_AMP_DATA
-    PROFILE_START( "testInputMesh" );
+    PROFILE( "testInputMesh" );
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( filename );
 
@@ -262,7 +257,6 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
     AMP::Mesh::meshTests::MeshGeometryTestLoop( ut, mesh );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh, true );
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh, true );
-    PROFILE_STOP( "testInputMesh" );
 #endif
     NULL_USE( ut );
     NULL_USE( filename );
@@ -272,7 +266,7 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
 void testSubsetMesh( AMP::UnitTest &ut )
 {
     NULL_USE( ut );
-    PROFILE_START( "testSubsetMesh" );
+    PROFILE( "testSubsetMesh" );
 #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
     std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
     // Subset a mesh for a surface without ghost cells and test
@@ -292,7 +286,6 @@ void testSubsetMesh( AMP::UnitTest &ut )
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
 #endif
-    PROFILE_STOP( "testSubsetMesh" );
 }
 
 
@@ -360,7 +353,7 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv, startup_properties );
     AMP::UnitTest ut;
     PROFILE_ENABLE( 2 );
-    PROFILE_START( "Run tests" );
+    PROFILE( "Run tests" );
 
     if ( argc == 1 ) {
         // Run the default tests
@@ -372,7 +365,6 @@ int main( int argc, char **argv )
     }
 
     // Save the timing results
-    PROFILE_STOP( "Run tests" );
     PROFILE_SAVE( "test_Mesh" );
 
     // Print the results and return

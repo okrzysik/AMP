@@ -9,7 +9,7 @@ namespace AMP::Mesh {
 
 void meshTests::MeshTestLoop( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-    PROFILE_START( "MeshTestLoop" );
+    PROFILE( "MeshTestLoop" );
     // Run some basic sanity checks
     MeshBasicTest( ut, mesh );
     // Test the number of elements
@@ -37,7 +37,6 @@ void meshTests::MeshTestLoop( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh
     VerifyElementForNode( ut, mesh );
     // Test performance
     MeshPerformance( ut, mesh );
-    PROFILE_STOP( "MeshTestLoop" );
 }
 
 
@@ -46,13 +45,12 @@ void meshTests::MeshGeometryTestLoop( AMP::UnitTest &ut, std::shared_ptr<AMP::Me
     // Return if we do not have a geometry to work with
     if ( !mesh->getGeometry() )
         return;
-    PROFILE_START( "MeshGeometryTestLoop" );
+    PROFILE( "MeshGeometryTestLoop" );
     // Run the mesh-geometry based tests
     TestBasicGeometry( ut, mesh );
     TestInside( ut, mesh );
     TestPhysicalLogical( ut, mesh );
     TestNormalGeometry( ut, mesh );
-    PROFILE_STOP( "MeshGeometryTestLoop" );
 }
 
 
@@ -61,14 +59,13 @@ void meshTests::MeshVectorTestLoop( AMP::UnitTest &ut,
                                     bool fast )
 {
     // Run the vector tests
-    PROFILE_START( "MeshVectorTestLoop" );
+    PROFILE( "MeshVectorTestLoop" );
     VerifyGetVectorTest<1, true>( ut, mesh );
     if ( !fast ) {
         VerifyGetVectorTest<3, true>( ut, mesh );
         VerifyGetVectorTest<1, false>( ut, mesh );
         VerifyGetVectorTest<3, false>( ut, mesh );
     }
-    PROFILE_STOP( "MeshVectorTestLoop" );
 }
 
 
@@ -79,7 +76,7 @@ void meshTests::MeshMatrixTestLoop( AMP::UnitTest &ut,
     // Run the matrix tests
     bool run_tests = true;
     if ( run_tests ) {
-        PROFILE_START( "MeshMatrixTestLoop" );
+        PROFILE( "MeshMatrixTestLoop" );
         VerifyGetMatrixTrivialTest<1, true>( ut, mesh );
         if ( AMP::LinearAlgebra::haveSparseMatrix() ) {
             GhostWriteTest<1, true>( ut, mesh );
@@ -92,7 +89,6 @@ void meshTests::MeshMatrixTestLoop( AMP::UnitTest &ut,
                 GhostWriteTest<3, false>( ut, mesh );
             }
         }
-        PROFILE_STOP( "MeshMatrixTestLoop" );
     }
 }
 

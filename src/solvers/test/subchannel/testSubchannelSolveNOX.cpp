@@ -115,7 +115,7 @@ static void createVectors( std::shared_ptr<AMP::Mesh::Mesh> pinMesh,
 
 static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 {
-    PROFILE_START( "Main" );
+    PROFILE( "Main" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
     AMP::logAllNodes( log_file );
@@ -583,7 +583,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->setZeroInitialGuess( false );
 
     // Initialize the pin temperatures
-    PROFILE_START( "Initialize" );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     int root_subchannel = -1;
     std::vector<double> range( 6 );
@@ -676,11 +675,9 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearThermalOperator->modifyRHSvector( globalThermalRhsVec );
     }
     globalThermalRhsVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    PROFILE_STOP( "Initialize" );
 
 
     // Solve
-    PROFILE_START( "Solve" );
     AMP::pout << "Rhs norm: " << std::setprecision( 13 ) << globalRhsMultiVector->L2Norm()
               << std::endl;
     AMP::pout << "Initial solution norm: " << std::setprecision( 13 )
@@ -708,7 +705,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
     AMP::pout << "Final residual norm: " << std::setprecision( 13 )
               << globalResMultiVector->L2Norm() << std::endl;
-    PROFILE_STOP( "Solve" );
 
 
     // Compute the flow temperature and density
@@ -859,7 +855,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     ut->expected_failure( "Solve disabled because it does not converge (requires debugging)" );
 #endif
     globalComm.barrier();
-    PROFILE_STOP( "Main" );
     PROFILE_SAVE( "exeName" );
 }
 

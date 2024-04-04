@@ -541,7 +541,7 @@ bool SubsetMesh::isMember( const MeshElementID &id ) const
 }
 MeshIterator SubsetMesh::isMember( const MeshIterator &iterator ) const
 {
-    PROFILE_SCOPED( timer, "isMember" );
+    PROFILE( "isMember" );
     auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
     elements->reserve( iterator.size() );
     int size = static_cast<int>( d_elements.size() );

@@ -3,6 +3,7 @@
 
 #include <array>
 #include <math.h>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -245,6 +246,13 @@ private:
 protected:
     friend constexpr Units pow( Units base, int exponent );
 };
+
+
+inline std::ostream &operator<<( std::ostream &os, Units unit )
+{
+    os << unit.str();
+    return os;
+}
 
 
 } // namespace AMP

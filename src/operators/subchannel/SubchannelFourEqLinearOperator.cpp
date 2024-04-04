@@ -193,7 +193,6 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
     if ( !myparams->d_initialize ) {
         // We are done with the reset
         d_matrix->setIdentity();
-        PROFILE_STOP2( "reset" );
         return;
     }
 
@@ -1032,7 +1031,6 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
         }
     }
     d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
-    PROFILE_STOP( "reset" );
 } // end of reset function
 
 // function used in reset to get double parameter or set default if missing
@@ -1453,11 +1451,11 @@ void SubchannelFourEqLinearOperator::getAxialFaces( const AMP::Mesh::MeshElement
             else
                 // face is the lower axial face
                 if ( lowerFaceFound )
-                AMP_ERROR( "Two lower axial faces were found for the same cell." );
-            else {
-                lowerFace      = cellFace;
-                lowerFaceFound = true;
-            }
+                    AMP_ERROR( "Two lower axial faces were found for the same cell." );
+                else {
+                    lowerFace      = cellFace;
+                    lowerFaceFound = true;
+                }
         }
     } // end loop over faces of cell
     if ( !( upperFaceFound && lowerFaceFound ) )
@@ -1497,8 +1495,8 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
             // adjacent to the current
             // lateral face
             double knownCentroid[3]           = { parentLateralFaceCentroid[0],
-                                        parentLateralFaceCentroid[1],
-                                        daughterCellCentroid[2] };
+                                                  parentLateralFaceCentroid[1],
+                                                  daughterCellCentroid[2] };
             bool isAxiallyAdjacentLateralFace = true;
             for ( size_t i = 0; i < 3; i++ ) {
                 if ( !AMP::Utilities::approx_equal_abs(

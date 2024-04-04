@@ -108,7 +108,7 @@ int RK34TimeIntegrator::advanceSolution( const double dt,
                                          std::shared_ptr<AMP::LinearAlgebra::Vector> in,
                                          std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
-    PROFILE_START( "advanceSolution" );
+    PROFILE( "advanceSolution" );
 
     d_solution_vector = in;
     d_current_dt      = dt;
@@ -152,7 +152,6 @@ int RK34TimeIntegrator::advanceSolution( const double dt,
     d_z_vec->subtract( *d_z_vec, *d_z3_vec );
     d_z_vec->scale( dt / 6.0, *d_z_vec );
     out->copyVector( d_new_solution );
-    PROFILE_STOP( "advanceSolution" );
 
     return ( 1 );
 }

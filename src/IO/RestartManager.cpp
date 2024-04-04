@@ -51,7 +51,7 @@ void RestartManager::reset()
 }
 void RestartManager::load( const std::string &name )
 {
-    PROFILE_START( "load" );
+    PROFILE( "load" );
     reset(); // Clear existing data
     int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
     d_data.clear();
@@ -65,7 +65,6 @@ void RestartManager::load( const std::string &name )
     for ( size_t i = 0; i < names.size(); i++ )
         d_names[names[i]] = ids[i];
     readCommData( name );
-    PROFILE_STOP( "load" );
 }
 
 
@@ -74,7 +73,7 @@ void RestartManager::load( const std::string &name )
  ********************************************************/
 void RestartManager::write( const std::string &name, Compression compress )
 {
-    PROFILE_START( "write" );
+    PROFILE( "write" );
     int rank  = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
     auto file = name + "." + AMP::Utilities::nodeToString( rank ) + ".h5";
     auto fid  = openHDF5( file, "w", compress );
@@ -92,7 +91,6 @@ void RestartManager::write( const std::string &name, Compression compress )
     }
     closeHDF5( fid );
     writeCommData( name, compress );
-    PROFILE_STOP( "write" );
 }
 
 
@@ -138,7 +136,7 @@ AMP_MPI RestartManager::getComm( uint64_t hash )
 }
 void RestartManager::writeCommData( const std::string &name, Compression compress )
 {
-    PROFILE_START( "writeCommData" );
+    PROFILE( "writeCommData" );
     // Collect the comm data
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     int rank = globalComm.getRank();
@@ -181,11 +179,10 @@ void RestartManager::writeCommData( const std::string &name, Compression compres
         writeHDF5( fid, "data", data );
         closeHDF5( fid );
     }
-    PROFILE_STOP( "writeCommData" );
 }
 void RestartManager::readCommData( const std::string &name )
 {
-    PROFILE_START( "readCommData" );
+    PROFILE( "readCommData" );
     // Load the comm data
     auto file = name + ".comms.h5";
     std::vector<uint64_t> ids;
@@ -226,7 +223,6 @@ void RestartManager::readCommData( const std::string &name )
             d_comms[ids[i]] = AMP::AMP_MPI( AMP_COMM_SELF ).dup();
         }
     }
-    PROFILE_STOP( "readCommData" );
 }
 
 

@@ -25,7 +25,7 @@ void runTest( AMP::UnitTest &ut )
 
 void testMeshGenerators( AMP::UnitTest &ut )
 {
-    PROFILE_START( "testMeshGenerators" );
+    PROFILE( "testMeshGenerators" );
     // AMP mesh generators
     runTest<AMP::unit_test::AMPCubeGenerator<4>>( ut );
     runTest<AMP::unit_test::AMPCylinderGenerator>( ut );
@@ -40,13 +40,12 @@ void testMeshGenerators( AMP::UnitTest &ut )
     runTest<AMP::unit_test::ExodusReaderGenerator<2>>( ut );
     #endif
 #endif
-    PROFILE_STOP( "testMeshGenerators" );
 }
 
 
 void testInputMesh( AMP::UnitTest &ut, std::string filename )
 {
-    PROFILE_START( "testInputMesh" );
+    PROFILE( "testInputMesh" );
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( filename );
 
@@ -61,7 +60,6 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshPerformance( ut, mesh );
     ;
-    PROFILE_STOP( "testInputMesh" );
 }
 
 
@@ -73,7 +71,7 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv, startup_properties );
     AMP::UnitTest ut;
     PROFILE_ENABLE();
-    PROFILE_START( "Run tests" );
+    PROFILE( "Run tests" );
 
     if ( argc == 1 ) {
         // Run the default tests
@@ -85,7 +83,6 @@ int main( int argc, char **argv )
     }
 
     // Save the timing results
-    PROFILE_STOP( "Run tests" );
     PROFILE_SAVE( "test_MeshPerformance" );
 
     // Print the results and return

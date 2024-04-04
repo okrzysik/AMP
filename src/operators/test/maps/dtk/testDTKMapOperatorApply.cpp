@@ -25,7 +25,6 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    // PROFILE_START("SetupDriver");
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
@@ -150,8 +149,6 @@ int main( int argc, char *argv[] )
     ut.report();
 
     int num_failed = ut.NumFailGlobal();
-
-    // PROFILE_SAVE(inputFile);
 
     AMP::AMPManager::shutdown();
 

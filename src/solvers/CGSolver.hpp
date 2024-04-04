@@ -52,7 +52,7 @@ template<typename T>
 void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                          std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "solve" );
 
     // Check input vector states
     AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
@@ -180,8 +180,6 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_dResidualNorm = static_cast<T>( r->L2Norm() );
     } else
         d_dResidualNorm = current_res;
-
-    PROFILE_STOP( "solve" );
 }
 
 /****************************************************************

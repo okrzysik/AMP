@@ -271,19 +271,17 @@ void HypreSolver::setParameters() {}
 
 void HypreSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    PROFILE_START( "resetOperator" );
+    PROFILE( "resetOperator" );
     AMP_INSIST( ( d_pOperator ), "ERROR: HypreSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
     reset( std::shared_ptr<SolverStrategyParameters>() );
-    PROFILE_STOP( "resetOperator" );
 }
 
 
 void HypreSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 {
-    PROFILE_START( "reset" );
+    PROFILE( "reset" );
     registerOperator( d_pOperator );
-    PROFILE_STOP( "reset" );
 }
 
 } // namespace AMP::Solver

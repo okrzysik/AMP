@@ -42,7 +42,7 @@ struct NullDeleter {
  ********************************************************/
 STKMesh::STKMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( params_in )
 {
-    PROFILE_START( "constructor" );
+    PROFILE( "constructor" );
     this->d_max_gcw = 1;
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );
@@ -97,7 +97,6 @@ STKMesh::STKMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( para
     } else {
         AMP_ERROR( "Error: params must contain a database object" );
     }
-    PROFILE_STOP( "constructor" );
 }
 
 STKMesh::STKMesh( std::shared_ptr<stk::mesh::BulkData> mesh, std::string name )
@@ -157,7 +156,7 @@ Mesh STKMesh::copy() const { return STKMesh( *this ); }
  ********************************************************/
 void STKMesh::initialize()
 {
-    PROFILE_START( "initialize" );
+    PROFILE( "initialize" );
     // Verify STKmesh's rank and size agrees with the rank and size of the comm of the mesh
     AMP_INSIST( stk::parallel_machine_rank( d_STKMeshBulk->parallel() ) ==
                     (unsigned) d_comm.getRank(),
@@ -486,7 +485,6 @@ void STKMesh::initialize()
     for ( size_t i = 0; i < recv_list.size(); i++ )
         block_ids.insert( recv_list[i] );
     d_block_ids = std::vector<int>( block_ids.begin(), block_ids.end() );
-    PROFILE_STOP( "initialize" );
 }
 
 

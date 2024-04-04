@@ -184,18 +184,17 @@ void TrilinosMLSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator
 void TrilinosMLSolver::resetOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    PROFILE_START( "resetOperator" );
+    PROFILE( "resetOperator" );
     AMP_INSIST( ( d_pOperator ),
                 "ERROR: TrilinosMLSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
     reset( std::shared_ptr<SolverStrategyParameters>() );
-    PROFILE_STOP( "resetOperator" );
 }
 
 
 void TrilinosMLSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 {
-    PROFILE_START( "reset" );
+    PROFILE( "reset" );
     if ( d_mlAggregate ) {
         ML_Aggregate_Destroy( &d_mlAggregate );
         d_mlAggregate = nullptr;
@@ -207,14 +206,13 @@ void TrilinosMLSolver::reset( std::shared_ptr<SolverStrategyParameters> )
     d_mlSolver.reset();
     d_matrix.reset(); // Need to keep a copy of the matrix alive until after the solver is destroyed
     registerOperator( d_pOperator );
-    PROFILE_STOP( "reset" );
 }
 
 
 void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                               std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "solve" );
 
     if ( f )
         AMP_ASSERT( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
@@ -316,7 +314,6 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
         }
     }
 
-    PROFILE_STOP( "solve" );
 
     if ( d_bRobustMode ) {
         if ( finalResNorm > initialResNorm ) {
@@ -332,7 +329,7 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
 void TrilinosMLSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                       std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "reSolveWithLU" );
+    PROFILE( "reSolveWithLU" );
 
     if ( !d_bUseEpetra ) {
         AMP_ERROR( "Robust mode can only be used with Epetra matrices." );
@@ -361,8 +358,6 @@ void TrilinosMLSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::
     d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(
         d_matrix->getEpetra_CrsMatrix(), d_MLParameterList, false ) );
     d_bCreationPhase = true;
-
-    PROFILE_STOP( "reSolveWithLU" );
 }
 
 

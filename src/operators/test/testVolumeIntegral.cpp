@@ -243,7 +243,7 @@ int testVolumeIntegral( int argc, char *argv[] )
 #ifdef AMP_USE_TIMER
     global_profiler.ignoreTimerErrors( true );
 #endif
-    PROFILE_START( "main" );
+    PROFILE( "main" );
 
     AMP::UnitTest ut;
 
@@ -256,7 +256,6 @@ int testVolumeIntegral( int argc, char *argv[] )
         sourceTest( &ut, file );
 
     ut.report();
-    PROFILE_STOP( "main" );
     PROFILE_SAVE( "testVolumeIntegral-1" );
 
     int num_failed = ut.NumFailGlobal();

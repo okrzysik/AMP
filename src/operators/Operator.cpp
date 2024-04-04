@@ -98,7 +98,7 @@ void Operator::getFromInput( std::shared_ptr<AMP::Database> db )
 AMP::LinearAlgebra::Vector::shared_ptr
 Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    PROFILE_START( "subsetOutputVector", 1 );
+    PROFILE( "subsetOutputVector", 1 );
     auto var = getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr retvec;
     if ( d_Mesh ) {
@@ -109,7 +109,6 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
     } else {
         retvec = vec->subsetVectorForVariable( var );
     }
-    PROFILE_STOP( "subsetOutputVector", 1 );
     return retvec;
 }
 
@@ -117,7 +116,7 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 AMP::LinearAlgebra::Vector::shared_ptr
 Operator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    PROFILE_START( "subsetInputVector", 1 );
+    PROFILE( "subsetInputVector", 1 );
     auto var = getInputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr retvec;
     if ( d_Mesh ) {
@@ -128,7 +127,6 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
     } else {
         retvec = vec->subsetVectorForVariable( var );
     }
-    PROFILE_STOP( "subsetInputVector", 1 );
     return retvec;
 }
 
@@ -136,7 +134,7 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 AMP::LinearAlgebra::Vector::const_shared_ptr
 Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    PROFILE_START( "constSubsetOutputVector", 1 );
+    PROFILE( "constSubsetOutputVector", 1 );
     auto var = getOutputVariable();
     AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
     if ( d_Mesh ) {
@@ -147,7 +145,6 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     } else {
         retvec = vec->subsetVectorForVariable( var );
     }
-    PROFILE_STOP( "constSubsetOutputVector", 1 );
     return retvec;
 }
 
@@ -155,7 +152,7 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 AMP::LinearAlgebra::Vector::const_shared_ptr
 Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    PROFILE_START( "constSubsetInputVector", 1 );
+    PROFILE( "constSubsetInputVector", 1 );
     auto var = getInputVariable();
     AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
     if ( d_Mesh ) {
@@ -166,7 +163,6 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     } else {
         retvec = vec->subsetVectorForVariable( var );
     }
-    PROFILE_STOP( "constSubsetInputVector", 1 );
     return retvec;
 }
 
