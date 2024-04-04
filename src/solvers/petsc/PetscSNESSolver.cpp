@@ -174,9 +174,9 @@ void PetscSNESSolver::createPetscObjects(
             // check if the linearSolverDB specifies the name of the preconditioner
             // else assume the preconditioner will be created externally and set
             // later
-            if ( uses_preconditioner && linearSolverDB->keyExists( "pc_solver_name" ) ) {
-                snes_create_pc     = true;
-                preconditionerName = linearSolverDB->getScalar<std::string>( "pc_solver_name" );
+            if ( uses_preconditioner ) {
+                snes_create_pc = linearSolverDB->keyExists( "pc_solver_name" ) ||
+                                 linearSolverDB->keyExists( "Preconditioner" );
             }
             linearSolverDB->putScalar<bool>( "matrix_free", true );
         }
@@ -184,7 +184,13 @@ void PetscSNESSolver::createPetscObjects(
         std::shared_ptr<SolverStrategy> preconditionerSolver;
 
         if ( snes_create_pc ) {
-            preconditionerSolver = createPreconditioner( preconditionerName );
+
+            preconditionerName =
+                linearSolverDB->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+            auto pc_db           = linearSolverDB->keyExists( "pc_solver_name" ) ?
+                                       d_global_db->getDatabase( preconditionerName ) :
+                                       linearSolverDB->getDatabase( preconditionerName );
+            preconditionerSolver = createPreconditioner( pc_db );
         }
         AMP_ASSERT( linearSolverDB );
         auto linearSolverParams    = std::make_shared<SolverStrategyParameters>( linearSolverDB );
@@ -304,13 +310,15 @@ void PetscSNESSolver::initializePetscObjects()
 
 void PetscSNESSolver::preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector> v )
 {
-    SNESLineSearch snesLineSearch;
-    SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
-    // reset the SNES line search objet to deallocate previous vectors
-    // This is important when the solver is being re-used with only a change
-    // in the type of vectors being passed in as there will be a mismatch between the
-    // vectors created and cached by the linesearch and the input
-    SNESLineSearchReset( snesLineSearch );
+    if ( d_bDestroyCachedVecs ) {
+        SNESLineSearch snesLineSearch;
+        SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
+        // reset the SNES line search objet to deallocate previous vectors
+        // This is important when the solver is being re-used with only a change
+        // in the type of vectors being passed in as there will be a mismatch between the
+        // vectors created and cached by the linesearch and the input
+        SNESLineSearchReset( snesLineSearch );
+    }
 
     auto spv = AMP::LinearAlgebra::PetscVector::constView( v );
 
@@ -318,9 +326,11 @@ void PetscSNESSolver::preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         // a clone is done here even if d_pResidualVector is allocated
         // to guard against the possibility of two consecutive solves having
         // different vector types (see the test testPetscSNESSolver)
-        auto r            = spv->getManagedVec();
-        d_pResidualVector = r->clone();
-        d_pScratchVector  = d_pResidualVector->clone();
+        auto r = spv->getManagedVec();
+        if ( d_bDestroyCachedVecs || ( !d_pResidualVector ) )
+            d_pResidualVector = r->clone();
+        if ( d_bDestroyCachedVecs || ( !d_pScratchVector ) )
+            d_pScratchVector = d_pResidualVector->clone();
     }
 
     AMP_ASSERT( d_pResidualVector );
@@ -463,19 +473,20 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 
     d_bPrintNonlinearResiduals = db->getWithDefault<bool>( "print_nonlinear_residuals", false );
     d_bPrintLinearResiduals    = db->getWithDefault<bool>( "print_linear_residuals", false );
+    d_bDestroyCachedVecs       = db->getWithDefault<bool>( "destroy_cached_vecs", false );
 }
 
 std::shared_ptr<SolverStrategy>
-PetscSNESSolver::createPreconditioner( const std::string &pc_solver_name )
+PetscSNESSolver::createPreconditioner( std::shared_ptr<AMP::Database> pc_solver_db )
 {
+    AMP_INSIST(
+        pc_solver_db,
+        "PetscSNESSolver::createPreconditioner: Database object for preconditioner is NULL" );
     std::shared_ptr<SolverStrategy> preconditionerSolver;
-    AMP_ASSERT( d_global_db && d_global_db->keyExists( pc_solver_name ) );
-    auto pc_solver_db = d_global_db->getDatabase( pc_solver_name );
     auto pcSolverParameters =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( pc_solver_db );
     if ( d_pOperator ) {
-        std::shared_ptr<AMP::LinearAlgebra::Vector> x;
-        auto pc_params = d_pOperator->getParameters( "Jacobian", x );
+        auto pc_params = d_pOperator->getParameters( "Jacobian", d_pSolutionVector );
         std::shared_ptr<AMP::Operator::Operator> pcOperator =
             AMP::Operator::OperatorFactory::create( pc_params );
         pcSolverParameters->d_pOperator = pcOperator;

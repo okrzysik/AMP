@@ -1,0 +1,143 @@
+
+Mesh {
+  MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "brick.e"
+}
+
+NumberOfLoadingSteps = 1
+
+nonlinearMechanicsBVPOperator {
+  name="NonlinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "MechanicsNonlinearFEOperator1"
+    BoundaryOperator = "DirichletVectorCorrection1"
+}
+
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
+
+MechanicsNonlinearFEOperator1 {
+  name = "MechanicsNonlinearFEOperator"
+    print_info_level = 1
+    ActiveInputVariables {
+      DISPLACEMENT = "displacement"
+    }
+  OutputVariable = "displacement"
+    RESET_REUSES_RADIAL_RETURN = TRUE
+    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+
+    MechanicsElement {
+      name="MechanicsNonlinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+
+  MechanicsLinearElement = LinearMechanicsElement
+  LocalModel = "VonMisesElastoPlasticModel"
+}
+
+DirichletVectorCorrection1 {
+  name = "DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    isAttachedToVolumeOperator = TRUE
+    number_of_ids = 1
+    id_0 = 2
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
+}
+
+VonMisesElastoPlasticModel {
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = "UO2_MSRZC_09"
+    name="VonMisesElastoPlasticModel"
+    Youngs_Modulus = 2.08e11
+    Poissons_Ratio = 0.23
+    Linear_Strain_Hardening = 2.10e9
+    Elastic_Yield_Stress = 1.45e8
+    Default_Temperature = 310.0
+    Default_Burnup = 0.0
+    Default_Oxygen_Concentration = .1
+}
+
+linearMechanicsBVPOperator {
+    name="LinearBVPOperator"
+    print_info_level = 1
+    VolumeOperator = "MechanicsLinearFEOperator2"
+    BoundaryOperator = "DirichletMatrixCorrection2"
+}
+
+MechanicsLinearFEOperator2 {
+    name = "MechanicsLinearFEOperator"
+    print_info_level = 1
+    reset_reuses_matrix = TRUE
+    InputVariable = "displacement"
+    OutputVariable = "displacement"
+    isAttachedToNonlinearOperator = TRUE
+    MechanicsElement = LinearMechanicsElement
+}
+
+DirichletMatrixCorrection2 {
+    name = "DirichletMatrixCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    skip_rhs_correction = TRUE
+    number_of_ids = 1
+    id_0          = 2
+    number_of_dofs_0 =  3
+    dof_0_0          =  0
+    dof_0_1          =  1
+    dof_0_2          =  2
+}
+
+Load_Boundary {
+  name = "DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+    isAttachedToVolumeOperator = FALSE
+    number_of_ids = 1
+    id_0 = 1
+    number_of_dofs_0 = 1
+    dof_0_0 = 2
+    value_0_0 = 10.0
+}
+
+NonlinearSolver{
+  name = "NKASolver"
+  print_info_level = 1
+  max_iterations = 500
+  max_error = 1e-10
+  max_vectors = 3
+  angle_tolerance = 0.2
+  uses_preconditioner=TRUE
+  pc_solver_name = "Preconditioner"
+  freeze_pc = FALSE
+  zero_initial_guess = FALSE
+  absolute_tolerance = 1.0e-12
+  relative_tolerance = 1.0e-12
+}
+       
+Preconditioner{
+   name = "TrilinosMLSolver"
+   print_info_level = 0
+   PDE_equations = 3
+   max_iterations = 1
+   max_error = 1.0e-15
+}
+ 

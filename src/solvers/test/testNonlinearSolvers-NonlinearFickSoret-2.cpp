@@ -1,10 +1,9 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -18,10 +17,9 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
-#include "AMP/solvers/hypre/BoomerAMGSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -38,10 +36,32 @@ struct null_deleter {
 };
 
 
-void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &results )
+std::shared_ptr<AMP::Solver::SolverStrategy>
+buildSolver( const std::string &solver_name,
+             std::shared_ptr<AMP::Database> input_db,
+             const AMP::AMP_MPI &comm,
+             std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess,
+             std::shared_ptr<AMP::Operator::Operator> op )
 {
-    std::string input_file = "input_" + exeName;
-    std::string log_file   = "output_" + exeName;
+
+    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
+
+    auto db = input_db->getDatabase( solver_name );
+    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
+
+    auto parameters             = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+    parameters->d_pOperator     = op;
+    parameters->d_comm          = comm;
+    parameters->d_pInitialGuess = initialGuess;
+    parameters->d_global_db     = input_db;
+
+    return AMP::Solver::SolverFactory::create( parameters );
+}
+
+void fickSoretTest( AMP::UnitTest *ut, std::string fileName )
+{
+    std::string input_file = fileName;
+    std::string log_file   = "output_" + fileName;
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -104,12 +124,11 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     auto fickFrozen  = fickOp->getFrozen();
     auto soretFrozen = soretOp->getFrozen();
 
-    double lenscale = input_db->getDouble( "LengthScale" );
+    double lenscale = input_db->getScalar<double>( "LengthScale" );
     soretFrozen["temperature"]->setToScalar( 300. );
     auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x, y;
-        std::valarray<double> poly( 10 );
         x = ( iterator->coord() )[0];
         y = ( iterator->coord() )[1];
         std::vector<size_t> gid;
@@ -121,47 +140,25 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     }
 
     // Initial guess
-    double initialValue = input_db->getDouble( "InitialValue" );
+    auto initialValue = input_db->getScalar<double>( "InitialValue" );
     solVec->setToScalar( initialValue );
-    double initialGuessNorm = solVec->L2Norm();
+    auto initialGuessNorm = static_cast<double>( solVec->L2Norm() );
     std::cout << "initial guess norm = " << initialGuessNorm << "\n";
 
     nlinBVPOp->modifyInitialSolutionVector( solVec );
 
-    initialGuessNorm = solVec->L2Norm();
+    initialGuessNorm = static_cast<double>( solVec->L2Norm() );
     std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
 
     rhsVec->setToScalar( 0.0 );
     nlinBVPOp->modifyRHSvector( rhsVec );
 
-    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
-
-    // initialize the nonlinear solver
-    auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
-
-    // change the next line to get the correct communicator out
-    nonlinearSolverParams->d_comm          = globalComm;
-    nonlinearSolverParams->d_pOperator     = nlinBVPOp;
-    nonlinearSolverParams->d_pInitialGuess = solVec;
-
-    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
-
-    auto fickPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
-    auto fickPreconditionerParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( fickPreconditioner_db );
-    fickPreconditionerParams->d_pOperator = linBVPOp;
-    auto linearFickPreconditioner =
-        std::make_shared<AMP::Solver::BoomerAMGSolver>( fickPreconditionerParams );
-
-    // register the preconditioner with the Jacobian free Krylov solver
-    auto linearSolver = nonlinearSolver->getKrylovSolver();
-
-    linearSolver->setNestedSolver( linearFickPreconditioner );
+    // Create the solver
+    auto nonlinearSolver =
+        buildSolver( "NonlinearSolver", input_db, globalComm, solVec, nlinBVPOp );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = resVec->L2Norm();
+    double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
@@ -171,12 +168,11 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = resVec->L2Norm();
+    double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // evaluate and register material coefficients for graphical output
     auto fickCoeffVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "FickCoefficient" );
@@ -215,46 +211,14 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
         soretCoeffVec->setValuesByGlobalID( nnodes, &gids[0], &soretCoeff[0] );
     }
 
-    // write graphical output
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->registerVector(
-        fickFrozen["temperature"], meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
-    siloWriter->registerVector(
-        fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
-    siloWriter->registerVector(
-        soretCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalDiffusionCoefficient" );
-    siloWriter->writeFile( exeName, 0 );
-
-    // store result
-    {
-        iterator        = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-        iterator        = iterator.begin();
-        size_t numNodes = 0;
-        for ( ; iterator != iterator.end(); iterator++ )
-            numNodes++;
-        results.resize( numNodes );
-
-        iterator     = iterator.begin();
-        size_t iNode = 0;
-        for ( ; iterator != iterator.end(); iterator++ ) {
-            std::vector<size_t> gid;
-            nodalDofMap->getDOFs( iterator->globalID(), gid );
-            results[iNode] = solVec->getValueByGlobalID( gid[0] );
-            iNode++;
-        }
-    }
-
     if ( finalResidualNorm > 1.0e-08 ) {
-        ut->failure( exeName );
+        ut->failure( fileName );
     } else {
-        ut->passes( "PetscSNES Solver successfully solves a nonlinear mechanics equation with "
+        ut->passes( "PetscSNES Solver successfully solves a nonlinear Fick-Soret equation with "
                     "Jacobian provided, "
                     "FGMRES for Krylov" );
     }
-    ut->passes( exeName );
+    ut->passes( fileName );
 }
 
 
@@ -262,9 +226,25 @@ int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    AMP::Solver::registerSolverFactories();
 
-    std::vector<double> results;
-    fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-1", results );
+    std::vector<std::string> inputNames;
+
+    if ( argc > 1 ) {
+        inputNames.push_back( argv[1] );
+    } else {
+#ifdef AMP_USE_PETSC
+    #ifdef AMP_USE_HYPRE
+        inputNames.emplace_back(
+            "input_testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-1" );
+    #endif
+#else
+        AMP_ERROR( "Test requires both PETSC and HYPRE at present" );
+#endif
+    }
+
+    for ( auto &inputName : inputNames )
+        fickSoretTest( &ut, inputName );
 
     ut.report();
 

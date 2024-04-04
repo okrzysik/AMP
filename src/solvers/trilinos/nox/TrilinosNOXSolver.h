@@ -30,7 +30,7 @@ class TrilinosThyraModelEvaluator;
 
 
 /**
- * The TrilinosNOXSolver is a wrapper to the PETSc SNES solver which provides an implementation
+ * The TrilinosNOXSolver is a wrapper to the Trilinos NOX solver which provides an implementation
  * of the inexact Newton method.
  */
 class TrilinosNOXSolver : public SolverStrategy

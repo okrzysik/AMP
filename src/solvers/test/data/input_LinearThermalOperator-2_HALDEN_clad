@@ -13,6 +13,7 @@ Mesh{
 NeutronicsOperator{
   name="NeutronicsRhsOperator"
     type               = "Power"
+    OutputVariable     = "SpecificPowerInWattsPerGram" 
     numTimeSteps       = 1
     timeSteps          = .1
     useFixedValue      = TRUE

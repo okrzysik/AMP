@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -69,14 +68,6 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     ut->passes( exeName + ": PowerShape gets past apply with a non-flat power shape." );
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( SpecificPowerShapeVec,
-                                meshAdapter,
-                                AMP::Mesh::GeomType::Cell,
-                                "SpecificPowerInWattsPerKg" );
-    siloWriter->writeFile( input_file, 0 );
 
     AMP::pout << "SpecificPowerShapeVec->max()"
               << " : " << SpecificPowerShapeVec->min() << " : " << SpecificPowerShapeVec->max()

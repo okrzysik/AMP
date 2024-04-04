@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
@@ -81,11 +80,6 @@ void linearElasticTest( AMP::UnitTest *ut )
     mlSolver->setZeroInitialGuess( false );
 
     mlSolver->apply( mechRhsVec, mechSolVec );
-
-    // Create the silo writer and register the data
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->writeFile( exeName, 0 );
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 

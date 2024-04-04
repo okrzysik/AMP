@@ -21,6 +21,7 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
     : AMP::Solver::SolverStrategy( params )
 {
     getFromInput( d_db );
+    initialize( params );
 
     // initialize the preconditioner
     if ( d_uses_preconditioner ) {
@@ -30,8 +31,9 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
         // 3. A preconditioner solver name is not specified but the user will set on their own
         auto parameters =
             std::dynamic_pointer_cast<AMP::Solver::SolverStrategyParameters>( params );
-        if ( parameters != nullptr )
+        if ( parameters ) {
             d_preconditioner = parameters->d_pNestedSolver;
+        }
 
         if ( d_preconditioner ) {
             if ( d_pOperator ) {
@@ -129,9 +131,16 @@ template<typename T>
 void NonlinearKrylovAccelerator<T>::initialize(
     std::shared_ptr<const AMP::Solver::SolverStrategyParameters> params )
 {
-    AMP_ASSERT( params->d_vectors.size() > 0 );
-    d_solution_vector = params->d_vectors[0]->clone();
-    d_solution_vector->setToScalar( static_cast<T>( 0.0 ) );
+    // temporary if-then-else till a cleanup
+    if ( params->d_vectors.size() > 0 ) {
+        d_solution_vector = params->d_vectors[0]->clone();
+        d_solution_vector->copyVector( params->d_vectors[0] );
+    } else {
+        d_solution_vector = params->d_pInitialGuess;
+        AMP_INSIST( d_solution_vector, "Initial guess vector cannot be null" );
+    }
+
+    AMP_ASSERT( d_solution_vector );
 
     d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
@@ -341,6 +350,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
     d_iNumberIterations = 0;
 
     d_solution_vector->copyVector( u );
+    d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     AMP_ASSERT( d_pOperator.get() != nullptr );
 
@@ -444,6 +454,9 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
     }
 
     u->copyVector( d_solution_vector );
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    PROFILE_STOP( "solve" );
 }
 
 template<typename T>
@@ -677,10 +690,7 @@ NonlinearKrylovAccelerator<T>::createPreconditionerOperator(
     std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
-
-    // use a null vector since this is not during the solution process
-    std::shared_ptr<AMP::LinearAlgebra::Vector> x;
-    auto pc_params = op->getParameters( "Jacobian", x );
+    auto pc_params = op->getParameters( "Jacobian", d_solution_vector );
     return AMP::Operator::OperatorFactory::create( pc_params );
 }
 } // namespace AMP::Solver

@@ -17,6 +17,15 @@ Mesh{
     NumberOfElements = 1088
 }
 
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
+
 nonlinearMechanicsBVPOperator {
     name="NonlinearBVPOperator"
     print_info_level = 1
@@ -45,8 +54,9 @@ MechanicsNonlinearFEOperator1 {
             QRULE_ORDER = "DEFAULT"
         }
 
+        MechanicsLinearElement = LinearMechanicsElement
 	LocalModel = "FrapconCladThermalCreepPlasticModel"
-    }
+}
 
 DirichletVectorCorrection1 {
     name = "DirichletVectorCorrection"
@@ -102,16 +112,8 @@ MechanicsLinearFEOperator2 {
         reset_reuses_matrix = TRUE
         InputVariable = "disp"
         OutputVariable = "disp"
-
-        MechanicsElement {
-          name="MechanicsLinearElement"
-            USE_REDUCED_INTEGRATION = FALSE 
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }
-    }
+        MechanicsElement = LinearMechanicsElement
+}
 
 DirichletMatrixCorrection2 {
     name = "DirichletMatrixCorrection"

@@ -20,7 +20,6 @@ public:
     using FactoryStrategy::create;
 };
 
-
 } // namespace AMP::Operator
 
 #endif

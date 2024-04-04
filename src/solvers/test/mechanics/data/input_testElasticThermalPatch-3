@@ -58,12 +58,22 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_type fgmres"
 
         Preconditioner{
-          print_info_level = 1
+	    name = "TrilinosMLSolver"
+            print_info_level = 1
             PDE_equations = 3
             max_iterations = 1
             max_error = 1e-15
         }
     }
+}
+
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
 }
 
 MechanicsNonlinearFEOperator{
@@ -86,6 +96,7 @@ MechanicsNonlinearFEOperator{
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }
+        MechanicsLinearElement = LinearMechanicsElement
 	LocalModel = "MechanicsMaterialModel"
     }
 
@@ -188,15 +199,7 @@ MechanicsLinearFEOperator{
         OutputVariable = "disp"
         isAttachedToNonlinearOperator = TRUE
         isNonlinearOperatorInitialized = FALSE
-
-        MechanicsElement {
-          name="MechanicsLinearElement"
-            USE_REDUCED_INTEGRATION = FALSE 
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }
+        MechanicsElement = LinearMechanicsElement
 }
 	
 DirichletMatrixCorrection{

@@ -109,6 +109,7 @@ NonlinearSolver{
 
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"
         Preconditioner{
+	    name = "TrilinosMLSolver"
             Type = "ML"     // Valid types: ML, Banded, None
             print_info_level = 1
             max_iterations = 1

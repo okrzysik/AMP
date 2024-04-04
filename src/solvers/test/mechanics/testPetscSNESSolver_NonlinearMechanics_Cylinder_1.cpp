@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -92,13 +91,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mechNlScaledRhsVec =
         AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );
 
-    // Create the silo writer and register the data
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector(
-        mechNlSolVec, mesh, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
-    siloWriter->registerVector(
-        mechNlResVec, mesh, AMP::Mesh::GeomType::Vertex, "Residual_Vector" );
-
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );
     mechPressureVec->setToScalar( 0.0 );
@@ -189,8 +181,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     double finalSolNorm = static_cast<double>( mechNlSolVec->L2Norm() );
     AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
-
-    siloWriter->writeFile( exeName, 1 );
 
     ut->passes( exeName );
 }

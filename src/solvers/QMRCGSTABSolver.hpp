@@ -1,5 +1,6 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/solvers/QMRCGSTABSolver.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "ProfilerApp.h"
 
 #include <array>
@@ -29,12 +30,23 @@ void QMRCGSTABSolver<T>::initialize( std::shared_ptr<const SolverStrategyParamet
 {
     AMP_ASSERT( parameters );
 
-    d_pPreconditioner = parameters->d_pNestedSolver;
+    auto db = parameters->d_db;
+    getFromInput( db );
 
-    getFromInput( parameters->d_db );
-
-    if ( d_pOperator ) {
-        registerOperator( d_pOperator );
+    if ( parameters->d_pNestedSolver ) {
+        d_pPreconditioner = parameters->d_pNestedSolver;
+    } else {
+        if ( d_bUsesPreconditioner ) {
+            auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+            auto outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
+            if ( outerDB ) {
+                auto pcDB       = outerDB->getDatabase( pcName );
+                auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+                parameters->d_pOperator = d_pOperator;
+                d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+                AMP_ASSERT( d_pPreconditioner );
+            }
+        }
     }
 }
 
@@ -285,15 +297,6 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     }
 }
 
-/****************************************************************
- *  Function to set the register the operator                    *
- ****************************************************************/
-template<typename T>
-void QMRCGSTABSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
-{
-    AMP_ASSERT( op );
-    d_pOperator = op;
-}
 template<typename T>
 void QMRCGSTABSolver<T>::resetOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> params )

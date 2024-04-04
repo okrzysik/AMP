@@ -1,9 +1,13 @@
-#include "MechanicsNonlinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/ElementOperationFactory.h"
+#include "AMP/operators/mechanics/MechanicsLinearElement.h"
+#include "AMP/operators/mechanics/MechanicsLinearFEOperatorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
-#include "MechanicsLinearFEOperatorParameters.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"
 
@@ -16,6 +20,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     AMP_INSIST( params, "NULL parameter!" );
     AMP_INSIST( params->d_db, "NULL database!" );
 
+    auto db = params->d_db;
     d_resetReusesRadialReturn =
         params->d_db->getWithDefault<bool>( "RESET_REUSES_RADIAL_RETURN", true );
     d_jacobianReusesRadialReturn =
@@ -26,8 +31,18 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     if ( d_useUpdatedLagrangian ) {
         d_mechNULElem =
             std::dynamic_pointer_cast<MechanicsNonlinearUpdatedLagrangianElement>( d_elemOp );
+        // next create a linear ElementOperation object
+        AMP_INSIST( db->keyExists( "MechanicsLinearElement" ),
+                    "Key ''MechanicsLinearElement'' is missing!" );
+        d_mechLULElem = ElementOperationFactory::createElementOperation(
+            db->getDatabase( "MechanicsLinearElement" ) );
     } else {
         d_mechNonlinElem = std::dynamic_pointer_cast<MechanicsNonlinearElement>( d_elemOp );
+        // next create a linear ElementOperation object
+        AMP_INSIST( db->keyExists( "MechanicsLinearElement" ),
+                    "Key ''MechanicsLinearElement'' is missing!" );
+        d_mechLinElem = ElementOperationFactory::createElementOperation(
+            db->getDatabase( "MechanicsLinearElement" ) );
     }
 
     if ( d_useUpdatedLagrangian ) {
@@ -441,12 +456,29 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
 
     // set up a database for the linear operator params
     auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
-    tmp_db->putScalar( "reset_reuses_matrix", true );
+    tmp_db->putScalar( "name", "MechanicsLinearFEOperator" );
+    tmp_db->putScalar( "USE_UPDATED_LAGRANGIAN", d_useUpdatedLagrangian );
     tmp_db->putScalar( "isAttachedToNonlinearOperator", true );
     tmp_db->putScalar( "isNonlinearOperatorInitialized", true );
+    tmp_db->putScalar( "InputVariable",
+                       d_inpVariables->getVariable( Mechanics::DISPLACEMENT )->getName() );
+    tmp_db->putScalar( "OutputVariable", d_outVariable->getName() );
+    tmp_db->putScalar( "reset_reuses_matrix", true );
 
     // create the linear operator params
-    auto outParams = std::make_shared<MechanicsLinearFEOperatorParameters>( tmp_db );
+    auto outParams             = std::make_shared<MechanicsLinearFEOperatorParameters>( tmp_db );
+    outParams->d_materialModel = getMaterialModel();
+    outParams->d_elemOp        = d_useUpdatedLagrangian ? d_mechLULElem : d_mechLinElem;
+    outParams->d_Mesh          = d_Mesh;
+    outParams->d_outDofMap     = outParams->d_inDofMap;
+
+    // add miscellaneous to output parameters
+    auto createDOFManager = []( std::shared_ptr<AMP::Mesh::Mesh> mesh ) {
+        return AMP::Discretization::simpleDOFManager::create(
+            mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    };
+
+    outParams->d_inDofMap = createDOFManager( d_Mesh );
 
     // If updated-lagrangian is being used, then displacement and other variable has to be passed to
     // the linear element level.

@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/libmesh/ReadTestMesh.h"
@@ -132,13 +131,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         ut->passes( exeName );
     }
 
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    auto outFileName1 = AMP::Utilities::stringf( "undeformedBeam_%d", exampleNum );
-    siloWriter->writeFile( outFileName1, 0 );
     meshAdapter->displaceMesh( mechSolVec );
-    auto outFileName2 = AMP::Utilities::stringf( "deformedBeam_%d", exampleNum );
-    siloWriter->writeFile( outFileName2, 0 );
 }
 
 int testMacNealstraightBeam_regular( int argc, char *argv[] )

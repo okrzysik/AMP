@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -214,12 +213,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( !AMP::Utilities::approx_equal( expectedVal, globalResNorm, 10.0 ) ) {
         ut->failure( "the Final Residual Norm has changed." );
     }
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector(
-        globalSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
-    siloWriter->writeFile( input_file, 0 );
 
     if ( globalResNorm < 10e-6 ) {
         ut->passes( "Seggregated solve of Composite Operator using control loop of "

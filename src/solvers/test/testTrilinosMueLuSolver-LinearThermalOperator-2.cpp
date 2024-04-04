@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -167,14 +166,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( finalResidualNorm > 10.0 ) {
         ut->failure( "TrilinosMueLuSolver could not solve a linear thermal problem succesfully" );
     }
-
-    // Plot the results
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector(
-        TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
-    siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->writeFile( input_file, 0 );
 
     input_db.reset();
 

@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -171,9 +170,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->setDecomposition( 1 );
 
     //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
@@ -367,10 +363,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     bool skipDisplaceMesh = true;
     contactOperator->updateActiveSet( nullVec, skipDisplaceMesh );
 
-    siloWriter->registerVector(
-        columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->writeFile( "TOTO_0", 0 );
-
     size_t const maxActiveSetIterations =
         input_db->getWithDefault<size_t>( "maxActiveSetIterations", 5 );
     for ( size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations;
@@ -469,9 +461,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         contactOperator->addShiftToSlave( columnSolVec );
 
         meshAdapter->displaceMesh( columnSolVec );
-        siloWriter->registerVector(
-            columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-        siloWriter->writeFile( "TOTO_0", activeSetIteration + 1 );
         columnSolVec->scale( -1.0 );
         meshAdapter->displaceMesh( columnSolVec );
         columnSolVec->scale( -1.0 );
@@ -506,10 +495,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         // drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
         slaveFout.close();
     } // end if
-
-    siloWriter->registerVector(
-        columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->writeFile( "MPC_0", 0 );
 
     fout.close();
 
