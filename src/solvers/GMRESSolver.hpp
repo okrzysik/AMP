@@ -53,15 +53,15 @@ void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
         d_pPreconditioner = parameters->d_pNestedSolver;
     } else {
         if ( d_bUsesPreconditioner ) {
-            auto pcName = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
-            std::shared_ptr<AMP::Database> outerDB;
-            outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
-            AMP_INSIST( outerDB, "Outer database containing preconditioner is NULL" );
-            auto pcDB       = outerDB->getDatabase( pcName );
-            auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
-            parameters->d_pOperator = d_pOperator;
-            d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
-            AMP_ASSERT( d_pPreconditioner );
+            auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+            auto outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
+            if ( outerDB ) {
+                auto pcDB       = outerDB->getDatabase( pcName );
+                auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+                parameters->d_pOperator = d_pOperator;
+                d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+                AMP_ASSERT( d_pPreconditioner );
+            }
         }
     }
 }
@@ -413,16 +413,6 @@ void GMRESSolver<T>::backwardSolve( const int nr )
 
         d_dy[k] = d_dy[k] / d_dHessenberg( k, k );
     }
-}
-
-/****************************************************************
- *  Function to set the register the operator                    *
- ****************************************************************/
-template<typename T>
-void GMRESSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
-{
-    AMP_ASSERT( op );
-    d_pOperator = op;
 }
 
 template<typename T>
