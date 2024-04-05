@@ -455,8 +455,6 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 
     u->copyVector( d_solution_vector );
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
-    PROFILE_STOP( "solve" );
 }
 
 template<typename T>

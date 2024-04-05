@@ -248,7 +248,7 @@ protected:
 };
 
 
-inline std::ostream &operator<<( std::ostream &os, Units unit )
+inline std::ostream &operator<<( std::ostream &os, const Units &unit )
 {
     os << unit.str();
     return os;
