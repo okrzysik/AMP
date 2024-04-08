@@ -121,7 +121,9 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
     template Vector::shared_ptr createArrayVector<TYPE>( const ArraySize &,                        \
                                                          std::shared_ptr<Variable> );              \
     template Vector::shared_ptr createArrayVector<TYPE>(                                           \
-        const ArraySize &, const ArraySize &, const AMP_MPI &, std::shared_ptr<Variable> );
+        const ArraySize &, const ArraySize &, const AMP_MPI &, std::shared_ptr<Variable> );        \
+    template Vector::shared_ptr createVectorAdaptor<TYPE>(                                         \
+        const std::string &, std::shared_ptr<AMP::Discretization::DOFManager>, TYPE * );
 INSTANTIATE_VECTOR( double )
 INSTANTIATE_VECTOR( float )
 

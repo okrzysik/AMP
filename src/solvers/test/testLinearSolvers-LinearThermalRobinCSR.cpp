@@ -271,8 +271,15 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Use a random initial guess?
     linearSolver->setZeroInitialGuess( false );
 
+    auto b     = RightHandSideVec;
+    auto bView = AMP::LinearAlgebra::createVectorAdaptor(
+        b->getName(), b->getDOFManager(), b->getRawDataBlock<double>() );
+    auto x     = TemperatureInKelvinVec;
+    auto xView = AMP::LinearAlgebra::createVectorAdaptor(
+        x->getName(), x->getDOFManager(), x->getRawDataBlock<double>() );
+
     // Solve the problem.
-    linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
+    linearSolver->apply( bView, xView );
 
     // commented till necessary infrastructure in place
     checkConvergence( linearSolver.get(), inputFileName, *ut );
