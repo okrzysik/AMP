@@ -191,6 +191,21 @@ public: // Evaluators
 
     /**
      * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      List of arguments for the property
+     * \param units     List of units for each argument
+     * \param vec       List of values for each argument
+     * \return scalar value of property
+     */
+    double eval( const Units &unit,
+                 const std::vector<std::string> &args,
+                 const std::vector<double> &vec,
+                 const std::vector<Units> &units = {} ) const;
+
+    /**
+     * \brief    Evaluate the property
      * \details  This function evaluates the property at the desired conditions for multiple points.
      * \param r         std::vector of return values
      * \param unit      The desired units of the result.  If this is not specified,
@@ -319,6 +334,7 @@ protected: // Internal eval/evalv/evalArg
     static Units getUnits( const AMP::LinearAlgebra::Vector& );
     void evalv( const AMP::Array<double>&, AMP::Array<std::vector<double> *> &, const Units & ) const;
     void evalv( const AMP::Array<double>&, AMP::Array<AMP::LinearAlgebra::Vector *> & ) const;
+    void evalArg( AMP::Array<double>&, std::string_view, const Units&, double ) const;
     void evalArg( AMP::Array<double>&, std::string_view, const Units&, const std::vector<double>& ) const;
     void evalArg( AMP::Array<double>&, std::string_view, const Units&, const AMP::LinearAlgebra::Vector& ) const;
     // clang-format on
@@ -346,7 +362,6 @@ protected: // Functions to load the arguments
     void evalArgs( AMP::Array<double>&, std::string_view, const std::shared_ptr<VEC>&, const Args&... ) const;
     template<class VEC, class... Args>
     void evalArgs( AMP::Array<double>&, std::string_view, const Units&, const std::shared_ptr<VEC>&, const Args&... ) const;
-    template<class... Args>
     void evalArgs( AMP::Array<double>&, const std::vector<double> &args, const std::vector<std::string> &names, const std::vector<Units> &argUnits = {} ) const;
     // clang-format on
 

@@ -55,7 +55,7 @@ SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(
 // reset
 void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    PROFILE_START( "reset" );
+    PROFILE( "reset" );
     d_initialized = true;
     auto myparams = std::dynamic_pointer_cast<const SubchannelOperatorParameters>( params );
 
@@ -184,7 +184,6 @@ void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParamet
     if ( !myparams->d_initialize ) {
         // We are done with the reset
         d_matrix->setIdentity();
-        PROFILE_STOP2( "reset" );
         return;
     }
 
@@ -372,7 +371,6 @@ void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParamet
 
     } // end of isub
     d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
-    PROFILE_STOP( "reset" );
 }
 
 // function used in reset to get double parameter or set default if missing

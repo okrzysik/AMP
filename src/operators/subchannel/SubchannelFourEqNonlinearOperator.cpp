@@ -454,7 +454,7 @@ int SubchannelFourEqNonlinearOperator::getSubchannelIndex( double x, double y )
 void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
 
     // Check that the operator has been initialized
     if ( !d_initialized )

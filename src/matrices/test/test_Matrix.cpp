@@ -14,7 +14,7 @@ void test_matrix_loop( AMP::UnitTest &ut )
 {
     auto factory     = std::make_shared<FACTORY>();
     std::string name = factory->name();
-    PROFILE_START( name );
+    PROFILE2( name );
     MatrixTests tests( factory );
     tests.InstantiateMatrix( &ut );
     tests.VerifyGetSetValuesMatrix( &ut );
@@ -25,7 +25,6 @@ void test_matrix_loop( AMP::UnitTest &ut )
     tests.VerifyMultMatrix( &ut );
     tests.VerifyMatMultMatrix( &ut );
     tests.VerifyAddElementNode( &ut );
-    PROFILE_STOP( name );
 }
 
 

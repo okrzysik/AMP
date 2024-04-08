@@ -70,7 +70,7 @@ template<typename T>
 void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                 std::shared_ptr<AMP::LinearAlgebra::Vector> x )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "solve" );
 
     // Check input vector states
     AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
@@ -295,8 +295,6 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "L2Norm of solution: " << x->L2Norm() << std::endl;
     }
-
-    PROFILE_STOP( "solve" );
 }
 
 template<typename T>

@@ -64,19 +64,18 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
 
 void MatrixTests::InstantiateMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "InstantiateMatrix" );
+    PROFILE( "InstantiateMatrix" );
     auto matrix = d_factory->getMatrix();
     if ( matrix )
         utils->passes( "created " + matrix->type() );
     else
         utils->failure( "created " );
-    PROFILE_STOP( "InstantiateMatrix" );
 }
 
 
 void MatrixTests::VerifyGetLeftRightVector( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyGetLeftRightVector" );
+    PROFILE( "VerifyGetLeftRightVector" );
     auto matrix   = d_factory->getMatrix();
     auto factory1 = std::make_shared<AmpInterfaceRightVectorFactory>( matrix );
     auto factory2 = std::make_shared<AmpInterfaceLeftVectorFactory>( matrix );
@@ -92,13 +91,12 @@ void MatrixTests::VerifyGetLeftRightVector( AMP::UnitTest *utils )
     tests3.testPetsc( utils );
     tests4.testPetsc( utils );
 #endif
-    PROFILE_STOP( "VerifyGetLeftRightVector" );
 }
 
 
 void MatrixTests::VerifyGetSetValuesMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyGetSetValuesMatrix" );
+    PROFILE( "VerifyGetSetValuesMatrix" );
     auto matrix = d_factory->getMatrix();
     auto dofmap = d_factory->getDOFMap();
 
@@ -118,13 +116,12 @@ void MatrixTests::VerifyGetSetValuesMatrix( AMP::UnitTest *utils )
         }
     }
     utils->passes( "verify get and set" + matrix->type() );
-    PROFILE_STOP( "VerifyGetSetValuesMatrix" );
 }
 
 
 void MatrixTests::VerifyAXPYMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyAXPYMatrix" );
+    PROFILE( "VerifyAXPYMatrix" );
 
     // Create vectors/matricies from the factory
     auto matrix1      = d_factory->getMatrix();
@@ -172,13 +169,12 @@ void MatrixTests::VerifyAXPYMatrix( AMP::UnitTest *utils )
                         matrix1->type() );
     }
 #endif
-    PROFILE_STOP( "VerifyAXPYMatrix" );
 }
 
 
 void MatrixTests::VerifyScaleMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyScaleMatrix" );
+    PROFILE( "VerifyScaleMatrix" );
     auto matrix1      = d_factory->getMatrix();
     auto matrix2      = d_factory->getMatrix();
     auto vector1lhs   = matrix1->getRightVector();
@@ -209,13 +205,12 @@ void MatrixTests::VerifyScaleMatrix( AMP::UnitTest *utils )
         utils->passes( "non-trivial vector " + matrix1->type() );
     else
         utils->passes( "trivial vector " + matrix1->type() );
-    PROFILE_STOP( "VerifyScaleMatrix" );
 }
 
 
 void MatrixTests::VerifyExtractDiagonal( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyExtractDiagonal" );
+    PROFILE( "VerifyExtractDiagonal" );
     auto matrix = d_factory->getMatrix();
     //    matrix->makeConsistent(); // required by PETSc
     auto vector     = matrix->getRightVector();
@@ -238,13 +233,12 @@ void MatrixTests::VerifyExtractDiagonal( AMP::UnitTest *utils )
         utils->passes( "Verify extractDiagonal " + matrix->type() );
     else
         utils->failure( "Verify extractDiagonal " + matrix->type() );
-    PROFILE_STOP( "VerifyExtractDiagonal" );
 }
 
 
 void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyMultMatrix" );
+    PROFILE( "VerifyMultMatrix" );
     auto matrix    = d_factory->getMatrix();
     auto vectorlhs = matrix->getRightVector();
     auto vectorrhs = matrix->getRightVector();
@@ -290,14 +284,13 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
         utils->passes( "mult by other matrix " + matrix->type() );
     else
         utils->failure( "mult by other matrix " + matrix->type() );
-    PROFILE_STOP( "VerifyMultMatrix" );
 }
 
 
 // Test matrix-matrix multiplication (this tests takes a long time for large matrices)
 void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyMatMultMatrix" );
+    PROFILE( "VerifyMatMultMatrix" );
     auto matZero   = d_factory->getMatrix();
     auto matIdent  = d_factory->getMatrix();
     auto matLaplac = d_factory->getMatrix();
@@ -307,7 +300,6 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
 
     if ( vector1->getGlobalSize() > 1000 ) {
         // Matrix-matrix multiplies take a long time (skip it)
-        PROFILE_STOP2( "VerifyMatMultMatrix" );
         return;
     }
 
@@ -371,13 +363,12 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
         else
             utils->failure( "matMultiply with trivial matrix " + matSol->type() );
     }
-    PROFILE_STOP( "VerifyMatMultMatrix" );
 }
 
 
 void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifySetElementNode" );
+    PROFILE( "VerifySetElementNode" );
     auto mesh   = d_factory->getMesh();
     auto dofmap = d_factory->getDOFMap();
     auto matrix = d_factory->getMatrix();
@@ -453,8 +444,6 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
         utils->passes( "VerifyAddElementNode " + matrix->type() );
     else
         utils->failure( "VerifyAddElementNode " + matrix->type() );
-
-    PROFILE_STOP( "VerifySetElementNode" );
 }
 
 

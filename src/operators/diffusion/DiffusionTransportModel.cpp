@@ -141,7 +141,7 @@ void DiffusionTransportModel::getTransport(
     std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
     const std::vector<libMesh::Point> & )
 {
-    PROFILE_START( "getTransport", 7 );
+    PROFILE( "getTransport", 7 );
     std::shared_ptr<std::vector<double>> scaledp;
 
 
@@ -177,7 +177,6 @@ void DiffusionTransportModel::getTransport(
         if ( d_BilogScaleCoefficient )
             bilogScale( result, lower, upper );
     }
-    PROFILE_STOP( "getTransport", 7 );
 }
 
 

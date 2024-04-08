@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/libmesh/ReadTestMesh.h"
@@ -230,16 +229,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     AMP::pout << "epsilon = " << epsilon << std::endl;
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector(
-        burnVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "InitialDamageThreshold" );
-    siloWriter->registerVector(
-        lhgrVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "CriticalDamageThreshold" );
-    siloWriter->writeFile( "undeformedMesh_SS_3", 1 );
-    meshAdapter->displaceMesh( solVec );
-    siloWriter->writeFile( "deformedMesh_SS_3", 1 );
 
     ut->passes( exeName );
 }

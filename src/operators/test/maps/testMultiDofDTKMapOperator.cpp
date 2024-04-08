@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/ColumnOperator.h"
@@ -79,20 +78,6 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
 
     auto ElectrodeSolVec = BatterySolVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5 ), "V4" );
     auto ElectrodeMapVec = BatteryMapVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5 ), "V4" );
-    //---------------------------------------------------
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( mesh );
-    siloWriter->setDecomposition( 1 );
-    siloWriter->registerVector(
-        potentialMapVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialMapVec" );
-    siloWriter->registerVector(
-        potentialSolVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialSolVec" );
-    siloWriter->registerVector(
-        ElectrodeMapVec, mesh, AMP::Mesh::GeomType::Vertex, "batteryMapVec" );
-    siloWriter->registerVector(
-        ElectrodeSolVec, mesh, AMP::Mesh::GeomType::Vertex, "batterySolVec" );
-
     //---------------------------------------------------
 
     auto multiSolVec = AMP::LinearAlgebra::MultiVector::create( "MultiSolVec", globalComm );
@@ -177,7 +162,6 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
         } // end for node
     }
     multiSolVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    siloWriter->writeFile( logFile, 0 );
 
     // create dtk map operator.
     AMP::pout << "----------------------------\n";
@@ -228,15 +212,11 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     AMP::pout << "----------------------\n";
     AMP::pout << "     APPLY THE MAP    \n";
     AMP::pout << "----------------------\n";
-    siloWriter->writeFile( logFile, 1 );
     AMP::pout << "interface cellSandwich cathodeCC\n";
     cellSandwichCathodeCCMapOperator->apply( multiSolVec, multiResVec );
-    siloWriter->writeFile( logFile, 2 );
     AMP::pout << "interface anodeCC cellSandwich\n";
     anodeCCCellSandwichMapOperator->apply( multiSolVec,
                                            multiResVec ); // this map doesn't seem to work properly
-    siloWriter->writeFile( logFile, 3 );
-
 
     // check the answer
     AMP::pout << "----------------------\n";
@@ -346,8 +326,6 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
                 ut->failure( whatAmIChecking );
         }
     }
-
-    siloWriter->writeFile( logFile, 4 );
 
     return 1;
 }

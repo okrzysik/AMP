@@ -22,7 +22,7 @@ void record( AMP::UnitTest &ut, bool pass, const std::string &msg )
 
 void testRestartManagerComms( AMP::UnitTest &ut )
 {
-    PROFILE_SCOPED( timer, "MAIN" );
+    PROFILE( "MAIN" );
 
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     int size = globalComm.getSize();

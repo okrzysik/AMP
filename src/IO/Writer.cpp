@@ -189,7 +189,7 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         return;
     if ( !getProperties().registerMesh )
         AMP_ERROR( "registerMesh is not supported for " + getProperties().type );
-    PROFILE_SCOPED( timer, "registerMesh" );
+    PROFILE( "registerMesh" );
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( !multimesh ) {
         // Create a unique id for each rank
@@ -310,7 +310,7 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
     // Return if the vector or mesh is empty
     if ( !vec || !mesh )
         return;
-    PROFILE_SCOPED( timer, "registerVector" );
+    PROFILE( "registerVector" );
     // Make sure the mesh has been registered
     std::set<GlobalID> base_ids;
     registerMesh2( mesh, 1, "", base_ids );
@@ -326,7 +326,6 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
     if ( it1.size() != it3.size() )
         AMP_WARNING( "vector does not cover the entire mesh for the given entity type" );
     // Register the vector with the appropriate base meshes
-    PROFILE_START( "registerVector-2" );
     auto ids = getMeshIDs( mesh );
     for ( auto id : ids ) {
         for ( auto &[id0, mesh2] : d_baseMeshes ) {
@@ -342,7 +341,6 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
             }
         }
     }
-    PROFILE_STOP( "registerVector-2" );
     // Register the vector with the appropriate multi-meshes
     VectorData data( vec, name_in );
     for ( auto &[id0, mesh2] : d_multiMeshes ) {
@@ -372,7 +370,7 @@ void Writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
 void Writer::syncVectors()
 {
     // Syncronize all vectors
-    PROFILE_START( "makeConsistent", 1 );
+    PROFILE( "makeConsistent", 1 );
     for ( auto &elem : d_vectorsMesh ) {
         auto localState = elem->getUpdateStatus();
         if ( localState == AMP::LinearAlgebra::UpdateState::ADDING )
@@ -380,7 +378,6 @@ void Writer::syncVectors()
         else
             elem->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
-    PROFILE_STOP( "makeConsistent", 1 );
 }
 
 
@@ -524,7 +521,7 @@ void Writer::syncData( std::vector<TYPE> &data, int root ) const
 {
     if ( d_comm.getSize() == 1 )
         return;
-    PROFILE_SCOPED( timer, "syncData" );
+    PROFILE( "syncData" );
     // Create buffers to store the data
     size_t sendcount = 0;
     for ( size_t i = 0; i < data.size(); ++i )
@@ -554,7 +551,7 @@ void Writer::syncData( std::vector<TYPE> &data, int root ) const
 std::tuple<std::vector<Writer::multiMeshData>, std::map<Writer::GlobalID, Writer::baseMeshData>>
 Writer::syncMultiMeshData( int root ) const
 {
-    PROFILE_SCOPED( timer, "syncMultiMeshData" );
+    PROFILE( "syncMultiMeshData" );
     // Convert the data to vectors
     std::vector<multiMeshData> multiMesh;
     multiMesh.reserve( d_multiMeshes.size() );
@@ -608,7 +605,7 @@ void Writer::getNodeElemList( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                               AMP::Array<int> &nodelist,
                               std::vector<AMP::Mesh::MeshElementID> &nodelist_ids )
 {
-    PROFILE_SCOPED( timer, "getNodeElemList" );
+    PROFILE( "getNodeElemList" );
     AMP_ASSERT( elements.size() > 0 );
     int ndim = mesh->getDim();
     // Get the element list

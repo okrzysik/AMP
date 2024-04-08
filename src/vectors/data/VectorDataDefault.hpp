@@ -58,7 +58,7 @@ VectorDataDefault<TYPE, Allocator>::~VectorDataDefault()
  ****************************************************************/
 template<typename TYPE, class Allocator>
 std::shared_ptr<VectorData>
-VectorDataDefault<TYPE, Allocator>::cloneData( const std::string &name ) const
+VectorDataDefault<TYPE, Allocator>::cloneData( const std::string & ) const
 {
     auto retVal = std::make_shared<VectorDataDefault<TYPE, Allocator>>(
         d_localStart, d_localSize, d_globalSize );

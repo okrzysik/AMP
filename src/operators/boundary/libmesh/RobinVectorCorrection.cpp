@@ -59,7 +59,7 @@ void RobinVectorCorrection::reset( std::shared_ptr<const OperatorParameters> par
 void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                    AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
     AMP_INSIST( r, "NULL Residual Vector" );
     AMP_INSIST( u, "NULL Solution Vector" );
 
@@ -125,7 +125,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     std::vector<size_t> dofs;
     std::vector<std::vector<size_t>> dofIndices;
     std::vector<size_t> dofsElementVec;
-    PROFILE_START( "integration loop" );
+    PROFILE( "integration loop" );
     for ( unsigned int nid = 0; nid < numIds; nid++ ) {
         unsigned int numDofIds = d_dofIds[nid].size();
 
@@ -135,8 +135,6 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                 d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryIds[nid], 0 );
 
             for ( const auto &elem : bnd1 ) {
-                PROFILE_START( "prepare element", 2 );
-
                 // Get the nodes for the current element
                 d_currNodes             = elem.getElements( AMP::Mesh::GeomType::Vertex );
                 auto numNodesInCurrElem = d_currNodes.size();
@@ -170,7 +168,6 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
 
                 auto JxW = fe->get_JxW();
                 auto phi = fe->get_phi();
-                PROFILE_STOP( "prepare element", 2 );
 
                 std::vector<std::vector<double>> inputArgs(
                     d_elementInputVec.size(), std::vector<double>( numNodesInCurrElem ) );
@@ -178,7 +175,6 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                     d_elementInputVec.size(), std::vector<double>( numGaussPts ) );
                 std::vector<double> beta( numGaussPts, d_beta );
                 std::vector<double> gamma( numGaussPts, d_gamma );
-                PROFILE_START( "get conductance", 2 );
                 if ( d_robinPhysicsModel ) {
                     unsigned int startIdx = 0;
                     if ( d_isFluxGaussPtVector && d_IsCoupledBoundary[nid] ) {
@@ -202,8 +198,6 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
 
                     d_robinPhysicsModel->getConductance( beta, gamma, inputArgsAtGpts );
                 }
-                PROFILE_STOP( "get conductance", 2 );
-                PROFILE_START( "perform integration", 2 );
                 std::vector<double> values( dofs.size(), 0.0 );
                 std::vector<double> gpValues( gpDofs.size(), 0.0 );
                 std::vector<double> addValues( dofs.size(), 0.0 );
@@ -235,16 +229,12 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                     } // end for qp
                 }     // coupled
                 rInternal->addValuesByGlobalID( dofs.size(), &dofs[0], &addValues[0] );
-                PROFILE_STOP( "perform integration", 2 );
 
             } // end for bnd
         }     // end for dof ids
     }         // end for nid
-    PROFILE_STOP( "integration loop" );
 
     rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
-
-    PROFILE_STOP( "apply" );
 }
 
 

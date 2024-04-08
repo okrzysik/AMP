@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -132,15 +131,6 @@ void myTest( AMP::UnitTest *ut, const std::string &inputName )
         ut->failure( "the Final Residual is larger than the tolerance" );
     if ( !AMP::Utilities::approx_equal( 45431.3, finalSolutionNorm, 1e-5 ) )
         ut->failure( "the Final Solution Norm has changed." );
-
-#ifdef AMP_USE_SILO
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->writeFile( input_file, 0 );
-#endif
-
     if ( N_error0 == ut->NumFailLocal() )
         ut->passes( inputName );
     else

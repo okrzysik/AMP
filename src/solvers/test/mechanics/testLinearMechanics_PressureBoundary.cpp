@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
@@ -153,13 +152,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
                                    ( ( bvpOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    auto outFileName1 = AMP::Utilities::stringf( "undeformedBeam_%d", exampleNum );
-    siloWriter->writeFile( outFileName1, 1 );
     meshAdapter->displaceMesh( mechSolVec );
-    auto outFileName2 = AMP::Utilities::stringf( "deformedBeam_%d", exampleNum );
-    siloWriter->writeFile( outFileName2, 1 );
 }
 
 int testLinearMechanics_PressureBoundary( int argc, char *argv[] )

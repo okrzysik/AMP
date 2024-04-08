@@ -1,13 +1,15 @@
-//----------------------------------*-C++-*----------------------------------//
-/*!
- * \file   operators/test/testNekOperator.cc
- * \brief  Tests Nek pipe problem run through NekMoabOperator
- *
- * This test is intended to test our ability to use a Nek-generated Moab
- * instance.  It duplicates the behavior of testNekPipe, but maps the Nek
- * output onto an actual AMP mesh.
- */
-//---------------------------------------------------------------------------//
+#include "AMP/IO/PIO.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/moab/MoabMapOperator.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorBuilder.h"
+
+// Nek includes
+#include "nek/NekMoabOperator.h"
+#include "nek/NekMoabOperatorParameters.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -16,21 +18,6 @@
 #include <string>
 #include <vector>
 
-#include "AMP/IO/PIO.h"
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-
-#include "AMP/IO/Writer.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/VectorBuilder.h"
-
-#include "AMP/operators/moab/MoabMapOperator.h"
-
-// Nek includes
-#include "nek/NekMoabOperator.h"
-#include "nek/NekMoabOperatorParameters.h"
 
 //---------------------------------------------------------------------------//
 // TESTS
@@ -156,13 +143,6 @@ static void nekPipeOperator( AMP::UnitTest *ut )
         ut->passes( "Nodal vector is not identically zero" );
     else
         ut->failure( "Nodal vector is identically zero" );
-
-    // How about some output?
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( mesh );
-    siloWriter->registerVector( r_gp, mesh, AMP::Mesh::GeomType::Cell, "AllGaussPointPressures" );
-    siloWriter->registerVector( r_node, mesh, AMP::Mesh::GeomType::Vertex, "AllNodalPressures" );
-    siloWriter->writeFile( "Nek_Pressure", 0 );
 
     // Finalize Nek Operator
     nekOp->finalize();

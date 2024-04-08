@@ -29,8 +29,6 @@ using AMP::Utilities::stringf;
 // Function to waste CPU cycles
 void waste_cpu( int N )
 {
-    if ( N > 10000 )
-        PROFILE_START( "waste_cpu", 2 );
     double x = 1.0;
     N        = std::max( 10, N );
     {
@@ -40,8 +38,6 @@ void waste_cpu( int N )
     } // style to limit gcov hits
     if ( fabs( x - 2.926064057273157 ) > 1e-12 )
         abort();
-    if ( N > 10000 )
-        PROFILE_STOP( "waste_cpu", 2 );
 }
 
 
@@ -65,10 +61,9 @@ void sleep_s( int N ) { sleep_ms( 1000 * N ); }
 static volatile int global_sleep_count = 0;
 void sleep_inc( int N )
 {
-    PROFILE_START( "sleep_inc" );
+    PROFILE( "sleep_inc" );
     sleep_s( N );
     ++global_sleep_count;
-    PROFILE_STOP( "sleep_inc" );
 }
 void sleep_inc2( double x )
 {
@@ -77,10 +72,9 @@ void sleep_inc2( double x )
 }
 void sleep_msg( double x, const std::string &msg )
 {
-    PROFILE_START( msg );
+    PROFILE2( msg );
     sleep_ms( static_cast<int>( round( x * 1000 ) ) );
     NULL_USE( msg );
-    PROFILE_STOP( msg );
 }
 bool check_inc( int N ) { return global_sleep_count == N; }
 
@@ -652,12 +646,12 @@ void testThreadPoolPerformance( ThreadPool &tpool )
 
     // Test the timing creating and running a work item
     printp( "   Testing timmings (creating/running work item):\n" );
-    PROFILE_START( "Create/Run work item" );
     tpool.wait_pool_finished();
     int64_t time_create = 0;
     int64_t time_run    = 0;
     int64_t time_delete = 0;
     for ( int n = 0; n < N_it; n++ ) {
+        PROFILE( "Create/Run work item" );
         auto t1 = std::chrono::high_resolution_clock::now();
         for ( int i = 0; i < N_work; i++ )
             work[i] = ThreadPool::createWork<void, int>( waste_cpu, data1[i] );
@@ -675,7 +669,6 @@ void testThreadPoolPerformance( ThreadPool &tpool )
     time_create /= ( N_it * N_work );
     time_run /= ( N_it * N_work );
     time_delete /= ( N_it * N_work );
-    PROFILE_STOP( "Create/Run work item" );
     printp( "      create = %i ns\n", time_create );
     printp( "      run    = %i ns\n", time_run );
     printp( "      delete = %i ns\n", time_delete );
@@ -684,10 +677,10 @@ void testThreadPoolPerformance( ThreadPool &tpool )
     printp( "   Testing timmings (adding a single item):\n" );
     auto timer_name = Utilities::stringf( "Add single item to tpool (%i threads)", N_threads );
     NULL_USE( timer_name );
-    PROFILE_START( timer_name );
     int64_t time_add_single  = 0;
     int64_t time_wait_single = 0;
     for ( int n = 0; n < N_it; n++ ) {
+        PROFILE2( timer_name );
         auto t1 = std::chrono::high_resolution_clock::now();
         for ( int i = 0; i < N_work; i++ )
             ids[i] = TPOOL_ADD_WORK( &tpool, waste_cpu, ( data1[i] ), priority[i] );
@@ -699,7 +692,6 @@ void testThreadPoolPerformance( ThreadPool &tpool )
     }
     time_add_single /= ( N_it * N_work );
     time_wait_single /= ( N_it * N_work );
-    PROFILE_STOP( timer_name );
     printp( "      create and add = %i ns\n", time_add_single );
     printp( "      wait = %i ns\n", time_wait_single );
 
@@ -707,11 +699,11 @@ void testThreadPoolPerformance( ThreadPool &tpool )
     printp( "   Testing timmings (adding a block of items):\n" );
     timer_name = Utilities::stringf( "Add block of items to tpool (%i threads)", N_threads );
     NULL_USE( timer_name );
-    PROFILE_START( timer_name );
     int64_t time_create_multiple = 0;
     int64_t time_add_multiple    = 0;
     int64_t time_wait_multiple   = 0;
     for ( int n = 0; n < N_it; n++ ) {
+        PROFILE2( timer_name );
         auto t1 = std::chrono::high_resolution_clock::now();
         for ( int i = 0; i < N_work; i++ )
             work[i] = ThreadPool::createWork<void, int>( waste_cpu, data1[i] );
@@ -727,7 +719,6 @@ void testThreadPoolPerformance( ThreadPool &tpool )
     time_create_multiple /= ( N_it * N_work );
     time_add_multiple /= ( N_it * N_work );
     time_wait_multiple /= ( N_it * N_work );
-    PROFILE_STOP( timer_name );
     printp( "      create = %i ns\n", time_create_multiple );
     printp( "      add = %i ns\n", time_add_multiple );
     printp( "      wait = %i ns\n", time_wait_multiple );
@@ -841,8 +832,8 @@ void run_tests( UnitTest &ut )
     // Run a dependency test that tests a simple case that should keep the thread pool busy
     // Note: Checking the results requires looking at the trace data
     tpool.wait_pool_finished();
-    PROFILE_START( "Dependency test" );
     for ( int i = 0; i < 10; i++ ) {
+        PROFILE( "Dependency test" );
         char msg[3][100];
         snprintf( msg[0], 100, "Item %i-%i", i, 0 );
         snprintf( msg[1], 100, "Item %i-%i", i, 1 );
@@ -857,7 +848,6 @@ void run_tests( UnitTest &ut )
         tpool.add_work( work2 );
     }
     tpool.wait_pool_finished();
-    PROFILE_STOP( "Dependency test" );
 
     // Close the thread pool
     tpool.setNumThreads( 0 );

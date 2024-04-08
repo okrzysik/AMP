@@ -122,10 +122,9 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, std::shared_ptr<Matrix>
     memp->d_CommListLeft  = leftVec->getCommunicationList();
     memp->d_CommListRight = rightVec->getCommunicationList();
     result                = std::make_shared<ManagedEpetraMatrix>( memp );
-    PROFILE_START( "Epetra::MatrixMultiply" );
+    PROFILE( "Epetra::MatrixMultiply" );
     d_matrixOps->matMultiply(
         *d_matrixData, *( other_op->getMatrixData() ), *( result->getMatrixData() ) );
-    PROFILE_STOP( "Epetra::MatrixMultiply" );
 }
 
 } // namespace AMP::LinearAlgebra

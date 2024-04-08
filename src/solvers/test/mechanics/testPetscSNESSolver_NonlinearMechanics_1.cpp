@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
@@ -51,8 +50,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -165,12 +162,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
         nonlinearSolver->setZeroInitialGuess( false );
 
         meshAdapter->displaceMesh( mechNlSolVec );
-
-        siloWriter->registerVector(
-            mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-        auto outFileName = AMP::Utilities::stringf(
-            "LoadPrescribed-DeformedPlateWithHole-LinearElasticity_%d", step );
-        siloWriter->writeFile( outFileName, 0 );
     }
 
     double finalSolNorm = static_cast<double>( mechNlSolVec->L2Norm() );
