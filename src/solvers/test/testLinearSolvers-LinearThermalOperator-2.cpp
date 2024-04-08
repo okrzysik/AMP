@@ -132,7 +132,6 @@ void linearThermalTest( AMP::UnitTest *ut,
     } else {
         ut->passes( combo + " fails linear thermal problem with input " + input_file );
     }
-
 }
 
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile )
