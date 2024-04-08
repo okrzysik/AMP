@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -242,9 +241,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->setDecomposition( 1 );
 
     //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
@@ -557,32 +553,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                          thermalExpansionCoefficient,
                          tempVec );
 
-    siloWriter->registerVector(
-        columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "SolutionDisplacement" );
-    siloWriter->registerVector(
-        sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMisesStresses" );
-    siloWriter->registerVector( sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
-    siloWriter->registerVector( sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
-    siloWriter->registerVector( sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
-    siloWriter->registerVector( sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
-    siloWriter->registerVector( sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
-    siloWriter->registerVector( sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
-    siloWriter->registerVector( activeSetBeforeUpdateVec,
-                                meshAdapter,
-                                AMP::Mesh::GeomType::Vertex,
-                                "ActiveSetBeforeUpdate" );
-    siloWriter->registerVector(
-        activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetAfterUpdate" );
-    siloWriter->registerVector(
-        surfaceTractionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Traction" );
-    siloWriter->registerVector(
-        normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
-    siloWriter->registerVector(
-        contactPressureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ContactPressure" );
-    siloWriter->registerVector(
-        contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
-    siloWriter->writeFile( "TOTO_0", 0 );
-
     bool skipDisplaceMesh = true;
     contactOperator->updateActiveSet( nullVec, skipDisplaceMesh );
     //  contactOperator->updateActiveSet(columnSolVec, skipDisplaceMesh);
@@ -767,7 +737,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         columnSolVec->scale( 1.0e3 );
         meshAdapter->displaceMesh( columnSolVec );
-        siloWriter->writeFile( "TOTO_0", activeSetIteration + 1 );
         columnSolVec->scale( -1.0 );
         meshAdapter->displaceMesh( columnSolVec );
         columnSolVec->scale( -1.0e-3 );
@@ -800,8 +769,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         // drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
         slaveFout.close();
     } // end if
-
-    siloWriter->writeFile( "MPC_0", 0 );
 
     fout.close();
 

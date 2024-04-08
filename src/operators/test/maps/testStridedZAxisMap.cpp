@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -116,14 +115,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr dummyVector;
     mapOperator->setVector( dstVector );
     mapOperator->apply( srcVector, dummyVector );
-
-    // Create the writer
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->setDecomposition( 1 );
-    siloWriter->registerVector( srcVector, mesh, AMP::Mesh::GeomType::Vertex, "src" );
-    siloWriter->registerVector( ansVector, mesh, AMP::Mesh::GeomType::Vertex, "foo_bar" );
-    siloWriter->registerVector( dstVector, mesh, AMP::Mesh::GeomType::Vertex, "tmp_bar" );
-    siloWriter->writeFile( "tmp", 0 );
 
     double tolerance = 1.0e-14 * static_cast<double>( ansVector->L2Norm() );
     dstVector->subtract( *ansVector, *dstVector );

@@ -216,7 +216,7 @@ void BoxMesh::loadBalance( std::array<int, 3> size,
  ****************************************************************/
 void BoxMesh::initialize( const std::vector<int> &minSize )
 {
-    PROFILE_SCOPED( timer, "initialize" );
+    PROFILE( "initialize" );
     // Cache comm data
     if ( !d_comm.isNull() ) {
         d_rank = d_comm.getRank();
@@ -283,7 +283,7 @@ void BoxMesh::createBoundingBox()
 }
 void BoxMesh::finalize( const std::string &name, const std::vector<double> &displacement )
 {
-    PROFILE_START( "finalize" );
+    PROFILE( "finalize" );
     d_name = name;
     // Cache comm data (repeat in case initialize is not called)
     if ( !d_comm.isNull() ) {
@@ -300,7 +300,6 @@ void BoxMesh::finalize( const std::string &name, const std::vector<double> &disp
     }
     if ( test )
         displaceMesh( displacement );
-    PROFILE_STOP( "finalize" );
 }
 std::vector<double> BoxMesh::getDisplacement( std::shared_ptr<const AMP::Database> db )
 {

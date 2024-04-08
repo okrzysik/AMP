@@ -468,28 +468,26 @@ void TrilinosMueLuSolver::registerOperator( std::shared_ptr<AMP::Operator::Opera
 void TrilinosMueLuSolver::resetOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    PROFILE_START( "resetOperator" );
+    PROFILE( "resetOperator" );
     AMP_INSIST( ( d_pOperator ),
                 "ERROR: TrilinosMueLuSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
     reset( std::shared_ptr<SolverStrategyParameters>() );
-    PROFILE_STOP( "resetOperator" );
 }
 
 
 void TrilinosMueLuSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 {
-    PROFILE_START( "reset" );
+    PROFILE( "reset" );
     d_mueluSolver.reset();
     d_matrix.reset(); // Need to keep a copy of the matrix alive until after the solver is destroyed
     registerOperator( d_pOperator );
-    PROFILE_STOP( "reset" );
 }
 
 void TrilinosMueLuSolver::solveWithHierarchy( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                               std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solveWithHierarchy" );
+    PROFILE( "solveWithHierarchy" );
 
     if ( d_bUseEpetra ) {
 
@@ -512,15 +510,12 @@ void TrilinosMueLuSolver::solveWithHierarchy( std::shared_ptr<const AMP::LinearA
     } else {
         AMP_ERROR( "Only Epetra interface currently supported" );
     }
-
-
-    PROFILE_STOP( "solveWithHierarchy" );
 }
 
 void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                  std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "solve" );
 
     AMP_ASSERT( f != nullptr );
     AMP_ASSERT( u != nullptr );
@@ -618,7 +613,6 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
         }
     }
 
-    PROFILE_STOP( "solve" );
 
     if ( d_bRobustMode ) {
         if ( finalResNorm > initialResNorm ) {
@@ -633,7 +627,7 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
 void TrilinosMueLuSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                          std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "reSolveWithLU" );
+    PROFILE( "reSolveWithLU" );
 
     if ( !d_bUseEpetra ) {
         AMP_ERROR( "Robust mode can only be used with Epetra matrices." );
@@ -668,8 +662,6 @@ void TrilinosMueLuSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebr
     mueluRCP.release();
 
     d_bCreationPhase = false;
-
-    PROFILE_STOP( "reSolveWithLU" );
 }
 
 } // namespace Solver

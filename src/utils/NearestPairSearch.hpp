@@ -4,6 +4,8 @@
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/Utilities.hpp"
 
+#include "ProfilerApp.h"
+
 #include <math.h>
 
 
@@ -15,6 +17,7 @@ template<int NDIM, class TYPE>
 inline std::pair<int, int> find_min_dist2( const size_t N, const TYPE *const *x, double &dist )
 
 {
+    PROFILE( "find_min_dist2", 3 );
     // Number of points below which we will switch to a brute force search
     constexpr size_t N_brute = 10;
     if ( N < N_brute ) {

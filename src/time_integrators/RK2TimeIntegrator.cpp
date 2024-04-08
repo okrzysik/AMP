@@ -91,7 +91,7 @@ int RK2TimeIntegrator::advanceSolution( const double dt,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> in,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
-    PROFILE_START( "advanceSolution" );
+    PROFILE( "advanceSolution" );
 
     d_solution_vector = in;
 
@@ -107,7 +107,6 @@ int RK2TimeIntegrator::advanceSolution( const double dt,
 
     out->copyVector( d_new_solution );
 
-    PROFILE_STOP( "advanceSolution" );
     return ( 1 );
 }
 

@@ -1,11 +1,9 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -210,12 +208,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( !AMP::Utilities::approx_equal( expectedVal, finalSolutionNorm, 1e-7 ) ) {
         ut->failure( "the Final Residual Norm has changed." );
     }
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->writeFile( exeName, 0 );
 
     ut->passes( exeName );
 }

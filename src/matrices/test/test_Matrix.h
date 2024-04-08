@@ -29,7 +29,7 @@ class DOFMatrixTestFactory : public MatrixFactory
 public:
     DOFMatrixTestFactory()
     {
-        PROFILE_START( "DOFMatrixTestFactory" );
+        PROFILE( "DOFMatrixTestFactory" );
         // Create the mesh
         GENERATOR meshGenerator;
         mesh = meshGenerator.getMesh();
@@ -39,7 +39,6 @@ public:
                        "different number of DOFs for the two matrix variables" );
         DOFs = AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, 1, NUM_DOF_ROW );
-        PROFILE_STOP( "DOFMatrixTestFactory" );
     }
 
     ~DOFMatrixTestFactory()
@@ -77,22 +76,20 @@ public:
 
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        PROFILE_START( "getVector" );
+        PROFILE( "getVector" );
         auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "a" );
         auto vector   = AMP::LinearAlgebra::createVector( DOFs, variable );
-        PROFILE_STOP( "getVector" );
         return vector;
     }
 
     std::shared_ptr<AMP::LinearAlgebra::Matrix> getMatrix() const override
     {
-        PROFILE_START( "getMatrix" );
+        PROFILE( "getMatrix" );
         auto variable_a = std::make_shared<AMP::LinearAlgebra::Variable>( "a" );
         auto variable_b = std::make_shared<AMP::LinearAlgebra::Variable>( "b" );
         auto vector_a   = AMP::LinearAlgebra::createVector( DOFs, variable_a );
         auto vector_b   = AMP::LinearAlgebra::createVector( DOFs, variable_b );
         auto matrix     = AMP::LinearAlgebra::createMatrix( vector_a, vector_b, type() );
-        PROFILE_STOP( "getMatrix" );
         return matrix;
     }
 

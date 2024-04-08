@@ -6,47 +6,14 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/extended_int.h"
 
+#include "ProfilerApp.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <vector>
 
 
-// Macros to define 3 levels of profilers
-//#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
-#if 0
-    #define PROFILE_START_L2( MSG ) PROFILE_START( MSG, 4 )
-    #define PROFILE_STOP_L2( MSG ) PROFILE_STOP( MSG, 4 )
-    #define PROFILE_STOP2_L2( MSG ) PROFILE_STOP2( MSG, 4 )
-#else
-    #define PROFILE_START_L2( MSG ) \
-        do {                        \
-        } while ( 0 )
-    #define PROFILE_STOP_L2( MSG ) \
-        do {                       \
-        } while ( 0 )
-    #define PROFILE_STOP2_L2( MSG ) \
-        do {                        \
-        } while ( 0 )
-#endif
-#if 0
-    #define PROFILE_START_L3( MSG ) PROFILE_START( MSG, 5 )
-    #define PROFILE_STOP_L3( MSG ) PROFILE_STOP( MSG, 5 )
-    #define PROFILE_STOP2_L3( MSG ) PROFILE_STOP2( MSG, 5 )
-#else
-    #define PROFILE_START_L3( MSG ) \
-        do {                        \
-        } while ( 0 )
-    #define PROFILE_STOP_L3( MSG ) \
-        do {                       \
-        } while ( 0 )
-    #define PROFILE_STOP2_L3( MSG ) \
-        do {                        \
-        } while ( 0 )
-#endif
-
-
 #define DEBUG_CHECK 0 // Flag to enable extra checks (1: some additional cost, 2: very expensive)
-
 
 // Choose our numerical format and precision
 // Note: for exact integer arithmetic, we need to support at least O(N^D)
@@ -172,7 +139,7 @@ bool check_current_triangles( int N,
     if ( N_tri == 0 )
         return false;
     NULL_USE( TOL_VOL );
-    PROFILE_START_L2( "check_current_triangles" );
+    PROFILE( "check_current_triangles", 4 );
     bool pass = true;
     for ( size_t i = 0; i < N_tri; i++ ) {
         // First check if we are dealing with an unused triangle
@@ -234,7 +201,6 @@ bool check_current_triangles( int N,
             break;
         }
     }
-    PROFILE_STOP_L2( "check_current_triangles" );
     return pass;
 }
 
@@ -349,7 +315,7 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
     std::vector<int> &neighbor,
     std::vector<int> &face_id )
 {
-    PROFILE_START_L2( "FaceList::add_node" );
+    PROFILE( "FaceList::add_node", 4 );
 #if DEBUG_CHECK == 2
     check_data();
 #endif
@@ -406,7 +372,6 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
     }
     if ( ids.empty() ) {
         // No triangles were created, the point must be inside (or on) the convex hull
-        PROFILE_STOP2_L2( "FaceList::add_node" );
         AMP_ERROR( "Error: point is inside or on the convex hull" );
     }
     // Check that the new triangles are valid and have the proper point ordering
@@ -418,7 +383,6 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
         double volume = DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 );
         if ( fabs( volume ) <= TOL_vol ) {
             // The triangle is invalid
-            PROFILE_STOP2_L2( "FaceList::add_node" );
             AMP_ERROR( "Invalid triangle created" );
         } else if ( volume < 0 ) {
             // The volume is negitive, swap the order of the last two points
@@ -513,7 +477,6 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
     if ( !all_valid )
         printf( "Warning: new triangle neighbors are inconsistent\n" );
 #endif
-    PROFILE_STOP_L2( "FaceList::add_node" );
 }
 
 
@@ -578,7 +541,7 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::update_face( const int N
                                                                      const int new_fid[],
                                                                      const Triangle *tri_in )
 {
-    PROFILE_START_L3( "update_face" );
+    PROFILE( "update_face", 4 );
     // Check the inputs
     bool valid_inputs = N <= 16;
     for ( int i = 0; i < N; i++ ) {
@@ -689,7 +652,6 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::update_face( const int N
 #if DEBUG_CHECK == 2
     check_data();
 #endif
-    PROFILE_STOP_L3( "update_face" );
 }
 
 

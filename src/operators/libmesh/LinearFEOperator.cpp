@@ -32,7 +32,7 @@ LinearFEOperator::LinearFEOperator( std::shared_ptr<const OperatorParameters> in
 
 void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    PROFILE_START( "reset" );
+    PROFILE( "reset" );
     AMP_INSIST( params, "NULL parameter" );
     AMP_INSIST( params->d_db, "NULL database" );
 
@@ -57,8 +57,6 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
     }
 
     this->postAssembly();
-
-    PROFILE_STOP( "reset" );
 }
 
 

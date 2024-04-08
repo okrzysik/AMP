@@ -136,7 +136,7 @@ std::vector<PointInt<NDIM>> createRandomPointsInt( int N )
             points[d + 1].x[d] = R_INT;
         return points;
     }
-    PROFILE_START( "createRandomPoints", 1 );
+    PROFILE( "createRandomPoints", 1 );
     const uint64_t R_INT2 = static_cast<uint64_t>( R_INT ) * static_cast<uint64_t>( R_INT );
     points.reserve( N + 10 );
     // Create a logical Nd-hypercube on [-1,1] and keep only the points within R<=R_INT
@@ -176,7 +176,6 @@ std::vector<PointInt<NDIM>> createRandomPointsInt( int N )
     points.resize( std::min<size_t>( points.size(), N ) );
     // Resort the points in random order
     std::random_shuffle( points.begin(), points.end() );
-    PROFILE_STOP( "createRandomPoints", 1 );
     return points;
 }
 AMP::Array<int> getPointListInt( int ndim, int N )
@@ -240,7 +239,7 @@ std::vector<double> createRandomPoints<double>( int ndim, int N )
 template<>
 AMP::Array<double> createRandomPoints<double>( int ndim, int N )
 {
-    PROFILE_START( "createRandomPointsDouble", 1 );
+    PROFILE( "createRandomPointsDouble", 1 );
     AMP::Array<double> points( ndim, N );
     int i = 0;
     // Create a Nd-hypercube on [-1,1] and keep only the points within R<=1
@@ -275,6 +274,5 @@ AMP::Array<double> createRandomPoints<double>( int ndim, int N )
             i++;
         }
     }
-    PROFILE_STOP( "createRandomPointsDouble", 1 );
     return points;
 }

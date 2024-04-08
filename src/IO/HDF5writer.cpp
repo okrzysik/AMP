@@ -92,7 +92,7 @@ void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not i
  ************************************************************/
 void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double time )
 {
-    PROFILE_SCOPED( timer, "writeFile" );
+    PROFILE( "writeFile" );
 #ifdef AMP_USE_HDF5
     Xdmf xmf;
     AMP_ASSERT( d_comm.getSize() == 1 );
@@ -191,7 +191,7 @@ Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
                                              const std::string &name,
                                              const std::string &path ) const
 {
-    PROFILE_SCOPED( timer, "writeDefaultMesh", 1 );
+    PROFILE( "writeDefaultMesh", 1 );
     // Treat the mesh as an unstructured mesh
     const int ndim      = mesh.mesh->getDim();
     const auto type     = mesh.mesh->getGeomType();
@@ -288,7 +288,7 @@ Array<double> getBoxMeshVar( const AMP::Mesh::BoxMesh &mesh,
         }
     }
     // Copy the data
-    PROFILE_START( "convertData", 1 );
+    PROFILE( "convertData", 1 );
     AMP::ArraySize size( mesh.size() );
     auto size2 = size + (size_t) 1;
     int ndim   = size2.ndim();
@@ -324,7 +324,6 @@ Array<double> getBoxMeshVar( const AMP::Mesh::BoxMesh &mesh,
     }
     if ( numDOFs == 1 )
         data.reshape( size2 );
-    PROFILE_STOP( "convertData", 1 );
     return data;
 }
 Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
@@ -332,6 +331,7 @@ Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
                                          const std::string &name,
                                          const std::string &path ) const
 {
+    PROFILE( "writeBoxMesh", 1 );
     using AMP::Mesh::GeomType;
     using MeshElementIndex = AMP::Mesh::BoxMesh::MeshElementIndex;
     auto mesh2             = std::dynamic_pointer_cast<const AMP::Mesh::BoxMesh>( mesh.mesh );
@@ -340,7 +340,6 @@ Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
     AMP::ArraySize size( mesh2->size() );
     if ( size.ndim() != mesh2->getDim() )
         return writeDefaultMesh( fid, mesh, name, path ); // We have issues with surface meshes
-    PROFILE_START( "writeBoxMesh", 1 );
     auto size2      = size + (size_t) 1;
     auto isPeriodic = mesh2->periodic();
     AMP::Array<double> x( size2 ), y( size2 ), z( size2 );
@@ -376,9 +375,8 @@ Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
     } else {
         AMP_ERROR( "Not finished" );
     }
-    PROFILE_STOP( "writeBoxMesh", 1 );
     // Write the vectors
-    PROFILE_START( "writeBoxMeshVars", 1 );
+    PROFILE( "writeBoxMeshVars", 1 );
     for ( const auto &vec : mesh.vectors ) {
         auto data = getBoxMeshVar( *mesh2, *vec.vec, vec.type, vec.numDOFs );
         writeHDF5( fid, vec.name, data );
@@ -390,7 +388,6 @@ Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
         var.data     = path + "/" + vec.name;
         XdmfData.vars.push_back( var );
     }
-    PROFILE_STOP( "writeBoxMeshVars", 1 );
     return XdmfData;
 }
 static std::vector<std::string> splitPath( const std::string &path )

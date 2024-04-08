@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -78,11 +77,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto rhsVec = AMP::LinearAlgebra::createVector( DOF_scalar, fickVariable );
     auto resVec = AMP::LinearAlgebra::createVector( DOF_scalar, fickVariable );
 
-    // register some variables for plotting
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-
     // now construct the linear BVP operator for fick
     AMP_INSIST( input_db->keyExists( "testLinearFickOperator" ), "key missing!" );
     auto linearFickOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -139,8 +133,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
-    siloWriter->writeFile( exeName, 0 );
 
     if ( finalResidualNorm > 1.0e-08 ) {
         ut->failure( exeName );

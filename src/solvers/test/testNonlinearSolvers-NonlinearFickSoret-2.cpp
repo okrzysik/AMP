@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -211,21 +210,6 @@ void fickSoretTest( AMP::UnitTest *ut, std::string fileName )
         fickCoeffVec->setValuesByGlobalID( nnodes, &gids[0], &fickCoeff[0] );
         soretCoeffVec->setValuesByGlobalID( nnodes, &gids[0], &soretCoeff[0] );
     }
-
-#ifdef AMP_USE_SILO
-    // write graphical output
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->registerVector(
-        fickFrozen["temperature"], meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
-    siloWriter->registerVector(
-        fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
-    siloWriter->registerVector(
-        soretCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalDiffusionCoefficient" );
-    siloWriter->writeFile( fileName, 0 );
-#endif
 
     if ( finalResidualNorm > 1.0e-08 ) {
         ut->failure( fileName );

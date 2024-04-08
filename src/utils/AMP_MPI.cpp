@@ -546,7 +546,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
 }
 uint64_t MPI_CLASS::hashRanks() const
 {
-    PROFILE_SCOPED( timer, "hashRanks", profile_level );
+    PROFILE( "hashRanks", profile_level );
     std::string str;
     for ( auto rank : globalRanks() )
         str += std::to_string( rank ) + '.';
@@ -665,7 +665,7 @@ MPI_CLASS MPI_CLASS::split( int color, int key, bool manage ) const
             return MPI_CLASS( commNull );
         return dup();
     }
-    PROFILE_SCOPED( timer, "split", profile_level );
+    PROFILE( "split", profile_level );
     MPI_CLASS::Comm new_MPI_comm = commNull;
 #ifdef USE_MPI
     // USE MPI to split the communicator
@@ -688,7 +688,7 @@ MPI_CLASS MPI_CLASS::splitByNode( int key, bool manage ) const
     // Check if we are dealing with a single processor (trivial case)
     if ( d_size == 1 )
         return this->split( 0, 0, manage );
-    PROFILE_SCOPED( timer, "splitByNode", profile_level );
+    PROFILE( "splitByNode", profile_level );
     // Get the node name
     std::string name = MPI_CLASS::getNodeName();
     unsigned int id  = AMP::Utilities::hash_char( name.data() );
@@ -708,7 +708,7 @@ MPI_CLASS MPI_CLASS::dup( bool manage ) const
 {
     if ( d_isNull )
         return MPI_CLASS( commNull );
-    PROFILE_SCOPED( timer, "dup", profile_level );
+    PROFILE( "dup", profile_level );
     MPI_CLASS::Comm new_MPI_comm = d_comm;
 #if defined( USE_MPI ) || defined( USE_PETSC )
     // USE MPI to duplicate the communicator
@@ -1154,9 +1154,8 @@ void MPI_CLASS::barrier() const
 #ifdef USE_MPI
     if ( d_size <= 1 )
         return;
-    PROFILE_START( "barrier", profile_level );
+    PROFILE( "barrier", profile_level );
     MPI_Barrier( d_comm );
-    PROFILE_STOP( "barrier", profile_level );
 #endif
 }
 void MPI_CLASS::sleepBarrier() const
@@ -1165,7 +1164,7 @@ void MPI_CLASS::sleepBarrier() const
     if ( d_size <= 1 )
         return;
     using namespace std::chrono_literals;
-    PROFILE_START( "sleepBarrier", profile_level );
+    PROFILE( "sleepBarrier", profile_level );
     int flag = 0;
     MPI_Request request;
     MPI_Ibarrier( d_comm, &request );
@@ -1177,7 +1176,6 @@ void MPI_CLASS::sleepBarrier() const
         // Check if the request has finished
         MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
     }
-    PROFILE_STOP( "sleepBarrier", profile_level );
 #endif
 }
 
@@ -1209,7 +1207,7 @@ void MPI_CLASS::sendBytes( const void *buf, int bytes, int, int tag ) const
 {
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
-    PROFILE_START( "sendBytes", profile_level );
+    PROFILE( "sendBytes", profile_level );
     auto id = getRequest( d_comm, tag );
     auto it = global_isendrecv_list.find( id );
     MPI_CLASS_INSIST( it != global_isendrecv_list.end(),
@@ -1217,13 +1215,12 @@ void MPI_CLASS::sendBytes( const void *buf, int bytes, int, int tag ) const
     MPI_CLASS_ASSERT( it->second.status == 2 );
     memcpy( (char *) it->second.data, buf, bytes );
     global_isendrecv_list.erase( it );
-    PROFILE_STOP( "sendBytes", profile_level );
 }
 void MPI_CLASS::recvBytes( void *buf, int bytes, const int, int tag ) const
 {
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
-    PROFILE_START( "recv<char>", profile_level );
+    PROFILE( "recv<char>", profile_level );
     auto id = getRequest( d_comm, tag );
     auto it = global_isendrecv_list.find( id );
     MPI_CLASS_INSIST( it != global_isendrecv_list.end(),
@@ -1232,13 +1229,12 @@ void MPI_CLASS::recvBytes( void *buf, int bytes, const int, int tag ) const
     MPI_CLASS_ASSERT( it->second.bytes == bytes );
     memcpy( buf, it->second.data, bytes );
     global_isendrecv_list.erase( it );
-    PROFILE_STOP( "recv<char>", profile_level );
 }
 MPI_CLASS::Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) const
 {
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
-    PROFILE_START( "IsendBytes", profile_level );
+    PROFILE( "IsendBytes", profile_level );
     auto id = getRequest( d_comm, tag );
     auto it = global_isendrecv_list.find( id );
     if ( it == global_isendrecv_list.end() ) {
@@ -1258,7 +1254,6 @@ MPI_CLASS::Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int t
         memcpy( (char *) it->second.data, buf, bytes );
         global_isendrecv_list.erase( it );
     }
-    PROFILE_STOP( "IsendBytes", profile_level );
     return id;
 }
 MPI_CLASS::Request
@@ -1266,7 +1261,7 @@ MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const int tag ) co
 {
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
-    PROFILE_START( "Irecv<char>", profile_level );
+    PROFILE( "Irecv<char>", profile_level );
     auto id = getRequest( d_comm, tag );
     auto it = global_isendrecv_list.find( id );
     if ( it == global_isendrecv_list.end() ) {
@@ -1285,7 +1280,6 @@ MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const int tag ) co
         memcpy( buf, it->second.data, bytes );
         global_isendrecv_list.erase( it );
     }
-    PROFILE_STOP( "Irecv<char>", profile_level );
     return id;
 }
 #endif
@@ -1329,7 +1323,7 @@ std::vector<int> MPI_CLASS::commRanks( const std::vector<int> &ranks ) const
 #ifdef USE_MPI
 void MPI_CLASS::wait( Request2 request )
 {
-    PROFILE_START( "wait", profile_level );
+    PROFILE( "wait", profile_level );
     int flag = 0;
     int err  = MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
     MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
@@ -1339,13 +1333,12 @@ void MPI_CLASS::wait( Request2 request )
         // Check if the request has finished
         MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
     }
-    PROFILE_STOP( "wait", profile_level );
 }
 int MPI_CLASS::waitAny( int count, Request2 *request )
 {
     if ( count == 0 )
         return -1;
-    PROFILE_START( "waitAny", profile_level );
+    PROFILE( "waitAny", profile_level );
     int index = -1;
     int flag  = 0;
     int err   = MPI_Testany( count, request, &index, &flag, MPI_STATUS_IGNORE );
@@ -1357,14 +1350,13 @@ int MPI_CLASS::waitAny( int count, Request2 *request )
         MPI_Testany( count, request, &index, &flag, MPI_STATUS_IGNORE );
     }
     MPI_CLASS_ASSERT( index >= 0 ); // Check that the index is valid
-    PROFILE_STOP( "waitAny", profile_level );
     return index;
 }
 void MPI_CLASS::waitAll( int count, Request2 *request )
 {
     if ( count == 0 )
         return;
-    PROFILE_START( "waitAll", profile_level );
+    PROFILE( "waitAll", profile_level );
     int flag = 0;
     int err  = MPI_Testall( count, request, &flag, MPI_STATUS_IGNORE );
     MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
@@ -1374,13 +1366,12 @@ void MPI_CLASS::waitAll( int count, Request2 *request )
         // Check if the request has finished
         MPI_Testall( count, request, &flag, MPI_STATUS_IGNORE );
     }
-    PROFILE_STOP( "waitAll", profile_level );
 }
 std::vector<int> MPI_CLASS::waitSome( int count, Request2 *request )
 {
     if ( count == 0 )
         return std::vector<int>();
-    PROFILE_START( "waitSome", profile_level );
+    PROFILE( "waitSome", profile_level );
     std::vector<int> indicies( count, -1 );
     int outcount = 0;
     int err      = MPI_Testsome( count, request, &outcount, &indicies[0], MPI_STATUS_IGNORE );
@@ -1393,13 +1384,12 @@ std::vector<int> MPI_CLASS::waitSome( int count, Request2 *request )
         MPI_Testsome( count, request, &outcount, &indicies[0], MPI_STATUS_IGNORE );
     }
     indicies.resize( outcount );
-    PROFILE_STOP( "waitSome", profile_level );
     return indicies;
 }
 #else
 void MPI_CLASS::wait( Request2 request )
 {
-    PROFILE_START( "wait", profile_level );
+    PROFILE( "wait", profile_level );
     while ( 1 ) {
         // Check if the request is in our list
         if ( global_isendrecv_list.find( request ) == global_isendrecv_list.end() )
@@ -1407,13 +1397,12 @@ void MPI_CLASS::wait( Request2 request )
         // Put the current thread to sleep to allow other threads to run
         std::this_thread::yield();
     }
-    PROFILE_STOP( "wait", profile_level );
 }
 int MPI_CLASS::waitAny( int count, Request2 *request )
 {
     if ( count == 0 )
         return -1;
-    PROFILE_START( "waitAny", profile_level );
+    PROFILE( "waitAny", profile_level );
     int index = 0;
     while ( 1 ) {
         // Check if the request is in our list
@@ -1429,14 +1418,13 @@ int MPI_CLASS::waitAny( int count, Request2 *request )
         // Put the current thread to sleep to allow other threads to run
         std::this_thread::yield();
     }
-    PROFILE_STOP( "waitAny", profile_level );
     return index;
 }
 void MPI_CLASS::waitAll( int count, Request2 *request )
 {
     if ( count == 0 )
         return;
-    PROFILE_START( "waitAll", profile_level );
+    PROFILE( "waitAll", profile_level );
     while ( 1 ) {
         // Check if the request is in our list
         bool found_all = true;
@@ -1449,13 +1437,12 @@ void MPI_CLASS::waitAll( int count, Request2 *request )
         // Put the current thread to sleep to allow other threads to run
         std::this_thread::yield();
     }
-    PROFILE_STOP( "waitAll", profile_level );
 }
 std::vector<int> MPI_CLASS::waitSome( int count, Request2 *request )
 {
     if ( count == 0 )
         return std::vector<int>();
-    PROFILE_START( "waitSome", profile_level );
+    PROFILE( "waitSome", profile_level );
     std::vector<int> indicies;
     while ( 1 ) {
         // Check if the request is in our list
@@ -1468,7 +1455,6 @@ std::vector<int> MPI_CLASS::waitSome( int count, Request2 *request )
         // Put the current thread to sleep to allow other threads to run
         std::this_thread::yield();
     }
-    PROFILE_STOP( "waitSome", profile_level );
     return indicies;
 }
 #endif

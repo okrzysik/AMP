@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
@@ -117,7 +116,7 @@ static void createVectors( std::shared_ptr<AMP::Mesh::Mesh> pinMesh,
 
 static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 {
-    PROFILE_START( "Main" );
+    PROFILE( "Main" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
     AMP::logAllNodes( log_file );
@@ -485,7 +484,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     auto globalThermalResVec  = globalResMultiVector->subsetVectorForVariable( thermalVariable );
 
     // Initialize the pin temperatures
-    PROFILE_START( "Initialize" );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     int root_subchannel = -1;
     std::vector<double> range( 6 );
@@ -570,7 +568,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearThermalOperator->modifyRHSvector( globalThermalRhsVec );
     }
     globalThermalRhsVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    PROFILE_STOP( "Initialize" );
 
     auto linearColParams =
         nonlinearColumnOperator->getParameters( "Jacobian", globalSolMultiVector );
@@ -646,6 +643,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess( false );
+
 
     double tempResNorm = 0.0;
     double flowResNorm = 0.0;
@@ -802,30 +800,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         enthalpy->scale( h_scale );
         pressure->scale( P_scale );
     }
-    // Register the quantities to plot
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    if ( xyFaceMesh ) {
-        siloWriter->registerVector(
-            flowSolVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "SubchannelFlow" );
-        siloWriter->registerVector(
-            flowTempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "FlowTemp" );
-        siloWriter->registerVector(
-            deltaFlowTempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "FlowTempDelta" );
-        siloWriter->registerVector(
-            flowDensityVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "FlowDensity" );
-    }
-    if ( pinMesh  ) {
-        siloWriter->registerVector(
-            globalThermalSolVec, pinMesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
-        siloWriter->registerVector(
-            specificPowerGpVec, pinMesh, AMP::Mesh::GeomType::Cell, "Power" );
-    }
-    siloWriter->writeFile( exeName, 0 );
 #endif
     ut->passes( "test runs to completion" );
 
     globalComm.barrier();
-    PROFILE_STOP( "Main" );
     PROFILE_SAVE( "exeName" );
 }
 

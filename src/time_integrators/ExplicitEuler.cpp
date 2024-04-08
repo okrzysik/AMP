@@ -87,14 +87,13 @@ int ExplicitEuler::advanceSolution( const double dt,
                                     std::shared_ptr<AMP::LinearAlgebra::Vector> in,
                                     std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
-    PROFILE_START( "ExplicitEuler::advanceSolution1" );
+    PROFILE( "ExplicitEuler::advanceSolution1" );
     d_solution_vector = in;
     if ( first_step ) {
         d_current_dt = d_initial_dt;
     } else {
         d_current_dt = dt;
     }
-    PROFILE_STOP( "ExplicitEuler::advanceSolution1" );
     if ( stepsRemaining() && ( d_current_time < d_final_time ) ) {
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
@@ -105,21 +104,22 @@ int ExplicitEuler::advanceSolution( const double dt,
                       << std::endl;
         }
         // f_vec = f(tn,un)
-        PROFILE_START( "ExplicitEuler::advanceSolution apply" );
-        d_operator->apply( d_solution_vector, d_f_vec );
-        PROFILE_STOP( "ExplicitEuler::advanceSolution apply" );
-        if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "L2 Norm of f(d_solution_vector) " << d_f_vec->L2Norm() << std::endl;
+        {
+            PROFILE( "ExplicitEuler::advanceSolution apply" );
+            d_operator->apply( d_solution_vector, d_f_vec );
+            if ( d_iDebugPrintInfoLevel > 0 ) {
+                AMP::pout << "L2 Norm of f(d_solution_vector) " << d_f_vec->L2Norm() << std::endl;
+            }
         }
 
 
         // u* = un+dt*f
-        PROFILE_START( "ExplicitEuler::advanceSolution axby" );
-        d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution_vector );
-        PROFILE_STOP( "ExplicitEuler::advanceSolution axby" );
-
-        if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "L2 Norm of d_new_solution " << d_new_solution->L2Norm() << std::endl;
+        {
+            PROFILE( "ExplicitEuler::advanceSolution axby" );
+            d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution_vector );
+            if ( d_iDebugPrintInfoLevel > 0 ) {
+                AMP::pout << "L2 Norm of d_new_solution " << d_new_solution->L2Norm() << std::endl;
+            }
         }
     }
 

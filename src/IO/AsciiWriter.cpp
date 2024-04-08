@@ -58,7 +58,7 @@ std::set<ID> getKeys( const std::map<ID, TYPE> &local_map, const AMP_MPI &comm )
 void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count, double time )
 {
     NULL_USE( time );
-    PROFILE_START( "writeFile" );
+    PROFILE( "writeFile" );
     // Open the file for writing
     FILE *fid = nullptr;
     if ( d_comm.getRank() == 0 ) {
@@ -128,7 +128,6 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     // Close the file
     if ( fid )
         fclose( fid );
-    PROFILE_STOP( "writeFile" );
 }
 
 

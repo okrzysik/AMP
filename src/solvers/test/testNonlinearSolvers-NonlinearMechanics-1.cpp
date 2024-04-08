@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
@@ -139,16 +138,6 @@ void myTest( AMP::UnitTest *ut, std::string fileName )
         nonlinBvpOperator->getVolumeOperator()->reset( tmpParams );
         nonlinearSolver->setZeroInitialGuess( false );
     }
-
-#ifdef AMP_USE_SILO
-    // Create the silo writer and register the data
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector(
-        mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    siloWriter->registerVector(
-        mechNlResVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->writeFile( fileName, 0 );
-#endif
 
     ut->passes( fileName );
 }

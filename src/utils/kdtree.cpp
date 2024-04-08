@@ -34,6 +34,8 @@ static inline double calcDist( const std::array<double, NDIM> &x,
 template<uint8_t NDIM>
 void *createTree( const size_t N, const double *const *x )
 {
+    auto name = AMP::Utilities::stringf( "kdtree<%i>", NDIM );
+    PROFILE2( name );
     std::vector<int> index( N );
     std::vector<std::array<double, NDIM>> x2( N );
     for ( size_t i = 0; i < N; i++ ) {
@@ -214,7 +216,7 @@ AMP::Mesh::MeshPoint<double> kdtree::find_nearest( const AMP::Mesh::MeshPoint<do
 }
 size_t kdtree::find_nearest( const double *x, double *dist, double *pos ) const
 {
-    PROFILE_START( "find_nearest single", 5 );
+    PROFILE( "find_nearest single", 5 );
     double dist2 = 1e100;
     double pos2[64];
     auto index = find_nearest2( x, dist2, pos2 );
@@ -222,7 +224,6 @@ size_t kdtree::find_nearest( const double *x, double *dist, double *pos ) const
         *dist = dist2;
     if ( pos )
         memcpy( pos, pos2, d_dim * sizeof( double ) );
-    PROFILE_STOP( "find_nearest single", 5 );
     return index;
 }
 void kdtree::find_nearest( int N, const double *x, size_t *index, double *dist, double *pos ) const
@@ -233,7 +234,7 @@ void kdtree::find_nearest( int N, const double *x, size_t *index, double *dist, 
         ERROR_MSG( "N must be >= 0" );
     if ( index == nullptr )
         ERROR_MSG( "index may not be null" );
-    PROFILE_START( "find_nearest multiple", 3 );
+    PROFILE( "find_nearest multiple", 3 );
     for ( int i = 0; i < N; i++ ) {
         double dist2 = 1e100;
         double pos2[64];
@@ -245,7 +246,6 @@ void kdtree::find_nearest( int N, const double *x, size_t *index, double *dist, 
                 pos[d_dim * i + d] = pos2[d];
         }
     }
-    PROFILE_STOP( "find_nearest multiple", 3 );
 }
 size_t kdtree::find_nearest2( const double *x, double &dist, double *pos ) const
 {
@@ -288,19 +288,17 @@ size_t kdtree::find_nearest2( const double *x, double &dist, double *pos ) const
 size_t kdtree::find_nearest2d( const double x, const double y ) const
 {
     AMP_ASSERT( d_dim == 2 );
-    PROFILE_START( "find_nearest 2d", 5 );
+    PROFILE( "find_nearest 2d", 5 );
     double xy[2] = { x, y }, dist2, pos2[2] = { 0 };
     size_t index = find_nearest2( xy, dist2, pos2 );
-    PROFILE_STOP( "find_nearest 2d", 5 );
     return index;
 }
 size_t kdtree::find_nearest3d( const double x, const double y, const double z ) const
 {
     AMP_ASSERT( d_dim == 3 );
-    PROFILE_START( "find_nearest 3d", 5 );
+    PROFILE( "find_nearest 3d", 5 );
     double xyz[3] = { x, y, z }, dist2, pos2[3] = { 0 };
     size_t index = find_nearest2( xyz, dist2, pos2 );
-    PROFILE_STOP( "find_nearest 3d", 5 );
     return index;
 }
 

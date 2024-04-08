@@ -21,7 +21,7 @@ NonlinearBVPOperator::NonlinearBVPOperator( std::shared_ptr<const OperatorParame
 void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                   AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
 
     if ( u )
         AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
@@ -59,19 +59,17 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
         AMP::pout << "L2 Norm of output of NonlinearBVPOperator :: apply is : "
                   << rInternal->L2Norm() << std::endl;
     }
-    PROFILE_STOP( "apply" );
 }
 
 void NonlinearBVPOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    PROFILE_START( "reset" );
+    PROFILE( "reset" );
     auto inParams = std::dynamic_pointer_cast<const BVPOperatorParameters>( params );
 
     AMP_INSIST( ( inParams ), "NonlinearBVPOperator :: reset Null parameter" );
 
     d_volumeOperator->reset( inParams->d_volumeOperatorParams );
     d_boundaryOperator->reset( inParams->d_boundaryOperatorParams );
-    PROFILE_STOP( "reset" );
 }
 
 std::shared_ptr<OperatorParameters>
@@ -79,14 +77,13 @@ NonlinearBVPOperator::getParameters( const std::string &type,
                                      std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
                                      std::shared_ptr<OperatorParameters> params )
 {
-    PROFILE_START( "getParameters" );
+    PROFILE( "getParameters" );
     auto db = std::make_shared<Database>();
     db->putScalar( "name", "LinearBVPOperator" );
     auto outParams                      = std::make_shared<BVPOperatorParameters>( db );
     outParams->d_Mesh                   = d_Mesh;
     outParams->d_volumeOperatorParams   = d_volumeOperator->getParameters( type, u, params );
     outParams->d_boundaryOperatorParams = d_boundaryOperator->getParameters( type, u, params );
-    PROFILE_STOP( "getParameters" );
     return outParams;
 }
 

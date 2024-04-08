@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -426,12 +425,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         // drawVerticesOnBoundaryID(slaveMeshAdapter, 2, slaveFout, point_of_view, "red");
         slaveFout.close();
     } // end if
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector(
-        columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    auto outFileName = "MPC_0";
-    siloWriter->writeFile( outFileName, 0 );
 
     fout.close();
 

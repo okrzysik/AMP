@@ -97,7 +97,7 @@ int RK4TimeIntegrator::advanceSolution( const double dt,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> in,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
-    PROFILE_START( "advanceSolution" );
+    PROFILE( "advanceSolution" );
 
     d_solution_vector = in;
 
@@ -126,7 +126,6 @@ int RK4TimeIntegrator::advanceSolution( const double dt,
 
     d_new_solution->axpy( dt / 6.0, *d_k1_vec, *d_solution_vector );
     out->copyVector( d_new_solution );
-    PROFILE_STOP( "advanceSolution" );
 
     return ( 1 );
 }

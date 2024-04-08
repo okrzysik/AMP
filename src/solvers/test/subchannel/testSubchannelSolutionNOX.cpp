@@ -1,6 +1,5 @@
 // This test checks the verification problem in SubChannelFlow.tex
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/mesh/Mesh.h"
@@ -322,21 +321,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     pressure = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
     enthalpy->scale( h_scale );
     pressure->scale( P_scale );
-    // Register the quantities to plot
-    auto siloWriter         = AMP::IO::Writer::buildWriter( "Silo" );
-    auto subchannelEnthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
-    auto subchannelPressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
-    subchannelEnthalpy->scale( h_scale );
-    subchannelPressure->scale( P_scale );
-    siloWriter->registerVector(
-        manufacturedVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ManufacturedSolution" );
-    siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ComputedSolution" );
-    siloWriter->registerVector(
-        subchannelEnthalpy, xyFaceMesh, AMP::Mesh::GeomType::Face, "Enthalpy" );
-    siloWriter->registerVector(
-        subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face, "Pressure" );
-    siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "Temperature" );
-    siloWriter->writeFile( exeName, 0 );
 }
 
 int testSubchannelSolutionNOX( int argc, char *argv[] )

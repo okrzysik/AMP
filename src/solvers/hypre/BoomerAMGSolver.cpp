@@ -309,7 +309,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator, "ERROR: BoomerAMGSolver::apply() operator cannot be NULL" );
 
@@ -389,8 +389,6 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
                       << std::setprecision( 15 ) << r->L2Norm() << std::endl;
         }
     }
-
-    PROFILE_STOP( "solve" );
 }
 
 } // namespace AMP::Solver

@@ -337,7 +337,7 @@ template<typename T>
 void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                            std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "solve" );
     d_ConvergenceStatus = AMP::Solver::SolverStrategy::SolverStatus::DivergedOther;
     AMP_ASSERT( u.get() != nullptr );
     AMP_ASSERT( d_pOperator != nullptr );
@@ -359,6 +359,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
     d_function_apply_count++;
 
     d_residual_vector->scale( static_cast<T>( -1.0 ), *d_residual_vector );
+    d_residual_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     auto residual_norm = d_residual_vector->L2Norm();
 
@@ -419,6 +420,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
         d_function_apply_count++;
 
         d_residual_vector->scale( static_cast<T>( -1.0 ), *d_residual_vector );
+        d_residual_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         // auto prev_residual_norm = residual_norm;
         residual_norm = d_residual_vector->L2Norm();
@@ -453,8 +455,6 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 
     u->copyVector( d_solution_vector );
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
-    PROFILE_STOP( "solve" );
 }
 
 template<typename T>

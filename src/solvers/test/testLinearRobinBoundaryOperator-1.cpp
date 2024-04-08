@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -274,15 +273,6 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     } else {
         ut->passes( "linear robin boundary operator verification test-1." );
     }
-
-    // Plot the results
-    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector(
-        TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
-    siloWriter->registerVector( exactVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Exact" );
-    siloWriter->writeFile( input_file, 0 );
 
     ut->passes( exeName );
 }

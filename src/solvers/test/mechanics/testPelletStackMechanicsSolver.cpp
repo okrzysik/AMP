@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/solvers/libmesh/PelletStackHelpers.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
@@ -23,9 +22,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-
-    // Create the silo writer and register the data
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
 
     auto global_input_db = AMP::Database::parseInputFile( input_file );
     global_input_db->print( AMP::plog );
@@ -88,8 +84,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setNestedSolver( pelletStackSolver );
 
-    siloWriter->registerVector( solVec, manager, AMP::Mesh::GeomType::Vertex, "Displacement" );
-
     for ( unsigned int step = 0; step < NumberOfLoadingSteps; step++ ) {
         AMP::pout << "########################################" << std::endl;
         AMP::pout << "The current loading step is " << ( step + 1 ) << std::endl;
@@ -121,8 +115,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "final,   rhsVec: " << scaledRhsVec->L2Norm() << std::endl;
         AMP::pout << "final,   solVec: " << solVec->L2Norm() << std::endl;
         AMP::pout << "final,   resVec: " << resVec->L2Norm() << std::endl;
-
-        siloWriter->writeFile( exeName, step );
 
         helperResetNonlinearOperatorForPelletMechanics( coupledOp );
     } // end for step
