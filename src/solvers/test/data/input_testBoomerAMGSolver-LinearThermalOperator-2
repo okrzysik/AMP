@@ -88,6 +88,7 @@ DiffusionTransportModel1 {
    }
 
 LinearSolver{
+  name = "BoomerAMGSolver"
   print_info_level = 1
   max_iterations = 10
   max_error = 1e-10

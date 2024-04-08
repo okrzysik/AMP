@@ -19,10 +19,12 @@
 namespace AMP::Solver {
 
 
-#if PETSC_VERSION_LT( 3, 7, 5 )
-    #error AMP only supports PETSc 3.7.5 or greater
-#endif
+static_assert( PETSC_VERSION_GE( 3, 15, 0 ), "AMP only supports PETSc 3.15.0 or greater" );
 
+#if PETSC_VERSION_LT( 3, 17, 0 )
+    #define SETERRQ SETERRQ1
+    #define PetscInfo PetscInfo3
+#endif
 
 static inline void checkErr( PetscErrorCode ierr )
 {
@@ -162,8 +164,6 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     checkErr( KSPGetPC( d_KrylovSolver, &pc ) );
     if ( d_bUsesPreconditioner ) {
 
-        initializePreconditioner( parameters );
-
         if ( d_sPcType != "shell" ) {
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
             AMP_ASSERT( d_pPreconditioner.get() == nullptr );
@@ -176,12 +176,11 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
             // preconditioner
             // NOTE: if this is being used within a JFNK solver the outer solver sets and applies
             // the PC
-            //            if ( !d_bMatrixFree ) {
             checkErr( PCSetType( pc, PCSHELL ) );
             checkErr( PCShellSetContext( pc, this ) );
             checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
             checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
-            //            }
+            initializePreconditioner( parameters );
         }
         checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
     } else {
@@ -231,15 +230,14 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "apply" );
 
     // Get petsc views of the vectors
     auto fVecView = AMP::LinearAlgebra::PetscVector::constView( f );
     auto uVecView = AMP::LinearAlgebra::PetscVector::view( u );
 
     // Check input vector states
-    AMP_ASSERT( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-    u->makeConsistent(); // Force a makeConsistent, required communication
+    AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     AMP::pout << "Beginning PetscKrylovSolver::apply" << std::endl;
     if ( d_iDebugPrintInfoLevel > 1 ) {
@@ -272,7 +270,6 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // Reset the solvers
     KSPReset( d_KrylovSolver );
     AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-    PROFILE_STOP( "solve" );
 }
 
 
@@ -379,22 +376,17 @@ void PetscKrylovSolver::initializePreconditioner(
         }
 
     } else {
-        // attempt to construct the preconditioner
-        // NOTE: at present a nested preconditioner database is not considered
-        // as we are trying to move away from it
-        if ( d_db->keyExists( "pc_solver_name" ) ) {
-            auto pc_solver_name = d_db->getString( "pc_solver_name" );
-            AMP_ASSERT( parameters->d_global_db );
-            auto global_db = parameters->d_global_db;
-            AMP_ASSERT( global_db->keyExists( pc_solver_name ) );
-            auto pc_solver_db       = global_db->getDatabase( pc_solver_name );
-            auto pcSolverParameters = std::make_shared<SolverStrategyParameters>( pc_solver_db );
-            if ( d_pOperator ) {
-                auto pcOperator                 = createPCOperator();
-                pcSolverParameters->d_pOperator = pcOperator;
-            }
-
-            d_pPreconditioner = SolverFactory::create( pcSolverParameters );
+        auto db     = parameters->d_db;
+        auto pcName = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+        std::shared_ptr<AMP::Database> outerDB;
+        outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
+        if ( outerDB ) {
+            auto pcDB       = outerDB->getDatabase( pcName );
+            auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+            parameters->d_pOperator = d_pOperator;
+            parameters->d_comm      = d_comm;
+            d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+            AMP_ASSERT( d_pPreconditioner );
         }
     }
 }

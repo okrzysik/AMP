@@ -129,7 +129,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
 
 void VolumeIntegralOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
 {
-    PROFILE_START( "preElementOperation", 5 );
+    PROFILE( "preElementOperation", 5 );
     d_currNodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
 
     std::vector<size_t> elemDofIds;
@@ -179,16 +179,14 @@ void VolumeIntegralOperator::preElementOperation( const AMP::Mesh::MeshElement &
 
     d_srcNonlinElem->setElementVectors(
         elementInputVectors, elementAuxVectors, d_elementOutputVector );
-    PROFILE_STOP( "preElementOperation", 5 );
 }
 
 
 void VolumeIntegralOperator::postElementOperation()
 {
-    PROFILE_START( "postElementOperation", 5 );
+    PROFILE( "postElementOperation", 5 );
     d_outVec->addValuesByGlobalID(
         d_dofIndices.size(), &d_dofIndices[0], &d_elementOutputVector[0] );
-    PROFILE_STOP( "postElementOperation", 5 );
 }
 
 

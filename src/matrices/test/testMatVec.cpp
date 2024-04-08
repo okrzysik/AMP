@@ -26,48 +26,34 @@
 #include <iostream>
 #include <string>
 
-void matVecTest( AMP::UnitTest *ut, std::string input_file )
+void matVecTestWithDOFs( AMP::UnitTest *ut,
+                         std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-
-    std::string log_file = "output_testMatVec";
-    AMP::logOnlyNodeZero( log_file );
-
-    // Read the input file
-    auto input_db = AMP::Database::parseInputFile( input_file );
-
-    // Get the Mesh database and create the mesh parameters
-    auto database = input_db->getDatabase( "Mesh" );
-    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
-    auto comm     = AMP::AMP_MPI( AMP_COMM_WORLD );
-    params->setComm( comm );
-
-    // Create the meshes from the input database
-    auto mesh = AMP::Mesh::MeshFactory::create( params );
-
-    // Create the DOF manager
-    auto scalarDOFs =
-        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
-    //    AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Cell, 1, 1 );
-
-    //    auto vectorDOFs =
-    //        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3
-    //        );
-
+    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     // Create the vectors
     auto inVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
     auto outVar = std::make_shared<AMP::LinearAlgebra::Variable>( "outputVar" );
-    auto inVec  = AMP::LinearAlgebra::createVector( scalarDOFs, inVar );
-    auto outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
+    auto inVec  = AMP::LinearAlgebra::createVector( dofManager, inVar );
+    auto outVec = AMP::LinearAlgebra::createVector( dofManager, outVar );
+
+    std::string type;
+#if defined( AMP_USE_TRILINOS )
+    type = "ManagedEpetraMatrix";
+#elif defined( AMP_USE_PETSC )
+    type         = "NativePetscMatrix";
+#else
+    AMP_ERROR( "This test requires either Trilinos or Petsc matrices to be enabled" );
+#endif
 
     // Create the matrix
-    auto matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec );
+    auto matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec, type );
     if ( matrix ) {
         ut->passes( "Able to create a square matrix" );
     } else {
         ut->failure( "Unable to create a square matrix" );
     }
 
-    fillWithPseudoLaplacian( matrix, scalarDOFs );
+    fillWithPseudoLaplacian( matrix, dofManager );
 
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
@@ -75,8 +61,10 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
     auto nLocalRows1  = matrix->numLocalRows();
 
 #if defined( AMP_USE_HYPRE )
-
-    using Policy   = AMP::LinearAlgebra::HypreCSRPolicy;
+    using Policy = AMP::LinearAlgebra::HypreCSRPolicy;
+#else
+    using Policy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
+#endif
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -104,8 +92,6 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
         ut->failure( "Number of local and global rows don't match for default and CSR matrices" );
     }
 
-#endif
-
     auto x  = matrix->getRightVector();
     auto y1 = matrix->getRightVector();
     auto y2 = matrix->getRightVector();
@@ -129,8 +115,6 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
         ut->failure( "Fails 1 norm test with pseudo Laplacian with default matvec" );
     }
 
-#if defined( AMP_USE_HYPRE )
-
     csrMatrix->mult( x, y2 );
     y2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
@@ -151,12 +135,58 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
     auto l2Norm  = static_cast<scalar_t>( y1->L2Norm() );
 
     if ( maxNorm < 1.0e-14 && l2Norm < 1.0e-14 ) {
+        ut->passes( "Matvec with converted CSR matches default matvec" );
+    } else {
+        AMP::pout << "maxNorm " << maxNorm << ", l2 norm " << l2Norm << std::endl;
+        ut->failure( "Matvec with converted CSR matches fails to default matvec" );
+    }
+
+    auto csrMatrix2 = AMP::LinearAlgebra::createMatrix( inVec, outVec, "CSRMatrix" );
+    fillWithPseudoLaplacian( csrMatrix2, dofManager );
+    csrMatrix2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+    y1->zero();
+    y2->zero();
+    matrix->mult( x, y1 );
+    csrMatrix2->mult( x, y2 );
+    y1->subtract( *y1, *y2 );
+
+    maxNorm = static_cast<scalar_t>( y1->maxNorm() );
+    l2Norm  = static_cast<scalar_t>( y1->L2Norm() );
+
+    if ( maxNorm < 1.0e-14 && l2Norm < 1.0e-14 ) {
         ut->passes( "Matvec with CSR matches default matvec" );
     } else {
         AMP::pout << "maxNorm " << maxNorm << ", l2 norm " << l2Norm << std::endl;
         ut->failure( "Matvec with CSR matches fails to default matvec" );
     }
-#endif
+}
+
+void matVecTest( AMP::UnitTest *ut, std::string input_file )
+{
+
+    std::string log_file = "output_testMatVec";
+    AMP::logOnlyNodeZero( log_file );
+
+    // Read the input file
+    auto input_db = AMP::Database::parseInputFile( input_file );
+
+    // Get the Mesh database and create the mesh parameters
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
+    auto comm     = AMP::AMP_MPI( AMP_COMM_WORLD );
+    params->setComm( comm );
+
+    // Create the meshes from the input database
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
+
+    // Create the DOF manager
+    auto scalarDOFs =
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
+    matVecTestWithDOFs( ut, scalarDOFs );
+
+    auto vectorDOFs =
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
+    matVecTestWithDOFs( ut, vectorDOFs );
 }
 
 int main( int argc, char *argv[] )

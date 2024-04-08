@@ -127,7 +127,7 @@ void VectorData::getGhostAddValuesByGlobalID( size_t N,
 UpdateState VectorData::getLocalUpdateStatus() const { return *d_UpdateState; }
 UpdateState VectorData::getGlobalUpdateStatus() const
 {
-    PROFILE_START( "getGlobalUpdateStatus" );
+    PROFILE( "getGlobalUpdateStatus" );
     auto local = getComm().allGather<uint8_t>( static_cast<int8_t>( getLocalUpdateStatus() ) );
     auto state = UpdateState::UNCHANGED;
     for ( auto s : local ) {
@@ -150,7 +150,6 @@ UpdateState VectorData::getGlobalUpdateStatus() const
             state = UpdateState::MIXED;
         }
     }
-    PROFILE_STOP( "getGlobalUpdateStatus" );
     return state;
 }
 void VectorData::setUpdateStatus( UpdateState state ) { *d_UpdateState = state; }
@@ -158,7 +157,7 @@ void VectorData::setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs ) { d_Upda
 std::shared_ptr<UpdateState> VectorData::getUpdateStatusPtr() const { return d_UpdateState; }
 void VectorData::makeConsistent( ScatterType t )
 {
-    PROFILE_START( "makeConsistent" );
+    PROFILE( "makeConsistent" );
     if ( d_CommList ) {
         if ( t == ScatterType::CONSISTENT_ADD ) {
             AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
@@ -171,7 +170,6 @@ void VectorData::makeConsistent( ScatterType t )
         *d_UpdateState = UpdateState::UNCHANGED;
     }
     this->setUpdateStatus( UpdateState::UNCHANGED );
-    PROFILE_STOP( "makeConsistent" );
 }
 void VectorData::makeConsistent()
 {

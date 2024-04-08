@@ -60,6 +60,27 @@ void Property::evalArg( AMP::Array<double> &args,
             args( i, j ) = scale * v[j];
     }
 }
+void Property::evalArgs( AMP::Array<double> &args2,
+                         const std::vector<double> &args,
+                         const std::vector<std::string> &names,
+                         const std::vector<Units> &argUnits ) const
+{
+    size_t N = args2.size( 1 );
+    AMP_ASSERT( args.size() == names.size() );
+    AMP_ASSERT( argUnits.empty() || argUnits.size() == names.size() );
+    for ( size_t k = 0; k < args.size(); k++ ) {
+        int i = get_arg_index( names[k] );
+        if ( i >= 0 ) {
+            double scale = 1.0;
+            if ( !argUnits.empty() ) {
+                if ( !argUnits[k].isNull() )
+                    scale = argUnits[k].convert( d_argUnits[i] );
+            }
+            for ( size_t j = 0; j < N; j++ )
+                args2( i, j ) = scale * args[k];
+        }
+    }
+}
 void Property::evalv( const AMP::Array<double> &args,
                       AMP::Array<std::vector<double> *> &r,
                       const Units &unit ) const
@@ -90,6 +111,27 @@ void Property::evalv( const AMP::Array<double> &args,
 std::string Property::evalString() const
 {
     AMP_ERROR( "Evaluating a property as a string is not supported for " + d_name );
+}
+double Property::eval( const Units &unit,
+                       const std::vector<std::string> &names,
+                       const std::vector<double> &vec,
+                       const std::vector<Units> &units ) const
+{
+    AMP_ASSERT( names.size() == units.size() && names.size() == vec.size() );
+    double value = 0;
+    auto result  = AMP::Array<double>::staticView( { 1 }, &value );
+    // Get the arguments
+    double tmp[128];
+    memcpy( tmp, d_defaults.data(), d_defaults.size() * sizeof( double ) );
+    auto args2 = AMP::Array<double>::staticView( { d_arguments.size() }, tmp );
+    evalArgs( args2, vec, names, units );
+    checkArgs( args2 );
+    // Evaluate the property
+    eval( result, args2 );
+    // Convert units if required
+    if ( !unit.isNull() )
+        value *= d_units.convert( unit );
+    return value;
 }
 
 

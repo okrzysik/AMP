@@ -54,7 +54,7 @@ static bool testLogicalGeometry( const AMP::Geometry::LogicalGeometry &geom, AMP
     auto name = geom.getName();
     int ndim  = geom.getDim();
     // Test logical/physical transformations
-    PROFILE_START( "testGeometry-logical " + name );
+    PROFILE2( "testGeometry-logical " + name );
     auto [lb, ub] = geom.box();
     std::mt19937 gen( 54612 );
     std::uniform_real_distribution<> dis[3];
@@ -78,7 +78,6 @@ static bool testLogicalGeometry( const AMP::Geometry::LogicalGeometry &geom, AMP
         ut.failure( "testGeometry physical-logical-physical: " + name );
     else if ( !pass2 )
         ut.expected_failure( "testGeometry physical-logical-physical: " + name );
-    PROFILE_STOP( "testGeometry-logical " + name );
     return pass;
 }
 
@@ -147,7 +146,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // Get the physical dimension
     int ndim  = geom.getDim();
     auto name = geom.getName();
-    PROFILE_SCOPED( timer, "testGeometry " + name );
+    PROFILE2( "testGeometry " + name );
     // Test logical geometries
     auto logicalGeom = dynamic_cast<const AMP::Geometry::LogicalGeometry *>( &geom );
     if ( logicalGeom ) {
@@ -160,129 +159,135 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // First get the centroid and the range
     auto center = geom.centroid();
     // Use a series of rays projecting from the centroid to get points on the surface
-    PROFILE_START( "testGeometry-surface " + name );
-    size_t N = 10000;
     std::vector<Point> surfacePoints;
-    surfacePoints.reserve( N );
-    bool all_hit = true;
-    while ( surfacePoints.size() < N ) {
-        auto dir  = genRandDir( ndim );
-        bool test = addSurfacePoints( geom, center, dir, surfacePoints );
-        all_hit   = all_hit && test;
-    }
-    pass = pass && !surfacePoints.empty();
-    if ( surfacePoints.empty() )
-        ut.failure( "testGeometry unable to get surface: " + name );
-    if ( geom.inside( center ) && !all_hit )
-        ut.failure( "testGeometry failed all rays hit: " + name );
-    // Add points propagating from box surface
-    if ( ndim == 3 && !multigeom ) {
-        int n         = 11;
-        auto [lb, ub] = geom.box();
-        auto dx       = 1.0 / n * ( ub - lb );
-        for ( int i = 0; i < n; i++ ) {
-            for ( int j = 0; j < n; j++ ) {
-                Point x0 = { lb[0] - dx[0],
-                             lb[1] + ( i + 0.5 ) * dx[1],
-                             lb[2] + ( j + 0.5 ) * dx[2] };
-                Point y0 = { lb[0] + ( i + 0.5 ) * dx[0],
-                             lb[1] - dx[1],
-                             lb[2] + ( j + 0.5 ) * dx[2] };
-                Point z0 = { lb[0] + ( i + 0.5 ) * dx[0],
-                             lb[1] + ( j + 0.5 ) * dx[1],
-                             lb[2] - dx[2] };
-                addSurfacePoints( geom, x0, { 1, 0, 0 }, surfacePoints );
-                addSurfacePoints( geom, y0, { 0, 1, 0 }, surfacePoints );
-                addSurfacePoints( geom, z0, { 0, 0, 1 }, surfacePoints );
+    {
+        PROFILE2( "testGeometry-surface " + name );
+        size_t N = 10000;
+        surfacePoints.reserve( N );
+        bool all_hit = true;
+        while ( surfacePoints.size() < N ) {
+            auto dir  = genRandDir( ndim );
+            bool test = addSurfacePoints( geom, center, dir, surfacePoints );
+            all_hit   = all_hit && test;
+        }
+        pass = pass && !surfacePoints.empty();
+        if ( surfacePoints.empty() )
+            ut.failure( "testGeometry unable to get surface: " + name );
+        if ( geom.inside( center ) && !all_hit )
+            ut.failure( "testGeometry failed all rays hit: " + name );
+        // Add points propagating from box surface
+        if ( ndim == 3 && !multigeom ) {
+            int n         = 11;
+            auto [lb, ub] = geom.box();
+            auto dx       = 1.0 / n * ( ub - lb );
+            for ( int i = 0; i < n; i++ ) {
+                for ( int j = 0; j < n; j++ ) {
+                    Point x0 = { lb[0] - dx[0],
+                                 lb[1] + ( i + 0.5 ) * dx[1],
+                                 lb[2] + ( j + 0.5 ) * dx[2] };
+                    Point y0 = { lb[0] + ( i + 0.5 ) * dx[0],
+                                 lb[1] - dx[1],
+                                 lb[2] + ( j + 0.5 ) * dx[2] };
+                    Point z0 = { lb[0] + ( i + 0.5 ) * dx[0],
+                                 lb[1] + ( j + 0.5 ) * dx[1],
+                                 lb[2] - dx[2] };
+                    addSurfacePoints( geom, x0, { 1, 0, 0 }, surfacePoints );
+                    addSurfacePoints( geom, y0, { 0, 1, 0 }, surfacePoints );
+                    addSurfacePoints( geom, z0, { 0, 0, 1 }, surfacePoints );
+                }
             }
         }
     }
-    PROFILE_STOP( "testGeometry-surface " + name );
     // Verify each surface point is "inside" the object
-    PROFILE_START( "testGeometry-inside " + name );
-    bool pass_inside = true;
-    for ( const auto &tmp : surfacePoints ) {
-        bool inside = geom.inside( tmp );
-        if ( !inside ) {
-            pass_inside = false;
-            std::cout << "testGeometry-inside: " << tmp << std::endl;
-            break;
+    {
+        PROFILE2( "testGeometry-inside " + name );
+        bool pass_inside = true;
+        for ( const auto &tmp : surfacePoints ) {
+            bool inside = geom.inside( tmp );
+            if ( !inside ) {
+                pass_inside = false;
+                std::cout << "testGeometry-inside: " << tmp << std::endl;
+                break;
+            }
         }
+        pass = pass && pass_inside;
+        if ( !pass_inside )
+            ut.failure( "testGeometry surface inside geometry: " + name );
     }
-    pass = pass && pass_inside;
-    if ( !pass_inside )
-        ut.failure( "testGeometry surface inside geometry: " + name );
-    PROFILE_STOP( "testGeometry-inside " + name );
     // Project each surface point in a random direction and back propagate to get the same point
-    PROFILE_START( "testGeometry-distance " + name );
-    bool pass_projection = true;
-    auto box             = geom.box();
-    auto length          = box.second - box.first;
-    const double d0      = 0.2 * std::max( { length.x(), length.y(), length.z() } );
-    for ( const auto &tmp : surfacePoints ) {
-        auto ang = genRandDir( ndim );
-        auto pos = tmp - d0 * ang;
-        double d = fabs( geom.distance( pos, ang ) );
-        for ( int it = 0; it < 1000 && d < d0 - 1e-5; it++ ) {
-            // We may have crossed multiple surfaces, find the original
-            d += 1e-6;
-            auto pos2 = pos + d * ang;
-            d += fabs( geom.distance( pos2, ang ) );
+    {
+        PROFILE2( "testGeometry-distance " + name );
+        bool pass_projection = true;
+        auto box             = geom.box();
+        auto length          = box.second - box.first;
+        const double d0      = 0.2 * std::max( { length.x(), length.y(), length.z() } );
+        for ( const auto &tmp : surfacePoints ) {
+            auto ang = genRandDir( ndim );
+            auto pos = tmp - d0 * ang;
+            double d = fabs( geom.distance( pos, ang ) );
+            for ( int it = 0; it < 1000 && d < d0 - 1e-5; it++ ) {
+                // We may have crossed multiple surfaces, find the original
+                d += 1e-6;
+                auto pos2 = pos + d * ang;
+                d += fabs( geom.distance( pos2, ang ) );
+            }
+            if ( fabs( d - d0 ) > 1e-5 ) {
+                std::cout << "testGeometry-distance: " << d0 << " " << d << " " << tmp << " " << pos
+                          << std::endl;
+                pass_projection = false;
+                break;
+            }
         }
-        if ( fabs( d - d0 ) > 1e-5 ) {
-            std::cout << "testGeometry-distance: " << d0 << " " << d << " " << tmp << " " << pos
-                      << std::endl;
-            pass_projection = false;
-            break;
-        }
+        pass = pass && pass_projection;
+        if ( !pass_projection )
+            ut.failure( "testGeometry distances do not match: " + name );
     }
-    pass = pass && pass_projection;
-    if ( !pass_projection )
-        ut.failure( "testGeometry distances do not match: " + name );
-    PROFILE_STOP( "testGeometry-distance " + name );
     // Get a set of interior points by randomly sampling the space
     // Note we use a non-random seed to ensure test doesn't fail periodically due to tolerances
-    PROFILE_START( "testGeometry-sample " + name );
-    static std::mt19937 gen( 84397 );
-    std::uniform_real_distribution<double> dist[3];
-    for ( int d = 0; d < ndim; d++ )
-        dist[d] = std::uniform_real_distribution<double>( box.first[d], box.second[d] );
     std::vector<Point> interiorPoints;
-    for ( int i = 0; i < 10000; i++ ) {
-        Point pos( ndim, { 0, 0, 0 } );
+    {
+        PROFILE2( "testGeometry-sample " + name );
+        auto box = geom.box();
+        static std::mt19937 gen( 84397 );
+        std::uniform_real_distribution<double> dist[3];
         for ( int d = 0; d < ndim; d++ )
-            pos[d] = dist[d]( gen );
-        if ( geom.inside( pos ) )
-            interiorPoints.push_back( pos );
+            dist[d] = std::uniform_real_distribution<double>( box.first[d], box.second[d] );
+        for ( int i = 0; i < 10000; i++ ) {
+            Point pos( ndim, { 0, 0, 0 } );
+            for ( int d = 0; d < ndim; d++ )
+                pos[d] = dist[d]( gen );
+            if ( geom.inside( pos ) )
+                interiorPoints.push_back( pos );
+        }
     }
-    PROFILE_STOP( "testGeometry-sample " + name );
     // Check that nearest returns the surface/interior points
-    PROFILE_START( "testGeometry-nearest " + name );
-    bool pass_nearest = true;
-    for ( const auto &p0 : surfacePoints ) {
-        auto p   = geom.nearest( p0 );
-        double d = ( p - p0 ).abs();
-        if ( d > 1e-8 ) {
-            bool test = geom.inside( p0 );
-            p         = geom.nearest( p0 );
-            NULL_USE( p );
-            NULL_USE( test );
-            pass_nearest = false;
+    {
+        PROFILE2( "testGeometry-nearest " + name );
+        bool pass_nearest = true;
+        for ( const auto &p0 : surfacePoints ) {
+            auto p   = geom.nearest( p0 );
+            double d = ( p - p0 ).abs();
+            if ( d > 1e-8 ) {
+                bool test = geom.inside( p0 );
+                p         = geom.nearest( p0 );
+                NULL_USE( p );
+                NULL_USE( test );
+                pass_nearest = false;
+            }
         }
-    }
-    for ( const auto &p0 : interiorPoints ) {
-        auto p   = geom.nearest( p0 );
-        double d = ( p - p0 ).abs();
-        if ( d > 1e-8 ) {
-            p = geom.nearest( p0 );
-            NULL_USE( p );
-            pass_nearest = false;
+        for ( const auto &p0 : interiorPoints ) {
+            auto p   = geom.nearest( p0 );
+            double d = ( p - p0 ).abs();
+            if ( d > 1e-8 ) {
+                p = geom.nearest( p0 );
+                NULL_USE( p );
+                pass_nearest = false;
+            }
         }
+        pass = pass && pass_nearest;
+        if ( !pass_nearest )
+            ut.failure( "testGeometry-nearest: " + name );
     }
-    pass = pass && pass_nearest;
-    if ( !pass_nearest )
-        ut.failure( "testGeometry-nearest: " + name );
-    PROFILE_STOP( "testGeometry-nearest " + name );
     // Test getting surface normals
     if ( !multigeom ) {
         bool passNorm = true;
@@ -300,7 +305,8 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     }
     // Test getting the volume
     {
-        PROFILE_START( "testGeometry-volume " + name );
+        PROFILE2( "testGeometry-volume " + name );
+        auto box         = geom.box();
         double volume    = geom.volume();
         double boxVolume = 1.0;
         for ( int d = 0; d < ndim; d++ )
@@ -320,11 +326,10 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
             if ( !passVol2 )
                 ut.failure( "testGeometry volumeOverlap: " + name );
         }
-        PROFILE_STOP( "testGeometry-volume " + name );
     }
     // Test getting the surface id
     if ( !multigeom ) {
-        PROFILE_START( "testGeometry-surfaceID " + name );
+        PROFILE2( "testGeometry-surfaceID " + name );
         std::set<int> ids;
         for ( const auto &p : surfacePoints )
             ids.insert( geom.surface( p ) );
@@ -338,7 +343,6 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
             msg += AMP::Utilities::to_string( std::vector<int>( ids.begin(), ids.end() ) );
             ut.failure( msg );
         }
-        PROFILE_STOP( "testGeometry-surfaceID " + name );
     }
     // Finished with all tests
     if ( pass )

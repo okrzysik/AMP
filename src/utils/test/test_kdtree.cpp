@@ -53,7 +53,9 @@ double compute_avg_dist( int DIM, int N )
 // Run the kdtree tests
 void run_kdtree_test( AMP::UnitTest &ut, int DIM, size_t Nx, size_t Ns )
 {
-    auto prefix = AMP::Utilities::stringf( "kdtree<%i,%i,%i>::", DIM, Nx, Ns );
+    auto prefix = AMP::Utilities::stringf( "kdtree<%i,%i,%i>", DIM, Nx, Ns );
+    PROFILE2( prefix );
+    prefix += "::";
 
     // Initialize the random number
     static std::random_device rd;
@@ -75,13 +77,11 @@ void run_kdtree_test( AMP::UnitTest &ut, int DIM, size_t Nx, size_t Ns )
     }
 
     // Create the kdtree
-    PROFILE_START( "create_tree" );
     const auto x = new const double *[DIM];
     for ( int d = 0; d < DIM; d++ )
         x[d] = &points[d][0];
     AMP::kdtree tree( DIM, Nx, x );
     delete[] x;
-    PROFILE_STOP( "create_tree" );
 
     // Check the bounding box
     auto box  = tree.box();
@@ -93,35 +93,38 @@ void run_kdtree_test( AMP::UnitTest &ut, int DIM, size_t Nx, size_t Ns )
     checkResult( ut, pass, prefix + "box" );
 
     // Search for the local points
-    PROFILE_START( "search_local" );
-    pass = true;
-    double dist, xs[100], pos[100];
-    for ( size_t i = 0; i < Nx; i++ ) {
-        for ( int d = 0; d < DIM; d++ )
-            xs[d] = points[d][i];
-        size_t j = tree.find_nearest( xs, &dist, pos );
-        if ( j != i || dist != 0.0 )
-            pass = false;
-        for ( int d = 0; d < DIM; d++ )
-            if ( pos[d] != xs[d] )
+    {
+        PROFILE( "search_local" );
+        pass = true;
+        double dist, xs[100], pos[100];
+        for ( size_t i = 0; i < Nx; i++ ) {
+            for ( int d = 0; d < DIM; d++ )
+                xs[d] = points[d][i];
+            size_t j = tree.find_nearest( xs, &dist, pos );
+            if ( j != i || dist != 0.0 )
                 pass = false;
+            for ( int d = 0; d < DIM; d++ )
+                if ( pos[d] != xs[d] )
+                    pass = false;
+        }
     }
-    PROFILE_STOP( "search_local" );
     checkResult( ut, pass, prefix + "find_nearest (local)" );
 
     // Search for the unknown points
-    PROFILE_START( "search_unknown" );
-    pass            = true;
-    double dist_max = sqrt( (double) DIM ); // Maximum possible distance between two points
-    double dist_avg = compute_avg_dist( DIM, (int) Nx ); // Average distance between two points
-    for ( size_t i = 0; i < Ns; i++ ) {
-        for ( int d = 0; d < DIM; d++ )
-            xs[d] = search[d][i];
-        size_t j = tree.find_nearest( xs, &dist, pos );
-        if ( j >= Nx || dist <= 0.0 || dist > dist_max || dist > 100.0 * dist_avg )
-            pass = false;
+    {
+        PROFILE( "search_unknown" );
+        pass            = true;
+        double dist_max = sqrt( (double) DIM ); // Maximum possible distance between two points
+        double dist_avg = compute_avg_dist( DIM, (int) Nx ); // Average distance between two points
+        double dist, xs[100], pos[100];
+        for ( size_t i = 0; i < Ns; i++ ) {
+            for ( int d = 0; d < DIM; d++ )
+                xs[d] = search[d][i];
+            size_t j = tree.find_nearest( xs, &dist, pos );
+            if ( j >= Nx || dist <= 0.0 || dist > dist_max || dist > 100.0 * dist_avg )
+                pass = false;
+        }
     }
-    PROFILE_STOP( "search_unknown" );
     checkResult( ut, pass, prefix + "find_nearest (unknown)" );
 }
 
@@ -187,34 +190,24 @@ int main( int argc, char *argv[] )
     PROFILE_ENABLE( 3 );
     PROFILE_ENABLE_TRACE();
     // Run a 1D test
-    PROFILE_START( "1D kdtree" );
     run_kdtree_test( ut, 1, 10, 10 );
     run_kdtree_test( ut, 1, 10000, 1000 );
-    PROFILE_STOP( "1D kdtree" );
 
     // Run a 2D test
-    PROFILE_START( "2D kdtree" );
     run_kdtree_test( ut, 2, 10, 10 );
     run_kdtree_test( ut, 2, 100000, 10000 );
-    PROFILE_STOP( "2D kdtree" );
 
     // Run a 3D test
-    PROFILE_START( "3D kdtree" );
     run_kdtree_test( ut, 3, 10, 10 );
     run_kdtree_test( ut, 3, 100000, 100000 );
-    PROFILE_STOP( "3D kdtree" );
 
     // Run a 5D test
-    PROFILE_START( "5D kdtree" );
     run_kdtree_test( ut, 5, 10, 10 );
     run_kdtree_test( ut, 5, 10000, 2000 );
-    PROFILE_STOP( "5D kdtree" );
 
     // Run a 10D test
-    // PROFILE_START( "10D kdtree" );
     // run_kdtree_test( ut, 10, 10, 10 );
     // run_kdtree_test( ut, 10, 10000, 2000 );
-    // PROFILE_STOP( "10D kdtree" );*/
 
     // Run specific kdtree2 tests
     run_kdtree2_test<3>( ut, 1000 );

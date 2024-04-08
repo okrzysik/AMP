@@ -64,19 +64,18 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
 
 void MatrixTests::InstantiateMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "InstantiateMatrix" );
+    PROFILE( "InstantiateMatrix" );
     auto matrix = d_factory->getMatrix();
     if ( matrix )
         utils->passes( "created " + matrix->type() );
     else
         utils->failure( "created " );
-    PROFILE_STOP( "InstantiateMatrix" );
 }
 
 
 void MatrixTests::VerifyGetLeftRightVector( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyGetLeftRightVector" );
+    PROFILE( "VerifyGetLeftRightVector" );
     auto matrix   = d_factory->getMatrix();
     auto factory1 = std::make_shared<AmpInterfaceRightVectorFactory>( matrix );
     auto factory2 = std::make_shared<AmpInterfaceLeftVectorFactory>( matrix );
@@ -92,13 +91,12 @@ void MatrixTests::VerifyGetLeftRightVector( AMP::UnitTest *utils )
     tests3.testPetsc( utils );
     tests4.testPetsc( utils );
 #endif
-    PROFILE_STOP( "VerifyGetLeftRightVector" );
 }
 
 
 void MatrixTests::VerifyGetSetValuesMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyGetSetValuesMatrix" );
+    PROFILE( "VerifyGetSetValuesMatrix" );
     auto matrix = d_factory->getMatrix();
     auto dofmap = d_factory->getDOFMap();
 
@@ -118,13 +116,12 @@ void MatrixTests::VerifyGetSetValuesMatrix( AMP::UnitTest *utils )
         }
     }
     utils->passes( "verify get and set" + matrix->type() );
-    PROFILE_STOP( "VerifyGetSetValuesMatrix" );
 }
 
 
 void MatrixTests::VerifyAXPYMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyAXPYMatrix" );
+    PROFILE( "VerifyAXPYMatrix" );
 
     // Create vectors/matricies from the factory
     auto matrix1      = d_factory->getMatrix();
@@ -172,13 +169,12 @@ void MatrixTests::VerifyAXPYMatrix( AMP::UnitTest *utils )
                         matrix1->type() );
     }
 #endif
-    PROFILE_STOP( "VerifyAXPYMatrix" );
 }
 
 
 void MatrixTests::VerifyScaleMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyScaleMatrix" );
+    PROFILE( "VerifyScaleMatrix" );
     auto matrix1      = d_factory->getMatrix();
     auto matrix2      = d_factory->getMatrix();
     auto vector1lhs   = matrix1->getRightVector();
@@ -209,13 +205,12 @@ void MatrixTests::VerifyScaleMatrix( AMP::UnitTest *utils )
         utils->passes( "non-trivial vector " + matrix1->type() );
     else
         utils->passes( "trivial vector " + matrix1->type() );
-    PROFILE_STOP( "VerifyScaleMatrix" );
 }
 
 
 void MatrixTests::VerifyExtractDiagonal( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyExtractDiagonal" );
+    PROFILE( "VerifyExtractDiagonal" );
     auto matrix = d_factory->getMatrix();
     //    matrix->makeConsistent(); // required by PETSc
     auto vector     = matrix->getRightVector();
@@ -238,13 +233,12 @@ void MatrixTests::VerifyExtractDiagonal( AMP::UnitTest *utils )
         utils->passes( "Verify extractDiagonal " + matrix->type() );
     else
         utils->failure( "Verify extractDiagonal " + matrix->type() );
-    PROFILE_STOP( "VerifyExtractDiagonal" );
 }
 
 
 void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyMultMatrix" );
+    PROFILE( "VerifyMultMatrix" );
     auto matrix    = d_factory->getMatrix();
     auto vectorlhs = matrix->getRightVector();
     auto vectorrhs = matrix->getRightVector();
@@ -290,14 +284,13 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
         utils->passes( "mult by other matrix " + matrix->type() );
     else
         utils->failure( "mult by other matrix " + matrix->type() );
-    PROFILE_STOP( "VerifyMultMatrix" );
 }
 
 
 // Test matrix-matrix multiplication (this tests takes a long time for large matrices)
 void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifyMatMultMatrix" );
+    PROFILE( "VerifyMatMultMatrix" );
     auto matZero   = d_factory->getMatrix();
     auto matIdent  = d_factory->getMatrix();
     auto matLaplac = d_factory->getMatrix();
@@ -307,7 +300,6 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
 
     if ( vector1->getGlobalSize() > 1000 ) {
         // Matrix-matrix multiplies take a long time (skip it)
-        PROFILE_STOP2( "VerifyMatMultMatrix" );
         return;
     }
 
@@ -322,49 +314,61 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     vector2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     AMP_ASSERT( static_cast<double>( vector1->L2Norm() ) > 0.0 );
 
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> matSol;
+
     // Verify matMultiply with 0 matrix
-    auto matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
-    if ( matSol->L1Norm() == 0.0 )
-        utils->passes( "matMultiply with 0 matrix " + matZero->type() );
-    else
-        utils->failure( "matMultiply with 0 matrix " + matZero->type() );
+    if ( matZero->type() == "CSRMatrix" || matLaplac->type() == "CSRMatrix" ) {
+        utils->expected_failure( "Mat GEMM not implemented" );
+    } else {
+        matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
+        if ( matSol->L1Norm() == 0.0 )
+            utils->passes( "matMultiply with 0 matrix " + matZero->type() );
+        else
+            utils->failure( "matMultiply with 0 matrix " + matZero->type() );
+    }
 
     // Verify mult with identity
-    matLaplac->mult( vector1, vector2 );
-    if ( vector2->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
-        utils->failure( "matMultiply leaves vector in an inconsistent state" );
-    auto ans1 = static_cast<double>( vector2->L2Norm() );
-    matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
-    matSol->mult( vector1, vector2 );
-    auto ans2 = static_cast<double>( vector2->L2Norm() );
-    matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
-    matSol->mult( vector1, vector2 );
-    auto ans3 = static_cast<double>( vector2->L2Norm() );
-    if ( AMP::Utilities::approx_equal( ans1, ans2 ) && AMP::Utilities::approx_equal( ans1, ans3 ) &&
-         ans1 != 0.0 )
-        utils->passes( "matMultiply with identity matrix " + matSol->type() );
-    else
-        utils->failure( "matMultiply with identity matrix " + matSol->type() );
+    if ( matIdent->type() == "CSRMatrix" || matLaplac->type() == "CSRMatrix" ) {
+        utils->expected_failure( "Mat GEMM not implemented" );
+    } else {
+        matLaplac->mult( vector1, vector2 );
+        if ( vector2->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
+            utils->failure( "matMultiply leaves vector in an inconsistent state" );
+        auto ans1 = static_cast<double>( vector2->L2Norm() );
+        matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
+        matSol->mult( vector1, vector2 );
+        auto ans2 = static_cast<double>( vector2->L2Norm() );
+        matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
+        matSol->mult( vector1, vector2 );
+        auto ans3 = static_cast<double>( vector2->L2Norm() );
+        if ( AMP::Utilities::approx_equal( ans1, ans2 ) &&
+             AMP::Utilities::approx_equal( ans1, ans3 ) && ans1 != 0.0 )
+            utils->passes( "matMultiply with identity matrix " + matSol->type() );
+        else
+            utils->failure( "matMultiply with identity matrix " + matSol->type() );
+    }
 
     // Verify mult with two trivial matrices
-    matLaplac->mult( vector1, vector2 );
-    matLaplac->mult( vector2, vector3 );
-    ans1   = static_cast<double>( vector3->L2Norm() );
-    matSol = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matLaplac );
-    matSol->mult( vector1, vector2 );
-    ans2 = static_cast<double>( vector2->L2Norm() );
-    if ( AMP::Utilities::approx_equal( ans1, ans2 ) && ans1 != 0.0 )
-        utils->passes( "matMultiply with trivial matrix " + matSol->type() );
-    else
-        utils->failure( "matMultiply with trivial matrix " + matSol->type() );
-
-    PROFILE_STOP( "VerifyMatMultMatrix" );
+    if ( matLaplac->type() == "CSRMatrix" ) {
+        utils->expected_failure( "Mat GEMM not implemented" );
+    } else {
+        matLaplac->mult( vector1, vector2 );
+        matLaplac->mult( vector2, vector3 );
+        auto ans1 = static_cast<double>( vector3->L2Norm() );
+        matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matLaplac );
+        matSol->mult( vector1, vector2 );
+        auto ans2 = static_cast<double>( vector2->L2Norm() );
+        if ( AMP::Utilities::approx_equal( ans1, ans2 ) && ans1 != 0.0 )
+            utils->passes( "matMultiply with trivial matrix " + matSol->type() );
+        else
+            utils->failure( "matMultiply with trivial matrix " + matSol->type() );
+    }
 }
 
 
 void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
 {
-    PROFILE_START( "VerifySetElementNode" );
+    PROFILE( "VerifySetElementNode" );
     auto mesh   = d_factory->getMesh();
     auto dofmap = d_factory->getDOFMap();
     auto matrix = d_factory->getMatrix();
@@ -374,7 +378,7 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
     auto it  = mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     auto end = it.end();
     std::vector<size_t> dofs;
-    dofs.reserve( 24 );
+    dofs.reserve( 40 );
     while ( it != end ) {
         auto nodes = it->getElements( AMP::Mesh::GeomType::Vertex );
         dofs.clear();
@@ -383,7 +387,17 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
             dofmap->getDOFs( node.globalID(), dofsNode );
             for ( auto &elem : dofsNode )
                 dofs.push_back( elem );
+#if 0            
+            const auto row = node.globalID().meshID().getData();
+            for ( size_t c = 0; c < dofs.size(); ++c ) {
+                double val = -1.0;
+                if ( row == c )
+                    val = dofs.size() - 1;
+                matrix->addValueByGlobalID( row, dofs[c], val );
+            }
+#endif
         }
+#if 1
         for ( size_t r = 0; r < dofs.size(); r++ ) {
             for ( size_t c = 0; c < dofs.size(); c++ ) {
                 double val = -1.0;
@@ -392,6 +406,7 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
                 matrix->addValueByGlobalID( dofs[r], dofs[c], val );
             }
         }
+#endif
         ++it;
     }
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -429,8 +444,6 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
         utils->passes( "VerifyAddElementNode " + matrix->type() );
     else
         utils->failure( "VerifyAddElementNode " + matrix->type() );
-
-    PROFILE_STOP( "VerifySetElementNode" );
 }
 
 

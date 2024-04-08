@@ -163,6 +163,13 @@ Vector::shared_ptr createArrayVector( const ArraySize &localSize,
                                       const AMP_MPI &comm,
                                       std::shared_ptr<Variable> var );
 
+/** \brief    Create a view to raw vector data
+ * \details  This is the factory method for the raw vector view.
+ */
+template<typename T>
+Vector::shared_ptr createVectorAdaptor( const std::string &name,
+                                        std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
+                                        T *data );
 
 } // namespace AMP::LinearAlgebra
 

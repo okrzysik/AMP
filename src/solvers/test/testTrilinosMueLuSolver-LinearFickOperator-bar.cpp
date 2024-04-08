@@ -1,11 +1,9 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -149,15 +147,6 @@ void linearFickTest( AMP::UnitTest *ut )
     bool passes = checkAnalyticalSolution( exeName, fun, iterator, SolutionVec );
     if ( passes )
         ut->passes( "The linear fick solve is verified" );
-
-    // Plot the results
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector(
-        SolutionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Concentration" );
-    siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-
-    siloWriter->writeFile( input_file, 0 );
 
     input_db.reset();
 

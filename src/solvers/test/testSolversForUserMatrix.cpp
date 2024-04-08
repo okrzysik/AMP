@@ -142,7 +142,6 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     auto linearOpParameters = std::make_shared<AMP::Operator::OperatorParameters>( linearOpDB );
     auto linearOp           = std::make_shared<AMP::Operator::LinearOperator>( linearOpParameters );
     linearOp->setMatrix( ampMat );
-    linearOp->setVariables( copyVariable, copyVariable );
 
     ampMat->axpy( 1.0, userMat );
     ampMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -150,10 +149,12 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************
 
-    auto f  = ampVector->clone();
-    auto u  = ampVector->clone();
-    auto ri = ampVector->clone();
-    auto rf = ampVector->clone();
+    auto f  = userVector->clone();
+    auto u  = userVector->clone();
+    auto ri = userVector->clone();
+    auto rf = userVector->clone();
+
+    linearOp->setVariables( u->getVariable(), f->getVariable() );
 
     f->zero();
     u->setRandomValues();

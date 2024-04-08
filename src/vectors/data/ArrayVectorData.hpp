@@ -45,6 +45,26 @@ std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allo
     return retVal;
 }
 
+template<typename T, typename FUN, typename Allocator>
+std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allocator>::create(
+    const size_t localSize, std::shared_ptr<CommunicationList> commList, T *data )
+{
+    auto retVal = std::make_shared<ArrayVectorData<T, FUN, Allocator>>();
+
+    retVal->setCommunicationList( commList );
+    retVal->d_comm            = commList->getComm();
+    retVal->d_localStart      = commList->getStartGID();
+    retVal->d_localSize       = commList->numLocalRows();
+    retVal->d_globalSize      = commList->getTotalSize();
+    retVal->d_blockIndex      = { retVal->d_comm.getRank() };
+    retVal->d_globalArraySize = { retVal->d_globalSize };
+    retVal->d_offset          = retVal->d_localStart;
+
+    retVal->d_array.viewRaw( { retVal->d_localSize }, data );
+
+    return retVal;
+}
+
 
 /****************************************************************
  * Clone/Swap data                                               *

@@ -1,20 +1,5 @@
 //----------------------------------*-C++-*----------------------------------//
-/*!
- * \file   operators/test/testMoabBasedOperator.cc
- * \brief  This tests the Moab iMesh interface with MoabBasedOperator
- */
-//---------------------------------------------------------------------------//
-
-#include <cmath>
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
-
-// AMP Moab Includes
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/moab/MoabBasedOperator.h"
 #include "AMP/operators/moab/MoabMapOperator.h"
@@ -31,6 +16,13 @@
 #include "MBiMesh.hpp"
 #include "iMesh.h"
 #include "moab/Interface.hpp"
+
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 
 
 // Helper Class
@@ -257,14 +249,6 @@ static void moabInterface( AMP::UnitTest *ut )
         ut->passes( "Values interpolated correctly" );
     else
         ut->failure( "Values not interpolated correctly" );
-
-    // How about some output?
-    // Useful for making sure everything looks right
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( mesh );
-    siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::GeomType::Vertex, "Temperatures" );
-    siloWriter->writeFile( "Moab_Temp", 0 );
 
     if ( ut->NumPassGlobal() == 0 )
         ut->failure( "if it doesn't pass, it must have failed." );

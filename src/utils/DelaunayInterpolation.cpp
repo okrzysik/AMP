@@ -16,7 +16,7 @@
 #include "ProfilerApp.h"
 
 #define NDIM_MAX 3
-#define PROFILE_LEVEL 3
+#define ProfileLevel 3
 
 
 namespace AMP {
@@ -182,7 +182,7 @@ void DelaunayInterpolation<TYPE>::create_tessellation( size_t N,
 template<class TYPE>
 void DelaunayInterpolation<TYPE>::create_tessellation( const AMP::Array<TYPE> &x )
 {
-    PROFILE_SCOPED( timer, "create_tessellation", PROFILE_LEVEL );
+    PROFILE( "create_tessellation", ProfileLevel );
     // Delete the existing data
     clear();
     if ( x.empty() )
@@ -246,7 +246,7 @@ void DelaunayInterpolation<TYPE>::create_kdtree() const
 {
     // Create the kdtree
     if ( d_tree == nullptr ) {
-        PROFILE_START( "create_kdtree", PROFILE_LEVEL );
+        PROFILE( "create_kdtree", ProfileLevel );
         double *x[NDIM_MAX] = { nullptr };
         size_t N            = d_x.size( 1 );
         int ndim            = d_x.size( 0 );
@@ -258,7 +258,6 @@ void DelaunayInterpolation<TYPE>::create_kdtree() const
         d_tree = new kdtree( ndim, N, x );
         for ( int d = 0; d < ndim; d++ )
             delete[] x[d];
-        PROFILE_STOP( "create_kdtree", PROFILE_LEVEL );
     }
 }
 
@@ -273,7 +272,7 @@ Array<size_t> DelaunayInterpolation<TYPE>::find_nearest( const Array<TYPE2> &xi 
     if ( xi.empty() )
         return Array<size_t>();
     AMP_ASSERT( xi.size( 0 ) == d_x.size( 0 ) );
-    PROFILE_START( "find_nearest", PROFILE_LEVEL );
+    PROFILE( "find_nearest", ProfileLevel );
     // Create the kdtree
     create_kdtree();
     // Use the kdtree to perform the nearest neighbor interpolation
@@ -285,7 +284,6 @@ Array<size_t> DelaunayInterpolation<TYPE>::find_nearest( const Array<TYPE2> &xi 
         xi2.copy( xi );
         d_tree->find_nearest( xi2.size( 1 ), xi2.data(), index.data() );
     }
-    PROFILE_STOP( "find_nearest", PROFILE_LEVEL );
     return index;
 }
 
@@ -304,7 +302,7 @@ Array<int> DelaunayInterpolation<TYPE>::find_tri( const Array<TYPE2> &xi, bool e
     if ( xi.empty() )
         return Array<int>();
     AMP_ASSERT( xi.size( 0 ) == d_x.size( 0 ) );
-    PROFILE_START( "find_tri", PROFILE_LEVEL );
+    PROFILE( "find_tri", ProfileLevel );
     Array<int> index( xi.size( 1 ) );
     // Create the kdtree
     create_kdtree();
@@ -412,7 +410,6 @@ Array<int> DelaunayInterpolation<TYPE>::find_tri( const Array<TYPE2> &xi, bool e
     // Check if the search failed for any values
     if ( failed_search )
         AMP::perr << "Search failed for some points\n";
-    PROFILE_STOP( "find_tri", PROFILE_LEVEL );
     return index;
 }
 
@@ -426,7 +423,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                                                       double *grad,
                                                       const int n_it ) const
 {
-    PROFILE_START( "calc_node_gradient", PROFILE_LEVEL );
+    PROFILE( "calc_node_gradient", ProfileLevel );
     // First we need to get a list of the nodes that link to every other node
     create_node_neighbors();
     size_t N = d_x.size( 1 );
@@ -571,9 +568,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
         // This is the same as method 3 (Gauss-Seidel) but does not store the matrix entries,
         //    instead they are re-created every time
         // First, lets get the initial solution using method 1
-        PROFILE_STOP2( "calc_node_gradient", PROFILE_LEVEL );
         calc_node_gradient( f, 1, grad );
-        PROFILE_START2( "calc_node_gradient", PROFILE_LEVEL );
         // Loop through the Gauss-Seidel iterations
         double D[NDIM_MAX * NDIM_MAX] = { 0 }, rhs[NDIM_MAX] = { 0 }, Ax[NDIM_MAX] = { 0 },
                             rh[NDIM_MAX] = { 0 };
@@ -623,7 +618,6 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
         // Unkown method
         AMP::perr << "Unknown method\n";
     }
-    PROFILE_STOP( "calc_node_gradient", PROFILE_LEVEL );
 }
 
 
@@ -638,11 +632,10 @@ Array<double> DelaunayInterpolation<TYPE>::interp_nearest( const Array<double> &
 {
     AMP_ASSERT( !xi.empty() );
     AMP_ASSERT( f.size() == ArraySize( d_x.size( 1 ) ) );
-    PROFILE_START( "interp_nearest", PROFILE_LEVEL );
+    PROFILE( "interp_nearest", ProfileLevel );
     Array<double> fi( xi.size( 1 ) );
     for ( size_t i = 0; i < fi.length(); i++ )
         fi( i ) = f( nearest( i ) );
-    PROFILE_STOP( "interp_nearest", PROFILE_LEVEL );
     return f;
 }
 
@@ -666,7 +659,7 @@ DelaunayInterpolation<TYPE>::interp_linear( const AMP::Array<double> &f,
     AMP_ASSERT( !xi.empty() );
     AMP_ASSERT( xi.size() == ArraySize( ndim, Ni ) );
     // Allocate data
-    PROFILE_START( "interp_linear", PROFILE_LEVEL );
+    PROFILE( "interp_linear", ProfileLevel );
     AMP::Array<double> fi( Ni );
     AMP::Array<double> gi( ndim, Ni );
     double x2[NDIM_MAX * ( NDIM_MAX + 1 )], f2[NDIM_MAX + 1], L[NDIM_MAX + 1];
@@ -710,7 +703,6 @@ DelaunayInterpolation<TYPE>::interp_linear( const AMP::Array<double> &f,
         // Compute the gradient
         compute_gradient( ndim, x2, f2, &gi( 0, i ) );
     }
-    PROFILE_STOP( "interp_linear", PROFILE_LEVEL );
     return std::tie( fi, gi );
 }
 
@@ -727,6 +719,7 @@ DelaunayInterpolation<TYPE>::interp_cubic( const AMP::Array<double> &f,
                                            const AMP::Array<int> &index,
                                            int extrap ) const
 {
+    PROFILE( "interp_cubic", ProfileLevel );
     int ndim  = d_x.size( 0 );
     size_t Ni = xi.size( 1 );
     // Check inputs
@@ -736,7 +729,6 @@ DelaunayInterpolation<TYPE>::interp_cubic( const AMP::Array<double> &f,
     AMP_ASSERT( !xi.empty() );
     AMP_ASSERT( xi.size() == ArraySize( ndim, Ni ) );
     // Allocate data
-    PROFILE_START( "interp_cubic", PROFILE_LEVEL );
     AMP::Array<double> fi( Ni );
     AMP::Array<double> gi( ndim, Ni );
     fi.fill( 0 );
@@ -747,7 +739,6 @@ DelaunayInterpolation<TYPE>::interp_cubic( const AMP::Array<double> &f,
             xi0[d] = xi( d, i );
         interp_cubic_single( f.data(), g.data(), xi0, index( i ), fi( i ), &gi( 0, i ), extrap );
     }
-    PROFILE_STOP( "interp_cubic", PROFILE_LEVEL );
     return std::tie( fi, gi );
 }
 template<class TYPE>
@@ -759,6 +750,7 @@ void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
                                                        double *gi,
                                                        int extrap ) const
 {
+    PROFILE( "interp_cubic_single", ProfileLevel );
     const bool check_collinear = true; // Do we want to perform checks that points are collinear
     double x2[NDIM_MAX * ( NDIM_MAX + 1 )] = { 0 };
     double g2[NDIM_MAX * ( NDIM_MAX + 1 )] = { 0 };
@@ -773,7 +765,6 @@ void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
             gi[j] = nan;
         return;
     } else if ( index < 0 ) {
-        PROFILE_STOP2( "interp_cubic", PROFILE_LEVEL );
         throw std::logic_error( "Invalid triangle specified" );
     }
     // Compute the Barycentric coordinates
@@ -868,15 +859,12 @@ void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
                     double xi1[NDIM_MAX], xi2[NDIM_MAX], fi1, fi2, gi1[NDIM_MAX], gi2[NDIM_MAX];
                     get_interpolant_points( ndim, N, x3, L3, xi, xi1, xi2, check_collinear );
                     // Use cubic interpolation to get f and g for the two points
-                    PROFILE_STOP2( "interp_cubic", PROFILE_LEVEL );
                     interp_cubic_single( f, g, xi1, index, fi1, gi1, 0 );
                     interp_cubic_single( f, g, xi2, index, fi2, gi2, 0 );
-                    PROFILE_START2( "interp_cubic", PROFILE_LEVEL );
                     // Perform quadratic interpolation using a linear approximation to the gradient
                     fi = interp_line( ndim, xi1, fi1, gi1, xi2, fi2, gi2, xi, gi );
                 }
             } else {
-                PROFILE_STOP2( "interp_cubic", PROFILE_LEVEL );
                 throw std::logic_error( "Invalid value for extrap" );
             }
         }
@@ -1193,7 +1181,7 @@ void DelaunayInterpolation<TYPE>::create_node_neighbors() const
     // Check to see if we already created the structure
     if ( d_N_node != nullptr )
         return;
-    PROFILE_START( "create_node_neighbors", PROFILE_LEVEL );
+    PROFILE( "create_node_neighbors", ProfileLevel );
     // Allocate the data
     size_t N           = d_x.size( 1 );
     int ndim           = d_x.size( 0 );
@@ -1255,7 +1243,6 @@ void DelaunayInterpolation<TYPE>::create_node_neighbors() const
     // Delete the temporary memory
     delete[] node_list_tmp[0];
     delete[] node_list_tmp;
-    PROFILE_STOP( "create_node_neighbors", PROFILE_LEVEL );
 }
 
 
@@ -1293,7 +1280,7 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
     auto N_tri_nab         = new unsigned int[N]; // Number of triangles connected each node (N)
     auto tri_list          = new uint32_t *[N];   // List of triangles connected each node (N)
     tri_list[0]            = new unsigned int[( ndim + 1 ) * N_tri];
-    PROFILE_START( "create_tri_neighbors", PROFILE_LEVEL );
+    PROFILE( "create_tri_neighbors", ProfileLevel );
     // For each node, get a list of the triangles that connect to that node
     // Count the number of triangles connected to each vertex
     for ( size_t i = 0; i < N; i++ )
@@ -1377,7 +1364,6 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
     } else if ( error == 2 ) {
         throw std::logic_error( "Internal error" );
     }
-    PROFILE_STOP( "create_tri_neighbors", PROFILE_LEVEL );
 }
 
 

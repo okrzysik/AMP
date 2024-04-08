@@ -119,9 +119,14 @@ NonlinearSolver{
         uses_preconditioner=TRUE
         pc_type = "shell"
         pc_side = "RIGHT"
+        pc_solver_name = "Preconditioner"
 
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"
-        Preconditioner{
+   }
+}
+
+Preconditioner{
+	    name = "TrilinosMLSolver"
             max_levels = 1
             aggregation_aux_enable = TRUE
             //problem_type = "NSSA"
@@ -129,5 +134,4 @@ NonlinearSolver{
             max_iterations = 1
             max_error = 1.0e-7
         }
-    }
-}
+ 

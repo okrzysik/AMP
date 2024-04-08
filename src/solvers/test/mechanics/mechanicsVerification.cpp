@@ -1,15 +1,13 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/createLibmeshElements.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/materials/UO2_MSRZC_09.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-#include "AMP/mesh/libmesh/libmeshMesh.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
-#include "AMP/materials/UO2_MSRZC_09.h"
 #include "AMP/mesh/libmesh/ReadTestMesh.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
@@ -463,15 +461,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         AMP_ERROR( "Unknown value for manufacturedSolution->getName()" );
     }
 
-    auto vertex     = AMP::Mesh::GeomType::Vertex;
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( exactErrVec, meshAdapter, vertex, "Exact_Error_Vector" );
-    siloWriter->registerVector( exactSolVec, meshAdapter, vertex, "Exact_Solution_Vector" );
-    siloWriter->registerVector( solVec, meshAdapter, vertex, "Solution_Vector" );
-    // siloWriter->registerVector( resVec, meshAdapter, vertex, "Residual_Vector");
-    siloWriter->writeFile( "undeformedBeam_" + std::to_string( exampleNum ), 1 );
     meshAdapter->displaceMesh( solVec );
-    siloWriter->writeFile( "deformedBeam_" + std::to_string( exampleNum ), 1 );
 }
 
 

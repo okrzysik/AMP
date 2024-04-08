@@ -58,13 +58,23 @@ VectorDataDefault<TYPE, Allocator>::~VectorDataDefault()
  ****************************************************************/
 template<typename TYPE, class Allocator>
 std::shared_ptr<VectorData>
-VectorDataDefault<TYPE, Allocator>::cloneData( const std::string &name ) const
+VectorDataDefault<TYPE, Allocator>::cloneData( const std::string & ) const
 {
     auto retVal = std::make_shared<VectorDataDefault<TYPE, Allocator>>(
         d_localStart, d_localSize, d_globalSize );
     auto comm = getCommunicationList();
     if ( comm )
         retVal->setCommunicationList( comm );
+
+    if ( d_Ghosts && ( !d_Ghosts->empty() ) ) {
+        retVal->d_Ghosts = std::make_shared<std::vector<double>>( d_Ghosts->size() );
+        retVal->copyGhostValues( *this );
+    }
+    if ( d_AddBuffer && ( !d_AddBuffer->empty() ) ) {
+        retVal->d_AddBuffer      = std::make_shared<std::vector<double>>( d_AddBuffer->size() );
+        *( retVal->d_AddBuffer ) = *d_AddBuffer;
+    }
+
     return retVal;
 }
 

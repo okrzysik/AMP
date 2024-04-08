@@ -119,7 +119,6 @@ private:
     std::shared_ptr<const VectorFactory> d_factory;
 };
 
-
 class MultiVectorFactory : public VectorFactory
 {
 public:

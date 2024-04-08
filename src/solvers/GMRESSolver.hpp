@@ -1,5 +1,6 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/solvers/GMRESSolver.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "ProfilerApp.h"
 
 
@@ -34,8 +35,9 @@ template<typename T>
 void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
     AMP_ASSERT( parameters );
+    auto db = parameters->d_db;
 
-    getFromInput( parameters->d_db );
+    getFromInput( db );
 
     // maximum dimension to allocate storage for
     const int max_dim = std::min( d_iMaxKrylovDimension, d_iMaxIterations );
@@ -47,10 +49,20 @@ void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
     d_dw.resize( max_dim + 1, 0.0 );
     d_dy.resize( max_dim, 0.0 );
 
-    d_pPreconditioner = parameters->d_pNestedSolver;
-
-    if ( d_pOperator ) {
-        registerOperator( d_pOperator );
+    if ( parameters->d_pNestedSolver ) {
+        d_pPreconditioner = parameters->d_pNestedSolver;
+    } else {
+        if ( d_bUsesPreconditioner ) {
+            auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+            auto outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
+            if ( outerDB ) {
+                auto pcDB       = outerDB->getDatabase( pcName );
+                auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+                parameters->d_pOperator = d_pOperator;
+                d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+                AMP_ASSERT( d_pPreconditioner );
+            }
+        }
     }
 }
 
@@ -88,7 +100,7 @@ template<typename T>
 void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                             std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "solve" );
 
     // Check input vector states
     AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
@@ -308,8 +320,6 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         AMP::pout << "GMRES: Final residual: " << d_dResidualNorm << std::endl;
         AMP::pout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
-
-    PROFILE_STOP( "solve" );
 }
 
 template<typename T>
@@ -401,16 +411,6 @@ void GMRESSolver<T>::backwardSolve( const int nr )
 
         d_dy[k] = d_dy[k] / d_dHessenberg( k, k );
     }
-}
-
-/****************************************************************
- *  Function to set the register the operator                    *
- ****************************************************************/
-template<typename T>
-void GMRESSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
-{
-    AMP_ASSERT( op );
-    d_pOperator = op;
 }
 
 template<typename T>

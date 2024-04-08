@@ -770,16 +770,20 @@ NonlinearSolver {
         pc_side = "RIGHT"
 
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 10000 -ksp_rtol 0.05 -ksp_atol 1.0e-11 -ksp_gmres_restart 1000"
+    }
+}
 
-        Preconditioner {
+Preconditioner {
+	    name = "ColumnSolver"
             print_info_level = 1
             max_iterations = 1
             max_error = 1e-16
             absolute_tolerance = 1.0e-16
             relative_tolerance = 1.0e-13
             divergence_tolerance = 1.0e03
-
+	    
             TrilinosPreconditioner{
+	        name = "TrilinosMLSolver"
                 print_info_level = 0
                 max_iterations = 3
                 max_levels = 5
@@ -790,7 +794,10 @@ NonlinearSolver {
 
             // Preconditioner for the subchannel
             SubchannelPreconditioner{
+	        name = "BandedSolver"
                 Type = "Banded"         // ML, Banded, None
+		KL = 3
+		KU = 3
                 print_info_level = 0
                 max_iterations = 3
                 max_levels = 10
@@ -800,5 +807,3 @@ NonlinearSolver {
             }
 
         }
-    }
-}

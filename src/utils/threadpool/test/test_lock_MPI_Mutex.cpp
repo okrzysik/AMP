@@ -22,25 +22,26 @@ void test_lock( AMP::AMP_MPI comm, int N, bool call_sleep )
     for ( int i = 0; i < N; i++ ) {
         // Acquire the lock
         AMP::lock_MPI_Mutex( _global_lock, comm );
-        PROFILE_START( "work", 2 );
-        comm.barrier();
-        // Check and increment count
-        int tmp = _global_count++;
-        if ( tmp != 0 )
-            AMP_ERROR( "Invalid count" );
-        // Acquire the lock a second time, then release
-        _global_lock.lock();
-        _global_lock.unlock();
-        // Sleep for a while
-        sched_yield();
-        if ( call_sleep )
-            AMP::Utilities::sleep_ms( 20 );
-        // Check and decrement count
-        tmp = _global_count--;
-        if ( tmp != 1 )
-            AMP_ERROR( "Invalid count" );
+        {
+            PROFILE( "work", 2 );
+            comm.barrier();
+            // Check and increment count
+            int tmp = _global_count++;
+            if ( tmp != 0 )
+                AMP_ERROR( "Invalid count" );
+            // Acquire the lock a second time, then release
+            _global_lock.lock();
+            _global_lock.unlock();
+            // Sleep for a while
+            sched_yield();
+            if ( call_sleep )
+                AMP::Utilities::sleep_ms( 20 );
+            // Check and decrement count
+            tmp = _global_count--;
+            if ( tmp != 1 )
+                AMP_ERROR( "Invalid count" );
+        }
         // Release the mutex
-        PROFILE_STOP( "work", 2 );
         _global_lock.unlock();
         // Try to add some random waits
         for ( int j = 0; j < rand() % 10; j++ ) {
@@ -60,7 +61,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     PROFILE_ENABLE( 2 );
     PROFILE_ENABLE_TRACE();
-    PROFILE_START( "main" );
+    PROFILE( "main" );
 
     {
         // Create the thread pool
@@ -77,38 +78,42 @@ int main( int argc, char *argv[] )
 
         // Run a single lock test
         AMP::pout << "Running single lock test\n";
-        PROFILE_START( "single" );
-        _global_start = false;
         std::vector<AMP::ThreadPoolID> ids;
-        for ( int i = 0; i < N_threads; i++ )
-            ids.push_back( TPOOL_ADD_WORK( &tpool, test_lock, ( comm_world.dup(), 1, true ) ) );
-        _global_start = true;
-        tpool.wait_all( ids );
-        ids.clear();
-        comm_world.barrier();
-        PROFILE_STOP( "single" );
+        {
+            PROFILE( "single" );
+            _global_start = false;
+            for ( int i = 0; i < N_threads; i++ )
+                ids.push_back( TPOOL_ADD_WORK( &tpool, test_lock, ( comm_world.dup(), 1, true ) ) );
+            _global_start = true;
+            tpool.wait_all( ids );
+            ids.clear();
+            comm_world.barrier();
+        }
 
         // Run multiple lock tests
         AMP::pout << "Running multiple lock test\n";
-        PROFILE_START( "multiple" );
-        _global_start = false;
-        int N_it      = 100;
-        double start  = AMP::AMP_MPI::time();
-        for ( int i = 0; i < N_threads; i++ )
-            ids.push_back( TPOOL_ADD_WORK( &tpool, test_lock, ( comm_world.dup(), N_it, false ) ) );
-        _global_start = true;
-        tpool.wait_all( ids );
-        ids.clear();
-        comm_world.barrier();
-        double stop = AMP::AMP_MPI::time();
-        PROFILE_STOP( "multiple" );
+        int N_it     = 100;
+        double start = 0;
+        double stop  = 0;
+        {
+            PROFILE( "multiple" );
+            _global_start = false;
+            start         = AMP::AMP_MPI::time();
+            for ( int i = 0; i < N_threads; i++ )
+                ids.push_back(
+                    TPOOL_ADD_WORK( &tpool, test_lock, ( comm_world.dup(), N_it, false ) ) );
+            _global_start = true;
+            tpool.wait_all( ids );
+            ids.clear();
+            comm_world.barrier();
+            stop = AMP::AMP_MPI::time();
+        }
         AMP::pout << "   Time to acquire global MPI lock was " << ( stop - start ) / N_it
                   << " seconds/iteration\n";
     }
 
     // Finalize
     AMP::pout << "Test ran sucessfully\n";
-    PROFILE_STOP( "main" );
     PROFILE_SAVE( "test_lock_MPI_Mutex" );
     AMP::AMPManager::shutdown();
     return 0;

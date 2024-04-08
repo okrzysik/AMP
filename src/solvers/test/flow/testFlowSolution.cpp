@@ -5,6 +5,7 @@
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/OperatorFactory.h"
 #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
 #include "AMP/solvers/SolverFactory.h"
@@ -118,9 +119,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << std::endl;
 
     flowOperator->setVector( cladVec );
-    flowJacobian->setVector( cladVec );
 
-    auto jacobianSolver_db  = input_db->getDatabase( "JacobianSolver" );
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
 
     auto mv_view_solVec = AMP::LinearAlgebra::MultiVector::view( solVec, globalComm );
@@ -128,18 +127,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mv_view_tmpVec = AMP::LinearAlgebra::MultiVector::view( tmpVec, globalComm );
 
     flowOperator->residual( rhsVec, solVec, resVec );
-    flowJacobian->reset( flowOperator->getParameters( "Jacobian", mv_view_solVec ) );
-    flowJacobian->residual( rhsVec, solVec, resVec );
-
-    auto jacobianSolverParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( jacobianSolver_db );
-
-    // change the next line to get the correct communicator out
-    jacobianSolverParams->d_comm          = globalComm;
-    jacobianSolverParams->d_pOperator     = flowJacobian;
-    jacobianSolverParams->d_pInitialGuess = mv_view_tmpVec;
-
-    auto JacobianSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( jacobianSolverParams );
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
@@ -151,11 +138,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolverParams->d_pInitialGuess = mv_view_tmpVec;
 
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
-
-    // register the preconditioner with the Jacobian free Krylov solver
-    auto linearSolver = nonlinearSolver->getKrylovSolver();
-
-    linearSolver->setNestedSolver( JacobianSolver );
 
     flowOperator->residual( rhsVec, solVec, resVec );
 

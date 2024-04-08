@@ -42,6 +42,9 @@ public:
     static std::shared_ptr<ArrayVectorData>
     create( const ArraySize &localSize, const ArraySize &blockIndex, AMP_MPI comm );
 
+    static std::shared_ptr<ArrayVectorData>
+    create( const size_t localSize, std::shared_ptr<CommunicationList> commList, T *data );
+
     //! Empty constructor
     ArrayVectorData() = default;
 

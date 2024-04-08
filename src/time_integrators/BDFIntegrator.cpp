@@ -603,9 +603,9 @@ double BDFIntegrator::getInitialDt()
 
 double BDFIntegrator::getNextDtTruncationError( const bool good_solution, const int solver_retcode )
 {
-    PROFILE_START( "getNextDt-truncation", 1 );
+    PROFILE( "getNextDt-truncation", 1 );
     if ( good_solution ) {
-        PROFILE_START( "getNextDt-truncation-good", 2 );
+        PROFILE( "getNextDt-truncation-good", 2 );
 
         d_current_dt = estimateDtWithTruncationErrorEstimates( d_current_dt, good_solution );
 
@@ -630,9 +630,8 @@ double BDFIntegrator::getNextDtTruncationError( const bool good_solution, const 
             }
         }
 #endif
-        PROFILE_STOP( "getNextDt-truncation-good", 2 );
     } else {
-        PROFILE_START( "getNextDt-truncation-bad", 2 );
+        PROFILE( "getNextDt-truncation-bad", 2 );
         // the rejection could be due to the truncation error being too large or
         // a solution step failing
 
@@ -650,7 +649,6 @@ double BDFIntegrator::getNextDtTruncationError( const bool good_solution, const 
             // truncation error is too high
             d_current_dt = estimateDtWithTruncationErrorEstimates( d_current_dt, good_solution );
         }
-        PROFILE_STOP( "getNextDt-truncation-bad", 2 );
     }
 
     // check to make sure the predictor vector is a valid vector,
@@ -662,7 +660,7 @@ double BDFIntegrator::getNextDtTruncationError( const bool good_solution, const 
     bool validVector = d_operator->isValidVector( d_predictor_vector );
 
     if ( !validVector ) {
-        PROFILE_START( "getNextDt-truncation-not_valid", 2 );
+        PROFILE( "getNextDt-truncation-not_valid", 2 );
         AMP::pout << "The predictor is not valid" << std::endl;
         int iNumberOfPredictorPreCheckAttempts = 10;
 
@@ -686,9 +684,7 @@ double BDFIntegrator::getNextDtTruncationError( const bool good_solution, const 
                           << " attempts" << std::endl;
             }
         }
-        PROFILE_STOP( "getNextDt-truncation-not_valid", 2 );
     }
-    PROFILE_STOP( "getNextDt-truncation", 1 );
     return d_current_dt;
 }
 
@@ -723,7 +719,7 @@ double BDFIntegrator::getNextDtFinalConstant( const bool, const int )
 double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
                                                    const int solver_retcode )
 {
-    PROFILE_START( "getNextDt" );
+    PROFILE( "getNextDt" );
     // store the current dt somewhere as this has to be transferred to d_old_dt after the various
     // estimators are done
     const double d_tmp_dt = d_current_dt;
@@ -731,7 +727,7 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
     if ( d_timestep_strategy == "truncationErrorStrategy" ) {
         d_current_dt = getNextDtTruncationError( good_solution, solver_retcode );
     } else {
-        PROFILE_START( "getNextDt-default", 1 );
+        PROFILE( "getNextDt-default", 1 );
         if ( good_solution ) {
             static bool dtLimitedForCheckPoint;
             static double dtBeforeCheckPoint;
@@ -785,7 +781,6 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
             }
             d_current_dt = d_DtCutLowerBound * d_tmp_dt;
         }
-        PROFILE_STOP( "getNextDt-default", 1 );
     }
 
     // now set the old dt once it has been used
@@ -795,7 +790,6 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
 
     d_current_dt = std::min( std::min( d_current_dt, d_max_dt ), d_final_time - d_current_time );
 
-    PROFILE_STOP( "getNextDt" );
     return ( d_current_dt );
 }
 
@@ -804,7 +798,7 @@ double BDFIntegrator::getPredictorTimestepBound( void ) { return 0; }
 
 void BDFIntegrator::evaluatePredictor()
 {
-    PROFILE_START( "evaluatePredictor" );
+    PROFILE( "evaluatePredictor" );
     if ( ( d_implicit_integrator == "BDF2" ) || ( d_implicit_integrator == "BDF3" ) ||
          ( d_implicit_integrator == "BDF4" ) || ( d_implicit_integrator == "BDF5" ) ||
          ( d_implicit_integrator == "BDF6" ) ) {
@@ -846,13 +840,11 @@ void BDFIntegrator::evaluatePredictor()
         evaluateForwardEulerPredictor();
         //        d_predictor_vector->copyVector( d_prev_solutions[0] );
     }
-
-    PROFILE_STOP( "evaluatePredictor" );
 }
 
 void BDFIntegrator::evaluateAB2Predictor()
 {
-    PROFILE_START( "evaluateAB2Predictor" );
+    PROFILE( "evaluateAB2Predictor" );
 
     const double dt_ratio = d_current_dt / d_old_dt;
     const double alpha    = d_current_dt * ( 2.0 + dt_ratio ) / 2.0;
@@ -860,14 +852,12 @@ void BDFIntegrator::evaluateAB2Predictor()
 
     d_predictor_vector->linearSum( alpha, *d_current_function_vector, beta, *d_old_td_vector );
     d_predictor_vector->add( *d_predictor_vector, *d_prev_solutions[0] );
-
-    PROFILE_STOP( "evaluateAB2Predictor" );
 }
 
 // the leapfrog estimator is based on Gresho and Sani
 void BDFIntegrator::evaluateLeapFrogPredictor()
 {
-    PROFILE_START( "evaluateLeapFrogPredictor" );
+    PROFILE( "evaluateLeapFrogPredictor" );
 
     if ( d_iDebugPrintInfoLevel > 4 ) {
         printVectorComponentNorms( d_prev_solutions[1], " of old ", ": ", "L2Norm" );
@@ -892,8 +882,6 @@ void BDFIntegrator::evaluateLeapFrogPredictor()
     if ( d_iDebugPrintInfoLevel > 4 ) {
         printVectorComponentNorms( d_predictor_vector, " of ", " predictor: ", "L2Norm" );
     }
-
-    PROFILE_STOP( "evaluateLeapFrogPredictor" );
 }
 
 void BDFIntegrator::evaluateBDFInterpolantPredictor() { AMP_ERROR( "Not implemented" ); }
@@ -901,7 +889,7 @@ void BDFIntegrator::evaluateBDFInterpolantPredictor() { AMP_ERROR( "Not implemen
 // the leapfrog estimator is based on Gresho and Sani
 void BDFIntegrator::evaluateForwardEulerPredictor()
 {
-    PROFILE_START( "evaluateForwardEulerPredictor" );
+    PROFILE( "evaluateForwardEulerPredictor" );
 
     if ( d_iDebugPrintInfoLevel > 4 ) {
         printVectorComponentNorms( d_prev_solutions[0], " of old ", ": ", "L2Norm" );
@@ -946,8 +934,6 @@ void BDFIntegrator::evaluateForwardEulerPredictor()
     if ( d_iDebugPrintInfoLevel > 4 ) {
         printVectorComponentNorms( d_predictor_vector, " of ", "predictor: ", "L2Norm" );
     }
-
-    PROFILE_STOP( "evaluateForwardEulerPredictor" );
 }
 
 /*
@@ -966,7 +952,7 @@ void BDFIntegrator::setInitialGuess( const bool first_step,
     NULL_USE( current_dt );
     NULL_USE( old_dt );
 
-    PROFILE_START( "setInitialGuess" );
+    PROFILE( "setInitialGuess" );
     (void) current_time;
 
     d_first_step = first_step;
@@ -1034,8 +1020,6 @@ void BDFIntegrator::setInitialGuess( const bool first_step,
     }
 
     computeIntegratorSourceTerm();
-
-    PROFILE_STOP( "setInitialGuess" );
 }
 
 /*
@@ -1048,7 +1032,7 @@ void BDFIntegrator::setInitialGuess( const bool first_step,
 */
 bool BDFIntegrator::integratorSpecificCheckNewSolution( const int solver_retcode )
 {
-    PROFILE_START( "integratorSpecificCheckNewSolution" );
+    PROFILE( "integratorSpecificCheckNewSolution" );
     bool checkPassed = false;
 
     // the first check is whether the solver passed or failed
@@ -1110,14 +1094,12 @@ bool BDFIntegrator::integratorSpecificCheckNewSolution( const int solver_retcode
         d_step_accepted.push_back( stepStatus );
     }
 
-    PROFILE_STOP( "integratorSpecificCheckNewSolution" );
-
     return checkPassed == 0 ? false : true;
 }
 
 void BDFIntegrator::estimateBDF2TimeDerivative( void )
 {
-    PROFILE_START( "estimateBDF2TimeDerivative" );
+    PROFILE( "estimateBDF2TimeDerivative" );
     // we use the approach suggested in Gresho and Sani, Pg 805 to estimate
     // what the time derivative is
     const double dtt   = d_current_dt / d_old_dt;
@@ -1127,8 +1109,6 @@ void BDFIntegrator::estimateBDF2TimeDerivative( void )
 
     d_timederivative_vector->linearSum( alpha, *d_solution_vector, beta, *d_prev_solutions[0] );
     d_timederivative_vector->axpy( gamma, *d_prev_solutions[1], *d_timederivative_vector );
-
-    PROFILE_STOP( "estimateBDF2TimeDerivative" );
 }
 
 /**
@@ -1137,7 +1117,7 @@ void BDFIntegrator::estimateBDF2TimeDerivative( void )
 */
 void BDFIntegrator::estimateCNTimeDerivative( void )
 {
-    PROFILE_START( "estimateCNTimeDerivative" );
+    PROFILE( "estimateCNTimeDerivative" );
     const double alpha = -1.0;
     const double beta  = 2.0 / d_current_dt;
     const double gamma = -1.0;
@@ -1145,8 +1125,6 @@ void BDFIntegrator::estimateCNTimeDerivative( void )
     d_timederivative_vector->axpy( alpha, *d_prev_solutions[0], *d_solution_vector );
     d_timederivative_vector->linearSum(
         beta, *d_timederivative_vector, gamma, *d_prev_function_vector );
-
-    PROFILE_STOP( "estimateCNTimeDerivative" );
 }
 
 /**
@@ -1155,21 +1133,19 @@ void BDFIntegrator::estimateCNTimeDerivative( void )
 */
 void BDFIntegrator::estimateBETimeDerivative( void )
 {
-    PROFILE_START( "estimateBETimeDerivative" );
+    PROFILE( "estimateBETimeDerivative" );
 
     const double alpha = -1.0;
     const double beta  = 1.0 / d_current_dt;
 
     d_timederivative_vector->axpy( alpha, *d_prev_solutions[0], *d_solution_vector );
     d_timederivative_vector->scale( beta, *d_timederivative_vector );
-
-    PROFILE_STOP( "estimateBETimeDerivative" );
 }
 
 
 void BDFIntegrator::estimateTimeDerivative( void )
 {
-    PROFILE_START( "estimateTimeDerivative" );
+    PROFILE( "estimateTimeDerivative" );
 
     const auto &current_integrator = d_integrator_names[d_integrator_index];
 
@@ -1189,7 +1165,6 @@ void BDFIntegrator::estimateTimeDerivative( void )
         AMP_ERROR(
             "ERROR: Unknown time time integrator, valid options are BDF2, CN or BE currently" );
     }
-    PROFILE_STOP( "estimateTimeDerivative" );
 }
 
 /*
@@ -1202,7 +1177,7 @@ void BDFIntegrator::estimateTimeDerivative( void )
 */
 void BDFIntegrator::integratorSpecificUpdateSolution( const double new_time )
 {
-    PROFILE_START( "integratorSpecificUpdateSolution" );
+    PROFILE( "integratorSpecificUpdateSolution" );
 
     d_new_time = d_current_time = new_time;
 
@@ -1265,8 +1240,6 @@ void BDFIntegrator::integratorSpecificUpdateSolution( const double new_time )
     // signalled (from one point of view) as being the first step causing
     // problems. To avoid that we set it explicitly here
     d_first_step = false;
-
-    PROFILE_STOP( "integratorSpecificUpdateSolution" );
 }
 
 /*
@@ -1297,7 +1270,7 @@ double BDFIntegrator::getTimeOperatorScaling( void ) { return d_gamma; }
 */
 double BDFIntegrator::estimateDynamicalTimeScale( double current_dt )
 {
-    PROFILE_START( "estimateDynamicalTimeScale" );
+    PROFILE( "estimateDynamicalTimeScale" );
 
     if ( d_implicit_integrator == "CN" ) {
         AMP_ERROR( "Implemented only for BE and BDF2" );
@@ -1350,14 +1323,13 @@ double BDFIntegrator::estimateDynamicalTimeScale( double current_dt )
 
     current_dt = std::min( cfl_new_dt, factor * current_dt );
 
-    PROFILE_STOP( "estimateDynamicalTimeScale" );
     return current_dt;
 }
 
 double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
                                                               bool good_solution )
 {
-    PROFILE_START( "estimateDtWithTruncationErrorEstimates", 1 );
+    PROFILE( "estimateDtWithTruncationErrorEstimates", 1 );
     /*
      * Compute a new time step based on truncation error estimates
      * The truncation error estimate comes from a private communication with M. Pernice
@@ -1510,7 +1482,6 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         AMP::pout << std::setprecision( 16 ) << "New dt: " << current_dt << std::endl;
     }
 
-    PROFILE_STOP( "estimateDtWithTruncationErrorEstimates", 1 );
     return current_dt;
 }
 
@@ -1634,7 +1605,7 @@ void BDFIntegrator::calculateScaledLTENorm( std::shared_ptr<AMP::LinearAlgebra::
 void BDFIntegrator::calculateTemporalTruncationError()
 {
 
-    PROFILE_START( "calculateTemporalTruncationError" );
+    PROFILE( "calculateTemporalTruncationError" );
     const size_t nComponents = d_solution_vector->getNumberOfComponents();
     std::vector<double> truncErrorEstimate( nComponents, 1.0 );
 
@@ -1821,8 +1792,6 @@ void BDFIntegrator::calculateTemporalTruncationError()
             d_LTE[i].push_back( truncErrorEstimate[i] );
         }
     }
-
-    PROFILE_STOP( "calculateTemporalTruncationError" );
 }
 
 void BDFIntegrator::setIterationCounts( const int nli, const int li )
@@ -1919,7 +1888,7 @@ void BDFIntegrator::registerVectorsForMemoryManagement( void )
 */
 void BDFIntegrator::reset( std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> )
 {
-    PROFILE_START( "BDFIntegrator::reset" );
+    PROFILE( "BDFIntegrator::reset" );
 
     registerVectorsForMemoryManagement();
 
@@ -1994,7 +1963,6 @@ void BDFIntegrator::reset( std::shared_ptr<const AMP::TimeIntegrator::TimeIntegr
     }
 
     d_reset_after_restart = false;
-    PROFILE_STOP( "BDFIntegrator::reset" );
 }
 
 // provide a default implementation
@@ -2015,7 +1983,9 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
 
-    auto rhs = in->clone();
+    if ( !d_scratch_function_vector )
+        d_scratch_function_vector = in->clone();
+    auto rhs = d_scratch_function_vector;
     rhs->scale( -1.0, *d_integrator_source_vector );
 
     if ( d_solution_scaling ) {

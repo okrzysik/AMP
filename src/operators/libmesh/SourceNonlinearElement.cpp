@@ -82,7 +82,7 @@ void SourceNonlinearElement::initializeForCurrentElement(
 void SourceNonlinearElement::apply()
 {
 
-    PROFILE_START( "apply", 5 );
+    PROFILE( "apply", 5 );
 
     d_fe->reinit( d_elem );
     const unsigned int n_nodes                         = d_elem->n_nodes();
@@ -155,7 +155,5 @@ void SourceNonlinearElement::apply()
             }
         } // end for j
     }     // end for qp
-
-    PROFILE_STOP( "apply", 5 );
 }
 } // namespace AMP::Operator

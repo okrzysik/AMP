@@ -202,28 +202,6 @@ void Property::evalArgs( AMP::Array<double> &args2,
 {
     evalArgs( args2, name, *v, args... );
 }
-template<class... Args>
-void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::vector<double> &args,
-                         const std::vector<std::string> &names,
-                         const std::vector<Units> &argUnits ) const
-{
-    size_t N = args2.size( 1 );
-    AMP_ASSERT( args.size() == names.size() );
-    AMP_ASSERT( argUnits.empty() || argUnits.size() == names.size() );
-    for ( size_t k = 0; k < args.size(); k++ ) {
-        int i = get_arg_index( names[k] );
-        if ( i >= 0 ) {
-            double scale = 1.0;
-            if ( !argUnits.empty() ) {
-                if ( !argUnits[k].isNull() )
-                    scale = argUnits[k].convert( d_argUnits[i] );
-            }
-            for ( size_t j = 0; j < N; j++ )
-                args2( i, j ) = scale * args[k];
-        }
-    }
-}
 
 
 /************************************************************************

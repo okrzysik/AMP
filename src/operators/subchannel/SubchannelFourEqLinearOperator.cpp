@@ -17,8 +17,8 @@ namespace AMP::Operator {
 
 // Constructor
 SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
-    std::shared_ptr<const SubchannelOperatorParameters> params )
-    : LinearOperator( params ),
+    std::shared_ptr<const OperatorParameters> inparams )
+    : LinearOperator( inparams ),
       d_forceNoConduction( false ),
       d_forceNoTurbulence( false ),
       d_forceNoHeatSource( false ),
@@ -39,6 +39,7 @@ SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
       d_Q( 0 ),
       d_numSubchannels( 0 )
 {
+    auto params = std::dynamic_pointer_cast<const SubchannelOperatorParameters>( inparams );
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
     std::string inpVar = params->d_db->getString( "InputVariable" );
     d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
@@ -50,6 +51,8 @@ SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
 
     d_params      = params;
     d_initialized = false;
+
+    reset( params );
 }
 
 // reset
@@ -193,7 +196,6 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
     if ( !myparams->d_initialize ) {
         // We are done with the reset
         d_matrix->setIdentity();
-        PROFILE_STOP2( "reset" );
         return;
     }
 
@@ -1032,7 +1034,6 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
         }
     }
     d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
-    PROFILE_STOP( "reset" );
 } // end of reset function
 
 // function used in reset to get double parameter or set default if missing
@@ -1497,8 +1498,8 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
             // adjacent to the current
             // lateral face
             double knownCentroid[3]           = { parentLateralFaceCentroid[0],
-                                        parentLateralFaceCentroid[1],
-                                        daughterCellCentroid[2] };
+                                                  parentLateralFaceCentroid[1],
+                                                  daughterCellCentroid[2] };
             bool isAxiallyAdjacentLateralFace = true;
             for ( size_t i = 0; i < 3; i++ ) {
                 if ( !AMP::Utilities::approx_equal_abs(

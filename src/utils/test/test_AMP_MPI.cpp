@@ -98,7 +98,7 @@ int testReduce( MPI_CLASS comm, UnitTest &ut );
 template<>
 int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_SCOPED( profiler, "testReduce<complex double>" );
+    PROFILE( "testReduce<complex double>" );
     std::string typeName      = typeid( std::complex<double> ).name();
     std::complex<double> rank = comm.getRank() + 1;
     std::complex<double> N    = ( ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2 );
@@ -112,7 +112,7 @@ int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest &ut )
 template<class type>
 int testReduce( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_SCOPED( profiler, "testReduce" );
+    PROFILE( "testReduce" );
     std::string typeName = typeid( std::complex<double> ).name();
     auto rank            = (type) comm.getRank();
     auto size            = (type) comm.getSize();
@@ -199,7 +199,7 @@ int testReduce( MPI_CLASS comm, UnitTest &ut )
 template<class type>
 int testScan( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_SCOPED( profiler, "testScan" );
+    PROFILE( "testScan" );
     auto x   = (type) ( comm.getRank() + 1 );
     type y   = 0;
     auto msg = stringf( "sumScan (%s)", typeid( type ).name() );
@@ -223,7 +223,7 @@ int testScan( MPI_CLASS comm, UnitTest &ut )
 template<class type>
 int testBcast( MPI_CLASS comm, UnitTest &ut, type default_val, type new_val )
 {
-    PROFILE_SCOPED( profiler, "testBcast" );
+    PROFILE( "testBcast" );
     for ( int i = 0; i < comm.getSize(); i++ ) {
         type tmp1 = default_val;
         if ( comm.getRank() == i )
@@ -249,7 +249,7 @@ int testBcast( MPI_CLASS comm, UnitTest &ut, type default_val, type new_val )
 template<class type>
 int testAllGather( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_SCOPED( profiler, "testAllGather" );
+    PROFILE( "testAllGather" );
     // Test scalar allGather
     auto x1  = (type) comm.getRank();
     auto *x2 = new type[comm.getSize()];
@@ -351,7 +351,7 @@ int testAllGather( MPI_CLASS comm, UnitTest &ut )
 template<class type>
 int testSetGather( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_SCOPED( profiler, "testSetGather" );
+    PROFILE( "testSetGather" );
     auto x1 = (type) comm.getRank();
     std::set<type> set;
     set.insert( x1 );
@@ -372,7 +372,7 @@ int testSetGather( MPI_CLASS comm, UnitTest &ut )
 template<class type>
 int testMapGather( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_SCOPED( profiler, "testMapGather" );
+    PROFILE( "testMapGather" );
     auto x1 = (type) comm.getRank();
     std::map<int, type> map;
     map.insert( std::pair<int, type>( comm.getRank(), x1 ) );
@@ -396,7 +396,7 @@ int testMapGather( MPI_CLASS comm, UnitTest &ut )
 template<class type>
 int testAllToAll( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_SCOPED( profiler, "testAllToAll" );
+    PROFILE( "testAllToAll" );
     bool pass;
     int size = 0;
     type *send_data, *recv_data;
@@ -544,7 +544,7 @@ int testAllToAll( MPI_CLASS comm, UnitTest &ut )
 template<class type>
 int testSendRecv( MPI_CLASS comm, UnitTest &ut, type v1, type v2 )
 {
-    PROFILE_SCOPED( profiler, "testSendRecv" );
+    PROFILE( "testSendRecv" );
     // Test send-recv with a known length
     for ( int i = 0; i < comm.getSize(); i++ ) {
         for ( int j = 0; j < comm.getSize(); j++ ) {
@@ -617,7 +617,7 @@ int testSendRecv( MPI_CLASS comm, UnitTest &ut, type v1, type v2 )
 template<class type>
 int testIsendIrecv( MPI_CLASS comm, UnitTest &ut, type v1, type v2 )
 {
-    PROFILE_SCOPED( profiler, "testIsendIrecv" );
+    PROFILE( "testIsendIrecv" );
     std::vector<MPI_CLASS::Request> sendRequest;
     std::vector<MPI_CLASS::Request> recvRequest;
     // Send all msgs
@@ -751,7 +751,7 @@ struct testCommTimerResults {
 // This routine will test a single MPI communicator
 testCommTimerResults testComm( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_SCOPED( profiler, "testComm" );
+    PROFILE( "testComm" );
     testCommTimerResults timer;
     double start_time;
     // Test the tag
@@ -1062,7 +1062,7 @@ int main( int argc, char *argv[] )
     // Create the unit test
     UnitTest ut;
     PROFILE_ENABLE( 0 );
-    PROFILE_START( "Main" );
+    PROFILE( "Main" );
 
 
     // Limit the scope so objects are destroyed
@@ -1148,7 +1148,6 @@ int main( int argc, char *argv[] )
         }
 
         // Split the global comm and test
-        PROFILE_START( "Split" );
         int color;
         if ( globalComm.getRank() == 0 )
             color = 0;
@@ -1174,7 +1173,6 @@ int main( int argc, char *argv[] )
         splitComms[3] = splitComms[0]; // Make a copy to ensure there are no memory leaks
         splitComms[3] = splitComms[2]; // Perform assignement to check memory leaks
         MPI_ASSERT( splitComms[3] == splitComms[2] );
-        PROFILE_STOP( "Split" );
 
         // Test  <  <=  >  >=
         if ( globalComm.getSize() > 1 ) {
@@ -1300,11 +1298,8 @@ int main( int argc, char *argv[] )
     } // Limit the scope so objects are destroyed
 
     // Finished testing, report the results
-    PROFILE_START( "Report" );
     ut.report();
     int num_failed = ut.NumFailGlobal();
-    PROFILE_STOP( "Report" );
-    PROFILE_STOP( "Main" );
 
     // Shutdown
     PROFILE_SAVE( "test_AMP_MPI" );

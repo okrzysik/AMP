@@ -1,6 +1,5 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -39,61 +38,19 @@ std::shared_ptr<AMP::Solver::SolverStrategy>
 buildSolver( std::shared_ptr<AMP::Database> input_db,
              const std::string &solver_name,
              const AMP::AMP_MPI &comm,
-             std::shared_ptr<AMP::Operator::Operator> &op )
+             std::shared_ptr<AMP::Operator::Operator> op )
 {
-
-    std::shared_ptr<AMP::Solver::SolverStrategy> solver;
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
 
     AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
 
     auto db = input_db->getDatabase( solver_name );
+    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
 
-    if ( db->keyExists( "name" ) ) {
-
-        auto name = db->getString( "name" );
-
-        if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ||
-             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ||
-             ( name == "HyprePCGSolver" )
-#if defined( AMP_USE_PETSC )
-             || ( name == "PetscKrylovSolver" ) ) {
-#else
-        ) {
-#endif
-
-            // check if we need to construct a preconditioner
-            auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
-            std::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
-
-            if ( uses_preconditioner ) {
-
-                auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
-
-                pcSolver = buildSolver( input_db, pc_name, comm, op );
-
-                AMP_INSIST( pcSolver, "null preconditioner" );
-            }
-
-            auto params             = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-            params->d_comm          = comm;
-            params->d_pNestedSolver = pcSolver;
-            parameters              = params;
-
-        } else {
-            parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-        }
-
-        AMP_INSIST( parameters != nullptr, "null parameter object" );
-        parameters->d_pOperator = op;
-
-    } else {
-        AMP_ERROR( "Key name does not exist in solver database" );
-    }
-
-    solver = AMP::Solver::SolverFactory::create( parameters );
-
-    return solver;
+    auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+    parameters->d_pOperator = op;
+    parameters->d_comm      = comm;
+    parameters->d_global_db = input_db;
+    return AMP::Solver::SolverFactory::create( parameters );
 }
 
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
@@ -143,7 +100,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    // Integrate Nuclear Source over Desnity * Volume
+    // Integrate Nuclear Source over Density * Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
@@ -173,9 +130,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto ResidualVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
-    ResidualVec->zero();
-    RightHandSideVec->setToScalar( 0.0 );
-
     // Add the boundary conditions corrections
     auto boundaryOpCorrectionVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
@@ -184,15 +138,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
-    RightHandSideVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    // std::cout << "RHS Norm after BC Correction " << RightHandSideVec->L2Norm() << std::endl;
-    // std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;
-    // std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;
-    // std::cout << "RHS Norm 3: " << boundaryOpCorrectionVec->L2Norm() << std::endl;
-
-    // make sure the database on theinput file exists for the linear solver
-    AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
     auto comm         = AMP::AMP_MPI( AMP_COMM_WORLD );
     auto linearSolver = buildSolver( input_db, "LinearSolver", comm, linearOperator );
 
@@ -201,8 +147,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     // Check the initial L2 norm of the solution
     double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
-    std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
+    AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    AMP::pout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
+    AMP::pout << "System size: " << RightHandSideVec->getGlobalSize() << std::endl;
 
     // Use a random initial guess?
     linearSolver->setZeroInitialGuess( false );
@@ -212,18 +159,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     // commented till necessary infrastructure in place
     checkConvergence( linearSolver.get(), inputFileName, *ut );
-
-#ifdef AMP_USE_SILO
-    // Plot the results
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector(
-        TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
-    siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->writeFile( input_file, 0 );
-#endif
-
-    input_db.reset();
 }
 
 

@@ -19,8 +19,8 @@ namespace AMP::Operator {
 
 // Constructor
 SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(
-    std::shared_ptr<const SubchannelOperatorParameters> params )
-    : LinearOperator( params ),
+    std::shared_ptr<const OperatorParameters> inparams )
+    : LinearOperator( inparams ),
       d_Pout( 0 ),
       d_Tin( 0 ),
       d_mass( 0 ),
@@ -35,6 +35,7 @@ SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(
       d_machinePrecision( 1.0e-15 ),
       d_numSubchannels( 0 )
 {
+    auto params = std::dynamic_pointer_cast<const SubchannelOperatorParameters>( inparams );
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
     std::string inpVar = params->d_db->getString( "InputVariable" );
     d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
@@ -46,13 +47,15 @@ SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(
 
     d_params      = params;
     d_initialized = false;
+
+    reset( params );
 }
 
 
 // reset
 void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    PROFILE_START( "reset" );
+    PROFILE( "reset" );
     d_initialized = true;
     auto myparams = std::dynamic_pointer_cast<const SubchannelOperatorParameters>( params );
 
@@ -61,7 +64,7 @@ void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParamet
 
     d_params = myparams;
 
-    // We require that subchannel in on an AMP structured
+    // We require that subchannel is on an AMP structured
 
     // Get the subchannel mesh coordinates
     AMP::Mesh::StructuredMeshHelper::getXYZCoordinates( d_Mesh, d_x, d_y, d_z );
@@ -181,7 +184,6 @@ void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParamet
     if ( !myparams->d_initialize ) {
         // We are done with the reset
         d_matrix->setIdentity();
-        PROFILE_STOP2( "reset" );
         return;
     }
 
@@ -369,7 +371,6 @@ void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParamet
 
     } // end of isub
     d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
-    PROFILE_STOP( "reset" );
 }
 
 // function used in reset to get double parameter or set default if missing

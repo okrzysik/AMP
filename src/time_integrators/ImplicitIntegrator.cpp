@@ -68,9 +68,11 @@ void ImplicitIntegrator::createSolver( void )
 
     solverDB->print( AMP::plog );
     auto solver_params = std::make_shared<AMP::Solver::SolverStrategyParameters>( solverDB );
-    solver_params->d_pOperator = d_operator;
-    solver_params->d_global_db = globalDB;
-    d_solver                   = AMP::Solver::SolverFactory::create( solver_params );
+
+    solver_params->d_pOperator     = d_operator;
+    solver_params->d_global_db     = globalDB;
+    solver_params->d_pInitialGuess = d_solution_vector;
+    d_solver                       = AMP::Solver::SolverFactory::create( solver_params );
 }
 
 
@@ -163,7 +165,7 @@ int ImplicitIntegrator::integratorSpecificAdvanceSolution(
         auto params = std::make_shared<AMP::Solver::SolverStrategyParameters>();
         params->d_vectors.push_back( d_solution_vector );
 
-        d_solver->initialize( params );
+        //        d_solver->initialize( params );
     }
 
     setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );

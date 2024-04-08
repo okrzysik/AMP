@@ -105,20 +105,17 @@ AMP::LinearAlgebra::Vector::shared_ptr NodeToNodeMap::getVector() { return d_Out
 void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                 AMP::LinearAlgebra::Vector::shared_ptr )
 {
-    PROFILE_START( "applyStart" );
+    PROFILE( "applyStart" );
 
     // Subset the vector for the variable (we only need the local portion of the vector)
-    PROFILE_START( "subset", 1 );
     auto var = getInputVariable();
     //    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_COMM_SELF );
     auto commSubsetVec = u->select( commSelector, u->getName() );
     auto curPhysics    = commSubsetVec->subsetVectorForVariable( var );
-    PROFILE_STOP( "subset", 1 );
     AMP_INSIST( curPhysics, "apply received bogus stuff" );
 
     // Get the DOFs to send
-    PROFILE_START( "getDOFs", 1 );
     auto DOF = curPhysics->getDOFManager();
     std::vector<size_t> dofs( DofsPerObj * d_sendList.size() );
     std::vector<size_t> local_dofs( DofsPerObj );
@@ -128,15 +125,11 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         for ( int j = 0; j < DofsPerObj; j++ )
             dofs[j + i * DofsPerObj] = local_dofs[j];
     }
-    PROFILE_STOP( "getDOFs", 1 );
 
     // Get the values to send
-    PROFILE_START( "getValues", 1 );
     curPhysics->getValuesByGlobalID( dofs.size(), dofs.data(), d_sendBuffer.data() );
-    PROFILE_STOP( "getValues", 1 );
 
     // Start the communication
-    PROFILE_START( "startCommunication", 1 );
     auto curReq = beginRequests();
     for ( int i = 0; i < d_MapComm.getSize(); i++ ) {
         int count  = DofsPerObj * d_count[i];
@@ -153,8 +146,6 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             ++curReq;
         }
     }
-    PROFILE_STOP( "startCommunication", 1 );
-    PROFILE_STOP( "applyStart" );
 }
 
 
@@ -164,7 +155,7 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                                  AMP::LinearAlgebra::Vector::shared_ptr )
 {
-    PROFILE_START( "applyFinish" );
+    PROFILE( "applyFinish" );
 
     // Get the DOFs to recv
     auto DOF = d_OutputVector->getDOFManager();
@@ -186,8 +177,6 @@ void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     // Update ghost cells (this should be done on the full output vector)
     if ( d_callMakeConsistentSet )
         d_OutputVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
-    PROFILE_STOP( "applyFinish" );
 }
 
 

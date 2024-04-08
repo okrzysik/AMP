@@ -116,6 +116,9 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 1000"
         Preconditioner{
             Type = "Banded"     // Valid types: ML, Banded, None
+	    name = "BandedSolver"
+	    KL = 3
+	    KU = 3
             print_info_level = 1
             max_iterations = 1
             max_levels = 1

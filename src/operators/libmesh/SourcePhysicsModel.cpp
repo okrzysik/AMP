@@ -89,7 +89,7 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
                                                   const std::vector<std::vector<double>> &,
                                                   const std::vector<libMesh::Point> &Coordinates )
 {
-    PROFILE_START( "getConstitutiveProperty", 6 );
+    PROFILE( "getConstitutiveProperty", 6 );
     if ( d_physicsName == "DiffusionTransportModel" ) {
         auto tmp = std::dynamic_pointer_cast<DiffusionTransportModel>( d_elementPhysicsModel );
 
@@ -174,6 +174,5 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
             AMP_ERROR( "Invalid case" );
         }
     }
-    PROFILE_STOP( "getConstitutiveProperty", 6 );
 }
 } // namespace AMP::Operator

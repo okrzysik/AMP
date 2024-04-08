@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
@@ -115,7 +114,7 @@ static void createVectors( std::shared_ptr<AMP::Mesh::Mesh> pinMesh,
 
 static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 {
-    PROFILE_START( "Main" );
+    PROFILE( "Main" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
     AMP::logAllNodes( log_file );
@@ -153,7 +152,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         std::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerInWattsPerGram" );
 
     auto nonlinearColumnOperator      = std::make_shared<AMP::Operator::ColumnOperator>();
-    auto linearColumnOperator         = std::make_shared<AMP::Operator::ColumnOperator>();
     auto volumeIntegralColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
     auto mapsColumn                   = std::make_shared<AMP::Operator::ColumnOperator>();
     auto n2nColumn                    = std::make_shared<AMP::Operator::AsyncMapColumnOperator>();
@@ -202,18 +200,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                                                                     global_input_db,
                                                                     thermalTransportModel ) );
             nonlinearColumnOperator->append( thermalNonlinearOperator );
-
-            // CREATE THE LINEAR THERMAL OPERATOR 1
-            AMP_INSIST( global_input_db->keyExists( prefix + "LinearThermalOperator" ),
-                        "key missing!" );
-            auto thermalLinearOperator =
-                std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-                    AMP::Operator::OperatorBuilder::createOperator( adapter,
-                                                                    prefix +
-                                                                        "LinearThermalOperator",
-                                                                    global_input_db,
-                                                                    thermalTransportModel ) );
-            linearColumnOperator->append( thermalLinearOperator );
 
             AMP_INSIST( global_input_db->keyExists( prefixPower + "VolumeIntegralOperator" ),
                         "key missing!" );
@@ -281,16 +267,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                 nonlinearOpParams->clad_y = clad_y;
                 nonlinearOpParams->clad_d = clad_d;
                 subchannelNonlinearOperator->reset( nonlinearOpParams );
-                // create linear operator
-                subchannelLinearOperator =
-                    std::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqLinearOperator>(
-                        AMP::Operator::OperatorBuilder::createOperator(
-                            adapter,
-                            "SubchannelTwoEqLinearOperator",
-                            global_input_db,
-                            subchannelNonlinearOperator->getSubchannelPhysicsModel() ) );
-                // subchannelLinearOperator.reset( new AMP::Operator::IdentityOperator(
-                // nonlinearOpParams ) );
+
                 int DOFsPerFace[3] = { 0, 0, 2 };
                 auto flowDOFManager =
                     std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
@@ -298,11 +275,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                 auto subchannelFlow =
                     AMP::LinearAlgebra::createVector( flowDOFManager, flowVariable );
                 subchannelNonlinearOperator->setVector( subchannelFuelTemp );
-                auto subchannelLinearParams =
-                    std::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>(
-                        subchannelNonlinearOperator->getParameters( "Jacobian", subchannelFlow ) );
-                subchannelLinearParams->d_initialize = false;
-                subchannelLinearOperator->reset( subchannelLinearParams );
+
                 // pass creation test
                 ut->passes( exeName + ": creation" );
                 std::cout.flush();
@@ -507,83 +480,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     auto globalThermalRhsVec  = globalRhsMultiVector->subsetVectorForVariable( thermalVariable );
     auto globalThermalResVec  = globalResMultiVector->subsetVectorForVariable( thermalVariable );
 
-    // create nonlinear solver
-    std::shared_ptr<AMP::Solver::SolverStrategy> nonlinearSolver;
-    { // Limit the scope so we can add an if else statement for Petsc vs NOX
-
-        // get the solver databases
-        auto nonlinearSolver_db = global_input_db->getDatabase( "NonlinearSolver" );
-        auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
-
-        // create preconditioner (thermal domains)
-        auto columnPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
-        auto columnPreconditionerParams =
-            std::make_shared<AMP::Solver::SolverStrategyParameters>( columnPreconditioner_db );
-        columnPreconditionerParams->d_pOperator = linearColumnOperator;
-        columnPreconditioner.reset( new AMP::Solver::ColumnSolver( columnPreconditionerParams ) );
-
-        auto trilinosPreconditioner_db =
-            columnPreconditioner_db->getDatabase( "TrilinosPreconditioner" );
-        unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
-        for ( unsigned int id = 0; id < N_preconditioners; id++ ) {
-            auto trilinosPreconditionerParams =
-                std::make_shared<AMP::Solver::SolverStrategyParameters>(
-                    trilinosPreconditioner_db );
-            trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator( id );
-            auto trilinosPreconditioner =
-                std::make_shared<AMP::Solver::TrilinosMLSolver>( trilinosPreconditionerParams );
-            columnPreconditioner->append( trilinosPreconditioner );
-        }
-
-        // Create the subchannel preconditioner
-        if ( subchannelLinearOperator ) {
-            auto subchannelPreconditioner_db =
-                columnPreconditioner_db->getDatabase( "SubchannelPreconditioner" );
-            AMP_ASSERT( subchannelPreconditioner_db );
-            auto subchannelPreconditionerParams =
-                std::make_shared<AMP::Solver::SolverStrategyParameters>(
-                    subchannelPreconditioner_db );
-            subchannelPreconditionerParams->d_pOperator = subchannelLinearOperator;
-            auto preconditioner = subchannelPreconditioner_db->getString( "Type" );
-            if ( preconditioner == "ML" ) {
-                auto subchannelPreconditioner = std::make_shared<AMP::Solver::TrilinosMLSolver>(
-                    subchannelPreconditionerParams );
-                linearColumnOperator->append( subchannelLinearOperator );
-                columnPreconditioner->append( subchannelPreconditioner );
-            } else if ( preconditioner == "Banded" ) {
-                subchannelPreconditioner_db->putScalar( "KL", 3 );
-                subchannelPreconditioner_db->putScalar( "KU", 3 );
-                auto subchannelPreconditioner =
-                    std::make_shared<AMP::Solver::BandedSolver>( subchannelPreconditionerParams );
-                linearColumnOperator->append( subchannelLinearOperator );
-                columnPreconditioner->append( subchannelPreconditioner );
-            } else if ( preconditioner == "None" ) {
-            } else {
-                AMP_ERROR( "Invalid preconditioner type" );
-            }
-        }
-
-        // create nonlinear solver parameters
-        auto nonlinearSolverParams =
-            std::make_shared<AMP::Solver::TrilinosNOXSolverParameters>( nonlinearSolver_db );
-        nonlinearSolverParams->d_comm            = globalComm;
-        nonlinearSolverParams->d_pOperator       = nonlinearCoupledOperator;
-        nonlinearSolverParams->d_pInitialGuess   = globalSolMultiVector;
-        nonlinearSolverParams->d_pLinearOperator = linearColumnOperator;
-        nonlinearSolver = std::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
-
-        /*// create linear solver
-        auto linearSolver =
-        std::dynamic_pointer_cast<AMP::Solver::PetscSNESSolver>(nonlinearSolver)->getKrylovSolver();
-        // set preconditioner
-        linearSolver->setNestedSolver(columnPreconditioner);*/
-    }
-
-    // don't use zero initial guess
-    nonlinearSolver->setZeroInitialGuess( false );
-
     // Initialize the pin temperatures
-    PROFILE_START( "Initialize" );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     int root_subchannel = -1;
     std::vector<double> range( 6 );
@@ -649,14 +546,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
         subchannelEnthalpy->setToScalar( AMP::Operator::Subchannel::scaleEnthalpy * hin );
         subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * Pout );
-
-        // FIRST APPLY CALL
-        auto subchannelLinearParams =
-            std::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>(
-                subchannelNonlinearOperator->getParameters( "Jacobian", flowSolVec ) );
-        subchannelLinearParams->d_initialize = false;
-        subchannelLinearOperator->reset( subchannelLinearParams );
-        subchannelLinearOperator->residual( flowRhsVec, flowSolVec, flowResVec );
     }
 
     nonlinearCoupledOperator->residual(
@@ -676,11 +565,82 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearThermalOperator->modifyRHSvector( globalThermalRhsVec );
     }
     globalThermalRhsVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    PROFILE_STOP( "Initialize" );
 
+
+    auto linearColParams =
+        nonlinearColumnOperator->getParameters( "Jacobian", globalSolMultiVector );
+
+    auto linearColumnOperator = std::make_shared<AMP::Operator::ColumnOperator>( linearColParams );
+
+    // create nonlinear solver
+    std::shared_ptr<AMP::Solver::SolverStrategy> nonlinearSolver;
+    { // Limit the scope so we can add an if else statement for Petsc vs NOX
+
+        // get the solver databases
+        auto nonlinearSolver_db = global_input_db->getDatabase( "NonlinearSolver" );
+
+        // create preconditioner (thermal domains)
+        auto columnPreconditioner_db = global_input_db->getDatabase( "Preconditioner" );
+        auto columnPreconditionerParams =
+            std::make_shared<AMP::Solver::SolverStrategyParameters>( columnPreconditioner_db );
+        columnPreconditionerParams->d_pOperator = linearColumnOperator;
+        columnPreconditioner.reset( new AMP::Solver::ColumnSolver( columnPreconditionerParams ) );
+
+        auto trilinosPreconditioner_db =
+            columnPreconditioner_db->getDatabase( "TrilinosPreconditioner" );
+        unsigned int N_preconditioners = linearColumnOperator->getNumberOfOperators();
+        for ( unsigned int id = 0; id < N_preconditioners; id++ ) {
+            auto trilinosPreconditionerParams =
+                std::make_shared<AMP::Solver::SolverStrategyParameters>(
+                    trilinosPreconditioner_db );
+            trilinosPreconditionerParams->d_pOperator = linearColumnOperator->getOperator( id );
+            auto trilinosPreconditioner =
+                std::make_shared<AMP::Solver::TrilinosMLSolver>( trilinosPreconditionerParams );
+            columnPreconditioner->append( trilinosPreconditioner );
+        }
+
+        // Create the subchannel preconditioner
+        if ( subchannelMesh ) {
+            auto subchannelPreconditioner_db =
+                columnPreconditioner_db->getDatabase( "SubchannelPreconditioner" );
+            AMP_ASSERT( subchannelPreconditioner_db );
+            auto subchannelPreconditionerParams =
+                std::make_shared<AMP::Solver::SolverStrategyParameters>(
+                    subchannelPreconditioner_db );
+            subchannelPreconditionerParams->d_pOperator =
+                linearColumnOperator->getOperator( totalOp );
+            auto preconditioner = subchannelPreconditioner_db->getString( "Type" );
+            if ( preconditioner == "ML" ) {
+                auto subchannelPreconditioner = std::make_shared<AMP::Solver::TrilinosMLSolver>(
+                    subchannelPreconditionerParams );
+                columnPreconditioner->append( subchannelPreconditioner );
+            } else if ( preconditioner == "Banded" ) {
+                subchannelPreconditioner_db->putScalar( "KL", 3 );
+                subchannelPreconditioner_db->putScalar( "KU", 3 );
+                auto subchannelPreconditioner =
+                    std::make_shared<AMP::Solver::BandedSolver>( subchannelPreconditionerParams );
+                columnPreconditioner->append( subchannelPreconditioner );
+            } else if ( preconditioner == "None" ) {
+            } else {
+                AMP_ERROR( "Invalid preconditioner type" );
+            }
+        }
+
+        // create nonlinear solver parameters
+        auto nonlinearSolverParams =
+            std::make_shared<AMP::Solver::TrilinosNOXSolverParameters>( nonlinearSolver_db );
+        nonlinearSolverParams->d_comm            = globalComm;
+        nonlinearSolverParams->d_pOperator       = nonlinearCoupledOperator;
+        nonlinearSolverParams->d_pLinearOperator = linearColumnOperator;
+        nonlinearSolverParams->d_preconditioner  = columnPreconditioner;
+        nonlinearSolverParams->d_pInitialGuess   = globalSolMultiVector;
+        nonlinearSolver = std::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
+    }
+
+    // don't use zero initial guess
+    nonlinearSolver->setZeroInitialGuess( false );
 
     // Solve
-    PROFILE_START( "Solve" );
     AMP::pout << "Rhs norm: " << std::setprecision( 13 ) << globalRhsMultiVector->L2Norm()
               << std::endl;
     AMP::pout << "Initial solution norm: " << std::setprecision( 13 )
@@ -688,13 +648,12 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearCoupledOperator->residual(
         globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
     NULL_USE( globalThermalResVec );
-#if 0
     double tempResNorm = 0.0;
     double flowResNorm = 0.0;
     if ( pinMesh )
-        tempResNorm = globalThermalResVec->L2Norm();
+        tempResNorm = static_cast<double>( globalThermalResVec->L2Norm() );
     if ( subchannelMesh )
-        flowResNorm = flowResVec->L2Norm();
+        flowResNorm = static_cast<double>( flowResVec->L2Norm() );
     tempResNorm = globalComm.maxReduce( tempResNorm );
     flowResNorm = globalComm.maxReduce( flowResNorm );
     AMP::pout << "Initial residual norm: " << std::setprecision( 13 )
@@ -708,9 +667,9 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
     AMP::pout << "Final residual norm: " << std::setprecision( 13 )
               << globalResMultiVector->L2Norm() << std::endl;
-    PROFILE_STOP( "Solve" );
 
 
+#if 0
     // Compute the flow temperature and density
     AMP::LinearAlgebra::Vector::shared_ptr flowTempVec;
     AMP::LinearAlgebra::Vector::shared_ptr deltaFlowTempVec;
@@ -835,31 +794,11 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         enthalpy->scale( h_scale );
         pressure->scale( P_scale );
     }
-    // Register the quantities to plot
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    if ( xyFaceMesh ) {
-        siloWriter->registerVector(
-            flowSolVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "SubchannelFlow" );
-        siloWriter->registerVector(
-            flowTempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "FlowTemp" );
-        siloWriter->registerVector(
-            deltaFlowTempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "FlowTempDelta" );
-        siloWriter->registerVector(
-            flowDensityVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "FlowDensity" );
-    }
-    if ( pinMesh  ) {
-        siloWriter->registerVector(
-            globalThermalSolVec, pinMesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
-        siloWriter->registerVector(
-            specificPowerGpVec, pinMesh, AMP::Mesh::GeomType::Cell, "Power" );
-    }
-    siloWriter->writeFile( exeName, 0 );
     ut->passes( "test runs to completion" );
 #else
     ut->expected_failure( "Solve disabled because it does not converge (requires debugging)" );
 #endif
     globalComm.barrier();
-    PROFILE_STOP( "Main" );
     PROFILE_SAVE( "exeName" );
 }
 

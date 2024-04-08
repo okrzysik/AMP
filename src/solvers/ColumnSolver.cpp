@@ -1,5 +1,7 @@
-#include "ColumnSolver.h"
+#include "AMP/solvers/ColumnSolver.h"
+#include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/ColumnOperatorParameters.h"
+#include "AMP/solvers/SolverFactory.h"
 
 
 namespace AMP::Solver {
@@ -12,6 +14,28 @@ ColumnSolver::ColumnSolver( std::shared_ptr<const SolverStrategyParameters> para
     auto db               = parameters->d_db;
     d_IterationType       = db->getWithDefault<std::string>( "IterationType", "GaussSeidel" );
     d_resetColumnOperator = db->getWithDefault<bool>( "ResetColumnOperator", false );
+
+    std::shared_ptr<AMP::Operator::ColumnOperator> columnOp;
+    if ( d_pOperator ) {
+        columnOp = std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( d_pOperator );
+        AMP_INSIST( columnOp, "The operator for a ColumnSolver must be a ColumnOperator" );
+    }
+
+    if ( db->keyExists( "solvers" ) ) {
+        auto solverNames = db->getVector<std::string>( "solvers" );
+        for ( size_t i = 0; i < solverNames.size(); ++i ) {
+            auto solverDB = db->getDatabase( solverNames[i] );
+            auto params   = std::make_shared<AMP::Solver::SolverStrategyParameters>( solverDB );
+            //          params->d_comm          = d_comm;
+            // an initial guess should be made possible also in time for truly getting this to work
+            //          params->d_pInitialGuess = initialGuess;
+            params->d_global_db = db;
+            if ( columnOp )
+                params->d_pOperator = columnOp->getOperator( i );
+            std::shared_ptr<SolverStrategy> solver = AMP::Solver::SolverFactory::create( params );
+            append( solver );
+        }
+    }
 }
 
 void ColumnSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,

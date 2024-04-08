@@ -30,6 +30,17 @@ public:
     explicit BandedSolver( std::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
+     * static create routine that is used by SolverFactory
+     @param [in] parameters The parameters object
+     contains a database objects with the fields listed for the constructor above
+     */
+    static std::unique_ptr<SolverStrategy>
+    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+        return std::make_unique<BandedSolver>( solverStrategyParameters );
+    }
+
+    /**
      * Default destructor. Currently does not do anything.
      */
     virtual ~BandedSolver();

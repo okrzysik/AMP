@@ -7,9 +7,10 @@
 namespace AMP::Operator {
 
 MechanicsLinearFEOperator::MechanicsLinearFEOperator(
-    std::shared_ptr<const MechanicsLinearFEOperatorParameters> params )
-    : LinearFEOperator( params )
+    std::shared_ptr<const OperatorParameters> inParams )
+    : LinearFEOperator( inParams )
 {
+    auto params = std::dynamic_pointer_cast<const MechanicsLinearFEOperatorParameters>( inParams );
     AMP_INSIST( params, "NULL parameter" );
     d_useUpdatedLagrangian = params->d_db->getWithDefault<bool>( "USE_UPDATED_LAGRANGIAN", false );
     if ( d_useUpdatedLagrangian ) {

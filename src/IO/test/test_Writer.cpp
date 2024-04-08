@@ -106,7 +106,7 @@ createVector( std::shared_ptr<AMP::LinearAlgebra::Variable> var, const AMP::AMP_
  ***************************************************************/
 void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
 {
-    PROFILE_SCOPED( timer, "testWriterVector-" + writerName );
+    PROFILE2( "testWriterVector-" + writerName );
 
     // Create the writer and get it's properties
     AMP::AMP_MPI comm( AMP_COMM_WORLD );
@@ -148,7 +148,7 @@ void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
  ***************************************************************/
 void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
 {
-    PROFILE_SCOPED( timer, "testWriterMatrix-" + writerName );
+    PROFILE2( "testWriterMatrix-" + writerName );
 
     // Create the writer and get it's properties
     AMP::AMP_MPI comm( AMP_COMM_WORLD );
@@ -196,7 +196,7 @@ void testWriterMesh( AMP::UnitTest &ut,
                      const std::string &writerName,
                      const std::string &input_file )
 {
-    PROFILE_SCOPED( timer, "testWriterMesh-" + writerName );
+    PROFILE2( "testWriterMesh-" + writerName );
 
     // Create the writer and get it's properties
     auto writer     = AMP::IO::Writer::buildWriter( writerName, AMP_COMM_WORLD );
@@ -222,13 +222,11 @@ void testWriterMesh( AMP::UnitTest &ut,
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    PROFILE_START( "Load Mesh" );
     auto mesh        = AMP::Mesh::MeshFactory::create( params );
     auto pointType   = AMP::Mesh::GeomType::Vertex;
     auto volumeType  = mesh->getGeomType();
     auto surfaceType = getSurfaceType( volumeType );
     globalComm.barrier();
-    PROFILE_STOP( "Load Mesh" );
     double t2 = AMP::AMP_MPI::time();
 
     // Create a surface mesh
@@ -426,7 +424,7 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
     PROFILE_ENABLE( 1 );
-    PROFILE_START( "test_Writer" );
+    PROFILE( "test_Writer" );
     AMP::logOnlyNodeZero( "output_test_SiloIO" );
 
     std::vector<std::string> writers = { "Silo" };
@@ -463,7 +461,6 @@ int main( int argc, char **argv )
     ut.report();
     ut.reset();
     writers = std::vector<std::string>();
-    PROFILE_STOP( "test_Writer" );
     PROFILE_SAVE( "test_Writer", true );
     AMP::AMPManager::shutdown();
     return N_failed;

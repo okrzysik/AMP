@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -148,8 +147,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearSolver->setZeroInitialGuess( false );
 
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-
     for ( int step = 0; step < NumberOfLoadingSteps; step++ ) {
         AMP::pout << "########################################" << std::endl;
         AMP::pout << "The current loading step is " << ( step + 1 ) << std::endl;
@@ -195,17 +192,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinBvpOperator->getVolumeOperator()->reset( tmpParams );
         nonlinearSolver->setZeroInitialGuess( false );
 
-        siloWriter->registerVector(
-            mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
         meshAdapter->displaceMesh( mechNlSolVec );
         auto outFileName2 =
             AMP::Utilities::stringf( "PressurePrescribed-DeformedBrick-LinearElasticity_%d", step );
-        siloWriter->writeFile( outFileName2, 1 );
     }
 
     AMP::pout << "Final Solution Norm: " << mechNlSolVec->L2Norm() << std::endl;
-
-    siloWriter->writeFile( exeName, 1 );
 
     ut->passes( exeName );
 }

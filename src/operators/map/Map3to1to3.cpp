@@ -86,18 +86,15 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr )
 {
     const double tol = 1e-8;
-    PROFILE_START( "applyStart" );
+    PROFILE( "applyStart" );
 
     // Subset the vector (we only need to deal with the locally owned portion)
-    PROFILE_START( "subset" );
     auto var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_COMM_SELF );
     auto commVec = u->select( commSelector, u->getName() );
     auto vec     = commVec->subsetVectorForVariable( var );
-    PROFILE_STOP( "subset" );
 
     // Build the local maps
-    PROFILE_START( "prepare data" );
     auto map1 = buildMap( vec, d_mesh1, d_srcIterator1 );
     auto map2 = buildMap( vec, d_mesh2, d_srcIterator2 );
 
@@ -160,7 +157,6 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         d_SendBuf2[i].z = z2[i];
         d_SendBuf2[i].sum += tmp.second;
     }
-    PROFILE_STOP( "prepare data" );
 
 
     // Send the data
@@ -186,7 +182,6 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             }
         }
     }
-    PROFILE_STOP( "applyStart" );
 }
 
 
@@ -197,7 +192,7 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                               AMP::LinearAlgebra::Vector::shared_ptr )
 {
-    PROFILE_START( "applyFinish" );
+    PROFILE( "applyFinish" );
 
     // Recieve the data and create the maps
     auto myRank = (size_t) d_MapComm.getRank();
@@ -261,11 +256,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
         buildReturn( d_ResultVector, d_mesh2, d_dstIterator2, final_map2 );
 
     // Apply make consistent
-    PROFILE_START( "makeConsistent" );
     d_ResultVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    PROFILE_STOP( "makeConsistent" );
-
-    PROFILE_STOP( "applyFinish" );
 }
 
 

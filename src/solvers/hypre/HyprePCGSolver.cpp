@@ -3,6 +3,7 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/data/hypre/HypreMatrixAdaptor.h"
 #include "AMP/operators/LinearOperator.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
@@ -43,9 +44,25 @@ void HyprePCGSolver::initialize( std::shared_ptr<const SolverStrategyParameters>
 {
     AMP_ASSERT( parameters );
 
-    d_pPreconditioner = parameters->d_pNestedSolver;
+    auto db = parameters->d_db;
 
-    HyprePCGSolver::getFromInput( parameters->d_db );
+    HyprePCGSolver::getFromInput( db );
+
+    if ( parameters->d_pNestedSolver ) {
+        d_pPreconditioner = parameters->d_pNestedSolver;
+    } else {
+        if ( d_bUsesPreconditioner ) {
+            auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+            auto outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
+            if ( outerDB ) {
+                auto pcDB       = outerDB->getDatabase( pcName );
+                auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+                parameters->d_pOperator = d_pOperator;
+                d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+                AMP_ASSERT( d_pPreconditioner );
+            }
+        }
+    }
 }
 
 void HyprePCGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
@@ -88,7 +105,7 @@ void HyprePCGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                             std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator, "ERROR: HyprePCGSolver::apply() operator cannot be NULL" );
 
@@ -200,8 +217,6 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                       << std::setprecision( 15 ) << r->L2Norm() << std::endl;
         }
     }
-
-    PROFILE_STOP( "solve" );
 }
 
 } // namespace AMP::Solver

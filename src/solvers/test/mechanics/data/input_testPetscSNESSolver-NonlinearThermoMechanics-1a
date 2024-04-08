@@ -106,6 +106,17 @@ DirichletMatrixCorrection2 {
     dof_1_0 = 0
 }
 
+
+LinearMechanicsElement {
+      name="MechanicsLinearUpdatedLagrangianElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        USE_JAUMANN_RATE = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+}
+
 testNonlinearMechanicsOperator {
   name="NonlinearBVPOperator"
     print_info_level = 3
@@ -137,6 +148,7 @@ MechanicsNonlinearFEOperator3 {
         QRULE_ORDER = "DEFAULT"
     }
 
+  MechanicsLinearElement = LinearMechanicsElement
   LocalModel = "ThermalStrainMaterialModel3"
 }
 
@@ -193,17 +205,7 @@ MechanicsLinearFEOperator4 {
     InputVariable = "disp"
     OutputVariable = "disp"
     USE_UPDATED_LAGRANGIAN = TRUE
-
-    MechanicsElement {
-      name="MechanicsLinearUpdatedLagrangianElement"
-        //name="MechanicsLinearElement"
-        USE_REDUCED_INTEGRATION = FALSE 
-        USE_JAUMANN_RATE = TRUE
-        FE_ORDER = "FIRST"  
-        FE_FAMILY = "LAGRANGE"
-        QRULE_TYPE = "QGAUSS"
-        QRULE_ORDER = "DEFAULT"
-    }
+    MechanicsElement = LinearMechanicsElement
 }
 
 DirichletMatrixCorrection4 {

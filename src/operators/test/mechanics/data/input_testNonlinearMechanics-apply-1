@@ -6,6 +6,15 @@ Mesh {
     FileName = "brick.e"
 }
 
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
+
 testNonlinearMechanicsOperator {
   name = "MechanicsNonlinearFEOperator"
     print_info_level = 1
@@ -25,6 +34,7 @@ testNonlinearMechanicsOperator {
         QRULE_ORDER = "DEFAULT"
     }
 
+  MechanicsLinearElement = LinearMechanicsElement
   LocalModel = "MechanicsMaterialModel"
 
 }

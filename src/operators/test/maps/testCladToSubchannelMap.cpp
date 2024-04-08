@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -151,15 +150,6 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
         else
             ut->failure("correctly mapped temperature");
     }*/
-
-    // Write the results
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    if ( T1 )
-        siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
-    if ( T2 )
-        siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::GeomType::Face, "Temperature" );
-    siloWriter->setDecomposition( 1 );
-    siloWriter->writeFile( fname, 0 );
 }
 
 

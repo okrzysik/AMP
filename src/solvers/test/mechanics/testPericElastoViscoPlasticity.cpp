@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -44,9 +43,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-
-    // Create the silo writer and register the data
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
 
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -232,12 +228,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearMechanicsBVPoperator->getVolumeOperator() )
             ->printStressAndStrain( solVec, fname );
 
-        siloWriter->registerVector(
-            solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
         meshAdapter->displaceMesh( solVec );
-        auto outFileName2 =
-            AMP::Utilities::stringf( "displacementPrescribed-DeformedPlateWithHole_%d", step );
-        siloWriter->writeFile( outFileName2, 1 );
     }
 
     AMP::pout << "epsilon = " << epsilon << std::endl;

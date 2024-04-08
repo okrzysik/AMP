@@ -199,7 +199,7 @@ AMP::LinearAlgebra::Vector::shared_ptr Mesh::getPositionVector( std::string name
 bool Mesh::isMember( const MeshElementID &id ) const { return id.meshID() == d_meshID; }
 MeshIterator Mesh::isMember( const MeshIterator &iterator ) const
 {
-    PROFILE_SCOPED( timer, "isMember" );
+    PROFILE( "isMember" );
     auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
     elements->reserve( iterator.size() );
     for ( const auto &elem : iterator ) {
@@ -369,12 +369,12 @@ int Mesh::compare( const Mesh &a, const Mesh &b )
  ********************************************************/
 MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshIterator &B )
 {
-    PROFILE_SCOPED( timer, "getIterator" );
+    PROFILE( "getIterator" );
     // Get a list of ids to keep
     std::vector<MeshElementID> ids;
     if ( OP == SetOP::Union ) {
         // Perform a union: A U B
-        PROFILE_SCOPED( timer, "getIterator::Union" );
+        PROFILE( "getIterator::Union" );
         if ( A.size() == 0 )
             return B.begin();
         if ( B.size() == 0 )
@@ -389,7 +389,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
     } else if ( OP == SetOP::Intersection ) {
         // Perform a intersection: A n B
         // Get the intersection using the mesh IDs
-        PROFILE_SCOPED( timer, "getIterator::Intersection" );
+        PROFILE( "getIterator::Intersection" );
         if ( A.size() == 0 || B.size() == 0 )
             return MeshIterator();
         std::vector<MeshElementID> idA, idB;
@@ -412,7 +412,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
     } else if ( OP == SetOP::Complement ) {
         // Perform a SetOP::Complement:  A - B
         // Get the compliment using the mesh IDs
-        PROFILE_SCOPED( timer, "getIterator::Complement" );
+        PROFILE( "getIterator::Complement" );
         std::set<MeshElementID> compliment_set;
         for ( auto &elem : A )
             compliment_set.insert( elem.globalID() );

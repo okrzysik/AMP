@@ -228,6 +228,36 @@ static inline void check_tri_size( size_t size_new,
 
 
 /********************************************************************
+ * Choose the order to add points                                    *
+ * We will do this by sorting the points by order of their distance  *
+ * from the closest pair                                             *
+ ********************************************************************/
+template<int NDIM, class TYPE, class ETYPE>
+std::vector<int> getInsertionOrder( const std::pair<int, int> &index_pair,
+                                    const std::vector<std::array<TYPE, NDIM>> &x )
+{
+    PROFILE( "getInsertionOrder", 3 );
+    // Compute the square of the radius
+    int N = x.size();
+    std::vector<ETYPE> R2( N );
+    for ( int i = 0, i1 = index_pair.first; i < N; i++ ) {
+        R2[i] = ETYPE( 0 );
+        for ( int d = 0; d < NDIM; d++ ) {
+            ETYPE tmp( x[i][d] - x[i1][d] );
+            R2[i] += tmp * tmp;
+        }
+    }
+    // Sort the points, keeping track of the index
+    std::vector<int> I( N );
+    for ( int i = 0; i < N; i++ ) {
+        I[i] = i;
+    }
+    AMP::Utilities::quicksort( R2, I );
+    return I;
+}
+
+
+/********************************************************************
  * This is the main function that creates the tessellation           *
  ********************************************************************/
 template<int NDIM, class TYPE, class ETYPE>
@@ -240,7 +270,7 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
     int N = x.size();
     AMP_INSIST( N > NDIM, "Insufficient number of points" );
 
-    PROFILE_SCOPED( timer, "create_tessellation", 2 );
+    PROFILE( "create_tessellation", 2 );
 
     // Check that no two points match and get the closest pair of points
     std::pair<int, int> index_pair( -1, -1 );
@@ -260,12 +290,10 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
         domain_size = static_cast<TYPE>( sqrt( static_cast<double>( domain_size ) ) );
 
         // First, get the two closest points and check that they are not the same
-        PROFILE_START( "create-find_min_dist", 3 );
         index_pair = find_min_dist<NDIM, TYPE>( N, x[0].data() );
-        PROFILE_STOP( "create-find_min_dist", 3 );
-        int i1 = index_pair.first;
-        int i2 = index_pair.second;
-        r_min  = 0;
+        int i1     = index_pair.first;
+        int i2     = index_pair.second;
+        r_min      = 0;
         for ( int d = 0; d < NDIM; d++ ) {
             auto tmp = static_cast<double>( x[i1][d] - x[i2][d] );
             r_min += tmp * tmp;
@@ -287,25 +315,7 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
     NULL_USE( TOL_COPLANAR );
 
     // Next we need to create a list of the order in which we want to insert the values
-    // We will do this by sorting the points by order of their distance from the closest pair
-    // Compute the square of the radius
-    PROFILE_START( "create-order", 3 );
-    std::vector<ETYPE> R2( N );
-    for ( int i = 0, i1 = index_pair.first; i < N; i++ ) {
-        R2[i] = ETYPE( 0 );
-        for ( int d = 0; d < NDIM; d++ ) {
-            ETYPE tmp( x[i][d] - x[i1][d] );
-            R2[i] += tmp * tmp;
-        }
-    }
-    // Sort the points, keeping track of the index
-    std::vector<int> I( N );
-    for ( int i = 0; i < N; i++ ) {
-        I[i] = i;
-    }
-    AMP::Utilities::quicksort( R2, I );
-    R2 = std::vector<ETYPE>();
-    PROFILE_STOP( "create-order", 3 );
+    auto I = getInsertionOrder<NDIM, TYPE, ETYPE>( index_pair, x );
 
     // Resort the first few points so that the first ndim+1 points are not collinear or coplanar
     int ik = 2;
@@ -392,14 +402,13 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
     check_surface.reserve( 256 );
 
     // Subsequently add each point to the convex hull
-    PROFILE_START( "create-add_points", 3 );
     std::vector<Triangle> new_tri;
     std::vector<Triangle> new_tri_nab;
     std::vector<int> neighbor;
     std::vector<int> face;
     std::vector<uint32_t> new_tri_id;
     for ( int i = NDIM + 1; i < N; i++ ) {
-        PROFILE_START_L2( "create-add_triangles" );
+        PROFILE( "create-add_points", 3 );
         // Add a point to the convex hull and create the new triangles
         face_list.add_node( I[i], unused, N_tri, new_tri_id, new_tri, new_tri_nab, neighbor, face );
         int N_tri_new = new_tri_id.size();
@@ -455,26 +464,24 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
                 }
             }
         }
-        PROFILE_STOP_L2( "create-add_triangles" );
 
         // Now that we have created a new triangle, perform any edge flips that
         // are necessary to create a valid tesselation
-        PROFILE_START_L2( "create-edge_flips" );
         size_t it = 1;
         AMP_ASSERT( !check_surface.empty() );
         while ( !check_surface.empty() ) {
+            PROFILE( "create-edge_flips", 4 );
             if ( it > std::max<size_t>( 500, N_tri ) )
                 throw std::logic_error( "Error: infinite loop detected" );
             // First, lets eliminate all the surfaces that are fine
-            PROFILE_START_L3( "create-check_surface" );
             for ( auto &elem : check_surface ) {
                 /* Check the surface to see if the triangle pairs need to undergo a flip
                  * The surface is invalid and the triangles need to undergo a flip
                  * if the vertex of either triangle lies within the circumsphere of the other.
                  * Note: if the vertex of one triangle lies within the circumsphere of the
                  * other, then the vertex of the other triangle will lie within the circumsphere
-                 * of the current triangle.  Consequently we only need to check one vertex/triangle
-                 * pair
+                 * of the current triangle.  Consequently we only need to check one
+                 * vertex/triangle pair
                  */
                 if ( ( elem.test & 0x01 ) != 0 ) {
                     // We already checked this surface
@@ -497,7 +504,6 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
                 }
             }
             check_surface.resize( n );
-            PROFILE_STOP_L3( "create-check_surface" );
             if ( check_surface.size() == 0 ) {
                 // All surfaces are good, we are finished
                 break;
@@ -536,7 +542,6 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
                 throw std::logic_error( "Error: no valid flips detected" );
             }
             // Check that we conserved the boundary triangles
-            PROFILE_START_L3( "create-check_tri_neighbor" );
             int old_tri_nab[( NDIM + 1 ) * 4]; // The maximum flip currently supported is a 4-4 flip
             for ( int j1 = 0; j1 < N_tri_old; j1++ ) {
                 for ( int j2 = 0; j2 <= NDIM; j2++ ) {
@@ -550,11 +555,9 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
             }
             bool pass = conserved_neighbors(
                 N_tri_old * ( NDIM + 1 ), old_tri_nab, N_tri_new * ( NDIM + 1 ), new_tri_nab );
-            PROFILE_STOP_L3( "create-check_tri_neighbor" );
             if ( !pass )
                 throw std::logic_error( "Error: triangle neighbors not conserved" );
             // Delete the old triangles, add the new ones, and update the structures
-            PROFILE_START_L3( "create-update_tri" );
             // First get the indicies where we will store the new triangles
             int index_new[4];
             for ( int j = 0; j < N_tri_new; j++ ) {
@@ -625,16 +628,16 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
                         // tr_nab
                         tri_nab[k1][j2] = index_new[-k2 - 2];
                     } else if ( k2 == -1 ) {
-                        // Face is on the convex hull, we need to update tri_nab and store the face
-                        // for updating face_list
+                        // Face is on the convex hull, we need to update tri_nab and store the
+                        // face for updating face_list
                         tri_nab[k1][j2]             = -1;
                         new_tri_id[N_face_update2]  = index_new[j1];
                         new_face_id[N_face_update2] = j2;
                         N_face_update2++;
                     } else {
-                        // Neighbor triangle is an existing triangle, we need to update tr_nab for
-                        // the new triangle,
-                        // the exisiting triangle, and add the face to check_surface
+                        // Neighbor triangle is an existing triangle, we need to update tr_nab
+                        // for the new triangle, the exisiting triangle, and add the face to
+                        // check_surface
                         tri_nab[k1][j2] = k2;
                         int tmp[NDIM];
                         for ( int m = 0; m < j2; m++ )
@@ -664,7 +667,6 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
                     }
                 }
             }
-            PROFILE_STOP_L3( "create-update_tri" );
             // Update the faces on the convex hull
             if ( N_face_update != N_face_update2 ) {
                 printf( "N_face_update = %i, k = %i\n", N_face_update, N_face_update2 );
@@ -681,7 +683,6 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
 #endif
             it++;
         }
-        PROFILE_STOP_L2( "create-edge_flips" );
 // Check the current triangles for errors (Only when debug is set, very expensive)
 #if DEBUG_CHECK == 2
         all_valid = check_current_triangles<NDIM, TYPE, ETYPE>(
@@ -690,12 +691,11 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
             throw std::logic_error( "Failed internal triangle check" );
 #endif
     }
-    PROFILE_STOP( "create-add_points", 3 );
     check_surface.clear();
     I = std::vector<int>();
 
     // Delete any unused triangles
-    PROFILE_START( "clean up", 3 );
+    PROFILE( "clean up", 3 );
     while ( !unused.empty() ) {
         // First, see if any unused slots are at the end of the list
         size_t index = unused.size();
@@ -750,7 +750,6 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
         // We should have removed all the NULL triangles in the previous step
         throw std::logic_error( "Error with internal structures (NULL tri)\n" );
     }
-    PROFILE_STOP( "clean up", 3 );
 
     // Remove triangles that are only likely to create problesm
     // clean_triangles<NDIM,TYPE,ETYPE>( N, x.data(), N_tri, tri, tri_nab );
@@ -2034,7 +2033,7 @@ inline bool find_flip_2D( const std::array<TYPE, 2> *x,
                           int *new_tri,
                           int *new_tri_nab )
 {
-    PROFILE_START_L3( "find_flip<2>" );
+    PROFILE( "find_flip<2>", 4 );
     // In 2D we only have one type of flip (2-2 flip)
     bool found = false;
     for ( auto &elem : check_surface ) {
@@ -2076,7 +2075,6 @@ inline bool find_flip_2D( const std::array<TYPE, 2> *x,
             printf( "Warning: necessary flips in 2D should always be valid\n" );
         }
     }
-    PROFILE_STOP_L3( "find_flip<2>" );
     return found;
 }
 template<class TYPE, class ETYPE>
@@ -2091,7 +2089,7 @@ inline bool find_flip_3D( const std::array<TYPE, 3> *x,
                           int *new_tri,
                           int *new_tri_nab )
 {
-    PROFILE_START_L3( "find_flip<3>" );
+    PROFILE( "find_flip<3>", 4 );
     bool found = false;
     // In 3D there are several possible types of flips
     // First let's see if there are any valid 2-2 flips
@@ -2184,7 +2182,6 @@ inline bool find_flip_3D( const std::array<TYPE, 3> *x,
             }
         }
     }
-    PROFILE_STOP_L3( "find_flip<3>" );
     return found;
 }
 template<int NDIM, class TYPE, class ETYPE>

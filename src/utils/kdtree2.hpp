@@ -74,6 +74,7 @@ kdtree2<NDIM, TYPE>::kdtree2( const std::vector<std::array<double, NDIM>> &x,
 template<uint8_t NDIM, class TYPE>
 void kdtree2<NDIM, TYPE>::initialize( const std::vector<Point> &x, const std::vector<TYPE> &data )
 {
+    PROFILE( "initialize" );
     d_N = x.size();
     // Update the box
     d_lb.fill( 1e100 );

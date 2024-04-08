@@ -3,6 +3,15 @@ mesh_file = "mesh1"
 
 NumberOfMeshes = 0
 
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
+
 NonlinearMechanicsOperator {
   name = "NonlinearBVPOperator"
     print_info_level = 1
@@ -41,6 +50,7 @@ MechanicsNonlinearFEOperator{
             QRULE_ORDER = "DEFAULT"
         }
 
+      MechanicsLinearElement = LinearMechanicsElement
       LocalModel = "MechanicsMaterialModel"
 
     }
@@ -71,15 +81,7 @@ MechanicsLinearFEOperator{
         isNonlinearOperatorInitialized = FALSE
         InputVariable = "displacement"
         OutputVariable = "displacement"
-
-        MechanicsElement {
-          name="MechanicsLinearElement"
-            USE_REDUCED_INTEGRATION = FALSE 
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }
+        MechanicsElement = LinearMechanicsElement
     }
 
 DirichletMatrixCorrection{

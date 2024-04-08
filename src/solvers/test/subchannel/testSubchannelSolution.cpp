@@ -1,6 +1,5 @@
 // This test checks the verification problem in SubChannelFlow.tex
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/mesh/Mesh.h"
@@ -98,12 +97,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         std::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 subchannelMesh, "SubchannelTwoEqNonlinearOperator", input_db, elementModel ) );
-
-    // create linear operator
-    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            subchannelMesh, "SubchannelTwoEqLinearOperator", input_db, elementModel ) );
-
     // pass creation test
     ut->passes( exeName + ": creation" );
     std::cout.flush();
@@ -199,17 +192,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // get nonlinear solver database
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
 
-    // get linear solver database
-    auto linearSolver_db = nonlinearSolver_db->getDatabase( "LinearSolver" );
-
     // put manufactured RHS into resVec
     nonlinearOperator->reset( subchannelOpParams );
-    auto subchannelLinearParams =
-        std::dynamic_pointer_cast<AMP::Operator::SubchannelOperatorParameters>(
-            nonlinearOperator->getParameters( "Jacobian", solVec ) );
-    subchannelLinearParams->d_initialize = false;
-    linearOperator->reset( subchannelLinearParams );
-    linearOperator->residual( rhsVec, solVec, resVec );
 
     // create nonlinear solver parameters
     auto nonlinearSolverParams =
@@ -222,31 +206,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // create nonlinear solver
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
-
-    // create linear solver
-    auto linearSolver = nonlinearSolver->getKrylovSolver();
-
-    // create preconditioner
-    auto Preconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
-    auto PreconditionerParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( Preconditioner_db );
-    PreconditionerParams->d_pOperator = linearOperator;
-    auto preconditioner               = Preconditioner_db->getString( "Type" );
-    if ( preconditioner == "ML" ) {
-        auto linearFlowPreconditioner =
-            std::make_shared<AMP::Solver::TrilinosMLSolver>( PreconditionerParams );
-        linearSolver->setNestedSolver( linearFlowPreconditioner );
-    } else if ( preconditioner == "Banded" ) {
-        Preconditioner_db->putScalar( "KL", 3 );
-        Preconditioner_db->putScalar( "KU", 3 );
-        auto linearFlowPreconditioner =
-            std::make_shared<AMP::Solver::BandedSolver>( PreconditionerParams );
-        linearSolver->setNestedSolver( linearFlowPreconditioner );
-    } else if ( preconditioner == "None" ) {
-    } else {
-        AMP_ERROR( "Invalid preconditioner type" );
-    }
-
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess( false );
 
@@ -355,8 +314,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "L2 Norm of Absolute Error: " << absErrorNorm << std::endl;
     std::cout << "L2 Norm of Relative Error: " << relErrorNorm << std::endl;
 
-    input_db.reset();
-
     // Rescale the solution to get the correct units
     auto enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
     auto pressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
@@ -366,21 +323,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     pressure = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
     enthalpy->scale( h_scale );
     pressure->scale( P_scale );
-    // Register the quantities to plot
-    auto siloWriter         = AMP::IO::Writer::buildWriter( "Silo" );
-    auto subchannelEnthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
-    auto subchannelPressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
-    subchannelEnthalpy->scale( h_scale );
-    subchannelPressure->scale( P_scale );
-    siloWriter->registerVector(
-        manufacturedVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ManufacturedSolution" );
-    siloWriter->registerVector( solVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "ComputedSolution" );
-    siloWriter->registerVector(
-        subchannelEnthalpy, xyFaceMesh, AMP::Mesh::GeomType::Face, "Enthalpy" );
-    siloWriter->registerVector(
-        subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face, "Pressure" );
-    siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "Temperature" );
-    siloWriter->writeFile( exeName, 0 );
 }
 
 int testSubchannelSolution( int argc, char *argv[] )

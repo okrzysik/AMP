@@ -22,7 +22,7 @@ NonlinearFEOperator::~NonlinearFEOperator() { destroyLibMeshElementList(); }
 void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                  AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
 
     AMP_INSIST( ( r != nullptr ), "NULL Residual/Output Vector" );
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );
@@ -34,14 +34,12 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     d_currElemIdx = static_cast<unsigned int>( -1 );
     this->preAssembly( u, rInternal );
 
-    PROFILE_START( "loop over elements" );
     AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     for ( d_currElemIdx = 0; d_currElemIdx < el.size(); ++d_currElemIdx, ++el ) {
         this->preElementOperation( *el );
         d_elemOp->apply();
         this->postElementOperation();
     } // end for el
-    PROFILE_STOP( "loop over elements" );
 
     d_currElemIdx = static_cast<unsigned int>( -1 );
     this->postAssembly();
@@ -53,8 +51,6 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                   << std::endl;
     if ( d_iDebugPrintInfoLevel > 5 )
         std::cout << rInternal << std::endl;
-
-    PROFILE_STOP( "apply" );
 }
 
 

@@ -48,14 +48,13 @@ void AsyncMapColumnOperator::append( std::shared_ptr<Operator> op )
 void AsyncMapColumnOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                     AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
     this->applyStart( u, f );
     this->applyFinish( u, f );
     if ( requiresMakeConsistentSet() ) {
         AMP_ASSERT( d_OutputVector );
         d_OutputVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
-    PROFILE_STOP( "apply" );
 }
 
 
