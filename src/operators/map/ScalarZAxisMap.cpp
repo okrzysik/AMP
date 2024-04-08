@@ -60,7 +60,7 @@ ScalarZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                           const std::shared_ptr<AMP::Mesh::Mesh>,
                           const AMP::Mesh::MeshIterator &iterator )
 {
-    PROFILE_START( "buildMap" );
+    PROFILE( "buildMap" );
     std::multimap<double, double> map;
     auto dof = vec->getDOFManager();
     auto cur = iterator.begin();
@@ -74,7 +74,6 @@ ScalarZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
         addTo1DMap( map, x[2], val );
         ++cur;
     }
-    PROFILE_STOP( "buildMap" );
     return map;
 }
 
@@ -89,7 +88,7 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
 {
     if ( iterator.size() == 0 )
         return;
-    PROFILE_START( "buildReturn" );
+    PROFILE( "buildReturn" );
     const double TOL = 1e-8;
 
     // Convert the map to a std::vector
@@ -155,7 +154,6 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
 
         ++cur;
     }
-    PROFILE_STOP( "buildReturn" );
 }
 
 

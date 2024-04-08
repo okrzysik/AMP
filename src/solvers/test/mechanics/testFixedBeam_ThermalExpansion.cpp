@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -119,10 +118,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     rhsVec->zero();
     dirichletLoadVecOp->apply( nullVec, rhsVec );
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
-
-    // Create the silo writer and register the data
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerVector( solVec, mesh, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
 
     // Adding the Temperature and Burnup
     tempVecRef->setToScalar( 301.0 );
@@ -245,8 +240,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
     mechanicsNonlinearVolumeOperator->printStressAndStrain( solVec, output_file );
-
-    siloWriter->writeFile( exeName, 1 );
 
     ut->passes( exeName );
     fclose( fout123 );

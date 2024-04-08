@@ -502,7 +502,7 @@ PetscSNESSolver::createPreconditioner( std::shared_ptr<AMP::Database> pc_solver_
  ****************************************************************/
 PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
     int ierr = 0;
 
     auto sp_x = PETSC::getAMP( x );
@@ -522,7 +522,6 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
     sp_r->scale( -1.0 );
     sp_r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    PROFILE_STOP( "apply" );
     return ( ierr );
 }
 
@@ -533,7 +532,7 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
 void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "solve" );
 
     if ( d_iDebugPrintInfoLevel > 2 )
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm()
@@ -560,9 +559,10 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     Vec b = spRhs ? spRhs->getVec() : nullptr;
 
     // Solve
-    PROFILE_START( "petsc-SNESSolve" );
-    checkErr( SNESSolve( d_SNESSolver, b, x ) );
-    PROFILE_STOP( "petsc-SNESSolve" );
+    {
+        PROFILE( "petsc-SNESSolve" );
+        checkErr( SNESSolve( d_SNESSolver, b, x ) );
+    }
 
     // Note that an alternative would be to use the PETSc routine
     // SNESSetConvergenceHistory. At present we don't use it since
@@ -593,8 +593,6 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     spSol.reset();
 
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
-    PROFILE_STOP( "solve" );
 }
 
 void PetscSNESSolver::reset( std::shared_ptr<AMP::Solver::SolverStrategyParameters> params )
@@ -755,7 +753,7 @@ void PetscSNESSolver::setLineSearchPreCheck(
  ****************************************************************/
 PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat B, void *ctx )
 {
-    PROFILE_START( "setJacobian" );
+    PROFILE( "setJacobian" );
     int ierr           = 0;
     auto *pSNESSolver  = reinterpret_cast<PetscSNESSolver *>( ctx );
     bool bUsesJacobian = pSNESSolver->getUsesJacobian();
@@ -775,7 +773,6 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat B, void *ct
     auto pKrylovSolver = pSNESSolver->getKrylovSolver();
     pKrylovSolver->resetOperator( op_parameters );
 
-    PROFILE_STOP( "setJacobian" );
     return ierr;
 }
 
@@ -916,7 +913,7 @@ int PetscSNESSolver::wrapperLineSearchPreCheck(
     bool b_changed_y = false;
     int ierr         = 0;
 
-    PROFILE_START( "wrapperLineSearchPreCheck" );
+    PROFILE( "wrapperLineSearchPreCheck" );
     AMP_ASSERT( ctx != nullptr );
     auto snesSolver = reinterpret_cast<PetscSNESSolver *>( ctx );
 
@@ -926,7 +923,6 @@ int PetscSNESSolver::wrapperLineSearchPreCheck(
 
     *changed_y = static_cast<PetscBool>( b_changed_y );
 
-    PROFILE_STOP( "wrapperLineSearchPreCheck" );
     return ierr;
 }
 
@@ -977,7 +973,7 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
 
 PetscErrorCode PetscSNESSolver::setupPreconditioner( PC pc )
 {
-    PROFILE_START( "PetscSNESSolver::setupPreconditioner" );
+    PROFILE( "PetscSNESSolver::setupPreconditioner" );
 
     int ierr = 0;
     Vec current_solution;
@@ -1010,8 +1006,6 @@ PetscErrorCode PetscSNESSolver::setupPreconditioner( PC pc )
     // once the preconditioning operator has been reset
     preconditioner->reset( {} );
 
-    PROFILE_STOP( "PetscSNESSolver::setupPreconditioner" );
-
     return ierr;
 }
 
@@ -1019,7 +1013,7 @@ PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
                                                      Vec xin,   // input vector
                                                      Vec xout ) // output vector
 {
-    PROFILE_START( "PetscSNESSolver::applyPreconditioner" );
+    PROFILE( "PetscSNESSolver::applyPreconditioner" );
 
     void *ctx = nullptr;
     PCShellGetContext( pc, &ctx );
@@ -1070,8 +1064,6 @@ PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
     }
 
     //    snesSolver->logPreconditionerApply();
-
-    PROFILE_STOP( "PetscSNESSolver::applyPreconditioner" );
 
     return 0;
 }

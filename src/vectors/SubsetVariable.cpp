@@ -34,7 +34,7 @@ Vector::shared_ptr SubsetVariable::view( Vector::shared_ptr v, std::shared_ptr<V
 Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
                                                std::shared_ptr<Variable> var_in )
 {
-    PROFILE_START( "view", 2 );
+    PROFILE( "view", 2 );
     auto var = std::dynamic_pointer_cast<SubsetVariable>( var_in );
     AMP_ASSERT( var );
     if ( std::dynamic_pointer_cast<const MultiVector>( v ) ) {
@@ -48,25 +48,20 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
                 vec_list.push_back( sub_vec );
         }
         if ( vec_list.empty() ) {
-            PROFILE_STOP2( "view", 2 );
             return Vector::const_shared_ptr();
         }
         auto parentDOF = v->getDOFManager();
         auto subsetDOF = var->getSubsetDOF( parentDOF );
-        PROFILE_STOP2( "view", 2 );
         return MultiVector::const_create( v->getName(), subsetDOF->getComm(), vec_list );
     }
     // Subset the DOFManager and create a new communication list
     auto parentDOF = v->getDOFManager();
     auto subsetDOF = var->getSubsetDOF( parentDOF );
     if ( !subsetDOF ) {
-        PROFILE_STOP2( "view", 2 );
         return Vector::shared_ptr();
     } else if ( subsetDOF->numGlobalDOF() == 0 ) {
-        PROFILE_STOP2( "view", 2 );
         return Vector::shared_ptr();
     } else if ( subsetDOF == parentDOF ) {
-        PROFILE_STOP2( "view", 2 );
         return v;
     }
 
@@ -92,7 +87,6 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
     params->d_CommList   = commList;
     auto data            = std::make_shared<SubsetVectorData>( params );
     auto retVal          = std::make_shared<Vector>( data, ops, var, subsetDOF );
-    PROFILE_STOP( "view", 2 );
     return retVal;
 }
 

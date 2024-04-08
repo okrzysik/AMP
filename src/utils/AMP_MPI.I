@@ -314,7 +314,7 @@ void MPI_CLASS::sumReduce( const TYPE *send, TYPE *recv, int n ) const
         return;
     }
 #ifdef USE_MPI
-    PROFILE_START( "sumReduce", profile_level );
+    PROFILE( "sumReduce", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_CLASS_ASSERT( d_comm != MPI_COMM_NULL );
@@ -322,7 +322,6 @@ void MPI_CLASS::sumReduce( const TYPE *send, TYPE *recv, int n ) const
     } else {
         throw std::logic_error( "sumReduce is not valid for arbitrary types" );
     }
-    PROFILE_STOP( "sumReduce", profile_level );
 #endif
 }
 template<class TYPE>
@@ -371,14 +370,13 @@ void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n ) const
         return;
     }
 #ifdef USE_MPI
-    PROFILE_START( "minReduce", profile_level );
+    PROFILE( "minReduce", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Allreduce( send, recv, n, type, MPI_MIN, d_comm );
     } else {
         throw std::logic_error( "minReduce is not valid for arbitrary types" );
     }
-    PROFILE_STOP( "minReduce", profile_level );
 #endif
 }
 template<class TYPE>
@@ -397,7 +395,7 @@ void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
     using TYPE2 = typename TypeIntSelector<TYPE>::type;
     if constexpr ( !isMPItype<TYPE>() )
         throw std::logic_error( "minReduce with rank is not supported for arbitrary types" );
-    PROFILE_START( "minReduce2", profile_level );
+    PROFILE( "minReduce2", profile_level );
     auto send2 = new TYPE2[n];
     auto recv2 = new TYPE2[n];
     for ( int i = 0; i < n; i++ ) {
@@ -412,7 +410,6 @@ void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
     }
     delete[] send2;
     delete[] recv2;
-    PROFILE_STOP( "minReduce2", profile_level );
 #endif
 }
 template<class TYPE>
@@ -476,14 +473,13 @@ void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n ) const
         return;
     }
 #ifdef USE_MPI
-    PROFILE_START( "maxReduce", profile_level );
+    PROFILE( "maxReduce", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Allreduce( send, recv, n, type, MPI_MAX, d_comm );
     } else {
         throw std::logic_error( "maxReduce is not valid for arbitrary types" );
     }
-    PROFILE_STOP( "maxReduce", profile_level );
 #endif
 }
 template<class TYPE>
@@ -502,7 +498,7 @@ void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
     using TYPE2 = typename TypeIntSelector<TYPE>::type;
     if constexpr ( !isMPItype<TYPE>() )
         throw std::logic_error( "maxReduce with rank is not supported for arbitrary types" );
-    PROFILE_START( "maxReduce2", profile_level );
+    PROFILE( "maxReduce2", profile_level );
     auto send2 = new TYPE2[n];
     auto recv2 = new TYPE2[n];
     for ( int i = 0; i < n; i++ ) {
@@ -517,7 +513,6 @@ void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
     }
     delete[] send2;
     delete[] recv2;
-    PROFILE_STOP( "maxReduce2", profile_level );
 #endif
 }
 template<class TYPE>
@@ -580,7 +575,7 @@ void MPI_CLASS::bcast( TYPE *x, int n, int root ) const
         return;
     if ( root >= d_size )
         MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
-    PROFILE_SCOPED( timer, "bcast", profile_level );
+    PROFILE( "bcast", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Bcast( x, n, type, root, d_comm );
@@ -666,7 +661,7 @@ void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) cons
     tag = ( tag >= 0 ) ? tag : 0;
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     // Send the data
-    PROFILE_START( "send", profile_level );
+    PROFILE( "send", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Send2( buf, length, type, recv_proc, tag, d_comm );
@@ -680,7 +675,6 @@ void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) cons
         MPI_Send2( buf2, bytes, MPI_CLASS_BYTE, recv_proc, tag, d_comm );
         delete[] buf2;
     }
-    PROFILE_STOP( "send", profile_level );
 }
 
 
@@ -714,7 +708,7 @@ MPI_CLASS::Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc,
     tag = ( tag >= 0 ) ? tag : 0;
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     // Send the data
-    PROFILE_START( "isend", profile_level );
+    PROFILE( "isend", profile_level );
     MPI_CLASS::Request request;
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
@@ -730,7 +724,6 @@ MPI_CLASS::Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc,
         MPI_Isend2( buf2, bytes, MPI_CLASS_BYTE, recv_proc, tag, d_comm, &request2 );
         request = Request( request2, std::shared_ptr<std::byte>( buf2 ) );
     }
-    PROFILE_STOP( "isend", profile_level );
     return request;
 }
 
@@ -762,7 +755,7 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
     // Set the tag to 0 if it is < 0
     tag = ( tag >= 0 ) ? tag : 0;
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    PROFILE_START( "recv", profile_level );
+    PROFILE( "recv", profile_level );
     // Get the receive length if necessary
     if ( get_length ) {
         int bytes       = probe( send_proc, tag );
@@ -791,7 +784,6 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
         delete[] buf2;
         MPI_CLASS_ASSERT( N == bytes );
     }
-    PROFILE_STOP( "recv", profile_level );
 }
 template<class TYPE>
 void MPI_CLASS::recv( TYPE *buf, int length, int send_proc, int tag ) const
@@ -829,7 +821,7 @@ MPI_CLASS::Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int t
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     MPI_CLASS::Request request;
-    PROFILE_START( "Irecv", profile_level );
+    PROFILE( "Irecv", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Irecv2( buf, length, type, send_proc, tag, d_comm, request.get() );
@@ -848,7 +840,6 @@ MPI_CLASS::Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int t
         NULL_USE( tag );
         MPI_CLASS_ERROR( "Arbitrary types are not supported yet" );
     }
-    PROFILE_STOP( "Irecv", profile_level );
     return request;
 }
 
@@ -876,7 +867,7 @@ void MPI_CLASS::sendrecv( const TYPE *sendbuf,
         return;
     }
 #ifdef USE_MPI
-    PROFILE_START( "sendrecv", profile_level );
+    PROFILE( "sendrecv", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Sendrecv( sendbuf,
@@ -909,7 +900,6 @@ void MPI_CLASS::sendrecv( const TYPE *sendbuf,
     } else {
         MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
     }
-    PROFILE_STOP( "sendrecv", profile_level );
 #endif
 }
 
@@ -968,7 +958,7 @@ void MPI_CLASS::gather( const TYPE *sendbuf,
         return;
     }
 #ifdef USE_MPI
-    PROFILE_START( "gather", profile_level );
+    PROFILE( "gather", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Gatherv( sendbuf, sendcount, type, recvbuf, recv_cnt, recv_disp, type, root, d_comm );
@@ -992,7 +982,6 @@ void MPI_CLASS::gather( const TYPE *sendbuf,
     } else {
         STATIC_ERROR( "Arbitrary types are not supported yet" );
     }
-    PROFILE_STOP( "gather", profile_level );
 #endif
 }
 
@@ -1040,7 +1029,7 @@ void MPI_CLASS::allGather( const TYPE &x, TYPE *y ) const
             return;
         }
 #ifdef USE_MPI
-        PROFILE_START( "allGather", profile_level );
+        PROFILE( "allGather", profile_level );
         if constexpr ( isMPItype<TYPE>() ) {
             auto type = MPI_getType<TYPE>();
             MPI_Allgather( &x, 1, type, y, 1, type, d_comm );
@@ -1063,7 +1052,6 @@ void MPI_CLASS::allGather( const TYPE &x, TYPE *y ) const
             size_t N = unpackArray( y, recv_cnt.size(), recv_data );
             MPI_CLASS_ASSERT( N == bytes );
         }
-        PROFILE_STOP( "allGather", profile_level );
 #endif
     }
 }
@@ -1102,7 +1090,7 @@ int MPI_CLASS::allGather( const TYPE *send_data,
             return send_cnt;
         }
 #ifdef USE_MPI
-        PROFILE_START( "allGather2", profile_level );
+        PROFILE( "allGather2", profile_level );
         // Get the sizes of the received data (if necessary)
         int *recv_cnt  = recv_cnt0;
         int *recv_disp = recv_disp0;
@@ -1159,7 +1147,6 @@ int MPI_CLASS::allGather( const TYPE *send_data,
             delete[] recv_cnt;
         if ( !recv_disp0 )
             delete[] recv_disp;
-        PROFILE_STOP( "allGather2", profile_level );
         return N_recv;
 #endif
     }
@@ -1257,7 +1244,7 @@ void MPI_CLASS::sumScan( const TYPE *x, TYPE *y, int n ) const
         return;
     }
 #ifdef USE_MPI
-    PROFILE_START( "sumScan", profile_level );
+    PROFILE( "sumScan", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_CLASS_ASSERT( d_comm != MPI_COMM_NULL );
@@ -1265,7 +1252,6 @@ void MPI_CLASS::sumScan( const TYPE *x, TYPE *y, int n ) const
     } else {
         throw std::logic_error( "Default instantion of sumScan in parallel is not supported" );
     }
-    PROFILE_STOP( "sumScan", profile_level );
 #endif
 }
 
@@ -1289,7 +1275,7 @@ void MPI_CLASS::minScan( const TYPE *x, TYPE *y, int n ) const
         return;
     }
 #ifdef USE_MPI
-    PROFILE_START( "minScan", profile_level );
+    PROFILE( "minScan", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_CLASS_ASSERT( d_comm != MPI_COMM_NULL );
@@ -1297,7 +1283,6 @@ void MPI_CLASS::minScan( const TYPE *x, TYPE *y, int n ) const
     } else {
         throw std::logic_error( "Default instantion of minScan in parallel is not supported" );
     }
-    PROFILE_STOP( "minScan", profile_level );
 #endif
 }
 
@@ -1321,7 +1306,7 @@ void MPI_CLASS::maxScan( const TYPE *x, TYPE *y, int n ) const
         return;
     }
 #ifdef USE_MPI
-    PROFILE_START( "maxScan", profile_level );
+    PROFILE( "maxScan", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_CLASS_ASSERT( d_comm != MPI_COMM_NULL );
@@ -1329,7 +1314,6 @@ void MPI_CLASS::maxScan( const TYPE *x, TYPE *y, int n ) const
     } else {
         throw std::logic_error( "Default instantion of maxScan in parallel is not supported" );
     }
-    PROFILE_STOP( "maxScan", profile_level );
 #endif
 }
 
@@ -1391,7 +1375,7 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
         return send_cnt[0];
     }
 #ifdef USE_MPI
-    PROFILE_START( "allToAll", profile_level );
+    PROFILE( "allToAll", profile_level );
     // Get the recv sizes if needed
     int *recv_cnt2  = recv_cnt;
     int *recv_disp2 = recv_disp;
@@ -1444,7 +1428,6 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
         delete[] recv_cnt2;
     if ( !recv_disp )
         delete[] recv_disp2;
-    PROFILE_STOP( "allToAll", profile_level );
     return N_received;
 #else
     return 0;

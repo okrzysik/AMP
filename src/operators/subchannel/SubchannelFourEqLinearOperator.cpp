@@ -196,7 +196,6 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
     if ( !myparams->d_initialize ) {
         // We are done with the reset
         d_matrix->setIdentity();
-        PROFILE_STOP2( "reset" );
         return;
     }
 
@@ -1035,7 +1034,6 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
         }
     }
     d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
-    PROFILE_STOP( "reset" );
 } // end of reset function
 
 // function used in reset to get double parameter or set default if missing

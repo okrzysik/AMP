@@ -388,7 +388,7 @@ void MultiVectorData::partitionGlobalValues( const int num,
                                              std::vector<std::vector<std::byte>> &out_vals,
                                              std::vector<std::vector<int>> *remap ) const
 {
-    PROFILE_START( "partitionGlobalValues", 2 );
+    PROFILE( "partitionGlobalValues", 2 );
     const size_t neg_one = ~( (size_t) 0 );
     std::vector<size_t> globalDOFs( num, neg_one );
     for ( int i = 0; i < num; i++ )
@@ -421,7 +421,6 @@ void MultiVectorData::partitionGlobalValues( const int num,
             }
         }
     }
-    PROFILE_STOP( "partitionGlobalValues", 2 );
 }
 
 
@@ -438,7 +437,7 @@ void MultiVectorData::partitionLocalValues( const int num,
 {
     if ( num == 0 )
         return;
-    PROFILE_START( "partitionLocalValues", 2 );
+    PROFILE( "partitionLocalValues", 2 );
     // Convert the local ids to global ids
     size_t begin_DOF = d_globalDOFManager->beginDOF();
     size_t end_DOF   = d_globalDOFManager->endDOF();
@@ -462,7 +461,6 @@ void MultiVectorData::partitionLocalValues( const int num,
             AMP_ASSERT( elem < end_DOF );
         }
     }
-    PROFILE_STOP( "partitionLocalValues", 2 );
 }
 
 VectorData *MultiVectorData::getVectorData( size_t i )

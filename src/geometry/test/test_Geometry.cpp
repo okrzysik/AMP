@@ -8,7 +8,7 @@
 
 void testInputGeometries( AMP::UnitTest &ut, std::string filename )
 {
-    PROFILE_START( "testInputGeometries" );
+    PROFILE( "testInputGeometries" );
 
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( filename );
@@ -22,7 +22,6 @@ void testInputGeometries( AMP::UnitTest &ut, std::string filename )
         // Run the tests
         testGeometry( *geom, ut );
     }
-    PROFILE_STOP( "testInputGeometries" );
 }
 
 

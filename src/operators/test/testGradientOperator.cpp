@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -80,14 +79,6 @@ static void run( const std::string &input_file, AMP::UnitTest &ut )
     auto ansVec = AMP::LinearAlgebra::createVector( nodalVectorDofMap, outputVar, true );
     auto errVec = AMP::LinearAlgebra::createVector( nodalVectorDofMap, outputVar, true );
 
-    // Create the writer
-    auto writer = AMP::IO::Writer::buildWriter( "silo" );
-    writer->registerMesh( mesh );
-    writer->registerVector( rhsVec, mesh, AMP::Mesh::GeomType::Vertex, "f" );
-    writer->registerVector( solVec, mesh, AMP::Mesh::GeomType::Vertex, "g" );
-    writer->registerVector( ansVec, mesh, AMP::Mesh::GeomType::Vertex, "g0" );
-    writer->registerVector( errVec, mesh, AMP::Mesh::GeomType::Vertex, "err" );
-
     // Create the functions to test
     using AMP::Mesh::Point;
     std::vector<std::string> name;
@@ -120,7 +111,6 @@ static void run( const std::string &input_file, AMP::UnitTest &ut )
             std::cout << "  norm(ansVec) = " << ansVec->L2Norm() << std::endl;
             ut.failure( name[i] );
         }
-        writer->writeFile( "testGradientOperator", i, 0 );
     }
 }
 

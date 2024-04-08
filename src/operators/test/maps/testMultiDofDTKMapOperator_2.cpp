@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/ColumnOperator.h"
@@ -79,20 +78,6 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     auto BatteryRhsVec   = AMP::LinearAlgebra::createVector( eectDofMap, batteryVariables, split );
     auto ElectrodeSolVec = BatterySolVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5 ), "V4" );
     autoElectrodeMapVec  = BatteryMapVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5 ), "V4" );
-    */
-    //---------------------------------------------------
-
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    //    siloWriter->registerMesh( mesh );
-    //    siloWriter->setDecomposition( 1 );
-    siloWriter->registerVector(
-        potentialMapVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialMapVec" );
-    siloWriter->registerVector(
-        potentialSolVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialSolVec" );
-    /*
-    siloWriter->registerVector( ElectrodeMapVec, mesh, AMP::Mesh::GeomType::Vertex, "batteryMapVec"
-    ); siloWriter->registerVector( ElectrodeSolVec, mesh, AMP::Mesh::GeomType::Vertex,
-    "batterySolVec" );
 
     //---------------------------------------------------
 
@@ -176,7 +161,6 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
         } // end for node
     }
     potentialSolVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    siloWriter->writeFile( logFile, 0 );
 
     AMP::pout << " L2Norm of Sol Vec " << potentialSolVec->L2Norm() << std::endl;
     // create dtk map operator.
@@ -228,14 +212,11 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     AMP::pout << "----------------------\n";
     AMP::pout << "     APPLY THE MAP    \n";
     AMP::pout << "----------------------\n";
-    siloWriter->writeFile( logFile, 1 );
     AMP::pout << "interface cellSandwich cathodeCC\n";
     cellSandwichCathodeCCMapOperator->apply( potentialSolVec, potentialMapVec );
-    siloWriter->writeFile( logFile, 2 );
     AMP::pout << "interface anodeCC cellSandwich\n";
     anodeCCCellSandwichMapOperator->apply(
         potentialSolVec, potentialMapVec ); // this map doesn't seem to work properly
-    siloWriter->writeFile( logFile, 3 );
 
     AMP::pout << " L2Norm of Map Vec " << potentialMapVec->L2Norm() << std::endl;
 
@@ -347,8 +328,6 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
                 ut->failure( whatAmIChecking );
         }
     }
-
-    siloWriter->writeFile( logFile, 4 );
 
     return 1;
 }

@@ -1,11 +1,9 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -212,12 +210,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         ut->passes( "Testing TrilinosMLSolver's constructor: PASS" );
     }
 
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector(
-        initialCondition, meshAdapter, AMP::Mesh::GeomType::Vertex, "InitialSolution" );
-    siloWriter->writeFile( input_file, 0 );
-
     // create the IDA time integrator
     auto time_Params = std::make_shared<AMP::TimeIntegrator::IDATimeIntegratorParameters>( ida_db );
 
@@ -275,9 +267,6 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     }
 
     auto pSolution = pIDATimeIntegrator->getSolution();
-    siloWriter->registerVector( pSolution, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-
-    siloWriter->writeFile( input_file, 1 );
 
     if ( ut->NumFailLocal() == 0 ) {
         ut->passes( "testIDATimeIntegrator successful" );

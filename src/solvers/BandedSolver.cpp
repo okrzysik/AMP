@@ -32,7 +32,7 @@ BandedSolver::~BandedSolver()
 
 void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
 {
-    PROFILE_START( "reset" );
+    PROFILE( "reset" );
 
     // Reset the parameters
     rightDOF.reset();
@@ -103,25 +103,22 @@ void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
 #else
     AMP_ERROR( "Lapack Required" );
 #endif
-
-    PROFILE_STOP( "reset" );
 }
 
 
 void BandedSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    PROFILE_START( "resetOperator" );
+    PROFILE( "resetOperator" );
     AMP_INSIST( ( d_pOperator ), "ERROR: BandedSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
     reset( std::shared_ptr<SolverStrategyParameters>() );
-    PROFILE_STOP( "resetOperator" );
 }
 
 
 void BandedSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                           std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE_START( "solve" );
+    PROFILE( "apply" );
 
     // Copy f
     AMP_ASSERT( *rightDOF == *( f->getDOFManager() ) );
@@ -145,8 +142,6 @@ void BandedSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     AMP_ASSERT( *rightDOF == *( u->getDOFManager() ) );
     u->putRawData( B );
     delete[] B;
-
-    PROFILE_STOP( "solve" );
 }
 
 

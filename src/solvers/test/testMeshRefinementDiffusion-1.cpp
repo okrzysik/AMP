@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -380,20 +379,6 @@ void myTest( AMP::UnitTest *ut,
 
     registerMapswithThermalOperator( input_db, nonlinearThermalColumnOperator, thermMapVec );
 
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( manager );
-    siloWriter->registerVector(
-        manufacturedSolution, manager, AMP::Mesh::GeomType::Vertex, "ManufacturedSolution" );
-    siloWriter->registerVector(
-        TemperatureVec, manager, AMP::Mesh::GeomType::Vertex, "ComputedSolution" );
-    siloWriter->registerVector( ResidualVec, manager, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->registerVector(
-        solutionError, manager, AMP::Mesh::GeomType::Vertex, "SolutionErro" );
-    siloWriter->registerVector(
-        manufacturedRHS, manager, AMP::Mesh::GeomType::Cell, "ManufacturedRhs" );
-    std::string silo_file = "testMeshRefinementDiffusion-1";
-    siloWriter->writeFile( silo_file, 0 );
-
     TemperatureVec->copyVector( manufacturedSolution );
     std::cout << "Max value of manufactured solution : " << manufacturedSolution->max()
               << std::endl;
@@ -428,8 +413,6 @@ void myTest( AMP::UnitTest *ut,
     volumeIntegralColumnOperator->apply( manufacturedRHS, integratedRHSVec );
 
     integratedRHSVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
-    siloWriter->registerVector( integratedRHSVec, manager, AMP::Mesh::GeomType::Vertex, "Source" );
 
     // modify the RHS to take into account boundary conditions
     //  for(int id = 0; id !=
@@ -503,9 +486,6 @@ void myTest( AMP::UnitTest *ut,
 
     std::cout << "Max of U : " << TemperatureVec->max() << " Min of U : " << TemperatureVec->min()
               << std::endl;
-
-
-    siloWriter->writeFile( silo_file, 1 );
 
     ut->passes( "Ran to completion" );
 }

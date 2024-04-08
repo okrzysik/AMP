@@ -82,7 +82,7 @@ void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared
                                               const std::vector<double> &z,
                                               const std::vector<double> &f )
 {
-    PROFILE_START( "fillReturnVector" );
+    PROFILE( "fillReturnVector" );
     std::shared_ptr<AMP::Discretization::DOFManager> DOF = vec->getDOFManager();
     std::vector<gaussPointZCoord> z_gauss                = this->getGaussPoints( mesh, ids );
     std::vector<size_t> dofs( 4 );
@@ -94,7 +94,6 @@ void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared
             vals[j] = interp_linear( z, f, z_gauss[i].z[j] );
         vec->setLocalValuesByGlobalID( 4, &dofs[0], &vals[0] );
     }
-    PROFILE_STOP( "fillReturnVector" );
 }
 
 

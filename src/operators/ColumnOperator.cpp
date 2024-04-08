@@ -66,7 +66,7 @@ void ColumnOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     for ( auto &op : d_operators ) {
         AMP_INSIST( op, "ColumnOperator::operator component is NULL" );
         op->residual( f, u, r );
-        checkState( state, f, op );
+        checkState( state, r, op );
     }
 }
 

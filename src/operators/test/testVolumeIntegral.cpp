@@ -1,6 +1,5 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -243,7 +242,7 @@ int testVolumeIntegral( int argc, char *argv[] )
 #ifdef AMP_USE_TIMER
     global_profiler.ignoreTimerErrors( true );
 #endif
-    PROFILE_START( "main" );
+    PROFILE( "main" );
 
     AMP::UnitTest ut;
 
@@ -256,7 +255,6 @@ int testVolumeIntegral( int argc, char *argv[] )
         sourceTest( &ut, file );
 
     ut.report();
-    PROFILE_STOP( "main" );
     PROFILE_SAVE( "testVolumeIntegral-1" );
 
     int num_failed = ut.NumFailGlobal();

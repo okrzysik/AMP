@@ -53,14 +53,13 @@ AsyncMapOperator::~AsyncMapOperator() = default;
 void AsyncMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                               AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
     applyStart( u, f );
     applyFinish( u, f );
     if ( requiresMakeConsistentSet() ) {
         AMP_ASSERT( d_OutputVector );
         d_OutputVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
-    PROFILE_STOP( "apply" );
 }
 
 

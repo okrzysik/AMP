@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/ColumnOperator.h"
@@ -25,7 +24,6 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-    // PROFILE_START("SetupDriver");
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
@@ -51,12 +49,6 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
 
     auto thermalMapVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable, true );
 
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( manager );
-    siloWriter->registerVector( SolutionVec, manager, AMP::Mesh::GeomType::Vertex, "SolutionVec" );
-    siloWriter->registerVector( thermalMapVec, manager, AMP::Mesh::GeomType::Vertex, "MapVec" );
-    siloWriter->registerVector( RankVec, manager, AMP::Mesh::GeomType::Vertex, "RankVec" );
-
     RightHandSideVec->setToScalar( 0.0 );
 
     double initialMapValue = input_db->getWithDefault<double>( "IMapValue", 1. );
@@ -64,8 +56,6 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
     thermalMapVec->setToScalar( initialMapValue );
     RankVec->setToScalar( globalComm.getRank() );
     RightHandSideVec->setToScalar( 0 );
-
-    siloWriter->writeFile( out_file, 0 );
 
     auto DTKdb        = input_db->getDatabase( "DTKMaps" );
     auto mapColParams = std::make_shared<AMP::Operator::ColumnOperatorParameters>( input_db );
@@ -109,9 +99,7 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
         mapsColumn->append( mapOperator );
     }
 
-    siloWriter->writeFile( out_file, 1 );
     mapsColumn->apply( SolutionVec, ResidualVec );
-    siloWriter->writeFile( out_file, 2 );
 
     AMP::pout << " L2Norm of Map Vec " << std::setprecision( 17 ) << thermalMapVec->L2Norm()
               << std::endl;
@@ -150,8 +138,6 @@ int main( int argc, char *argv[] )
     ut.report();
 
     int num_failed = ut.NumFailGlobal();
-
-    // PROFILE_SAVE(inputFile);
 
     AMP::AMPManager::shutdown();
 

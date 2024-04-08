@@ -101,11 +101,10 @@ void lock_MPI_Mutex( Mutex &mutex, const AMP_MPI &comm )
     // the lock of lock and free, but this is unlikely to affect performance
     mutex.lock();
 #else
-    PROFILE_START( "lock_MPI_Mutex", 5 );
+    PROFILE( "lock_MPI_Mutex", 5 );
     if ( mutex.ownLock() ) {
         // Special case when we already own the lock
         mutex.lock();
-        PROFILE_STOP2( "lock_MPI_Mutex", 5 );
         return;
     }
     #if 1
@@ -144,7 +143,6 @@ void lock_MPI_Mutex( Mutex &mutex, const AMP_MPI &comm )
     // problems
     comm.barrier();
     #endif
-    PROFILE_STOP( "lock_MPI_Mutex", 5 );
 #endif
 }
 

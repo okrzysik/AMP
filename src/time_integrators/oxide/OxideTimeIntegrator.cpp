@@ -31,7 +31,7 @@ OxideTimeIntegrator::~OxideTimeIntegrator() = default;
  ************************************************************************/
 void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    PROFILE_START( "initialize" );
+    PROFILE( "initialize" );
     d_current_time = 0.0;
     d_current_dt   = 1.0;
 
@@ -130,7 +130,6 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
     // Free the temporary memory
     delete[] C0[0];
     delete[] C1[0];
-    PROFILE_STOP( "initialize" );
 }
 
 
@@ -151,7 +150,7 @@ int OxideTimeIntegrator::advanceSolution( const double dt,
                                           std::shared_ptr<AMP::LinearAlgebra::Vector>,
                                           std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
-    PROFILE_START( "advanceSolution" );
+    PROFILE( "advanceSolution" );
     d_current_time += dt;
     d_current_dt = dt;
     // Get the relavent DOF Managers
@@ -224,7 +223,6 @@ int OxideTimeIntegrator::advanceSolution( const double dt,
     // Free the temporary memory
     delete[] C0[0];
     delete[] C1[0];
-    PROFILE_STOP( "advanceSolution" );
     return 0;
 }
 

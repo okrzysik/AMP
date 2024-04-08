@@ -20,7 +20,7 @@ subsetDOFManager::create( std::shared_ptr<const DOFManager> parentDOFManager,
     // Limit the new comm to be <= the parent comm
     if ( parentDOFManager.get() == nullptr || comm_in.isNull() )
         return std::shared_ptr<DOFManager>();
-    PROFILE_START( "subsetDOFManager", 2 );
+    PROFILE( "subsetDOFManager", 2 );
     AMP_MPI comm = AMP_MPI::intersect( parentDOFManager->getComm(), comm_in );
     // Set the basic info
     std::shared_ptr<subsetDOFManager> subsetDOF( new subsetDOFManager() );
@@ -47,15 +47,11 @@ subsetDOFManager::create( std::shared_ptr<const DOFManager> parentDOFManager,
     subsetDOF->d_global =
         subsetDOF->d_comm.bcast( subsetDOF->d_end, subsetDOF->d_comm.getSize() - 1 );
     // Return if the subset DOF is empty
-    if ( subsetDOF->d_global == 0 ) {
-        PROFILE_STOP2( "subsetDOFManager", 2 );
+    if ( subsetDOF->d_global == 0 )
         return std::shared_ptr<DOFManager>();
-    }
     // Return if the subset DOF == parent DOF
-    if ( subsetDOF->d_global == parentDOFManager->numGlobalDOF() ) {
-        PROFILE_STOP2( "subsetDOFManager", 2 );
+    if ( subsetDOF->d_global == parentDOFManager->numGlobalDOF() )
         return std::const_pointer_cast<DOFManager>( parentDOFManager );
-    }
     // Determine which remote DOFs we will need to keep
     size_t *send_data = nullptr;
     if ( N_local > 0 )
@@ -85,7 +81,6 @@ subsetDOFManager::create( std::shared_ptr<const DOFManager> parentDOFManager,
             subsetDOF->d_remoteSubsetDOFs.push_back( index );
         }
     }
-    PROFILE_STOP( "subsetDOFManager", 2 );
     if ( subsetDOF->numGlobalDOF() == 0 )
         return std::shared_ptr<DOFManager>();
     return subsetDOF;

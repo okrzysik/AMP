@@ -61,7 +61,7 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
                                     std::shared_ptr<const libMesh::FEType> type,
                                     bool cache_fe )
 {
-    PROFILE_START( "reinit" );
+    PROFILE( "reinit" );
     // Destroy the existing libmesh elements
     for ( auto &elem : d_base_element ) {
         delete elem;
@@ -133,7 +133,6 @@ void createLibmeshElements::reinit( const AMP::Mesh::MeshIterator &iterator_in,
         for ( size_t i = 0; i < N; i++ )
             d_rule_element[i] = rule[d_index[i]];
     }
-    PROFILE_STOP( "reinit" );
 }
 
 
@@ -175,11 +174,10 @@ libMesh::Elem *createLibmeshElements::createElement( const AMP::Mesh::MeshElemen
 // Search and return the desired libmesh element
 const libMesh::Elem *createLibmeshElements::getElement( const AMP::Mesh::MeshElementID &id ) const
 {
-    PROFILE_START( "getElement", 2 );
+    PROFILE( "getElement", 2 );
     size_t index = AMP::Utilities::findfirst( d_ids, id );
     index        = std::min<size_t>( index, d_ids.size() - 1 );
     AMP_INSIST( d_ids[index] == id, "Desired element was not found" );
-    PROFILE_STOP( "getElement", 2 );
     return d_elements[index];
 }
 
@@ -187,7 +185,7 @@ const libMesh::Elem *createLibmeshElements::getElement( const AMP::Mesh::MeshEle
 // Search and return the desired libmesh FEBase
 const libMesh::FEBase *createLibmeshElements::getFEBase( const AMP::Mesh::MeshElementID &id ) const
 {
-    PROFILE_START( "getFEBase", 2 );
+    PROFILE( "getFEBase", 2 );
     const libMesh::FEBase *result = nullptr;
     if ( d_base != nullptr ) {
         size_t index = AMP::Utilities::findfirst( d_ids, id );
@@ -204,7 +202,6 @@ const libMesh::FEBase *createLibmeshElements::getFEBase( const AMP::Mesh::MeshEl
             result = d_base.get();
         }
     }
-    PROFILE_STOP( "getFEBase", 2 );
     return result;
 }
 
@@ -212,7 +209,7 @@ const libMesh::FEBase *createLibmeshElements::getFEBase( const AMP::Mesh::MeshEl
 // Search and return the desired libmesh FEBase
 const libMesh::QBase *createLibmeshElements::getQBase( const AMP::Mesh::MeshElementID &id ) const
 {
-    PROFILE_START( "getQBase", 2 );
+    PROFILE( "getQBase", 2 );
     const libMesh::QBase *result = nullptr;
     if ( d_rule != nullptr ) {
         size_t index = AMP::Utilities::findfirst( d_ids, id );
@@ -229,7 +226,6 @@ const libMesh::QBase *createLibmeshElements::getQBase( const AMP::Mesh::MeshElem
             result = d_rule.get();
         }
     }
-    PROFILE_STOP( "getQBase", 2 );
     return result;
 }
 } // namespace AMP::Discretization

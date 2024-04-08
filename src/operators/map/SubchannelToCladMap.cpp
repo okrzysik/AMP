@@ -182,12 +182,10 @@ SubchannelToCladMap::getSubchannelIterator( std::shared_ptr<AMP::Mesh::Mesh> mes
 void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                       AMP::LinearAlgebra::Vector::shared_ptr )
 {
-    PROFILE_START( "applyStart" );
+    PROFILE( "applyStart" );
     // Check if we have any data to send
-    if ( d_mesh1.get() == nullptr ) {
-        PROFILE_STOP2( "applyStart" );
+    if ( d_mesh1.get() == nullptr )
         return;
-    }
 
     // Subset the vector for the variable (we only need the local portion of the vector)
     auto var = getInputVariable();
@@ -234,7 +232,6 @@ void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
                 d_MapComm.Isend<double>( &d_sendBuffer[i][0], d_sendBuffer[i].size(), rank, tag ) );
         }
     }
-    PROFILE_STOP( "applyStart" );
 }
 
 
@@ -244,13 +241,12 @@ void SubchannelToCladMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
 void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                                        AMP::LinearAlgebra::Vector::shared_ptr )
 {
-    PROFILE_START( "applyFinish" );
+    PROFILE( "applyFinish" );
     if ( d_mesh2.get() == nullptr ) {
         // We don't have an output vector to fill, wait for communication to finish and return
         if ( d_currRequests.size() > 0 )
             AMP::AMP_MPI::waitAll( (int) d_currRequests.size(), &d_currRequests[0] );
         d_currRequests.resize( 0 );
-        PROFILE_STOP2( "applyFinish" );
         return;
     }
     // Recieve the data
@@ -289,7 +285,6 @@ void SubchannelToCladMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
     d_currRequests.resize( 0 );
     // Call makeConsistent
     d_OutputVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    PROFILE_STOP( "applyFinish" );
 }
 
 
@@ -303,7 +298,7 @@ void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_p
                                             const std::vector<double> &z,
                                             const std::vector<double> &f )
 {
-    PROFILE_START( "fillReturnVector" );
+    PROFILE( "fillReturnVector" );
     std::shared_ptr<AMP::Discretization::DOFManager> DOF = vec->getDOFManager();
     std::vector<size_t> dofs( 1 );
     for ( auto &id : ids ) {
@@ -313,7 +308,6 @@ void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_p
         double val = interp_linear( z, f, pos[2] );
         vec->setLocalValuesByGlobalID( 1, &dofs[0], &val );
     }
-    PROFILE_STOP( "fillReturnVector" );
 }
 
 

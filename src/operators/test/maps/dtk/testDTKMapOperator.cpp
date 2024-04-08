@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -67,14 +66,6 @@ static void myTest( AMP::UnitTest *ut )
         value = testFunction1( sourceMeshIterator->coord() );
         sourceVector->setLocalValueByGlobalID( dofIndices[0], value );
     }
-    {
-        auto siloWriter = AMP::IO::Writer::buildWriter( "silo" );
-        siloWriter->setDecomposition( 1 );
-        siloWriter->registerVector(
-            sourceVector, sourceMesh, AMP::Mesh::GeomType::Vertex, "vector" );
-        siloWriter->writeFile( "source", 0 );
-    }
-
     // load the target mesh
     AMP::pout << "Loading the target mesh" << std::endl;
     auto targetMeshDatabase = input_db->getDatabase( "TargetMesh" );
@@ -111,11 +102,6 @@ static void myTest( AMP::UnitTest *ut )
     AMP::pout << "source vector l2 norm = " << sourceVector->L2Norm() << std::endl;
     AMP::pout << "target vector l2 norm = " << targetVector->L2Norm() << std::endl;
 
-    auto siloWriter = AMP::IO::Writer::buildWriter( "silo" );
-    siloWriter->setDecomposition( 1 );
-    siloWriter->registerVector( targetVector, targetMesh, AMP::Mesh::GeomType::Vertex, "vector" );
-    siloWriter->writeFile( "target", 0 );
-
     double const atol       = 1.0e-14;
     double const rtol       = 1.0e-14;
     double const tol        = atol + rtol * targetVector->L2Norm();
@@ -129,9 +115,6 @@ static void myTest( AMP::UnitTest *ut )
         targetVector->addLocalValueByGlobalID( dofIndices[0], -value );
     }
     AMP::pout << "error l2 norm = " << targetVector->L2Norm() << std::endl;
-
-    siloWriter->writeFile( "target", 1 );
-
     AMP_ASSERT( targetVector->L2Norm() < tol );
 
     ut->passes( exeName );

@@ -27,7 +27,7 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
     std::shared_ptr<const OperatorParameters> params )
     : Operator( params )
 {
-    PROFILE_START( "NodeToGaussPointOperator" );
+    PROFILE( "NodeToGaussPointOperator" );
     d_NodalVariable.reset(
         new AMP::LinearAlgebra::Variable( params->d_db->getString( "InputVariable" ) ) );
     d_GaussPtVariable.reset(
@@ -79,7 +79,6 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         }
         delete elem;
     }
-    PROFILE_STOP( "NodeToGaussPointOperator" );
 }
 
 
@@ -87,21 +86,14 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
 void NodeToGaussPointOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                       AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
 
-    PROFILE_START( "subsetInputVector" );
-    AMP::LinearAlgebra::Vector::const_shared_ptr nodalVec = subsetInputVector( u );
-    PROFILE_STOP( "subsetInputVector" );
-    PROFILE_START( "subsetOutputVector" );
-    AMP::LinearAlgebra::Vector::shared_ptr gaussPtVec = subsetOutputVector( r );
-    PROFILE_STOP( "subsetOutputVector" );
-
+    auto nodalVec   = subsetInputVector( u );
+    auto gaussPtVec = subsetOutputVector( r );
     AMP_ASSERT( nodalVec->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
-    PROFILE_START( "getDOFManager" );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map         = nodalVec->getDOFManager();
-    std::shared_ptr<AMP::Discretization::DOFManager> gaussPt_dof_map = gaussPtVec->getDOFManager();
-    PROFILE_STOP( "getDOFManager" );
+    auto dof_map         = nodalVec->getDOFManager();
+    auto gaussPt_dof_map = gaussPtVec->getDOFManager();
 
     AMP::Mesh::MeshIterator iterator = d_iterator.begin();
     std::vector<size_t> gaussPtIndices, bndGlobalIds;
@@ -137,6 +129,5 @@ void NodeToGaussPointOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
         gaussPtVec->setLocalValuesByGlobalID( N_quad, &gaussPtIndices[0], computedAtGauss );
 
     } // end for
-    PROFILE_STOP( "apply" );
 } // end apply
 } // namespace AMP::Operator

@@ -262,6 +262,7 @@ template<size_t NG>
 std::vector<std::array<int64_t, NG + 1>>
 create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
 {
+    PROFILE( "create_tri_neighbors", 1 );
     // Allocate memory
     constexpr auto null_tri = make_array<int64_t, NG + 1>( -1 );
     std::vector<std::array<int64_t, NG + 1>> tri_nab( tri.size(), null_tri );
@@ -277,7 +278,6 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
         tri_nab[tri.size() - 1][0] = -1;
         return tri_nab;
     }
-    PROFILE_START( "create_tri_neighbors", 1 );
     // Get the number of vertices
     size_t N_vertex = 0;
     for ( const auto &t : tri ) {
@@ -356,7 +356,6 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
     }
     delete[] tri_list[0];
     delete[] tri_list;
-    PROFILE_STOP( "create_tri_neighbors", 1 );
     return tri_nab;
 }
 

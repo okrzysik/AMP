@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -169,14 +168,6 @@ static void linearThermalTest( AMP::UnitTest *ut )
         ut->passes( "TrilinosMLSolver successfully solves a linear thermal problem with a nuclear "
                     "source term." );
     }
-
-    // Plot the results
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector(
-        TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
-    siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->writeFile( input_file, 0 );
 
     input_db.reset();
 

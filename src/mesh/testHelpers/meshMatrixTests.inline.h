@@ -17,7 +17,7 @@ template<int DOF_PER_NODE, bool SPLIT>
 void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest &ut,
                                             std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-    PROFILE_START( "VerifyGetMatrixTrivialTest", 1 );
+    PROFILE( "VerifyGetMatrixTrivialTest", 1 );
 
     // Create the DOF_Manager
     auto DOFs = AMP::Discretization::simpleDOFManager::create(
@@ -36,7 +36,6 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest &ut,
         std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) != nullptr;
     if ( isMultiVector ) {
         ut.expected_failure( "VerifyGetMatrixTrivialTest with split=true" );
-        PROFILE_STOP2( "VerifyGetMatrixTrivialTest", 1 );
         return;
     }
 
@@ -63,14 +62,13 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest &ut,
         ut.passes( "created identity matrix from mesh" );
     else
         ut.failure( "created identity matrix from mesh" );
-    PROFILE_STOP( "VerifyGetMatrixTrivialTest", 1 );
 }
 
 
 template<int DOF_PER_NODE, bool SPLIT>
 void meshTests::GhostWriteTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-    PROFILE_START( "GhostWriteTest", 1 );
+    PROFILE( "GhostWriteTest", 1 );
 
     // Create the DOF_Manager
     auto DOFs = AMP::Discretization::simpleDOFManager::create(
@@ -208,7 +206,6 @@ void meshTests::GhostWriteTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Me
         else
             ut.failure( msg );*/
     }
-    PROFILE_STOP( "GhostWriteTest", 1 );
 }
 
 

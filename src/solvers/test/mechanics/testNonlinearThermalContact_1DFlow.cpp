@@ -1,5 +1,4 @@
 #include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -464,11 +463,6 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
                   << " iteration is : " << ResidualVec2->L2Norm() << std::endl;
 
         vecLag2->subtract( *TemperatureInKelvinVec2, *vecLag2 );
-
-        auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-        siloWriter->registerVector(
-            TemperatureInKelvin, manager, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
-        siloWriter->writeFile( input_file, 0 );
 
         if ( vecLag2->L2Norm() < 1.e-6 ) {
             testPassed = true;

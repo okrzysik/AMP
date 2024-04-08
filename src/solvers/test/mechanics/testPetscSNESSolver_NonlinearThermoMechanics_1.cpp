@@ -1,5 +1,3 @@
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
@@ -36,9 +34,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-
-    // Create the silo writer and register the data
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -97,11 +92,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto rhsVec = solVec->clone();
     auto resVec = solVec->clone();
-
-    siloWriter->registerVector(
-        displacementVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "MechanicsSolution" );
-    siloWriter->registerVector(
-        temperatureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalSolution" );
 
     auto referenceTemperatureVec = temperatureVec->clone();
     referenceTemperatureVec->setToScalar( 300.0 );
@@ -232,8 +222,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::pout << "Maximum U displacement: " << finalMaxU << std::endl;
     AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
     AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
-
-    siloWriter->writeFile( exeName, 1 );
 
     if ( finalResidualNorm > initialResidualNorm * 1.0e-10 + 1.0e-05 ) {
         ut->failure( "Error" );

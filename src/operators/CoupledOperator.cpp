@@ -42,7 +42,7 @@ CoupledOperator::CoupledOperator( std::shared_ptr<const OperatorParameters> para
 void CoupledOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    PROFILE_START( "apply" );
+    PROFILE( "apply" );
     AMP_ASSERT( getState( u ) == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     // Fill the gauss-point vector if necessary
     if ( d_operators[0] ) {
@@ -68,7 +68,6 @@ void CoupledOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Call the operator
     d_operators[3]->apply( u, r );
     checkState( state, r, d_operators[3] );
-    PROFILE_STOP( "apply" );
 }
 
 void CoupledOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
