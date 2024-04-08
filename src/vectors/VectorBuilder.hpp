@@ -2,8 +2,8 @@
 #define included_AMP_VectorBuider_hpp
 
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/data/ArrayVectorData.h"
-
 
 #include "math.h"
 
@@ -77,6 +77,54 @@ Vector::shared_ptr createArrayVector( const ArraySize &localSize,
     auto data = ArrayVectorData<T, FUN, Allocator>::create( localSize, blockIndex, comm );
     auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
     return std::make_shared<Vector>( data, ops, var, DOFs );
+}
+
+
+/****************************************************************
+ * Vector view based on ArrayVector                             *
+ ****************************************************************/
+template<typename T>
+Vector::shared_ptr createVectorAdaptor( const std::string &name,
+                                        std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
+                                        T *data )
+{
+    auto var              = std::make_shared<Variable>( name );
+    auto params           = std::make_shared<CommunicationListParameters>();
+    params->d_comm        = DOFs->getComm();
+    params->d_localsize   = DOFs->numLocalDOF();
+    params->d_remote_DOFs = DOFs->getRemoteDOFs();
+    auto commList         = std::make_shared<CommunicationList>( params );
+
+    auto memType = AMP::Utilities::getMemoryType( data );
+
+    std::shared_ptr<VectorData> vecData;
+    std::shared_ptr<VectorOperations> vecOps;
+    if ( memType <= AMP::Utilities::MemoryType::host ) {
+        vecOps  = std::make_shared<VectorOperationsDefault<T>>();
+        vecData = ArrayVectorData<T>::create( DOFs->numLocalDOF(), commList, data );
+    } else if ( memType == AMP::Utilities::MemoryType::managed ) {
+#ifdef USE_CUDA
+        vecOps  = std::make_shared<VectorOperationsCuda<T>>();
+        vecData = ArrayVectorData<T, AMP::FunctionTable, AMP::CudaDevAllocator<T>>::create(
+            DOFs->numLocalDOF(), commList, data );
+#else
+        AMP_ERROR( "CUDA not enabled" );
+#endif
+    } else if ( memType == AMP::Utilities::MemoryType::device ) {
+#ifdef USE_CUDA
+        vecOps  = std::make_shared<VectorOperationsCuda<T>>();
+        vecData = ArrayVectorData<T, AMP::FunctionTable, AMP::CudaManagedAllocator<T>>::create(
+            DOFs->numLocalDOF(), commList, data );
+#else
+        AMP_ERROR( "CUDA not enabled" );
+#endif
+    } else {
+        AMP_ERROR( "Unknown memory location specified for data" );
+    }
+
+    auto vec = std::make_shared<Vector>( vecData, vecOps, var, DOFs );
+    vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    return vec;
 }
 
 

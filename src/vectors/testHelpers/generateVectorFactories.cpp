@@ -428,6 +428,7 @@ std::vector<std::string> getViewVectorFactories()
     list = cleanList( list );
     return list;
 }
+
 std::vector<std::string> getCloneViewVectorFactories()
 {
     std::vector<std::string> list;
