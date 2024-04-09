@@ -36,7 +36,7 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
         }
 
         if ( d_preconditioner ) {
-            if ( d_pOperator ) {
+            if ( d_pOperator && ( !d_preconditioner->getOperator() ) ) {
                 auto pcOperator = createPreconditionerOperator( d_pOperator );
                 d_preconditioner->registerOperator( pcOperator );
             }
