@@ -40,11 +40,9 @@ constexpr void getTypeName( uint64_t N, char *name )
         copy( name, "bool", N );
     } else if constexpr ( std::is_same_v<T, char> ) {
         copy( name, "char", N );
-    } else if constexpr ( std::is_same_v<T, unsigned char> ) {
-        copy( name, "unsigned char", N );
     } else if constexpr ( std::is_same_v<T, int8_t> ) {
         copy( name, "int8_t", N );
-    } else if constexpr ( std::is_same_v<T, uint8_t> ) {
+    } else if constexpr ( std::is_same_v<T, uint8_t> || std::is_same_v<T, unsigned char> ) {
         copy( name, "uint8_t", N );
     } else if constexpr ( std::is_same_v<T, int16_t> ) {
         copy( name, "int16_t", N );
@@ -57,7 +55,7 @@ constexpr void getTypeName( uint64_t N, char *name )
     } else if constexpr ( std::is_same_v<T, int64_t> ) {
         copy( name, "int64_t", N );
     } else if constexpr ( std::is_same_v<T, uint64_t> ) {
-        copy( name, "unt64_t", N );
+        copy( name, "uint64_t", N );
     } else if constexpr ( std::is_same_v<T, float> ) {
         copy( name, "float", N );
     } else if constexpr ( std::is_same_v<T, double> ) {

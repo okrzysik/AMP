@@ -4,6 +4,7 @@
 #include "AMP/utils/Utilities.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <map>
 #include <string>
 #include <vector>
@@ -44,7 +45,7 @@ double readValue<double>( std::string_view str )
         AMP_ERROR( "Error reading value (double): " + std::string( str ) );
     } else {
         char *pos = nullptr;
-        data      = strtod( str.data(), &pos );
+        data      = std::strtod( str.data(), &pos );
         if ( static_cast<size_t>( pos - str.data() ) == str.size() + 1 )
             AMP_ERROR( "Error reading value (double): " + std::string( str ) );
     }
