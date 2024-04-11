@@ -15,23 +15,6 @@ inline bool approx_equal( double a, double b )
 }
 
 
-// Check string to int/double conversion
-void checkIntDouble( AMP::UnitTest &ut )
-{
-    bool pass = true;
-    pass      = pass && Units::atoi( " 2303785 " ) == 2303785;
-    pass      = pass && Units::atoi( " +2303785 " ) == 2303785;
-    pass      = pass && Units::atoi( " -2303785 " ) == -2303785;
-    pass      = pass && Units::strtod( " 2303785 " ) == 2303785;
-    pass      = pass && Units::strtod( "2303785.42" ) - 2303785.42 < 1e-12;
-    pass      = pass && Units::strtod( " -2303785.42E-4 " ) + 230.378542 < 1e-12;
-    if ( pass )
-        ut.passes( "checkIntDouble" );
-    else
-        ut.failure( "checkIntDouble" );
-}
-
-
 // Check unit prefixes
 void checkPrefix( AMP::UnitTest &ut )
 {
@@ -57,6 +40,8 @@ void checkPrefix( AMP::UnitTest &ut )
     pass      = pass && Units::convert( Units::getUnitPrefix( "E" ) ) == 1e18;
     pass      = pass && Units::convert( Units::getUnitPrefix( "Z" ) ) == 1e21;
     pass      = pass && Units::convert( Units::getUnitPrefix( "Y" ) ) == 1e24;
+    auto list = Units::getAllPrefixes();
+    for ( size_t i = 0; i < list.size(); i++ ) {}
     if ( pass )
         ut.passes( "getUnitPrefix" );
     else
@@ -199,7 +184,6 @@ int main( int argc, char *argv[] )
     // Run some basic checks
     AMP_ASSERT( Units().isNull() );
     AMP_ASSERT( Units( "" ).isNull() );
-    checkIntDouble( ut );
     checkPrefix( ut );
     checkType( ut );
     checkOperators( ut );

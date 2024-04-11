@@ -13,28 +13,32 @@ namespace AMP {
 
 //! Enum to hold prefix
 enum class UnitPrefix : int8_t {
-    yocto   = 0,
-    zepto   = 1,
-    atto    = 2,
-    femto   = 3,
-    pico    = 4,
-    nano    = 5,
-    micro   = 6,
-    milli   = 7,
-    centi   = 8,
-    deci    = 9,
-    none    = 10,
-    deca    = 11,
-    hecto   = 12,
-    kilo    = 13,
-    mega    = 14,
-    giga    = 15,
-    tera    = 16,
-    peta    = 17,
-    exa     = 18,
-    zetta   = 19,
-    yotta   = 20,
-    unknown = 21
+    quecto  = 0,
+    ronto   = 1,
+    yocto   = 2,
+    zepto   = 3,
+    atto    = 4,
+    femto   = 5,
+    pico    = 6,
+    nano    = 7,
+    micro   = 8,
+    milli   = 9,
+    centi   = 10,
+    deci    = 11,
+    none    = 12,
+    deca    = 13,
+    hecto   = 14,
+    kilo    = 15,
+    mega    = 16,
+    giga    = 17,
+    tera    = 18,
+    peta    = 19,
+    exa     = 20,
+    zetta   = 21,
+    yotta   = 22,
+    ronna   = 23,
+    quetta  = 24,
+    unknown = -1
 };
 
 
@@ -160,10 +164,7 @@ public:
      * \details  This returns the value of the given prefix
      * \param x         Enum for the prefix
      */
-    constexpr static double convert( UnitPrefix x ) noexcept
-    {
-        return d_pow10[static_cast<int8_t>( x )];
-    }
+    constexpr static double convert( UnitPrefix x ) noexcept;
 
     //! Operator ==
     constexpr bool operator==( const Units &rhs ) const noexcept;
@@ -189,7 +190,7 @@ public:
     std::string str() const;
 
     //! Get a string representation for the prefix
-    static std::string_view getPrefixStr( UnitPrefix ) noexcept;
+    static constexpr std::string_view getPrefixStr( UnitPrefix ) noexcept;
 
     //! Get a string representation of the units in SI units (with scaling factor)
     std::string printSI() const;
@@ -208,11 +209,6 @@ public:
     //! Get all supported units
     static inline std::vector<std::string> getAllUnits();
 
-
-public:
-    static constexpr int atoi( std::string_view str, bool throw_error = true );
-    static constexpr double strtod( std::string_view str, bool throw_error = true );
-
 protected:
     using unit_type = std::array<char, 31>;
     using SI_type   = std::array<int8_t, 9>;
@@ -224,24 +220,14 @@ protected:
 protected:
     constexpr Units( const SI_type &u, double s );
 
+    std::string printSIBase() const;
     static constexpr Units read( std::string_view str );
     static constexpr Units read2( std::string_view str );
     static constexpr Units readUnit( const std::string_view &str, bool throwErr = true );
     static constexpr SI_type combine( const SI_type &a, const SI_type &b );
     static constexpr SI_type getSI( UnitType );
-
-    std::string printSIBase() const;
-
     static constexpr std::pair<size_t, char> findToken( const std::string_view &, size_t );
     static constexpr size_t findPar( const std::string_view &, size_t );
-
-private:
-    static constexpr double d_pow10[22] = { 1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-9, 1e-6, 1e-3,
-                                            1e-2,  0.1,   1,     10,    100,   1000, 1e6,  1e9,
-                                            1e12,  1e15,  1e18,  1e21,  1e24,  0 };
-    static constexpr const char *d_SI_units[] = {
-        "s", "m", "kg", "A", "K", "mol", "cd", "rad", "sr"
-    };
 
 protected:
     friend constexpr Units pow( Units base, int exponent );
