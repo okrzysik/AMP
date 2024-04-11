@@ -381,12 +381,15 @@ void PetscKrylovSolver::initializePreconditioner(
         std::shared_ptr<AMP::Database> outerDB;
         outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
         if ( outerDB ) {
-            auto pcDB       = outerDB->getDatabase( pcName );
-            auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
-            parameters->d_pOperator = d_pOperator;
-            parameters->d_comm      = d_comm;
-            d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
-            AMP_ASSERT( d_pPreconditioner );
+            auto pcDB = outerDB->getDatabase( pcName );
+            if ( pcDB ) {
+                // the user may set the preconditioner explicitly later
+                auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
+                parameters->d_pOperator = d_pOperator;
+                parameters->d_comm      = d_comm;
+                d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
+                AMP_ASSERT( d_pPreconditioner );
+            }
         }
     }
 }
