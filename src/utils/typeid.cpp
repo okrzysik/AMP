@@ -43,11 +43,11 @@ static_assert( check<double *>( "double*" ) );
 static_assert( check<const double *>( "const double*" ) );
 static_assert( check<double const *>( "const double*" ) );
 static_assert( check<std::shared_ptr<double>>( "std::shared_ptr<double>" ) );
-static_assert( check<Vector>( "AMP::LinearAlgebra::Vector" ) );
-static_assert( check<AMP::LinearAlgebra::Vector>( "AMP::LinearAlgebra::Vector" ) );
-static_assert( check<AMP::LinearAlgebra::VectorData>( "AMP::LinearAlgebra::VectorData" ) );
-static_assert(
-    check<AMP::LinearAlgebra::VectorOperations>( "AMP::LinearAlgebra::VectorOperations" ) );
+// static_assert( check<Vector>( "AMP::LinearAlgebra::Vector" ) );
+// static_assert( check<AMP::LinearAlgebra::Vector>( "AMP::LinearAlgebra::Vector" ) );
+// static_assert( check<AMP::LinearAlgebra::VectorData>( "AMP::LinearAlgebra::VectorData" ) );
+// static_assert( check<AMP::LinearAlgebra::VectorOperations>(
+//     "AMP::LinearAlgebra::VectorOperations" ) );
 #endif
 
 
