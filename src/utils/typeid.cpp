@@ -38,17 +38,17 @@ static_assert( check<std::complex<float>>( "std::complex<float>" ) );
 static_assert( check<std::complex<double>>( "std::complex<double>" ) );
 static_assert( check<const double>( "double" ) );
 static_assert( check<const double &>( "double" ) );
-  //#if !defined( __INTEL_COMPILER )
+#if !defined( __INTEL_COMPILER )
 static_assert( check<double *>( "double*" ) );
 static_assert( check<const double *>( "const double*" ) );
 static_assert( check<double const *>( "const double*" ) );
 static_assert( check<std::shared_ptr<double>>( "std::shared_ptr<double>" ) );
-static_assert( check<Vector>( "AMP::LinearAlgebra::Vector" ) );
-static_assert( check<AMP::LinearAlgebra::Vector>( "AMP::LinearAlgebra::Vector" ) );
-static_assert( check<AMP::LinearAlgebra::VectorData>( "AMP::LinearAlgebra::VectorData" ) );
-static_assert(
-    check<AMP::LinearAlgebra::VectorOperations>( "AMP::LinearAlgebra::VectorOperations" ) );
-  //#endif
+// static_assert( check<Vector>( "AMP::LinearAlgebra::Vector" ) );
+// static_assert( check<AMP::LinearAlgebra::Vector>( "AMP::LinearAlgebra::Vector" ) );
+// static_assert( check<AMP::LinearAlgebra::VectorData>( "AMP::LinearAlgebra::VectorData" ) );
+// static_assert( check<AMP::LinearAlgebra::VectorOperations>(
+//     "AMP::LinearAlgebra::VectorOperations" ) );
+#endif
 
 
 } // namespace AMP

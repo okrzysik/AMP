@@ -205,6 +205,10 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     HYPRE_PCGGetFinalRelativeResidualNorm( d_solver, &hypre_norm );
     d_dResidualNorm = hypre_norm;
 
+    if ( d_dResidualNorm < d_dRelativeTolerance ) {
+        d_ConvergenceStatus = SolverStatus::ConvergedOnRelTol;
+    }
+
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "HyprePCGSolver : after solve solution norm: " << std::setprecision( 15 )
                   << u->L2Norm() << std::endl;
