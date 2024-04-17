@@ -91,9 +91,9 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
                                       static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "QMRCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
+        AMP::pout << "QMRCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
                   << std::endl;
-        std::cout << "QMRCGSTABSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm
+        AMP::pout << "QMRCGSTABSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm
                   << std::endl;
     }
 
@@ -115,7 +115,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     auto res_norm = static_cast<T>( r0->L2Norm() );
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
-        std::cout << "QMRCGSTAB: initial residual " << res_norm << std::endl;
+        AMP::pout << "QMRCGSTAB: initial residual " << res_norm << std::endl;
     }
 
     // return if the residual is already low enough
@@ -123,7 +123,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         // provide a convergence reason
         // provide history (iterations, conv history etc)
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "QMRCGSTABSolver<T>::solve: initial residual norm " << res_norm
+            AMP::pout << "QMRCGSTABSolver<T>::solve: initial residual norm " << res_norm
                       << " is below convergence tolerance: " << terminate_tol << std::endl;
         }
         return;
@@ -250,7 +250,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         if ( std::fabs( tau ) * ( std::sqrt( (T) ( k + 1 ) ) ) <= terminate_tol ) {
 
             if ( d_iDebugPrintInfoLevel > 0 ) {
-                std::cout << "QMRCGSTAB: iteration " << ( k + 1 ) << ", residual " << tau
+                AMP::pout << "QMRCGSTAB: iteration " << ( k + 1 ) << ", residual " << tau
                           << std::endl;
             }
 
@@ -280,7 +280,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         rho1 = rho2;
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "QMRCGSTAB: iteration " << ( k + 1 ) << ", residual " << tau << std::endl;
+            AMP::pout << "QMRCGSTAB: iteration " << ( k + 1 ) << ", residual " << tau << std::endl;
         }
     }
 
@@ -293,7 +293,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution: " << x->L2Norm() << std::endl;
+        AMP::pout << "L2Norm of solution: " << x->L2Norm() << std::endl;
     }
 }
 

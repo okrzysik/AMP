@@ -2,6 +2,7 @@
 #define included_AMP_typeid
 
 #include <complex>
+#include <cstdint>
 #include <string_view>
 #include <type_traits>
 

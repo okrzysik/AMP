@@ -84,9 +84,9 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                          static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        std::cout << "CGSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
+        AMP::pout << "CGSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
-        std::cout << "CGSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
+        AMP::pout << "CGSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
     }
 
     if ( d_pOperator ) {
@@ -158,7 +158,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // compute the current residual norm
         current_res = r->L2Norm();
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "CG: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
+            AMP::pout << "CG: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
                       << current_res << std::endl;
         }
         // check if converged
@@ -182,7 +182,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
+        AMP::pout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
