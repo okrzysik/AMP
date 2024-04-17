@@ -95,9 +95,9 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
                                       static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "BiCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
+        AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
-        std::cout << "BiCGSTABSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm
+        AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm
                   << std::endl;
     }
 
@@ -120,7 +120,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     auto r_tilde_norm = res_norm;
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
-        std::cout << "BiCGSTAB: initial residual " << res_norm << std::endl;
+        AMP::pout << "BiCGSTAB: initial residual " << res_norm << std::endl;
     }
 
     // return if the residual is already low enough
@@ -128,7 +128,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         // provide a convergence reason
         // provide history (iterations, conv history etc)
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "BiCGSTABSolver<T>::solve: initial residual norm " << res_norm
+            AMP::pout << "BiCGSTABSolver<T>::solve: initial residual norm " << res_norm
                       << " is below convergence tolerance: " << terminate_tol << std::endl;
         }
         return;
@@ -251,7 +251,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         res_norm = static_cast<T>( res->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "BiCGSTAB: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
+            AMP::pout << "BiCGSTAB: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
                       << res_norm << std::endl;
         }
 
@@ -266,7 +266,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             // this is a breakdown of the iteration
             // need to flag
             if ( d_iDebugPrintInfoLevel > 0 ) {
-                std::cout << "BiCGSTABSolver<T>::solve: breakdown encountered, omega == 0"
+                AMP::pout << "BiCGSTABSolver<T>::solve: breakdown encountered, omega == 0"
                           << std::endl;
             }
             break;
@@ -284,7 +284,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         d_dResidualNorm = res_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution: " << u->L2Norm() << std::endl;
+        AMP::pout << "L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 }
 

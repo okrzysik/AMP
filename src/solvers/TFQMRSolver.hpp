@@ -92,9 +92,9 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                       static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "TFQMRSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
+        AMP::pout << "TFQMRSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
                   << std::endl;
-        std::cout << "TFQMRSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
+        AMP::pout << "TFQMRSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
     }
 
     if ( d_pOperator ) {
@@ -115,7 +115,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto res_norm = static_cast<T>( res->L2Norm() );
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
-        std::cout << "TFQMR: initial residual " << res_norm << std::endl;
+        AMP::pout << "TFQMR: initial residual " << res_norm << std::endl;
     }
 
     // return if the residual is already low enough
@@ -123,7 +123,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // provide a convergence reason
         // provide history (iterations, conv history etc)
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "TFQMRSolver<T>::solve: initial residual norm " << res_norm
+            AMP::pout << "TFQMRSolver<T>::solve: initial residual norm " << res_norm
                       << " is below convergence tolerance: " << terminate_tol << std::endl;
         }
         return;
@@ -234,7 +234,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             if ( tau * ( std::sqrt( (T) ( m + 1 ) ) ) <= terminate_tol ) {
 
                 if ( d_iDebugPrintInfoLevel > 0 ) {
-                    std::cout << "TFQMR: iteration " << ( d_iNumberIterations ) << ", residual "
+                    AMP::pout << "TFQMR: iteration " << ( d_iNumberIterations ) << ", residual "
                               << tau << std::endl;
                 }
 
@@ -286,7 +286,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v->axpy( beta, *v, *u[0] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "TFQMR: iteration " << ( d_iNumberIterations ) << ", residual " << tau
+            AMP::pout << "TFQMR: iteration " << ( d_iNumberIterations ) << ", residual " << tau
                       << std::endl;
         }
     }
@@ -300,7 +300,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_dResidualNorm = tau;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution: " << x->L2Norm() << std::endl;
+        AMP::pout << "L2Norm of solution: " << x->L2Norm() << std::endl;
     }
 }
 

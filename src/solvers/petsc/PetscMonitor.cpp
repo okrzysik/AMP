@@ -59,7 +59,7 @@ void PetscMonitor::printKSPStatus( KSP ksp, int iteration, double L2norm )
         std::string indent = "  ";
         for ( int i = 0; i < ( (PetscObject) ksp )->tablevel; i++ )
             indent += "  ";
-        std::cout << indent << iteration << " KSP Residual norm " << std::scientific
+        AMP::pout << indent << iteration << " KSP Residual norm " << std::scientific
                   << std::setprecision( 12 ) << L2norm << std::endl;
     }
 }
@@ -69,7 +69,7 @@ void PetscMonitor::printSNESStatus( SNES snes, int iteration, double L2norm )
         std::string indent = "  ";
         for ( int i = 0; i < ( (PetscObject) snes )->tablevel; i++ )
             indent += "  ";
-        std::cout << indent << iteration << " SNES Function norm " << std::scientific
+        AMP::pout << indent << iteration << " SNES Function norm " << std::scientific
                   << std::setprecision( 12 ) << L2norm << std::endl;
     }
 }

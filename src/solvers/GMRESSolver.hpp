@@ -122,9 +122,9 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                       static_cast<T>( d_dAbsoluteTolerance ) );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "GMRESSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
+        AMP::pout << "GMRESSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
-        std::cout << "GMRESSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
+        AMP::pout << "GMRESSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
     }
 
     if ( d_pOperator ) {
@@ -153,13 +153,13 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     const auto beta = static_cast<T>( res->L2Norm() );
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
-        std::cout << "GMRES: initial residual " << beta << std::endl;
+        AMP::pout << "GMRES: initial residual " << beta << std::endl;
     }
 
     // return if the residual is already low enough
     if ( beta < terminate_tol ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "GMRESSolver<T>::solve: initial residual norm " << beta
+            AMP::pout << "GMRESSolver<T>::solve: initial residual norm " << beta
                       << " is below convergence tolerance: " << terminate_tol << std::endl;
         }
 
@@ -271,7 +271,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v_norm = std::fabs( d_dw[k + 1] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "GMRES: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
+            AMP::pout << "GMRES: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
                       << v_norm << std::endl;
         }
 
@@ -281,7 +281,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 // with restarts, you start over with the last solution as new initial guess to
                 // compute the residal: r^new = Ax^old - b
                 if ( d_iDebugPrintInfoLevel > 2 ) {
-                    std::cout << "GMRES: restarting" << std::endl;
+                    AMP::pout << "GMRES: restarting" << std::endl;
                 }
                 // note: backwardSolve and addCorrection only go up to k - 1 because k has already
                 // been increased with ++k (so they really go up to k)
