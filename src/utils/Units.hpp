@@ -3,6 +3,7 @@
 
 #include "AMP/utils/Units.h"
 
+#include <cassert>
 #include <iostream>
 #include <tuple>
 
@@ -11,7 +12,7 @@ namespace AMP {
 
 
 /********************************************************************
- * Helper functions                                                  *
+ * Helper functions (string_view)                                    *
  ********************************************************************/
 constexpr std::string_view deblank( const std::string_view &str )
 {
@@ -67,38 +68,9 @@ constexpr size_t Units::findPar( const std::string_view &str, size_t i )
 
 
 /********************************************************************
- * Constructors                                                      *
+ * constexpr atoi/strtod                                             *
  ********************************************************************/
-constexpr Units::Units() : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0.0 ) {}
-constexpr Units::Units( const char *str ) : Units( std::string_view( str ) ) {}
-constexpr Units::Units( const std::string_view &str )
-    : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0.0 )
-{
-    if ( !str.empty() ) {
-        Units tmp = read( str );
-        d_SI      = tmp.d_SI;
-        d_scale   = tmp.d_scale;
-        if ( str.length() < d_unit.size() - 1 ) {
-            for ( size_t i = 0; i < str.length(); i++ )
-                d_unit[i] = str[i];
-        }
-    }
-}
-constexpr Units::Units( const std::string_view &str, double value )
-    : Units( std::string_view( str ) )
-{
-    d_scale *= value;
-}
-constexpr Units::Units( const SI_type &SI, double s ) : d_unit( { 0 } ), d_SI( SI ), d_scale( s ) {}
-constexpr std::array<int8_t, 9> operator+( const std::array<int8_t, 9> &a,
-                                           const std::array<int8_t, 9> &b )
-{
-    std::array<int8_t, 9> c = { 0 };
-    for ( size_t i = 0; i < a.size(); i++ )
-        c[i] = a[i] + b[i];
-    return c;
-}
-constexpr int Units::atoi( std::string_view str, bool throw_error )
+constexpr int atoi( std::string_view str, bool throw_error = true )
 {
     str = deblank( str );
     if ( str.empty() )
@@ -122,7 +94,7 @@ constexpr int Units::atoi( std::string_view str, bool throw_error )
     }
     return neg ? -i : i;
 }
-constexpr double Units::strtod( std::string_view str, bool throw_error )
+constexpr double strtod( std::string_view str, bool throw_error = true )
 {
     str = deblank( str );
     if ( str.empty() )
@@ -170,6 +142,41 @@ constexpr double Units::strtod( std::string_view str, bool throw_error )
     }
     return neg ? -x : x;
 }
+
+
+/********************************************************************
+ * Constructors                                                      *
+ ********************************************************************/
+constexpr Units::Units() : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0.0 ) {}
+constexpr Units::Units( const char *str ) : Units( std::string_view( str ) ) {}
+constexpr Units::Units( const std::string_view &str )
+    : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0.0 )
+{
+    if ( !str.empty() ) {
+        Units tmp = read( str );
+        d_SI      = tmp.d_SI;
+        d_scale   = tmp.d_scale;
+        if ( str.length() < d_unit.size() - 1 ) {
+            for ( size_t i = 0; i < str.length(); i++ )
+                d_unit[i] = str[i];
+        }
+    }
+}
+constexpr Units::Units( const std::string_view &str, double value )
+    : Units( std::string_view( str ) )
+{
+    d_scale *= value;
+}
+constexpr Units::Units( const SI_type &SI, double s ) : d_unit( { 0 } ), d_SI( SI ), d_scale( s ) {}
+constexpr std::array<int8_t, 9> operator+( const std::array<int8_t, 9> &a,
+                                           const std::array<int8_t, 9> &b )
+{
+    std::array<int8_t, 9> c = { 0 };
+    for ( size_t i = 0; i < a.size(); i++ )
+        c[i] = a[i] + b[i];
+    return c;
+}
+
 constexpr Units Units::read( std::string_view str )
 {
     str = deblank( str );
@@ -248,58 +255,78 @@ constexpr Units::SI_type Units::combine( const SI_type &a, const SI_type &b )
  ********************************************************************/
 constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcept
 {
-    constexpr char micro[] = { (char) 206, (char) 188, (char) 0 }; // micro symbol in UTF-16
-    UnitPrefix value       = UnitPrefix::unknown;
+    constexpr char u1[] = { (char) 0xBC, '\0' };                  // micro symbol in extended ASCII
+    constexpr char u2[] = { (char) 0xC2, (char) 0xB5, (char) 0 }; // micro symbol in UTF-8
+    constexpr char u3[] = { (char) 206, (char) 188, (char) 0 };   // micro symbol in UTF-16
     if ( str.empty() ) {
-        value = UnitPrefix::none;
+        return UnitPrefix::none;
+    } else if ( str == "quetta" || str == "Q" ) {
+        return UnitPrefix::quetta;
+    } else if ( str == "ronna" || str == "R" ) {
+        return UnitPrefix::ronna;
     } else if ( str == "yotta" || str == "Y" ) {
-        value = UnitPrefix::yotta;
+        return UnitPrefix::yotta;
     } else if ( str == "zetta" || str == "Z" ) {
-        value = UnitPrefix::zetta;
+        return UnitPrefix::zetta;
     } else if ( str == "exa" || str == "E" ) {
-        value = UnitPrefix::exa;
+        return UnitPrefix::exa;
     } else if ( str == "peta" || str == "P" ) {
-        value = UnitPrefix::peta;
+        return UnitPrefix::peta;
     } else if ( str == "tera" || str == "T" ) {
-        value = UnitPrefix::tera;
+        return UnitPrefix::tera;
     } else if ( str == "giga" || str == "G" ) {
-        value = UnitPrefix::giga;
+        return UnitPrefix::giga;
     } else if ( str == "mega" || str == "M" ) {
-        value = UnitPrefix::mega;
+        return UnitPrefix::mega;
     } else if ( str == "kilo" || str == "k" ) {
-        value = UnitPrefix::kilo;
+        return UnitPrefix::kilo;
     } else if ( str == "hecto" || str == "h" ) {
-        value = UnitPrefix::hecto;
+        return UnitPrefix::hecto;
     } else if ( str == "deca" || str == "da" ) {
-        value = UnitPrefix::deca;
+        return UnitPrefix::deca;
     } else if ( str == "deci" || str == "d" ) {
-        value = UnitPrefix::deci;
+        return UnitPrefix::deci;
     } else if ( str == "centi" || str == "c" ) {
-        value = UnitPrefix::centi;
+        return UnitPrefix::centi;
     } else if ( str == "milli" || str == "m" ) {
-        value = UnitPrefix::milli;
-    } else if ( str == "micro" || str == "u" || str == micro ) {
-        value = UnitPrefix::micro;
+        return UnitPrefix::milli;
+    } else if ( str == "micro" || str == "u" || str == u1 || str == u2 || str == u3 ) {
+        return UnitPrefix::micro;
     } else if ( str == "nano" || str == "n" ) {
-        value = UnitPrefix::nano;
+        return UnitPrefix::nano;
     } else if ( str == "pico" || str == "p" ) {
-        value = UnitPrefix::pico;
+        return UnitPrefix::pico;
     } else if ( str == "femto" || str == "f" ) {
-        value = UnitPrefix::femto;
+        return UnitPrefix::femto;
     } else if ( str == "atto" || str == "a" ) {
-        value = UnitPrefix::atto;
+        return UnitPrefix::atto;
     } else if ( str == "zepto" || str == "z" ) {
-        value = UnitPrefix::zepto;
+        return UnitPrefix::zepto;
     } else if ( str == "yocto" || str == "y" ) {
-        value = UnitPrefix::yocto;
+        return UnitPrefix::yocto;
+    } else if ( str == "ronto" || str == "r" ) {
+        return UnitPrefix::ronto;
+    } else if ( str == "quecto" || str == "q" ) {
+        return UnitPrefix::quecto;
     }
-    return value;
+    return UnitPrefix::unknown;
+}
+constexpr std::string_view Units::getPrefixStr( UnitPrefix p ) noexcept
+{
+    constexpr const char *d_prefixSymbol[25] = { "q", "r", "y",  "z",  "a", "f", "p", "n", "u",
+                                                 "m", "c", "da", "\0", "d", "h", "k", "M", "G",
+                                                 "T", "P", "E",  "Z",  "Y", "R", "Q" };
+    static_assert( static_cast<int>( UnitPrefix::unknown ) == -1 );
+    int i = static_cast<int>( p );
+    assert( i >= 0 && i <= 24 );
+    return d_prefixSymbol[i];
 }
 inline std::vector<std::string> Units::getAllPrefixes()
 {
-    constexpr char micro[] = { (char) 206, (char) 188, (char) 0 }; // micro symbol in UTF-16
-    return { "Y", "Z", "E", "P", "T",   "G", "M", "k", "h", "da", "",
-             "d", "c", "m", "u", micro, "n", "p", "f", "a", "z",  "y" };
+    std::vector<std::string> prefix( 25 );
+    for ( size_t i = 0; i < prefix.size(); i++ )
+        prefix[i] = std::string( getPrefixStr( static_cast<UnitPrefix>( i ) ) );
+    return prefix;
 }
 
 
@@ -308,30 +335,22 @@ inline std::vector<std::string> Units::getAllPrefixes()
  ********************************************************************/
 constexpr Units Units::read2( std::string_view str )
 {
-    constexpr char micro[] = { (char) 206, (char) 188, (char) 0 }; // micro symbol in UTF-16
-    // Check for special prefixes
-    if ( str.substr( 0, 2 ) == "da" ) {
-        Units u = readUnit( str.substr( 2 ), false );
-        u.d_scale *= 10.0;
-        if ( u.d_scale != 0 )
-            return u;
+    auto prefix = UnitPrefix::unknown;
+    Units u;
+    if ( str.size() >= 2 ) {
+        prefix = getUnitPrefix( str.substr( 0, 2 ) );
+        u      = readUnit( str.substr( 2 ), false );
     }
-    if ( str.substr( 0, 2 ) == micro ) {
-        Units u = readUnit( str.substr( 2 ), false );
-        u.d_scale *= 1e-6;
-        if ( u.d_scale != 0 )
-            return u;
+    if ( ( prefix == UnitPrefix::unknown || u.d_scale == 0 ) && !str.empty() ) {
+        prefix = getUnitPrefix( str.substr( 0, 1 ) );
+        u      = readUnit( str.substr( 1 ), false );
     }
-    // Try reading a prefix and then the unit
-    auto prefix = getUnitPrefix( str.substr( 0, 1 ) );
-    Units u     = readUnit( str.substr( 1 ), false );
     if ( prefix == UnitPrefix::unknown || u.d_scale == 0 ) {
-        return readUnit( str );
-    } else {
-        u.d_scale *= convert( prefix );
-        return u;
+        prefix = UnitPrefix::none;
+        u      = readUnit( str );
     }
-    return Units( SI_type{ 0 }, 0.0 );
+    u.d_scale *= convert( prefix );
+    return u;
 }
 constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
 {
@@ -339,7 +358,7 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
         auto u = getSI( type );
         return Units( u, s );
     };
-    constexpr char ohm[] = { (char) 206, (char) 169, (char) 0 }; // Ohm symbol in UTF-16
+    constexpr char ohm[] = { (char) 206, (char) 0xA9, (char) 0 }; // Ohm symbol in UTF-16
     // Check base SI units
     if ( str == "second" || str == "s" )
         return create( UnitType::time );
@@ -608,6 +627,16 @@ constexpr double Units::convert( const Units &rhs ) const
         throw std::logic_error( "Incompatible units: " + printSIBase() + " - " +
                                 rhs.printSIBase() );
     }
+}
+constexpr double Units::convert( UnitPrefix x ) noexcept
+{
+    constexpr double pow10[25] = { 1e-30, 1e-27, 1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-9, 1e-6,
+                                   1e-3,  1e-2,  0.1,   1,     10,    100,   1000,  1e6,  1e9,
+                                   1e12,  1e15,  1e18,  1e21,  1e24,  1e27,  1e30 };
+    auto i                     = static_cast<int8_t>( x );
+    if ( i < 0 || i > 24 )
+        return 0;
+    return pow10[i];
 }
 
 
