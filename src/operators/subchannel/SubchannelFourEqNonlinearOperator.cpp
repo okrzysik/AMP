@@ -1405,11 +1405,11 @@ void SubchannelFourEqNonlinearOperator::getAxialFaces( const AMP::Mesh::MeshElem
             else
                 // face is the lower axial face
                 if ( lowerFaceFound )
-                    AMP_ERROR( "Two lower axial faces were found for the same cell." );
-                else {
-                    lowerFace      = cellFace;
-                    lowerFaceFound = true;
-                }
+                AMP_ERROR( "Two lower axial faces were found for the same cell." );
+            else {
+                lowerFace      = cellFace;
+                lowerFaceFound = true;
+            }
         }
     } // end loop over faces of cell
     if ( !( upperFaceFound && lowerFaceFound ) )
@@ -1448,8 +1448,8 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
             // adjacent to the current
             // lateral face
             double knownCentroid[3]           = { parentLateralFaceCentroid[0],
-                                                  parentLateralFaceCentroid[1],
-                                                  daughterCellCentroid[2] };
+                                        parentLateralFaceCentroid[1],
+                                        daughterCellCentroid[2] };
             bool isAxiallyAdjacentLateralFace = true;
             for ( size_t i = 0; i < 3; i++ ) {
                 if ( !AMP::Utilities::approx_equal(

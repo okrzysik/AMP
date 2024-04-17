@@ -569,7 +569,7 @@ splitDomains( std::vector<std::array<int64_t, NG + 1>> tri )
 }
 template<>
 std::vector<std::vector<std::array<int64_t, 2>>>
-splitDomains<1>( std::vector<std::array<int64_t, 2>> )
+    splitDomains<1>( std::vector<std::array<int64_t, 2>> )
 {
     AMP_ERROR( "1D splitting of domains is not supported" );
     return std::vector<std::vector<std::array<int64_t, 2>>>();
