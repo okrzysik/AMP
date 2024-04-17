@@ -4,6 +4,9 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/data/ArrayVectorData.h"
+#ifdef USE_CUDA
+#include "AMP/utils/cuda/GPUFunctionTable.h"
+#endif
 
 #include "math.h"
 
@@ -105,7 +108,7 @@ Vector::shared_ptr createVectorAdaptor( const std::string &name,
     } else if ( memType == AMP::Utilities::MemoryType::managed ) {
 #ifdef USE_CUDA
         vecOps  = std::make_shared<VectorOperationsCuda<T>>();
-        vecData = ArrayVectorData<T, AMP::FunctionTable, AMP::CudaDevAllocator<T>>::create(
+        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<T>>::create(
             DOFs->numLocalDOF(), commList, data );
 #else
         AMP_ERROR( "CUDA not enabled" );
@@ -113,7 +116,7 @@ Vector::shared_ptr createVectorAdaptor( const std::string &name,
     } else if ( memType == AMP::Utilities::MemoryType::device ) {
 #ifdef USE_CUDA
         vecOps  = std::make_shared<VectorOperationsCuda<T>>();
-        vecData = ArrayVectorData<T, AMP::FunctionTable, AMP::CudaManagedAllocator<T>>::create(
+        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::CudaDevAllocator<T>>::create(
             DOFs->numLocalDOF(), commList, data );
 #else
         AMP_ERROR( "CUDA not enabled" );
