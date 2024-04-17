@@ -52,7 +52,11 @@ initializeLibMesh::initializeLibMesh( const AMP_MPI &comm )
         char *argv[1024]   = { nullptr };
         memcpy( argv, argv0, argc * sizeof( char * ) );
         char disableRefCount[] = "--disable-refcount-printing";
+        char syncWithStdio[]   = "--sync-with-stdio";
+        char sepOutput[]       = "--separate-libmeshout";
         argv[argc++]           = disableRefCount;
+        argv[argc++]           = syncWithStdio;
+        argv[argc++]           = sepOutput;
 #ifdef AMP_USE_MPI
     #ifdef AMP_USE_PETSC
         MPI_Comm petsc_comm = PETSC_COMM_WORLD;
