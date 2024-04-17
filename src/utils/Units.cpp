@@ -1,9 +1,9 @@
 #include "AMP/utils/Units.h"
 #include "AMP/utils/Utilities.h"
 
-//#if !defined( __INTEL_COMPILER )
+#if !defined( __INTEL_COMPILER )
     #include "AMP/utils/Constants.h"
-//#endif
+#endif
 
 
 namespace AMP {
@@ -66,7 +66,7 @@ static_assert( sizeof( Units ) == 48 );
 static_assert( std::is_final_v<Units> );
 static_assert( std::is_trivially_copyable_v<Units> );
 static_assert( !std::is_arithmetic_v<Units> );
-  //#if !defined( __INTEL_COMPILER )
+#if !defined( __INTEL_COMPILER )
 static_assert( Units().isNull() );
 static_assert( Units( "" ).isNull() );
 static_assert( atoi( " 2303785 " ) == 2303785 );
@@ -125,7 +125,7 @@ static_assert( approx_equal( Units( "oz" ).convert( Units( "g" ) ), 28.349523125
 static_assert( approx_equal( Units( "ton" ).convert( Units( "lb" ) ), 2240 ) );
 constexpr char microOhm[] = { (char) 206, (char) 188, (char) 206, (char) 169, (char) 0 }; // UTF-16
 static_assert( approx_equal( Units( "ohm" ).convert( Units( microOhm ) ), 1e6 ) );
-//#endif
+#endif
 } // namespace AMP
 
 
