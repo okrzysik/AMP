@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <random>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -175,7 +176,7 @@ std::vector<PointInt<NDIM>> createRandomPointsInt( int N )
     }
     points.resize( std::min<size_t>( points.size(), N ) );
     // Resort the points in random order
-    std::random_shuffle( points.begin(), points.end() );
+    std::shuffle( points.begin(), points.end(), std::mt19937( std::random_device()() ) );
     return points;
 }
 AMP::Array<int> getPointListInt( int ndim, int N )
