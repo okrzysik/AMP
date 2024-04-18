@@ -72,8 +72,8 @@ public:
     using MeshIterator::operator+=;
 
 public: // Write/read restart data
-    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
-    virtual void writeRestart( int64_t fid ) const;
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
+    void writeRestart( int64_t fid ) const override;
     structuredMeshIterator( int64_t fid, AMP::IO::RestartManager *manager );
 
 protected:

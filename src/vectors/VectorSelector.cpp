@@ -112,7 +112,7 @@ std::shared_ptr<Vector> VS_Components::subset( std::shared_ptr<Vector> p ) const
                     auto cv = multivec->getVector( i );
                     AMP_ASSERT( cv );
                     auto sc   = ( i > 0 ) ? ic - nc[i - 1] : ic;
-                    auto vec2 = cv->selectInto( VS_Components( { sc } ) );
+                    auto vec2 = cv->selectInto( VS_Components( sc ) );
                     if ( vec2 )
                         vecs.push_back( vec2 );
                     break;
