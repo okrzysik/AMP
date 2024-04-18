@@ -38,14 +38,6 @@ inline bool approx_equal( double x, double y, double tol = 1e-8 )
 }
 
 
-// Helper function to get the class name
-template<class TYPE>
-const char *getName()
-{
-    return AMP::getTypeID<TYPE>().name;
-}
-
-
 // Helper function to write points to a file
 template<class TYPE>
 void writePoints( const char *filename, const AMP::Array<TYPE> &x );
@@ -149,8 +141,8 @@ void testPointSearch( AMP::UnitTest *ut, const AMP::Array<TYPE> &x )
             dist2 += tmp * tmp;
         }
     }
-    auto msg =
-        AMP::Utilities::stringf( "Test point search (%i,%i,%s)", ndim, (int) N, getName<TYPE>() );
+    auto msg = AMP::Utilities::stringf(
+        "Test point search (%i,%i,%s)", ndim, (int) N, AMP::getTypeID<TYPE>().name );
     if ( approx_equal( dist1, dist2, 1e-12 ) ) {
         ut->passes( msg );
     } else {
@@ -178,7 +170,7 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
         return nullptr;
     int ndim = x.size( 0 );
     size_t N = x.size( 1 );
-    auto msg = AMP::Utilities::stringf( "(%i,%i,%s)", ndim, (int) N, getName<TYPE>() );
+    auto msg = AMP::Utilities::stringf( "(%i,%i,%s)", ndim, (int) N, AMP::getTypeID<TYPE>().name );
 
     // Create the tessellation
     auto data = std::make_shared<AMP::DelaunayInterpolation<TYPE>>();
@@ -567,7 +559,7 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
                                             problem.c_str(),
                                             (int) x.size( 0 ),
                                             (int) x.size( 1 ),
-                                            getName<TYPE>() );
+                                            AMP::getTypeID<TYPE>().name );
 
         // Test the gradient
         AMP::Array<double> grad( ndim, N );

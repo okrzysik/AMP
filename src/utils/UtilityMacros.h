@@ -59,12 +59,12 @@ static inline std::string operator+( std::string_view x, std::string_view y )
  *  \param variable  Variable to pretend to use
  */
 #undef NULL_USE
-#define NULL_USE( variable )                    \
-    do {                                        \
-        if ( 0 ) {                              \
-            auto static t = (char *) &variable; \
-            t++;                                \
-        }                                       \
+#define NULL_USE( variable )                                     \
+    do {                                                         \
+        if ( 0 ) {                                               \
+            [[maybe_unused]] auto static t = (char *) &variable; \
+            t++;                                                 \
+        }                                                        \
     } while ( 0 )
 
 
