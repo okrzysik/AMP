@@ -87,7 +87,7 @@ public:
 
 
     //! Return a string with the mesh class name
-    std::string className() const { return "simpleDOFManager"; }
+    std::string className() const override { return "simpleDOFManager"; }
 
 
     /** \brief Get the mesh element for a DOF

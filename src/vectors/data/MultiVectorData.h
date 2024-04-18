@@ -150,14 +150,14 @@ public: // Write/read restart data
      * \details  This function will register child objects with the manager
      * \param manager   Restart manager
      */
-    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
 
     /**
      * \brief    Write restart data to file
      * \details  This function will write the mesh to an HDF5 file
      * \param fid    File identifier to write
      */
-    virtual void writeRestart( int64_t fid ) const;
+    void writeRestart( int64_t fid ) const override;
 
     /**
      * \brief    Write restart data to file
