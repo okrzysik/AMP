@@ -22,11 +22,9 @@ StridedVariable::getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> 
     std::vector<size_t> dofs;
     dofs.reserve( parentDOF->numLocalDOF() );
     size_t offset2 = d_stride - d_offset % d_stride; // Change the sign of the offset
-    size_t i       = 0;
     for ( size_t DOF = parentDOF->beginDOF(); DOF < parentDOF->endDOF(); DOF++ ) {
         if ( ( DOF + offset2 ) % d_stride == 0 ) {
             dofs.push_back( DOF );
-            i++;
         }
     }
     auto iterator  = parentDOF->getIterator();
