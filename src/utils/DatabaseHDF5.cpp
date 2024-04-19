@@ -185,18 +185,8 @@ void AMP::readHDF5Scalar<AMP::DatabaseBox>( hid_t fid,
     AMP_ASSERT( y.size() == AMP::ArraySize( 1 ) );
     x = y( 0 );
 }
-template void
-AMP::readHDF5<AMP::DatabaseBox>( hid_t, const std::string_view &, AMP::DatabaseBox & );
-template void
-AMP::writeHDF5<AMP::DatabaseBox>( hid_t, const std::string_view &, const AMP::DatabaseBox & );
-template void AMP::readHDF5<AMP::Array<AMP::DatabaseBox>>( hid_t,
-                                                           const std::string_view &,
-                                                           AMP::Array<AMP::DatabaseBox> & );
-template void AMP::writeHDF5<AMP::Array<AMP::DatabaseBox>>( hid_t,
-                                                            const std::string_view &,
-                                                            const AMP::Array<AMP::DatabaseBox> & );
-#else
-INSTANTIATE_HDF5( AMP::DatabaseBox );
+
+
 #endif
 
 
@@ -204,5 +194,7 @@ INSTANTIATE_HDF5( AMP::DatabaseBox );
  * Explicit instantiations                                              *
  ***********************************************************************/
 INSTANTIATE_HDF5( AMP::Database );
-INSTANTIATE_HDF5( AMP::Database::Check );
 INSTANTIATE_AMPARRAY_HDF5( AMP::Database );
+INSTANTIATE_HDF5( AMP::Database::Check );
+INSTANTIATE_HDF5( AMP::DatabaseBox );
+INSTANTIATE_AMPARRAY_HDF5( AMP::DatabaseBox );
