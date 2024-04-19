@@ -267,22 +267,19 @@ Scalar Scalar::zero() const { return create( 0 ); }
 /********************************************************
  *  ostream operator                                     *
  ********************************************************/
-template<>
-std::enable_if_t<std::is_same_v<AMP::Scalar, AMP::Scalar>, std::ostream &>
-operator<<<AMP::Scalar>( std::ostream &out, const AMP::Scalar &x )
+void Scalar::print( std::ostream &out ) const
 {
-    if ( !x.has_value() )
-        return out;
-    if ( x.is_floating_point() ) {
-        out << x.get<double>();
-    } else if ( x.is_integral() ) {
-        out << x.get<int64_t>();
-    } else if ( x.is_complex() ) {
-        out << x.get<std::complex<double>>();
+    if ( !has_value() )
+        return;
+    if ( is_floating_point() ) {
+        out << get<double>();
+    } else if ( is_integral() ) {
+        out << get<int64_t>();
+    } else if ( is_complex() ) {
+        out << get<std::complex<double>>();
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }
-    return out;
 }
 
 
