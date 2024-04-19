@@ -2,7 +2,9 @@
 #include "AMP/mesh/hex8_element_t.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/UtilityMacros.h"
 
+#include <cmath>
 #include <iostream>
 
 
@@ -122,7 +124,7 @@ unsigned int perform_battery_of_tests( hex8_element_t *volume_element,
     return count_tests_failing;
 }
 
-void myTest( AMP::UnitTest *ut, const std::string &exeName )
+void testHex8ElementNormalToFaces( AMP::UnitTest &ut )
 {
     const double pi   = 3.141592653589793;
     double points[24] = {
@@ -178,22 +180,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     test_recovering_local_coordinates_on_face_from_basis_functions_values();
 
-    ut->passes( exeName );
+    ut.passes( "testHex8ElementNormalToFaces" );
 }
 
 
-int main( int argc, char *argv[] )
-{
-    AMP::AMPManager::startup( argc, argv );
-    AMP::UnitTest ut;
-
-    std::string exeName = "testHex8ElementNormalToGeomType::Faces";
-
-    myTest( &ut, exeName );
-
-    ut.report();
-    int num_failed = ut.NumFailGlobal();
-
-    AMP::AMPManager::shutdown();
-    return num_failed;
-}
