@@ -205,3 +205,4 @@ INSTANTIATE_HDF5( AMP::DatabaseBox );
  ***********************************************************************/
 INSTANTIATE_HDF5( AMP::Database );
 INSTANTIATE_HDF5( AMP::Database::Check );
+INSTANTIATE_AMPARRAY_HDF5( AMP::Database );
