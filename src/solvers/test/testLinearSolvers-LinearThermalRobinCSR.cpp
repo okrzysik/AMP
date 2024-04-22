@@ -4,7 +4,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
-#include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
+#include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/testHelpers/MatrixDataTransforms.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -31,6 +31,10 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+
+#ifdef AMP_USE_HYPRE
+    #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
+#endif
 
 #ifdef USE_CUDA
     #include "AMP/utils/cuda/CudaAllocator.h"
@@ -210,7 +214,11 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;
     // std::cout << "RHS Norm 3: " << boundaryOpCorrectionVec->L2Norm() << std::endl;
 
-    using Policy   = AMP::LinearAlgebra::HypreCSRPolicy;
+#if defined( AMP_USE_HYPRE )
+    using Policy = AMP::LinearAlgebra::HypreCSRPolicy;
+#else
+    using Policy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
+#endif
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -220,7 +228,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     std::vector<gidx_t> cols;
     std::vector<scalar_t> coeffs;
 
-    AMP::LinearAlgebra::transformDofToCSR<AMP::LinearAlgebra::HypreCSRPolicy>(
+    AMP::LinearAlgebra::transformDofToCSR<Policy>(
         diffusionOperator->getMatrix(), firstRow, endRow, nnz, cols, coeffs );
 
     lidx_t *nnz_p      = nullptr;
@@ -236,9 +244,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     std::memcpy( cols_p, cols.data(), sizeof( gidx_t ) * cols.size() );
     std::memcpy( coeffs_p, coeffs.data(), sizeof( scalar_t ) * coeffs.size() );
 #else
-    nnz_p    = nnz.data();
-    cols_p   = cols.data();
-    coeffs_p = coeffs.data();
+    nnz_p        = nnz.data();
+    cols_p       = cols.data();
+    coeffs_p     = coeffs.data();
 #endif
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
