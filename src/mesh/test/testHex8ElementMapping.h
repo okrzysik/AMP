@@ -1,8 +1,8 @@
 #include "AMP/mesh/euclidean_geometry_tools.h"
 #include "AMP/mesh/hex8_element_t.h"
 #include "AMP/mesh/latex_visualization_tools.h"
-#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/UtilityMacros.h"
 
 
 class soft_equal_to
@@ -18,9 +18,6 @@ private:
     double tolerance;
 };
 
-// inline bool soft_equal_to(double const x, double const y, double const tolerance = 1.0e-15) {
-// return std::abs(x-y) <
-// tolerance; }
 
 unsigned int test_mapping_global_to_local( hex8_element_t *volume_element,
                                            unsigned int n_random_candidate_points = 10000,
@@ -154,7 +151,6 @@ void draw_lines_on_face( unsigned int f, hex8_element_t *volume_element )
     double local_coordinates_on_face[2], local_coordinates[3];
     unsigned int n = 6, m = 6;
     double global_coordinates[21] = { 0 };
-    global_coordinates.resize( 3 * ( m + 1 ) );
     for ( unsigned int i = 0; i <= n; ++i ) {
         local_coordinates_on_face[0] =
             -1.0 + 2.0 * static_cast<double>( i ) / static_cast<double>( n );
@@ -241,7 +237,7 @@ void for_my_thesis( hex8_element_t *volume_element )
     draw_lines_on_face( 2, volume_element );
 }
 
-void myTest( AMP::UnitTest *ut, const std::string &exeName )
+void testHex8ElementMapping( AMP::UnitTest &ut )
 {
     const double pi   = 3.141592653589793;
     double points[24] = {
@@ -349,21 +345,5 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "% bounding box\n";
     draw_bounding_box( &volume_element, point_of_view );
 
-    ut->passes( exeName );
-}
-
-int main( int argc, char *argv[] )
-{
-    AMP::AMPManager::startup( argc, argv );
-    AMP::UnitTest ut;
-
-    std::string exeName = "testHex8ElementMapping";
-
-    myTest( &ut, exeName );
-
-    ut.report();
-    int num_failed = ut.NumFailGlobal();
-
-    AMP::AMPManager::shutdown();
-    return num_failed;
+    ut.passes( "testHex8ElementMapping" );
 }

@@ -269,8 +269,7 @@ bool Cylinder::operator==( const Geometry &rhs ) const
     if ( !geom )
         return false;
     return d_r == geom->d_r && d_z_min == geom->d_z_min && d_z_max == geom->d_z_max &&
-               d_offset == geom->d_offset,
-           d_chamfer == d_chamfer;
+           d_offset == geom->d_offset && d_chamfer == d_chamfer;
 }
 
 

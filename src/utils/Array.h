@@ -147,6 +147,9 @@ public: // Constructors / assignment operators
     //! Set is copyable
     ARRAY_INLINE void setFixedSize( bool flag ) { d_isFixedSize = flag; }
 
+    //! Destructor
+    ~Array();
+
 
 public: // Views/copies/subset
     /*!
@@ -327,10 +330,6 @@ public: // Views/copies/subset
      * @param exp         Exponent value
      */
     void pow( const Array &base, const TYPE &exp );
-
-
-    //! Destructor
-    ~Array();
 
 
     //! Clear the data in the array

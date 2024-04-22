@@ -99,6 +99,9 @@ public:
         }
     }
 
+    //! Print the value to a stream
+    void print( std::ostream &out ) const;
+
 
 public: // Comparison operators
     bool operator==( const Scalar &rhs ) const;
@@ -172,7 +175,11 @@ inline bool operator==( double x, const Scalar &y ) { return y.operator==( x ); 
  ********************************************************/
 template<class TYPE>
 typename std::enable_if_t<std::is_same_v<TYPE, Scalar>, std::ostream &>
-operator<<( std::ostream &out, const TYPE &x );
+operator<<( std::ostream &out, const TYPE &x )
+{
+    x.print( out );
+    return out;
+}
 
 
 } // namespace AMP

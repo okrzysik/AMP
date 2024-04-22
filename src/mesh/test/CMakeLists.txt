@@ -85,7 +85,5 @@ IF( USE_DENDRO AND USE_PETSC )
     COPY_TEST_FILE( input_testDendroInterpolation  )
     ADD_AMP_TEST( testDendroSearch PROCS 4 )
 ENDIF()
-#ADD_AMP_TEST( testHex8ElementMapping )
-#ADD_AMP_TEST( testHex8ElementLinearInterpolation )
-#ADD_AMP_TEST( testHex8ElementNormalToFaces )
+ADD_AMP_TEST( testHex8Element )
 

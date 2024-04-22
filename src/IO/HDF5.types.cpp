@@ -469,6 +469,8 @@ INSTANTIATE_HDF5( std::complex<double> );
 INSTANTIATE_HDF5( std::string );
 INSTANTIATE_HDF5( std::string_view );
 INSTANTIATE_HDF5( AMP::typeID );
+INSTANTIATE_HDF5( AMP::Mesh::MeshPoint<float> );
+INSTANTIATE_HDF5( AMP::Mesh::MeshPoint<double> );
 
 INSTANTIATE_SCALAR_HDF5( bool );
 INSTANTIATE_SCALAR_HDF5( char );
@@ -487,6 +489,8 @@ INSTANTIATE_SCALAR_HDF5( std::byte );
 INSTANTIATE_SCALAR_HDF5( std::string_view );
 INSTANTIATE_SCALAR_HDF5( std::complex<float> );
 INSTANTIATE_SCALAR_HDF5( std::complex<double> );
+INSTANTIATE_SCALAR_HDF5( AMP::Mesh::MeshPoint<float> );
+INSTANTIATE_SCALAR_HDF5( AMP::Mesh::MeshPoint<double> );
 
 INSTANTIATE_RWARRAY_HDF5( bool );
 INSTANTIATE_RWARRAY_HDF5( char );
