@@ -327,7 +327,7 @@ template<std::size_t NDIM>
 std::vector<int> Box<NDIM>::getLogicalGridSize( const std::vector<int> &x ) const
 {
     AMP_ASSERT( x.size() == NDIM );
-    return x;
+    return std::vector<int>( x );
 }
 template<std::size_t NDIM>
 std::vector<int> Box<NDIM>::getLogicalGridSize( const std::vector<double> &res ) const
