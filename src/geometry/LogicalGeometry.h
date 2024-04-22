@@ -64,17 +64,19 @@ public:
      * \brief    Return the logical grid periodic dimensions
      * \details  This function will return a vector indicating which logical grid
      *    dimensions are periodic.
+     *    Note: The returned array may be larger than the number of dimensions
      * @return          Return the periodic dimensions
      */
-    std::vector<bool> getPeriodicDim() const;
+    inline std::array<bool, 3> getPeriodicDim() const { return d_isPeriodic; }
 
     /**
      * \brief    Return the surface ids for the logical boundaries
      * \details  This function will return the surface ids for each logical boundary.
      *    If a logical boundary does not map to a surface, it will return -1.
+     *    Note: The returned array may be larger than the number of dimensions
      * @return          Return the logical boundary ids (2*logicalDim)
      */
-    std::vector<int> getLogicalSurfaceIds() const;
+    inline std::array<int, 6> getLogicalSurfaceIds() const { return d_ids; }
 
 
 public: // Restart functions
@@ -91,9 +93,9 @@ protected:
     }
 
     // Delete copy constructors
-    LogicalGeometry( LogicalGeometry && )      = delete;
-    LogicalGeometry( const LogicalGeometry & ) = default;
-    LogicalGeometry &operator=( LogicalGeometry && ) = delete;
+    LogicalGeometry( LogicalGeometry && )                 = delete;
+    LogicalGeometry( const LogicalGeometry & )            = default;
+    LogicalGeometry &operator=( LogicalGeometry && )      = delete;
     LogicalGeometry &operator=( const LogicalGeometry & ) = delete;
 
 

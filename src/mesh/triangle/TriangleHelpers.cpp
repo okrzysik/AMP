@@ -791,7 +791,6 @@ static inline std::vector<Point> getLogicalPoints( const AMP::Geometry::LogicalG
     auto N   = geom.getLogicalGridSize( std::vector<double>( ndim, resolution ) );
     N.resize( 3, 1 );
     auto periodic = geom.getPeriodicDim();
-    periodic.resize( 3, false );
     for ( int i = 0; i < N[0]; i++ ) {
         double x = getPos( i, N[0], periodic[0] );
         for ( int j = 0; j < N[1]; j++ ) {
