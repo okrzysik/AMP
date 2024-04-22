@@ -347,4 +347,3 @@ void testHex8ElementMapping( AMP::UnitTest &ut )
 
     ut.passes( "testHex8ElementMapping" );
 }
-
