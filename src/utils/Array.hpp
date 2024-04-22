@@ -692,8 +692,12 @@ void Array<TYPE, FUN, Allocator>::pow( const Array<TYPE, FUN, Allocator> &baseAr
         throw std::logic_error( "length of arrays do not match" );
 
     const auto base_data = baseArray.data();
-    for ( size_t i = 0; i < d_size.length(); i++ )
-        d_data[i] = std::pow( base_data[i], exp );
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
+        for ( size_t i = 0; i < d_size.length(); i++ )
+            d_data[i] = std::pow( base_data[i], exp );
+    } else {
+        throw std::logic_error( "pow not supported for non-arithmetic types" );
+    }
 }
 
 

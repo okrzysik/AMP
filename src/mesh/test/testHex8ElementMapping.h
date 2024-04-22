@@ -288,12 +288,10 @@ void testHex8ElementMapping( AMP::UnitTest &ut )
 
     test_mapping_basis_functions_values_to_local_coordinates_on_face();
 
-    ///*
     double scaling_factors[3] = { 4.0, 2.0, 1.0 };
     scale_points( scaling_factors, 8, points );
     volume_element.set_support_points( points );
     AMP_ASSERT( test_mapping_global_to_local( &volume_element ) == 0 );
-    //*/
 
     double translation_vector[3] = { 3.0, 1.0, 5.0 };
     translate_points( translation_vector, 8, points );
@@ -347,4 +345,3 @@ void testHex8ElementMapping( AMP::UnitTest &ut )
 
     ut.passes( "testHex8ElementMapping" );
 }
-

@@ -67,7 +67,7 @@ void AMP::readHDF5Scalar<MeshElementIndex>( hid_t fid,
                                             const std::string_view &name,
                                             MeshElementIndex &data )
 {
-    std::array<int, 4> data2;
+    std::array<int, 4> data2 = { 0 };
     readHDF5( fid, name, data2 );
     data = convert( data2 );
 }
