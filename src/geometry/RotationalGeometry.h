@@ -19,7 +19,12 @@ public:
      * \brief Construct a RotationalGeometry geometry
      * \param geom      Input geometry object
      */
-    explicit RotationalGeometry( std::shared_ptr<LogicalGeometry> geom ) : d_geom( geom ) {}
+    explicit RotationalGeometry( std::shared_ptr<LogicalGeometry> geom ) : d_geom( geom )
+    {
+        d_logicalDim = geom->getLogicalDim();
+        d_isPeriodic = geom->getPeriodicDim();
+        d_ids        = geom->getLogicalSurfaceIds();
+    }
 
 public: // Functions inherited from Geometry
     std::string getName() const { return "RotationalGeometry<" + d_geom->getName() + ">"; }
@@ -42,11 +47,6 @@ public: // Functions inherited from Geometry
     double volume() const override final { return d_geom->volume(); }
     void displace( const double *x ) override final;
     std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
-    std::vector<bool> getPeriodicDim() const override final { return d_geom->getPeriodicDim(); }
-    std::vector<int> getLogicalSurfaceIds() const override final
-    {
-        return d_geom->getLogicalSurfaceIds();
-    }
     virtual std::vector<int>
     getLogicalGridSize( const std::vector<double> &res ) const override final
     {
