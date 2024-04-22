@@ -75,8 +75,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     std::vector<gidx_t> cols;
     std::vector<scalar_t> coeffs;
 
-    AMP::LinearAlgebra::transformDofToCSR<AMP::LinearAlgebra::HypreCSRPolicy>(
-        matrix, firstRow, endRow, nnz, cols, coeffs );
+    AMP::LinearAlgebra::transformDofToCSR<Policy>( matrix, firstRow, endRow, nnz, cols, coeffs );
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
         firstRow, endRow, nnz.data(), cols.data(), coeffs.data(), comm );

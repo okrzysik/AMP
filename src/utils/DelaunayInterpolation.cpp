@@ -65,15 +65,6 @@ static int intersect_sorted( const int N_lists,
                              uint32_t *intersection );
 
 
-static inline size_t log2ceil( size_t x )
-{
-    size_t ans = 1;
-    while ( x >>= 1 )
-        ans++;
-    return ans;
-}
-
-
 static constexpr double TRI_TOL = 1e-10;
 
 
