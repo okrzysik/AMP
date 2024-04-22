@@ -116,5 +116,3 @@ void testHex8ElementLinearInterpolation( AMP::UnitTest &ut )
 
     ut.passes( "testHex8ElementLinearInterpolation" );
 }
-
-

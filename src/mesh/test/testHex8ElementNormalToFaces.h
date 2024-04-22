@@ -182,5 +182,3 @@ void testHex8ElementNormalToFaces( AMP::UnitTest &ut )
 
     ut.passes( "testHex8ElementNormalToFaces" );
 }
-
-
