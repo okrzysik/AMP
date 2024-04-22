@@ -377,26 +377,6 @@ void writeHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, 
     }
     writeHDF5Array( fid, name, y );
 }
-template<>
-void readHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Mesh::Point &x )
-{
-    readHDF5Scalar( fid, name, x );
-}
-template<>
-void writeHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Mesh::Point &x )
-{
-    writeHDF5Scalar( fid, name, x );
-}
-template<>
-void readHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::Point> &x )
-{
-    readHDF5Array( fid, name, x );
-}
-template<>
-void writeHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::Mesh::Point> &x )
-{
-    writeHDF5Array( fid, name, x );
-}
 instantiateArrayConstructors( AMP::Mesh::Point );
 
 /************************************************************************
