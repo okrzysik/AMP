@@ -155,9 +155,9 @@ void CSRMatrixOperationsDefault<Policy>::scale( AMP::Scalar alpha_in, MatrixData
 }
 
 template<typename Policy>
-void CSRMatrixOperationsDefault<Policy>::matMultiply( MatrixData const &Am,
-                                                      MatrixData const &Bm,
-                                                      MatrixData &Cm )
+void CSRMatrixOperationsDefault<Policy>::matMultiply( MatrixData const &,
+                                                      MatrixData const &,
+                                                      MatrixData & )
 {
     AMP_WARNING( "SpGEMM for CSRMatrixOperationsDefault not implemented" );
 }

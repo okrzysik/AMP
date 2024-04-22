@@ -37,16 +37,12 @@ namespace AMP::LinearAlgebra {
 
 
 // Trim string
-static inline std::string trim( std::string s )
+static inline std::string trim( const std::string &s )
 {
-    s.erase(
-        s.begin(),
-        std::find_if( s.begin(), s.end(), std::not_fn( std::ptr_fun<int, int>( std::isspace ) ) ) );
-    s.erase(
-        std::find_if( s.rbegin(), s.rend(), std::not_fn( std::ptr_fun<int, int>( std::isspace ) ) )
-            .base(),
-        s.end() );
-    return s;
+    constexpr char space[] = { 0x20, 0x0c, 0x0a, 0x0d, 0x09, 0x0b, 0x0 };
+    auto i                 = s.find_first_not_of( space );
+    auto j                 = s.find_last_not_of( space );
+    return s.substr( i, j - i + 1 );
 }
 
 

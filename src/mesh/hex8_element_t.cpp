@@ -601,10 +601,9 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
     compute_cross_product( &( tangential_vectors[0] ), &( tangential_vectors[3] ), normal_vector );
     normalize_vector( normal_vector );
     if ( direction == -1.0 ) {
-        std::transform( normal_vector,
-                        normal_vector + 3,
-                        normal_vector,
-                        std::bind1st( std::multiplies<double>(), direction ) );
+        normal_vector[0] *= direction;
+        normal_vector[1] *= direction;
+        normal_vector[2] *= direction;
     } else {
         AMP_DEBUG_ASSERT( direction == 1.0 );
     }
@@ -695,9 +694,9 @@ void hex8_element_t::get_basis_functions_values_on_face( double const *x, double
 void hex8_element_t::get_local_coordinates_on_face( double const *phi, double *x )
 {
     x[0] = 2.0 * ( phi[1] + phi[2] ) - 1.0;
-    AMP_DEBUG_ASSERT( abs( 1.0 - 2.0 * ( phi[0] + phi[3] ) - x[0] ) < 1.0e-15 );
+    AMP_DEBUG_ASSERT( abs( 1.0 - 2.0 * ( phi[0] + phi[3] ) - x[0] ) < 1.0e-14 );
     x[1] = 1.0 - 2.0 * ( phi[0] + phi[1] );
-    AMP_DEBUG_ASSERT( abs( 2.0 * ( phi[2] + phi[3] ) - 1.0 - x[2] ) < 1.0e-15 );
+    AMP_DEBUG_ASSERT( abs( 2.0 * ( phi[2] + phi[3] ) - 1.0 - x[1] ) < 1.0e-14 );
 }
 
 void hex8_element_t::get_normal_to_face( double const **support_points_ptr,
@@ -740,10 +739,9 @@ void hex8_element_t::get_normal_to_face( double const **support_points_ptr,
     } // end for d
     compute_cross_product( &( tangential_vectors[0] ), &( tangential_vectors[3] ), normal_vector );
     normalize_vector( normal_vector );
-    std::transform( normal_vector,
-                    normal_vector + 3,
-                    normal_vector,
-                    std::bind1st( std::multiplies<double>(), direction ) );
+    normal_vector[0] *= direction;
+    normal_vector[1] *= direction;
+    normal_vector[2] *= direction;
 }
 
 void hex8_element_t::compute_normal_to_face( unsigned int f,
@@ -791,10 +789,9 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
       //  normalize_vector(&(tangential_vectors[3]));
     compute_cross_product( &( tangential_vectors[0] ), &( tangential_vectors[3] ), normal_vector );
     normalize_vector( normal_vector );
-    std::transform( normal_vector,
-                    normal_vector + 3,
-                    normal_vector,
-                    std::bind1st( std::multiplies<double>(), direction ) );
+    normal_vector[0] *= direction;
+    normal_vector[1] *= direction;
+    normal_vector[2] *= direction;
 }
 
 void hex8_element_t::compute_strain_tensor( double const *x, double const *u, double *epsilon )

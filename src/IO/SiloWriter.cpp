@@ -507,43 +507,6 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
 
 
 /************************************************************
- * Functions to pack/unpack data to a char array             *
- ************************************************************/
-template<class TYPE>
-static inline void packData( char *ptr, size_t &pos, const TYPE &data );
-template<class TYPE>
-static inline TYPE unpackData( const char *ptr, size_t &pos );
-template<>
-inline void packData<std::string>( char *ptr, size_t &pos, const std::string &data )
-{
-    int N = data.size();
-    memcpy( &ptr[pos], data.c_str(), N + 1 );
-    pos += N + 1;
-}
-template<>
-inline std::string unpackData<std::string>( const char *ptr, size_t &pos )
-{
-    std::string data( &ptr[pos] );
-    pos += data.size() + 1;
-    return data;
-}
-template<class TYPE>
-static inline void packData( char *ptr, size_t &pos, const TYPE &data )
-{
-    memcpy( &ptr[pos], &data, sizeof( TYPE ) );
-    pos += sizeof( TYPE );
-}
-template<class TYPE>
-static inline TYPE unpackData( const char *ptr, size_t &pos )
-{
-    TYPE data;
-    memcpy( &data, &ptr[pos], sizeof( TYPE ) );
-    pos += sizeof( TYPE );
-    return data;
-}
-
-
-/************************************************************
  * Some utility functions                                    *
  ************************************************************/
 void createSiloDirectory( DBfile *fid, const std::string &path )
