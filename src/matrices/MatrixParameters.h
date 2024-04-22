@@ -89,6 +89,19 @@ public:
      */
     void addColumns( const std::vector<size_t> &cols );
 
+    /** \brief Create vector of columns referenced by this process that are unique
+     */
+    void findUniqueColumns();
+
+    /** \brief Return a vector of all unique columns with non-zero entries for this process
+     * \return a vector of global column ids
+     */
+    std::vector<size_t> &getUniqueColumns() { return d_vUniqueColumns; }
+
+    /** \brief Return the index mapping from columns to unique columns
+     */
+    std::vector<size_t> &getUniqueColumnsMap() { return d_vUniqueColumnsMap; }
+
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
     std::shared_ptr<AMP::Discretization::DOFManager> getLeftDOFManager();
@@ -117,6 +130,13 @@ protected:
 
     //!  The set of columns with non-zero entries this processor has
     std::vector<size_t> d_vColumns;
+
+    //! Set of unique columns referenced by this matrix (formed by removing duplicates from
+    //! d_vColumns)
+    std::vector<size_t> d_vUniqueColumns;
+
+    //! Mapping from d_vColumns into d_vUniqueColumns
+    std::vector<size_t> d_vUniqueColumnsMap;
 };
 } // namespace AMP::LinearAlgebra
 

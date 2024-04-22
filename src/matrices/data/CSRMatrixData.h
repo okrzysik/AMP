@@ -163,7 +163,12 @@ public:
 
     std::tuple<lidx_t *, gidx_t const *, scalar_t const *> getCSRData()
     {
-        return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
+      return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
+    }
+
+    std::tuple<gidx_t, size_t const *, size_t const *> getUniqueColumnsData()
+    {
+      return std::make_tuple( d_nuc, d_unq_cols, d_unq_cols_map );
     }
 
     bool isSquare() const noexcept { return d_is_square; }
@@ -188,8 +193,11 @@ protected:
     lidx_t *d_nnz_per_row;
     lidx_t *d_row_starts;
     gidx_t *d_cols;
+    size_t *d_unq_cols;
+    size_t *d_unq_cols_map;
     scalar_t *d_coeffs;
 
+    gidx_t d_nuc;
     lidx_t d_nnz;
 
     AMP::Utilities::MemoryType d_memory_location;

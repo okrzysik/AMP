@@ -9,6 +9,8 @@ DISABLE_WARNINGS
 #include <EpetraExt_Transpose_RowMatrix.h>
 ENABLE_WARNINGS
 
+#include "ProfilerApp.h"
+
 namespace AMP::LinearAlgebra {
 
 static void VerifyEpetraReturn( int err, const char *func )
@@ -39,6 +41,7 @@ void EpetraMatrixOperations::mult( std::shared_ptr<const Vector> in,
                                    MatrixData const &A,
                                    std::shared_ptr<Vector> out )
 {
+    PROFILE( "EpetraMatrixOperations::mult" );
     AMP_ASSERT( in->getGlobalSize() == A.numGlobalColumns() );
     AMP_ASSERT( out->getGlobalSize() == A.numGlobalRows() );
     auto in_view                = EpetraVector::constView( in );

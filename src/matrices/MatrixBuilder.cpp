@@ -129,6 +129,7 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         params->setEntriesInRow( row - row_start, cols.size() );
         params->addColumns( cols );
     }
+    params->findUniqueColumns();
     // Create the matrix
     auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy>>( params );
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( data );

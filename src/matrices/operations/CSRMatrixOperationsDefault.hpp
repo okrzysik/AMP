@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+#include "ProfilerApp.h"
+
 namespace AMP::LinearAlgebra {
 
 template<typename Policy>
@@ -28,6 +30,7 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
                                                MatrixData const &A,
                                                std::shared_ptr<Vector> out )
 {
+    PROFILE( "CSRMatrixOperationsDefault<Policy>::mult" );
     AMP_ASSERT( in && out );
     AMP_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
@@ -38,38 +41,39 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
     auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
 
     auto [nnz, cols, coeffs] = csrData->getCSRData();
+    auto [nuc, unq_cols, unq_cols_map] = csrData->getUniqueColumnsData();
 
     auto memType = AMP::Utilities::getMemoryType( cols );
     AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
-    auto maxColLen   = *std::max_element( nnz, nnz + nRows );
 
-    std::vector<size_t> rcols( maxColLen );
-    std::vector<scalar_t> vvals( maxColLen );
+    // Gather all needed values in one call
+    std::vector<scalar_t> vvals( nuc );
+    in->getValuesByGlobalID( nuc, unq_cols, vvals.data() );
 
-    auto beginRow = csrData->beginRow();
+    {
+      PROFILE( "CSRMult useful" );
 
-    lidx_t offset = 0;
-    for ( lidx_t row = 0; row < nRows; ++row ) {
+      lidx_t offset = 0;
+      for ( lidx_t row = 0; row < nRows; ++row ) {
 
-        const auto nCols = nnz[row];
-
+        const auto nCols = static_cast<gidx_t>( nnz[row] );
         const auto cloc = &cols[offset];
         const auto vloc = &coeffs[offset];
+	scalar_t val = 0.0;
 
-        std::transform(
-            cloc, cloc + nCols, rcols.begin(), []( gidx_t col ) -> size_t { return col; } );
-
-        in->getValuesByGlobalID( nCols, rcols.data(), vvals.data() );
-
-        scalar_t val =
-            std::inner_product( vloc, vloc + nCols, vvals.data(), static_cast<scalar_t>( 0.0 ) );
-
-        out->setValueByGlobalID( static_cast<size_t>( beginRow + row ), val );
+	for ( gidx_t nc = 0; nc < nCols; ++nc) {
+	  const auto col = cloc[nc];
+	  val += vloc[nc] * vvals[unq_cols_map[col]];
+	}
+	
+	size_t rowGbl = static_cast<size_t>( row );
+        out->setValuesByLocalID( 1, &rowGbl, &val );
 
         offset += nCols;
+      }
     }
 
     out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
