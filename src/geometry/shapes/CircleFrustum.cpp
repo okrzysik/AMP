@@ -341,16 +341,16 @@ double CircleFrustum::volume() const
 /********************************************************
  * Return the logical grid                               *
  ********************************************************/
-std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<int> &x ) const
+ArraySize CircleFrustum::getLogicalGridSize( const ArraySize &x ) const
 {
     AMP_INSIST( x.size() == 2, "Size must be an array of length 2" );
     return { 2 * x[0], 2 * x[0], x[1] };
 }
-std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<double> &res ) const
+ArraySize CircleFrustum::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
     double R = std::max( d_r[0], d_r[1] );
-    return { (int) ( R / res[0] ), (int) ( R / res[1] ), (int) ( d_h / res[2] ) };
+    return { (size_t) ( R / res[0] ), (size_t) ( R / res[1] ), (size_t) ( d_h / res[2] ) };
 }
 
 

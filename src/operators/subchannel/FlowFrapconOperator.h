@@ -116,36 +116,21 @@ public:
         return cp;
     }
 
-
-    short int d_boundaryId;
-
-    int d_numpoints; /**< Number of points in z direction */
-
+public: // Data members (should be private)
+    int d_boundaryId = 0;
+    int d_numpoints  = 0; //! Number of points in z direction */
     std::vector<unsigned int> d_dofIds;
-
-    std::vector<double> zPoints; /**< vector to hold z locations */
-
+    std::vector<double> zPoints; //! vector to hold z locations */
     AMP::LinearAlgebra::Vector::shared_ptr d_cladVec;
-
-    double d_De; /**< Channel Diameter */
-
-    double Cp; /**< Heat Capacity of Coolant */
-
-    double d_G; /**< Coolant Mass Flux */
-
-    double d_Tin; /**< Coolant Temp Tin */
-
-    double d_K; /**< Coolant conductivity */
-
-    double d_Re; /**< Reynolds Number */
-
-    double d_Pr; /**< Prandtl Number */
-
-    /* Since the map has been taken out the Flow operator
-       now expects a SimpleVariable for input & output */
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Simple Input Variable */
-
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Simple Output Variable */
+    double d_De  = 0; //! Channel Diameter
+    double Cp    = 0; //! Heat Capacity of Coolant
+    double d_G   = 0; //! Coolant Mass Flux
+    double d_Tin = 0; //! Coolant Temp Tin
+    double d_K   = 0; //! Coolant conductivity
+    double d_Re  = 0; //! Reynolds Number
+    double d_Pr  = 0; //! Prandtl Number
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
 protected:
     /**

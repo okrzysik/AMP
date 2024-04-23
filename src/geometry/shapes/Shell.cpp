@@ -169,12 +169,12 @@ double Shell::volume() const
 /********************************************************
  * Return the logical grid                               *
  ********************************************************/
-std::vector<int> Shell::getLogicalGridSize( const std::vector<int> &x ) const
+ArraySize Shell::getLogicalGridSize( const ArraySize &x ) const
 {
-    AMP_INSIST( x.size() == 2u, "Size must be an array of length 2" );
+    AMP_INSIST( x.ndim() == 2u, "Size must be an array of length 2" );
     return { 4 * x[0], 2 * x[0], x[1] };
 }
-std::vector<int> Shell::getLogicalGridSize( const std::vector<double> &res ) const
+ArraySize Shell::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
     AMP_ERROR( "Not finished" );

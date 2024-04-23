@@ -237,20 +237,20 @@ double Parallelepiped::volume() const { return d_V; }
 /********************************************************
  * Return the logical grid                               *
  ********************************************************/
-std::vector<int> Parallelepiped::getLogicalGridSize( const std::vector<int> &x ) const
+ArraySize Parallelepiped::getLogicalGridSize( const ArraySize &x ) const
 {
     AMP_INSIST( x.size() == 3u, "Size must be an array of length 3" );
     return { x[0], x[1], x[2] };
 }
-std::vector<int> Parallelepiped::getLogicalGridSize( const std::vector<double> &res ) const
+ArraySize Parallelepiped::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
-    double a = sqrt( d_a[0] * d_a[0] + d_a[1] * d_a[1] + d_a[2] * d_a[2] );
-    double b = sqrt( d_b[0] * d_b[0] + d_b[1] * d_b[1] + d_b[2] * d_b[2] );
-    double c = sqrt( d_c[0] * d_c[0] + d_c[1] * d_c[1] + d_c[2] * d_c[2] );
-    int N1   = std::max<int>( a / res[0], 1 );
-    int N2   = std::max<int>( b / res[1], 1 );
-    int N3   = std::max<int>( c / res[2], 1 );
+    double a  = sqrt( d_a[0] * d_a[0] + d_a[1] * d_a[1] + d_a[2] * d_a[2] );
+    double b  = sqrt( d_b[0] * d_b[0] + d_b[1] * d_b[1] + d_b[2] * d_b[2] );
+    double c  = sqrt( d_c[0] * d_c[0] + d_c[1] * d_c[1] + d_c[2] * d_c[2] );
+    size_t N1 = std::max<int>( a / res[0], 1 );
+    size_t N2 = std::max<int>( b / res[1], 1 );
+    size_t N3 = std::max<int>( c / res[2], 1 );
     return { N1, N2, N3 };
 }
 

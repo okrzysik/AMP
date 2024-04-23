@@ -178,8 +178,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static std::vector<size_t>
-    estimateLogicalMeshSize( std::shared_ptr<const MeshParameters> params );
+    static ArraySize estimateLogicalMeshSize( std::shared_ptr<const MeshParameters> params );
 
 
     /**
