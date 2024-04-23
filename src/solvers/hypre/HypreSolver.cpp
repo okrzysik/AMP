@@ -29,16 +29,15 @@ namespace AMP::Solver {
  ****************************************************************/
 HypreSolver::HypreSolver() : SolverStrategy() {}
 HypreSolver::HypreSolver( std::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters )
-{
+    : SolverStrategy( parameters ),
 #ifdef USE_CUDA
-    d_memory_location = HYPRE_MEMORY_DEVICE;
-    d_exec_policy     = HYPRE_EXEC_DEVICE;
+      d_memory_location( HYPRE_MEMORY_DEVICE ),
+      d_exec_policy( HYPRE_EXEC_DEVICE )
 #else
-    d_memory_location = HYPRE_MEMORY_HOST;
-    d_exec_policy     = HYPRE_EXEC_HOST;
+      d_memory_location( HYPRE_MEMORY_HOST ),
+      d_exec_policy( HYPRE_EXEC_HOST )
 #endif
-
+{
     AMP_ASSERT( parameters );
     HypreSolver::initialize( parameters );
 }
