@@ -324,19 +324,19 @@ double Box<NDIM>::volume() const
  * Return the logical grid                               *
  ********************************************************/
 template<std::size_t NDIM>
-std::vector<int> Box<NDIM>::getLogicalGridSize( const std::vector<int> &x ) const
+ArraySize Box<NDIM>::getLogicalGridSize( const ArraySize &x ) const
 {
-    AMP_ASSERT( x.size() == NDIM );
-    return std::vector<int>( x );
+    AMP_ASSERT( x.ndim() == NDIM );
+    return x;
 }
 template<std::size_t NDIM>
-std::vector<int> Box<NDIM>::getLogicalGridSize( const std::vector<double> &res ) const
+ArraySize Box<NDIM>::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_ASSERT( res.size() == NDIM );
-    std::vector<int> size( NDIM );
+    size_t size[5];
     for ( size_t d = 0; d < NDIM; d++ )
         size[d] = ( d_range[2 * d + 1] - d_range[2 * d] ) / res[d];
-    return size;
+    return ArraySize( NDIM, size );
 }
 
 

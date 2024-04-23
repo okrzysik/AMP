@@ -38,7 +38,8 @@ struct null_deleter {
 };
 
 
-static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &results )
+static void
+fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double> &results )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;

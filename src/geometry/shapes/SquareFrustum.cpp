@@ -314,12 +314,12 @@ double SquareFrustum::volume() const { return d_volume; }
 /********************************************************
  * Return the logical grid                               *
  ********************************************************/
-std::vector<int> SquareFrustum::getLogicalGridSize( const std::vector<int> &x ) const
+ArraySize SquareFrustum::getLogicalGridSize( const ArraySize &x ) const
 {
-    AMP_INSIST( x.size() == 3u, "Size must be an array of length 3" );
+    AMP_INSIST( x.ndim() == 3u, "Size must be an array of length 3" );
     return { x[0], x[1], x[2] };
 }
-std::vector<int> SquareFrustum::getLogicalGridSize( const std::vector<double> &res ) const
+ArraySize SquareFrustum::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
     AMP_ERROR( "Not finished" );

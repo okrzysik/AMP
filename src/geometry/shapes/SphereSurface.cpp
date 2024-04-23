@@ -150,12 +150,12 @@ double SphereSurface::volume() const
 /********************************************************
  * Return the logical grid                               *
  ********************************************************/
-std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<int> &x ) const
+ArraySize SphereSurface::getLogicalGridSize( const ArraySize &x ) const
 {
-    AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
+    AMP_INSIST( x.ndim() == 1u, "Size must be an array of length 1" );
     return { x[0], x[0] / 2 };
 }
-std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<double> &res ) const
+ArraySize SphereSurface::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 2u, "Resolution must be an array of length 2" );
     AMP_ERROR( "Not finished" );

@@ -58,7 +58,7 @@ buildSolver( const std::string &solver_name,
     return AMP::Solver::SolverFactory::create( parameters );
 }
 
-void fickSoretTest( AMP::UnitTest *ut, std::string fileName )
+void fickSoretTest( AMP::UnitTest *ut, const std::string &fileName )
 {
     std::string input_file = fileName;
     std::string log_file   = "output_" + fileName;
@@ -184,17 +184,17 @@ void fickSoretTest( AMP::UnitTest *ut, std::string fileName )
 
     {
         iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-        size_t nnodes = fickCoeffVec->getLocalSize(), node;
+        size_t nnodes = fickCoeffVec->getLocalSize();
+        AMP_INSIST( iterator.size() == nnodes, "invalid count" );
         std::vector<size_t> gids( nnodes );
         std::vector<double> temp( nnodes ), conc( nnodes ), fickCoeff( nnodes ),
             soretCoeff( nnodes ), burn( nnodes );
-        for ( node = 0; iterator != iterator.end(); iterator++ ) {
+        for ( size_t node = 0; iterator != iterator.end(); ++iterator ) {
             std::vector<size_t> gid;
             nodalDofMap->getDOFs( iterator->globalID(), gid );
             gids[node] = gid[0];
             node++;
         }
-        AMP_INSIST( node == nnodes, "invalid count" );
         fickFrozen["temperature"]->getValuesByGlobalID( nnodes, &gids[0], &temp[0] );
         solVec->getValuesByGlobalID( nnodes, &gids[0], &conc[0] );
         // This is kevin - i found out because the vector wasn't used when silo is not enabled.
@@ -214,9 +214,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string fileName )
     if ( finalResidualNorm > 1.0e-08 ) {
         ut->failure( fileName );
     } else {
-        ut->passes( "PetscSNES Solver successfully solves a nonlinear Fick-Soret equation with "
-                    "Jacobian provided, "
-                    "FGMRES for Krylov" );
+        ut->passes( "PetscSNES Solver successfully solves a nonlinear Fick-Soret"
+                    " equation with Jacobian provided, FGMRES for Krylov" );
     }
     ut->passes( fileName );
 }

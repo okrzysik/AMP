@@ -55,9 +55,8 @@ public: // Functions inherited from Geometry
     std::pair<Point, Point> box() const override final;
     double volume() const override final;
     void displace( const double *x ) override;
-    std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
-    virtual std::vector<int>
-    getLogicalGridSize( const std::vector<double> &res ) const override final;
+    ArraySize getLogicalGridSize( const ArraySize &x ) const override final;
+    ArraySize getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override;
     bool operator==( const Geometry &rhs ) const override;
     void writeRestart( int64_t ) const override;

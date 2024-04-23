@@ -146,16 +146,16 @@ double Sphere::volume() const
 /********************************************************
  * Return the logical grid                               *
  ********************************************************/
-std::vector<int> Sphere::getLogicalGridSize( const std::vector<int> &x ) const
+ArraySize Sphere::getLogicalGridSize( const ArraySize &x ) const
 {
     AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
     return { 2 * x[0], 2 * x[0], 2 * x[0] };
 }
-std::vector<int> Sphere::getLogicalGridSize( const std::vector<double> &res ) const
+ArraySize Sphere::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
     double res2 = std::min( { res[0], res[1], res[2] } );
-    int N       = std::max<int>( 2 * d_r / res2, 1 );
+    size_t N    = std::max<int>( 2 * d_r / res2, 1 );
     return { N, N, N };
 }
 

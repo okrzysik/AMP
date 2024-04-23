@@ -1,4 +1,5 @@
 #include "AMP/matrices/data/DenseSerialMatrixData.h"
+#include "AMP/matrices/MatrixParameters.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include <cstdio>
 #include <cstring>
@@ -11,16 +12,18 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructor/Destructor                                *
  ********************************************************/
-DenseSerialMatrixData::DenseSerialMatrixData( std::shared_ptr<MatrixParameters> params )
-    : MatrixData( params ),
-      d_VariableLeft( params->d_VariableLeft ),
-      d_VariableRight( params->d_VariableRight ),
-      d_DOFManagerLeft( params->getLeftDOFManager() ),
-      d_DOFManagerRight( params->getRightDOFManager() ),
-      d_rows( params->getGlobalNumberOfRows() ),
-      d_cols( params->getGlobalNumberOfColumns() )
+DenseSerialMatrixData::DenseSerialMatrixData( std::shared_ptr<MatrixParametersBase> inparams )
+    : MatrixData( inparams )
 {
-    d_M = new double[d_rows * d_cols];
+    auto params = std::dynamic_pointer_cast<MatrixParameters>( inparams );
+    AMP_ASSERT( params );
+    d_VariableLeft    = params->d_VariableLeft;
+    d_VariableRight   = params->d_VariableRight;
+    d_DOFManagerLeft  = params->getLeftDOFManager();
+    d_DOFManagerRight = params->getRightDOFManager();
+    d_rows            = params->getGlobalNumberOfRows();
+    d_cols            = params->getGlobalNumberOfColumns();
+    d_M               = new double[d_rows * d_cols];
     memset( d_M, 0, d_rows * d_cols * sizeof( double ) );
 }
 
