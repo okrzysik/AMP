@@ -2,6 +2,7 @@
 #define included_AMP_LogicalGeometry
 
 #include "AMP/geometry/Geometry.h"
+#include "AMP/utils/ArraySize.h"
 
 
 namespace AMP::Geometry {
@@ -46,19 +47,19 @@ public:
      * \brief    Return the logical grid size
      * \details  This function will return the dimensions of a logical grid
      *    given a size that makes sense for the object.
-     * \param[in] x    Input size
-     * @return          Return the logical boundary ids (2*logicalDim)
+     * \param[in] x     Input size
+     * @return          Return the logical grid size
      */
-    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const = 0;
+    virtual ArraySize getLogicalGridSize( const ArraySize &x ) const = 0;
 
     /**
      * \brief    Return the logical grid size
      * \details  This function will return the dimensions of a logical grid
      *    given a desired resolution
-     * \param[in] res  Desired resolution
-     * @return          Return the logical boundary ids (2*logicalDim)
+     * \param[in] res   Desired resolution
+     * @return          Return the logical grid size
      */
-    virtual std::vector<int> getLogicalGridSize( const std::vector<double> &res ) const = 0;
+    virtual ArraySize getLogicalGridSize( const std::vector<double> &res ) const = 0;
 
     /**
      * \brief    Return the logical grid periodic dimensions

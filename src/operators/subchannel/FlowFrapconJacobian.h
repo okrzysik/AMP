@@ -126,44 +126,32 @@ public:
        }
        */
 
+
+public: // Data members (this should be private)
     AMP::LinearAlgebra::Vector::shared_ptr d_cladVec;
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenVec;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_localCladVec;
     AMP::LinearAlgebra::Vector::shared_ptr d_localFrozenVec;
 
-    int d_numpoints; /**< Number of points in z direction */
-
+    int d_numpoints = 0; //! Number of points in z direction
     std::vector<unsigned int> d_dofIds;
+    std::vector<double> zPoints; //! vector to hold z locations
 
-    std::vector<double> zPoints; /**< vector to hold z locations */
+    double d_De  = 0; //! Channel Diameter
+    double Cp    = 0; //! Heat Capacity of Coolant
+    double dCp   = 0; //! Gradient of Heat Capacity
+    double d_G   = 0; //! Coolant Mass Flux
+    double d_Tin = 0; //! Coolant Temp Tin
+    double d_K   = 0; //! Coolant conductivity
+    double d_Re  = 0; //! Reynolds Number
+    double d_Pr  = 0; //! Prandtl Number
 
-    double d_De; /**< Channel Diameter */
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;    //! Input Variable
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;    //! Output Variable
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; //! Simple Input Variable
 
-    double Cp; /**< Heat Capacity of Coolant */
-
-    double dCp; /**< Gradient of Heat Capacity */
-
-    double d_G; /**< Coolant Mass Flux */
-
-    double d_Tin; /**< Coolant Temp Tin */
-
-    double d_K; /**< Coolant conductivity */
-
-    double d_Re; /**< Reynolds Number */
-
-    double d_Pr; /**< Prandtl Number */
-
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable; /**< Input Variable */
-
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable; /**< Output Variable */
-
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_SimpleVariable; /**< Simple Input Variable */
-
-    //      std::shared_ptr<AMP::Operator::Map3Dto1D> d_Map3to1;
     AMP::LinearAlgebra::Vector::shared_ptr flowInput;
-
-    //      std::shared_ptr<AMP::Operator::Map1Dto3D> d_Map1to3;
     AMP::LinearAlgebra::Vector::shared_ptr flowOutput;
 
 protected:

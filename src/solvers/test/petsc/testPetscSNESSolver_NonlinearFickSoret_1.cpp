@@ -35,7 +35,7 @@
 #include <string>
 
 
-static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &results )
+static void fickTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double> &results )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -146,7 +146,8 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
 }
 
 
-static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> &results )
+static void
+fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double> &results )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;

@@ -35,9 +35,9 @@ public:
     Box( int64_t );
 
 public: // Default constructors
-    explicit Box( Box<NDIM> &&range )      = default;
-    explicit Box( const Box<NDIM> &range ) = default;
-    Box<NDIM> &operator=( Box<NDIM> &&range ) = default;
+    explicit Box( Box<NDIM> &&range )              = default;
+    explicit Box( const Box<NDIM> &range )         = default;
+    Box<NDIM> &operator=( Box<NDIM> &&range )      = default;
     Box<NDIM> &operator=( const Box<NDIM> &range ) = default;
 
 public: // Functions inherited from Geometry
@@ -55,9 +55,8 @@ public: // Functions inherited from Geometry
     std::pair<Point, Point> box() const override final;
     double volume() const override final;
     void displace( const double *x ) override;
-    std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
-    virtual std::vector<int>
-    getLogicalGridSize( const std::vector<double> &res ) const override final;
+    ArraySize getLogicalGridSize( const ArraySize &x ) const override final;
+    ArraySize getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override;
     bool operator==( const Geometry &rhs ) const override;
     void writeRestart( int64_t ) const override;
@@ -96,9 +95,9 @@ public:
     Grid( int64_t );
 
 public: // Default constructors
-    explicit Grid( Grid<NDIM> &&rhs )      = default;
-    explicit Grid( const Grid<NDIM> &rhs ) = default;
-    Grid<NDIM> &operator=( Grid<NDIM> &&rhs ) = default;
+    explicit Grid( Grid<NDIM> &&rhs )              = default;
+    explicit Grid( const Grid<NDIM> &rhs )         = default;
+    Grid<NDIM> &operator=( Grid<NDIM> &&rhs )      = default;
     Grid<NDIM> &operator=( const Grid<NDIM> &rhs ) = default;
 
 public: // Functions inherited from Geometry

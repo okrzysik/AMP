@@ -787,15 +787,14 @@ static inline std::vector<Point> getLogicalPoints( const AMP::Geometry::LogicalG
 {
     // Create surface/interior points for a logical geometry
     std::vector<Point> points;
-    int ndim = geom.getDim();
-    auto N   = geom.getLogicalGridSize( std::vector<double>( ndim, resolution ) );
-    N.resize( 3, 1 );
+    int ndim      = geom.getDim();
+    auto N        = geom.getLogicalGridSize( std::vector<double>( ndim, resolution ) );
     auto periodic = geom.getPeriodicDim();
-    for ( int i = 0; i < N[0]; i++ ) {
+    for ( size_t i = 0; i < N[0]; i++ ) {
         double x = getPos( i, N[0], periodic[0] );
-        for ( int j = 0; j < N[1]; j++ ) {
+        for ( size_t j = 0; j < N[1]; j++ ) {
             double y = getPos( j, N[1], periodic[1] );
-            for ( int k = 0; k < N[2]; k++ ) {
+            for ( size_t k = 0; k < N[2]; k++ ) {
                 double z = getPos( k, N[2], periodic[2] );
                 Point p  = geom.physical( { x, y, z } );
                 points.push_back( p );
