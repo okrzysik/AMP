@@ -1,7 +1,7 @@
 #ifndef included_AMP_Matrix
 #define included_AMP_Matrix
 
-#include "AMP/matrices/MatrixParameters.h"
+#include "AMP/matrices/MatrixParametersBase.h"
 #include "AMP/matrices/data/MatrixData.h"
 #include "AMP/matrices/operations/MatrixOperations.h"
 #include "AMP/utils/ParameterBase.h"

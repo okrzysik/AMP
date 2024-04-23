@@ -130,6 +130,7 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     const auto nDOFS         = dofManager->numLocalDOF();
     const auto startingIndex = dofManager->beginDOF();
 
+    std::vector<HYPRE_Real> values;
     HYPRE_Real *vals = nullptr;
 
     if ( amp_v->numberOfDataBlocks() == 1 ) {
@@ -146,11 +147,9 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
                         "Implemented only for AMP vector memory on host" );
             std::vector<size_t> indices( nDOFS, 0 );
             std::iota( indices.begin(), indices.end(), startingIndex );
-            std::vector<HYPRE_Real> values( nDOFS, 0.0 );
-
-            amp_v->getValuesByGlobalID( nDOFS, indices.data(), values.data() );
-
+            values.resize( nDOFS );
             vals = values.data();
+            amp_v->getValuesByGlobalID( nDOFS, indices.data(), vals );
         }
 
 
@@ -162,7 +161,6 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
                     "Implemented only for AMP vector memory on host" );
 
-        std::vector<HYPRE_Real> values;
         for ( auto it = amp_v->begin<HYPRE_Real>(); it != amp_v->end<HYPRE_Real>(); ++it ) {
             values.push_back( *it );
         }

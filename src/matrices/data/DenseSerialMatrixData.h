@@ -24,7 +24,7 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit DenseSerialMatrixData( std::shared_ptr<MatrixParameters> params );
+    explicit DenseSerialMatrixData( std::shared_ptr<MatrixParametersBase> params );
 
     DenseSerialMatrixData()                                = delete;
     DenseSerialMatrixData( const DenseSerialMatrixData & ) = delete;

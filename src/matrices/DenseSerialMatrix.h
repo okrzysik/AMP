@@ -19,7 +19,7 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit DenseSerialMatrix( std::shared_ptr<MatrixParameters> params );
+    explicit DenseSerialMatrix( std::shared_ptr<MatrixParametersBase> params );
 
 
     /** \brief Constructor

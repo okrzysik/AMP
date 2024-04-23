@@ -19,7 +19,7 @@ protected:
 
 public:
     NativePetscMatrix();
-    NativePetscMatrix( std::shared_ptr<MatrixParameters> params );
+    NativePetscMatrix( std::shared_ptr<MatrixParametersBase> params );
 
     /** \brief  Construct a matrix from a PETSc Mat.
      * \param[in] m  The Mat to wrap

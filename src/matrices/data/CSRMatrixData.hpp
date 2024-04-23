@@ -143,9 +143,9 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         } else if ( ( d_memory_location == AMP::Utilities::MemoryType::managed ) ||
                     ( d_memory_location == AMP::Utilities::MemoryType::device ) ) {
 
-            d_manage_cols   = true;
             d_manage_nnz    = true;
             d_manage_coeffs = true;
+            d_manage_cols   = true;
 
 #ifdef AMP_USE_UMPIRE
             auto &resourceManager = umpire::ResourceManager::getInstance();

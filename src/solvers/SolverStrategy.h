@@ -239,17 +239,17 @@ protected:
 
     int d_iNumberIterations = 0; // iterations in solver
 
-    int d_iMaxIterations = 100;
+    int d_iMaxIterations = 0;
 
     AMP::Scalar d_dResidualNorm;
     AMP::Scalar d_dInitialResidual;
 
-    AMP::Scalar d_dAbsoluteTolerance;
-    AMP::Scalar d_dRelativeTolerance;
+    AMP::Scalar d_dAbsoluteTolerance = 1.0e-14;
+    AMP::Scalar d_dRelativeTolerance = 1.0e-09;
 
     int d_iDebugPrintInfoLevel = 0;
 
-    bool d_bUseZeroInitialGuess;
+    bool d_bUseZeroInitialGuess = true;
 
     bool d_bComputeResidual = false;
 
@@ -267,7 +267,7 @@ protected:
      *  This is introduced to allow for solver factories to access databases in the global
      *  database for the construction of nested solvers
      */
-    std::shared_ptr<AMP::Database> d_global_db;
+    std::shared_ptr<AMP::Database> d_global_db = nullptr;
 
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 

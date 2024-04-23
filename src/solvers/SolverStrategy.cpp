@@ -12,27 +12,20 @@ int SolverStrategy::d_iInstanceId = 0;
  * Constructors                                                  *
  ****************************************************************/
 SolverStrategy::SolverStrategy()
+    : d_dResidualNorm{ -1.0 }, d_iObjectId{ SolverStrategy::d_iInstanceId }
 {
-    d_iNumberIterations    = -1;
-    d_dResidualNorm        = -1;
-    d_bUseZeroInitialGuess = true;
-    d_iDebugPrintInfoLevel = 0;
-    d_iMaxIterations       = 0;
-    d_iObjectId            = 0;
+    SolverStrategy::d_iInstanceId++;
 }
+
 SolverStrategy::SolverStrategy( std::shared_ptr<const SolverStrategyParameters> parameters )
-    : d_db( parameters->d_db ), d_global_db( parameters->d_global_db )
+    : d_dResidualNorm{ -1.0 },
+      d_iObjectId{ SolverStrategy::d_iInstanceId },
+      d_db( parameters->d_db ),
+      d_global_db( parameters->d_global_db )
 {
     AMP_INSIST( parameters, "NULL SolverStrategyParameters object" );
-
-    d_iObjectId            = SolverStrategy::d_iInstanceId;
-    d_iNumberIterations    = -1;
-    d_dResidualNorm        = -1;
-    d_bUseZeroInitialGuess = true;
-
-    d_pOperator = parameters->d_pOperator;
-
     SolverStrategy::d_iInstanceId++;
+    d_pOperator = parameters->d_pOperator;
     SolverStrategy::getFromInput( parameters->d_db );
 }
 
