@@ -448,6 +448,17 @@ void writeHDF5Scalar<AMP::typeID>( hid_t fid, const std::string_view &name, cons
   H5Dclose( dataset );
   H5Tclose( datatype );
 }
+template<>
+void readHDF5Array<AMP::typeID>( hid_t fid, const std::string_view &name, AMP::Array<AMP::typeID> &data )
+{
+    readHDF5ArrayDefault<AMP::typeID>( fid, name, data );
+}
+template<>
+void writeHDF5Array<AMP::typeID>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::typeID> &data )
+{
+    writeHDF5ArrayDefault<AMP::typeID>( fid, name, data );
+}
+
 INSTANTIATE_HDF5( AMP::typeID );
 INSTANTIATE_AMPARRAY_HDF5( AMP::typeID );
 
