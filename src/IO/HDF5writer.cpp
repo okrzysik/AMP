@@ -306,7 +306,7 @@ Array<double> getBoxMeshVar( const AMP::Mesh::BoxMesh &mesh,
     } else {
         AMP_ERROR( "Not finished" );
     }
-    data.resize( ArraySize( { (uint8_t) numDOFs, size2[0], size2[1], size2[2] }, ndim + 1 ) );
+    data.resize( ArraySize( { (size_t) numDOFs, size2[0], size2[1], size2[2] }, ndim + 1 ) );
     data.fill( 0 );
     for ( size_t k = 0; k < size2[2]; k++ ) {
         size_t k2 = k % size0[2];
