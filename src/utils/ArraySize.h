@@ -191,22 +191,30 @@ public:
      * @param N             Size of the array
      * @param ndim          Number of dimensions
      */
-    CONSTEXPR ArraySize( std::initializer_list<size_t> N, int ndim = -1 )
-        : d_ndim( N.size() ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 }
+    template<class TYPE>
+    CONSTEXPR ArraySize( std::initializer_list<TYPE> N, int ndim = -1 )
+        : d_ndim( 0 ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 }
     {
-        if ( ndim >= 0 )
+        if ( ndim >= 0 ) {
             d_ndim = ndim;
-        ARRAY_INSIST( d_ndim <= maxDim(), "Maximum number of dimensions exceeded" );
-        auto it = N.begin();
-        for ( size_t i = 0; i < d_ndim; i++, ++it )
-            d_N[i] = *it;
-        d_length = 1;
-        for ( unsigned long i : d_N )
-            d_length *= i;
+        } else {
+            int ndim2 = 0;
+            for ( auto it = N.begin(); ndim2 < (int) N.size(); ndim2++, ++it ) {
+                if ( *it == (TYPE) -1 )
+                    break;
+            }
+            d_ndim = std::min<int>( ndim2, maxDim() );
+        }
         if ( d_ndim == 0 )
-            d_length = 0;
+            return;
+        ARRAY_INSIST( d_ndim <= maxDim(), "Maximum number of dimensions exceeded" );
+        auto it  = N.begin();
+        d_length = 1;
+        for ( size_t i = 0; i < d_ndim; i++, ++it ) {
+            d_N[i] = *it;
+            d_length *= d_N[i];
+        }
     }
-
 
     /*!
      * Create from raw pointer
