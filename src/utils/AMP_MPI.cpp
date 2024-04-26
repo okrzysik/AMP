@@ -1010,14 +1010,14 @@ int MPI_CLASS::newTag()
 /************************************************************************
  *  allReduce                                                            *
  ************************************************************************/
-static inline void setBit( uint64_t *x, size_t index )
+[[maybe_unused]] static inline void setBit( uint64_t *x, size_t index )
 {
     size_t i      = index >> 6;
     size_t j      = index & 0x3F;
     uint64_t mask = ( (uint64_t) 0x01 ) << j;
     x[i]          = x[i] | mask;
 }
-static inline bool readBit( const uint64_t *x, size_t index )
+[[maybe_unused]] static inline bool readBit( const uint64_t *x, size_t index )
 {
     size_t i      = index >> 6;
     size_t j      = index & 0x3F;

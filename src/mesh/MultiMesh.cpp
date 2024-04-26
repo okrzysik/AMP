@@ -9,6 +9,7 @@
 #include "AMP/mesh/loadBalance/loadBalanceSimulator.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 
@@ -857,17 +858,6 @@ static inline void putEntry( std::shared_ptr<const AMP::Database> database1,
             database2[i]->putVector( key, data );
     }
 }
-static std::string
-strrep( const std::string &in, const std::string_view &s, const std::string_view &r )
-{
-    std::string str( in );
-    size_t pos = str.find( s.data(), 0, s.size() );
-    while ( pos != std::string::npos ) {
-        str.replace( pos, s.size(), r.data(), r.size() );
-        pos = str.find( s.data(), 0, s.size() );
-    }
-    return str;
-}
 static void copyKey( std::shared_ptr<const AMP::Database> database1,
                      std::vector<std::shared_ptr<AMP::Database>> &database2,
                      const std::string &key,
@@ -892,15 +882,15 @@ static void copyKey( std::shared_ptr<const AMP::Database> database1,
         AMP_ASSERT( !data.empty() );
         for ( size_t i = 0; i < database2.size(); i++ ) {
             if ( data.size() == 1 ) {
-                auto data2 = strrep( data[0], iterator, index[i] );
+                auto data2 = AMP::Utilities::strrep( data[0], iterator, index[i] );
                 database2[i]->putScalar( key, data2 );
             } else if ( data.size() == database2.size() && select ) {
-                auto data2 = strrep( data[i], iterator, index[i] );
+                auto data2 = AMP::Utilities::strrep( data[i], iterator, index[i] );
                 database2[i]->putScalar( key, data2 );
             } else {
                 auto data2 = data;
                 for ( auto &str : data2 )
-                    str = strrep( str, iterator, index[i] );
+                    str = AMP::Utilities::strrep( str, iterator, index[i] );
                 database2[i]->putVector( key, data2 );
             }
         }
