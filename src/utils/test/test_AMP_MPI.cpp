@@ -1098,6 +1098,9 @@ int main( int argc, char *argv[] )
             std::cout << std::endl;
         }
 
+        // Test a call to sleepBarrier
+        globalComm.sleepBarrier();
+
         // Test bcast with std::string
         std::string rank_string;
         if ( globalComm.getRank() == 0 )

@@ -64,9 +64,9 @@ namespace AMP::Utilities {
 static std::mutex Utilities_mutex;
 
 
-/*
- * Routine to convert an integer to a string.
- */
+/****************************************************************************
+ *  Basic string functions                                                   *
+ ****************************************************************************/
 std::string intToString( int num, int min_width )
 {
     int tmp_width = ( min_width > 0 ? min_width : 1 );
@@ -84,6 +84,20 @@ std::string processorToString( int num ) { return intToString( num, 5 ); }
 std::string patchToString( int num ) { return intToString( num, 4 ); }
 std::string levelToString( int num ) { return intToString( num, 4 ); }
 std::string blockToString( int num ) { return intToString( num, 4 ); }
+std::string strrep( const std::string &in, const std::string &s, const std::string &r )
+{
+    auto out = in;
+    size_t i = 0;
+    while ( i < out.length() ) {
+        i = out.find( s, i );
+        if ( i == std::string::npos ) {
+            break;
+        }
+        out.replace( i, s.length(), r );
+        i += r.length();
+    }
+    return out;
+}
 
 
 /****************************************************************************

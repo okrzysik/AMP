@@ -116,14 +116,6 @@ static std::tuple<TYPE, Units> readPair( std::string_view str )
         }
     }
 }
-static void strrep( std::string &str, std::string_view s, std::string_view r )
-{
-    size_t pos = str.find( s.data(), 0, s.size() );
-    while ( pos != std::string::npos ) {
-        str.replace( pos, s.size(), r.data(), r.size() );
-        pos = str.find( s.data(), 0, s.size() );
-    }
-}
 
 
 /********************************************************************
@@ -1009,8 +1001,8 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
                 pos2  = pos3 + 1;
                 line2 = deblank( line2 );
                 std::string line3( line2 );
-                strrep( line3, "  ", " " );
-                strrep( line3, " ", "," );
+                line3 = AMP::Utilities::strrep( line3, "  ", " " );
+                line3 = AMP::Utilities::strrep( line3, " ", "," );
                 line3 += '\n';
                 auto tmp = read_value( line3.data(), key );
                 auto y   = std::get<1>( tmp )->convertToDouble();
