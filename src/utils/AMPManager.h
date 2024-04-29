@@ -4,10 +4,16 @@
 #include "AMP/utils/AMP_MPI.h"
 
 #include <array>
+#include <functional>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
+
+
+namespace StackTrace {
+class abort_error;
+}
 
 
 namespace AMP {
@@ -51,14 +57,33 @@ public:
 
     /*!
      * Stack trace to print on error:
+     *    0 - Don't print the call stack
      *    1 - Current process/thread
      *    2 - Current process, all threads
      *    3 - Global call stack
      */
     int stack_trace_type = 3;
 
-    //! The set of unhandled signals to set
+    //! The set of unhandled signals to set (will be initialized to a default set)
     std::set<int> catch_signals;
+
+    //! Set error handlers for MPI routines
+    bool catch_MPI = true;
+
+    //! Set error handlers for PETSc routines
+    bool catch_PETSc = true;
+
+    //! Set error handlers for SAMRAI routines
+    bool catch_SAMRAI = true;
+
+    //! Set error handlers for HDF5 routines
+    bool catch_HDF5 = true;
+
+    //! Catch early exit
+    bool catch_exit = true;
+
+    //! Set a user-provided function for handling all errors
+    std::function<void( StackTrace::abort_error & )> error_handler = nullptr;
 
     /*!
      *  MPI communicator to use for AMP_COMM_WORLD.  By default this should be set to
