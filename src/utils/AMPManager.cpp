@@ -24,6 +24,11 @@
     #include <cuda_runtime_api.h>
     #include "AMP/utils/cuda/helper_cuda.h"
 #endif
+#ifdef USE_HIP
+    // #include <cuda.h>
+    #include <hip/hip_runtime_api.h>
+    #include "AMP/utils/hip/helper_hip.h"
+#endif
 #ifdef AMP_USE_PETSC
     #include "petsc.h"
     #include "petscerror.h"
