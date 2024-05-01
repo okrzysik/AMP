@@ -533,20 +533,19 @@ inline std::vector<std::string> Units::getAllUnits()
 /********************************************************************
  * Get unit type                                                     *
  ********************************************************************/
-constexpr uint64_t Units::hash( Units::SI_type type )
+constexpr bool operator==( const std::array<int8_t, 9> &a, const std::array<int8_t, 9> &b )
 {
-    static_assert( type.size() == 9 );
-    uint64_t h = 0;
-    for ( int i = 0; i < 9; i++ )
-        h = ( h << 7 ) + ( type[i] + 64 );
-    return h;
+    bool test = true;
+    for ( size_t i = 0; i < a.size(); i++ )
+        test = test && a[i] == b[i];
+    return test;
 }
 constexpr Units::SI_type Units::getSI( UnitType type )
 {
     if ( type == UnitType::unknown )
         return { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     // s, m, kg, A, K, mol, cd, rad, sr
-    constexpr SI_type id[25] = {
+    constexpr std::array<SI_type, 25> id = { {
         { 0, 0, 0, 0, 0, 0, 0, 0, 0 },   // 0: unitless
         { 1, 0, 0, 0, 0, 0, 0, 0, 0 },   // 1: time (s)
         { 0, 1, 0, 0, 0, 0, 0, 0, 0 },   // 2: length (m)
@@ -557,32 +556,30 @@ constexpr Units::SI_type Units::getSI( UnitType type )
         { 0, 0, 0, 0, 0, 0, 1, 0, 0 },   // 7: intensity (cd)
         { 0, 0, 0, 0, 0, 0, 0, 1, 0 },   // 8: angle (rad)
         { 0, 0, 0, 0, 0, 0, 0, 0, 1 },   // 9: solid angle (sr)
-        { -2, 2, 1, 0, 0, 0, 0, 0 },     // 10: energy (kg m2 s-2)
-        { -3, 2, 1, 0, 0, 0, 0, 0 },     // 11: power (kg m2 s-3)
-        { -1, 0, 0, 0, 0, 0, 0, 0 },     // 12: frequency (s-1)
-        { -2, 1, 1, 0, 0, 0, 0, 0, 0 },  // 13: force (kg m s-2)
-        { -2, -1, 1, 0, 0, 0, 0, 0, 0 }, // 14: pressure (kg m-1 s-2)
+        { -2, 2, 1, 0, 0, 0, 0, 0, 0 },  // 10: energy (kg m^2 s^-2)
+        { -3, 2, 1, 0, 0, 0, 0, 0, 0 },  // 11: power (kg m^2 s^-3)
+        { -1, 0, 0, 0, 0, 0, 0, 0, 0 },  // 12: frequency (s^-1)
+        { -2, 1, 1, 0, 0, 0, 0, 0, 0 },  // 13: force (kg m s^-2)
+        { -2, -1, 1, 0, 0, 0, 0, 0, 0 }, // 14: pressure (kg m^-1 s^-2)
         { 1, 0, 0, 1, 0, 0, 0, 0, 0 },   // 15: electric charge (s A)
-        { -3, 2, 1, -1, 0, 0, 0, 0, 0 }, // 16: electrical potential (kg m2 s-3 A-1)
-        { 4, -2, -1, 2, 0, 0, 0, 0, 0 }, // 17: capacitance (kg-1 m-2 s4 A2)
-        { -3, 2, 1, -2, 0, 0, 0, 0, 0 }, // 18: resistance (kg m2 s-3 A-2)
-        { 3, -2, -1, 2, 0, 0, 0, 0, 0 }, // 19: electrical conductance (kg-1 m-2 s3 A2)
-        { -2, 2, 1, -1, 0, 0, 0, 0, 0 }, // 20: magnetic flux (kg m2 s-2 A-1)
-        { -2, 0, 1, -1, 0, 0, 0, 0, 0 }, // 21: magnetic flux density (kg s-2 A-1)
-        { -2, 2, 1, -2, 0, 0, 0, 0, 0 }, // 22: inductance (kg m2 s-2 A-2)
+        { -3, 2, 1, -1, 0, 0, 0, 0, 0 }, // 16: electrical potential (kg m^2 s^-3 A^-1)
+        { 4, -2, -1, 2, 0, 0, 0, 0, 0 }, // 17: capacitance (kg^-1 m^-2 s^4 A^2)
+        { -3, 2, 1, -2, 0, 0, 0, 0, 0 }, // 18: resistance (kg m^2 s^-3 A^-2)
+        { 3, -2, -1, 2, 0, 0, 0, 0, 0 }, // 19: electrical conductance (kg^-1 m^-2 s^3 A^2)
+        { -2, 2, 1, -1, 0, 0, 0, 0, 0 }, // 20: magnetic flux (kg m^2 s^-2 A^-1)
+        { -2, 0, 1, -1, 0, 0, 0, 0, 0 }, // 21: magnetic flux density (kg s^-2 A^-1)
+        { -2, 2, 1, -2, 0, 0, 0, 0, 0 }, // 22: inductance (kg m^2 s^-2 A^-2)
         { 0, 0, 0, 0, 0, 0, 1, 0, 1 },   // 23: luminous flux (cd sr)
-        { 0, -2, 0, 0, 0, 0, 1, 0, 1 }   // 24: illuminance (cd sr m-2)
-    };
+        { 0, -2, 0, 0, 0, 0, 1, 0, 1 }   // 24: illuminance (cd sr m^-2)
+    } };
     return id[static_cast<int>( type )];
 }
 constexpr UnitType Units::getType() const noexcept
 {
-    auto h1 = hash( d_SI );
     for ( int i = 0; i <= 24; i++ ) {
         auto type = static_cast<UnitType>( i );
         auto id   = getSI( type );
-        auto h2   = hash( id );
-        if ( h1 == h2 )
+        if ( d_SI == id )
             return type;
     }
     return UnitType::unknown;
@@ -592,13 +589,6 @@ constexpr UnitType Units::getType() const noexcept
 /********************************************************************
  * Convert to another unit system                                    *
  ********************************************************************/
-constexpr bool operator==( const std::array<int8_t, 9> &a, const std::array<int8_t, 9> &b )
-{
-    bool test = true;
-    for ( size_t i = 0; i < a.size(); i++ )
-        test = test && a[i] == b[i];
-    return test;
-}
 constexpr bool Units::compatible( const Units &rhs ) noexcept
 {
     constexpr SI_type energy      = getSI( UnitType::energy );

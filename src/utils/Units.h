@@ -229,7 +229,6 @@ protected:
     static constexpr SI_type getSI( UnitType );
     static constexpr std::pair<size_t, char> findToken( const std::string_view &, size_t );
     static constexpr size_t findPar( const std::string_view &, size_t );
-    static constexpr uint64_t hash( Units::SI_type );
 
 protected:
     friend constexpr Units pow( Units base, int exponent );
