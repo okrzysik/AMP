@@ -218,7 +218,8 @@ protected:
     double d_scale;
 
 protected:
-    constexpr Units( const SI_type &u, double s );
+    explicit constexpr Units( const SI_type &u, double s = 1.0 );
+    explicit constexpr Units( const UnitType &u, double s = 1.0 );
 
     std::string printSIBase() const;
     static constexpr Units read( std::string_view str );
@@ -228,6 +229,7 @@ protected:
     static constexpr SI_type getSI( UnitType );
     static constexpr std::pair<size_t, char> findToken( const std::string_view &, size_t );
     static constexpr size_t findPar( const std::string_view &, size_t );
+    static constexpr uint64_t hash( Units::SI_type );
 
 protected:
     friend constexpr Units pow( Units base, int exponent );

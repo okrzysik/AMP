@@ -168,6 +168,10 @@ constexpr Units::Units( const std::string_view &str, double value )
     d_scale *= value;
 }
 constexpr Units::Units( const SI_type &SI, double s ) : d_unit( { 0 } ), d_SI( SI ), d_scale( s ) {}
+constexpr Units::Units( const UnitType &u, double s )
+    : d_unit( { 0 } ), d_SI( getSI( u ) ), d_scale( s )
+{
+}
 constexpr std::array<int8_t, 9> operator+( const std::array<int8_t, 9> &a,
                                            const std::array<int8_t, 9> &b )
 {
@@ -354,65 +358,61 @@ constexpr Units Units::read2( std::string_view str )
 }
 constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
 {
-    auto create = []( UnitType type, double s = 1.0 ) {
-        auto u = getSI( type );
-        return Units( u, s );
-    };
     constexpr char ohm[] = { (char) 206, (char) 0xA9, (char) 0 }; // Ohm symbol in UTF-16
     // Check base SI units
     if ( str == "second" || str == "s" )
-        return create( UnitType::time );
+        return Units( UnitType::time );
     if ( str == "meter" || str == "m" )
-        return create( UnitType::length );
+        return Units( UnitType::length );
     if ( str == "gram" || str == "g" )
-        return create( UnitType::mass, 1e-3 );
+        return Units( UnitType::mass, 1e-3 );
     if ( str == "ampere" || str == "A" )
-        return create( UnitType::current );
+        return Units( UnitType::current );
     if ( str == "kelvin" || str == "K" )
-        return create( UnitType::temperature );
+        return Units( UnitType::temperature );
     if ( str == "mole" || str == "mol" )
-        return create( UnitType::mole );
+        return Units( UnitType::mole );
     if ( str == "candela" || str == "cd" )
-        return create( UnitType::intensity );
+        return Units( UnitType::intensity );
     if ( str == "radian" || str == "radians" || str == "rad" )
-        return create( UnitType::angle );
+        return Units( UnitType::angle );
     if ( str == "steradian" || str == "sr" )
-        return create( UnitType::solidAngle );
+        return Units( UnitType::solidAngle );
     // Check derived SI units
     if ( str == "degree" || str == "degrees" )
-        return create( UnitType::angle, 0.017453292519943 );
+        return Units( UnitType::angle, 0.017453292519943 );
     if ( str == "joule" || str == "J" )
-        return create( UnitType::energy );
+        return Units( UnitType::energy );
     if ( str == "watt" || str == "W" )
-        return create( UnitType::power );
+        return Units( UnitType::power );
     if ( str == "hertz" || str == "Hz" )
-        return create( UnitType::frequency );
+        return Units( UnitType::frequency );
     if ( str == "newton" || str == "N" )
-        return create( UnitType::force );
+        return Units( UnitType::force );
     if ( str == "pascal" || str == "Pa" )
-        return create( UnitType::pressure );
+        return Units( UnitType::pressure );
     if ( str == "coulomb" || str == "C" )
-        return create( UnitType::electricCharge );
+        return Units( UnitType::electricCharge );
     if ( str == "volt" || str == "V" )
-        return create( UnitType::electricalPotential );
+        return Units( UnitType::electricalPotential );
     if ( str == "farad" || str == "F" )
-        return create( UnitType::capacitance );
+        return Units( UnitType::capacitance );
     if ( str == "ohm" || str == ohm )
-        return create( UnitType::resistance );
+        return Units( UnitType::resistance );
     if ( str == "siemens" || str == "S" )
-        return create( UnitType::electricalConductance );
+        return Units( UnitType::electricalConductance );
     if ( str == "weber" || str == "Wb" )
-        return create( UnitType::magneticFlux );
+        return Units( UnitType::magneticFlux );
     if ( str == "tesla" || str == "T" )
-        return create( UnitType::magneticFluxDensity );
+        return Units( UnitType::magneticFluxDensity );
     if ( str == "henry" || str == "H" )
-        return create( UnitType::inductance );
+        return Units( UnitType::inductance );
     if ( str == "lumen" || str == "lm" )
-        return create( UnitType::luminousFlux );
+        return Units( UnitType::luminousFlux );
     if ( str == "lux" || str == "lx" )
-        return create( UnitType::illuminance );
+        return Units( UnitType::illuminance );
     if ( str == "becquerel" || str == "Bq" )
-        return create( UnitType::frequency );
+        return Units( UnitType::frequency );
     if ( str == "gray" || str == "Gy" )
         return Units( { -2, 2, 0, 0, 0, 0, 0, 0, 0 }, 1 );
     if ( str == "sievert" || str == "Sv" )
@@ -425,35 +425,35 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
         return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1e-6 );
     // Non-SI units accepted for use with SI
     if ( str == "minute" || str == "minutes" )
-        return create( UnitType::time, 60 );
+        return Units( UnitType::time, 60 );
     if ( str == "hour" || str == "hr" )
-        return create( UnitType::time, 3600 );
+        return Units( UnitType::time, 3600 );
     if ( str == "day" )
-        return create( UnitType::time, 86400 );
+        return Units( UnitType::time, 86400 );
     if ( str == "week" )
-        return create( UnitType::time, 604800 );
+        return Units( UnitType::time, 604800 );
     if ( str == "mmHg" )
-        return create( UnitType::pressure, 133.322387415 );
+        return Units( UnitType::pressure, 133.322387415 );
     // Check cgs units
     if ( str == "ergs" || str == "erg" )
-        return create( UnitType::energy, 1e-7 );
+        return Units( UnitType::energy, 1e-7 );
     if ( str == "eV" )
-        return create( UnitType::energy, 1.602176634e-19 );
+        return Units( UnitType::energy, 1.602176634e-19 );
     if ( str == "dyn" )
-        return create( UnitType::force, 1e-5 );
+        return Units( UnitType::force, 1e-5 );
     if ( str == "barye" || str == "Ba" )
-        return create( UnitType::pressure, 0.1 );
+        return Units( UnitType::pressure, 0.1 );
     // Check English units
     if ( str == "inch" || str == "in" || str == "\"" )
-        return create( UnitType::length, 0.0254 );
+        return Units( UnitType::length, 0.0254 );
     if ( str == "foot" || str == "ft" || str == "\'" )
-        return create( UnitType::length, 0.3048 );
+        return Units( UnitType::length, 0.3048 );
     if ( str == "yard" || str == "yd" )
-        return create( UnitType::length, 0.9144 );
+        return Units( UnitType::length, 0.9144 );
     if ( str == "furlong" || str == "fur" )
-        return create( UnitType::length, 201.168 );
+        return Units( UnitType::length, 201.168 );
     if ( str == "mile" || str == "mi" )
-        return create( UnitType::length, 1609.344 );
+        return Units( UnitType::length, 1609.344 );
     if ( str == "acre" )
         return Units( { 0, 2, 0, 0, 0, 0, 0, 0, 0 }, 4046.8564224 );
     if ( str == "teaspoon" || str == "tsp" )
@@ -469,25 +469,25 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
     if ( str == "gallon" || str == "gal" )
         return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 3.78541178196736e-3 );
     if ( str == "ounce" || str == "oz" )
-        return create( UnitType::mass, 0.028349523125 );
+        return Units( UnitType::mass, 0.028349523125 );
     if ( str == "pound" || str == "lb" )
-        return create( UnitType::mass, 0.45359237 );
+        return Units( UnitType::mass, 0.45359237 );
     if ( str == "ton" )
-        return create( UnitType::mass, 1016.0469088 );
+        return Units( UnitType::mass, 1016.0469088 );
     if ( str == "lbf" )
-        return create( UnitType::force, 4.4482216152605 );
+        return Units( UnitType::force, 4.4482216152605 );
     if ( str == "Rankine" || str == "R" )
-        return create( UnitType::temperature, 5.0 / 9.0 );
+        return Units( UnitType::temperature, 5.0 / 9.0 );
     // Check atomic units
     if ( str == "hartree" )
-        return create( UnitType::energy, 4.359744722207185e-18 );
+        return Units( UnitType::energy, 4.359744722207185e-18 );
     if ( str == "bohr" )
-        return create( UnitType::length, 5.2917721090380e-11 );
+        return Units( UnitType::length, 5.2917721090380e-11 );
     // Check special units/characters
     if ( str == "percent" || str == "%" )
-        return create( UnitType::unitless, 0.01 );
+        return Units( UnitType::unitless, 0.01 );
     if ( str == "angstrom" )
-        return create( UnitType::length, 1e-10 );
+        return Units( UnitType::length, 1e-10 );
     // No success
     SI_type u = { 0 };
     double s  = 0;
@@ -533,6 +533,14 @@ inline std::vector<std::string> Units::getAllUnits()
 /********************************************************************
  * Get unit type                                                     *
  ********************************************************************/
+constexpr uint64_t Units::hash( Units::SI_type type )
+{
+    static_assert( type.size() == 9 );
+    uint64_t h = 0;
+    for ( int i = 0; i < 9; i++ )
+        h = ( h << 7 ) + ( type[i] + 64 );
+    return h;
+}
 constexpr Units::SI_type Units::getSI( UnitType type )
 {
     if ( type == UnitType::unknown )
@@ -569,16 +577,12 @@ constexpr Units::SI_type Units::getSI( UnitType type )
 }
 constexpr UnitType Units::getType() const noexcept
 {
-    auto compare = []( const SI_type &a, const SI_type &b ) {
-        bool test = true;
-        for ( size_t i = 0; i < a.size(); i++ )
-            test = test && a[i] == b[i];
-        return test;
-    };
+    auto h1 = hash( d_SI );
     for ( int i = 0; i <= 24; i++ ) {
         auto type = static_cast<UnitType>( i );
         auto id   = getSI( type );
-        if ( compare( id, d_SI ) )
+        auto h2   = hash( id );
+        if ( h1 == h2 )
             return type;
     }
     return UnitType::unknown;
@@ -597,8 +601,8 @@ constexpr bool operator==( const std::array<int8_t, 9> &a, const std::array<int8
 }
 constexpr bool Units::compatible( const Units &rhs ) noexcept
 {
-    constexpr SI_type energy      = { -2, 2, 1, 0, 0, 0, 0, 0 };
-    constexpr SI_type temperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
+    constexpr SI_type energy      = getSI( UnitType::energy );
+    constexpr SI_type temperature = getSI( UnitType::temperature );
     if ( d_SI == rhs.d_SI )
         return true;
     if ( d_SI == energy && rhs.d_SI == temperature )
@@ -609,8 +613,8 @@ constexpr bool Units::compatible( const Units &rhs ) noexcept
 }
 constexpr double Units::convert( const Units &rhs ) const
 {
-    constexpr SI_type energy      = { -2, 2, 1, 0, 0, 0, 0, 0 };
-    constexpr SI_type temperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
+    constexpr SI_type energy      = getSI( UnitType::energy );
+    constexpr SI_type temperature = getSI( UnitType::temperature );
     if ( d_scale == 0 && rhs.d_scale == 0 ) {
         // No units for both sides
         return 1.0;
