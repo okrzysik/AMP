@@ -265,8 +265,7 @@ void TrilinosMueLuSolver::getFromInput( std::shared_ptr<const AMP::Database> db 
         db->getWithDefault<bool>( "build_hierarchy_from_defaults", false );
 
     // general parameters
-    d_MueLuParameterList.set( "verbosity",
-                              db->getWithDefault<std::string>( "verbosity", "medium" ) );
+    d_MueLuParameterList.set( "verbosity", db->getWithDefault<std::string>( "verbosity", "none" ) );
     d_MueLuParameterList.set( "problem: type",
                               db->getWithDefault<std::string>( "problem_type", "unknown" ) );
     d_MueLuParameterList.set( "number of equations",
@@ -414,9 +413,9 @@ void TrilinosMueLuSolver::getFromInput( std::shared_ptr<const AMP::Database> db 
 
     // miscellaneous options
     d_MueLuParameterList.set( "print initial parameters",
-                              db->getWithDefault<bool>( "print_initial_parameters", true ) );
+                              db->getWithDefault<bool>( "print_initial_parameters", false ) );
     d_MueLuParameterList.set( "print unused parameters",
-                              db->getWithDefault<bool>( "print_unused_parameters", true ) );
+                              db->getWithDefault<bool>( "print_unused_parameters", false ) );
 
     d_MueLuParameterList.set( "transpose: use implicit",
                               db->getWithDefault<bool>( "transpose_use_implicit", false ) );

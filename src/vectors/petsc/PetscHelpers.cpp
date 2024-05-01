@@ -11,6 +11,8 @@
     #error AMP only supports PETSc 3.7.5 or greater
 #endif
 
+extern PetscInt
+    NormIds[4]; /* map from NormType to IDs used to cache norm values, 1_AND_2 is excluded */
 
 namespace PETSC {
 
