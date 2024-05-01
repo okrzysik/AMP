@@ -17,8 +17,8 @@ namespace Ox_MSRZC_09_NS {
 
 static const char *source = "Bogdan Mihaila, Marius Stan, Juan Ramirez, Alek Zubelewicz, "
                             "Petrica Cristea, Journal of Nuclear Materials 394 (2009) 182--189";
-static double FCparams[]                            = { -9.386, -4.26e3, 1.2e-3, 7.5e-4 };
-static double SCparams[]                            = { -1380.8, -134435.5, 0.0261 };
+static double FCparams[]  = { -9.386, -4.26e3, 1.2e-3, 7.5e-4 };
+static double SCparams[]  = { -1380.8, -134435.5, 0.0261 };
 static std::initializer_list<std::string> arguments = { "temperature", "concentration" };
 static const double TminVal                         = 299.9;
 static const double TmaxVal                         = 1400;

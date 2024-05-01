@@ -2,6 +2,7 @@
 #define included_AMP_CSRMatrix_hpp
 
 #include "AMP/matrices/CSRMatrix.h"
+#include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
 #include "AMP/vectors/VectorBuilder.h"

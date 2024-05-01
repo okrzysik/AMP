@@ -204,11 +204,9 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
             argsMultiVec->addVector( toobigVec[i] );    // extra junk, should be ignored
         }
         std::map<std::string, std::string> xlator;
-        int count = 0;
         for ( size_t i = 0; i < nargs; i++ ) {
             std::string jname = justrightname[i];
             xlator.insert( std::make_pair( argnames[i], jname ) );
-            count++;
         }
         auto nominalMultiVar = std::make_shared<AMP::LinearAlgebra::Variable>( "nominalMulti" );
         auto nominalMultiVec =

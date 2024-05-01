@@ -52,22 +52,6 @@ void MatrixParameters::addColumns( const std::vector<size_t> &col )
     d_vColumns.insert( d_vColumns.end(), col.begin(), col.end() );
 }
 
-void MatrixParameters::findUniqueColumns()
-{
-#warning This code is non-optimal and only present to test matvec performance ideas
-  
-  std::copy(d_vColumns.begin(), d_vColumns.end(), std::back_inserter(d_vUniqueColumns));
-  AMP::Utilities::unique( d_vUniqueColumns );
-  // Create map from vector of columns into vector of unique columns
-  for ( size_t nc=0; nc < d_vColumns.size(); ++nc ) {
-    const auto col = d_vColumns[nc];
-    auto lower = std::lower_bound(d_vUniqueColumns.begin(), d_vUniqueColumns.end(), col);
-    const auto idx = std::distance(d_vUniqueColumns.begin(), lower);
-    d_vUniqueColumnsMap.push_back(idx);
-  }
-  AMP::pout << "matrix has " << d_vUniqueColumns.size() << " unique cols out of " << d_vColumns.size() << std::endl;
-}
-
 const int *MatrixParameters::entryList() const { return &*d_vEntriesPerRow.begin(); }
 
 int *MatrixParameters::entryList() { return &( d_vEntriesPerRow[0] ); }

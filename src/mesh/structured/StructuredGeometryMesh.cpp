@@ -35,8 +35,8 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     GeomDim     = static_cast<AMP::Mesh::GeomType>( d_geometry2->getLogicalDim() );
     d_max_gcw   = db->getWithDefault<int>( "GCW", 2 );
     AMP_ASSERT( PhysicalDim == db->getWithDefault<int>( "dim", PhysicalDim ) );
-    auto size = d_geometry2->getLogicalGridSize( db->getVector<int>( "Size" ) );
-    AMP_ASSERT( size.size() == static_cast<size_t>( GeomDim ) );
+    auto size = d_geometry2->getLogicalGridSize( db->getVector<size_t>( "Size" ) );
+    AMP_ASSERT( size.ndim() == static_cast<size_t>( GeomDim ) );
     for ( size_t d = 0; d < size.size(); d++ )
         d_globalSize[d] = size[d];
     auto isPeriodic = d_geometry2->getPeriodicDim();

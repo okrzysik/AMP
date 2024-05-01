@@ -4,6 +4,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
+#include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/testHelpers/MatrixDataTransforms.h"
 #include "AMP/matrices/testHelpers/MatrixTests.h"
@@ -74,8 +75,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     std::vector<gidx_t> cols;
     std::vector<scalar_t> coeffs;
 
-    AMP::LinearAlgebra::transformDofToCSR<AMP::LinearAlgebra::HypreCSRPolicy>(
-        matrix, firstRow, endRow, nnz, cols, coeffs );
+    AMP::LinearAlgebra::transformDofToCSR<Policy>( matrix, firstRow, endRow, nnz, cols, coeffs );
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
         firstRow, endRow, nnz.data(), cols.data(), coeffs.data(), comm );

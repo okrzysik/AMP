@@ -163,12 +163,7 @@ public:
 
     std::tuple<lidx_t *, gidx_t const *, scalar_t const *> getCSRData()
     {
-      return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
-    }
-
-    std::tuple<gidx_t, size_t const *, size_t const *> getUniqueColumnsData()
-    {
-      return std::make_tuple( d_nuc, d_unq_cols, d_unq_cols_map );
+        return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
     }
 
     bool isSquare() const noexcept { return d_is_square; }
@@ -185,26 +180,24 @@ public:
     auto numberOfNonZeros() const { return d_nnz; }
 
 protected:
-    bool d_is_square;
-    gidx_t d_first_row;
-    gidx_t d_last_row;
-    gidx_t d_first_col;
-    gidx_t d_last_col;
-    lidx_t *d_nnz_per_row;
-    lidx_t *d_row_starts;
-    gidx_t *d_cols;
-    size_t *d_unq_cols;
-    size_t *d_unq_cols_map;
-    scalar_t *d_coeffs;
+    bool d_is_square   = true;
+    gidx_t d_first_row = 0;
+    gidx_t d_last_row  = 0;
+    gidx_t d_first_col = 0;
+    gidx_t d_last_col  = 0;
 
-    gidx_t d_nuc;
-    lidx_t d_nnz;
+    lidx_t *d_nnz_per_row = nullptr;
+    lidx_t *d_row_starts  = nullptr;
+    gidx_t *d_cols        = nullptr;
+    scalar_t *d_coeffs    = nullptr;
 
-    AMP::Utilities::MemoryType d_memory_location;
+    lidx_t d_nnz = 0;
 
-    bool d_manage_cols;
-    bool d_manage_nnz;
-    bool d_manage_coeffs;
+    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+
+    bool d_manage_cols   = true;
+    bool d_manage_nnz    = true;
+    bool d_manage_coeffs = true;
 
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
     std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;

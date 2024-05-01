@@ -310,7 +310,7 @@ std::tuple<std::vector<hid_t>,
            std::vector<hid_t>,
            std::vector<hid_t>,
            std::vector<hid_t>>
-openObjects( hid_t fid )
+openObjects( hid_t )
 {
     std::vector<hid_t> file, set, group, type, attr;
     return std::tie( file, set, group, type, attr );

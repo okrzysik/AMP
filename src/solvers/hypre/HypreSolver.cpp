@@ -29,16 +29,15 @@ namespace AMP::Solver {
  ****************************************************************/
 HypreSolver::HypreSolver() : SolverStrategy() {}
 HypreSolver::HypreSolver( std::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters )
-{
+    : SolverStrategy( parameters ),
 #ifdef USE_CUDA
-    d_memory_location = HYPRE_MEMORY_DEVICE;
-    d_exec_policy     = HYPRE_EXEC_DEVICE;
+      d_memory_location( HYPRE_MEMORY_DEVICE ),
+      d_exec_policy( HYPRE_EXEC_DEVICE )
 #else
-    d_memory_location = HYPRE_MEMORY_HOST;
-    d_exec_policy     = HYPRE_EXEC_HOST;
+      d_memory_location( HYPRE_MEMORY_HOST ),
+      d_exec_policy( HYPRE_EXEC_HOST )
 #endif
-
+{
     AMP_ASSERT( parameters );
     HypreSolver::initialize( parameters );
 }
@@ -130,6 +129,7 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     const auto nDOFS         = dofManager->numLocalDOF();
     const auto startingIndex = dofManager->beginDOF();
 
+    std::vector<HYPRE_Real> values;
     HYPRE_Real *vals = nullptr;
 
     if ( amp_v->numberOfDataBlocks() == 1 ) {
@@ -146,11 +146,9 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
                         "Implemented only for AMP vector memory on host" );
             std::vector<size_t> indices( nDOFS, 0 );
             std::iota( indices.begin(), indices.end(), startingIndex );
-            std::vector<HYPRE_Real> values( nDOFS, 0.0 );
-
-            amp_v->getValuesByGlobalID( nDOFS, indices.data(), values.data() );
-
+            values.resize( nDOFS );
             vals = values.data();
+            amp_v->getValuesByGlobalID( nDOFS, indices.data(), vals );
         }
 
 
@@ -162,7 +160,6 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
                     "Implemented only for AMP vector memory on host" );
 
-        std::vector<HYPRE_Real> values;
         for ( auto it = amp_v->begin<HYPRE_Real>(); it != amp_v->end<HYPRE_Real>(); ++it ) {
             values.push_back( *it );
         }

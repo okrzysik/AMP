@@ -142,15 +142,15 @@ double Circle::volume() const
 /********************************************************
  * Return the logical grid                               *
  ********************************************************/
-std::vector<int> Circle::getLogicalGridSize( const std::vector<int> &x ) const
+ArraySize Circle::getLogicalGridSize( const ArraySize &x ) const
 {
-    AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
+    AMP_INSIST( x.ndim() == 1u, "Size must be an array of length 1" );
     return { 2 * x[0], 2 * x[0] };
 }
-std::vector<int> Circle::getLogicalGridSize( const std::vector<double> &res ) const
+ArraySize Circle::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 2u, "Resolution must be an array of length 2" );
-    return { (int) ( d_R / res[0] ), (int) ( d_R / res[1] ) };
+    return { (size_t) ( d_R / res[0] ), (size_t) ( d_R / res[1] ) };
 }
 
 

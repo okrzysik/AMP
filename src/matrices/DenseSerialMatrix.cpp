@@ -1,4 +1,5 @@
 #include "AMP/matrices/DenseSerialMatrix.h"
+#include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/DenseSerialMatrixData.h"
 #include "AMP/matrices/operations/DenseSerialMatrixOperations.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -13,7 +14,8 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructor/Destructor                                *
  ********************************************************/
-DenseSerialMatrix::DenseSerialMatrix( std::shared_ptr<MatrixParameters> params ) : Matrix( params )
+DenseSerialMatrix::DenseSerialMatrix( std::shared_ptr<MatrixParametersBase> params )
+    : Matrix( params )
 {
     d_matrixOps = std::make_shared<DenseSerialMatrixOperations>();
 }

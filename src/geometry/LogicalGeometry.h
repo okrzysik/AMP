@@ -2,6 +2,7 @@
 #define included_AMP_LogicalGeometry
 
 #include "AMP/geometry/Geometry.h"
+#include "AMP/utils/ArraySize.h"
 
 
 namespace AMP::Geometry {
@@ -46,35 +47,37 @@ public:
      * \brief    Return the logical grid size
      * \details  This function will return the dimensions of a logical grid
      *    given a size that makes sense for the object.
-     * \param[in] x    Input size
-     * @return          Return the logical boundary ids (2*logicalDim)
+     * \param[in] x     Input size
+     * @return          Return the logical grid size
      */
-    virtual std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const = 0;
+    virtual ArraySize getLogicalGridSize( const ArraySize &x ) const = 0;
 
     /**
      * \brief    Return the logical grid size
      * \details  This function will return the dimensions of a logical grid
      *    given a desired resolution
-     * \param[in] res  Desired resolution
-     * @return          Return the logical boundary ids (2*logicalDim)
+     * \param[in] res   Desired resolution
+     * @return          Return the logical grid size
      */
-    virtual std::vector<int> getLogicalGridSize( const std::vector<double> &res ) const = 0;
+    virtual ArraySize getLogicalGridSize( const std::vector<double> &res ) const = 0;
 
     /**
      * \brief    Return the logical grid periodic dimensions
      * \details  This function will return a vector indicating which logical grid
      *    dimensions are periodic.
+     *    Note: The returned array may be larger than the number of dimensions
      * @return          Return the periodic dimensions
      */
-    std::vector<bool> getPeriodicDim() const;
+    inline std::array<bool, 3> getPeriodicDim() const { return d_isPeriodic; }
 
     /**
      * \brief    Return the surface ids for the logical boundaries
      * \details  This function will return the surface ids for each logical boundary.
      *    If a logical boundary does not map to a surface, it will return -1.
+     *    Note: The returned array may be larger than the number of dimensions
      * @return          Return the logical boundary ids (2*logicalDim)
      */
-    std::vector<int> getLogicalSurfaceIds() const;
+    inline std::array<int, 6> getLogicalSurfaceIds() const { return d_ids; }
 
 
 public: // Restart functions

@@ -8,13 +8,13 @@
 namespace AMP::LinearAlgebra {
 
 
-static inline auto getVectorEngine( std::shared_ptr<VectorData> data )
+[[maybe_unused]] static inline auto getVectorEngine( std::shared_ptr<VectorData> data )
 {
     auto managed = std::dynamic_pointer_cast<ManagedVectorData>( data );
     AMP_ASSERT( managed );
     return managed->getVectorEngine();
 }
-static inline auto getVectorEngine( std::shared_ptr<const VectorData> data )
+[[maybe_unused]] static inline auto getVectorEngine( std::shared_ptr<const VectorData> data )
 {
     auto managed = std::dynamic_pointer_cast<const ManagedVectorData>( data );
     AMP_ASSERT( managed );

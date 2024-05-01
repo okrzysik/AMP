@@ -44,7 +44,7 @@ buildSolver( const std::string &solver_name,
     return AMP::Solver::SolverFactory::create( parameters );
 }
 
-void myTest( AMP::UnitTest *ut, std::string fileName )
+void myTest( AMP::UnitTest *ut, const std::string &fileName )
 {
     std::string input_file = fileName;
     std::string log_file   = "output_" + fileName;

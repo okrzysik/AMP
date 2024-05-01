@@ -111,12 +111,9 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         d_last_col  = d_rightDOFManager->endDOF();
         size_t N    = d_last_row - d_first_row;
 
-        auto *nnzPerRow  = matParams->entryList();
-        auto &cols       = matParams->getColumns();
-	auto &unqCols    = matParams->getUniqueColumns();
-	auto &unqColsMap = matParams->getUniqueColumnsMap();
-	d_nuc            = unqCols.size();
-        d_nnz            = cols.empty() ? NNZ<Policy>( N, nnzPerRow ) : cols.size();
+        auto *nnzPerRow = matParams->entryList();
+        auto &cols      = matParams->getColumns();
+        d_nnz           = cols.empty() ? NNZ<Policy>( N, nnzPerRow ) : cols.size();
 
         if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
 
@@ -128,26 +125,14 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
             if constexpr ( std::is_same_v<decltype( d_cols ), decltype( cols.data() )> ) {
                 if ( d_manage_cols ) {
                     d_cols = allocate<gidx_t, std::allocator>( d_nnz );
-		    d_unq_cols_map = allocate<gidx_t, std::allocator>( d_nnz );
-		    d_unq_cols = allocate<gidx_t, std::allocator>( d_nuc );
                 } else {
                     d_cols = cols.data();
-		    d_unq_cols_map = unqColsMap.data();
-		    d_unq_cols = unqCols.data();
                 }
             } else {
-                d_manage_cols  = true;
-                d_cols         = allocate<gidx_t, std::allocator>( d_nnz );
-                d_unq_cols_map = allocate<size_t, std::allocator>( d_nnz );
-                d_unq_cols     = allocate<size_t, std::allocator>( d_nuc );
+                d_manage_cols = true;
+                d_cols        = allocate<gidx_t, std::allocator>( d_nnz );
                 std::transform(
                     cols.begin(), cols.end(), d_cols, []( size_t col ) -> gidx_t { return col; } );
-                std::transform(
-                    unqCols.begin(), unqCols.end(),
-		    d_unq_cols, []( size_t col ) -> gidx_t { return col; } );
-                std::transform(
-                    unqColsMap.begin(), unqColsMap.end(),
-		    d_unq_cols_map, []( size_t col ) -> gidx_t { return col; } );
             }
 
             d_manage_coeffs = true;
@@ -158,9 +143,9 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         } else if ( ( d_memory_location == AMP::Utilities::MemoryType::managed ) ||
                     ( d_memory_location == AMP::Utilities::MemoryType::device ) ) {
 
-            d_manage_cols   = true;
             d_manage_nnz    = true;
             d_manage_coeffs = true;
+            d_manage_cols   = true;
 
 #ifdef AMP_USE_UMPIRE
             auto &resourceManager = umpire::ResourceManager::getInstance();
@@ -228,9 +213,7 @@ CSRMatrixData<Policy>::~CSRMatrixData()
             }
             if ( d_manage_cols ) {
                 std::allocator<gidx_t> allocator_g;
-                std::allocator<size_t> allocator_s;
                 allocator_g.deallocate( d_cols, d_nnz );
-                allocator_s.deallocate( d_unq_cols, d_nnz );
             }
 
             if ( d_manage_nnz ) {

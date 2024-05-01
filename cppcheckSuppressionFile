@@ -102,6 +102,7 @@ containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 containerOutOfBounds:*/src/utils/test/test_AMP_MPI.cpp
 copyCtorPointerCopying:*/src/utils/AMP_MPI.cpp
 duplicateAssignExpression:*/src/mesh/testHelpers/meshTests.cpp
+duplicateAssignExpression:*/src/matrices/test/testMatVec.cpp
 duplicateExpression:*/src/mesh/structured/BoxMesh.cpp
 duplicateExpression:*/src/mesh/testHelpers/meshTests.cpp
 duplicateExpression:*/src/utils/DatabaseKeyData.cpp

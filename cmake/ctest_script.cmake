@@ -1,6 +1,6 @@
 # ctest script for building, running, and submitting the test results 
 # Usage:  ctest -S script,build
-#   build = debug / optimized / weekly / valgrind
+#   build = debug / optimized / valgrind
 # Note: this test will use use the number of processors defined in the variable N_PROCS,
 #   the enviornmental variable N_PROCS, or the number of processors availible (if not specified)
 
@@ -30,6 +30,7 @@ SET( USE_CUDA            $ENV{USE_CUDA}           )
 SET( CUDA_FLAGS         "$ENV{CUDA_FLAGS}"        )
 SET( CTEST_SITE         "$ENV{CTEST_SITE}"        )
 SET( CTEST_URL          "$ENV{CTEST_URL}"         )
+SET( EXCLUDE_WEEKLY     "$ENV{EXCLUDE_WEEKLY}"    )
 
 
 # Get the source directory based on the current directory
@@ -42,7 +43,6 @@ ENDIF()
 
 
 # Check that we specified the build type to run
-SET( RUN_WEEKLY FALSE )
 IF( NOT CTEST_SCRIPT_ARG )
     MESSAGE(FATAL_ERROR "No build specified: ctest -S /path/to/script,build (debug/optimized/valgrind")
 ELSEIF( ${CTEST_SCRIPT_ARG} STREQUAL "debug" )
@@ -63,7 +63,6 @@ ELSEIF( (${CTEST_SCRIPT_ARG} STREQUAL "weekly") )
     SET( CTEST_COVERAGE_COMMAND )
     SET( ENABLE_GCOV "false" )
     SET( USE_VALGRIND FALSE )
-    SET( RUN_WEEKLY TRUE )
 ELSEIF( ${CTEST_SCRIPT_ARG} STREQUAL "valgrind" )
     SET( CTEST_BUILD_NAME "${PROJ}-valgrind" )
     SET( CMAKE_BUILD_TYPE "Debug" )
@@ -135,8 +134,6 @@ SET( CTEST_CUSTOM_WARNING_EXCEPTION
 
 # Set timeouts: 10 minutes for debug, 5 for opt, and 30 minutes for valgrind/weekly
 IF ( USE_VALGRIND )
-    SET( CTEST_TEST_TIMEOUT 1800 )
-ELSEIF ( RUN_WEEKLY )
     SET( CTEST_TEST_TIMEOUT 1800 )
 ELSEIF( ${CMAKE_BUILD_TYPE} STREQUAL "Debug" )
     SET( CTEST_TEST_TIMEOUT 600 )
@@ -229,10 +226,10 @@ IF ( SKIP_TESTS )
     SET( CTEST_COVERAGE_COMMAND )
 ELSEIF ( USE_VALGRIND )
     CTEST_MEMCHECK( EXCLUDE "(procs|WEEKLY|cppcheck|cppclean|test_crash)"  PARALLEL_LEVEL ${N_PROCS} )
-ELSEIF ( RUN_WEEKLY )
-    CTEST_TEST( INCLUDE WEEKLY  PARALLEL_LEVEL ${N_PROCS} )
-ELSE()
+ELSEIF ( EXCLUDE_WEEKLY )
     CTEST_TEST( EXCLUDE WEEKLY  PARALLEL_LEVEL ${N_PROCS} )
+ELSE()
+    CTEST_TEST( PARALLEL_LEVEL ${N_PROCS} )
 ENDIF()
 IF( CTEST_COVERAGE_COMMAND )
     CTEST_COVERAGE()
