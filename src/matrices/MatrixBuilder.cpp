@@ -118,6 +118,8 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         comm = AMP_MPI( AMP_COMM_SELF );
     // Create the matrix parameters
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
+    params->d_CommListLeft  = leftVec->getCommunicationList();
+    params->d_CommListRight = rightVec->getCommunicationList();
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
 

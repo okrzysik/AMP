@@ -1,11 +1,10 @@
-#ifndef included_AMP_CSRMatrixData_h
-#define included_AMP_CSRMatrixData_h
+#ifndef included_AMP_CSRSerialMatrixData_h
+#define included_AMP_CSRSerialMatrixData_h
 
-#include "AMP/matrices/data/MatrixData.h"
-#include "AMP/matrices/data/CSRSerialMatrixData.h"
-
-#include <map>
 #include <tuple>
+
+#include "AMP/utils/enable_shared_from_this.h"
+#include "AMP/utils/typeid.h"
 
 namespace AMP::Discretization {
 class DOFManager;
@@ -13,8 +12,9 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
+// This intentionally does not inherit from matrix data
 template<typename Policy>
-class CSRMatrixData : public MatrixData
+class CSRSerialMatrixData : public AMP::enable_shared_from_this<CSRSerialMatrixData<Policy>>
 {
 public:
     using gidx_t   = typename Policy::gidx_t;
@@ -24,28 +24,29 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit CSRMatrixData( std::shared_ptr<MatrixParametersBase> params );
+    explicit CSRSerialMatrixData( std::shared_ptr<MatrixParametersBase> params,
+				  bool is_diag );
 
     //! Destructor
-    virtual ~CSRMatrixData();
+    virtual ~CSRSerialMatrixData();
 
     //! Empty constructor
-    CSRMatrixData();
+    CSRSerialMatrixData();
 
     //! Copy constructor
-    CSRMatrixData( const CSRMatrixData & ) = delete;
+    CSRSerialMatrixData( const CSRSerialMatrixData & ) = delete;
 
     //! Clone the data
-    std::shared_ptr<MatrixData> cloneMatrixData() const override;
+    std::shared_ptr<MatrixData> cloneMatrixData() const;
 
     //! Transpose
-    std::shared_ptr<MatrixData> transpose() const override;
+    std::shared_ptr<MatrixData> transpose() const;
 
     //! Extract the diagonal vector
-    void extractDiagonal( std::shared_ptr<Vector> buf ) const override;
+    void extractDiagonal( std::shared_ptr<Vector> buf ) const;
 
     //! Return the type of the matrix
-    std::string type() const override { return "CSRMatrixData"; }
+    std::string type() const { return "CSRSerialMatrixData"; }
 
     /** \brief  Retrieve a row of the matrix in compressed format
      * \param[in]  row Which row
@@ -54,7 +55,7 @@ public:
      */
     void getRowByGlobalID( size_t row,
                            std::vector<size_t> &cols,
-                           std::vector<double> &values ) const override;
+                           std::vector<double> &values ) const;
 
     /** \brief  Add values to those in the matrix
      * \param[in] num_rows The number of rows represented in values
@@ -71,7 +72,7 @@ public:
                               size_t *rows,
                               size_t *cols,
                               void *values,
-                              const typeID &id ) override;
+                              const typeID &id );
 
     /** \brief  Set values in the matrix
      * \param[in] num_rows The number of rows represented in values
@@ -88,7 +89,7 @@ public:
                               size_t *rows,
                               size_t *cols,
                               void *values,
-                              const typeID &id ) override;
+                              const typeID &id );
 
     /** \brief  Get values in the matrix
      * \param[in] num_rows The number of rows represented in values
@@ -104,120 +105,73 @@ public:
                               size_t *rows,
                               size_t *cols,
                               void *values,
-                              const typeID &id ) const override;
+                              const typeID &id ) const;
 
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
      * \param[in]  row Which row
      */
-    std::vector<size_t> getColumnIDs( size_t row ) const override;
-
-    /** \brief  Perform communication to ensure values in the
-     * matrix are the same across cores.
-     */
-    void makeConsistent( AMP::LinearAlgebra::ScatterType t ) override;
-
-    /** \brief Get the DOFManager associated with a right vector ( For
-     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$
-     * is a right vector )
-     * \return  The DOFManager associated with a right vector
-     */
-    std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
-
-    /** \brief Get the DOFManager associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$\mathbf{y}\f$ is
-     * a left vector )
-     * \return  The DOFManager associated with a left vector
-     */
-    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
+    std::vector<size_t> getColumnIDs( size_t row ) const;
 
     /** \brief  Get the number of local rows in the matrix
      * \return  The number of local rows
      */
-    size_t numLocalRows() const override;
-
-    /** \brief  Get the number of global rows in the matrix
-     * \return  The number of global rows
-     */
-    size_t numGlobalRows() const override;
+    size_t numLocalRows() const;
 
     /** \brief  Get the number of local columns in the matrix
      * \return  The number of local columns
      */
-    size_t numLocalColumns() const override;
-
-    /** \brief  Get the number of global columns in the matrix
-     * \return  The number of global columns
-     */
-    size_t numGlobalColumns() const override;
+    size_t numLocalColumns() const;
 
     /** \brief  Get the global id of the beginning row
      * \return  beginning global row id
      */
-    size_t beginRow() const override;
+    size_t beginRow() const;
 
     /** \brief  Get the global id of the ending row
      * \return  ending global row id
      */
-    size_t endRow() const override;
+    size_t endRow() const;
 
     size_t beginCol() const { return d_first_col; }
 
-    std::tuple<lidx_t *, lidx_t const *, scalar_t const *> getCSRDiagData()
+    std::tuple<lidx_t *, lidx_t const *, scalar_t const *> getCSRData()
     {
-        return d_diagMatrix->getCSRData();
+        return std::make_tuple( d_nnz_per_row, d_cols_loc, d_coeffs );
     }
 
-    std::tuple<lidx_t *, lidx_t const *, scalar_t const *> getCSROffDiagData()
-    {
-        return d_offDiagMatrix->getCSRData();
-    }
+    bool isDiag() const noexcept { return d_is_diag; }
 
-    bool isSquare() const noexcept { return d_is_square; }
-
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getLeftVariable()
-    {
-        return d_pParameters->d_VariableLeft;
-    }
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getRightVariable()
-    {
-        return d_pParameters->d_VariableRight;
-    }
+    bool isEmpty() const { return d_is_empty; }
 
     auto numberOfNonZeros() const { return d_nnz; }
 
-    auto numberOfNonZerosDiag() const { return d_diagMatrix->numberOfNonZeros(); }
-
-    auto numberOfNonZerosOffDiag() const { return d_offDiagMatrix->numberOfNonZeros(); }
-
-    bool hasOffDiag() const { return !d_offDiagMatrix->isEmpty(); }
-
 protected:
-    bool d_is_square   = true;
+    bool d_is_diag     = true;
+    bool d_is_empty    = false;
     gidx_t d_first_row = 0;
     gidx_t d_last_row  = 0;
     gidx_t d_first_col = 0;
     gidx_t d_last_col  = 0;
-    gidx_t d_nnz       = 0;
-  
+
+    lidx_t *d_nnz_per_row = nullptr;
+    lidx_t *d_row_starts  = nullptr;
+    lidx_t *d_cols_loc    = nullptr;
+    gidx_t *d_cols        = nullptr;
+    scalar_t *d_coeffs    = nullptr;
+
+    lidx_t d_nnz = 0;
+
     AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
-  
-    std::shared_ptr<CSRSerialMatrixData<Policy>> d_diagMatrix = nullptr;
-    std::shared_ptr<CSRSerialMatrixData<Policy>> d_offDiagMatrix = nullptr;
 
-    std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
-    std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;
+    std::shared_ptr<MatrixParametersBase> d_pParameters;
 
-    //!  \f$A_{i,j}\f$ storage of off core matrix data
-    std::map<gidx_t, std::map<gidx_t, scalar_t>> d_other_data;
-
-    //!  \f$A_{i,j}\f$ storage of off core matrix data to set
-    std::map<gidx_t, std::map<gidx_t, scalar_t>> d_ghost_data;
-
-    //!  Update matrix data off-core
-    void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &,
-                       AMP::LinearAlgebra::ScatterType );
+    bool d_manage_cols   = true;
+    bool d_manage_nnz    = true;
+    bool d_manage_coeffs = true;
 };
-
+  
 } // namespace AMP::LinearAlgebra
 
 #endif
+
+#include "AMP/matrices/data/CSRSerialMatrixData.hpp"

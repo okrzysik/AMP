@@ -30,7 +30,8 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     auto csrData = std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy>>( matrixData );
     if ( csrData ) {
 
-      auto [nnz, cols, vals] = csrData->getCSRData();
+#warning HypreMatrixAdaptor only looks at diagonal blocks for the moment... 
+        auto [nnz, cols, vals] = csrData->getCSRDiagData();
 
         auto nnz_per_row  = static_cast<HYPRE_Int *>( nnz );
         const auto csr_ja = static_cast<HYPRE_BigInt const *>( cols );

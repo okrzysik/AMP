@@ -34,7 +34,7 @@
 // classes
 
 // Number of products to evaluate to average out timings
-#define NUM_PRODUCTS 10
+#define NUM_PRODUCTS 50
 
 void matVecTestWithDOFs( AMP::UnitTest *ut,
 			 std::string type,

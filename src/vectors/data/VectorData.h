@@ -637,7 +637,7 @@ public: // Non virtual functions
 
     bool hasGhosts( void ) { return ( d_Ghosts != nullptr ); }
 
-    std::vector<double> &getGhosts() { return *d_Ghosts; }
+    std::vector<double> &getGhosts() const { return *d_Ghosts; }
 
     //! Get a unique id hash for the vector
     uint64_t getID() const;
