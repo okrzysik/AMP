@@ -16,6 +16,8 @@ MESSAGE ("===============")
 SET( PROJ AMP )                 # Set the project name for CMake
 SET( AMP_LIB amp )              # Set the final library name
 SET( AMP_INC AMP )              # Set an optional subfolder for includes (e.g. include/name/...)
+SET( AMP_MAJOR_VERSION 2 )      # Set the major version
+SET( AMP_MINOR_VERSION 0 )      # Set the minor version
 IF ( NOT ${PROJ}_INSTALL_DIR )
     SET( ${PROJ}_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}" )
 ENDIF()
@@ -152,8 +154,16 @@ IF ( USE_EXT_DOXYGEN )
 ENDIF()
 
 
-# Create custom targets for build-test, check, and distclean
+# Create custom targets for distclean
 ADD_DISTCLEAN( src ampdir AMP compile_commands.json AMP-Data.tar.gz tpl-build tpl-builder )
+
+
+# Write the version info
+WRITE_REPO_VERSION()
+
+
+# Create a release target
+CREATE_RELEASE()
 
 
 # Add a timer for the build
@@ -181,7 +191,6 @@ ENDIF()
 
 # Add the src directory
 IF ( NOT ONLY_BUILD_DOCS )
-    WRITE_REPO_VERSION()
     CHECK_ENABLE_FLAG( EXCLUDE_TESTS_FROM_ALL 1 )
     ADD_SUBDIRECTORY( src )
 ENDIF()
@@ -228,28 +237,6 @@ SET( CPPCLEAN_UNUSED_VARIABLE 0 )
 SET( CPPCLEAN_UNKNOWN 1 )
 SET( CPPCLEAN_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}" )
 FIND_PACKAGE( Cppclean )
-
-
-# Create release target
-IF ( AMP_MAJOR_VERSION AND AMP_MINOR_VERSION )
-    ADD_CUSTOM_TARGET( release )
-    INCLUDE( "${${PROJ}_INSTALL_DIR}/${PROJ}_Version.cmake" )
-    SET( AMP_NAME AMP-${AMP_MAJOR_VERSION}.${AMP_MINOR_VERSION}.${AMP_BUILD_VERSION} )
-    SET( RELEASE_FILENAME ${AMP_NAME}.tar )
-    SET( TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/tmp" )
-    FILE(WRITE  "${TMP_DIR}/release.cmake" "# Create the release tar\n" )
-    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory \"${CMAKE_CURRENT_SOURCE_DIR}\" ${AMP_NAME})\n" )
-    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${AMP_NAME}/.hg )\n" )
-    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f ${AMP_NAME}/.hgtags )\n" )
-    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f ${AMP_NAME}/.hgignore )\n" )
-    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E copy version.cmake ${AMP_NAME}/AMP_Version.cmake)\n" )
-    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E tar -cf ${AMP_NAME}.tar ${AMP_NAME})\n" )
-    FILE(APPEND "${TMP_DIR}/release.cmake" "execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${AMP_NAME}.tar \"${AMP_INSTALL_DIR}/${${AMP_NAME}}\" )\n" )
-    ADD_CUSTOM_COMMAND( TARGET release PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -P "${TMP_DIR}/release.cmake"
-        WORKING_DIRECTORY "${TMP_DIR}" 
-    )
-ENDIF()
 
 
 # Install the documentation

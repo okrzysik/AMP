@@ -6,6 +6,7 @@
 #include "StackTrace/ErrorHandlers.h"
 #include "StackTrace/Utilities.h"
 
+#include <chrono>
 #include <cstring>
 #include <sstream>
 
@@ -206,53 +207,70 @@ public:
 /****************************************************************************
  * Functions to set/clear the error handlers                                 *
  ****************************************************************************/
-using functionPtr     = std::function<void( StackTrace::abort_error     &)>;
-using setFunctionPtr1 = std::function<void( functionPtr )>;
-using setFunctionPtr2 = std::function<void( functionPtr, const std::vector<int> & )>;
-void setErrorHandler( setFunctionPtr1 routine, functionPtr abort, const std::vector<int> & )
-{
-    routine( abort );
-}
-void setErrorHandler( setFunctionPtr2 routine, functionPtr abort, const std::vector<int> &signals )
-{
-    routine( abort, signals );
-}
+static bool areErrorHandlersSet = false;
 void AMPManager::setHandlers()
 {
+    if ( areErrorHandlersSet ) {
+        clearHandlers();
+        areErrorHandlersSet = false;
+    }
+    // Initialize call stack handler
+    auto comm_world = getCommWorld();
+    AMP_ASSERT( d_properties.stack_trace_type <= 3 && d_properties.stack_trace_type >= 0 );
+    if ( comm_world.getSize() == 1 )
+        d_properties.stack_trace_type = std::min( d_properties.stack_trace_type, 2 );
+    StackTrace::Utilities::setAbortBehavior( !d_properties.use_MPI_Abort,
+                                             d_properties.stack_trace_type );
+    if ( d_properties.stack_trace_type == 3 )
+        StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
     // Set the MPI error handler
-    setMPIErrorHandler();
+    if ( d_properties.catch_MPI ) {
+        setMPIErrorHandler();
+    }
     // Set the error handlers for petsc
 #ifdef AMP_USE_PETSC
-    PetscPopSignalHandler();
-    PetscPopErrorHandler();
-    PetscPushErrorHandler( &petsc_err_handler, nullptr );
+    if ( d_properties.catch_PETSc ) {
+        PetscPopSignalHandler();
+        PetscPopErrorHandler();
+        PetscPushErrorHandler( &petsc_err_handler, nullptr );
+    }
 #endif
     // Set the error handlers for SAMRAI
 #ifdef AMP_USE_SAMRAI
-    SAMRAI::tbox::SAMRAI_MPI::setCallAbortInSerialInsteadOfExit( true );
-    SAMRAI::tbox::SAMRAI_MPI::setCallAbortInParallelInsteadOfMPIAbort( true );
-    auto appender = std::make_shared<SAMRAIAbortAppender>();
-    SAMRAI::tbox::Logger::getInstance()->setAbortAppender( appender );
+    if ( d_properties.catch_SAMRAI ) {
+        SAMRAI::tbox::SAMRAI_MPI::setCallAbortInSerialInsteadOfExit( true );
+        SAMRAI::tbox::SAMRAI_MPI::setCallAbortInParallelInsteadOfMPIAbort( true );
+        auto appender = std::make_shared<SAMRAIAbortAppender>();
+        SAMRAI::tbox::Logger::getInstance()->setAbortAppender( appender );
+    }
 #endif
     // Set the error handlers for HDF5
 #ifdef AMP_USE_HDF5
-    hid_t error_stack = 0;
-    H5E_auto2_t fun   = hdf5_error_handler;
-    H5Eset_auto2( error_stack, fun, nullptr );
+    if ( d_properties.catch_HDF5 ) {
+        hid_t error_stack = 0;
+        H5E_auto2_t fun   = hdf5_error_handler;
+        H5Eset_auto2( error_stack, fun, nullptr );
+    }
 #endif
     // Set the terminate routine for runtime errors
-    constexpr int funArgs = arg_count_v<decltype( StackTrace::setErrorHandler )>;
     std::vector<int> signals( d_properties.catch_signals.begin(),
                               d_properties.catch_signals.end() );
-    static_assert( funArgs == 1 );
-    setErrorHandler( StackTrace::setErrorHandler, terminate_AMP2, signals );
+    if ( d_properties.error_handler )
+        StackTrace::setErrorHandler( d_properties.error_handler, signals );
+    else
+        StackTrace::setErrorHandler( terminate_AMP2, signals );
     // Set atexit function
-    std::atexit( exitFun );
-    int err = std::at_quick_exit( exitFun );
-    AMP_ASSERT( err == 0 );
+    if ( d_properties.catch_exit ) {
+        std::atexit( exitFun );
+        int err = std::at_quick_exit( exitFun );
+        AMP_ASSERT( err == 0 );
+    }
+    areErrorHandlersSet = true;
 }
 void AMPManager::clearHandlers()
 {
+    if ( !areErrorHandlersSet )
+        return;
     // Don't call the global version of the call stack
     StackTrace::globalCallStackFinalize();
     // Clear the MPI error handler for comm_world
@@ -266,6 +284,7 @@ void AMPManager::clearHandlers()
     PetscPopSignalHandler();
     PetscPopErrorHandler();
 #endif
+    areErrorHandlersSet = false;
 }
 
 
