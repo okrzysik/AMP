@@ -269,6 +269,16 @@ int main( int argc, char *argv[] )
     // Test combinations of units and prefixes
     testPrefixUnits( ut );
 
+    // Print all supported units
+    auto list = Units::getAllUnits();
+    printf( "\nSupported Units:\n" );
+    for ( size_t i = 0; i < list.size(); i++ ) {
+        printf( " %11s", list[i].data() );
+        if ( i % 10 == 9 )
+            printf( "\n" );
+    }
+    printf( "\n" );
+
     // Return
     int N_errors = ut.NumFailGlobal();
     ut.report();

@@ -101,6 +101,7 @@ struct SolverParameters {
         auto db = std::make_unique<AMP::Database>( "LinearSolver" );
         db->putScalar<std::string>( "name", "TFQMRSolver" );
         db->putScalar<bool>( "uses_preconditioner", use_nested );
+        db->putScalar<bool>( "compute_residual", true );
         db->putScalar<double>( "absolute_tolerance", 1.0e-12 );
         db->putScalar<double>( "relative_tolerance", 1.0e-12 );
         db->putScalar<int>( "print_info_level", 1 );
@@ -176,6 +177,13 @@ struct SolverParameters {
         auto db = std::make_unique<AMP::Database>( "LinearSolver" );
         db->putScalar<std::string>( "name", "TrilinosMueLuSolver" );
         db->putScalar<int>( "max_iterations", use_nested ? 1 : 25 );
+        db->putScalar<bool>( "problem_symmetric", true );
+        db->putScalar<std::string>( "smoother_preorpost", "both" );
+        db->putScalar<int>( "coarse_max_size", 100 );
+        auto smoother_db = std::make_unique<AMP::Database>( "smoother_params" );
+        smoother_db->putScalar<std::string>( "relaxation_type", "Gauss-Seidel" );
+        smoother_db->putScalar<int>( "relaxation_sweeps", 2 );
+        db->putDatabase( "smoother_params", std::move( smoother_db ) );
         return db;
     }
 };

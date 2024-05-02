@@ -218,7 +218,8 @@ protected:
     double d_scale;
 
 protected:
-    constexpr Units( const SI_type &u, double s );
+    explicit constexpr Units( const SI_type &u, double s = 1.0 );
+    explicit constexpr Units( const UnitType &u, double s = 1.0 );
 
     std::string printSIBase() const;
     static constexpr Units read( std::string_view str );
