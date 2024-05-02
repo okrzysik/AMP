@@ -261,7 +261,7 @@ constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcep
 {
     constexpr char u1[] = { (char) 0xBC, '\0' };                  // micro symbol in extended ASCII
     constexpr char u2[] = { (char) 0xC2, (char) 0xB5, (char) 0 }; // micro symbol in UTF-8
-    constexpr char u3[] = { (char) 206, (char) 188, (char) 0 };   // micro symbol in UTF-16
+    constexpr char u3[] = { (char) 0xCE, (char) 0xBC, (char) 0 }; // micro symbol in UTF-16
     if ( str.empty() ) {
         return UnitPrefix::none;
     } else if ( str == "quetta" || str == "Q" ) {
@@ -358,7 +358,7 @@ constexpr Units Units::read2( std::string_view str )
 }
 constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
 {
-    constexpr char ohm[] = { (char) 206, (char) 0xA9, (char) 0 }; // Ohm symbol in UTF-16
+    constexpr char ohm[] = { (char) 0xCE, (char) 0xA9, (char) 0 }; // Ohm symbol in UTF-16
     // Check base SI units
     if ( str == "second" || str == "s" )
         return Units( UnitType::time );
@@ -507,7 +507,7 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
 }
 inline std::vector<std::string> Units::getAllUnits()
 {
-    constexpr char ohm[] = { (char) 206, (char) 169, (char) 0 }; // Ohm symbol in UTF-16
+    constexpr char ohm[] = { (char) 0xCE, (char) 0xA9, (char) 0 }; // Ohm symbol in UTF-16
     return { "second",   "s",           "meter",      "m",         "gram",    "g",
              "ampere",   "A",           "kelvin",     "K",         "mole",    "mol",
              "candela",  "cd",          "radian",     "radians",   "rad",     "steradian",

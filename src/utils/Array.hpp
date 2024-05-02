@@ -33,12 +33,12 @@
     template AMP::Array<TYPE>::Array( std::initializer_list<std::initializer_list<TYPE>> ); \
     template AMP::Array<TYPE>::Array( const AMP::Array<TYPE>& );                   \
     template AMP::Array<TYPE>::Array( AMP::Array<TYPE>&& );                        \
-    template void AMP::Array<TYPE>::allocate( const ArraySize& );                  \
+    template void AMP::Array<TYPE>::allocate( const AMP::ArraySize& );             \
     template void AMP::Array<TYPE>::reshape( const AMP::ArraySize& );              \
     template std::unique_ptr<const AMP::Array<TYPE>>                               \
-        AMP::Array<TYPE>::constView( const ArraySize&, const std::shared_ptr<TYPE const>& ); \
-    template void AMP::Array<TYPE>::viewRaw( const ArraySize&, TYPE*, bool, bool ); \
-    template void AMP::Array<TYPE>::view2( const ArraySize&, std::shared_ptr<TYPE> ); \
+        AMP::Array<TYPE>::constView( const AMP::ArraySize&, const std::shared_ptr<TYPE const>& ); \
+    template void AMP::Array<TYPE>::viewRaw( const AMP::ArraySize&, TYPE*, bool, bool ); \
+    template void AMP::Array<TYPE>::view2( const AMP::ArraySize&, std::shared_ptr<TYPE> ); \
     template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( const AMP::Array<TYPE>& ); \
     template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( AMP::Array<TYPE>&& );  \
     template TYPE* AMP::Array<TYPE>::data();                                       \
