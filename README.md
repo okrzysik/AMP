@@ -25,7 +25,6 @@ The websites associated with the AMP package includes:
 
 # Contributors #
 * Andrew Reisner (LANL)
-* Giacomo Capodaglio (LANL)
 * Richard Berger (LANL)
 
 # Alumni #
@@ -36,3 +35,4 @@ The websites associated with the AMP package includes:
 * Rahul Sampath (ORNL)
 * Srikanth Allu (ORNL)
 * Steven Hamilton (ORNL)
+* Giacomo Capodaglio (LANL)
