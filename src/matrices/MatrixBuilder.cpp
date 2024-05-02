@@ -258,7 +258,7 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     if ( type == "auto" )
         type = DEFAULT_MATRIX; // Definition set by CMake variable DEFAULT_MATRIX
     if ( type == "NULL" )
-        return nullptr;  // Special case to return nullptr
+        return nullptr; // Special case to return nullptr
     // Create the default getRow function (if not provided)
     if ( !getRow ) {
         const auto leftDOF  = leftVec->getDOFManager().get();
