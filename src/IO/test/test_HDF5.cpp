@@ -227,7 +227,7 @@ public: // Functions
         i64.write( fid );
         f.write( fid );
         d.write( fid );
-        // cmplx.write( fid );
+        cmplx.write( fid );
         str.write( fid );
     }
     void check( hid_t fid, AMP::UnitTest &ut )
@@ -245,7 +245,7 @@ public: // Functions
         i64.check( fid, ptr, ut );
         f.check( fid, ptr, ut );
         d.check( fid, ptr, ut );
-        // cmplx.check( fid, ptr, ut );
+        cmplx.check( fid, ptr, ut );
         str.check( fid, ptr, ut );
     }
 
@@ -261,7 +261,7 @@ public: // Data members
     testTYPE<int64_t> i64;
     testTYPE<float> f;
     testTYPE<double> d;
-    // testTYPE<std::complex<double>> cmplx;
+    testTYPE<std::complex<double>> cmplx;
     testTYPE<std::string> str;
 };
 
