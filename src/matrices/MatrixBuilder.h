@@ -39,7 +39,7 @@ bool haveSparseMatrix();
 std::shared_ptr<Matrix>
 createMatrix( AMP::LinearAlgebra::Vector::shared_ptr right,
               AMP::LinearAlgebra::Vector::shared_ptr left,
-              const std::string &type = "auto",
+              std::string type = "auto",
               std::function<std::vector<size_t>( size_t row )> getColumnIDs =
                   std::function<std::vector<size_t>( size_t )>() );
 

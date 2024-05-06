@@ -405,8 +405,10 @@ void readHDF5Scalar( hid_t fid, const std::string_view &name, TYPE &data )
 {
     AMP::Array<TYPE> tmp;
     readHDF5( fid, name, tmp );
-    AMP_INSIST( tmp.ndim() == 1 && tmp.length() == 1,
-                "Error loading " + std::string( name ) );
+    if ( tmp.ndim() != 1 || tmp.length() != 1 ) {
+        auto msg = AMP::Utilities::stringf( "Error loading %s: (%i,%i)", name.data(), tmp.ndim(), (int) tmp.length() );
+        AMP_ERROR( msg );
+    }
     data = tmp( 0 );
 }
 template<class T>
@@ -448,6 +450,17 @@ void writeHDF5Scalar<AMP::typeID>( hid_t fid, const std::string_view &name, cons
   H5Dclose( dataset );
   H5Tclose( datatype );
 }
+template<>
+void readHDF5Array<AMP::typeID>( hid_t fid, const std::string_view &name, AMP::Array<AMP::typeID> &data )
+{
+    readHDF5ArrayDefault<AMP::typeID>( fid, name, data );
+}
+template<>
+void writeHDF5Array<AMP::typeID>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::typeID> &data )
+{
+    writeHDF5ArrayDefault<AMP::typeID>( fid, name, data );
+}
+
 INSTANTIATE_HDF5( AMP::typeID );
 INSTANTIATE_AMPARRAY_HDF5( AMP::typeID );
 

@@ -481,6 +481,7 @@ void simpleDOFManager::writeRestart( int64_t fid ) const
     writeHDF5( fid, "remote_id", d_remote_id );
     writeHDF5( fid, "remote_dof", d_remote_dof );
 #else
+    NULL_USE( fid );
     AMP_ERROR( "Requires HDF5" );
 #endif
 }
@@ -508,6 +509,7 @@ simpleDOFManager::simpleDOFManager( int64_t fid, AMP::IO::RestartManager *manage
     readHDF5( fid, "remote_id", d_remote_id );
     readHDF5( fid, "remote_dof", d_remote_dof );
 #else
+    NULL_USE( fid );
     AMP_ERROR( "Requires HDF5" );
 #endif
     d_mesh          = manager->getData<AMP::Mesh::Mesh>( d_meshID.getHash() );

@@ -254,21 +254,13 @@ static void test( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
               AMP::LinearAlgebra::Vector::shared_ptr leftVec,
-              const std::string &type,
+              std::string type,
               std::function<std::vector<size_t>( size_t )> getRow )
 {
-    // Determine the type of matrix to build
-    std::string type2 = type;
-    if ( type == "auto" ) {
-        // this is only meant to be in the short term
-        // once tests can use any matrix we should change
-        // exclusively to CSRMatrix
-#if defined( AMP_USE_TRILINOS )
-        type2 = "ManagedEpetraMatrix";
-#else
-        type2 = "CSRMatrix";
-#endif
-    }
+    if ( type == "auto" )
+        type = DEFAULT_MATRIX; // Definition set by CMake variable DEFAULT_MATRIX
+    if ( type == "NULL" )
+        return nullptr; // Special case to return nullptr
     // Create the default getRow function (if not provided)
     if ( !getRow ) {
         const auto leftDOF  = leftVec->getDOFManager().get();
@@ -280,21 +272,19 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     }
     // Build the matrix
     std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix;
-    if ( type2 == "ManagedEpetraMatrix" ) {
-        matrix = createManagedMatrix( leftVec, rightVec, getRow, type2 );
-        test( matrix );
-    } else if ( type2 == "NativePetscMatrix" ) {
+    if ( type == "ManagedEpetraMatrix" ) {
+        matrix = createManagedMatrix( leftVec, rightVec, getRow, type );
+    } else if ( type == "NativePetscMatrix" ) {
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
-        test( matrix );
-    } else if ( type2 == "CSRMatrix" ) {
+    } else if ( type == "CSRMatrix" ) {
         matrix = createCSRMatrix<DefaultCSRPolicy>( leftVec, rightVec, getRow );
-        test( matrix );
-    } else if ( type2 == "DenseSerialMatrix" ) {
+    } else if ( type == "DenseSerialMatrix" ) {
         matrix = createDenseSerialMatrix( leftVec, rightVec );
-        test( matrix );
     } else {
         AMP_ERROR( "Unknown matrix type to build" );
     }
+    // Check that the matrix is valid
+    test( matrix );
     return matrix;
 }
 

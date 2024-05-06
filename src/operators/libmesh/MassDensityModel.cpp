@@ -215,7 +215,6 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                 ( B.size() == U.size() ) );
     AMP_ASSERT( xyz.size() == result.size() );
 
-    std::valarray<double> soln( 10 );
     size_t neval = result.size();
 
     std::shared_ptr<AMP::Materials::Property> sourceProp;
@@ -301,7 +300,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
 
         for ( size_t i = 0; i < neval; i++ ) {
-            d_ManufacturedSolution->evaluate( soln, xyz[i]( 0 ), xyz[i]( 1 ), xyz[i]( 2 ) );
+            auto soln = d_ManufacturedSolution->evaluate( xyz[i]( 0 ), xyz[i]( 1 ), xyz[i]( 2 ) );
 
             result[i] = coeff[i] * ( soln[4] + soln[7] + soln[9] ) +
                         dCoeff[i] * ( soln[1] * soln[1] + soln[2] * soln[2] + soln[3] * soln[3] );
@@ -328,7 +327,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         size_t xlate[3][3] = { { 4, 5, 6 }, { 5, 7, 8 }, { 6, 8, 9 } };
 
         for ( size_t k = 0; k < neval; k++ ) {
-            d_ManufacturedSolution->evaluate( soln, xyz[k]( 0 ), xyz[k]( 1 ), xyz[k]( 2 ) );
+            auto soln = d_ManufacturedSolution->evaluate( xyz[k]( 0 ), xyz[k]( 1 ), xyz[k]( 2 ) );
 
             result[k] = 0.;
             for ( size_t i = 0; i < dimensions[0]; i++ )
@@ -398,7 +397,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                 th = 2 * Pi - th;
             }
             // soln is the set of all derivatives wrto r, th, and z of order <= 2
-            d_ManufacturedSolution->evaluate( soln, r, th, z );
+            auto soln = d_ManufacturedSolution->evaluate( r, th, z );
 
             std::vector<double> Kr( 2 ), Kz( 2 );
             Kr[0] = ( *coeff( 0, 0 ) )[k] + ( *coeff( 1, 1 ) )[k];

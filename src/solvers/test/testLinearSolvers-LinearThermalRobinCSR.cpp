@@ -25,6 +25,7 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -50,36 +51,6 @@
 
 #include "reference_solver_solutions.h"
 
-std::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( std::shared_ptr<AMP::Database> input_db,
-             const std::string &solver_name,
-             const AMP::AMP_MPI &comm,
-             std::shared_ptr<AMP::Operator::Operator> op )
-{
-
-    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
-
-    auto db = input_db->getDatabase( solver_name );
-    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
-
-    auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-    parameters->d_pOperator = op;
-    parameters->d_comm      = comm;
-
-    std::shared_ptr<AMP::Solver::SolverStrategy> nestedSolver;
-
-    // check if we need to construct a preconditioner
-    auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
-    if ( uses_preconditioner ) {
-        auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
-        nestedSolver = buildSolver( input_db, pc_name, comm, op );
-        AMP_INSIST( nestedSolver, "null preconditioner" );
-    }
-
-    parameters->d_pNestedSolver = nestedSolver;
-
-    return AMP::Solver::SolverFactory::create( parameters );
-}
 
 namespace AMP::LinearAlgebra {
 std::shared_ptr<AMP::LinearAlgebra::Vector>
@@ -269,8 +240,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
-    auto comm         = AMP::AMP_MPI( AMP_COMM_WORLD );
-    auto linearSolver = buildSolver( input_db, "LinearSolver", comm, csrOperator );
+    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
+    auto linearSolver =
+        AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, csrOperator );
 
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );

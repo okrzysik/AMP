@@ -2,7 +2,6 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/createLibmeshElements.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/UO2_MSRZC_09.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
@@ -178,7 +177,7 @@ computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
 }
 
 
-static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
+static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, int exampleNum )
 {
     NULL_USE( exampleNum );
     std::string inputFile = "input_" + exeName;

@@ -1,4 +1,5 @@
 #include "AMP/IO/PIO.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/solvers/libmesh/PelletStackHelpers.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"

@@ -66,6 +66,15 @@ class Material;
 namespace AMP {
 
 
+// Get the elapsed duration
+static double getDuration( const std::chrono::time_point<std::chrono::steady_clock> &start )
+{
+    auto stop  = std::chrono::steady_clock::now();
+    int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( stop - start ).count();
+    return 1e-9 * ns;
+}
+
+
 // Initialize static member variables
 int AMPManager::d_initialized                 = 0;
 int AMPManager::d_argc                        = 0;
@@ -135,7 +144,7 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
     if ( d_initialized == -1 )
         AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
     // Begin startup procedure
-    double start = Utilities::time();
+    auto start = std::chrono::steady_clock::now();
     // Copy full list of input arguments
     d_properties = properties;
     d_argc       = argc;
@@ -143,9 +152,9 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
     // Initialize the timers (default is disabled)
     PROFILE_DISABLE();
     // Initialize MPI
-    double MPI_start = Utilities::time();
+    auto MPI_start = std::chrono::steady_clock::now();
     AMP_MPI::start_MPI( argc, argv, d_properties.profile_MPI_level );
-    double MPI_time = Utilities::time() - MPI_start;
+    auto MPI_time = getDuration( MPI_start );
     // Initialize AMP's MPI
     comm_world = AMP_MPI( AMP_COMM_WORLD );
     if ( d_properties.COMM_WORLD != AMP_COMM_WORLD )
@@ -158,17 +167,11 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
     double petsc_time = start_PETSc();
     // Initialize SAMRAI
     double SAMRAI_time = start_SAMRAI();
-    // Initialize StackTrace
-    if ( comm_world.getSize() == 1 )
-        d_properties.stack_trace_type = std::min( d_properties.stack_trace_type, 2 );
-    StackTrace::Utilities::setAbortBehavior( !d_properties.use_MPI_Abort,
-                                             d_properties.stack_trace_type );
-    if ( d_properties.stack_trace_type == 3 )
-        StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
+    // Initialize error handlers
     setHandlers();
     // Initialization finished
     d_initialized = 1;
-    double time   = Utilities::time() - start;
+    double time   = getDuration( start );
     if ( d_properties.print_startup ) {
         AMP::pout << "Version info:\n" << info() << std::endl;
         AMP::pout.flush();
@@ -191,8 +194,8 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
  ****************************************************************************/
 void AMPManager::shutdown()
 {
-    double start_time = Utilities::time();
-    int rank          = comm_world.getRank();
+    auto start_time = std::chrono::steady_clock::now();
+    int rank        = comm_world.getRank();
     if ( d_initialized == 0 )
         AMP_ERROR( "AMP is not initialized, did you forget to call startup" );
     if ( d_initialized == -1 )
@@ -216,9 +219,9 @@ void AMPManager::shutdown()
     // shutdown Kokkos
     AMP::Utilities::finalizeKokkos();
     // Shutdown MPI
-    double MPI_start = Utilities::time();
+    auto MPI_start = std::chrono::steady_clock::now();
     AMP_MPI::stop_MPI();
-    double MPI_time = Utilities::time() - MPI_start;
+    auto MPI_time = getDuration( MPI_start );
     // Print any AMP_MPI leaks
     if ( AMP_MPI::MPI_Comm_created() != AMP_MPI::MPI_Comm_destroyed() ) {
         printf( "Rank %i detected AMP_MPI comm leak: %i %i\n",
@@ -239,7 +242,7 @@ void AMPManager::shutdown()
     AMP::Solver::SolverFactory::clear();
     AMP::TimeIntegrator::TimeIntegratorFactory::clear();
     // List shutdown times
-    double shutdown_time = Utilities::time() - start_time;
+    double shutdown_time = getDuration( start_time );
     if ( d_properties.print_times && rank == 0 ) {
         printf( "shutdown time = %0.3f s\n", shutdown_time );
         if ( SAMRAI_time != 0 )
@@ -317,7 +320,7 @@ typename std::enable_if_t<!hasClearTimers<T>::value, void> clearTimers( const T 
 }
 double AMPManager::start_SAMRAI()
 {
-    double start = Utilities::time();
+    auto start = std::chrono::steady_clock::now();
     #ifdef AMP_USE_MPI
     SAMRAI::tbox::SAMRAI_MPI::init( AMP_MPI( AMP_COMM_WORLD ).getCommunicator() );
     #else
@@ -326,17 +329,17 @@ double AMPManager::start_SAMRAI()
     SAMRAI::tbox::SAMRAIManager::initialize();
     SAMRAI::tbox::SAMRAIManager::startup();
     SAMRAI::tbox::SAMRAIManager::setMaxNumberPatchDataEntries( 2048 );
-    return Utilities::time() - start;
+    return getDuration( start );
 }
 double AMPManager::stop_SAMRAI()
 {
-    double start = Utilities::time();
+    auto start = std::chrono::steady_clock::now();
     SAMRAI::tbox::PIO::finalize();
     SAMRAI::tbox::SAMRAIManager::shutdown();
     SAMRAI::tbox::SAMRAIManager::finalize();
     SAMRAI::tbox::SAMRAI_MPI::finalize();
     clearTimers( SAMRAI::tbox::Schedule() );
-    return Utilities::time() - start;
+    return getDuration( start );
 }
 #else
 double AMPManager::start_SAMRAI() { return 0; }
@@ -351,7 +354,7 @@ double AMPManager::stop_SAMRAI() { return 0; }
 static bool called_PetscInitialize = false;
 double AMPManager::start_PETSc()
 {
-    double start = Utilities::time();
+    auto start = std::chrono::steady_clock::now();
     if ( PetscInitializeCalled ) {
         called_PetscInitialize = false;
     } else {
@@ -365,17 +368,17 @@ double AMPManager::start_PETSc()
     // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
     AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
     #endif
-    return Utilities::time() - start;
+    return getDuration( start );
 }
 double AMPManager::stop_PETSc()
 {
     double time = 0;
     if ( called_PetscInitialize ) {
-        double start = Utilities::time();
+        auto start = std::chrono::steady_clock::now();
         PetscPopSignalHandler();
         PetscPopErrorHandler();
         PetscFinalize();
-        time = Utilities::time() - start;
+        time = getDuration( start );
     }
     return time;
 }
@@ -392,7 +395,7 @@ double AMPManager::start_CUDA()
 {
     if ( !d_properties.initialize_CUDA )
         return 0;
-    double start = Utilities::time();
+    auto start = std::chrono::steady_clock::now();
 #ifdef USE_CUDA
     if ( d_properties.bind_process_to_accelerator ) {
         AMP::Utilities::setenv( "RDMAV_FORK_SAFE", "1" );
@@ -408,7 +411,7 @@ double AMPManager::start_CUDA()
     checkCudaErrors( cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal ) );
     cudaFree( tmp );
 #endif
-    return Utilities::time() - start;
+    return getDuration( start );
 }
 
 

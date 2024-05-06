@@ -15,36 +15,6 @@
 namespace AMP::IO {
 
 
-static inline size_t find_slash( const std::string &filename )
-{
-    size_t i1 = filename.find_last_of( 47 );
-    size_t i2 = filename.find_last_of( 92 );
-    size_t i  = std::string::npos;
-    if ( i1 == std::string::npos )
-        i = i2;
-    else if ( i2 == std::string::npos )
-        i = i1;
-    else if ( i1 != std::string::npos && i2 != std::string::npos )
-        i = std::max( i1, i2 );
-    return i;
-}
-
-
-// Function to replace all instances of a string with another
-static inline void strrep( std::string &str, const std::string &s, const std::string &r )
-{
-    size_t i = 0;
-    while ( i < str.length() ) {
-        i = str.find( s, i );
-        if ( i == std::string::npos ) {
-            break;
-        }
-        str.replace( i, s.length(), r );
-        i += r.length();
-    }
-}
-
-
 /************************************************************
  * Constructor/Destructor                                    *
  ************************************************************/
@@ -395,15 +365,17 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
     const auto [multiMeshes, baseMeshes] = syncMultiMeshData( 0 );
     // Write the multimeshes and multivariables
     std::string base_path;
-    if ( find_slash( filename ) != std::string::npos )
-        base_path = filename.substr( 0, find_slash( filename ) + 1 );
+    constexpr static char slash[] = { 0x2F, 0x5C, 0x0 };
+    size_t pos                    = filename.find_last_of( slash );
+    if ( pos != std::string::npos )
+        base_path = filename.substr( 0, pos + 1 );
     if ( d_comm.getRank() == 0 ) {
         DBfile *fid = DBOpen( filename.c_str(), DB_HDF5, DB_APPEND );
         // Create the subdirectories
         std::set<std::string> subdirs;
         for ( const auto &data : multiMeshes ) {
-            auto file  = getFile( data.name, base_path );
-            size_t pos = find_slash( file );
+            auto file = getFile( data.name, base_path );
+            pos       = file.find_last_of( slash );
             if ( pos != std::string::npos )
                 subdirs.insert( file.substr( 0, pos ) );
         }
@@ -417,10 +389,10 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
             for ( size_t i = 0; i < N; ++i ) {
                 auto it = baseMeshes.find( data.meshes[i] );
                 AMP_ASSERT( it != baseMeshes.end() );
-                const auto &base = it->second;
-                auto file        = getFile( base.file, base_path );
-                meshNames[i]     = file + ":" + base.path + "/" + base.meshName;
-                strrep( meshNames[i], "//", "/" );
+                auto &base   = it->second;
+                auto file    = getFile( base.file, base_path );
+                meshNames[i] = file + ":" + base.path + "/" + base.meshName;
+                meshNames[i] = AMP::Utilities::strrep( meshNames[i], "//", "/" );
             }
             auto meshnames = new char *[N];
             auto meshtypes = new int[N];
@@ -453,9 +425,9 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                     auto rankStr = std::to_string( base.rank );
                     auto file    = getFile( base.file, base_path );
                     varNames[i]  = file + ":" + base.path + "/" + varName + "P" + rankStr;
-                    strrep( varNames[i], "//", "/" );
-                    varnames[i] = (char *) varNames[i].c_str();
-                    vartypes[i] = DB_UCDVAR;
+                    varNames[i]  = AMP::Utilities::strrep( varNames[i], "//", "/" );
+                    varnames[i]  = (char *) varNames[i].c_str();
+                    vartypes[i]  = DB_UCDVAR;
                 }
                 auto it = baseMeshes.find( data.meshes[0] );
                 AMP_ASSERT( it != baseMeshes.end() );
