@@ -10,6 +10,7 @@
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -29,13 +30,12 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
              std::shared_ptr<AMP::Operator::LinearOperator> &op )
 {
 
-    std::shared_ptr<AMP::Solver::SolverStrategy> solver;
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
 
     AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
 
     const auto &db = input_db->getDatabase( solver_name );
 
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
     if ( db->keyExists( "name" ) ) {
 
         auto name = db->getString( "name" );
@@ -50,12 +50,12 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
 
                 auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
 
-                pcSolver = buildSolver( input_db, pc_name, comm, op );
+                pcSolver = AMP::Solver::Test::buildSolver( pc_name, input_db, comm, nullptr, op );
 
                 AMP_INSIST( pcSolver, "null preconditioner" );
             }
 
-            auto parameters    = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+            parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
             parameters->d_comm = comm;
             parameters->d_pNestedSolver = pcSolver;
 
@@ -70,7 +70,7 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
         AMP_ERROR( "Key name does not exist in solver database" );
     }
 
-    solver = AMP::Solver::SolverFactory::create( parameters );
+    auto solver = AMP::Solver::SolverFactory::create( parameters );
 
     return solver;
 }
@@ -163,7 +163,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
-    auto linearSolver = buildSolver( input_db, "LinearSolver", globalComm, linearOp );
+    auto linearSolver =
+        AMP::Solver::Test::buildSolver( "LinearSolver", input_db, globalComm, nullptr, linearOp );
 
     // Use a random initial guess
     linearSolver->setZeroInitialGuess( false );

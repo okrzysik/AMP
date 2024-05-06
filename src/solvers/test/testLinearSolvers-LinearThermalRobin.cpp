@@ -21,6 +21,7 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -31,27 +32,8 @@
 #include <memory>
 #include <string>
 
-
 #include "reference_solver_solutions.h"
 
-std::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( std::shared_ptr<AMP::Database> input_db,
-             const std::string &solver_name,
-             const AMP::AMP_MPI &comm,
-             std::shared_ptr<AMP::Operator::Operator> op )
-{
-
-    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
-
-    auto db = input_db->getDatabase( solver_name );
-    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
-
-    auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-    parameters->d_pOperator = op;
-    parameters->d_comm      = comm;
-    parameters->d_global_db = input_db;
-    return AMP::Solver::SolverFactory::create( parameters );
-}
 
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
@@ -139,8 +121,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
-    auto comm         = AMP::AMP_MPI( AMP_COMM_WORLD );
-    auto linearSolver = buildSolver( input_db, "LinearSolver", comm, linearOperator );
+    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
+    auto linearSolver =
+        AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, linearOperator );
 
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );

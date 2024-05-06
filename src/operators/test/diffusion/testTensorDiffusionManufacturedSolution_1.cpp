@@ -128,31 +128,28 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
     auto mfgName  = mfgSolution->get_name();
     if ( mfgName.find( "Cylindrical" ) < mfgName.size() ) {
         for ( ; iterator != iterator.end(); ++iterator ) {
-            double x, y, z, r, th = 0.;
-            std::valarray<double> poly( 10 );
-            x         = ( iterator->coord() )[0];
-            y         = ( iterator->coord() )[1];
-            z         = ( iterator->coord() )[2];
-            r         = sqrt( x * x + y * y );
+            double x  = ( iterator->coord() )[0];
+            double y  = ( iterator->coord() )[1];
+            double z  = ( iterator->coord() )[2];
+            double r  = sqrt( x * x + y * y );
             double Pi = 3.1415926535898;
+            double th = 0;
             if ( r > 0 ) {
                 th = acos( x / r );
                 if ( y < 0. )
                     th = 2 * Pi - th;
             }
-            mfgSolution->evaluate( poly, r, th, z );
+            auto poly = mfgSolution->evaluate( r, th, z );
             std::vector<size_t> gid;
             nodalDofMap->getDOFs( iterator->globalID(), gid );
             solVec->setValuesByGlobalID( 1, &gid[0], &poly[0] );
         }
     } else {
         for ( ; iterator != iterator.end(); ++iterator ) {
-            double x, y, z;
-            std::valarray<double> poly( 10 );
-            x = ( iterator->coord() )[0];
-            y = ( iterator->coord() )[1];
-            z = ( iterator->coord() )[2];
-            mfgSolution->evaluate( poly, x, y, z );
+            double x  = ( iterator->coord() )[0];
+            double y  = ( iterator->coord() )[1];
+            double z  = ( iterator->coord() )[2];
+            auto poly = mfgSolution->evaluate( x, y, z );
             std::vector<size_t> gid;
             nodalDofMap->getDOFs( iterator->globalID(), gid );
             solVec->setValuesByGlobalID( 1, &gid[0], &poly[0] );
@@ -200,7 +197,6 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
                 sol = solVec->getValueByGlobalID( gid[0] );
                 src = sourceVec->getValueByGlobalID( gid[0] );
                 err = res / ( src + .5 * res + std::numeric_limits<double>::epsilon() );
-                std::valarray<double> poly( 10 );
                 if ( mfgName.find( "Cylindrical" ) < mfgName.size() ) {
                     double r = sqrt( x * x + y * y ), th = 0.;
                     double Pi = 3.1415926535898;
@@ -209,11 +205,10 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
                         if ( y < 0. )
                             th = 2. * Pi - th;
                     }
-                    mfgSolution->evaluate( poly, r, th, z );
+                    val = mfgSolution->evaluate( r, th, z )[0];
                 } else {
-                    mfgSolution->evaluate( poly, x, y, z );
+                    val = mfgSolution->evaluate( x, y, z )[0];
                 }
-                val = poly[0];
                 workVec->setValuesByGlobalID( 1, &gid[0], &err );
 
                 file << "{" << x << "," << y << "," << z << "," << val << "," << sol << "," << src
