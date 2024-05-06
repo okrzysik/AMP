@@ -57,7 +57,8 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsOperator->getVolumeOperator() );
-    auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
+        nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
@@ -68,7 +69,8 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearThermalVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
-    auto thermalTransportModel = nonlinearThermalVolumeOperator->getTransportModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel =
+        nonlinearThermalVolumeOperator->getTransportModel();
 
     auto thermOperator = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nonlinearThermalOperator->getVolumeOperator() );
@@ -82,7 +84,8 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearOxygenVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearOxygenOperator->getVolumeOperator() );
-    auto oxygenTransportModel = nonlinearOxygenVolumeOperator->getTransportModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel =
+        nonlinearOxygenVolumeOperator->getTransportModel();
 
     auto fickOperator = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nonlinearOxygenOperator->getVolumeOperator() );
@@ -154,8 +157,11 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( thermalTransportModel );
     auto transportModelOx =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( oxygenTransportModel );
-    double defTemp = thermalTransportModel->getProperty()->get_default( "temperature" );
-    double defConc = thermalTransportModel->getProperty()->get_default( "concentration" );
+    auto property =
+        std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( thermalTransportModel )
+            ->getProperty();
+    double defTemp = property->get_default( "temperature" );
+    double defConc = property->get_default( "concentration" );
     // next get vectors
     auto tempVec =
         solVec->subsetVectorForVariable( inputVariables[AMP::Operator::Mechanics::TEMPERATURE] );
