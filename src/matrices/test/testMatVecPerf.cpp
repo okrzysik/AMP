@@ -4,8 +4,8 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
-#include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/testHelpers/MatrixDataTransforms.h"
 #include "AMP/matrices/testHelpers/MatrixTests.h"
 #include "AMP/mesh/Mesh.h"
@@ -37,7 +37,7 @@
 #define NUM_PRODUCTS 50
 
 void matVecTestWithDOFs( AMP::UnitTest *ut,
-			 std::string type,
+                         std::string type,
                          std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
     auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
@@ -60,8 +60,8 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 
     auto nGlobalRows = matrix->numGlobalRows();
     auto nLocalRows  = matrix->numLocalRows();
-    AMP::pout << type << " Global rows: " << nGlobalRows
-	      << " Local rows: " << nLocalRows << std::endl;
+    AMP::pout << type << " Global rows: " << nGlobalRows << " Local rows: " << nLocalRows
+              << std::endl;
 
 #if defined( AMP_USE_HYPRE )
     using scalar_t = typename AMP::LinearAlgebra::HypreCSRPolicy::scalar_t;
@@ -69,7 +69,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     using scalar_t = typename double;
 #endif
 
-    auto x  = matrix->getRightVector();
+    auto x = matrix->getRightVector();
     auto y = matrix->getRightVector();
 
     x->setToScalar( 1.0 );
@@ -78,8 +78,8 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 
     y->zero();
 
-    for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd) {
-      matrix->mult( x, y );
+    for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
+        matrix->mult( x, y );
     }
 
     auto yNorm = static_cast<scalar_t>( y->L1Norm() );
@@ -130,7 +130,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
     std::vector<std::string> files;
     PROFILE_ENABLE();
-    
+
     if ( argc > 1 ) {
 
         files.emplace_back( argv[1] );

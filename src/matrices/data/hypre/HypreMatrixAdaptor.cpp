@@ -30,15 +30,27 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     auto csrData = std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy>>( matrixData );
     if ( csrData ) {
 
-#warning HypreMatrixAdaptor only looks at diagonal blocks for the moment... 
-        auto [nnz, cols, vals] = csrData->getCSRDiagData();
+        auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
+        auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
 
-        auto nnz_per_row  = static_cast<HYPRE_Int *>( nnz );
-        const auto csr_ja = static_cast<HYPRE_BigInt const *>( cols );
-        const auto csr_aa = static_cast<HYPRE_Real const *>( vals );
+        auto nnz_per_row_d  = static_cast<HYPRE_Int *>( nnz_d );
+        const auto csr_ja_d = static_cast<HYPRE_BigInt const *>( cols_d );
+        const auto csr_aa_d = static_cast<HYPRE_Real const *>( coeffs_d );
 
-        AMP_INSIST( nnz_per_row && csr_ja && csr_aa, "nnz_per_row, csr_ja, csr_aa cannot be NULL" );
-        initializeHypreMatrix( firstRow, lastRow, nnz_per_row, csr_ja, csr_aa );
+        auto nnz_per_row_od  = static_cast<HYPRE_Int *>( nnz_od );
+        const auto csr_ja_od = static_cast<HYPRE_BigInt const *>( cols_od );
+        const auto csr_aa_od = static_cast<HYPRE_Real const *>( coeffs_od );
+
+        AMP_INSIST( nnz_d && csr_ja_d && csr_aa_d, "diagonal block layout cannot be NULL" );
+        initializeHypreMatrix( firstRow,
+                               lastRow,
+                               csrData->hasOffDiag(),
+                               nnz_per_row_d,
+                               csr_ja_d,
+                               csr_aa_d,
+                               nnz_per_row_od,
+                               csr_ja_od,
+                               csr_aa_od );
 
     } else {
 
@@ -85,9 +97,13 @@ set_row_ids_( HYPRE_BigInt const first_row, HYPRE_BigInt const nrows, HYPRE_BigI
 
 void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
                                                 HYPRE_BigInt last_row,
-                                                HYPRE_Int *const nnz_per_row,
-                                                HYPRE_BigInt const *const csr_ja,
-                                                HYPRE_Real const *const csr_aa )
+                                                bool has_off_diag,
+                                                HYPRE_Int *const nnz_per_row_d,
+                                                HYPRE_BigInt const *const csr_ja_d,
+                                                HYPRE_Real const *const csr_aa_d,
+                                                HYPRE_Int *const nnz_per_row_od,
+                                                HYPRE_BigInt const *const csr_ja_od,
+                                                HYPRE_Real const *const csr_aa_od )
 {
     const auto nrows = last_row - first_row + 1;
 
@@ -95,16 +111,11 @@ void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
     AMP::CudaManagedAllocator<HYPRE_BigInt> managedAllocator;
 #endif
 
-    HYPRE_IJMatrixSetRowSizes( d_matrix, nnz_per_row );
-
-    // The next 2 lines affect efficiency and should be resurrected at some point
-    //  set_row_location_(d_first_row, d_last_row, nrows, nnz_per_row, csr_ia, csr_ja,
-    //  number_of_local_cols, number_of_remote_cols ); HYPRE_IJMatrixSetDiagOffdSizes( d_matrix,
-    //  number_of_local_cols.data(), number_of_remote_cols.data() );
+    HYPRE_IJMatrixSetDiagOffdSizes( d_matrix, nnz_per_row_d, nnz_per_row_od );
 
     HYPRE_IJMatrixInitialize( d_matrix );
 
-    auto memType = AMP::Utilities::getMemoryType( csr_ja );
+    auto memType = AMP::Utilities::getMemoryType( csr_ja_d );
 
     HYPRE_BigInt *row_ids_p = nullptr;
     std::vector<HYPRE_BigInt> row_ids;
@@ -122,7 +133,10 @@ void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
     }
 
     set_row_ids_( first_row, nrows, row_ids_p );
-    HYPRE_IJMatrixSetValues( d_matrix, nrows, nnz_per_row, row_ids_p, csr_ja, csr_aa );
+    HYPRE_IJMatrixSetValues( d_matrix, nrows, nnz_per_row_d, row_ids_p, csr_ja_d, csr_aa_d );
+    if ( has_off_diag ) {
+        HYPRE_IJMatrixSetValues( d_matrix, nrows, nnz_per_row_od, row_ids_p, csr_ja_od, csr_aa_od );
+    }
     HYPRE_IJMatrixAssemble( d_matrix );
 
     if ( memType == AMP::Utilities::MemoryType::managed ) {

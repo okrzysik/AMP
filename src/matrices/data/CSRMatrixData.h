@@ -2,7 +2,6 @@
 #define included_AMP_CSRMatrixData_h
 
 #include "AMP/matrices/data/MatrixData.h"
-#include "AMP/matrices/data/CSRSerialMatrixData.h"
 
 #include <map>
 #include <tuple>
@@ -162,14 +161,20 @@ public:
 
     size_t beginCol() const { return d_first_col; }
 
-    std::tuple<lidx_t *, lidx_t const *, scalar_t const *> getCSRDiagData()
+    std::tuple<lidx_t *, gidx_t const *, lidx_t const *, scalar_t const *> getCSRDiagData()
     {
-        return d_diagMatrix->getCSRData();
+        return std::make_tuple( d_diag_matrix->d_nnz_per_row,
+                                d_diag_matrix->d_cols,
+                                d_diag_matrix->d_cols_loc,
+                                d_diag_matrix->d_coeffs );
     }
 
-    std::tuple<lidx_t *, lidx_t const *, scalar_t const *> getCSROffDiagData()
+    std::tuple<lidx_t *, gidx_t const *, lidx_t const *, scalar_t const *> getCSROffDiagData()
     {
-        return d_offDiagMatrix->getCSRData();
+        return std::make_tuple( d_off_diag_matrix->d_nnz_per_row,
+                                d_off_diag_matrix->d_cols,
+                                d_off_diag_matrix->d_cols_loc,
+                                d_off_diag_matrix->d_coeffs );
     }
 
     bool isSquare() const noexcept { return d_is_square; }
@@ -185,11 +190,77 @@ public:
 
     auto numberOfNonZeros() const { return d_nnz; }
 
-    auto numberOfNonZerosDiag() const { return d_diagMatrix->numberOfNonZeros(); }
+    auto numberOfNonZerosDiag() const { return d_diag_matrix->d_nnz; }
 
-    auto numberOfNonZerosOffDiag() const { return d_offDiagMatrix->numberOfNonZeros(); }
+    auto numberOfNonZerosOffDiag() const { return d_off_diag_matrix->d_nnz; }
 
-    bool hasOffDiag() const { return !d_offDiagMatrix->isEmpty(); }
+    bool hasOffDiag() const { return !d_off_diag_matrix->d_is_empty; }
+
+private:
+    // Private internal data class for managing the non-zero structure of the matrix
+    // One instance will be made for the diagonal block and another for the off-diagonal block
+    class CSRSerialMatrixData : public AMP::enable_shared_from_this<CSRSerialMatrixData>
+    {
+        // The outer CSRMatrixData class should have direct access to the internals of this class
+        friend class CSRMatrixData<Policy>;
+
+    public:
+        /** \brief Constructor
+         * \param[in] params Description of the matrix
+         * \param[in] is_diag True if this is the diag block, influences which dofs are used/ignored
+         */
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy> &outer,
+                                      std::shared_ptr<MatrixParametersBase> params,
+                                      bool is_diag );
+
+        //! Destructor
+        virtual ~CSRSerialMatrixData();
+
+        void getRowByGlobalID( const size_t local_row,
+                               std::vector<size_t> &cols,
+                               std::vector<double> &values ) const;
+
+        void getValuesByGlobalID( const size_t local_row,
+                                  const size_t col,
+                                  void *values,
+                                  const typeID &id ) const;
+
+        void addValuesByGlobalID( const size_t num_cols,
+                                  const size_t rows,
+                                  const size_t *cols,
+                                  const scalar_t *vals,
+                                  const typeID &id );
+
+        void setValuesByGlobalID( const size_t num_cols,
+                                  const size_t rows,
+                                  const size_t *cols,
+                                  const scalar_t *vals,
+                                  const typeID &id );
+
+        std::vector<size_t> getColumnIDs( const size_t local_row ) const;
+
+    protected:
+        const CSRMatrixData<Policy> &d_outer; // reference to the containing CSRMatrixData object
+        bool d_is_diag  = true;
+        bool d_is_empty = false;
+
+        lidx_t *d_nnz_per_row = nullptr;
+        lidx_t *d_row_starts  = nullptr;
+        lidx_t *d_cols_loc    = nullptr;
+        gidx_t *d_cols        = nullptr;
+        scalar_t *d_coeffs    = nullptr;
+
+        gidx_t d_num_rows = 0;
+        gidx_t d_nnz      = 0;
+
+        AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+
+        std::shared_ptr<MatrixParametersBase> d_pParameters;
+
+        bool d_manage_cols   = true;
+        bool d_manage_nnz    = true;
+        bool d_manage_coeffs = true;
+    };
 
 protected:
     bool d_is_square   = true;
@@ -198,11 +269,11 @@ protected:
     gidx_t d_first_col = 0;
     gidx_t d_last_col  = 0;
     gidx_t d_nnz       = 0;
-  
+
     AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
-  
-    std::shared_ptr<CSRSerialMatrixData<Policy>> d_diagMatrix = nullptr;
-    std::shared_ptr<CSRSerialMatrixData<Policy>> d_offDiagMatrix = nullptr;
+
+    std::shared_ptr<CSRSerialMatrixData> d_diag_matrix     = nullptr;
+    std::shared_ptr<CSRSerialMatrixData> d_off_diag_matrix = nullptr;
 
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
     std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;

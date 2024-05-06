@@ -32,9 +32,13 @@ private:
     //! Main internal routine for initializing the matrix
     void initializeHypreMatrix( HYPRE_BigInt first_row,
                                 HYPRE_BigInt last_row,
-                                HYPRE_Int *const csr_ia,
-                                HYPRE_BigInt const *const csr_ja,
-                                HYPRE_Real const *const csr_aa );
+                                bool has_off_diag,
+                                HYPRE_Int *const csr_ia_d,
+                                HYPRE_BigInt const *const csr_ja_d,
+                                HYPRE_Real const *const csr_aa_d,
+                                HYPRE_Int *const csr_ia_od,
+                                HYPRE_BigInt const *const csr_ja_od,
+                                HYPRE_Real const *const csr_aa_od );
 
     //! hypre IJ matrix that this class wraps
     HYPRE_IJMatrix d_matrix;

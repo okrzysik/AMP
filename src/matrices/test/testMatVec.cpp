@@ -71,14 +71,35 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     using scalar_t = typename Policy::scalar_t;
 
     gidx_t firstRow, endRow;
-    std::vector<lidx_t> nnz;
-    std::vector<gidx_t> cols;
-    std::vector<scalar_t> coeffs;
+    std::vector<lidx_t> nnz_d, nnz_od;
+    std::vector<gidx_t> cols_d, cols_od;
+    std::vector<lidx_t> cols_loc_d, cols_loc_od;
+    std::vector<scalar_t> coeffs_d, coeffs_od;
 
-    AMP::LinearAlgebra::transformDofToCSR<Policy>( matrix, firstRow, endRow, nnz, cols, coeffs );
+    AMP::LinearAlgebra::transformDofToCSR<Policy>( matrix,
+                                                   firstRow,
+                                                   endRow,
+                                                   nnz_d,
+                                                   cols_d,
+                                                   cols_loc_d,
+                                                   coeffs_d,
+                                                   nnz_od,
+                                                   cols_od,
+                                                   cols_loc_od,
+                                                   coeffs_od );
 
-    auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
-        firstRow, endRow, nnz.data(), cols.data(), coeffs.data(), comm );
+    auto csrParams =
+        std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>( firstRow,
+                                                                           endRow,
+                                                                           nnz_d.data(),
+                                                                           cols_d.data(),
+                                                                           cols_loc_d.data(),
+                                                                           coeffs_d.data(),
+                                                                           nnz_od.data(),
+                                                                           cols_od.data(),
+                                                                           cols_loc_od.data(),
+                                                                           coeffs_od.data(),
+                                                                           comm );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
     AMP_ASSERT( csrMatrix );
