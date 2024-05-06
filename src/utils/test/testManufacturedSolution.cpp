@@ -39,14 +39,14 @@ void testit( AMP::UnitTest *ut,
     size_t nc = ms.getNumberOfInputs();
     size_t na = ms.getNumberOfParameters();
 
-    std::valarray<double> out( 10 ), in( nc ), param( na );
+    std::valarray<double> in( nc ), param( na );
 
     for ( size_t i = 0; i < na; i++ )
         param[i] = i;
     for ( size_t i = 0; i < nc; i++ )
         in[i] = i + 1;
     ms.setTricubicParams( in, param );
-    ms.evaluate( out, x, y, z );
+    [[maybe_unused]] auto out = ms.evaluate( x, y, z );
 
     std::string msg = geom + " " + order + " " + bc + " basics";
     ut->passes( msg );

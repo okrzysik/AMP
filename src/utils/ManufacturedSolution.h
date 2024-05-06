@@ -1,6 +1,8 @@
 #ifndef MMS_H
 #define MMS_H
 
+#include <array>
+#include <functional>
 #include <memory>
 #include <string>
 #include <valarray>
@@ -55,11 +57,11 @@ public:
      *  \param y y-coordinate
      *  \param z z-coordinate
      */
-    void evaluate( std::valarray<double> &result, const double x, const double y, const double z );
+    std::array<double, 10> evaluate( const double x, const double y, const double z ) const;
 
-    size_t getNumberOfParameters() { return d_NumberOfParameters; }
+    size_t getNumberOfParameters() const { return d_NumberOfParameters; }
 
-    size_t getNumberOfInputs() { return d_NumberOfInputs; }
+    size_t getNumberOfInputs() const { return d_NumberOfInputs; }
 
     void setTricubicParams( const std::valarray<double> &cin, const std::valarray<double> &ain )
     {
@@ -67,7 +69,7 @@ public:
         d_a = ain;
     }
 
-    std::string get_name() { return d_Name; }
+    std::string get_name() const { return d_Name; }
 
 private:
     /**
@@ -102,142 +104,112 @@ private:
      *  \param z z-coordinate
      *  \param mfs manufactured solution
      */
-    static void quad_neumann( std::valarray<double> &result,
-                              const double x,
-                              const double y,
-                              const double z,
-                              ManufacturedSolution *mfs );
+    static std::array<double, 10>
+    quad_neumann( const double x, const double y, const double z, const ManufacturedSolution *mfs );
 
-    static void quad_dirichlet1( std::valarray<double> &result,
-                                 const double x,
-                                 const double y,
-                                 const double z,
-                                 ManufacturedSolution *mfs );
+    static std::array<double, 10> quad_dirichlet1( const double x,
+                                                   const double y,
+                                                   const double z,
+                                                   const ManufacturedSolution *mfs );
 
-    static void quad_dirichlet2( std::valarray<double> &result,
-                                 const double x,
-                                 const double y,
-                                 const double z,
-                                 ManufacturedSolution *mfs );
+    static std::array<double, 10> quad_dirichlet2( const double x,
+                                                   const double y,
+                                                   const double z,
+                                                   const ManufacturedSolution *mfs );
 
-    static void quad_none( std::valarray<double> &result,
-                           const double x,
-                           const double y,
-                           const double z,
-                           ManufacturedSolution *mfs );
+    static std::array<double, 10>
+    quad_none( const double x, const double y, const double z, const ManufacturedSolution *mfs );
 
-    static void cubic_neumann( std::valarray<double> &result,
-                               const double x,
-                               const double y,
-                               const double z,
-                               ManufacturedSolution *mfs );
+    static std::array<double, 10> cubic_neumann( const double x,
+                                                 const double y,
+                                                 const double z,
+                                                 const ManufacturedSolution *mfs );
 
-    static void cubic_dirichlet1( std::valarray<double> &result,
-                                  const double x,
-                                  const double y,
-                                  const double z,
-                                  ManufacturedSolution *mfs );
+    static std::array<double, 10> cubic_dirichlet1( const double x,
+                                                    const double y,
+                                                    const double z,
+                                                    const ManufacturedSolution *mfs );
 
-    static void cubic_dirichlet2( std::valarray<double> &result,
-                                  const double x,
-                                  const double y,
-                                  const double z,
-                                  ManufacturedSolution *mfs );
+    static std::array<double, 10> cubic_dirichlet2( const double x,
+                                                    const double y,
+                                                    const double z,
+                                                    const ManufacturedSolution *mfs );
 
-    static void cubic_none( std::valarray<double> &result,
-                            const double x,
-                            const double y,
-                            const double z,
-                            ManufacturedSolution *mfs );
+    static std::array<double, 10>
+    cubic_none( const double x, const double y, const double z, const ManufacturedSolution *mfs );
 
-    static void quad_cyl_rod_none( std::valarray<double> &result,
-                                   const double r,
-                                   const double th,
-                                   const double z,
-                                   ManufacturedSolution *mfs );
+    static std::array<double, 10> quad_cyl_rod_none( const double r,
+                                                     const double th,
+                                                     const double z,
+                                                     const ManufacturedSolution *mfs );
 
-    static void cubic_cyl_shell_neumann( std::valarray<double> &result,
-                                         const double r,
-                                         const double th,
-                                         const double z,
-                                         ManufacturedSolution *mfs );
+    static std::array<double, 10> cubic_cyl_shell_neumann( const double r,
+                                                           const double th,
+                                                           const double z,
+                                                           const ManufacturedSolution *mfs );
 
-    static void cubic_cyl_rod_dirichletz2( std::valarray<double> &result,
-                                           const double r,
-                                           const double th,
-                                           const double z,
-                                           ManufacturedSolution *mfs );
+    static std::array<double, 10> cubic_cyl_rod_dirichletz2( const double r,
+                                                             const double th,
+                                                             const double z,
+                                                             const ManufacturedSolution *mfs );
 
-    static void cubic_cyl_rod_rz_none( std::valarray<double> &result,
-                                       const double r,
-                                       const double th,
-                                       const double z,
-                                       ManufacturedSolution *mfs );
+    static std::array<double, 10> cubic_cyl_rod_rz_none( const double r,
+                                                         const double th,
+                                                         const double z,
+                                                         const ManufacturedSolution *mfs );
 
-    static void cubic_cyl_rod_none( std::valarray<double> &result,
-                                    const double r,
-                                    const double th,
-                                    const double z,
-                                    ManufacturedSolution *mfs );
+    static std::array<double, 10> cubic_cyl_rod_none( const double r,
+                                                      const double th,
+                                                      const double z,
+                                                      const ManufacturedSolution *mfs );
 
-    static void quad_cyl_shell_neumann( std::valarray<double> &result,
-                                        const double r,
-                                        const double th,
-                                        const double z,
-                                        ManufacturedSolution *mfs );
+    static std::array<double, 10> quad_cyl_shell_neumann( const double r,
+                                                          const double th,
+                                                          const double z,
+                                                          const ManufacturedSolution *mfs );
 
-    static void quad_cyl_qtr_shell_neumann( std::valarray<double> &result,
-                                            const double r,
-                                            const double th,
-                                            const double z,
-                                            ManufacturedSolution *mfs );
+    static std::array<double, 10> quad_cyl_qtr_shell_neumann( const double r,
+                                                              const double th,
+                                                              const double z,
+                                                              const ManufacturedSolution *mfs );
 
-    static void quad_cyl_qtr_shell_dirichlet2( std::valarray<double> &result,
-                                               const double r,
-                                               const double th,
-                                               const double z,
-                                               ManufacturedSolution *mfs );
+    static std::array<double, 10> quad_cyl_qtr_shell_dirichlet2( const double r,
+                                                                 const double th,
+                                                                 const double z,
+                                                                 const ManufacturedSolution *mfs );
 
-    static void quad_cyl_qtr_shell_none( std::valarray<double> &result,
-                                         const double r,
-                                         const double th,
-                                         const double z,
-                                         ManufacturedSolution *mfs );
+    static std::array<double, 10> quad_cyl_qtr_shell_none( const double r,
+                                                           const double th,
+                                                           const double z,
+                                                           const ManufacturedSolution *mfs );
 
-    static void cubic_cyl_qtr_shell_neumann( std::valarray<double> &result,
-                                             const double r,
-                                             const double th,
-                                             const double z,
-                                             ManufacturedSolution *mfs );
+    static std::array<double, 10> cubic_cyl_qtr_shell_neumann( const double r,
+                                                               const double th,
+                                                               const double z,
+                                                               const ManufacturedSolution *mfs );
 
-    static void cubic_cyl_qtr_shell_none( std::valarray<double> &result,
-                                          const double r,
-                                          const double th,
-                                          const double z,
-                                          ManufacturedSolution *mfs );
+    static std::array<double, 10> cubic_cyl_qtr_shell_none( const double r,
+                                                            const double th,
+                                                            const double z,
+                                                            ManufacturedSolution *mfs );
 
-    static void general_quadratic_exponential( std::valarray<double> &result,
-                                               const double x,
-                                               const double y,
-                                               const double z,
-                                               ManufacturedSolution *mfs );
+    static std::array<double, 10> general_quadratic_exponential( const double x,
+                                                                 const double y,
+                                                                 const double z,
+                                                                 const ManufacturedSolution *mfs );
 
-    static void general_quadratic_sinusoid( std::valarray<double> &result,
-                                            const double x,
-                                            const double y,
-                                            const double z,
-                                            ManufacturedSolution *mfs );
+    static std::array<double, 10> general_quadratic_sinusoid( const double x,
+                                                              const double y,
+                                                              const double z,
+                                                              const ManufacturedSolution *mfs );
 
-    static void general_quadratic_exponential_sinusoid( std::valarray<double> &result,
-                                                        const double x,
-                                                        const double y,
-                                                        const double z,
-                                                        ManufacturedSolution *mfs );
+    static std::array<double, 10> general_quadratic_exponential_sinusoid(
+        const double x, const double y, const double z, const ManufacturedSolution *mfs );
 
-    std::valarray<double> getc() { return d_c; }
-    std::valarray<double> geta() { return d_a; }
-    std::valarray<std::valarray<double>> geth() { return d_h; }
-    std::valarray<std::valarray<double>> geths() { return d_hs; }
+    const std::valarray<double> &getc() const { return d_c; }
+    const std::valarray<double> &geta() const { return d_a; }
+    const std::array<std::array<double, 3>, 3> &geth() const { return d_h; }
+    const std::array<std::array<double, 3>, 3> &geths() const { return d_hs; }
 
     enum class FunctionType { POLYNOMIAL, GENERALQUADRATIC };
     enum class Geometry { BRICK, CYLROD, CYLRODRZ, CYLSHELL, QTRCYLSHELL, LASTGeometry };
@@ -252,11 +224,9 @@ private:
     size_t d_NumberOfParameters;
     size_t d_NumberOfInputs;
 
-    void ( *d_functionPointer )( std::valarray<double> &result,
-                                 const double,
-                                 const double,
-                                 const double,
-                                 ManufacturedSolution * );
+    std::function<std::array<double, 10>(
+        const double, const double, const double, const ManufacturedSolution * )>
+        d_functionPointer;
 
     bool d_internalParameters;
 
@@ -269,8 +239,8 @@ private:
     double d_MinR, d_MaxR, d_ScaleR;
     double d_MinTh, d_MaxTh, d_ScaleTh;
 
-    std::valarray<std::valarray<double>> d_h;
-    std::valarray<std::valarray<double>> d_hs; // symmetrized h
+    std::array<std::array<double, 3>, 3> d_h;
+    std::array<std::array<double, 3>, 3> d_hs; // symmetrized h
 
     double d_Pi;
     double d_MaximumTheta;

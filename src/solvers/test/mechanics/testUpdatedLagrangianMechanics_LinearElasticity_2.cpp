@@ -1,5 +1,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/operators/BVPOperatorParameters.h"

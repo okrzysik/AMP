@@ -6,22 +6,17 @@
 #include <cmath>
 #include <limits>
 #include <string>
-#include <valarray>
 #include <vector>
 
 
 namespace AMP {
 
-using std::valarray;
 
 ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
-    : d_internalParameters( false ),
-      d_c( 1 ),
-      d_a( 1 ),
-      d_h( std::valarray<std::valarray<double>>( std::valarray<double>( 3 ), 3 ) ),
-      d_hs( std::valarray<std::valarray<double>>( std::valarray<double>( 3 ), 3 ) ),
-      d_CylindricalCoords( false )
+    : d_internalParameters( false ), d_c( 1 ), d_a( 1 ), d_CylindricalCoords( false )
 {
+    d_h.fill( { 0, 0, 0 } );
+    d_hs.fill( { 0, 0, 0 } );
     d_Pi           = 3.1415926535898;
     d_MaximumTheta = 2. * d_Pi;
 
@@ -74,19 +69,19 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
         if ( d_geom == Geometry::BRICK ) {
             if ( d_order == Order::QUADRATIC ) {
                 if ( d_bcType == BCType::NEUMANN ) {
-                    d_functionPointer    = &quad_neumann;
+                    d_functionPointer    = quad_neumann;
                     d_NumberOfParameters = 1;
                     d_NumberOfInputs     = 6;
                 } else if ( d_bcType == BCType::DIRICHLET1 ) {
-                    d_functionPointer    = &quad_dirichlet1;
+                    d_functionPointer    = quad_dirichlet1;
                     d_NumberOfParameters = 1;
                     d_NumberOfInputs     = 2;
                 } else if ( d_bcType == BCType::DIRICHLET2 ) {
-                    d_functionPointer    = &quad_dirichlet2;
+                    d_functionPointer    = quad_dirichlet2;
                     d_NumberOfParameters = 1;
                     d_NumberOfInputs     = 2;
                 } else if ( d_bcType == BCType::NONE ) {
-                    d_functionPointer    = &quad_none;
+                    d_functionPointer    = quad_none;
                     d_NumberOfParameters = 10;
                     d_NumberOfInputs     = 0;
                 } else {
@@ -94,19 +89,19 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
                 }
             } else if ( d_order == Order::CUBIC ) {
                 if ( d_bcType == BCType::NEUMANN ) {
-                    d_functionPointer    = &cubic_neumann;
+                    d_functionPointer    = cubic_neumann;
                     d_NumberOfParameters = 8;
                     d_NumberOfInputs     = 6;
                 } else if ( d_bcType == BCType::DIRICHLET1 ) {
-                    d_functionPointer    = &cubic_dirichlet1;
+                    d_functionPointer    = cubic_dirichlet1;
                     d_NumberOfParameters = 8;
                     d_NumberOfInputs     = 2;
                 } else if ( d_bcType == BCType::DIRICHLET2 ) {
-                    d_functionPointer    = &cubic_dirichlet2;
+                    d_functionPointer    = cubic_dirichlet2;
                     d_NumberOfParameters = 8;
                     d_NumberOfInputs     = 2;
                 } else if ( d_bcType == BCType::NONE ) {
-                    d_functionPointer    = &cubic_none;
+                    d_functionPointer    = cubic_none;
                     d_NumberOfParameters = 20;
                     d_NumberOfInputs     = 0;
                 } else {
@@ -116,7 +111,7 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
         } else if ( d_geom == Geometry::CYLROD ) {
             if ( d_order == Order::QUADRATIC ) {
                 if ( d_bcType == BCType::NONE ) {
-                    d_functionPointer    = &quad_cyl_rod_none;
+                    d_functionPointer    = quad_cyl_rod_none;
                     d_NumberOfParameters = 15;
                     d_NumberOfInputs     = 0;
                 } else {
@@ -124,11 +119,11 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
                 }
             } else if ( d_order == Order::CUBIC ) {
                 if ( d_bcType == BCType::DIRICHLETZ2 ) {
-                    d_functionPointer    = &cubic_cyl_rod_dirichletz2;
+                    d_functionPointer    = cubic_cyl_rod_dirichletz2;
                     d_NumberOfParameters = 96;
                     d_NumberOfInputs     = 2;
                 } else if ( d_bcType == BCType::NONE ) {
-                    d_functionPointer    = &cubic_cyl_rod_none;
+                    d_functionPointer    = cubic_cyl_rod_none;
                     d_NumberOfParameters = 64;
                     d_NumberOfInputs     = 0;
                 } else {
@@ -140,7 +135,7 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
             d_CylindricalCoords = true;
         } else if ( d_geom == Geometry::CYLRODRZ ) {
             if ( d_bcType == BCType::NONE ) {
-                d_functionPointer    = &cubic_cyl_rod_rz_none;
+                d_functionPointer    = cubic_cyl_rod_rz_none;
                 d_NumberOfParameters = 16;
                 d_NumberOfInputs     = 0;
             } else {
@@ -150,13 +145,13 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
         } else if ( d_geom == Geometry::CYLSHELL ) {
             if ( d_order == Order::QUADRATIC ) {
                 if ( d_bcType == BCType::NEUMANN ) {
-                    d_functionPointer    = &quad_cyl_shell_neumann;
+                    d_functionPointer    = quad_cyl_shell_neumann;
                     d_NumberOfParameters = 9;
                     d_NumberOfInputs     = 4;
                 } else if ( d_bcType == BCType::NONE ) {
                     d_functionPointer =
-                        &quad_cyl_rod_none; // TODO: This should be: &quad_cyl_shell_none; once that
-                                            // function is completed.
+                        quad_cyl_rod_none; // TODO: This should be: quad_cyl_shell_none; once that
+                                           // function is completed.
                     d_NumberOfParameters = 15;
                     d_NumberOfInputs     = 0;
                 } else {
@@ -164,7 +159,7 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
                 }
             } else if ( d_order == Order::CUBIC ) {
                 if ( d_bcType == BCType::NONE ) {
-                    d_functionPointer    = &cubic_cyl_rod_none;
+                    d_functionPointer    = cubic_cyl_rod_none;
                     d_NumberOfParameters = 35;
                     d_NumberOfInputs     = 0;
                 }
@@ -175,31 +170,31 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
         } else if ( d_geom == Geometry::QTRCYLSHELL ) {
             if ( d_order == Order::QUADRATIC ) {
                 if ( d_bcType == BCType::NEUMANN ) {
-                    d_functionPointer    = &quad_cyl_qtr_shell_neumann;
+                    d_functionPointer    = quad_cyl_qtr_shell_neumann;
                     d_NumberOfParameters = 7;
                     d_NumberOfInputs     = 4;
                 } else if ( d_bcType == BCType::DIRICHLET2 ) {
-                    d_functionPointer    = &quad_cyl_qtr_shell_dirichlet2;
+                    d_functionPointer    = quad_cyl_qtr_shell_dirichlet2;
                     d_NumberOfParameters = 7;
                     d_NumberOfInputs     = 4;
                 } else if ( d_bcType == BCType::NONE ) {
                     d_functionPointer =
-                        &cubic_cyl_rod_none; // TODO: This should be: &quad_cyl_qtr_shell_none; once
-                                             // that function is completed.
+                        cubic_cyl_rod_none; // TODO: This should be: &quad_cyl_qtr_shell_none; once
+                                            // that function is completed.
                     d_NumberOfParameters = 20;
                     d_NumberOfInputs     = 0;
                 } else {
                     AMP_INSIST( false, "manufactured solution combination is not available" );
                 }
             } else if ( d_order == Order::CUBIC ) {
-                d_functionPointer    = &cubic_cyl_qtr_shell_neumann;
+                d_functionPointer    = cubic_cyl_qtr_shell_neumann;
                 d_NumberOfParameters = 56;
                 d_NumberOfInputs     = 4;
                 if ( d_bcType == BCType::NEUMANN ) {
                 } else if ( d_bcType == BCType::NONE ) {
-                    d_functionPointer = &cubic_cyl_rod_none; // TODO: This should be:
-                                                             // &cubic_cyl_qtr_shell_none; once
-                                                             // that function is completed.
+                    d_functionPointer = cubic_cyl_rod_none; // TODO: This should be:
+                                                            // &cubic_cyl_qtr_shell_none; once
+                                                            // that function is completed.
                     d_NumberOfParameters = 20;
                     d_NumberOfInputs     = 0;
                 } else {
@@ -238,16 +233,15 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
         d_FunctionType       = FunctionType::GENERALQUADRATIC;
         std::string function = db->getString( "QuadraticFunction" );
         if ( function == "Exponential" )
-            d_functionPointer = &general_quadratic_exponential;
+            d_functionPointer = general_quadratic_exponential;
         else if ( function == "Sinusoid" )
-            d_functionPointer = &general_quadratic_sinusoid;
+            d_functionPointer = general_quadratic_sinusoid;
         else if ( function == "ExponentialSinusoid" )
-            d_functionPointer = &general_quadratic_exponential_sinusoid;
+            d_functionPointer = general_quadratic_exponential_sinusoid;
         else
             AMP_INSIST( false, "invalid value for QuadraticFunction" );
         auto distortion = db->getVector<double>( "QuadraticDistortion" );
         AMP_INSIST( distortion.size() == 9, "distortion array must have 9 elements" );
-        d_hs = std::valarray<std::valarray<double>>( std::valarray<double>( 3 ), 3 );
         for ( int i = 0; i < 3; i++ )
             for ( int j = 0; j < 3; j++ ) {
                 d_h[i][j]  = distortion[i * 3 + j];
@@ -288,10 +282,8 @@ ManufacturedSolution::ManufacturedSolution( std::shared_ptr<Database> db )
     }
 }
 
-void ManufacturedSolution::evaluate( std::valarray<double> &result,
-                                     const double x,
-                                     const double y,
-                                     const double z )
+std::array<double, 10>
+ManufacturedSolution::evaluate( const double x, const double y, const double z ) const
 {
     if ( !d_CylindricalCoords ) {
         AMP_ASSERT( x >= d_MinX && x <= d_MaxX );
@@ -302,8 +294,7 @@ void ManufacturedSolution::evaluate( std::valarray<double> &result,
         ys = ( y - d_MinY ) * d_ScaleY;
         zs = ( z - d_MinZ ) * d_ScaleZ;
 
-        ( *d_functionPointer )( result, xs, ys, zs, this );
-
+        auto result = d_functionPointer( xs, ys, zs, this );
         result[1] *= d_ScaleX;
         result[2] *= d_ScaleY;
         result[3] *= d_ScaleZ;
@@ -313,6 +304,7 @@ void ManufacturedSolution::evaluate( std::valarray<double> &result,
         result[7] *= d_ScaleY * d_ScaleY;
         result[8] *= d_ScaleY * d_ScaleZ;
         result[9] *= d_ScaleZ * d_ScaleZ;
+        return result;
     } else {
         double r = x, th = y;
         AMP_ASSERT( r >= d_MinR && r <= d_MaxR );
@@ -324,8 +316,7 @@ void ManufacturedSolution::evaluate( std::valarray<double> &result,
         if ( d_MaximumTheta < 2. * d_Pi )
             ths = ( th - d_MinTh ) * d_ScaleTh;
 
-        ( *d_functionPointer )( result, rs, ths, zs, this );
-
+        auto result = d_functionPointer( rs, ths, zs, this );
         result[1] *= d_ScaleR;
         result[2] *= d_ScaleTh;
         result[3] *= d_ScaleZ;
@@ -335,27 +326,27 @@ void ManufacturedSolution::evaluate( std::valarray<double> &result,
         result[7] *= d_ScaleTh * d_ScaleTh;
         result[8] *= d_ScaleTh * d_ScaleZ;
         result[9] *= d_ScaleZ * d_ScaleZ;
+        return result;
     }
 }
 
 #define CHECKSIZES
 
-void ManufacturedSolution::quad_neumann( valarray<double> &result,
-                                         const double x,
-                                         const double y,
-                                         const double z,
-                                         ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::quad_neumann( const double x,
+                                                           const double y,
+                                                           const double z,
+                                                           const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 1;
     size_t nc = 6;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
+    std::array<double, 10> result;
     result[0] = a[0] + x * ( -c[0] + x * ( c[0] / 2 + c[1] / 2 ) ) +
                 y * ( -c[2] + y * ( c[2] / 2 + c[3] / 2 ) ) +
                 z * ( -c[4] + z * ( c[4] / 2 + c[5] / 2 ) );
@@ -368,25 +359,25 @@ void ManufacturedSolution::quad_neumann( valarray<double> &result,
     result[7] = c[2] + c[3];
     result[8] = 0;
     result[9] = c[4] + c[5];
+    return result;
 }
 
 
-void ManufacturedSolution::quad_dirichlet1( valarray<double> &result,
-                                            const double x,
-                                            const double,
-                                            const double,
-                                            ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::quad_dirichlet1( const double x,
+                                                              const double,
+                                                              const double,
+                                                              const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 1;
     size_t nc = 2;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
+    std::array<double, 10> result;
     result[0] = c[0] + x * ( a[0] + x * ( -a[0] / 2 + c[1] / 2 ) );
     result[1] = a[0] + x * ( -a[0] + c[1] );
     result[2] = 0;
@@ -397,25 +388,25 @@ void ManufacturedSolution::quad_dirichlet1( valarray<double> &result,
     result[7] = 0;
     result[8] = 0;
     result[9] = 0;
+    return result;
 }
 
 
-void ManufacturedSolution::quad_dirichlet2( valarray<double> &result,
-                                            const double x,
-                                            const double,
-                                            const double,
-                                            ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::quad_dirichlet2( const double x,
+                                                              const double,
+                                                              const double,
+                                                              const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 1;
     size_t nc = 2;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
+    std::array<double, 10> result;
     result[0] = c[0] + x * ( a[0] + x * ( -a[0] - c[0] + c[1] ) );
     result[1] = a[0] + x * ( -2 * a[0] - 2 * c[0] + 2 * c[1] );
     result[2] = 0;
@@ -426,23 +417,22 @@ void ManufacturedSolution::quad_dirichlet2( valarray<double> &result,
     result[7] = 0;
     result[8] = 0;
     result[9] = 0;
+    return result;
 }
 
 
-void ManufacturedSolution::quad_none( valarray<double> &result,
-                                      const double x,
-                                      const double y,
-                                      const double z,
-                                      ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::quad_none( const double x,
+                                                        const double y,
+                                                        const double z,
+                                                        const ManufacturedSolution *mfs )
 {
-    const valarray<double> a = mfs->geta();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 10;
     AMP_INSIST( a.size() >= na || a.size() == 0, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
+    std::array<double, 10> result;
     result[0] = a[0] + z * ( a[1] + z * a[2] ) + y * ( a[3] + z * a[4] + y * a[5] ) +
                 x * ( a[6] + z * a[7] + y * a[8] + x * a[9] );
     result[1] = a[6] + z * a[7] + y * a[8] + 2 * x * a[9];
@@ -454,25 +444,25 @@ void ManufacturedSolution::quad_none( valarray<double> &result,
     result[7] = 2 * a[5];
     result[8] = a[4];
     result[9] = 2 * a[2];
+    return result;
 }
 
 
-void ManufacturedSolution::cubic_neumann( valarray<double> &result,
-                                          const double x,
-                                          const double y,
-                                          const double z,
-                                          ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::cubic_neumann( const double x,
+                                                            const double y,
+                                                            const double z,
+                                                            const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 8;
     size_t nc = 6;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
+    std::array<double, 10> result;
     result[0] =
         a[0] +
         x * ( -c[0] +
@@ -581,25 +571,25 @@ void ManufacturedSolution::cubic_neumann( valarray<double> &result,
                         ( ( -4 * a[7] ) / 3 + ( 8 * z * a[7] ) / 3 +
                           y * ( ( 8 * a[7] ) / 9 - ( 16 * z * a[7] ) / 9 ) ) ) ) +
         z * ( -4 * a[1] + 2 * c[4] + 2 * c[5] );
+    return result;
 }
 
 
-void ManufacturedSolution::cubic_dirichlet1( valarray<double> &result,
-                                             const double x,
-                                             const double y,
-                                             const double z,
-                                             ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::cubic_dirichlet1( const double x,
+                                                               const double y,
+                                                               const double z,
+                                                               const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 8;
     size_t nc = 2;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
+    std::array<double, 10> result;
     result[0] =
         c[0] +
         x * ( a[0] + z * z * ( a[1] - ( 2 * z * a[1] ) / 3 ) +
@@ -761,25 +751,25 @@ void ManufacturedSolution::cubic_dirichlet1( valarray<double> &result,
                             y * ( ( 4 * a[3] ) / 9 + z * ( ( -8 * a[3] ) / 9 - ( 16 * a[7] ) / 9 ) +
                                   ( 8 * a[7] ) / 9 ) -
                             ( 4 * a[7] ) / 3 + z * ( ( 4 * a[3] ) / 3 + ( 8 * a[7] ) / 3 ) ) ) ) );
+    return result;
 }
 
 
-void ManufacturedSolution::cubic_dirichlet2( valarray<double> &result,
-                                             const double x,
-                                             const double y,
-                                             const double z,
-                                             ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::cubic_dirichlet2( const double x,
+                                                               const double y,
+                                                               const double z,
+                                                               const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 8;
     size_t nc = 2;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
+    std::array<double, 10> result;
     result[0] =
         c[0] +
         x * ( a[0] + z * z * ( a[1] - ( 2 * z * a[1] ) / 3 ) +
@@ -924,23 +914,22 @@ void ManufacturedSolution::cubic_dirichlet2( valarray<double> &result,
                             y * ( ( 4 * a[3] ) / 3 + z * ( ( -8 * a[3] ) / 3 - ( 8 * a[7] ) / 3 ) +
                                   ( 4 * a[7] ) / 3 ) +
                             z * ( 4 * a[3] + 4 * a[7] ) ) ) ) );
+    return result;
 }
 
 
-void ManufacturedSolution::cubic_none( valarray<double> &result,
-                                       const double x,
-                                       const double y,
-                                       const double z,
-                                       ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::cubic_none( const double x,
+                                                         const double y,
+                                                         const double z,
+                                                         const ManufacturedSolution *mfs )
 {
-    const valarray<double> a = mfs->geta();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 20;
     AMP_INSIST( a.size() >= na || a.size() == 0, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
+    std::array<double, 10> result;
     result[0] = a[0] + z * ( a[1] + z * ( a[2] + z * a[3] ) ) +
                 y * ( a[4] + z * ( a[5] + z * a[6] ) + y * ( a[7] + z * a[8] + y * a[9] ) ) +
                 x * ( a[10] + z * ( a[11] + z * a[12] ) + y * ( a[13] + z * a[14] + y * a[15] ) +
@@ -957,24 +946,24 @@ void ManufacturedSolution::cubic_none( valarray<double> &result,
     result[7] = 2 * a[7] + 2 * z * a[8] + 6 * y * a[9] + 2 * x * a[15];
     result[8] = a[5] + 2 * z * a[6] + 2 * y * a[8] + x * a[14];
     result[9] = 2 * a[2] + 6 * z * a[3] + 2 * y * a[6] + 2 * x * a[12];
+    return result;
 }
 
 
-void ManufacturedSolution::quad_cyl_rod_none( valarray<double> &result,
-                                              const double r,
-                                              const double th,
-                                              const double z,
-                                              ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::quad_cyl_rod_none( const double r,
+                                                                const double th,
+                                                                const double z,
+                                                                const ManufacturedSolution *mfs )
 {
-    const valarray<double> a = mfs->geta();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 15;
     AMP_INSIST( a.size() >= na || a.size() == 0, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
 
     double sth = sin( th ), cth = cos( th );
+    std::array<double, 10> result;
     result[0] = a[0] + cth * a[0] + cth * cth * a[0] + sth * a[0] + cth * sth * a[0] +
                 sth * sth * a[0] + z * ( a[1] + cth * a[1] + sth * a[1] + z * a[2] ) +
                 r * ( a[10] + cth * a[10] + sth * a[10] + z * a[11] + r * a[14] );
@@ -989,26 +978,24 @@ void ManufacturedSolution::quad_cyl_rod_none( valarray<double> &result,
                 r * ( -( cth * a[10] ) - sth * a[10] );
     result[8] = cth * a[1] - sth * a[1];
     result[9] = 2 * a[2];
+    return result;
 }
 
 
-void ManufacturedSolution::cubic_cyl_shell_neumann( valarray<double> &result,
-                                                    const double r,
-                                                    const double th,
-                                                    const double z,
-                                                    ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::cubic_cyl_shell_neumann(
+    const double r, const double th, const double z, const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 9;
     size_t nc = 4;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
     const double sth = sin( th ), cth = cos( th );
+    std::array<double, 10> result;
     result[0] = a[0] + cth * ( a[1] + cth * a[2] ) +
                 sth * ( a[3] + cth * ( a[4] + cth * a[5] ) +
                         sth * ( a[6] + cth * ( a[7] + cth * a[8] ) ) ) +
@@ -1030,26 +1017,25 @@ void ManufacturedSolution::cubic_cyl_shell_neumann( valarray<double> &result,
                         sth * ( 2 * a[5] + 2 * sth * a[8] ) ) );
     result[8] = 0;
     result[9] = c[2] + c[3];
+    return result;
 }
 
 
-void ManufacturedSolution::cubic_cyl_rod_dirichletz2( valarray<double> &result,
-                                                      const double r,
-                                                      const double th,
-                                                      const double z,
-                                                      ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::cubic_cyl_rod_dirichletz2(
+    const double r, const double th, const double z, const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 96;
     size_t nc = 2;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
 
     const double sth = sin( th ), cth = cos( th );
+    std::array<double, 10> result;
     result[0] =
         cth * ( z * ( a[2] + z * ( z * ( -a[2] - a[3] ) + a[3] ) ) +
                 cth * ( z * ( a[4] + z * ( z * ( -a[4] - a[5] ) + a[5] ) ) +
@@ -3022,24 +3008,21 @@ void ManufacturedSolution::cubic_cyl_rod_dirichletz2( valarray<double> &result,
                                                                     4 * a[94] +
                                                                     4 * a[95] ) ) ) ) ) ) ) ) ) ) +
         z * ( -6 * a[0] - 6 * a[1] - 6 * c[0] + 6 * c[1] );
+    return result;
 }
 
 
-void ManufacturedSolution::cubic_cyl_rod_rz_none( valarray<double> &result,
-                                                  const double r,
-                                                  const double th,
-                                                  const double z,
-                                                  ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::cubic_cyl_rod_rz_none(
+    const double r, const double th, const double z, const ManufacturedSolution *mfs )
 {
     NULL_USE( th );
-    const valarray<double> a = mfs->geta();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 16;
     AMP_INSIST( a.size() >= na || a.size() == 0, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
-
+    std::array<double, 10> result;
     result[0] = a[0] + z * ( a[1] + z * ( a[2] + z * a[3] ) ) +
                 r * ( a[4] + z * ( a[5] + z * ( a[6] + z * a[7] ) ) +
                       r * ( a[8] + z * ( a[9] + z * ( a[10] + z * a[11] ) ) +
@@ -3063,25 +3046,25 @@ void ManufacturedSolution::cubic_cyl_rod_rz_none( valarray<double> &result,
     result[9] = 2 * a[2] + 6 * z * a[3] +
                 r * ( 2 * a[6] + 6 * z * a[7] +
                       r * ( 2 * a[10] + 6 * z * a[11] + r * ( 2 * a[14] + 6 * z * a[15] ) ) );
+    return result;
 }
 
 
-void ManufacturedSolution::cubic_cyl_rod_none( valarray<double> &result,
-                                               const double r,
-                                               const double th,
-                                               const double z,
-                                               ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::cubic_cyl_rod_none( const double r,
+                                                                 const double th,
+                                                                 const double z,
+                                                                 const ManufacturedSolution *mfs )
 {
-    const valarray<double> a = mfs->geta();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 64;
     AMP_INSIST( a.size() >= na || a.size() == 0, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
 
     double sth = sin( th ), s2th = sin( 2. * th ), s3th = sin( 3. * th );
     double cth = cos( th ), c2th = cos( 2. * th ), c3th = cos( 3. * th );
+    std::array<double, 10> result;
     result[0] =
         a[0] + cth * ( a[4] + z * ( a[5] + z * ( a[6] + z * a[7] ) ) ) + c2th * a[8] +
         c3th * a[12] +
@@ -3245,26 +3228,25 @@ void ManufacturedSolution::cubic_cyl_rod_none( valarray<double> &result,
                     r * ( 2 * a[50] + cth * ( 2 * a[54] + 6 * z * a[55] ) + 2 * c2th * a[58] +
                           2 * c3th * a[62] +
                           z * ( 6 * a[51] + 6 * c2th * a[59] + 6 * c3th * a[63] ) ) ) );
+    return result;
 }
 
 
-void ManufacturedSolution::quad_cyl_shell_neumann( valarray<double> &result,
-                                                   const double r,
-                                                   const double th,
-                                                   const double z,
-                                                   ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::quad_cyl_shell_neumann(
+    const double r, const double th, const double z, const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 9;
     size_t nc = 4;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
 
     const double sth = sin( th ), cth = cos( th );
+    std::array<double, 10> result;
     result[0] = a[0] + cth * ( a[1] + cth * a[2] ) +
                 sth * ( a[3] + cth * ( a[4] + cth * a[5] ) +
                         sth * ( a[6] + cth * ( a[7] + cth * a[8] ) ) ) +
@@ -3286,26 +3268,25 @@ void ManufacturedSolution::quad_cyl_shell_neumann( valarray<double> &result,
                         sth * ( 2 * a[5] + 2 * sth * a[8] ) ) );
     result[8] = 0;
     result[9] = c[2] + c[3];
+    return result;
 }
 
 
-void ManufacturedSolution::quad_cyl_qtr_shell_neumann( valarray<double> &result,
-                                                       const double r,
-                                                       const double th,
-                                                       const double z,
-                                                       ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::quad_cyl_qtr_shell_neumann(
+    const double r, const double th, const double z, const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 7;
     size_t nc = 4;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
 
     const double sth = sin( th ), cth = cos( th );
+    std::array<double, 10> result;
     result[0] = a[0] + cth * ( a[1] + cth * a[2] ) +
                 sth * ( a[3] + cth * ( cth * ( -a[3] - a[4] ) + a[4] ) +
                         sth * ( a[5] + cth * ( -a[1] - a[4] + cth * a[6] ) ) ) +
@@ -3330,26 +3311,25 @@ void ManufacturedSolution::quad_cyl_qtr_shell_neumann( valarray<double> &result,
                         sth * ( -2 * a[3] - 2 * a[4] + 2 * sth * a[6] ) ) );
     result[8] = 0;
     result[9] = c[2] + c[3];
+    return result;
 }
 
 
-void ManufacturedSolution::quad_cyl_qtr_shell_dirichlet2( valarray<double> &result,
-                                                          const double r,
-                                                          const double th,
-                                                          const double z,
-                                                          ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::quad_cyl_qtr_shell_dirichlet2(
+    const double r, const double th, const double z, const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 7;
     size_t nc = 4;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
 
     const double sth = sin( th ), cth = cos( th );
+    std::array<double, 10> result;
     result[0] = a[0] + cth * ( a[1] + cth * a[2] ) +
                 sth * ( a[3] + cth * ( cth * ( -a[3] - a[4] ) + a[4] ) +
                         sth * ( a[5] + cth * ( -a[1] - a[4] + cth * a[6] ) ) ) +
@@ -3374,26 +3354,25 @@ void ManufacturedSolution::quad_cyl_qtr_shell_dirichlet2( valarray<double> &resu
                         sth * ( -2 * a[3] - 2 * a[4] + 2 * sth * a[6] ) ) );
     result[8] = 0;
     result[9] = c[2] + c[3];
+    return result;
 }
 
 
-void ManufacturedSolution::cubic_cyl_qtr_shell_neumann( valarray<double> &result,
-                                                        const double r,
-                                                        const double th,
-                                                        const double z,
-                                                        ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::cubic_cyl_qtr_shell_neumann(
+    const double r, const double th, const double z, const ManufacturedSolution *mfs )
 {
-    const valarray<double> c = mfs->getc(), a = mfs->geta();
+    const auto &c = mfs->getc();
+    const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
     size_t na = 56;
     size_t nc = 4;
     AMP_INSIST( c.size() >= nc, "not enough boundary values specified" );
     AMP_INSIST( a.size() >= na, "incorrect number of parameters specified" );
-    AMP_INSIST( result.size() >= 10, "input size of argument result must be at least 10" );
 #endif
 
     const double sth = sin( th ), cth = cos( th );
+    std::array<double, 10> result;
     result[0] =
         a[0] +
         cth * ( a[2] + z * z * ( a[3] - ( 2 * z * a[3] ) / 3 ) +
@@ -4887,20 +4866,20 @@ void ManufacturedSolution::cubic_cyl_qtr_shell_neumann( valarray<double> &result
                                                                       ( 8 * z * a[55] ) /
                                                                           3 ) ) ) ) ) ) ) ) ) +
         z * ( -4 * a[1] + 2 * c[2] + 2 * c[3] );
+    return result;
 }
 
-void ManufacturedSolution::general_quadratic_exponential( valarray<double> &result,
-                                                          const double x,
-                                                          const double y,
-                                                          const double z,
-                                                          ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::general_quadratic_exponential(
+    const double x, const double y, const double z, const ManufacturedSolution *mfs )
 {
-    valarray<double> w( 3 ), darg( 0., 3 );
-    valarray<valarray<double>> h = mfs->geth(), hs = mfs->geths();
-    w[0]       = x;
-    w[1]       = y;
-    w[2]       = z;
-    double arg = 0.;
+    std::array<double, 3> w    = { 0, 0, 0 };
+    std::array<double, 3> darg = { 0, 0, 0 };
+    const auto &h              = mfs->geth();
+    const auto &hs             = mfs->geths();
+    w[0]                       = x;
+    w[1]                       = y;
+    w[2]                       = z;
+    double arg                 = 0.;
     for ( int i = 0; i < 3; i++ ) {
         for ( int j = 0; j < 3; j++ ) {
             darg[i] += hs[i][j] * w[j];
@@ -4912,30 +4891,31 @@ void ManufacturedSolution::general_quadratic_exponential( valarray<double> &resu
     double f   = exp( arg );
     double df  = log10 * f;
     double ddf = log10 * df;
-    result[0]  = f;
-    result[1]  = darg[0] * df;
-    result[2]  = darg[1] * df;
-    result[3]  = darg[2] * df;
-    result[4]  = hs[0][0] * df + darg[0] * darg[0] * ddf;
-    result[5]  = hs[0][1] * df + darg[0] * darg[1] * ddf;
-    result[6]  = hs[0][2] * df + darg[0] * darg[2] * ddf;
-    result[7]  = hs[1][1] * df + darg[1] * darg[1] * ddf;
-    result[8]  = hs[1][2] * df + darg[1] * darg[2] * ddf;
-    result[9]  = hs[2][2] * df + darg[2] * darg[2] * ddf;
+    std::array<double, 10> result;
+    result[0] = f;
+    result[1] = darg[0] * df;
+    result[2] = darg[1] * df;
+    result[3] = darg[2] * df;
+    result[4] = hs[0][0] * df + darg[0] * darg[0] * ddf;
+    result[5] = hs[0][1] * df + darg[0] * darg[1] * ddf;
+    result[6] = hs[0][2] * df + darg[0] * darg[2] * ddf;
+    result[7] = hs[1][1] * df + darg[1] * darg[1] * ddf;
+    result[8] = hs[1][2] * df + darg[1] * darg[2] * ddf;
+    result[9] = hs[2][2] * df + darg[2] * darg[2] * ddf;
+    return result;
 }
 
-void ManufacturedSolution::general_quadratic_sinusoid( valarray<double> &result,
-                                                       const double x,
-                                                       const double y,
-                                                       const double z,
-                                                       ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::general_quadratic_sinusoid(
+    const double x, const double y, const double z, const ManufacturedSolution *mfs )
 {
-    valarray<double> w( 3 ), darg( 0., 3 );
-    valarray<valarray<double>> h = mfs->geth(), hs = mfs->geths();
-    w[0]       = x;
-    w[1]       = y;
-    w[2]       = z;
-    double arg = 0.;
+    std::array<double, 3> w    = { 0, 0, 0 };
+    std::array<double, 3> darg = { 0, 0, 0 };
+    const auto &h              = mfs->geth();
+    const auto &hs             = mfs->geths();
+    w[0]                       = x;
+    w[1]                       = y;
+    w[2]                       = z;
+    double arg                 = 0.;
     for ( int i = 0; i < 3; i++ ) {
         for ( int j = 0; j < 3; j++ ) {
             darg[i] += hs[i][j] * w[j];
@@ -4948,30 +4928,31 @@ void ManufacturedSolution::general_quadratic_sinusoid( valarray<double> &result,
     double f   = sin( arg );
     double df  = pi2 * cos( arg );
     double ddf = -pi2 * pi2 * f;
-    result[0]  = f;
-    result[1]  = darg[0] * df;
-    result[2]  = darg[1] * df;
-    result[3]  = darg[2] * df;
-    result[4]  = hs[0][0] * df + darg[0] * darg[0] * ddf;
-    result[5]  = hs[0][1] * df + darg[0] * darg[1] * ddf;
-    result[6]  = hs[0][2] * df + darg[0] * darg[2] * ddf;
-    result[7]  = hs[1][1] * df + darg[1] * darg[1] * ddf;
-    result[8]  = hs[1][2] * df + darg[1] * darg[2] * ddf;
-    result[9]  = hs[2][2] * df + darg[2] * darg[2] * ddf;
+    std::array<double, 10> result;
+    result[0] = f;
+    result[1] = darg[0] * df;
+    result[2] = darg[1] * df;
+    result[3] = darg[2] * df;
+    result[4] = hs[0][0] * df + darg[0] * darg[0] * ddf;
+    result[5] = hs[0][1] * df + darg[0] * darg[1] * ddf;
+    result[6] = hs[0][2] * df + darg[0] * darg[2] * ddf;
+    result[7] = hs[1][1] * df + darg[1] * darg[1] * ddf;
+    result[8] = hs[1][2] * df + darg[1] * darg[2] * ddf;
+    result[9] = hs[2][2] * df + darg[2] * darg[2] * ddf;
+    return result;
 }
 
-void ManufacturedSolution::general_quadratic_exponential_sinusoid( valarray<double> &result,
-                                                                   const double x,
-                                                                   const double y,
-                                                                   const double z,
-                                                                   ManufacturedSolution *mfs )
+std::array<double, 10> ManufacturedSolution::general_quadratic_exponential_sinusoid(
+    const double x, const double y, const double z, const ManufacturedSolution *mfs )
 {
-    valarray<double> w( 3 ), darg( 0., 3 );
-    valarray<valarray<double>> h = mfs->geth(), hs = mfs->geths();
-    w[0]       = x;
-    w[1]       = y;
-    w[2]       = z;
-    double arg = 0.;
+    std::array<double, 3> w    = { 0, 0, 0 };
+    std::array<double, 3> darg = { 0, 0, 0 };
+    const auto &h              = mfs->geth();
+    const auto &hs             = mfs->geths();
+    w[0]                       = x;
+    w[1]                       = y;
+    w[2]                       = z;
+    double arg                 = 0.;
     for ( int i = 0; i < 3; i++ ) {
         for ( int j = 0; j < 3; j++ ) {
             darg[i] += hs[i][j] * w[j];
@@ -4987,15 +4968,17 @@ void ManufacturedSolution::general_quadratic_exponential_sinusoid( valarray<doub
     double f     = s * e;
     double df    = pi2 * c * e + s * log10 * e;
     double ddf   = -pi2 * pi2 * s * e + 2. * pi2 * c * log10 * e + s * log10 * log10 * e;
-    result[0]    = f;
-    result[1]    = darg[0] * df;
-    result[2]    = darg[1] * df;
-    result[3]    = darg[2] * df;
-    result[4]    = hs[0][0] * df + darg[0] * darg[0] * ddf;
-    result[5]    = hs[0][1] * df + darg[0] * darg[1] * ddf;
-    result[6]    = hs[0][2] * df + darg[0] * darg[2] * ddf;
-    result[7]    = hs[1][1] * df + darg[1] * darg[1] * ddf;
-    result[8]    = hs[1][2] * df + darg[1] * darg[2] * ddf;
-    result[9]    = hs[2][2] * df + darg[2] * darg[2] * ddf;
+    std::array<double, 10> result;
+    result[0] = f;
+    result[1] = darg[0] * df;
+    result[2] = darg[1] * df;
+    result[3] = darg[2] * df;
+    result[4] = hs[0][0] * df + darg[0] * darg[0] * ddf;
+    result[5] = hs[0][1] * df + darg[0] * darg[1] * ddf;
+    result[6] = hs[0][2] * df + darg[0] * darg[2] * ddf;
+    result[7] = hs[1][1] * df + darg[1] * darg[1] * ddf;
+    result[8] = hs[1][2] * df + darg[1] * darg[2] * ddf;
+    result[9] = hs[2][2] * df + darg[2] * darg[2] * ddf;
+    return result;
 }
 } // namespace AMP

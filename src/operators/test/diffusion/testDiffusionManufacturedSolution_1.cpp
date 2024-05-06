@@ -110,12 +110,10 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Fill in manufactured solution
     auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; iterator != iterator.end(); ++iterator ) {
-        double x, y, z;
-        std::valarray<double> poly( 10 );
-        x = ( iterator->coord() )[0];
-        y = ( iterator->coord() )[1];
-        z = ( iterator->coord() )[2];
-        mfgSolution->evaluate( poly, x, y, z );
+        double x  = ( iterator->coord() )[0];
+        double y  = ( iterator->coord() )[1];
+        double z  = ( iterator->coord() )[2];
+        auto poly = mfgSolution->evaluate( x, y, z );
         std::vector<size_t> i;
         nodalDofMap->getDOFs( iterator->globalID(), i );
         solVec->setValuesByGlobalID( 1, &i[0], &poly[0] );
@@ -149,20 +147,18 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
             double l2err    = 0.;
             auto myIterator = iterator.begin();
             for ( ; myIterator != iterator.end(); ++myIterator ) {
-                double x, y, z;
-                x = ( myIterator->coord() )[0];
-                y = ( myIterator->coord() )[1];
-                z = ( myIterator->coord() )[2];
+                double x = ( myIterator->coord() )[0];
+                double y = ( myIterator->coord() )[1];
+                double z = ( myIterator->coord() )[2];
                 std::vector<size_t> gid;
                 nodalDofMap->getDOFs( myIterator->globalID(), gid );
                 double val, res, sol, src, err;
-                res = resVec->getValueByGlobalID( gid[0] );
-                sol = solVec->getValueByGlobalID( gid[0] );
-                src = sourceVec->getValueByGlobalID( gid[0] );
-                err = res / ( src + .5 * res + std::numeric_limits<double>::epsilon() );
-                std::valarray<double> poly( 10 );
-                mfgSolution->evaluate( poly, x, y, z );
-                val = poly[0];
+                res       = resVec->getValueByGlobalID( gid[0] );
+                sol       = solVec->getValueByGlobalID( gid[0] );
+                src       = sourceVec->getValueByGlobalID( gid[0] );
+                err       = res / ( src + .5 * res + std::numeric_limits<double>::epsilon() );
+                auto poly = mfgSolution->evaluate( x, y, z );
+                val       = poly[0];
                 workVec->setValuesByGlobalID( 1, &gid[0], &err );
 
                 file << "{" << x << "," << y << "," << z << "," << val << "," << sol << "," << src
