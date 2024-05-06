@@ -56,10 +56,9 @@ void linearThermalTest( AMP::UnitTest *ut,
     ////////////////////////////////////
     //   CREATE THE THERMAL OPERATOR  //
     ////////////////////////////////////
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
+            meshAdapter, "DiffusionBVPOperator", input_db ) );
     auto TemperatureInKelvinVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
     auto RightHandSideVec =
@@ -162,10 +161,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile, bool al
 
     // Integrate Nuclear Rhs over Density * Volume //
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
+            meshAdapter, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();

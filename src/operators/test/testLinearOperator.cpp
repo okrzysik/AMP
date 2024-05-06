@@ -59,9 +59,8 @@ static void myTest( AMP::UnitTest *ut )
 
         AMP_INSIST( innerInput_db->keyExists( "testOperator" ), "key missing!" );
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto testOperator = AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testOperator", innerInput_db, elementPhysicsModel );
+            meshAdapter, "testOperator", innerInput_db );
 
         msgPrefix = exeName + " : " + innerInput_file;
 

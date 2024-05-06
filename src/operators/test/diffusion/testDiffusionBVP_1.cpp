@@ -55,7 +55,8 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
     auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nlinBVPOp->getVolumeOperator() );
-    auto elementPhysicsModel = nlinOp->getTransportModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
+        nlinOp->getTransportModel();
 
     // use the linear BVP operator to create a thermal linear operator with bc's
     auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(

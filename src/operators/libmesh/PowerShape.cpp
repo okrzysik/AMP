@@ -609,7 +609,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             // power density the
             // value the user specified.
             d_db->putDatabase( "VolumeIntegral" );
-            std::shared_ptr<AMP::Database> volume_db = d_db->getDatabase( "VolumeIntegral" );
+            auto volume_db = d_db->getDatabase( "VolumeIntegral" );
             std::shared_ptr<AMP::Database> act_db;
 
             volume_db->putScalar( "name", "VolumeIntegralOperator" );
@@ -623,16 +623,15 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             volume_db->putDatabase( "ActiveInputVariables" );
             volume_db->putDatabase( "SourceElement" );
 
-            std::shared_ptr<AMP::Database> source_db = volume_db->getDatabase( "SourceElement" );
+            auto source_db = volume_db->getDatabase( "SourceElement" );
             source_db->putScalar( "name", "SourceNonlinearElement" );
 
             act_db = volume_db->getDatabase( "ActiveInputVariables" );
             act_db->putScalar( "ActiveVariable_0", ( u->getVariable() )->getName() );
-            std::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
-            std::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeIntegralOperator =
+            auto volumeIntegralOperator =
                 std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
                     AMP::Operator::OperatorBuilder::createOperator(
-                        d_Mesh, "VolumeIntegral", d_db, emptyModel ) );
+                        d_Mesh, "VolumeIntegral", d_db ) );
 
             int DOFsPerNode     = 1;
             int nodalGhostWidth = 1;

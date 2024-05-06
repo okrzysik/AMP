@@ -1,11 +1,13 @@
-UseRegularGridMesh = TRUE
+UseRegularGridMesh = FALSE
 NumberOfMeshes = 0
 mesh_file = "boxMesh-3"
 BinaryMeshes = FALSE
 
-Mesh_1 {
-    Filename = "halden_1_pellet_9mil.e"
+Mesh {
+    dim = 3
     MeshName = "pellet"
+    MeshType = "libMesh"
+    FileName = "halden_1_pellet_9mil.e"
     x_offset = 0
     y_offset = 0
     z_offset = 0
@@ -71,8 +73,8 @@ VolumeIntegral {
 LinearSolver {
     print_info_level = 1
     max_iterations = 1000
-    max_error = 1e-10
-    ksp_type = "preonly"
+    max_error = 1e-12
+    ksp_type = "fgmres"
     absolute_tolerance = 1.0e-16
     relative_tolerance = 1.0e-13
     divergence_tolerance = 1.0e03
