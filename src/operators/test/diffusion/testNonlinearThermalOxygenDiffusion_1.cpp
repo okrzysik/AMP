@@ -55,7 +55,8 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     auto nonlinearThermalVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
-    auto thermalMaterialModel = nonlinearThermalVolumeOperator->getTransportModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalMaterialModel =
+        nonlinearThermalVolumeOperator->getTransportModel();
 
     // create a nonlinear BVP operator for nonlinear oxygen diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearOxygenOperator" ), "key missing!" );
@@ -66,7 +67,8 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     auto nonlinearOxygenVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearOxygenOperator->getVolumeOperator() );
-    auto oxygenTransportModel = nonlinearOxygenVolumeOperator->getTransportModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel =
+        nonlinearOxygenVolumeOperator->getTransportModel();
 
     auto fickOperator = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nonlinearOxygenOperator->getVolumeOperator() );

@@ -67,7 +67,8 @@ static void myTest( AMP::UnitTest *ut )
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinBvpOperator->getVolumeOperator() );
-    auto elementPhysicsModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
+        nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     auto linBvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(

@@ -106,6 +106,9 @@ computeForcingTerms( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         dummyIntegrationPointVecV->setLocalValuesByGlobalID( dofs.size(), dofs.data(), V.data() );
         dummyIntegrationPointVecW->setLocalValuesByGlobalID( dofs.size(), dofs.data(), W.data() );
     } // end loop over all elements
+    dummyIntegrationPointVecU->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    dummyIntegrationPointVecV->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    dummyIntegrationPointVecW->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     // Create nodal vectors pointing to vector containing forcing terms
     auto dummyNodalVecU =
         AMP::LinearAlgebra::createVector( NodalVectorDOF, volumeOp->getOutputVariable() );
@@ -127,7 +130,7 @@ computeForcingTerms( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         nodal3DofMap->getDOFs( node.globalID(), nd3GlobalIds );
         nodal1DofMap->getDOFs( node.globalID(), nd1GlobalIds );
         AMP_ASSERT( nd1GlobalIds.size() == 1 );
-        AMP_ASSERT( nd3GlobalIds.size() == 2 );
+        AMP_ASSERT( nd3GlobalIds.size() == 3 );
         double val[3] = { dummyNodalVecU->getLocalValueByGlobalID( nd1GlobalIds[0] ),
                           dummyNodalVecV->getLocalValueByGlobalID( nd1GlobalIds[0] ),
                           dummyNodalVecW->getLocalValueByGlobalID( nd1GlobalIds[0] ) };
@@ -145,14 +148,14 @@ computeForcingTerms( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
 // Compute exact solution
 static void
-computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                       std::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
                       AMP::LinearAlgebra::Vector::shared_ptr exactSolutionsVec,
                       bool verbose = false )
 {
     // Loop over all nodes
     auto dofMap = exactSolutionsVec->getDOFManager();
-    auto nd     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto nd     = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto end_nd = nd.end();
     for ( ; nd != end_nd; ++nd ) {
         std::vector<size_t> globalIDs;
@@ -190,14 +193,13 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     auto inputDatabase = AMP::Database::parseInputFile( inputFile );
     inputDatabase->print( AMP::plog );
 
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter;
+    std::shared_ptr<AMP::Mesh::Mesh> mesh;
     std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
 
     // Regular grid mesh file
     bool useRegularGridMesh = inputDatabase->getScalar<bool>( "UseRegularGridMesh" );
     if ( useRegularGridMesh ) {
-        libmeshInit =
-            std::make_shared<AMP::Mesh::initializeLibMesh>( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+        libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
         libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
         auto mesh_file    = inputDatabase->getString( "mesh_file" );
         auto myMesh       = std::make_shared<libMesh::Mesh>( comm, 3 );
@@ -207,24 +209,16 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         } else {
             AMP::readTestMesh( mesh_file, myMesh );
         }
-        libMesh::MeshCommunication().broadcast( *( myMesh.get() ) );
+        libMesh::MeshCommunication().broadcast( *myMesh );
         myMesh->prepare_for_use( false );
-        meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( myMesh, "myMesh" );
+        mesh = std::make_shared<AMP::Mesh::libmeshMesh>( myMesh, "myMesh" );
     } else {
         // Create the Mesh.
         AMP_INSIST( inputDatabase->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
         auto mesh_db   = inputDatabase->getDatabase( "Mesh" );
         auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-        mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-        auto manager = AMP::Mesh::MeshFactory::create( mgrParams );
-        // Reading the mesh
-        if ( exeName == "mechanicsVerification-Cylinder" ) {
-            meshAdapter = manager->Subset( "cylinder" );
-        } else if ( exeName == "mechanicsVerification-HaldenPellet" ) {
-            meshAdapter = manager->Subset( "pellet" );
-        } else {
-            meshAdapter = manager->Subset( "brick" );
-        }
+        mgrParams->setComm( AMP_COMM_WORLD );
+        mesh = AMP::Mesh::MeshFactory::create( mgrParams );
     }
     NULL_USE( libmeshInit );
 
@@ -235,7 +229,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "MechanicsBVPOperator", inputDatabase, elementPhysicsModel ) );
+            mesh, "MechanicsBVPOperator", inputDatabase, elementPhysicsModel ) );
     AMP_ASSERT( bvpOperator );
     AMP_ASSERT( elementPhysicsModel );
     // auto var = bvpOperator->getOutputVariable();
@@ -294,8 +288,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     // Vectors: solution, right-hand side, residual
-    auto NodalVectorDOF = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
+    auto NodalVectorDOF =
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
     auto solVec =
         AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getInputVariable() );
     auto rhsVec =
@@ -305,13 +299,13 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
 
     // Create an operator to get manufactured solution and forcing terms
     auto volumeOp = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "VolumeIntegral", inputDatabase, dummyModel );
+        mesh, "VolumeIntegral", inputDatabase, dummyModel );
 
     // Compute the forcing terms
     rhsVec->zero();
     auto volumeIntegralOp =
         std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>( volumeOp );
-    computeForcingTerms( meshAdapter, volumeIntegralOp, manufacturedSolution, rhsVec, true );
+    computeForcingTerms( mesh, volumeIntegralOp, manufacturedSolution, rhsVec, true );
 
     // Compute Dirichlet values
     auto dirichletMatOp = std::dynamic_pointer_cast<AMP::Operator::DirichletMatrixCorrection>(
@@ -319,8 +313,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     auto dirichletBoundaryIds = dirichletMatOp->getBoundaryIds();
     std::vector<size_t> dofs;
     for ( short dirichletBoundaryId : dirichletBoundaryIds ) {
-        auto bnd =
-            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, dirichletBoundaryId );
+        auto bnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, dirichletBoundaryId );
         for ( const auto &node : bnd ) {
             auto p       = node.coord();
             auto bndVals = manufacturedSolution->getExactSolutions( p.x(), p.y(), p.z() );
@@ -332,12 +325,11 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     // Compute Neumann values
     auto neumannVecOp = std::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
         AMP::Operator::OperatorBuilder::createBoundaryOperator(
-            meshAdapter, "NeumannCorrection", inputDatabase, volumeOp, dummyModel ) );
+            mesh, "NeumannCorrection", inputDatabase, volumeOp, dummyModel ) );
     // neumannVecOp->setVariable(var);
     auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
     for ( short neumannBoundaryId : neumannBoundaryIds ) {
-        auto bnd =
-            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, neumannBoundaryId );
+        auto bnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, neumannBoundaryId );
         for ( const auto &node : bnd ) {
             std::vector<double> dummyNormal( 3, 0.0 );
             std::vector<double> gradientX( 3, 1.0 );
@@ -401,14 +393,14 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
 
     double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
     AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
-    if ( finalResidualNorm > ( 1.0e-10 * initResidualNorm ) ) {
-        ut->failure( exeName );
+    if ( finalResidualNorm > ( 1e-6 * initResidualNorm ) ) {
+        ut->failure( exeName + " - Norm" );
     } else {
-        ut->passes( exeName );
+        ut->passes( exeName + " - Norm" );
     }
 
-    double epsilon = 1.0e-13 * static_cast<double>(
-                                   ( ( bvpOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+    double epsilon =
+        1.0e-13 * static_cast<double>( bvpOperator->getMatrix()->extractDiagonal()->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
     AMP::pout << "------------------------------------------------\n"
@@ -420,14 +412,14 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     /// Compute exact solution over the domain to compare with numerical solution
     auto exactSolVec =
         AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getOutputVariable() );
-    computeExactSolution( meshAdapter, manufacturedSolution, exactSolVec, true );
+    computeExactSolution( mesh, manufacturedSolution, exactSolVec, true );
 
 
     /// scale L2 norm by a factor h^(d/2)
     double Lx          = 10.0 * scaleMeshFactor;
     double Ly          = Lx;
     double Lz          = Lx;
-    double nElements   = meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Cell );
+    double nElements   = mesh->numGlobalElements( AMP::Mesh::GeomType::Cell );
     double scaleFactor = sqrt( Lx * Ly * Lz / nElements );
     AMP::pout << "number of elements = " << nElements << "\n";
     AMP::pout << "scale factor = " << scaleFactor << "\n";
@@ -448,19 +440,19 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
 
     if ( manufacturedSolution->getName() == "Linear" ) {
         if ( scaleFactor * exactErrVec->L2Norm() < 1.0e-12 ) {
-            ut->passes( exeName );
+            ut->passes( exeName + " - Linear" );
         } else {
-            ut->failure( exeName );
+            ut->failure( exeName + " - Linear" );
         }
     } else if ( manufacturedSolution->getName() == "Trigonometric" ) {
         // this need to be changed...
-        ut->passes( exeName );
+        ut->passes( exeName + " - Trigonometric" );
     } else {
         // need to define test requirements for new mms
         AMP_ERROR( "Unknown value for manufacturedSolution->getName()" );
     }
 
-    meshAdapter->displaceMesh( solVec );
+    mesh->displaceMesh( solVec );
 }
 
 

@@ -67,13 +67,12 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     // CREATE THE VOLUME INTEGRAL OPERATOR
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto volumeDatabase = input_db->getDatabase( "VolumeIntegralOperator" );
     auto inputVarDB     = volumeDatabase->getDatabase( "ActiveInputVariables" );
     inputVarDB->putScalar( "ActiveVariable_0", interfaceVarName );
     auto volumeOp = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "VolumeIntegralOperator", input_db, transportModel ) );
+            meshAdapter, "VolumeIntegralOperator", input_db ) );
 
     auto outputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "heatsource" );
 
