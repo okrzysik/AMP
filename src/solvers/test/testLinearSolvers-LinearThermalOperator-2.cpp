@@ -28,25 +28,6 @@
 
 #include <memory>
 
-std::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( std::shared_ptr<AMP::Database> input_db,
-             const std::string &solver_name,
-             const AMP::AMP_MPI &comm,
-             std::shared_ptr<AMP::Operator::Operator> op )
-{
-
-    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
-
-    auto db = input_db->getDatabase( solver_name );
-    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
-
-    auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-    parameters->d_pOperator = op;
-    parameters->d_comm      = comm;
-    parameters->d_global_db = input_db;
-
-    return AMP::Solver::SolverFactory::create( parameters );
-}
 
 void linearThermalTest( AMP::UnitTest *ut,
                         const std::string &input_file,
@@ -101,7 +82,8 @@ void linearThermalTest( AMP::UnitTest *ut,
     std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
 
     auto comm         = AMP::AMP_MPI( AMP_COMM_WORLD );
-    auto linearSolver = buildSolver( input_db, "LinearSolver", comm, diffusionOperator );
+    auto linearSolver = AMP::Solver::Test::buildSolver(
+        "LinearSolver", input_db, comm, nullptr, diffusionOperator );
 
     AMP::pout << "RHS Max: " << RightHandSideVec->max() << std::endl;
     AMP::pout << "RHS Min: " << RightHandSideVec->min() << std::endl;

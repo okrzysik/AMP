@@ -13,6 +13,7 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -24,28 +25,6 @@
 #include <memory>
 #include <string>
 
-
-std::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( const std::string &solver_name,
-             std::shared_ptr<AMP::Database> input_db,
-             const AMP::AMP_MPI &comm,
-             std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess,
-             std::shared_ptr<AMP::Operator::Operator> op )
-{
-
-    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
-
-    auto db = input_db->getDatabase( solver_name );
-    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
-
-    auto parameters             = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-    parameters->d_pOperator     = op;
-    parameters->d_comm          = comm;
-    parameters->d_pInitialGuess = initialGuess;
-    parameters->d_global_db     = input_db;
-
-    return AMP::Solver::SolverFactory::create( parameters );
-}
 
 // Function to get the linear heat generation rate
 double getLinearHeatGeneration( double Q, double H, double z )
@@ -284,8 +263,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearOperator->reset( nonlinearOpParams );
 
     // Create the solver
-    auto nonlinearSolver =
-        buildSolver( "NonlinearSolver", input_db, globalComm, solVec, nonlinearOperator );
+    auto nonlinearSolver = AMP::Solver::Test::buildSolver(
+        "NonlinearSolver", input_db, globalComm, solVec, nonlinearOperator );
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess( false );
