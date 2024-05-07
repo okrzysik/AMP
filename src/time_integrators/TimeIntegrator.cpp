@@ -169,9 +169,7 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
         AMP_ERROR( d_object_name + " -- Error in input data min_dt < 0." );
     }
 
-    if ( db->keyExists( "initial_dt" ) ) {
-        d_initial_dt = db->getWithDefault<double>( "initial_dt", 0.0 );
-    }
+    d_initial_dt = db->getWithDefault<double>( "initial_dt", 0.0 );
 
     d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
 
