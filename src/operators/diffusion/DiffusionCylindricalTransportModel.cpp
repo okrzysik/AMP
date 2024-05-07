@@ -1,4 +1,4 @@
-#include "DiffusionCylindricalTransportModel.h"
+#include "AMP/operators/diffusion/DiffusionCylindricalTransportModel.h"
 #include "AMP/utils/Database.h"
 
 #include <cmath>

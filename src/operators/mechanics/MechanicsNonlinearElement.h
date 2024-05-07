@@ -1,14 +1,12 @@
-
 #ifndef included_AMP_MechanicsNonlinearElement
 #define included_AMP_MechanicsNonlinearElement
 
-#include <vector>
+#include "AMP/operators/mechanics/MechanicsConstants.h"
+#include "AMP/operators/mechanics/MechanicsElement.h"
 
 #include <memory>
+#include <vector>
 
-/* AMP files */
-#include "MechanicsConstants.h"
-#include "MechanicsElement.h"
 
 namespace AMP::Operator {
 

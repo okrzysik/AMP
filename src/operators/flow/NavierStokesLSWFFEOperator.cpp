@@ -1,12 +1,14 @@
-#include "NavierStokesLSWFFEOperator.h"
+#include "AMP/operators/flow/NavierStokesLSWFFEOperator.h"
+#include "AMP/operators/flow/NavierStokesLSWFFEOperatorParameters.h"
+#include "AMP/operators/flow/NavierStokesLinearFEOperatorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
-#include "NavierStokesLSWFFEOperatorParameters.h"
-#include "NavierStokesLinearFEOperatorParameters.h"
+
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"
+
 
 namespace AMP::Operator {
 

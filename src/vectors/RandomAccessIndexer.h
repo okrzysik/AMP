@@ -3,7 +3,7 @@
 
 #include <map>
 
-#include "VectorIndexer.h"
+#include "AMP/vectors/VectorIndexer.h"
 
 
 namespace AMP::LinearAlgebra {

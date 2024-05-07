@@ -1,4 +1,4 @@
-#include "ArraySize.h"
+#include "AMP/utils/ArraySize.h"
 
 
 static_assert( AMP::ArraySize( { 10 } ).ndim() == 1 );

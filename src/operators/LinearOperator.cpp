@@ -1,4 +1,4 @@
-#include "LinearOperator.h"
+#include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"
 
 

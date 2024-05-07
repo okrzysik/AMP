@@ -1,16 +1,16 @@
-
 #ifndef included_AMP_MechanicsLinearFEOperator
 #define included_AMP_MechanicsLinearFEOperator
 
 /* AMP files */
 #include "AMP/operators/libmesh/LinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsConstants.h"
+#include "AMP/operators/mechanics/MechanicsLinearElement.h"
+#include "AMP/operators/mechanics/MechanicsLinearFEOperatorParameters.h"
+#include "AMP/operators/mechanics/MechanicsLinearUpdatedLagrangianElement.h"
 #include "AMP/vectors/Variable.h"
-#include "MechanicsConstants.h"
-#include "MechanicsLinearElement.h"
-#include "MechanicsLinearFEOperatorParameters.h"
-#include "MechanicsLinearUpdatedLagrangianElement.h"
 
 #include <vector>
+
 
 namespace AMP::Operator {
 

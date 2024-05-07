@@ -1,7 +1,7 @@
 #ifndef included_AMP_AsynchronousColumnOperator
 #define included_AMP_AsynchronousColumnOperator
 
-#include "ColumnOperator.h"
+#include "AMP/operators/ColumnOperator.h"
 
 namespace AMP::Operator {
 

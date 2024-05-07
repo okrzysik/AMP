@@ -1,4 +1,4 @@
-#include "ElementOperationFactory.h"
+#include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/Utilities.h"
 

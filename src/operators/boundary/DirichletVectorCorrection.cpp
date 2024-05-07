@@ -1,10 +1,10 @@
-#include "DirichletVectorCorrection.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/operators/boundary/DirichletMatrixCorrectionParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorSelector.h"
-#include "DirichletMatrixCorrectionParameters.h"
 
 
 using AMP::Utilities::stringf;

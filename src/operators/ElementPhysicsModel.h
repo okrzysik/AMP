@@ -1,9 +1,9 @@
-
 #ifndef included_AMP_ElementPhysicsModel
 #define included_AMP_ElementPhysicsModel
 
-#include "ElementPhysicsModelParameters.h"
+#include "AMP/operators/ElementPhysicsModelParameters.h"
 #include <memory>
+
 
 namespace AMP::Operator {
 

@@ -1,14 +1,13 @@
-/* AMP Files */
-#include "NeutronicsRhs.h"
+#include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/operators/NeutronicsRhsParameters.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/vectors/Vector.h"
-#include "NeutronicsRhsParameters.h"
-#include <memory>
 
 #include <cmath>
+#include <memory>
 #include <vector>
 
 
@@ -16,8 +15,8 @@ namespace AMP::Operator {
 
 /*
  *************************************************************************
- * Constructor for NeutronicsRhs.  The constructor initializes the values   *
- * from the parameters.                                                  *
+ * Constructor for NeutronicsRhs.  The constructor initializes the       *
+ * values from the parameters.                                           *
  *************************************************************************
  */
 NeutronicsRhs::NeutronicsRhs( std::shared_ptr<NeutronicsRhsParameters> parameters )

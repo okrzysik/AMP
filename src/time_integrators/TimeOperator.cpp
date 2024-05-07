@@ -1,7 +1,7 @@
-#include "TimeOperator.h"
+#include "AMP/time_integrators/TimeOperator.h"
+#include "AMP/time_integrators/TimeOperatorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/vectors/MultiVector.h"
-#include "TimeOperatorParameters.h"
 
 
 namespace AMP::TimeIntegrator {

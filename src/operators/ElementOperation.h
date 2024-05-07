@@ -2,9 +2,10 @@
 #ifndef included_AMP_ElementOperation
 #define included_AMP_ElementOperation
 
-#include "ElementOperationParameters.h"
+#include "AMP/operators/ElementOperationParameters.h"
 
 #include <memory>
+
 
 namespace AMP::Operator {
 

@@ -1,6 +1,6 @@
-
-#include "NavierStokesGalWFLinearElement.h"
+#include "AMP/operators/flow/NavierStokesGalWFLinearElement.h"
 #include "AMP/utils/Utilities.h"
+
 
 namespace AMP::Operator {
 

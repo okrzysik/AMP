@@ -1,14 +1,12 @@
-
 #ifndef included_AMP_NavierStokesGalWFElement
 #define included_AMP_NavierStokesGalWFElement
 
-#include <vector>
+#include "AMP/operators/flow/FlowElement.h"
+#include "AMP/operators/flow/NavierStokesConstants.h"
 
 #include <memory>
+#include <vector>
 
-/* AMP files */
-#include "FlowElement.h"
-#include "NavierStokesConstants.h"
 
 namespace AMP::Operator {
 

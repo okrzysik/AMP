@@ -1,8 +1,8 @@
 #ifndef included_AMP_MultiVariable_h
 #define included_AMP_MultiVariable_h
 
+#include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorSelector.h"
-#include "Variable.h"
 
 #include <vector>
 

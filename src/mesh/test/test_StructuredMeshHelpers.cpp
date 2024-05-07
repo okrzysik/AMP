@@ -2,11 +2,10 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/mesh/structured/BoxMesh.h"
+#include "AMP/mesh/testHelpers/meshGenerators.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
-
-#include "meshGenerators.h"
 
 
 void runTest( AMP::UnitTest *ut )

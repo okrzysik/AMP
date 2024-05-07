@@ -1,9 +1,8 @@
-
 #ifndef included_AMP_LinearBVPOperator
 #define included_AMP_LinearBVPOperator
 
-#include "BVPOperatorParameters.h"
-#include "LinearOperator.h"
+#include "AMP/operators/BVPOperatorParameters.h"
+#include "AMP/operators/LinearOperator.h"
 
 namespace AMP::Operator {
 

@@ -1,5 +1,5 @@
-#include "AsynchronousColumnOperator.h"
-#include "AsynchronousOperator.h"
+#include "AMP/operators/AsynchronousColumnOperator.h"
+#include "AMP/operators/AsynchronousOperator.h"
 
 namespace AMP::Operator {
 

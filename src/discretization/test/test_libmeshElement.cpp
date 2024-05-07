@@ -1,5 +1,5 @@
-#include "../../mesh/test/meshGenerators.h"
 #include "AMP/discretization/createLibmeshElements.h"
+#include "AMP/mesh/testHelpers/meshGenerators.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"

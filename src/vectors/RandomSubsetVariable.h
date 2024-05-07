@@ -1,7 +1,7 @@
 #ifndef included_AMP_RandomSubsetVariable
 #define included_AMP_RandomSubsetVariable
 
-#include "SubsetVariable.h"
+#include "AMP/vectors/SubsetVariable.h"
 
 
 namespace AMP::LinearAlgebra {

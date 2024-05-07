@@ -2,8 +2,9 @@
 #define included_AMP_ImplicitTimeIntegratorParameters
 
 #include "AMP/solvers/SolverStrategy.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/utils/Database.h"
-#include "TimeIntegratorParameters.h"
+
 #include <memory>
 
 
