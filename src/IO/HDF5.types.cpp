@@ -405,8 +405,10 @@ void readHDF5Scalar( hid_t fid, const std::string_view &name, TYPE &data )
 {
     AMP::Array<TYPE> tmp;
     readHDF5( fid, name, tmp );
-    AMP_INSIST( tmp.ndim() == 1 && tmp.length() == 1,
-                "Error loading " + std::string( name ) );
+    if ( tmp.ndim() != 1 || tmp.length() != 1 ) {
+        auto msg = AMP::Utilities::stringf( "Error loading %s: (%i,%i)", name.data(), tmp.ndim(), (int) tmp.length() );
+        AMP_ERROR( msg );
+    }
     data = tmp( 0 );
 }
 template<class T>

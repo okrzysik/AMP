@@ -1010,14 +1010,14 @@ int MPI_CLASS::newTag()
 /************************************************************************
  *  allReduce                                                            *
  ************************************************************************/
-static inline void setBit( uint64_t *x, size_t index )
+[[maybe_unused]] static inline void setBit( uint64_t *x, size_t index )
 {
     size_t i      = index >> 6;
     size_t j      = index & 0x3F;
     uint64_t mask = ( (uint64_t) 0x01 ) << j;
     x[i]          = x[i] | mask;
 }
-static inline bool readBit( const uint64_t *x, size_t index )
+[[maybe_unused]] static inline bool readBit( const uint64_t *x, size_t index )
 {
     size_t i      = index >> 6;
     size_t j      = index & 0x3F;
@@ -1666,6 +1666,7 @@ INSTANTIATE_GET_COMM( int32_t );
 INSTANTIATE_GET_COMM( uint32_t );
 INSTANTIATE_GET_COMM( int64_t );
 INSTANTIATE_GET_COMM( uint64_t );
+INSTANTIATE_GET_COMM( long long );
 INSTANTIATE_GET_COMM( float );
 INSTANTIATE_GET_COMM( double );
 INSTANTIATE_GET_COMM( std::byte );
@@ -1690,6 +1691,7 @@ INSTANTIATE_MPI_TYPE( int32_t );
 INSTANTIATE_MPI_TYPE( uint32_t );
 INSTANTIATE_MPI_TYPE( int64_t );
 INSTANTIATE_MPI_TYPE( uint64_t );
+INSTANTIATE_MPI_TYPE( long long );
 INSTANTIATE_MPI_TYPE( float );
 INSTANTIATE_MPI_TYPE( double );
 INSTANTIATE_MPI_TYPE( std::complex<float> );

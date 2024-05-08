@@ -9,6 +9,7 @@
 // Trilinos includes
 DISABLE_WARNINGS
 #include "MueLu.hpp"
+#include "MueLu_CreateEpetraPreconditioner.hpp"
 #include "MueLu_DirectSolver.hpp"
 #include "MueLu_Ifpack2Smoother.hpp"
 #include "MueLu_IfpackSmoother.hpp"
@@ -20,6 +21,7 @@ DISABLE_WARNINGS
 #include "MueLu_TransPFactory.hpp"
 #include "MueLu_TrilinosSmoother.hpp"
 #include "Teuchos_RCP.hpp"
+#include "Xpetra_EpetraCrsMatrix.hpp"
 #include "Xpetra_EpetraVector.hpp"
 #include "Xpetra_Matrix.hpp"
 #include "Xpetra_Operator.hpp"
@@ -127,7 +129,7 @@ TrilinosMueLuSolver::getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOpera
         AMP::LinearAlgebra::EpetraMatrixData::createView( ampMatrix->getMatrixData() );
     auto epA = Teuchos::rcpFromRef( epetraMatrix->getEpetra_CrsMatrix() );
     Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> exA =
-        Teuchos::rcp( new Xpetra::EpetraCrsMatrix( epA ) );
+        Teuchos::rcp( new Xpetra::EpetraCrsMatrixT<GO, NO>( epA ) );
     auto crsWrapMat = Teuchos::rcp( new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>( exA ) );
     auto xA         = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>>( crsWrapMat );
 
@@ -263,8 +265,7 @@ void TrilinosMueLuSolver::getFromInput( std::shared_ptr<const AMP::Database> db 
         db->getWithDefault<bool>( "build_hierarchy_from_defaults", false );
 
     // general parameters
-    d_MueLuParameterList.set( "verbosity",
-                              db->getWithDefault<std::string>( "verbosity", "medium" ) );
+    d_MueLuParameterList.set( "verbosity", db->getWithDefault<std::string>( "verbosity", "none" ) );
     d_MueLuParameterList.set( "problem: type",
                               db->getWithDefault<std::string>( "problem_type", "unknown" ) );
     d_MueLuParameterList.set( "number of equations",
@@ -412,9 +413,9 @@ void TrilinosMueLuSolver::getFromInput( std::shared_ptr<const AMP::Database> db 
 
     // miscellaneous options
     d_MueLuParameterList.set( "print initial parameters",
-                              db->getWithDefault<bool>( "print_initial_parameters", true ) );
+                              db->getWithDefault<bool>( "print_initial_parameters", false ) );
     d_MueLuParameterList.set( "print unused parameters",
-                              db->getWithDefault<bool>( "print_unused_parameters", true ) );
+                              db->getWithDefault<bool>( "print_unused_parameters", false ) );
 
     d_MueLuParameterList.set( "transpose: use implicit",
                               db->getWithDefault<bool>( "transpose_use_implicit", false ) );

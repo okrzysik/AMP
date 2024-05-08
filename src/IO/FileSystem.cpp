@@ -9,6 +9,7 @@
 /****************************************************************************
  *  Filesystem utilities                                                     *
  ****************************************************************************/
+constexpr static char slash[] = { 0x2F, 0x5C, 0x0 };
 bool AMP::IO::fileExists( const std::string &filename )
 {
     std::ifstream ifile( filename.c_str() );
@@ -17,24 +18,18 @@ bool AMP::IO::fileExists( const std::string &filename )
 
 std::string AMP::IO::path( const std::string &filename )
 {
-    size_t pos = 0;
-    if ( filename.find_last_of( 47 ) != std::string::npos )
-        pos = filename.find_last_of( 47 );
-    if ( filename.find_last_of( 92 ) != std::string::npos )
-        pos = std::max( pos, filename.find_last_of( 92 ) );
+    size_t pos = filename.find_last_of( slash );
+    if ( pos == std::string::npos )
+        return {};
     return filename.substr( 0, pos );
 }
 
 std::string AMP::IO::filename( const std::string &filename )
 {
-    size_t pos = 0;
-    if ( filename.find_last_of( 47 ) != std::string::npos )
-        pos = filename.find_last_of( 47 );
-    if ( filename.find_last_of( 92 ) != std::string::npos )
-        pos = std::max( pos, filename.find_last_of( 92 ) );
-    if ( pos != 0 )
-        return filename.substr( pos + 1 );
-    return filename;
+    size_t pos = filename.find_last_of( slash );
+    if ( pos == std::string::npos )
+        return filename;
+    return filename.substr( pos + 1 );
 }
 
 void AMP::IO::renameFile( const std::string &old_filename, const std::string &new_filename )

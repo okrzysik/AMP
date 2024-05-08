@@ -52,17 +52,13 @@ static void LinearTimeOperatorTest( AMP::UnitTest *ut )
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create a linear BVP operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearOperator", input_db, elementModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( meshAdapter, "LinearOperator", input_db ) );
 
     // create a mass linear BVP operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
     auto massOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "MassLinearOperator", input_db, massElementModel ) );
+            meshAdapter, "MassLinearOperator", input_db ) );
 
     auto fullMat = linearOperator->getMatrix();
     AMP::IO::AsciiWriter fullMatWriter;

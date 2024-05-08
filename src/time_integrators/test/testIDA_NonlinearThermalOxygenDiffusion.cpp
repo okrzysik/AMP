@@ -291,13 +291,13 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     time_Params->d_pMassOperator = columnMassOperator;
     time_Params->d_operator      = columnNonlinearRhsOperator;
-    time_Params->d_pNestedSolver = columnPreconditioner;
+    // time_Params->d_pNestedSolver = columnPreconditioner;
 
     time_Params->d_ic_vector       = initialCondition;
     time_Params->d_ic_vector_prime = initialConditionPrime;
 
     time_Params->d_pSourceTerm = f;
-    time_Params->d_object_name = "IDATimeIntegratorParameters";
+    // time_Params->d_object_name = "IDATimeIntegratorParameters";
 
     std::cout << "Before IDATimeIntegrator" << std::endl;
     auto pIDATimeIntegrator =

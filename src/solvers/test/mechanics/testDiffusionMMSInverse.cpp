@@ -117,12 +117,11 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     std::string mfgName = mfgSolution->get_name();
     bool isCylindrical  = mfgName.find( "Cylindrical" ) < mfgName.size();
     for ( ; iterator != iterator.end(); ++iterator ) {
-        double x, y, z;
-        std::valarray<double> poly( 10 );
         auto coord = iterator->coord();
-        x          = coord[0];
-        y          = coord[1];
-        z          = coord[2];
+        double x   = coord[0];
+        double y   = coord[1];
+        double z   = coord[2];
+        std::array<double, 10> poly;
         if ( isCylindrical ) {
             double th = 0.;
             double r  = sqrt( x * x + y * y );
@@ -131,9 +130,9 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
                 if ( y < 0. )
                     th = 2 * Pi - th;
             }
-            mfgSolution->evaluate( poly, r, th, z );
+            poly = mfgSolution->evaluate( r, th, z );
         } else {
-            mfgSolution->evaluate( poly, x, y, z );
+            poly = mfgSolution->evaluate( x, y, z );
         }
         std::vector<size_t> gid;
         DOF->getDOFs( iterator->globalID(), gid );
@@ -148,12 +147,11 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
         auto beg_bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, j, 0 );
         auto end_bnd = beg_bnd.end();
         for ( auto iter = beg_bnd; iter != end_bnd; ++iter ) {
-            std::valarray<double> poly( 10 );
-            double x, y, z;
             auto coord = iterator->coord();
-            x          = coord[0];
-            y          = coord[1];
-            z          = coord[2];
+            double x   = coord[0];
+            double y   = coord[1];
+            double z   = coord[2];
+            std::array<double, 10> poly;
             if ( isCylindrical ) {
                 double th = 0.;
                 double r  = sqrt( x * x + y * y );
@@ -162,9 +160,9 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
                     if ( y < 0. )
                         th = 2 * Pi - th;
                 }
-                mfgSolution->evaluate( poly, r, th, z );
+                poly = mfgSolution->evaluate( r, th, z );
             } else {
-                mfgSolution->evaluate( poly, x, y, z );
+                poly = mfgSolution->evaluate( x, y, z );
             }
             std::vector<size_t> gid;
             DOF->getDOFs( iterator->globalID(), gid );
@@ -253,14 +251,12 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
                 z          = coord[2];
                 std::vector<size_t> gid;
                 DOF->getDOFs( iterator->globalID(), gid );
-                double val, res, sol, src, err;
-                res = resVec->getValueByGlobalID( gid[0] );
-                sol = solVec->getValueByGlobalID( gid[0] );
-                src = srcVec->getValueByGlobalID( gid[0] );
-                err = res / ( src + .5 * res + std::numeric_limits<double>::epsilon() );
-                std::valarray<double> poly( 10 );
-                mfgSolution->evaluate( poly, x, y, z );
-                val = poly[0];
+                double res = resVec->getValueByGlobalID( gid[0] );
+                double sol = solVec->getValueByGlobalID( gid[0] );
+                double src = srcVec->getValueByGlobalID( gid[0] );
+                double err = res / ( src + .5 * res + std::numeric_limits<double>::epsilon() );
+                auto poly  = mfgSolution->evaluate( x, y, z );
+                double val = poly[0];
                 workVec->setValuesByGlobalID( 1, &gid[0], &err );
 
                 file << "{" << x << "," << y << "," << z << "," << val << "," << sol << "," << src

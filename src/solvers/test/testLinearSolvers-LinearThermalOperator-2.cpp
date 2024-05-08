@@ -28,25 +28,6 @@
 
 #include <memory>
 
-std::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( std::shared_ptr<AMP::Database> input_db,
-             const std::string &solver_name,
-             const AMP::AMP_MPI &comm,
-             std::shared_ptr<AMP::Operator::Operator> op )
-{
-
-    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
-
-    auto db = input_db->getDatabase( solver_name );
-    AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
-
-    auto parameters         = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-    parameters->d_pOperator = op;
-    parameters->d_comm      = comm;
-    parameters->d_global_db = input_db;
-
-    return AMP::Solver::SolverFactory::create( parameters );
-}
 
 void linearThermalTest( AMP::UnitTest *ut,
                         const std::string &input_file,
@@ -75,10 +56,9 @@ void linearThermalTest( AMP::UnitTest *ut,
     ////////////////////////////////////
     //   CREATE THE THERMAL OPERATOR  //
     ////////////////////////////////////
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
+            meshAdapter, "DiffusionBVPOperator", input_db ) );
     auto TemperatureInKelvinVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
     auto RightHandSideVec =
@@ -101,7 +81,8 @@ void linearThermalTest( AMP::UnitTest *ut,
     std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
 
     auto comm         = AMP::AMP_MPI( AMP_COMM_WORLD );
-    auto linearSolver = buildSolver( input_db, "LinearSolver", comm, diffusionOperator );
+    auto linearSolver = AMP::Solver::Test::buildSolver(
+        "LinearSolver", input_db, comm, nullptr, diffusionOperator );
 
     AMP::pout << "RHS Max: " << RightHandSideVec->max() << std::endl;
     AMP::pout << "RHS Min: " << RightHandSideVec->min() << std::endl;
@@ -130,11 +111,11 @@ void linearThermalTest( AMP::UnitTest *ut,
     if ( finalResidualNorm < 10 ) {
         ut->passes( combo + " passes linear thermal problem with input " + input_file );
     } else {
-        ut->passes( combo + " fails linear thermal problem with input " + input_file );
+        ut->failure( combo + " fails linear thermal problem with input " + input_file );
     }
 }
 
-void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile )
+void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile, bool all_solvers )
 {
     double t1;
     // Input and output file names
@@ -180,10 +161,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile )
 
     // Integrate Nuclear Rhs over Density * Volume //
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
+            meshAdapter, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();
@@ -198,60 +178,78 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile )
     t1 = static_cast<double>( PowerInWattsVec->L2Norm() );
     std::cout << "n1 = " << t1 << std::endl;
 
-    std::vector<std::pair<std::string, std::string>> solvers{
+    if ( all_solvers ) {
+        std::vector<std::pair<std::string, std::string>> solvers{
 #ifdef AMP_USE_HYPRE
-        { "CG", "BoomerAMG" },
-        { "GMRES", "BoomerAMG" },
-        { "FGMRES", "BoomerAMG" },
-        { "BiCGSTAB", "BoomerAMG" },
-        { "TFQMR", "BoomerAMG" },
-        { "BoomerAMG", "NoPC" },
-        { "HyprePCG", "NoPC" },
-        { "HyprePCG", "BoomerAMG" },
+            { "CG", "BoomerAMG" },
+            { "GMRES", "BoomerAMG" },
+            { "FGMRES", "BoomerAMG" },
+            { "BiCGSTAB", "BoomerAMG" },
+            { "TFQMR", "BoomerAMG" },
+            { "BoomerAMG", "NoPC" },
+            { "HyprePCG", "NoPC" },
+            { "HyprePCG", "BoomerAMG" },
     #ifdef AMP_USE_PETSC
-        { "PetscFGMRES", "BoomerAMG" },
+            { "PetscFGMRES", "BoomerAMG" },
     #endif
 #endif
 #ifdef AMP_USE_TRILINOS_ML
-        { "CG", "ML" },
-        { "GMRES", "ML" },
-        { "FGMRES", "ML" },
-        { "BiCGSTAB", "ML" },
-        { "TFQMR", "ML" },
+            { "CG", "ML" },
+            { "GMRES", "ML" },
+            { "FGMRES", "ML" },
+            { "BiCGSTAB", "ML" },
+            { "TFQMR", "ML" },
     #ifdef AMP_USE_PETSC
-        { "PetscFGMRES", "ML" },
+            { "PetscFGMRES", "ML" },
     #endif
-        { "ML", "NoPC" },
+            { "ML", "NoPC" },
+#endif
+#ifdef AMP_USE_TRILINOS_MUELU
+            { "CG", "MueLu" },
+            { "GMRES", "MueLu" },
+            { "FGMRES", "MueLu" },
+            { "BiCGSTAB", "MueLu" },
+            { "TFQMR", "MueLu" },
+    #ifdef AMP_USE_PETSC
+            { "PetscFGMRES", "MueLu" },
+    #endif
+            { "MueLu", "NoPC" },
 #endif
 #ifdef AMP_USE_PETSC
-        { "PetscFGMRES", "NoPC" },
+            { "PetscFGMRES", "NoPC" },
 #endif
-        { "CG", "NoPC" },
-        { "GMRES", "NoPC" },
-        { "FGMRES", "NoPC" },
-        { "BiCGSTAB", "NoPC" },
-        { "TFQMR", "NoPC" }
-    };
+            { "CG", "NoPC" },
+            { "GMRES", "NoPC" },
+            { "FGMRES", "NoPC" },
+            { "BiCGSTAB", "NoPC" }
+        };
 
-    for ( auto &[primary, nested] : solvers ) {
-        std::shared_ptr<AMP::Database> db = input_db->cloneDatabase();
-        auto use_nested                   = ( nested == "NoPC" ) ? false : true;
-        db->putDatabase(
-            "LinearSolver",
-            AMP::Solver::Test::SolverParameters::getParameters( primary, use_nested ) );
-        if ( use_nested ) {
+        for ( auto &[primary, nested] : solvers ) {
+            std::shared_ptr<AMP::Database> db = input_db->cloneDatabase();
+            auto use_nested                   = ( nested == "NoPC" ) ? false : true;
             db->putDatabase(
-                "Preconditioner",
-                AMP::Solver::Test::SolverParameters::getParameters( nested, use_nested ) );
-        }
+                "LinearSolver",
+                AMP::Solver::Test::SolverParameters::getParameters( primary, use_nested ) );
+            if ( use_nested ) {
+                db->putDatabase(
+                    "Preconditioner",
+                    AMP::Solver::Test::SolverParameters::getParameters( nested, use_nested ) );
+            }
 
-        std::string banner;
-        if ( use_nested )
-            banner = "Running " + primary + " with PC " + nested + " on " + input_file;
-        else
-            banner = "Running " + primary + " on " + input_file;
-        AMP::pout << banner << std::endl;
-        linearThermalTest( ut, input_file + primary + nested, db, meshAdapter, PowerInWattsVec );
+            std::string banner;
+            if ( use_nested )
+                banner = "Running " + primary + " with PC " + nested + " on " + input_file;
+            else
+                banner = "Running " + primary + " on " + input_file;
+            AMP::pout << banner << std::endl;
+            linearThermalTest( ut,
+                               input_file + " with " + primary + "+" + nested,
+                               db,
+                               meshAdapter,
+                               PowerInWattsVec );
+        }
+    } else {
+        linearThermalTest( ut, input_file, input_db, meshAdapter, PowerInWattsVec );
     }
 }
 
@@ -265,7 +263,8 @@ int main( int argc, char *argv[] )
 
     if ( argc > 1 ) {
 
-        inputFiles.emplace_back( argv[1] );
+        std::string inputFile{ argv[1] };
+        linearThermalTest( &ut, inputFile, false );
 
     } else {
 
@@ -274,10 +273,9 @@ int main( int argc, char *argv[] )
         inputFiles.emplace_back( "input_LinearThermalOperator-2-shell" );
         //    inputFiles.push_back( "input_testBoomerAMGSolver-LinearThermalOperator-2_HALDEN_clad"
         //    );
+        for ( auto &inputFile : inputFiles )
+            linearThermalTest( &ut, inputFile, true );
     }
-
-    for ( auto &inputFile : inputFiles )
-        linearThermalTest( &ut, inputFile );
 
     ut.report();
 

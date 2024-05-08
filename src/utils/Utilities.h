@@ -99,6 +99,15 @@ std::string intToString( int num, int min_width = 1 );
 
 
 /*!
+ * Replace part of a strig with another
+ * \param str   Input string to search/replace
+ * \param s     Search string
+ * \param r     Replacement string
+ */
+std::string strrep( const std::string &str, const std::string &s, const std::string &r );
+
+
+/*!
  * Convert common integer values to strings.
  *
  * These are simply wrappers around intToString that ensure the
