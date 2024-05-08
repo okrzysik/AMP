@@ -10,7 +10,7 @@
 // $Id: PowerShape.cc,v 1.3 2010/06/15 12:00:00 h51 Exp $
 //---------------------------------------------------------------------------//
 
-#include "PowerShape.h"
+#include "AMP/operators/libmesh/PowerShape.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/operators/Operator.h"
@@ -24,9 +24,9 @@
 #include "VolumeIntegralOperator.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/string_to_enum.h"
-#include <memory>
 
 #include <cmath>
+#include <memory>
 #include <vector>
 
 namespace AMP::Operator {

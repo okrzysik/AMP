@@ -2,7 +2,6 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/Utilities.h"
 
-
 // Libmesh headers
 DISABLE_WARNINGS
 #include "libmesh/auto_ptr.h"
