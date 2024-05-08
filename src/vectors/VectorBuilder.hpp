@@ -6,6 +6,7 @@
 #include "AMP/vectors/data/ArrayVectorData.h"
 #ifdef USE_CUDA
     #include "AMP/utils/cuda/GPUFunctionTable.h"
+    #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 
 #include "math.h"
