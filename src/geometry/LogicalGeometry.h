@@ -68,12 +68,15 @@ public:
      *    Note: The returned array may be larger than the number of dimensions
      * @return          Return the periodic dimensions
      */
-    inline std::array<bool, 3> getPeriodicDim() const { return d_isPeriodic; }
+    std::array<bool, 3> getPeriodicDim() const;
 
     /**
      * \brief    Return the surface ids for the logical boundaries
      * \details  This function will return the surface ids for each logical boundary.
-     *    If a logical boundary does not map to a surface, it will return -1.
+     *    If a logical boundary is periodic, it will return -1.
+     *    If a logical boundary maps to another point on the boundary, it will return -2.
+     *    If a logical boundary is not periodic, is not physical, and does not map to
+     *        another point on the boundary (i.e. unused dimensions), it will return -3.
      *    Note: The returned array may be larger than the number of dimensions
      * @return          Return the logical boundary ids (2*logicalDim)
      */
@@ -86,24 +89,19 @@ public: // Restart functions
 
 
 protected:
-    //!  Empty constructor for the base class
-    LogicalGeometry()
-        : Geometry(), d_logicalDim( 0 ), d_isPeriodic{ false, false, false }, d_ids{ 1, 2, 3,
-                                                                                     4, 5, 6 }
-    {
-    }
+    //!  Default constructor for the base class
+    LogicalGeometry( int physical, int logical, std::array<int, 6> ids = { 1, 2, 3, 4, 5, 6 } );
 
     // Delete copy constructors
-    LogicalGeometry( LogicalGeometry && )      = delete;
-    LogicalGeometry( const LogicalGeometry & ) = default;
-    LogicalGeometry &operator=( LogicalGeometry && ) = delete;
+    LogicalGeometry( LogicalGeometry && )                 = delete;
+    LogicalGeometry( const LogicalGeometry & )            = default;
+    LogicalGeometry &operator=( LogicalGeometry && )      = delete;
     LogicalGeometry &operator=( const LogicalGeometry & ) = delete;
 
 
-protected:                            // Internal data
-    uint8_t d_logicalDim;             // Logical dimension
-    std::array<bool, 3> d_isPeriodic; // Periodic dimensions
-    std::array<int, 6> d_ids;         // Logical surface ids
+protected:                          // Internal data
+    const uint8_t d_logicalDim;     // Logical dimension
+    const std::array<int, 6> d_ids; // Logical surface ids
 };
 
 

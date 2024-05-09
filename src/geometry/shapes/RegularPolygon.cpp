@@ -12,26 +12,18 @@ namespace AMP::Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-RegularPolygon::RegularPolygon( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry()
+RegularPolygon::RegularPolygon( std::shared_ptr<const AMP::Database> db )
+    : LogicalGeometry( 2, 2, { 1, 1, 1, 1, -3, -3 } )
 {
-    d_ids         = { 1, 1, 1, 1 };
-    d_isPeriodic  = { false, false };
-    d_physicalDim = 2;
-    d_logicalDim  = 2;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_N           = db->getScalar<double>( "N" );
-    d_R           = db->getScalar<double>( "R" );
+    d_N = db->getScalar<double>( "N" );
+    d_R = db->getScalar<double>( "R" );
     computeNorms();
 }
-RegularPolygon::RegularPolygon( int N, double R ) : LogicalGeometry(), d_N( N ), d_R( R )
+RegularPolygon::RegularPolygon( int N, double R )
+    : LogicalGeometry( 2, 2, { 1, 1, 1, 1, -3, -3 } ), d_N( N ), d_R( R )
 {
-    d_ids         = { 1, 1, 1, 1 };
-    d_isPeriodic  = { false, false };
-    d_physicalDim = 2;
-    d_logicalDim  = 2;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
+    d_offset[0] = 0;
+    d_offset[1] = 0;
     computeNorms();
 }
 void RegularPolygon::computeNorms()

@@ -136,7 +136,7 @@ OperatorBuilder::createOperator( std::shared_ptr<OperatorParameters> in_params )
 
 
 std::shared_ptr<Operator> OperatorBuilder::createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                                           std::string operatorName,
+                                                           const std::string &operatorName,
                                                            std::shared_ptr<AMP::Database> input_db )
 {
     std::shared_ptr<ElementPhysicsModel> model;
@@ -147,7 +147,7 @@ std::shared_ptr<Operator> OperatorBuilder::createOperator( std::shared_ptr<AMP::
 
 std::shared_ptr<Operator>
 OperatorBuilder::createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                 std::string operatorName,
+                                 const std::string &operatorName,
                                  std::shared_ptr<AMP::Database> input_db,
                                  std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel,
                                  std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )

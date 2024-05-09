@@ -33,7 +33,7 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<OperatorParameters> in
  * \param input_db              Input database
  */
 std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                          std::string operatorName,
+                                          const std::string &operatorName,
                                           std::shared_ptr<AMP::Database> input_db );
 
 /**
@@ -48,7 +48,7 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
  */
 std::shared_ptr<Operator> createOperator(
     std::shared_ptr<AMP::Mesh::Mesh> mesh,
-    std::string operatorName,
+    const std::string &operatorName,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel,
     std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory = nullptr );

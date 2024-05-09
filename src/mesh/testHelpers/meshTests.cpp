@@ -173,8 +173,12 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
             if ( coord.size() != mesh->getDim() )
                 coord_pass = false;
         } else {
-            if ( element.volume() <= 0.0 )
+            try {
+                if ( element.volume() <= 0.0 )
+                    volume_pass = false;
+            } catch ( ... ) {
                 volume_pass = false;
+            }
         }
         if ( id.type() == AMP::Mesh::GeomType::Cell ) {
             bool in_a_block = false;
@@ -1320,36 +1324,40 @@ void meshTests::MeshPerformance( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::M
 {
     if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() != 0 )
         return;
-    printf( "%s performance:\n", mesh->getName().c_str() );
-    const size_t N_nodes = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
-    const size_t N_elem  = mesh->numLocalElements( mesh->getGeomType() );
-    // Get the test timing
-    auto t1  = runAndTime( getIterator, mesh, 1000 );
-    auto t2  = runAndTime( incIterator, mesh, 10 );
-    auto t3  = runAndTime( rangeLoop, mesh, 10 );
-    auto t4  = runAndTime( globalID, mesh, 10 );
-    auto t5  = runAndTime( coord1, mesh, 10 );
-    auto t6  = runAndTime( coord2, mesh, 10 );
-    auto t7  = runAndTime( centroid, mesh, 10 );
-    auto t8  = runAndTime( getElementIDs, mesh, 10 );
-    auto t9  = runAndTime( getElements1, mesh, 10 );
-    auto t10 = runAndTime( getElements2, mesh, 10 );
-    auto t11 = runAndTime( volume, mesh, 10 );
-    // Print the results
-    auto to_ns = []( double time, size_t N ) {
-        return static_cast<int>( 1e9 * std::max( time, 0.0 ) / N );
-    };
-    printf( "   getIterator: %i ns\n", static_cast<int>( 1e9 * t1 ) );
-    printf( "   ++iterator: %i ns\n", to_ns( t2, N_nodes ) );
-    printf( "   rangeLoop: %i ns\n", to_ns( t3, N_nodes ) );
-    printf( "   globalID: %i ns\n", to_ns( t4 - t3, N_nodes ) );
-    printf( "   coord (1): %i ns\n", to_ns( t5 - t3, N_nodes ) );
-    printf( "   coord (2): %i ns\n", to_ns( t6 - t3, N_nodes ) );
-    printf( "   centroid: %i ns\n", to_ns( t7 - t3, N_elem ) );
-    printf( "   getElementIDs: %i ns\n", to_ns( t8 - t3, N_elem ) );
-    printf( "   getElements (1): %i ns\n", to_ns( t9 - t3, N_elem ) );
-    printf( "   getElements (2): %i ns\n", to_ns( t10 - t3, N_elem ) );
-    printf( "   volume: %i ns\n", to_ns( t11 - t3, N_elem ) );
+    try {
+        printf( "%s performance:\n", mesh->getName().c_str() );
+        const size_t N_nodes = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
+        const size_t N_elem  = mesh->numLocalElements( mesh->getGeomType() );
+        // Get the test timing
+        auto t1  = runAndTime( getIterator, mesh, 1000 );
+        auto t2  = runAndTime( incIterator, mesh, 10 );
+        auto t3  = runAndTime( rangeLoop, mesh, 10 );
+        auto t4  = runAndTime( globalID, mesh, 10 );
+        auto t5  = runAndTime( coord1, mesh, 10 );
+        auto t6  = runAndTime( coord2, mesh, 10 );
+        auto t7  = runAndTime( centroid, mesh, 10 );
+        auto t8  = runAndTime( getElementIDs, mesh, 10 );
+        auto t9  = runAndTime( getElements1, mesh, 10 );
+        auto t10 = runAndTime( getElements2, mesh, 10 );
+        auto t11 = runAndTime( volume, mesh, 10 );
+        // Print the results
+        auto to_ns = []( double time, size_t N ) {
+            return static_cast<int>( 1e9 * std::max( time, 0.0 ) / N );
+        };
+        printf( "   getIterator: %i ns\n", static_cast<int>( 1e9 * t1 ) );
+        printf( "   ++iterator: %i ns\n", to_ns( t2, N_nodes ) );
+        printf( "   rangeLoop: %i ns\n", to_ns( t3, N_nodes ) );
+        printf( "   globalID: %i ns\n", to_ns( t4 - t3, N_nodes ) );
+        printf( "   coord (1): %i ns\n", to_ns( t5 - t3, N_nodes ) );
+        printf( "   coord (2): %i ns\n", to_ns( t6 - t3, N_nodes ) );
+        printf( "   centroid: %i ns\n", to_ns( t7 - t3, N_elem ) );
+        printf( "   getElementIDs: %i ns\n", to_ns( t8 - t3, N_elem ) );
+        printf( "   getElements (1): %i ns\n", to_ns( t9 - t3, N_elem ) );
+        printf( "   getElements (2): %i ns\n", to_ns( t10 - t3, N_elem ) );
+        printf( "   volume: %i ns\n", to_ns( t11 - t3, N_elem ) );
+    } catch ( ... ) {
+        ut.failure( "Caught exception testing performance: " + mesh->getName() );
+    }
     // Repeat the tests for all base meshes if we are dealing with a multimesh
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh ) {

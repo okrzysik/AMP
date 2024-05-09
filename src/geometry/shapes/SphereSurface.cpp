@@ -12,27 +12,21 @@ namespace AMP::Geometry {
  * Constructor                                           *
  ********************************************************/
 SphereSurface::SphereSurface( std::shared_ptr<const AMP::Database> db )
+    : LogicalGeometry( 3, 2, { -1, -1, -2, -2, -3, -3 } )
 {
-    d_ids         = { -1, -1, -1, -1 };
-    d_isPeriodic  = { true, false };
-    d_physicalDim = 3;
-    d_logicalDim  = 2;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
-    auto range    = db->getVector<double>( "Range" );
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
+    auto range  = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
     d_r = range[0];
 }
-SphereSurface::SphereSurface( double r ) : LogicalGeometry(), d_r( r )
+SphereSurface::SphereSurface( double r )
+    : LogicalGeometry( 3, 2, { -1, -1, -2, -2, -3, -3 } ), d_r( r )
 {
-    d_ids         = { -1, -1, -1, -1 };
-    d_isPeriodic  = { true, false };
-    d_physicalDim = 3;
-    d_logicalDim  = 2;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
 }
 
 

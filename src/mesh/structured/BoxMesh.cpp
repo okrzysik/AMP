@@ -323,7 +323,7 @@ BoxMesh::ElementBlocks BoxMesh::getSurface( int s, GeomType type ) const
     // Check if we are keeping the given surface
     int d     = s / 2;
     int s_max = 2 * static_cast<int>( GeomDim );
-    if ( d_surfaceId[s] == -1 || s > s_max || d_isPeriodic[d] )
+    if ( d_surfaceId[s] < 0 || s > s_max || d_isPeriodic[d] )
         return {};
     // Initialize some basic info
     bool left                   = s % 2 == 0;
@@ -828,7 +828,7 @@ std::vector<int> BoxMesh::getBoundaryIDs() const
 {
     std::set<int> ids;
     for ( int i = 0; i < 2 * static_cast<int>( GeomDim ); i++ ) {
-        if ( !d_isPeriodic[i / 2] && d_surfaceId[i] != -1 )
+        if ( d_surfaceId[i] >= 0 )
             ids.insert( d_surfaceId[i] );
     }
     return std::vector<int>( ids.begin(), ids.end() );
