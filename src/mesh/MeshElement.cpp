@@ -60,11 +60,31 @@ void MeshElement::getElementsID( const GeomType type, std::vector<MeshElementID>
     for ( size_t i = 0; i < d_elements.size(); i++ )
         ID[i] = d_elements[i].globalID();
 }
-void MeshElement::getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const
+void MeshElement::getNeighbors( std::vector<std::unique_ptr<MeshElement>> &neighbors ) const
 {
     if ( d_element == nullptr )
         AMP_ERROR( "getNeighbors is not implemented for the base class (" + elementClass() + ")" );
     d_element->getNeighbors( neighbors );
+}
+void MeshElement::getNeighborVertices( std::vector<Point> &vertices ) const
+{
+    std::vector<Point> V0;
+    getVertices( V0 );
+    std::vector<std::unique_ptr<MeshElement>> neighbors;
+    getNeighbors( neighbors );
+    vertices.resize( 0 );
+    vertices.reserve( 24 );
+    std::vector<Point> V1;
+    for ( auto &elem : neighbors ) {
+        elem->getVertices( V1 );
+        for ( auto &p : V1 ) {
+            bool found = false;
+            for ( auto p0 : V0 )
+                found = found || p == p0;
+            if ( !found )
+                vertices.push_back( p );
+        }
+    }
 }
 
 

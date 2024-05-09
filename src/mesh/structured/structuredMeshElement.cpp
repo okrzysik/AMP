@@ -299,7 +299,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
  * Function to get the neighboring elements                      *
  ****************************************************************/
 void structuredMeshElement::getNeighbors(
-    std::vector<std::shared_ptr<MeshElement>> &neighbors ) const
+    std::vector<std::unique_ptr<MeshElement>> &neighbors ) const
 {
     int N = 0;
     BoxMesh::MeshElementIndex index[27];
@@ -334,7 +334,7 @@ void structuredMeshElement::getNeighbors(
             }
         }
         if ( in_mesh )
-            neighbors.push_back( std::make_shared<structuredMeshElement>( elem, d_mesh ) );
+            neighbors.push_back( std::make_unique<structuredMeshElement>( elem, d_mesh ) );
     }
 }
 void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const

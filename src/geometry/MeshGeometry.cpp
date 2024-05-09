@@ -106,12 +106,10 @@ void MeshGeometry::updateCache() const
             if ( dot( n, a - centroid ) < 0 )
                 n = -n;
             // Check the neighboring vertices to ensure they are not in front of the plane
-            for ( const auto &neighbor : elem.getNeighbors() ) {
-                neighbor->getVertices( vertices );
-                for ( const auto &p : vertices ) {
-                    double v   = dot( n, p - a );
-                    d_isConvex = d_isConvex && v >= -tol;
-                }
+            elem.getNeighborVertices( vertices );
+            for ( const auto &p : vertices ) {
+                double v   = dot( n, p - a );
+                d_isConvex = d_isConvex && v >= -tol;
             }
         }
         printf( "isConvex = %s\n", d_isConvex ? "true" : "false" );

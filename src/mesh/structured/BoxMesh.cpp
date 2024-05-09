@@ -67,46 +67,43 @@ ArraySize BoxMesh::estimateLogicalMeshSize( std::shared_ptr<const MeshParameters
 /****************************************************************
  * Constructor                                                   *
  ****************************************************************/
-BoxMesh::BoxMesh() : Mesh(), d_rank( -1 ), d_size( 0 )
+BoxMesh::BoxMesh()
+    : Mesh(),
+      d_rank( -1 ),
+      d_size( 0 ),
+      d_isPeriodic{ false, false, false },
+      d_globalSize{ 1, 1, 1 },
+      d_numBlocks{ 1, 1, 1 },
+      d_localIndex{ 0, 0, 0 },
+      d_indexSize{ 0, 0, 0 },
+      d_surfaceId{ -1, -1, -1 }
 {
-    d_isPeriodic.fill( false );
-    d_globalSize.fill( 1 );
-    d_indexSize.fill( 0 );
-    d_localIndex.fill( 0 );
-    d_numBlocks.fill( 1 );
-    d_surfaceId.fill( -1 );
 }
 BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params )
-    : Mesh( params ), d_rank( -1 ), d_size( 0 )
+    : Mesh( params ),
+      d_rank( -1 ),
+      d_size( 0 ),
+      d_isPeriodic{ false, false, false },
+      d_globalSize{ 1, 1, 1 },
+      d_numBlocks{ 1, 1, 1 },
+      d_localIndex{ 0, 0, 0 },
+      d_indexSize{ 0, 0, 0 },
+      d_surfaceId{ -1, -1, -1 }
 {
-    d_isPeriodic.fill( false );
-    d_globalSize.fill( 1 );
-    d_indexSize.fill( 0 );
-    d_localIndex.fill( 0 );
-    d_numBlocks.fill( 1 );
-    d_surfaceId.fill( -1 );
 }
-BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
+BoxMesh::BoxMesh( const BoxMesh &mesh )
+    : Mesh( mesh ),
+      d_rank( mesh.d_rank ),
+      d_size( mesh.d_size ),
+      d_isPeriodic( mesh.d_isPeriodic ),
+      d_globalSize( mesh.d_globalSize ),
+      d_numBlocks( mesh.d_numBlocks ),
+      d_startIndex( mesh.d_startIndex ),
+      d_endIndex( mesh.d_endIndex ),
+      d_localIndex( mesh.d_localIndex ),
+      d_indexSize( mesh.d_indexSize ),
+      d_surfaceId( mesh.d_surfaceId )
 {
-    PhysicalDim  = mesh.PhysicalDim;
-    GeomDim      = mesh.GeomDim;
-    d_max_gcw    = mesh.d_max_gcw;
-    d_comm       = mesh.d_comm;
-    d_rank       = mesh.d_rank;
-    d_size       = mesh.d_size;
-    d_name       = mesh.d_name;
-    d_box        = mesh.d_box;
-    d_box_local  = mesh.d_box_local;
-    d_isPeriodic = mesh.d_isPeriodic;
-    d_globalSize = mesh.d_globalSize;
-    d_numBlocks  = mesh.d_numBlocks;
-    d_localIndex = mesh.d_localIndex;
-    d_indexSize  = mesh.d_indexSize;
-    for ( int d = 0; d < 3; d++ ) {
-        d_startIndex[d] = mesh.d_startIndex[d];
-        d_endIndex[d]   = mesh.d_endIndex[d];
-    }
-    d_surfaceId = mesh.d_surfaceId;
 }
 
 
@@ -131,22 +128,30 @@ void BoxMesh::writeRestart( int64_t fid ) const
     writeHDF5( fid, "indexSize", d_indexSize );
     writeHDF5( fid, "surfaceId", d_surfaceId );
 }
-BoxMesh::BoxMesh( int64_t fid, AMP::IO::RestartManager *manager ) : Mesh( fid, manager )
+template<class TYPE>
+static inline TYPE read( int64_t fid, const std::string &name )
 {
-    readHDF5( fid, "rank", d_rank );
-    readHDF5( fid, "size", d_size );
-    readHDF5( fid, "isPeriodic", d_isPeriodic );
-    readHDF5( fid, "globalSize", d_globalSize );
-    readHDF5( fid, "numBlocks", d_numBlocks );
-    readHDF5( fid, "startIndex[0]", d_startIndex[0] );
-    readHDF5( fid, "startIndex[1]", d_startIndex[1] );
-    readHDF5( fid, "startIndex[2]", d_startIndex[2] );
-    readHDF5( fid, "endIndex[0]", d_endIndex[0] );
-    readHDF5( fid, "endIndex[1]", d_endIndex[1] );
-    readHDF5( fid, "endIndex[2]", d_endIndex[2] );
-    readHDF5( fid, "localIndex", d_localIndex );
-    readHDF5( fid, "indexSize", d_indexSize );
-    readHDF5( fid, "surfaceId", d_surfaceId );
+    TYPE x;
+    readHDF5( fid, name, x );
+    return x;
+}
+BoxMesh::BoxMesh( int64_t fid, AMP::IO::RestartManager *manager )
+    : Mesh( fid, manager ),
+      d_rank( read<int>( fid, "rank" ) ),
+      d_size( read<int>( fid, "size" ) ),
+      d_isPeriodic( read<std::array<bool, 3>>( fid, "isPeriodic" ) ),
+      d_globalSize( read<std::array<int, 3>>( fid, "globalSize" ) ),
+      d_numBlocks( read<std::array<int, 3>>( fid, "numBlocks" ) ),
+      d_localIndex( read<std::array<int, 6>>( fid, "localIndex" ) ),
+      d_indexSize( read<std::array<int, 3>>( fid, "indexSize" ) ),
+      d_surfaceId( read<std::array<int, 6>>( fid, "surfaceId" ) )
+{
+    readHDF5( fid, "startIndex[0]", const_cast<std::vector<int> &>( d_startIndex[0] ) );
+    readHDF5( fid, "startIndex[1]", const_cast<std::vector<int> &>( d_startIndex[1] ) );
+    readHDF5( fid, "startIndex[2]", const_cast<std::vector<int> &>( d_startIndex[2] ) );
+    readHDF5( fid, "endIndex[0]", const_cast<std::vector<int> &>( d_endIndex[0] ) );
+    readHDF5( fid, "endIndex[1]", const_cast<std::vector<int> &>( d_endIndex[1] ) );
+    readHDF5( fid, "endIndex[2]", const_cast<std::vector<int> &>( d_endIndex[2] ) );
 }
 
 
@@ -209,43 +214,60 @@ void BoxMesh::loadBalance( std::array<int, 3> size,
 /****************************************************************
  * Initialize the mesh                                           *
  ****************************************************************/
-void BoxMesh::initialize( const std::vector<int> &minSize )
+void BoxMesh::initialize( const std::array<int, 3> &boxSize,
+                          const std::array<int, 6> &ids,
+                          const std::vector<int> &minSize )
 {
     PROFILE( "initialize" );
+    // Perform some const casts so we can set the local variables
+    int &rank        = const_cast<int &>( d_rank );
+    int &size        = const_cast<int &>( d_size );
+    auto &isPeriodic = const_cast<std::array<bool, 3> &>( d_isPeriodic );
+    auto &globalSize = const_cast<std::array<int, 3> &>( d_globalSize );
+    auto &numBlocks  = const_cast<std::array<int, 3> &>( d_numBlocks );
+    auto startIndex  = const_cast<std::vector<int> *>( d_startIndex );
+    auto endIndex    = const_cast<std::vector<int> *>( d_endIndex );
+    auto &localIndex = const_cast<std::array<int, 6> &>( d_localIndex );
+    auto &indexSize  = const_cast<std::array<int, 3> &>( d_indexSize );
+    auto &surfaceId  = const_cast<std::array<int, 6> &>( d_surfaceId );
     // Cache comm data
     if ( !d_comm.isNull() ) {
-        d_rank = d_comm.getRank();
-        d_size = d_comm.getSize();
+        rank = d_comm.getRank();
+        size = d_comm.getSize();
     }
-    // Check some assumptions/variables
+    // Set basic variables
+    globalSize = boxSize;
+    surfaceId  = ids;
     AMP_INSIST( static_cast<int>( GeomDim ) <= 3, "Geometric dimension must be <= 3" );
     for ( int i = 2 * static_cast<int>( GeomDim ); i < 6; i++ )
-        d_surfaceId[i] = -1;
-    for ( int i = 0; i < 6; i++ ) {
-        if ( d_isPeriodic[i / 2] )
-            AMP_ASSERT( d_surfaceId[i] == -1 );
+        surfaceId[i] = -1;
+    for ( int d = 0; d < 3; d++ ) {
+        if ( surfaceId[2 * d + 0] == -1 || surfaceId[2 * d + 1] == -1 ) {
+            AMP_ASSERT( surfaceId[2 * d + 0] == -1 && surfaceId[2 * d + 1] == -1 );
+            isPeriodic[d] = true;
+        }
     }
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
-        AMP_ASSERT( d_globalSize[d] > 0 );
+        AMP_ASSERT( globalSize[d] > 0 );
     // Create the load balance
-    AMP_INSIST( d_size > 0, "Communicator must be set" );
-    loadBalance( d_globalSize, d_size, d_startIndex, minSize );
+    AMP_INSIST( size > 0, "Communicator must be set" );
+    loadBalance( globalSize, size, startIndex, minSize );
     // Set some cached values
     for ( int d = 0; d < 3; d++ ) {
-        AMP_ASSERT( !d_startIndex[d].empty() );
-        d_numBlocks[d] = d_startIndex[d].size();
-        d_endIndex[d].resize( d_numBlocks[d] );
-        for ( int i = 1; i < d_numBlocks[d]; i++ )
-            d_endIndex[d][i - 1] = d_startIndex[d][i];
-        d_endIndex[d].back() = d_globalSize[d];
+        AMP_ASSERT( !startIndex[d].empty() );
+        numBlocks[d] = startIndex[d].size();
+        endIndex[d].resize( numBlocks[d] );
+        for ( int i = 1; i < numBlocks[d]; i++ )
+            endIndex[d][i - 1] = d_startIndex[d][i];
+        endIndex[d].back() = globalSize[d];
     }
-    auto block   = getLocalBlock( d_rank );
-    d_indexSize  = { block[1] - block[0] + 3, block[3] - block[2] + 3, block[5] - block[4] + 3 };
-    d_localIndex = block;
+    auto block = getLocalBlock( rank );
+    indexSize  = { block[1] - block[0] + 3, block[3] - block[2] + 3, block[5] - block[4] + 3 };
+    localIndex = block;
     for ( int d = 0; d < 3; d++ ) {
-        if ( d_localIndex[2 * d + 1] == d_globalSize[d] - 1 )
-            d_localIndex[2 * d + 1] = d_globalSize[d];
-        d_localIndex[2 * d + 1]++;
+        if ( localIndex[2 * d + 1] == globalSize[d] - 1 )
+            localIndex[2 * d + 1] = globalSize[d];
+        localIndex[2 * d + 1]++;
     }
 }
 void BoxMesh::createBoundingBox()
@@ -280,11 +302,6 @@ void BoxMesh::finalize( const std::string &name, const std::vector<double> &disp
 {
     PROFILE( "finalize" );
     d_name = name;
-    // Cache comm data (repeat in case initialize is not called)
-    if ( !d_comm.isNull() ) {
-        d_rank = d_comm.getRank();
-        d_size = d_comm.getSize();
-    }
     // Fill in the final info for the mesh
     createBoundingBox();
     // Displace the mesh

@@ -436,7 +436,9 @@ protected:
                              std::vector<int> minSize = {} );
 
     // Function to initialize the mesh data once the logical mesh info has been created
-    void initialize( const std::vector<int> &minSize = {} );
+    void initialize( const std::array<int, 3> &size,
+                     const std::array<int, 6> &ids,
+                     const std::vector<int> &minSize = {} );
 
     // Function to finalize the mesh data once the coordinates have been set
     void finalize( const std::string &name, const std::vector<double> &displacement );
@@ -459,16 +461,16 @@ protected: // Write/read restart data
     void writeRestart( int64_t ) const override;
     BoxMesh( int64_t, AMP::IO::RestartManager * );
 
-protected:                            // Internal data
-    int d_rank, d_size;               // Cached values for the rank and size
-    std::array<bool, 3> d_isPeriodic; // Which directions are periodic
-    std::array<int, 3> d_globalSize;  // The size of the logical domain in each direction
-    std::array<int, 3> d_numBlocks;   // The number of local box in each direction
-    std::vector<int> d_startIndex[3]; // The first index for each block
-    std::vector<int> d_endIndex[3];   // The end index (last=1) for each block
-    std::array<int, 6> d_localIndex;  // Local index range (cached for performance)
-    std::array<int, 3> d_indexSize;   // Local index size (local box + 2) (cached for performance)
-    std::array<int, 6> d_surfaceId;   // ID of each surface (if any, -1 if not)
+protected:                                  // Internal data
+    const int d_rank, d_size;               // Cached values for the rank and size
+    const std::array<bool, 3> d_isPeriodic; // Which directions are periodic
+    const std::array<int, 3> d_globalSize;  // The size of the logical domain in each direction
+    const std::array<int, 3> d_numBlocks;   // The number of local box in each direction
+    const std::vector<int> d_startIndex[3]; // The first index for each block
+    const std::vector<int> d_endIndex[3];   // The end index (last=1) for each block
+    const std::array<int, 6> d_localIndex;  // Local index range (cached for performance)
+    const std::array<int, 3> d_indexSize;   // Local index size (local box + 2) (cached)
+    const std::array<int, 6> d_surfaceId;   // ID of each surface (if any, -1 if not)
 
 protected: // Friend functions to access protected functions
     friend class structuredMeshElement;

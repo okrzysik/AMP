@@ -175,8 +175,8 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
     for ( int i = 0; i < N; i++ ) {
         double x  = dis( gen );
         double y  = dis( gen );
-        auto p    = map_logical_sphere_surface( r, x, y );
-        auto p2   = map_sphere_surface_logical( r, p[0], p[1], p[2] );
+        auto p    = map_logical_sphere_surface( 1, r, x, y );
+        auto p2   = map_sphere_surface_logical( 1, r, p[0], p[1], p[2] );
         double r2 = sqrt( p[0] * p[0] + p[1] * p[1] + p[2] * p[2] );
         pass      = pass && r2 < r + 1e-15;
         pass      = pass && fabs( p2[0] - x ) < 1e-10 && fabs( p2[1] - y ) < 1e-10;
@@ -186,8 +186,8 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
     int N2 = 100;
     for ( int i = 0; i < N2; i++ ) {
         double x = i / static_cast<double>( N - 1 );
-        auto p1  = map_logical_sphere_surface( r, 0, x );
-        auto p2  = map_logical_sphere_surface( r, 1, x );
+        auto p1  = map_logical_sphere_surface( 1, r, 0, x );
+        auto p2  = map_logical_sphere_surface( 1, r, 1, x );
         if ( p1 != p2 ) {
             printf(
                 "Failed boundary 1: (%e,%e,%e)\n", p1[0] - p2[0], p1[1] - p2[1], p1[2] - p2[2] );
@@ -195,8 +195,8 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
         }
     }
     auto testMap = []( const AMP::Mesh::Point &p0 ) {
-        auto p2 = map_sphere_surface_logical( 1.0, p0[0], p0[1], p0[2] );
-        auto p  = map_logical_sphere_surface( 1.0, p2[0], p2[1] );
+        auto p2 = map_sphere_surface_logical( 1, 1.0, p0[0], p0[1], p0[2] );
+        auto p  = map_logical_sphere_surface( 1, 1.0, p2[0], p2[1] );
         auto d  = p0 - AMP::Mesh::Point( p );
         return d.abs() < 1e-12;
     };

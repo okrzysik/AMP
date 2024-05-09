@@ -510,13 +510,18 @@ protected:
 
 protected:
     //!  Empty constructor for a mesh
-    Mesh() {}
+    Mesh();
+
+    // Private copy constructor
+    explicit Mesh( const Mesh &old );
+
+    // Private assigment operator
+    Mesh &operator=( const Mesh &old ) = delete;
 
     //! The geometry parameters
     std::shared_ptr<Geometry::Geometry> d_geometry;
 
-    //! The geometric dimension (equivalent to the highest geometric object that could be
-    //! represented)
+    //! The geometric dimension (highest geometric object that can be represented)
     GeomType GeomDim;
 
     //! The physical dimension
@@ -544,12 +549,6 @@ protected:
      * used.
      */
     void setMeshID();
-
-    // Private copy constructor
-    explicit Mesh( const Mesh &old_mesh );
-
-    // Private assigment operator
-    Mesh &operator=( const Mesh &old_mesh ) = delete;
 };
 
 } // namespace AMP::Mesh

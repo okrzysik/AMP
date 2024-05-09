@@ -98,7 +98,7 @@ Point SphereSurface::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point SphereSurface::physical( const Point &pos ) const
 {
-    auto point = GeometryHelpers::map_logical_sphere_surface( d_r, pos[0], pos[1] );
+    auto point = GeometryHelpers::map_logical_sphere_surface( 1, d_r, pos[0], pos[1] );
     point[0] += d_offset[0];
     point[1] += d_offset[1];
     point[2] += d_offset[2];
@@ -114,7 +114,7 @@ Point SphereSurface::logical( const Point &pos ) const
     double x0 = pos[0] - d_offset[0];
     double y0 = pos[1] - d_offset[1];
     double z0 = pos[2] - d_offset[2];
-    auto tmp  = GeometryHelpers::map_sphere_surface_logical( d_r, x0, y0, z0 );
+    auto tmp  = GeometryHelpers::map_sphere_surface_logical( 1, d_r, x0, y0, z0 );
     return Point( tmp[0], tmp[1] );
 }
 

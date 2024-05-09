@@ -229,7 +229,7 @@ void TriangleMeshElement<NG, NP, TYPE>::getElements( const GeomType type,
  ****************************************************************/
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 void TriangleMeshElement<NG, NP, TYPE>::getNeighbors(
-    std::vector<std::shared_ptr<MeshElement>> &neighbors ) const
+    std::vector<std::unique_ptr<MeshElement>> &neighbors ) const
 {
     std::vector<ElementID> neighborIDs;
     d_mesh->getNeighborIDs( d_globalID.elemID(), neighborIDs );

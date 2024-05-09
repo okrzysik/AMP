@@ -220,7 +220,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
                 else if ( neighbor_pass == 1 )
                     neighbor_pass = 2; // Neighbors of other element types are not always supported
             } else {
-                for ( auto neighbor : neighbors ) {
+                for ( auto &neighbor : neighbors ) {
                     if ( neighbor ) {
                         // Verify that the neighbors does not include self
                         if ( *neighbor == element )
