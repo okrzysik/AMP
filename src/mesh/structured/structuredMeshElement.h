@@ -93,6 +93,7 @@ protected:
     // Helper functions
     void getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const;
     void getElementIndex( const GeomType type, int &N, BoxMesh::MeshElementIndex *index ) const;
+    std::array<int8_t, 3> getBC() const;
 
     // Reset just the mesh element
     inline void reset( const BoxMesh::MeshElementIndex &index ) { d_index = index; }

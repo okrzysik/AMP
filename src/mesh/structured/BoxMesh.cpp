@@ -71,31 +71,28 @@ BoxMesh::BoxMesh()
     : Mesh(),
       d_rank( -1 ),
       d_size( 0 ),
-      d_isPeriodic{ false, false, false },
-      d_globalSize{ 1, 1, 1 },
-      d_numBlocks{ 1, 1, 1 },
-      d_localIndex{ 0, 0, 0 },
-      d_indexSize{ 0, 0, 0 },
-      d_surfaceId{ -1, -1, -1 }
+      d_globalSize{ 1 },
+      d_numBlocks{ 1 },
+      d_localIndex{ 0 },
+      d_indexSize{ 0 },
+      d_surfaceId{ -3 }
 {
 }
 BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params )
     : Mesh( params ),
       d_rank( -1 ),
       d_size( 0 ),
-      d_isPeriodic{ false, false, false },
-      d_globalSize{ 1, 1, 1 },
-      d_numBlocks{ 1, 1, 1 },
-      d_localIndex{ 0, 0, 0 },
-      d_indexSize{ 0, 0, 0 },
-      d_surfaceId{ -1, -1, -1 }
+      d_globalSize{ 1 },
+      d_numBlocks{ 1 },
+      d_localIndex{ 0 },
+      d_indexSize{ 0 },
+      d_surfaceId{ -3 }
 {
 }
 BoxMesh::BoxMesh( const BoxMesh &mesh )
     : Mesh( mesh ),
       d_rank( mesh.d_rank ),
       d_size( mesh.d_size ),
-      d_isPeriodic( mesh.d_isPeriodic ),
       d_globalSize( mesh.d_globalSize ),
       d_numBlocks( mesh.d_numBlocks ),
       d_startIndex( mesh.d_startIndex ),
@@ -115,7 +112,6 @@ void BoxMesh::writeRestart( int64_t fid ) const
     Mesh::writeRestart( fid );
     writeHDF5( fid, "rank", d_rank );
     writeHDF5( fid, "size", d_size );
-    writeHDF5( fid, "isPeriodic", d_isPeriodic );
     writeHDF5( fid, "globalSize", d_globalSize );
     writeHDF5( fid, "numBlocks", d_numBlocks );
     writeHDF5( fid, "startIndex[0]", d_startIndex[0] );
@@ -139,7 +135,6 @@ BoxMesh::BoxMesh( int64_t fid, AMP::IO::RestartManager *manager )
     : Mesh( fid, manager ),
       d_rank( read<int>( fid, "rank" ) ),
       d_size( read<int>( fid, "size" ) ),
-      d_isPeriodic( read<std::array<bool, 3>>( fid, "isPeriodic" ) ),
       d_globalSize( read<std::array<int, 3>>( fid, "globalSize" ) ),
       d_numBlocks( read<std::array<int, 3>>( fid, "numBlocks" ) ),
       d_localIndex( read<std::array<int, 6>>( fid, "localIndex" ) ),
@@ -222,7 +217,6 @@ void BoxMesh::initialize( const std::array<int, 3> &boxSize,
     // Perform some const casts so we can set the local variables
     int &rank        = const_cast<int &>( d_rank );
     int &size        = const_cast<int &>( d_size );
-    auto &isPeriodic = const_cast<std::array<bool, 3> &>( d_isPeriodic );
     auto &globalSize = const_cast<std::array<int, 3> &>( d_globalSize );
     auto &numBlocks  = const_cast<std::array<int, 3> &>( d_numBlocks );
     auto startIndex  = const_cast<std::vector<int> *>( d_startIndex );
@@ -241,12 +235,8 @@ void BoxMesh::initialize( const std::array<int, 3> &boxSize,
     AMP_INSIST( static_cast<int>( GeomDim ) <= 3, "Geometric dimension must be <= 3" );
     for ( int i = 2 * static_cast<int>( GeomDim ); i < 6; i++ )
         surfaceId[i] = -1;
-    for ( int d = 0; d < 3; d++ ) {
-        if ( surfaceId[2 * d + 0] == -1 || surfaceId[2 * d + 1] == -1 ) {
-            AMP_ASSERT( surfaceId[2 * d + 0] == -1 && surfaceId[2 * d + 1] == -1 );
-            isPeriodic[d] = true;
-        }
-    }
+    for ( int d = 0; d < 3; d++ )
+        AMP_ASSERT( ( surfaceId[2 * d + 0] == -1 ) == ( surfaceId[2 * d + 1] == -1 ) );
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
         AMP_ASSERT( globalSize[d] > 0 );
     // Create the load balance
@@ -340,7 +330,7 @@ BoxMesh::ElementBlocks BoxMesh::getSurface( int s, GeomType type ) const
     // Check if we are keeping the given surface
     int d     = s / 2;
     int s_max = 2 * static_cast<int>( GeomDim );
-    if ( d_surfaceId[s] < 0 || s > s_max || d_isPeriodic[d] )
+    if ( d_surfaceId[s] < 0 || s > s_max )
         return {};
     // Initialize some basic info
     bool left                   = s % 2 == 0;
@@ -348,10 +338,13 @@ BoxMesh::ElementBlocks BoxMesh::getSurface( int s, GeomType type ) const
                                     std::max( d_globalSize[1] - 1, 0 ),
                                     std::max( d_globalSize[2] - 1, 0 ) };
     auto lastNode               = lastCell;
-    for ( int d2 = 0; d2 < static_cast<int>( GeomDim ); d2++ ) {
-        if ( !d_isPeriodic[d2] )
-            lastNode[d2]++;
+    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
+        // if ( d_surfaceId[2 * d + 1] != -1 && d_surfaceId[2 * d + 1] != -2 )
+        if ( d_surfaceId[2 * d + 1] != -1 )
+            lastNode[d]++;
     }
+    if ( d_surfaceId[0] == -2 || d_surfaceId[2] == -2 || d_surfaceId[4] == -2 )
+        AMP_WARN_ONCE( "Fix last node" );
     // Create the surface list
     if ( type == GeomDim ) {
         // We are dealing with the desired geometric type (e.g. Volume)
@@ -493,7 +486,7 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const AMP::Geometry::P
     // Correct x for periodic boundaries
     double x[3] = { x0.x(), x0.y(), x0.z() };
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
-        if ( d_isPeriodic[d] ) {
+        if ( d_surfaceId[2 * d + 1] == -1 ) {
             while ( x[d] < 0 )
                 x[d] += 1.0;
             while ( x[d] >= 1.0 )
@@ -638,11 +631,14 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
 {
     AMP_ASSERT( type <= GeomDim );
     // Get the range of cells we care about
+    bool isPeriodic[3] = { d_surfaceId[1] == -1, d_surfaceId[3] == -1, d_surfaceId[5] == -1 };
+    if ( std::find( d_surfaceId.begin(), d_surfaceId.end(), -2 ) != d_surfaceId.end() )
+        AMP_WARN_ONCE( "boundary ids == -2 are not yet supported, mesh may be incomplete" );
     if ( gcw != 0 ) {
         for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
             range[2 * d + 0] -= gcw;
             range[2 * d + 1] += gcw;
-            if ( !d_isPeriodic[d] ) {
+            if ( !isPeriodic[d] ) {
                 range[2 * d + 0] = std::max( range[2 * d + 0], 0 );
                 range[2 * d + 1] = std::min( range[2 * d + 1], d_globalSize[d] - 1 );
             }
@@ -657,7 +653,7 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
         for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
             if ( gcw != 0 )
                 range[2 * d + 1]++;
-            else if ( !d_isPeriodic[d] && range[2 * d + 1] == d_globalSize[d] - 1 )
+            else if ( !isPeriodic[d] && range[2 * d + 1] == d_globalSize[d] - 1 )
                 range[2 * d + 1]++;
         }
         blocks.emplace_back( MeshElementIndex( type, 0, range[0], range[2], range[4] ),
@@ -665,9 +661,9 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
     } else if ( type == GeomType::Edge && GeomDim == GeomType::Face ) {
         auto range1 = range;
         auto range2 = range;
-        if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[0] && range[1] == d_globalSize[0] - 1 ) )
+        if ( gcw != 0 || ( gcw == 0 && !isPeriodic[0] && range[1] == d_globalSize[0] - 1 ) )
             range2[1]++;
-        if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[1] && range[3] == d_globalSize[1] - 1 ) )
+        if ( gcw != 0 || ( gcw == 0 && !isPeriodic[1] && range[3] == d_globalSize[1] - 1 ) )
             range1[3]++;
         blocks.emplace_back( MeshElementIndex( type, 0, range1[0], range1[2], range1[4] ),
                              MeshElementIndex( type, 0, range1[1], range1[3], range1[5] ) );
@@ -677,15 +673,15 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
         auto range1 = range;
         auto range2 = range;
         auto range3 = range;
-        if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[0] && range[1] == d_globalSize[0] - 1 ) ) {
+        if ( gcw != 0 || ( gcw == 0 && !isPeriodic[0] && range[1] == d_globalSize[0] - 1 ) ) {
             range2[1]++;
             range3[1]++;
         }
-        if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[1] && range[3] == d_globalSize[1] - 1 ) ) {
+        if ( gcw != 0 || ( gcw == 0 && !isPeriodic[1] && range[3] == d_globalSize[1] - 1 ) ) {
             range1[3]++;
             range3[3]++;
         }
-        if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[2] && range[5] == d_globalSize[2] - 1 ) ) {
+        if ( gcw != 0 || ( gcw == 0 && !isPeriodic[2] && range[5] == d_globalSize[2] - 1 ) ) {
             range1[5]++;
             range2[5]++;
         }
@@ -699,11 +695,11 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
         auto range1 = range;
         auto range2 = range;
         auto range3 = range;
-        if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[0] && range[1] == d_globalSize[0] - 1 ) )
+        if ( gcw != 0 || ( gcw == 0 && !isPeriodic[0] && range[1] == d_globalSize[0] - 1 ) )
             range1[1]++;
-        if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[1] && range[3] == d_globalSize[1] - 1 ) )
+        if ( gcw != 0 || ( gcw == 0 && !isPeriodic[1] && range[3] == d_globalSize[1] - 1 ) )
             range2[3]++;
-        if ( gcw != 0 || ( gcw == 0 && !d_isPeriodic[2] && range[5] == d_globalSize[2] - 1 ) )
+        if ( gcw != 0 || ( gcw == 0 && !isPeriodic[2] && range[5] == d_globalSize[2] - 1 ) )
             range3[5]++;
         blocks.emplace_back( MeshElementIndex( type, 0, range1[0], range1[2], range1[4] ),
                              MeshElementIndex( type, 0, range1[1], range1[3], range1[5] ) );
@@ -717,7 +713,7 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
     // Check that each block does not have duplicate elements
     for ( auto &block : blocks ) {
         for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
-            if ( d_isPeriodic[d] ) {
+            if ( isPeriodic[d] ) {
                 auto &first = block.first;
                 auto &last  = block.second;
                 if ( first.index( d ) + d_globalSize[d] <= last.index( d ) ) {
@@ -787,6 +783,9 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
 {
     if ( type > GeomDim )
         return MeshIterator();
+    bool isPeriodic[3] = { d_surfaceId[1] == -1, d_surfaceId[3] == -1, d_surfaceId[5] == -1 };
+    if ( std::find( d_surfaceId.begin(), d_surfaceId.end(), -2 ) != d_surfaceId.end() )
+        AMP_WARN_ONCE( "boundary ids == -2 are not yet supported, mesh may be incomplete: " );
     // Include each surface as needed
     ElementBlocks sufaceSet;
     for ( int i = 0; i < 2 * static_cast<int>( GeomDim ); i++ ) {
@@ -798,7 +797,7 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     if ( gcw > 0 ) {
         for ( auto &data : sufaceSet ) {
             for ( int d = 0; d < 3; d++ ) {
-                if ( d_isPeriodic[d] && data.first.index( d ) == 0 &&
+                if ( isPeriodic[d] && data.first.index( d ) == 0 &&
                      data.second.index( d ) == d_globalSize[d] - 1 ) {
                     data.first.index( d ) -= gcw;
                     data.second.index( d ) += gcw;
@@ -817,15 +816,15 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
         auto side  = block.first.side();
         for ( int k = block.second.index( 2 ); k >= block.first.index( 2 ); k-- ) {
             int k2 = k;
-            if ( d_isPeriodic[2] )
+            if ( isPeriodic[2] )
                 k2 = ( k + d_globalSize[2] ) % d_globalSize[2];
             for ( int j = block.second.index( 1 ); j >= block.first.index( 1 ); j-- ) {
                 int j2 = j;
-                if ( d_isPeriodic[1] )
+                if ( isPeriodic[1] )
                     j2 = ( j + d_globalSize[1] ) % d_globalSize[1];
                 for ( int i = block.second.index( 0 ); i >= block.first.index( 0 ); i-- ) {
                     int i2 = i;
-                    if ( d_isPeriodic[0] )
+                    if ( isPeriodic[0] )
                         i2 = ( i + d_globalSize[0] ) % d_globalSize[0];
                     elements->emplace_back( itype, side, i2, j2, k2 );
                 }
@@ -855,6 +854,9 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
 {
     if ( type > GeomDim )
         return MeshIterator();
+    bool isPeriodic[3] = { d_surfaceId[1] == -1, d_surfaceId[3] == -1, d_surfaceId[5] == -1 };
+    if ( std::find( d_surfaceId.begin(), d_surfaceId.end(), -2 ) != d_surfaceId.end() )
+        AMP_WARN_ONCE( "boundary ids == -2 is not finished, mesh may be incomplete: " + getName() );
     // Include each surface as needed
     ElementBlocks sufaceSet;
     for ( int i = 0; i < 2 * static_cast<int>( GeomDim ); i++ ) {
@@ -868,7 +870,7 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
     if ( gcw > 0 ) {
         for ( auto &data : sufaceSet ) {
             for ( int d = 0; d < 3; d++ ) {
-                if ( d_isPeriodic[d] && data.first.index( d ) == 0 &&
+                if ( isPeriodic[d] && data.first.index( d ) == 0 &&
                      data.second.index( d ) == d_globalSize[d] - 1 ) {
                     data.first.index( d ) -= gcw;
                     data.second.index( d ) += gcw;
@@ -965,8 +967,6 @@ bool BoxMesh::operator==( const Mesh &rhs ) const
     if ( !mesh )
         return false;
     // Perform basic comparison
-    if ( d_isPeriodic != mesh->d_isPeriodic || d_globalSize != mesh->d_globalSize )
-        return false;
     if ( d_numBlocks != mesh->d_numBlocks || d_indexSize != mesh->d_indexSize ||
          d_localIndex != mesh->d_localIndex )
         return false;

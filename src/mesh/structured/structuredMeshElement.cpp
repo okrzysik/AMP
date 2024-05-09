@@ -82,7 +82,7 @@ structuredMeshElement &structuredMeshElement::operator=( const structuredMeshEle
 
 
 /****************************************************************
- * De-constructor                                                *
+ * Destructor                                                    *
  ****************************************************************/
 structuredMeshElement::~structuredMeshElement() = default;
 
@@ -99,6 +99,25 @@ MeshElement *structuredMeshElement::clone() const { return new structuredMeshEle
 unsigned int structuredMeshElement::globalOwnerRank() const
 {
     return d_mesh->getComm().globalRanks()[globalID().owner_rank()];
+}
+
+
+/********************************************************
+ * Get the general boundary conditions                   *
+ *    0 - Physical boundary                              *
+ *    1 - Periodic boundary                              *
+ *    2 - Mapped boundary                                *
+ ********************************************************/
+std::array<int8_t, 3> structuredMeshElement::getBC() const
+{
+    std::array<int8_t, 3> BC = { 0, 0, 0 };
+    for ( int d = 0; d < 3; d++ ) {
+        if ( d_mesh->d_surfaceId[2 * d] == -1 )
+            BC[d] = 1;
+        else if ( d_mesh->d_surfaceId[2 * d] == -2 || d_mesh->d_surfaceId[2 * d + 1] == -2 )
+            BC[d] = 2;
+    }
+    return BC;
 }
 
 
@@ -281,8 +300,10 @@ void structuredMeshElement::getElementIndex( const GeomType type,
         AMP_ERROR( "Not finished" );
     }
     // Fix any elements that are beyond a periodic boundary
+    auto BC = getBC();
     for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
-        if ( d_mesh->d_isPeriodic[d] ) {
+        if ( BC[d] == 1 ) {
+            // Periodic boundary
             int size = d_mesh->d_globalSize[d];
             for ( int i = 0; i < N; i++ ) {
                 if ( index[i].d_index[d] < 0 )
@@ -290,6 +311,9 @@ void structuredMeshElement::getElementIndex( const GeomType type,
                 else if ( index[i].d_index[d] >= size )
                     index[i].d_index[d] -= size;
             }
+        } else if ( BC[d] == 2 ) {
+            // mapped boundary
+            AMP_WARN_ONCE( "Not finished" );
         }
     }
 }
@@ -306,21 +330,19 @@ void structuredMeshElement::getNeighbors(
     getNeighborIndex( N, index );
     // Get the neighbor elements
     neighbors.reserve( N );
-    bool periodic[3];
-    int size[3];
-    for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
-        periodic[d] = d_mesh->d_isPeriodic[d];
-        size[d]     = d_mesh->d_globalSize[d];
-    }
+    auto BC   = getBC();
+    auto size = d_mesh->d_globalSize;
     for ( int i = 0; i < N; i++ ) {
         bool in_mesh = true;
         auto &elem   = index[i];
         for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
-            if ( periodic[d] ) {
+            if ( BC[d] == 1 ) {
                 if ( elem.d_index[d] < 0 )
                     elem.d_index[d] += size[d];
                 if ( elem.d_index[d] >= size[d] )
                     elem.d_index[d] -= size[d];
+            } else if ( BC[d] == 2 ) {
+                AMP_WARN_ONCE( "Not finished" );
             } else {
                 if ( elem.d_index[d] < 0 )
                     in_mesh = false;
@@ -525,12 +547,10 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     }
     // Get some basic properties from the mesh
     auto meshGeomDim = (int) d_meshType;
-    bool periodic[3] = { false, false, false };
-    for ( int d = 0; d < meshGeomDim; d++ )
-        periodic[d] = d_mesh->d_isPeriodic[d];
-    int size[3] = { 1, 1, 1 };
+    int size[3]      = { 1, 1, 1 };
     for ( int d = 0; d < meshGeomDim; d++ )
         size[d] = d_mesh->d_globalSize[d];
+    auto BC = getBC();
     // Remove any elements that are outside the physical domain
     size_t k = 0;
     for ( size_t i = 0; i < index_list.size(); i++ ) {
@@ -540,8 +560,10 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
         if ( static_cast<int>( d_meshType ) < 3 && index_list[i].d_index[2] != 0 )
             erase = true;
         for ( int d = 0; d < meshGeomDim; d++ ) {
-            if ( periodic[d] )
+            if ( BC[d] == 1 )
                 continue;
+            if ( BC[d] == 2 )
+                AMP_WARN_ONCE( "Not finished" );
             int i_max = size[d];
             if ( (int) type == meshGeomDim ) {
                 // The geometric type of the mesh must be within the domain
@@ -566,7 +588,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     index_list.resize( k );
     // Fix any elements that are beyond a periodic boundary
     for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
-        if ( d_mesh->d_isPeriodic[d] ) {
+        if ( BC[d] == 1 ) {
             int global_size = d_mesh->d_globalSize[d];
             for ( auto &elem : index_list ) {
                 if ( elem.d_index[d] < 0 )
@@ -574,6 +596,8 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                 else if ( elem.d_index[d] >= global_size )
                     elem.d_index[d] -= global_size;
             }
+        } else if ( BC[d] == 2 ) {
+            AMP_WARN_ONCE( "Not finished" );
         }
     }
     // Create the elements
@@ -774,33 +798,28 @@ bool structuredMeshElement::containsPoint( const Point &, double ) const
 }
 bool structuredMeshElement::isOnSurface() const
 {
-    bool on_surface = false;
-    const int *ijk  = d_index.d_index.data();
-    for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
-        if ( d_mesh->d_isPeriodic[d] )
-            continue;
-        auto size = (int) d_mesh->d_globalSize[d];
-        if ( d_index.type() == d_mesh->GeomDim ) {
-            // We are dealing with the highest level geometric entity
-            if ( ijk[d] == 0 || ijk[d] == size - 1 )
-                on_surface = true;
-        } else if ( d_index.type() == GeomType::Vertex ) {
-            // We are dealing with a vertex
-            if ( ijk[d] == 0 || ijk[d] == size )
-                on_surface = true;
-        } else if ( d_index.type() == GeomType::Edge ) {
-            // We are dealing with a vertex
-            if ( ( ijk[d] == 0 || ijk[d] == size ) && d_index.d_side != d )
-                on_surface = true;
-        } else if ( d_index.type() == GeomType::Face ) {
-            // We are dealing with a vertex
-            if ( ( ijk[d] == 0 || ijk[d] == size ) && d_index.d_side == d )
-                on_surface = true;
-        } else {
-            AMP_ERROR( "Internal error (dim>3?)" );
-        }
+    const int *ijk = d_index.d_index.data();
+    auto surfaceId = d_mesh->d_surfaceId;
+    auto size      = d_mesh->d_globalSize;
+    if ( d_index.type() == d_mesh->GeomDim ) {
+        size[0]--;
+        size[1]--;
+        size[2]--;
     }
-    return on_surface;
+    if ( d_index.type() != d_mesh->GeomDim && d_index.type() > GeomType::Face )
+        AMP_ERROR( "Internal error (dim>3?)" );
+    for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
+        if ( ( ijk[d] > 0 || ijk[d] < size[d] ) || ( ijk[d] == 0 && surfaceId[2 * d] < 0 ) ||
+             ( ijk[d] == size[d] && surfaceId[2 * d + 1] < 0 ) ) {
+            continue;
+        }
+        if ( d_index.type() == GeomType::Edge || d_index.type() == GeomType::Face ) {
+            if ( d_index.d_side == d )
+                return true;
+        }
+        return true;
+    }
+    return false;
 }
 bool structuredMeshElement::isOnBoundary( int id ) const
 {

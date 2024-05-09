@@ -32,13 +32,10 @@ PureLogicalMesh::PureLogicalMesh( std::shared_ptr<const MeshParameters> params )
     d_max_gcw   = db->getWithDefault<int>( "GCW", 2 );
     AMP_ASSERT( PhysicalDim == db->getWithDefault<int>( "dim", PhysicalDim ) );
     std::array<int, 3> size2 = { 1, 1, 1 };
-    std::array<int, 6> ids;
+    std::array<int, 6> ids   = { 0, 1, 2, 3, 4, 5 };
     for ( size_t d = 0; d < size.size(); d++ ) {
         size2[d] = size[d];
-        if ( !d_isPeriodic[d] ) {
-            ids[2 * d + 0] = 2 * d + 0;
-            ids[2 * d + 1] = 2 * d + 1;
-        } else {
+        if ( per[d] ) {
             ids[2 * d + 0] = -1;
             ids[2 * d + 1] = -1;
         }
