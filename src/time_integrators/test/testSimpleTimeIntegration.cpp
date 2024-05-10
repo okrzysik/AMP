@@ -57,11 +57,8 @@ void testIntegrator( const std::string &name,
 
     // Check the answer
     double ans2 = static_cast<double>( solution->max() );
-    if ( fabs( ans2 - ans ) < 1e-6 )
+    if ( fabs( ans2 - ans ) < 1e-14 )
         ut.passes( name + " - " + test );
-    else if ( test == "fixed source" )
-        ut.expected_failure(
-            AMP::Utilities::stringf( "%s - %s (%f)", name.data(), test.data(), ans2 ) );
     else
         ut.failure( AMP::Utilities::stringf( "%s - %s (%f)", name.data(), test.data(), ans2 ) );
 }
