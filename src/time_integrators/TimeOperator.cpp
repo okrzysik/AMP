@@ -21,7 +21,6 @@ TimeOperator::TimeOperator( std::shared_ptr<const AMP::Operator::OperatorParamet
     d_pRhsOperator  = params->d_pRhsOperator;
     d_pMassOperator = params->d_pMassOperator;
 
-    //    d_pSourceTerm        = params->d_pSourceTerm;
     d_pAlgebraicVariable = params->d_pAlgebraicVariable;
 
     reset( in_params );
@@ -66,9 +65,6 @@ void TimeOperator::applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x
 {
     AMP_INSIST( d_pRhsOperator, "RHS Operator is NULL" );
     d_pRhsOperator->apply( x, f );
-    //    if ( d_pSourceTerm ) {
-    //        f->add( *d_pSourceTerm, *f );
-    //    }
 }
 
 void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
