@@ -58,10 +58,10 @@ PetscSNESSolver::PetscSNESSolver( std::shared_ptr<SolverStrategyParameters> para
 
     if ( !parameters->d_comm.isNull() ) {
         d_comm = parameters->d_comm;
-    } else if ( d_pOperator ) {
+    } else if ( d_pOperator && d_pOperator->getMesh() ) {
         d_comm = d_pOperator->getMesh()->getComm();
     } else {
-        AMP_ERROR( "PetscSNESSolver ERROR: Unable to initialize MPI comm from parameters" );
+        d_comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     }
 
     getFromInput( params->d_db );

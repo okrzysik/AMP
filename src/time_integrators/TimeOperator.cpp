@@ -66,6 +66,9 @@ void TimeOperator::applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x
 {
     AMP_INSIST( d_pRhsOperator, "RHS Operator is NULL" );
     d_pRhsOperator->apply( x, f );
+    if ( d_pSourceTerm ) {
+        f->add( *d_pSourceTerm, *f );
+    }
 }
 
 void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
@@ -125,10 +128,6 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "Output of M * yp-fRhs(y,t) in TimeOperator" << std::endl;
         AMP::pout << r << std::endl;
-    }
-
-    if ( d_pSourceTerm ) {
-        r->axpy( d_dGamma, *d_pSourceTerm, *r );
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {

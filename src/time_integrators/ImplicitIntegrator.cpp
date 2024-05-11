@@ -54,23 +54,22 @@ void ImplicitIntegrator::createSolver( void )
     auto timeIntegratorDB = d_pParameters->d_db;
     AMP_ASSERT( timeIntegratorDB );
 
-    auto globalDB = d_pParameters->d_global_db;
-    AMP_ASSERT( globalDB );
+    auto solverName = timeIntegratorDB->getWithDefault<std::string>( "solver_name", "Solver" );
 
-    std::string solverName;
-    if ( timeIntegratorDB->keyExists( "solver_name" ) ) {
-        solverName = timeIntegratorDB->getString( "solver_name" );
+    std::shared_ptr<AMP::Database> solverDB;
+    if ( timeIntegratorDB->keyExists( solverName ) ) {
+        solverDB = timeIntegratorDB->getDatabase( solverName );
     } else {
-        AMP_ERROR( "Field solver_name missing in time integrator database" );
+        auto globalDB = d_pParameters->d_global_db;
+        AMP_INSIST( globalDB, "Solver database not specified" );
+        solverDB = globalDB->getDatabase( solverName );
     }
-
-    auto solverDB = globalDB->getDatabase( solverName );
 
     solverDB->print( AMP::plog );
     auto solver_params = std::make_shared<AMP::Solver::SolverStrategyParameters>( solverDB );
 
     solver_params->d_pOperator     = d_operator;
-    solver_params->d_global_db     = globalDB;
+    solver_params->d_global_db     = d_pParameters->d_global_db;
     solver_params->d_pInitialGuess = d_solution_vector;
     d_solver                       = AMP::Solver::SolverFactory::create( solver_params );
 }
@@ -91,6 +90,7 @@ void ImplicitIntegrator::registerOperator( std::shared_ptr<AMP::Operator::Operat
 
         auto timeOperatorParameters =
             std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
+        timeOperatorParameters->d_pSourceTerm  = d_pSourceTerm;
         timeOperatorParameters->d_pRhsOperator = d_operator;
         timeOperatorParameters->d_Mesh         = d_operator->getMesh();
 
