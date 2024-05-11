@@ -1,6 +1,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/operators/NullOperator.h"
 #include "AMP/operators/Operator.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/time_integrators/TimeIntegrator.h"
 #include "AMP/time_integrators/TimeIntegratorFactory.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
@@ -43,6 +44,8 @@ void testIntegrator( const std::string &name,
     auto solution       = AMP::LinearAlgebra::createSimpleVector<double>( 1, var, AMP_COMM_WORLD );
     auto timeIntegrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( params );
     solution->zero();
+    auto x = solution->clone();
+    x->zero();
 
     // Advance the solution
     double T         = 0;
@@ -50,7 +53,14 @@ void testIntegrator( const std::string &name,
     double finalTime = timeIntegrator->getFinalTime();
     timeIntegrator->setInitialDt( 0.1 );
     while ( T < finalTime ) {
-        timeIntegrator->advanceSolution( dt, T == 0, solution, solution );
+        timeIntegrator->advanceSolution( dt, T == 0, solution, x );
+        bool good_solution = timeIntegrator->checkNewSolution();
+        if ( good_solution ) {
+            timeIntegrator->updateSolution();
+            solution->copyVector( x );
+        } else {
+            AMP_ERROR( "Solution didn't converge" );
+        }
         timeIntegrator->setCurrentTime( T );
         T += dt;
     }
@@ -63,18 +73,78 @@ void testIntegrator( const std::string &name,
         ut.failure( AMP::Utilities::stringf( "%s - %s (%f)", name.data(), test.data(), ans2 ) );
 }
 
+void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
+{
+    AMP_ASSERT( db );
+    AMP::Solver::registerSolverFactories();
+    auto imp_ti      = { "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
+    auto name        = db->getScalar<std::string>( "name" );
+    auto is_implicit = ( std::find( imp_ti.begin(), imp_ti.end(), name ) != imp_ti.end() );
+    if ( is_implicit ) {
+
+        //        db->putScalar<std::string>( "name", "ImplicitIntegrator" );
+        db->putScalar<std::string>( "implicit_integrator", name );
+        db->putScalar<std::string>( "solver_name", "Solver" );
+        db->putScalar<std::string>( "timestep_selection_strategy", "constant" );
+        db->putScalar<bool>( "use_predictor", false );
+#if 0
+        auto solver_db = AMP::Database::create( "name",
+                                                "NKASolver",
+                                                "print_info_level",
+                                                1,
+                                                "max_iterations",
+                                                10,
+                                                "max_vectors",
+                                                5,
+                                                "angle_tolerance",
+                                                0.1,
+                                                "absolute_tolerance",
+                                                1.0e-12,
+                                                "relative_tolerance",
+                                                1.0e-12,
+                                                "step_tolerance",
+                                                1.0e-14 );
+#else
+        auto solver_db = AMP::Database::create( "name",
+                                                "PetscSNESSolver",
+                                                "print_info_level",
+                                                1,
+                                                "max_iterations",
+                                                10,
+                                                "linear_solver_type",
+                                                "fgmres",
+                                                "absolute_tolerance",
+                                                1.0e-12,
+                                                "relative_tolerance",
+                                                1.0e-12,
+                                                "step_tolerance",
+                                                1.0e-14 );
+#endif
+        db->putDatabase( "Solver", std::move( solver_db ) );
+    }
+}
+
 void runBasicIntegratorTests( const std::string &name, AMP::UnitTest &ut )
 {
     double finalTime = 2.0;
-
     // Create the vectors
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
     auto ic  = AMP::LinearAlgebra::createSimpleVector<double>( 1, var, AMP_COMM_WORLD );
     ic->zero();
 
     // Test creating Create the time integrator
-    std::shared_ptr<AMP::Database> db = AMP::Database::create(
-        "name", name, "initial_time", 0.0, "final_time", finalTime, "max_integrator_steps", 10000 );
+    std::shared_ptr<AMP::Database> db = AMP::Database::create( "name",
+                                                               name,
+                                                               "initial_time",
+                                                               0.0,
+                                                               "final_time",
+                                                               finalTime,
+                                                               "max_integrator_steps",
+                                                               10000,
+                                                               "print_info_level",
+                                                               2 );
+    updateDatabaseIfImplicit( db );
+
     auto params         = std::make_shared<AMP::TimeIntegrator::TimeIntegratorParameters>( db );
     params->d_ic_vector = ic;
     params->d_operator  = std::make_shared<AMP::Operator::NullOperator>();
@@ -108,7 +178,7 @@ int testSimpleTimeIntegration( int argc, char *argv[] )
 
     // List of integrators
     auto integrators = { "ExplicitEuler", "RK12", "RK23", "RK34", "RK45", "RK2", "RK4" };
-    //   "Backward Euler", "BDF1", "BDF2","BDF3", "BDF4","BDF5","BDF6"
+    //                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
 
     // Run the tests
     AMP::TimeIntegrator::registerTimeIntegratorFactories();
