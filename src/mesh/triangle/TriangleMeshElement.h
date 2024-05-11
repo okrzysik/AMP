@@ -60,7 +60,7 @@ public:
                                 std::vector<MeshElementID> &ID ) const override;
 
     //! Return the elements neighboring the current element
-    void getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const override;
+    void getNeighbors( std::vector<std::unique_ptr<MeshElement>> &neighbors ) const override;
 
     //! Return the volume of the current element (does not apply to vertices)
     double volume() const override;

@@ -1,4 +1,4 @@
-#include "CoupledOperator.h"
+#include "AMP/operators/CoupledOperator.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 

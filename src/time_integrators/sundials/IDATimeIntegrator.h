@@ -10,11 +10,6 @@
 #include "AMP/time_integrators/sundials/IDATimeOperator.h"
 #include "AMP/vectors/sundials/SundialsVector.h"
 
-/*
- #ifndef included_AMP_ImplicitTimeIntegrator
- #include "ImplicitTimeIntegrator.h"
- #endif
- */
 #ifdef AMP_USE_SUNDIALS
 extern "C" {
     #include "ida/ida.h"

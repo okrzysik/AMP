@@ -1,4 +1,4 @@
-#include "DiffusionElement.h"
+#include "AMP/operators/diffusion/DiffusionElement.h"
 
 // Libmesh headers
 DISABLE_WARNINGS
@@ -10,6 +10,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 #include <string>
+
 
 namespace AMP::Operator {
 

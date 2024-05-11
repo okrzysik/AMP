@@ -7,6 +7,8 @@
 #include "AMP/utils/arrayHelpers.h"
 #include "AMP/utils/kdtree2.h"
 
+#include "ProfilerApp.h"
+
 #include <mutex>
 #include <random>
 
@@ -18,12 +20,16 @@ namespace AMP::Geometry {
  * Constructors                                          *
  ********************************************************/
 MeshGeometry::MeshGeometry( std::shared_ptr<AMP::Mesh::Mesh> mesh )
-    : d_mesh( std::move( mesh ) ), d_pos_hash( -1 ), d_isConvex( false ), d_volume( 0 )
+    : Geometry( d_mesh->getDim() ),
+      d_mesh( std::move( mesh ) ),
+      d_pos_hash( -1 ),
+      d_isConvex( false ),
+      d_volume( 0 )
 {
+    PROFILE( "MeshGeometry::MeshGeometry" );
     AMP_ASSERT( d_mesh );
     AMP_ASSERT( static_cast<int>( d_mesh->getGeomType() ) == d_mesh->getDim() - 1 );
     AMP_ASSERT( d_mesh->getDim() == 3 );
-    d_physicalDim = d_mesh->getDim();
     // Get the block ids (they will translate to surface ids)
     d_surfaceIds = d_mesh->getBlockIDs();
     // Initialize position related data
@@ -43,6 +49,7 @@ void MeshGeometry::updateCache() const
     if ( d_pos_hash == d_mesh->positionHash() )
         return;
     // Lock a mutex to ensure only 1 thread updates the internal data
+    PROFILE( "updateCache" );
     static std::mutex mtx;
     mtx.lock();
     d_pos_hash = d_mesh->positionHash();
@@ -53,6 +60,7 @@ void MeshGeometry::updateCache() const
     Point centroid = 0.5 * ( lb + ub );
     // Initialize the tree to store inside data
     if ( d_inside.empty() ) {
+        PROFILE( "updateCache-interior", 1 );
         // Choose a random direction to use for ray-cast to ensure we don't hit edges
         std::random_device rd;
         std::mt19937 gen( rd() );
@@ -77,6 +85,7 @@ void MeshGeometry::updateCache() const
     }
     // Check that the approximate centroid is inside the volume
     if ( !std::get<1>( d_inside.findNearest( centroid ) ) ) {
+        PROFILE( "updateCache-centroid", 1 );
         auto tmp = d_inside.findNearest( centroid, 5 );
         for ( auto it = tmp.rbegin(); it != tmp.rend(); ++it ) {
             if ( std::get<1>( *it ) )
@@ -85,28 +94,30 @@ void MeshGeometry::updateCache() const
         AMP_ASSERT( std::get<1>( d_inside.findNearest( centroid ) ) );
     }
     // Check if the mesh is convex
-    d_isConvex = true;
-    double tol = 1e-4 * abs( ub - lb );
-    std::vector<Point> vertices;
-    for ( const auto &elem : d_mesh->getIterator( d_mesh->getGeomType() ) ) {
-        // Get the normal to the plane of the element (pointing away from the centroid)
-        auto n = elem.norm();
-        auto a = elem.centroid();
-        if ( dot( n, a - centroid ) < 0 )
-            n = -n;
-        // Check the neighboring vertices to ensure they are not in front of the plane
-        for ( const auto &neighbor : elem.getNeighbors() ) {
-            neighbor->getVertices( vertices );
+    {
+        PROFILE( "updateCache-isConvex", 1 );
+        d_isConvex = true;
+        double tol = 1e-4 * abs( ub - lb );
+        std::vector<Point> vertices;
+        for ( const auto &elem : d_mesh->getIterator( d_mesh->getGeomType() ) ) {
+            // Get the normal to the plane of the element (pointing away from the centroid)
+            auto n = elem.norm();
+            auto a = elem.centroid();
+            if ( dot( n, a - centroid ) < 0 )
+                n = -n;
+            // Check the neighboring vertices to ensure they are not in front of the plane
+            elem.getNeighborVertices( vertices );
             for ( const auto &p : vertices ) {
                 double v   = dot( n, p - a );
                 d_isConvex = d_isConvex && v >= -tol;
             }
         }
+        printf( "isConvex = %s\n", d_isConvex ? "true" : "false" );
     }
-    printf( "isConvex = %s\n", d_isConvex ? "true" : "false" );
     // Calculate the volume/centroid
     if ( d_isConvex ) {
         // Loop through the elements creating pyramids and using them to compute the centroid/volume
+        PROFILE( "updateCache-volume-1", 1 );
         d_volume   = 0;
         d_centroid = { 0, 0, 0 };
         for ( const auto &elem : d_mesh->getIterator( d_mesh->getGeomType() ) ) {
@@ -121,6 +132,7 @@ void MeshGeometry::updateCache() const
         d_centroid *= 1.0 / d_volume;
     } else {
         // Get the volume overlap
+        PROFILE( "updateCache-volume-2", 1 );
         std::vector<int> N( d_mesh->getDim(), 100 );
         auto V = AMP::Mesh::volumeOverlap( *this, N );
         // Calculate the total volume
@@ -238,7 +250,11 @@ void MeshGeometry::displace( const double *x )
 /********************************************************
  * Get the nearest element                               *
  ********************************************************/
-bool MeshGeometry::isConvex() const { return d_isConvex; }
+bool MeshGeometry::isConvex() const
+{
+    updateCache();
+    return d_isConvex;
+}
 
 
 /********************************************************
@@ -256,8 +272,13 @@ bool MeshGeometry::operator==( const Geometry &rhs ) const
 /****************************************************************
  * Write/Read restart data                                       *
  ****************************************************************/
-void MeshGeometry::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
-MeshGeometry::MeshGeometry( int64_t ) : d_pos_hash( -1 ), d_isConvex( false ), d_volume( 0 )
+void MeshGeometry::writeRestart( int64_t fid ) const
+{
+    Geometry::writeRestart( fid );
+    AMP_ERROR( "Not finished" );
+}
+MeshGeometry::MeshGeometry( int64_t fid )
+    : Geometry( fid ), d_pos_hash( -1 ), d_isConvex( false ), d_volume( 0 )
 {
     AMP_ERROR( "Not finished" );
 }

@@ -1,4 +1,4 @@
-#include "DirichletMatrixCorrection.h"
+#include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"

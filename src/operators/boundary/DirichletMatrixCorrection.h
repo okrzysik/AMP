@@ -2,10 +2,9 @@
 #ifndef included_AMP_DirichletMatrixCorrection
 #define included_AMP_DirichletMatrixCorrection
 
-#include "BoundaryOperator.h"
-#include "DirichletMatrixCorrectionParameters.h"
-#include "DirichletVectorCorrection.h"
-
+#include "AMP/operators/boundary/BoundaryOperator.h"
+#include "AMP/operators/boundary/DirichletMatrixCorrectionParameters.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
 #include "AMP/vectors/Variable.h"
 
 namespace AMP::Operator {

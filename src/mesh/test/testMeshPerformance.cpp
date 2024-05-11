@@ -3,13 +3,12 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/structured/BoxMesh.h"
+#include "AMP/mesh/testHelpers/meshGenerators.h"
 #include "AMP/mesh/testHelpers/meshTests.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-
-#include "meshGenerators.h"
 
 #include "ProfilerApp.h"
 

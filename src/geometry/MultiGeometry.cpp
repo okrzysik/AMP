@@ -7,12 +7,16 @@
 namespace AMP::Geometry {
 
 
-MultiGeometry::MultiGeometry( const std::vector<std::shared_ptr<Geometry>> &geom )
-    : Geometry(), d_geom( geom )
+static uint8_t getPhysical( const std::vector<std::shared_ptr<Geometry>> &geom )
 {
-    d_physicalDim = 0;
-    for ( const auto &tmp : d_geom )
-        d_physicalDim = std::max( d_physicalDim, tmp->getDim() );
+    uint8_t dim = 0;
+    for ( const auto &tmp : geom )
+        dim = std::max( dim, tmp->getDim() );
+    return dim;
+}
+MultiGeometry::MultiGeometry( const std::vector<std::shared_ptr<Geometry>> &geom )
+    : Geometry( getPhysical( geom ) ), d_geom( geom )
+{
 }
 Point MultiGeometry::nearest( const Point &pos ) const
 {

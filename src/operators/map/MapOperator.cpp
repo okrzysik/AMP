@@ -1,4 +1,4 @@
-#include "MapOperator.h"
+#include "AMP/operators/map/MapOperator.h"
 #include "AMP/utils/Utilities.h"
 
 namespace AMP::Operator {

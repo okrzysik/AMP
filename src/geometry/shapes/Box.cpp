@@ -16,12 +16,9 @@ namespace AMP::Geometry {
  * Constructors                                          *
  ********************************************************/
 template<std::size_t NDIM>
-Box<NDIM>::Box() : LogicalGeometry()
+Box<NDIM>::Box() : LogicalGeometry( NDIM, NDIM )
 {
     static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
-    d_isPeriodic  = { false, false, false };
-    d_physicalDim = NDIM;
-    d_logicalDim  = NDIM;
     d_range.fill( 0 );
 }
 template<std::size_t NDIM>

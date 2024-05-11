@@ -87,12 +87,12 @@ void RK23TimeIntegrator::setupVectors()
     /*
      * Set initial value of vectors to 0.
      */
-    d_new_solution->setToScalar( (double) 0.0 );
-    d_k1_vec->setToScalar( (double) 0.0 );
-    d_k2_vec->setToScalar( (double) 0.0 );
-    d_k3_vec->setToScalar( (double) 0.0 );
-    d_k4_vec->setToScalar( (double) 0.0 );
-    d_z_vec->setToScalar( (double) 0.0 );
+    d_new_solution->zero();
+    d_k1_vec->zero();
+    d_k2_vec->zero();
+    d_k3_vec->zero();
+    d_k4_vec->zero();
+    d_z_vec->zero();
 }
 
 int RK23TimeIntegrator::advanceSolution( const double dt,
@@ -116,18 +116,24 @@ int RK23TimeIntegrator::advanceSolution( const double dt,
     // rejected - could be fixed
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
+    if ( d_pSourceTerm )
+        d_k1_vec->add( *d_k1_vec, *d_pSourceTerm );
 
     // u* = un+k1*dt/2
     d_new_solution->axpy( 0.5 * dt, *d_k1_vec, *d_solution_vector );
 
     // k2 = f(t+dt/2, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
+    if ( d_pSourceTerm )
+        d_k2_vec->add( *d_k2_vec, *d_pSourceTerm );
 
     // u* = un+0.75*k2*dt
     d_new_solution->axpy( 0.75 * dt, *d_k2_vec, *d_solution_vector );
 
     // k3 = f(t+0.75dt, u*)
     d_operator->apply( d_new_solution, d_k3_vec );
+    if ( d_pSourceTerm )
+        d_k3_vec->add( *d_k3_vec, *d_pSourceTerm );
 
     // first we calculate the 3rd order solution in d_new_solution
     // u* = un+k1*2dt/9+k2*dt/3+k3*4dt/9
@@ -137,6 +143,8 @@ int RK23TimeIntegrator::advanceSolution( const double dt,
 
     // k4 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k4_vec );
+    if ( d_pSourceTerm )
+        d_k4_vec->add( *d_k4_vec, *d_pSourceTerm );
 
     // now we calculate the estimated error in d_z_vec for adapting the
     // timestep
@@ -149,6 +157,11 @@ int RK23TimeIntegrator::advanceSolution( const double dt,
     if ( d_iDebugPrintInfoLevel > 4 ) {
         std::cout << "L2 norm of (z-u*) " << d_z_vec->L2Norm().get<double>() << std::endl;
     }
+
+    d_k1_vec->zero();
+    d_k2_vec->zero();
+    d_k3_vec->zero();
+    d_k4_vec->zero();
 
     out->copyVector( d_new_solution );
 

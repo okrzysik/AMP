@@ -106,10 +106,11 @@ constexpr size_t BoxMesh::MeshElementIndex::numElements( const MeshElementIndex 
  ****************************************************************/
 inline std::vector<bool> BoxMesh::periodic() const
 {
-    std::vector<bool> per( static_cast<int>( GeomDim ) );
-    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
-        per[d] = d_isPeriodic[d];
-    return per;
+    std::vector<bool> periodic = { d_surfaceId[1] == -1,
+                                   d_surfaceId[3] == -1,
+                                   d_surfaceId[5] == -1 };
+    periodic.resize( static_cast<int>( GeomDim ) );
+    return periodic;
 }
 inline std::vector<size_t> BoxMesh::size() const
 {
@@ -128,10 +129,11 @@ inline std::vector<size_t> BoxMesh::numBlocks() const
 inline BoxMesh::Box BoxMesh::getGlobalBox( int gcw ) const
 {
     Box box;
+    bool isPeriodic[3] = { d_surfaceId[1] == -1, d_surfaceId[3] == -1, d_surfaceId[5] == -1 };
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
         box.first[d] = -gcw;
         box.last[d]  = d_globalSize[d] + gcw - 1;
-        if ( !d_isPeriodic[d] ) {
+        if ( !isPeriodic[d] ) {
             box.first[d] = std::max( box.first[d], 0 );
             box.last[d]  = std::min( box.last[d], d_globalSize[d] - 1 );
         }
@@ -143,10 +145,11 @@ inline BoxMesh::Box BoxMesh::getLocalBox( int gcw ) const
 {
     auto range = getLocalBlock( d_rank );
     Box box;
+    bool isPeriodic[3] = { d_surfaceId[1] == -1, d_surfaceId[3] == -1, d_surfaceId[5] == -1 };
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
         box.first[d] = range[2 * d + 0] - gcw;
         box.last[d]  = range[2 * d + 1] + gcw;
-        if ( !d_isPeriodic[d] ) {
+        if ( !isPeriodic[d] ) {
             box.first[d] = std::max( box.first[d], 0 );
             box.last[d]  = std::min( box.last[d], d_globalSize[d] - 1 );
         }

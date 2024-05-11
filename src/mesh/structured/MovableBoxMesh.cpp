@@ -173,14 +173,11 @@ void MovableBoxMesh::coord( const MeshElementIndex &index, double *pos ) const
         char msg[1024];
         snprintf( msg,
                   sizeof msg,
-                  "Did not find element %s in mesh MovableBoxMesh(%i,%i,%i,%i%i%i)",
+                  "Did not find element %s in mesh MovableBoxMesh(%i,%i,%i)",
                   index.print().data(),
                   d_globalSize[0],
                   d_globalSize[1],
-                  d_globalSize[2],
-                  d_isPeriodic[0] ? 1 : 0,
-                  d_isPeriodic[1] ? 1 : 0,
-                  d_isPeriodic[2] ? 1 : 0 );
+                  d_globalSize[2] );
         AMP_ERROR( msg );
     }
     for ( int d = 0; d < PhysicalDim; d++ )

@@ -1,13 +1,11 @@
-
 #ifndef included_AMP_MechanicsLinearElement
 #define included_AMP_MechanicsLinearElement
 
-#include <vector>
+#include "AMP/operators/mechanics/MechanicsElement.h"
 
 #include <memory>
+#include <vector>
 
-/* AMP files */
-#include "MechanicsElement.h"
 
 namespace AMP::Operator {
 

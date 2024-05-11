@@ -26,6 +26,7 @@
 #endif
 #ifdef USE_CUDA
     #include "AMP/utils/cuda/CudaAllocator.h"
+    #include "AMP/utils/cuda/GPUFunctionTable.h"
     #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 

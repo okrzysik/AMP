@@ -1,9 +1,8 @@
-
 #ifndef included_AMP_DirichletVectorCorrection
 #define included_AMP_DirichletVectorCorrection
 
-#include "BoundaryOperator.h"
-#include "DirichletVectorCorrectionParameters.h"
+#include "AMP/operators/boundary/BoundaryOperator.h"
+#include "AMP/operators/boundary/DirichletVectorCorrectionParameters.h"
 
 namespace AMP::Operator {
 

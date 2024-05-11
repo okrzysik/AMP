@@ -135,12 +135,16 @@ Point3D map_sphere_logical( double R, double x, double y, double z );
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
  *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
  *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
+ * \param[in] method    Method to use:
+ *                      1 - Use method in Calhoun, requires extra attention to boundary conditions
+ *                      2 - Half sphere mapping
+ *                      3 - Spherical coordinates
  * \param[in] R         Radius of sphere
  * \param[in] x         Logical x coordinate
  * \param[in] y         Logical y coordinate
  * @return              Returns the physical point
  */
-Point3D map_logical_sphere_surface( double R, double x, double y );
+Point3D map_logical_sphere_surface( int method, double R, double x, double y );
 
 /**
  * \brief   Map coordinates from the surface of a sphere to logical
@@ -149,13 +153,18 @@ Point3D map_logical_sphere_surface( double R, double x, double y );
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
  *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
  *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
+ * \param[in] method    Method to use:
+ *                      1 - Use method in Calhoun, requires extra attention to boundary conditions
+ *                      2 - Half sphere mapping
+ *                      3 - Spherical coordinates
  * \param[in] R         Radius of sphere
  * \param[in] x         Physical x coordinate
  * \param[in] y         Physical y coordinate
  * \param[in] z         Physical z coordinate
  * @return              Returns a pair with the logical (x,y) values
  */
-std::array<double, 2> map_sphere_surface_logical( double R, double x, double y, double z );
+std::array<double, 2>
+map_sphere_surface_logical( int method, double R, double x, double y, double z );
 
 
 /**

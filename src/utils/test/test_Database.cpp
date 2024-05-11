@@ -7,6 +7,7 @@
 #include "AMP/utils/MathExpr.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/to_tuple.h"
 
 #include <chrono>
 #include <complex>
@@ -140,7 +141,7 @@ void runBasicTests( UnitTest &ut )
         "E      = 0.4 J          // Energy in the beam\n"
         "delay  = 0 ps           // Delay the beam respect to zero\n"
         "diam   = 30 um          // Beam diameter\n"
-        "length = 0.4 cm         // Beam length\n"
+        "length = 0.4 cm         // Beam length\n "
         "lambda = 0.8 um         // Wavelength of laser\n"
         "angle  = 0 degrees      // Angle of beam with repect to normal\n"
         "array  = [ [ [ 1, 2, 3, 4 ], [5,6,7,8],[9,10,11,12]],\n"
@@ -348,6 +349,32 @@ void runFileTests( UnitTest &ut, const std::string &filename )
 }
 
 
+// Test converting a struct to a database
+struct myClass {
+    int a;
+    double b;
+    float c;
+    std::complex<double> d;
+};
+void testStructToDatabase( AMP::UnitTest &ut )
+{
+    // Create a simple struct
+    myClass x;
+    x.a = 5;
+    x.b = 3.14;
+    x.c = 2.1;
+    x.d = std::complex<double>( 1.4, 0.9 );
+
+    // Check the conversion to a tuple
+    auto t = AMP::to_tuple( x );
+    static_assert(
+        std::is_same_v<std::tuple<int, double, float, std::complex<double>>, decltype( t )> );
+    bool pass = std::get<0>( t ) == x.a && std::get<1>( t ) == x.b && std::get<2>( t ) == x.c &&
+                std::get<3>( t ) == x.d;
+    checkResult( ut, pass, "Convert struct to tuple" );
+}
+
+
 // Main
 int main( int argc, char *argv[] )
 {
@@ -356,6 +383,7 @@ int main( int argc, char *argv[] )
 
     // Run the tests
     runBasicTests( ut );
+    testStructToDatabase( ut );
     for ( int i = 1; i < argc; i++ )
         runFileTests( ut, argv[i] );
 

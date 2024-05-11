@@ -1,7 +1,7 @@
 #ifndef included_AMP_StridedVariable_H
 #define included_AMP_StridedVariable_H
 
-#include "SubsetVariable.h"
+#include "AMP/vectors/SubsetVariable.h"
 
 namespace AMP::LinearAlgebra {
 

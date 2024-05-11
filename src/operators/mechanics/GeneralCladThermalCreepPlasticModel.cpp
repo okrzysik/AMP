@@ -1,9 +1,8 @@
-
-#include "GeneralCladThermalCreepPlasticModel.h"
+#include "AMP/operators/mechanics/GeneralCladThermalCreepPlasticModel.h"
 #include "AMP/materials/Property.h"
-#include "MechanicsConstants.h"
-
+#include "AMP/operators/mechanics/MechanicsConstants.h"
 #include "AMP/utils/Utilities.h"
+
 
 namespace AMP::Operator {
 

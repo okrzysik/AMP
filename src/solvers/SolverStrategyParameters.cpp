@@ -1,4 +1,4 @@
-#include "SolverStrategyParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 
 #include <utility>
 

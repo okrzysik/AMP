@@ -1,4 +1,4 @@
-#include "MassMatrixCorrection.h"
+#include "AMP/operators/boundary/MassMatrixCorrection.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"

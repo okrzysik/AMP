@@ -1,10 +1,10 @@
-#include "DTKMapOperator.h"
-#include "DTKAMPField.h"
+#include "AMP/operators/map/dtk/DTKMapOperator.h"
+#include "AMP/operators/map/dtk/DTKAMPField.h"
 
+#include <DTK_BasicEntityPredicates.hpp>
 #include <DTK_ConsistentInterpolationOperator.hpp>
 #include <DTK_FieldMultiVector.hpp>
 
-#include <DTK_BasicEntityPredicates.hpp>
 #include <functional>
 
 namespace AMP::Operator {

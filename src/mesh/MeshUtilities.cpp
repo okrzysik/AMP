@@ -439,6 +439,7 @@ ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::
 }
 void ElementFinder::initialize() const
 {
+    PROFILE( "initialize" );
     AMP_ASSERT( d_mesh->getDim() == 3u );
     // Choose the approximate spacing between points
     double volume = 0.0;

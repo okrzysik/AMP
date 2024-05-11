@@ -1,5 +1,6 @@
-#include "PelletContactConductanceModel.h"
+#include "AMP/operators/libmesh/PelletContactConductanceModel.h"
 #include "AMP/utils/Utilities.h"
+
 #include <cmath>
 
 

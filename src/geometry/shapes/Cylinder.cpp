@@ -11,15 +11,11 @@ namespace AMP::Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Cylinder::Cylinder() : LogicalGeometry()
+Cylinder::Cylinder() : LogicalGeometry( 3, 3, { 4, 4, 4, 4, 2, 1 } )
 {
-    d_ids         = { 4, 4, 4, 4, 2, 1 };
-    d_isPeriodic  = { false, false, false };
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
 }
 Cylinder::Cylinder( std::shared_ptr<const AMP::Database> db ) : Cylinder()
 {

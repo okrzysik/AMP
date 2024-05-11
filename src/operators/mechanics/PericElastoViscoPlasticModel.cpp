@@ -1,10 +1,10 @@
-
-#include "PericElastoViscoPlasticModel.h"
+#include "AMP/operators/mechanics/PericElastoViscoPlasticModel.h"
 #include "AMP/materials/Property.h"
-#include "MechanicsConstants.h"
-
+#include "AMP/operators/mechanics/MechanicsConstants.h"
 #include "AMP/utils/Utilities.h"
+
 #include <iostream>
+
 
 namespace AMP::Operator {
 

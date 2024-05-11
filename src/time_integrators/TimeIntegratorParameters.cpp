@@ -1,4 +1,4 @@
-#include "TimeIntegratorParameters.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
 
 namespace AMP::TimeIntegrator {
 

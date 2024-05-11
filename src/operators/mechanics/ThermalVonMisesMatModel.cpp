@@ -1,9 +1,8 @@
-
-#include "ThermalVonMisesMatModel.h"
+#include "AMP/operators/mechanics/ThermalVonMisesMatModel.h"
 #include "AMP/materials/Property.h"
-#include "MechanicsConstants.h"
-
+#include "AMP/operators/mechanics/MechanicsConstants.h"
 #include "AMP/utils/Utilities.h"
+
 
 namespace AMP::Operator {
 

@@ -1,5 +1,7 @@
 #include "AMP/vectors/data/ArrayVectorData.h"
-
+#ifdef USE_CUDA
+    #include "AMP/utils/cuda/CudaAllocator.h"
+#endif
 
 // Explicit instantiations
 template class AMP::LinearAlgebra::ArrayVectorData<double>;

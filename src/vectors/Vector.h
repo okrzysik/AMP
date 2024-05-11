@@ -872,6 +872,6 @@ std::ostream &operator<<( std::ostream &out, const Vector & );
 
 } // namespace AMP::LinearAlgebra
 
-#include "Vector.inline.h"
+#include "AMP/vectors/Vector.inline.h"
 
 #endif
