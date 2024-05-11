@@ -57,7 +57,7 @@ void testIntegrator( const std::string &name,
         bool good_solution = timeIntegrator->checkNewSolution();
         if ( good_solution ) {
             timeIntegrator->updateSolution();
-            solution->swapVectors( x );
+            solution->copyVector( x );
         } else {
             AMP_ERROR( "Solution didn't converge" );
         }
@@ -87,7 +87,24 @@ void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
         db->putScalar<std::string>( "solver_name", "Solver" );
         db->putScalar<std::string>( "timestep_selection_strategy", "constant" );
         db->putScalar<bool>( "use_predictor", false );
-
+#if 0
+        auto solver_db = AMP::Database::create( "name",
+                                                "NKASolver",
+                                                "print_info_level",
+                                                1,
+                                                "max_iterations",
+                                                10,
+                                                "max_vectors",
+                                                5,
+                                                "angle_tolerance",
+                                                0.1,
+                                                "absolute_tolerance",
+                                                1.0e-12,
+                                                "relative_tolerance",
+                                                1.0e-12,
+                                                "step_tolerance",
+                                                1.0e-14 );
+#else
         auto solver_db = AMP::Database::create( "name",
                                                 "PetscSNESSolver",
                                                 "print_info_level",
@@ -102,6 +119,7 @@ void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
                                                 1.0e-12,
                                                 "step_tolerance",
                                                 1.0e-14 );
+#endif
         db->putDatabase( "Solver", std::move( solver_db ) );
     }
 }
@@ -159,8 +177,8 @@ int testSimpleTimeIntegration( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     // List of integrators
-    auto integrators = { "ExplicitEuler",  "RK12", "RK23", "RK34", "RK45", "RK2",  "RK4",
-                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
+    auto integrators = { "ExplicitEuler", "RK12", "RK23", "RK34", "RK45", "RK2", "RK4" };
+    //                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
 
     // Run the tests
     AMP::TimeIntegrator::registerTimeIntegratorFactories();

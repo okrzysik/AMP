@@ -137,6 +137,8 @@ int ImplicitIntegrator::advanceSolution( const double dt,
         AMP::pout << "++++++++++++++++++++++++++++++++++++++++++++++++\n" << std::endl;
     }
 
+    d_current_dt = dt;
+
     // this call must be before the call to setInitialGuess as the computed
     // coefficients are used there
     setTimeHistoryScalings();

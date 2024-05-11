@@ -1979,8 +1979,6 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     d_prev_solutions[0]->copyVector( in );
 
-    d_current_dt = dt;
-
     setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
 
     if ( !d_scratch_function_vector )
