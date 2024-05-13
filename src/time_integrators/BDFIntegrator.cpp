@@ -170,7 +170,7 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
     if ( db->keyExists( "implicit_integrator" ) ) {
 
         d_implicit_integrator = db->getString( "implicit_integrator" );
-        if ( d_implicit_integrator == "BDF1" )
+        if ( ( d_implicit_integrator == "BDF1" ) || ( d_implicit_integrator == "Backward Euler" ) )
             d_implicit_integrator = "BE";
 
     } else {
@@ -1978,8 +1978,6 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     d_solution_vector->getVectorData()->reset();
 
     d_prev_solutions[0]->copyVector( in );
-
-    d_current_dt = dt;
 
     setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
 
