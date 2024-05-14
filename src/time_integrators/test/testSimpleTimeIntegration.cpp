@@ -93,7 +93,7 @@ void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
                                                 "print_info_level",
                                                 1,
                                                 "max_iterations",
-                                                10,
+                                                100,
                                                 "max_vectors",
                                                 5,
                                                 "angle_tolerance",
@@ -110,7 +110,7 @@ void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
                                                 "print_info_level",
                                                 1,
                                                 "max_iterations",
-                                                10,
+                                                100,
                                                 "linear_solver_type",
                                                 "fgmres",
                                                 "absolute_tolerance",
@@ -177,8 +177,8 @@ int testSimpleTimeIntegration( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     // List of integrators
-    auto integrators = { "ExplicitEuler", "RK12", "RK23", "RK34", "RK45", "RK2", "RK4" };
-    //                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
+    auto integrators = { "ExplicitEuler",  "RK12", "RK23", "RK34", "RK45", "RK2",  "RK4",
+                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
 
     // Run the tests
     AMP::TimeIntegrator::registerTimeIntegratorFactories();
