@@ -18,6 +18,10 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
 #endif
+#ifdef USE_HIP
+    #include <hip/hip_runtime_api.h>
+#endif
+
 #ifdef AMP_USE_PETSC
     #include "petsc.h"
     #include "petscerror.h"

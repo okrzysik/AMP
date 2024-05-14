@@ -11,6 +11,10 @@
     #include "AMP/utils/cuda/CudaAllocator.h"
     #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
+#ifdef USE_HIP
+    #include "AMP/utils/hip/HipAllocator.h"
+    #include "AMP/vectors/operations/hip/VectorOperationsHIP.h"
+#endif
 
 #include "ProfilerApp.h"
 
@@ -195,7 +199,21 @@ int main( int argc, char **argv )
             AMP::pout << std::endl;
         }
 #endif
-    }
+
+#ifdef USE_HIP
+        using ALLOC = AMP::HipManagedAllocator<double>;
+        using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
+        using OPS   = AMP::LinearAlgebra::VectorOperationsHip<double>;
+        vec = AMP::LinearAlgebra::createSimpleVector<double, OPS, DATA>( N, var, globalComm );
+        auto time_hip = testPerformance( vec );
+        if ( rank == 0 ) {
+            AMP::pout << "SimpleVector<HIP>:" << std::endl;
+            time_hip.print();
+            time_hip.print_speedup( time0 );
+            AMP::pout << std::endl;
+        }
+#endif
+}
 
     AMP::AMPManager::shutdown();
     return 0;
