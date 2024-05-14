@@ -1,6 +1,5 @@
+#include "AMP/operators/AsynchronousOperator.h"
 
-
-#include "AsynchronousOperator.h"
 
 namespace AMP::Operator {
 

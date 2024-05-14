@@ -161,7 +161,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // Use a series of rays projecting from the centroid to get points on the surface
     std::vector<Point> surfacePoints;
     {
-        PROFILE2( "testGeometry-surface " + name );
+        PROFILE( "testGeometry-surface " );
         size_t N = 10000;
         surfacePoints.reserve( N );
         bool all_hit = true;
@@ -200,7 +200,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     }
     // Verify each surface point is "inside" the object
     {
-        PROFILE2( "testGeometry-inside " + name );
+        PROFILE( "testGeometry-inside" );
         bool pass_inside = true;
         for ( const auto &tmp : surfacePoints ) {
             bool inside = geom.inside( tmp );
@@ -216,7 +216,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     }
     // Project each surface point in a random direction and back propagate to get the same point
     {
-        PROFILE2( "testGeometry-distance " + name );
+        PROFILE( "testGeometry-distance" );
         bool pass_projection = true;
         auto box             = geom.box();
         auto length          = box.second - box.first;
@@ -246,7 +246,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // Note we use a non-random seed to ensure test doesn't fail periodically due to tolerances
     std::vector<Point> interiorPoints;
     {
-        PROFILE2( "testGeometry-sample " + name );
+        PROFILE( "testGeometry-sample" );
         auto box = geom.box();
         static std::mt19937 gen( 84397 );
         std::uniform_real_distribution<double> dist[3];
@@ -262,7 +262,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     }
     // Check that nearest returns the surface/interior points
     {
-        PROFILE2( "testGeometry-nearest " + name );
+        PROFILE( "testGeometry-nearest " );
         bool pass_nearest = true;
         for ( const auto &p0 : surfacePoints ) {
             auto p   = geom.nearest( p0 );
@@ -305,7 +305,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     }
     // Test getting the volume
     {
-        PROFILE2( "testGeometry-volume " + name );
+        PROFILE( "testGeometry-volume " );
         auto box         = geom.box();
         double volume    = geom.volume();
         double boxVolume = 1.0;
@@ -329,7 +329,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     }
     // Test getting the surface id
     if ( !multigeom ) {
-        PROFILE2( "testGeometry-surfaceID " + name );
+        PROFILE( "testGeometry-surfaceID" );
         std::set<int> ids;
         for ( const auto &p : surfacePoints )
             ids.insert( geom.surface( p ) );

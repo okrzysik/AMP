@@ -1,7 +1,7 @@
 #ifndef included_AMP_ColumnSolver
 #define included_AMP_ColumnSolver
 
-#include "SolverStrategy.h"
+#include "AMP/solvers/SolverStrategy.h"
 #include <string>
 #include <vector>
 

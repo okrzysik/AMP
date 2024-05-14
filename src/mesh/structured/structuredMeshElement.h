@@ -59,7 +59,7 @@ public: // Functions derived from MeshElement
     inline std::string elementClass() const override { return "structuredMeshElement"; }
     virtual void getElements( const GeomType, std::vector<MeshElement> & ) const override;
     virtual void getElementsID( const GeomType, std::vector<MeshElementID> & ) const override;
-    void getNeighbors( std::vector<std::shared_ptr<MeshElement>> & ) const override;
+    void getNeighbors( std::vector<std::unique_ptr<MeshElement>> & ) const override;
     Point centroid() const override;
     double volume() const override;
     Point norm() const override;
@@ -93,6 +93,7 @@ protected:
     // Helper functions
     void getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const;
     void getElementIndex( const GeomType type, int &N, BoxMesh::MeshElementIndex *index ) const;
+    std::array<int8_t, 3> getBC() const;
 
     // Reset just the mesh element
     inline void reset( const BoxMesh::MeshElementIndex &index ) { d_index = index; }

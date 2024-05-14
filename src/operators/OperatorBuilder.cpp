@@ -136,7 +136,7 @@ OperatorBuilder::createOperator( std::shared_ptr<OperatorParameters> in_params )
 
 
 std::shared_ptr<Operator> OperatorBuilder::createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                                           std::string operatorName,
+                                                           const std::string &operatorName,
                                                            std::shared_ptr<AMP::Database> input_db )
 {
     std::shared_ptr<ElementPhysicsModel> model;
@@ -147,7 +147,7 @@ std::shared_ptr<Operator> OperatorBuilder::createOperator( std::shared_ptr<AMP::
 
 std::shared_ptr<Operator>
 OperatorBuilder::createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                 std::string operatorName,
+                                 const std::string &operatorName,
                                  std::shared_ptr<AMP::Database> input_db,
                                  std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel,
                                  std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
@@ -1350,12 +1350,12 @@ OperatorBuilder::createNonlinearNavierStokesLSWFOperator( std::shared_ptr<AMP::M
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
-std::shared_ptr<Operator> OperatorBuilder::createNonlinearFickSoretOperator(
-    std::shared_ptr<AMP::Mesh::Mesh>,
-    std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>,
-    std::shared_ptr<AMP::Database>,
-    std::shared_ptr<ElementPhysicsModel>,
-    std::shared_ptr<ElementPhysicsModelFactory> )
+std::shared_ptr<Operator>
+OperatorBuilder::createNonlinearFickSoretOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                   std::string,
+                                                   std::shared_ptr<AMP::Database>,
+                                                   std::shared_ptr<ElementPhysicsModel> &,
+                                                   std::shared_ptr<ElementPhysicsModelFactory> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
@@ -1377,7 +1377,7 @@ OperatorBuilder::createFlowFrapconJacobian( std::shared_ptr<AMP::Mesh::Mesh>,
 std::shared_ptr<Operator>
 OperatorBuilder::createSubchannelTwoEqLinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
                                                       std::shared_ptr<AMP::Database>,
-                                                      std::shared_ptr<ElementPhysicsModel> )
+                                                      std::shared_ptr<ElementPhysicsModel> & )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
@@ -1421,22 +1421,22 @@ OperatorBuilder::createVolumeIntegralOperator( std::shared_ptr<AMP::Mesh::Mesh>,
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
-std::shared_ptr<Operator> OperatorBuilder::createLinearBVPOperator(
-    std::shared_ptr<AMP::Mesh::Mesh>,
-    std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>,
-    std::shared_ptr<AMP::Database>,
-    std::shared_ptr<ElementPhysicsModel> &,
-    std::shared_ptr<ElementPhysicsModelFactory> )
+std::shared_ptr<Operator>
+OperatorBuilder::createLinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                          std::string,
+                                          std::shared_ptr<AMP::Database>,
+                                          std::shared_ptr<ElementPhysicsModel> &,
+                                          std::shared_ptr<ElementPhysicsModelFactory> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
-std::shared_ptr<Operator> OperatorBuilder::createNonlinearBVPOperator(
-    std::shared_ptr<AMP::Mesh::Mesh>,
-    std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>,
-    std::shared_ptr<AMP::Database>,
-    std::shared_ptr<ElementPhysicsModel> &,
-    std::shared_ptr<ElementPhysicsModelFactory> )
+std::shared_ptr<Operator>
+OperatorBuilder::createNonlinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                             std::string,
+                                             std::shared_ptr<AMP::Database>,
+                                             std::shared_ptr<ElementPhysicsModel> &,
+                                             std::shared_ptr<ElementPhysicsModelFactory> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;

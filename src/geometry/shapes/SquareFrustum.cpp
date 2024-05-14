@@ -13,7 +13,7 @@ namespace AMP::Geometry {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-SquareFrustum::SquareFrustum( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry()
+SquareFrustum::SquareFrustum( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry( 3, 3 )
 {
     auto dir    = db->getString( "Dir" );
     auto height = db->getScalar<double>( "Height" );
@@ -37,16 +37,13 @@ SquareFrustum::SquareFrustum( std::shared_ptr<const AMP::Database> db ) : Logica
     initialize( range, dir2, height );
 }
 SquareFrustum::SquareFrustum( const std::vector<double> &range, int dir, double height )
-    : LogicalGeometry()
+    : LogicalGeometry( 3, 3 )
 {
     initialize( range, dir, height );
 }
 void SquareFrustum::initialize( const std::vector<double> &range, int dir, double height )
 {
-    d_isPeriodic  = { false, false, false };
-    d_dir         = dir;
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
+    d_dir = dir;
     // Initialize the frustrum
     AMP_INSIST( range.size() == 6, "Invalid size for range" );
     AMP_INSIST( dir >= 0 && dir < 6, "Invalid value for dir" );

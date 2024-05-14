@@ -1,7 +1,7 @@
 #ifndef included_AMP_TimeIntegrator_INLINE
 #define included_AMP_TimeIntegrator_INLINE
 
-#include "TimeIntegrator.h"
+#include "AMP/time_integrators/TimeIntegrator.h"
 
 namespace AMP::TimeIntegrator {
 

@@ -133,9 +133,9 @@ inline std::vector<MeshElement> MeshElement::getElements( const GeomType type ) 
     ( d_element != nullptr ? d_element : this )->getElements( type, d_elements );
     return d_elements;
 }
-inline std::vector<std::shared_ptr<MeshElement>> MeshElement::getNeighbors() const
+inline std::vector<std::unique_ptr<MeshElement>> MeshElement::getNeighbors() const
 {
-    std::vector<std::shared_ptr<MeshElement>> neighbors;
+    std::vector<std::unique_ptr<MeshElement>> neighbors;
     ( d_element != nullptr ? d_element : this )->getNeighbors( neighbors );
     return neighbors;
 }

@@ -20,7 +20,8 @@ Point operator-( const Point &x, const std::array<double, 3> &y )
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry()
+CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db )
+    : LogicalGeometry( 3, 3, { 2, 2, 2, 2, 0, 1 } )
 {
     double r1 = db->getScalar<double>( "BaseRadius" );
     double r2 = db->getScalar<double>( "TopRadius" );
@@ -44,19 +45,16 @@ CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db ) : Logica
     initialize( dir2, { r1, r2 }, h );
 }
 CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double height )
+    : LogicalGeometry( 3, 3, { 2, 2, 2, 2, 0, 1 } )
 {
     initialize( dir, r, height );
 }
 void CircleFrustum::initialize( int dir, const std::array<double, 2> &r, double h )
 {
-    d_ids         = { 2, 2, 2, 2, 0, 1 };
-    d_isPeriodic  = { false, false, false };
-    d_dir         = dir;
-    d_r           = r;
-    d_h           = h;
-    d_offset      = { 0, 0, 0 };
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
+    d_dir    = dir;
+    d_r      = r;
+    d_h      = h;
+    d_offset = { 0, 0, 0 };
     AMP_INSIST( d_r[0] > d_r[1] && d_r[1] > 0, "Invalid value for r" );
     AMP_INSIST( d_dir < 6, "Invalid value for dir" );
 }

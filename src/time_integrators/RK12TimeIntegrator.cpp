@@ -86,10 +86,10 @@ void RK12TimeIntegrator::setupVectors()
     /*
      * Set initial value of vectors to 0.
      */
-    d_new_solution->setToScalar( (double) 0.0 );
-    d_k1_vec->setToScalar( (double) 0.0 );
-    d_k2_vec->setToScalar( (double) 0.0 );
-    d_z_vec->setToScalar( (double) 0.0 );
+    d_new_solution->zero();
+    d_k1_vec->zero();
+    d_k2_vec->zero();
+    d_z_vec->zero();
 }
 
 int RK12TimeIntegrator::advanceSolution( const double dt,
@@ -111,6 +111,8 @@ int RK12TimeIntegrator::advanceSolution( const double dt,
 
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
+    if ( d_pSourceTerm )
+        d_k1_vec->add( *d_k1_vec, *d_pSourceTerm );
 
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "*****************************************" << std::endl;
@@ -132,6 +134,8 @@ int RK12TimeIntegrator::advanceSolution( const double dt,
 
     // k2 = f(t+dt, u*)
     d_operator->apply( d_z_vec, d_k2_vec );
+    if ( d_pSourceTerm )
+        d_k2_vec->add( *d_k2_vec, *d_pSourceTerm );
 
     if ( d_iDebugPrintInfoLevel > 4 ) {
         std::cout << "L2 norm of k2 " << d_k2_vec->L2Norm().get<double>() << std::endl;
@@ -149,6 +153,8 @@ int RK12TimeIntegrator::advanceSolution( const double dt,
     }
 
     out->copyVector( d_new_solution );
+    d_k1_vec->zero();
+    d_k2_vec->zero();
     return ( 1 );
 }
 

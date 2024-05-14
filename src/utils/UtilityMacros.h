@@ -102,6 +102,22 @@ static inline std::string operator+( std::string_view x, std::string_view y )
     } while ( 0 )
 
 
+/*! \def AMP_WARN_ONCE(MSG)
+ *  \brief   Print a warning
+ *  \details Print a warning without exit.  Print file and line number of the warning.
+ *           The message will only be printed once per execution
+ *  \param MSG  Warning message to print
+ */
+#define AMP_WARN_ONCE( MSG )         \
+    do {                             \
+        static bool printed = false; \
+        if ( !printed ) {            \
+            AMP_WARNING( MSG );      \
+            printed = true;          \
+        }                            \
+    } while ( 0 )
+
+
 /*! \def AMP_ASSERT(EXP)
  *  \brief Assert error
  *  \details Throw an error exception from within any C++ source code if the

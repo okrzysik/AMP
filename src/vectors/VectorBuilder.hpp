@@ -5,7 +5,9 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/data/ArrayVectorData.h"
 #ifdef USE_CUDA
+    #include "AMP/utils/cuda/CudaAllocator.h"
     #include "AMP/utils/cuda/GPUFunctionTable.h"
+    #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 #ifdef USE_HIP
     #include "AMP/utils/hip/GPUFunctionTable.h"

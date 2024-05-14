@@ -25,6 +25,7 @@ ENDIF()
 
 # Add the tests
 INITIALIZE_TESTBUILDER()
+ADD_TB_TEST( testSimpleTimeIntegration )
 ADD_TB_TEST_1_2_4( testTimeIntegratorParameters )
 IF ( USE_LAPACK )
     ADD_TB_TEST_1_2_4( testOxideTimeIntegrator )

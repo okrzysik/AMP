@@ -397,4 +397,4 @@ private:
 
 #endif
 
-#include "TimeIntegrator.I"
+#include "AMP/time_integrators/TimeIntegrator.I"

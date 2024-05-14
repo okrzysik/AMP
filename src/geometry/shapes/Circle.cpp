@@ -12,25 +12,18 @@ namespace AMP::Geometry {
  * Constructor                                           *
  ********************************************************/
 Circle::Circle( std::shared_ptr<const AMP::Database> db )
+    : LogicalGeometry( 2, 2, { 1, 1, 1, 1, -3, -3 } )
 {
-    d_ids         = { 1, 1, 1, 1 };
-    d_isPeriodic  = { false, false };
-    d_physicalDim = 2;
-    d_logicalDim  = 2;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    auto range    = db->getVector<double>( "Range" );
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    auto range  = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
     d_R = range[0];
 }
-Circle::Circle( double R ) : LogicalGeometry(), d_R( R )
+Circle::Circle( double R ) : LogicalGeometry( 2, 2, { 1, 1, 1, 1, -3, -3 } ), d_R( R )
 {
-    d_ids         = { 1, 1, 1, 1 };
-    d_isPeriodic  = { false, false };
-    d_physicalDim = 2;
-    d_logicalDim  = 2;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
+    d_offset[0] = 0;
+    d_offset[1] = 0;
 }
 
 

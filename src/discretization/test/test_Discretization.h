@@ -6,12 +6,11 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MultiMesh.h"
+#include "AMP/mesh/testHelpers/meshGenerators.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 
 #include "DOFManager_tests.h"
-
-#include "../../mesh/test/meshGenerators.h"
 
 
 using namespace AMP::unit_test;

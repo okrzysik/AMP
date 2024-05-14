@@ -1,4 +1,4 @@
-#include "AsyncMapOperatorParameters.h"
+#include "AMP/operators/map/AsyncMapOperatorParameters.h"
 
 namespace AMP::Operator {
 

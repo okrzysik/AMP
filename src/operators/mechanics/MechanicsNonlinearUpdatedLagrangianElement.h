@@ -1,15 +1,13 @@
-
 #ifndef included_AMP_MechanicsNonlinearUpdatedLagrangianElement
 #define included_AMP_MechanicsNonlinearUpdatedLagrangianElement
 
-#include <vector>
+#include "AMP/operators/mechanics/MechanicsConstants.h"
+#include "AMP/operators/mechanics/MechanicsElement.h"
+#include "AMP/operators/mechanics/UpdatedLagrangianUtils.h"
 
 #include <memory>
+#include <vector>
 
-/* AMP files */
-#include "MechanicsConstants.h"
-#include "MechanicsElement.h"
-#include "UpdatedLagrangianUtils.h"
 
 namespace AMP::Operator {
 

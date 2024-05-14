@@ -10,18 +10,14 @@ namespace AMP::Mesh {
  ****************************************************************/
 PureLogicalMesh::PureLogicalMesh( std::shared_ptr<const MeshParameters> params ) : BoxMesh( params )
 {
-    // Basic defaults
-    d_globalSize.fill( 1 );
-    d_isPeriodic.fill( false );
-    d_numBlocks.fill( 1 );
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );
     auto db = params->getDatabase();
     AMP_INSIST( db.get(), "Database must exist" );
     if ( db->keyExists( "commSize" ) ) {
-        d_rank = db->getScalar<int>( "commRank" );
-        d_size = db->getScalar<int>( "commSize" );
-        d_comm = AMP_COMM_NULL;
+        const_cast<int &>( d_rank ) = db->getScalar<int>( "commRank" );
+        const_cast<int &>( d_size ) = db->getScalar<int>( "commSize" );
+        d_comm                      = AMP_COMM_NULL;
     } else {
         AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
     }
@@ -35,19 +31,18 @@ PureLogicalMesh::PureLogicalMesh( std::shared_ptr<const MeshParameters> params )
     GeomDim     = static_cast<AMP::Mesh::GeomType>( size.size() );
     d_max_gcw   = db->getWithDefault<int>( "GCW", 2 );
     AMP_ASSERT( PhysicalDim == db->getWithDefault<int>( "dim", PhysicalDim ) );
+    std::array<int, 3> size2 = { 1, 1, 1 };
+    std::array<int, 6> ids   = { 0, 1, 2, 3, 4, 5 };
     for ( size_t d = 0; d < size.size(); d++ ) {
-        d_globalSize[d] = size[d];
-        d_isPeriodic[d] = per[d];
-        if ( !d_isPeriodic[d] ) {
-            d_surfaceId[2 * d + 0] = 2 * d + 0;
-            d_surfaceId[2 * d + 1] = 2 * d + 1;
-        } else {
-            d_surfaceId[2 * d + 0] = -1;
-            d_surfaceId[2 * d + 1] = -1;
+        size2[d] = size[d];
+        if ( per[d] ) {
+            ids[2 * d + 0] = -1;
+            ids[2 * d + 1] = -1;
         }
     }
     // Initialize the logical mesh
-    BoxMesh::initialize( db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", {} ) );
+    BoxMesh::initialize(
+        size2, ids, db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", {} ) );
     BoxMesh::finalize( db->getString( "MeshName" ), getDisplacement( db ) );
 }
 PureLogicalMesh::PureLogicalMesh( const PureLogicalMesh &mesh ) = default;

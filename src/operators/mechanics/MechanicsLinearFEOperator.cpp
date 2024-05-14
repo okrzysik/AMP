@@ -1,8 +1,8 @@
-
-#include "MechanicsLinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
+
 
 namespace AMP::Operator {
 

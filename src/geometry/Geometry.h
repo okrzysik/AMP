@@ -187,7 +187,7 @@ public:
 
 protected:
     //!  Empty constructor for the base class
-    Geometry() : d_physicalDim( 0 ) {}
+    Geometry( int ndim ) : d_physicalDim( ndim ) {}
 
     // Delete copy constructors
     Geometry( Geometry && )      = delete;
@@ -197,7 +197,7 @@ protected:
 
 
 protected: // Internal data
-    uint8_t d_physicalDim;
+    const uint8_t d_physicalDim;
 };
 
 

@@ -82,7 +82,7 @@ public: // non-virtual functions
      *  For Verticies, a list of all vertices that share an element is returned.
      *  This list is in unsorted order.
      */
-    inline std::vector<std::shared_ptr<MeshElement>> getNeighbors() const;
+    inline std::vector<std::unique_ptr<MeshElement>> getNeighbors() const;
 
     /**
      * \brief     Return the coordinate of the vertex
@@ -198,7 +198,7 @@ public: // Advanced functions
      *  For Verticies, a list of all vertices that share an element is returned.
      *  This list is in unsorted order.
      */
-    virtual void getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const;
+    virtual void getNeighbors( std::vector<std::unique_ptr<MeshElement>> &neighbors ) const;
 
     /**
      *  Return the vertex coordinates composing the current element.
@@ -208,6 +208,14 @@ public: // Advanced functions
      *  derived classes may implement a more efficient alternative
      */
     virtual void getVertices( std::vector<Point> &vertices ) const;
+
+    /**
+     *  Return the vertex coordinates for all neighboring elements excluding
+     *  verticies composing the current element.
+     *  Note the default implementation will call getNeighbors followed by getVertices,
+     *  derived classes may implement a more efficient alternative
+     */
+    virtual void getNeighborVertices( std::vector<Point> &vertices ) const;
 
 
 protected:

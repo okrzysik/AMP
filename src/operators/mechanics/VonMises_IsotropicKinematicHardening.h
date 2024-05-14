@@ -1,12 +1,11 @@
-
 #ifndef included_AMP_VonMises_IsotropicKinematicHardening
 #define included_AMP_VonMises_IsotropicKinematicHardening
 
-#include "MechanicsMaterialModel.h"
+#include "AMP/operators/mechanics/MechanicsMaterialModel.h"
 
 #include <memory>
-
 #include <vector>
+
 
 namespace AMP::Operator {
 

@@ -221,7 +221,7 @@ void libmeshMeshElement::getElements( const GeomType type,
 /****************************************************************
  * Function to get the neighboring elements                      *
  ****************************************************************/
-void libmeshMeshElement::getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const
+void libmeshMeshElement::getNeighbors( std::vector<std::unique_ptr<MeshElement>> &neighbors ) const
 {
     neighbors.clear();
     if ( d_globalID.type() == GeomType::Vertex ) {
@@ -230,9 +230,8 @@ void libmeshMeshElement::getNeighbors( std::vector<std::shared_ptr<MeshElement>>
         int n_neighbors     = neighbor_nodes.size();
         neighbors.reserve( n_neighbors );
         for ( int i = 0; i < n_neighbors; i++ ) {
-            std::shared_ptr<libmeshMeshElement> neighbor( new libmeshMeshElement(
+            neighbors.emplace_back( new libmeshMeshElement(
                 d_dim, GeomType::Vertex, (void *) neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
-            neighbors.push_back( neighbor );
         }
     } else if ( (int) d_globalID.type() == d_dim ) {
         // Return the neighbors of the current element
@@ -243,9 +242,8 @@ void libmeshMeshElement::getNeighbors( std::vector<std::shared_ptr<MeshElement>>
             auto *neighbor_elem = (void *) elem->neighbor_ptr( i );
             if ( neighbor_elem == nullptr )
                 continue;
-            std::shared_ptr<libmeshMeshElement> neighbor( new libmeshMeshElement(
+            neighbors.emplace_back( new libmeshMeshElement(
                 d_dim, d_globalID.type(), neighbor_elem, d_rank, d_meshID, d_mesh ) );
-            neighbors.push_back( neighbor );
         }
     } else {
         // We constructed a temporary libmesh object and do not have access to the neighbor info

@@ -78,8 +78,8 @@ void ExplicitEuler::setupVectors()
     /*
      * Set initial value of vectors to 0.
      */
-    d_new_solution->setToScalar( (double) 0.0 );
-    d_f_vec->setToScalar( (double) 0.0 );
+    d_new_solution->zero();
+    d_f_vec->zero();
 }
 
 int ExplicitEuler::advanceSolution( const double dt,
@@ -107,6 +107,8 @@ int ExplicitEuler::advanceSolution( const double dt,
         {
             PROFILE( "ExplicitEuler::advanceSolution apply" );
             d_operator->apply( d_solution_vector, d_f_vec );
+            if ( d_pSourceTerm )
+                d_f_vec->add( *d_f_vec, *d_pSourceTerm );
             if ( d_iDebugPrintInfoLevel > 0 ) {
                 AMP::pout << "L2 Norm of f(d_solution_vector) " << d_f_vec->L2Norm() << std::endl;
             }
@@ -123,6 +125,7 @@ int ExplicitEuler::advanceSolution( const double dt,
         }
     }
 
+    d_f_vec->zero();
     out->copyVector( d_new_solution );
 
     return ( 1 );

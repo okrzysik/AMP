@@ -165,7 +165,7 @@ static void removeUnusedVerticies( std::vector<std::array<double, NP>> &vertices
 template<size_t NP>
 static std::vector<size_t> splitDomain( const std::vector<std::array<double, NP>> &center )
 {
-    AMP_WARNING( "Not finished" );
+    AMP_WARN_ONCE( "Not finished" );
     return std::vector<size_t>( center.size(), 0 );
 }
 static std::vector<size_t> mapOwner( const std::vector<size_t> &rank, const AMP_MPI &comm )

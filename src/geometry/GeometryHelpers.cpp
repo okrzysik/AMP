@@ -88,7 +88,7 @@ static inline std::array<double, 2> map_p2c( int method, double xp, double yp )
 }
 std::array<double, 2> map_logical_circle( double r, int method, double x, double y )
 {
-    // This maps from a logically rectangular 3D mesh to a sphere mesh using the mapping by:
+    // This maps from a logically rectangular 2D mesh to a circular mesh using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
     //       and Finite Volume Methods for PDEs in Circular and Spherical Domains",
     //       SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
@@ -252,37 +252,80 @@ Point3D map_sphere_logical( double r, double x2, double y2, double z2 )
 
 /****************************************************************
  * Helper function to map x,y logical coordinates in [0,1]       *
- * to x,y,z coordinates on the surface of a sphere               *
+ *    to x,y,z coordinates on the surface of a sphere            *
+ * Dona Calhoun, Christiane Helzel, Randall LeVeque,             *
+ *    "Logically Rectangular Grids and Finite Volume Methods for *
+ *    PDEs in Circular and Spherical Domains",                   *
+ *    SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)            *
  ****************************************************************/
-Point3D map_logical_sphere_surface( double R, double x, double y )
+Point3D map_logical_sphere_surface( int method, double R, double x, double y )
 {
-    // This maps from a a logically rectangular 3D mesh to the surface of a sphere using:
-    // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and
-    //    Finite Volume Methods for PDEs in Circular and Spherical Domains",
-    //    SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
-    double x2 = 2 * x - 1;  // Change domain to [-1,1]
-    double x3 = fabs( x2 ); // We need to make x go from 1:0:1
-    // Map x,y to the unit circle
-    auto point = map_logical_circle( 1.0, 3, x3, y );
-    double xp  = point[0];
-    double yp  = point[1];
-    double zp  = sqrt( fabs( 1.0 - ( xp * xp + yp * yp ) ) );
-    if ( zp < 1e-7 )
-        zp = 0;
-    else if ( x2 < 0 )
-        zp = -zp; // negate z in lower hemisphere
-    xp *= R;
-    yp *= R;
-    zp *= R;
-    return { xp, yp, zp };
+    if ( method == 1 ) {
+        // Maps to a spherical surface, but boundary conditions and neighbors are wrong
+        double x2 = 2 * x - 1;  // Change domain to [-1,1]
+        double x3 = fabs( x2 ); // We need to make x go from 1:0:1
+        // Map x,y to the unit circle
+        auto point = map_logical_circle( 1.0, 3, x3, y );
+        double xp  = point[0];
+        double yp  = point[1];
+        double zp  = sqrt( fabs( 1.0 - ( xp * xp + yp * yp ) ) );
+        if ( zp < 1e-7 )
+            zp = 0;
+        else if ( x2 < 0 )
+            zp = -zp; // negate z in lower hemisphere
+        xp *= R;
+        yp *= R;
+        zp *= R;
+        return { xp, yp, zp };
+    } else if ( method == 2 ) {
+        // Maps to half of spherical surface, but I don't know what else to do
+        auto [xp, yp] = map_logical_circle( 1.0, 3, x, y );
+        double zp     = sqrt( 1 - ( xp * xp + yp * yp ) );
+        if ( zp != zp )
+            zp = 0;
+        return { R * xp, R * yp, R * zp };
+    } else if ( method == 3 ) {
+        // Spherical coordinates, not my favorite but at least it maps
+        double pi    = 3.14159265358979323;
+        double theta = pi * x;
+        double phi   = 2 * pi * y;
+        double xp    = R * sin( theta ) * cos( phi );
+        double yp    = R * sin( theta ) * sin( phi );
+        double zp    = R * cos( theta );
+        return { xp, yp, zp };
+    } else {
+        AMP_ERROR( "Unknown method" );
+    }
+    return {};
 }
-std::array<double, 2> map_sphere_surface_logical( double R, double x, double y, double z )
+constexpr static inline int sgn( double val ) { return ( 0 < val ) - ( val < 0 ); }
+static_assert( sgn( -2.0 ) == -1 );
+static_assert( sgn( 0.0 ) == 0 );
+static_assert( sgn( 2.0 ) == 1 );
+std::array<double, 2>
+map_sphere_surface_logical( int method, double R, double x, double y, double z )
 {
-    double xp  = x / R;
-    double yp  = y / R;
-    auto point = map_circle_logical( 1.0, 3, xp, yp );
-    double x2  = z < 0 ? -point[0] : point[0];
-    return { 0.5 + 0.5 * x2, point[1] };
+    if ( method == 1 ) {
+        double xp  = x / R;
+        double yp  = y / R;
+        auto point = map_circle_logical( 1.0, 3, xp, yp );
+        double x2  = z < 0 ? -point[0] : point[0];
+        return { 0.5 + 0.5 * x2, point[1] };
+    } else if ( method == 2 ) {
+        double R2 = std::max( sqrt( x * x + y * y + z * z ), 1e-10 );
+        double xp = x / R2;
+        double yp = y / R2;
+        return map_circle_logical( 1.0, 3, xp, yp );
+    } else if ( method == 3 ) {
+        // Spherical coordinates, not my favorite but at least it maps
+        double pi    = 3.14159265358979323;
+        double theta = acos( z / R );
+        double phi   = sgn( y ) * acos( x / sqrt( x * x + y * y ) );
+        return { theta / pi, phi / ( 2 * pi ) };
+    } else {
+        AMP_ERROR( "Unknown method" );
+    }
+    return {};
 }
 
 
@@ -297,7 +340,7 @@ Point3D map_logical_shell( double r1, double r2, double x, double y, double z )
     //    Finite Volume Methods for PDEs in Circular and Spherical Domains",
     //    SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
     double Rz = r1 + z * ( r2 - r1 ); // radius based on z[0,1]
-    return map_logical_sphere_surface( Rz, x, y );
+    return map_logical_sphere_surface( 1, Rz, x, y );
 }
 Point3D map_shell_logical( double r1, double r2, double x0, double y0, double z0 )
 {
@@ -306,7 +349,7 @@ Point3D map_shell_logical( double r1, double r2, double x0, double y0, double z0
     //    Finite Volume Methods for PDEs in Circular and Spherical Domains",
     //    SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
     double R = sqrt( x0 * x0 + y0 * y0 + z0 * z0 );
-    auto xy  = map_sphere_surface_logical( R, x0, y0, z0 );
+    auto xy  = map_sphere_surface_logical( 1, R, x0, y0, z0 );
     double z = ( R - r1 ) / ( r2 - r1 );
     return { std::get<0>( xy ), std::get<1>( xy ), z };
 }

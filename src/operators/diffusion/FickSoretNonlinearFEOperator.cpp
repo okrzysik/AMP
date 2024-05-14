@@ -1,6 +1,6 @@
-#include "FickSoretNonlinearFEOperator.h"
-#include "DiffusionNonlinearFEOperatorParameters.h"
-#include "FickSoretNonlinearFEOperatorParameters.h"
+#include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearFEOperatorParameters.h"
+#include "AMP/operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
 
 
 namespace AMP::Operator {

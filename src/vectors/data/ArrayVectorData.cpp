@@ -2,6 +2,9 @@
 #ifdef USE_HIP
     #include "AMP/utils/hip/HipAllocator.h"
 #endif
+#ifdef USE_CUDA
+    #include "AMP/utils/cuda/CudaAllocator.h"
+#endif
 
 // Explicit instantiations
 template class AMP::LinearAlgebra::ArrayVectorData<double>;

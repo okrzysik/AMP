@@ -11,19 +11,15 @@ namespace AMP::Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Parallelepiped::Parallelepiped( std::shared_ptr<const AMP::Database> db )
+Parallelepiped::Parallelepiped( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry( 3, 3 )
 {
     // Fill some basic properties
-    d_ids         = { 1, 2, 3, 4, 5, 6 };
-    d_isPeriodic  = { false, false, false };
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
     // Define the
     auto a = db->getVector<double>( "a" );
     auto b = db->getVector<double>( "b" );

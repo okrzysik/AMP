@@ -1,4 +1,4 @@
-#include "MechanicsElement.h"
+#include "AMP/operators/mechanics/MechanicsElement.h"
 #include "AMP/utils/Utilities.h"
 
 // Libmesh headers

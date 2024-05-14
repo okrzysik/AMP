@@ -1,9 +1,6 @@
-#include "NonlinearKrylovAccelerator.h"
-
-#include <iomanip>
-
 #include "AMP/IO/PIO.h"
 #include "AMP/operators/OperatorFactory.h"
+#include "AMP/solvers/NonlinearKrylovAccelerator.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 
