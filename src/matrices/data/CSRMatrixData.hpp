@@ -21,23 +21,69 @@
 namespace AMP::LinearAlgebra {
 
 /********************************************************
- * Constructors/Destructor helper functions             *
+ * Constructor/Destructor helper functions              *
  ********************************************************/
 template<typename T, template<typename> typename Allocator>
-static T *allocate( size_t N )
+static T *allocate( size_t N, AMP::Utilities::MemoryType mem_type )
 {
-    Allocator<T> alloc;
-    return alloc.allocate( N );
+    if ( mem_type == AMP::Utilities::MemoryType::host ) {
+        Allocator<T> alloc;
+        return alloc.allocate( N );
+    } else if ( mem_type == AMP::Utilities::MemoryType::managed ||
+                mem_type == AMP::Utilities::MemoryType::device ) {
+#ifdef AMP_USE_UMPIRE
+        auto &resourceManager = umpire::ResourceManager::getInstance();
+        auto alloc            = ( mem_type == AMP::Utilities::MemoryType::managed ) ?
+                                    resourceManager.getAllocator( "UM" ) :
+                                    resourceManager.getAllocator( "DEVICE" );
+        return static_cast<T *>( alloc.allocate( N * sizeof( T ) ) );
+#else
+        AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been "
+                   "implemented as yet" );
+#endif
+    } else {
+        AMP_ERROR( "Memory type undefined" );
+    }
+    return nullptr; // Unreachable
+}
+
+template<typename T, template<typename> typename Allocator>
+void deallocate( T **data, size_t N, AMP::Utilities::MemoryType mem_type )
+{
+    if ( mem_type == AMP::Utilities::MemoryType::host ) {
+        Allocator<T> alloc;
+        if ( *data ) {
+            alloc.deallocate( *data, N );
+            *data = nullptr;
+        }
+    } else if ( mem_type == AMP::Utilities::MemoryType::managed ||
+                mem_type == AMP::Utilities::MemoryType::device ) {
+#ifdef AMP_USE_UMPIRE
+        auto &resourceManager = umpire::ResourceManager::getInstance();
+        auto alloc            = ( mem_type == AMP::Utilities::MemoryType::managed ) ?
+                                    resourceManager.getAllocator( "UM" ) :
+                                    resourceManager.getAllocator( "DEVICE" );
+        if ( *data ) {
+            alloc.deallocate( data );
+            *data = nullptr;
+        }
+#else
+        AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been "
+                   "implemented as yet" );
+#endif
+    } else {
+        AMP_ERROR( "Memory type undefined" );
+    }
 }
 
 template<typename Policy>
 bool isColValid( typename Policy::gidx_t col,
                  bool is_diag,
-                 typename Policy::gidx_t first_row,
-                 typename Policy::gidx_t last_row )
+                 typename Policy::gidx_t first_col,
+                 typename Policy::gidx_t last_col )
 {
-    bool dValid  = is_diag && ( first_row <= col && col < last_row );
-    bool odValid = !is_diag && ( col < first_row || last_row <= col );
+    bool dValid  = is_diag && ( first_col <= col && col < last_col );
+    bool odValid = !is_diag && ( col < first_col || last_col <= col );
     return ( dValid || odValid );
 }
 
@@ -48,6 +94,14 @@ template<typename Policy>
 CSRMatrixData<Policy>::CSRMatrixData()
 {
     AMPManager::incrementResource( "CSRMatrixData" );
+}
+
+template<typename Policy>
+CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
+    const CSRMatrixData<Policy> &outer )
+    : d_outer( outer )
+{
+    AMPManager::incrementResource( "CSRSerialMatrixData" );
 }
 
 template<typename Policy>
@@ -98,9 +152,7 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
             AMP_WARNING( "CSRMatrixData: device memory handling has not been implemented as yet" );
         }
     } else if ( matParams ) {
-
         // for now all matrix parameter data is assumed to be on host
-
         d_leftDOFManager  = matParams->getLeftDOFManager();
         d_rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
@@ -145,8 +197,10 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
     // Number of rows owned by this rank
     d_num_rows = outer.d_last_row - outer.d_first_row;
 
-    if ( csrParams ) {
+    // row starts always internally allocated
+    d_row_starts = allocate<lidx_t, std::allocator>( d_num_rows + 1, d_memory_location );
 
+    if ( csrParams ) {
         d_is_diag = is_diag;
 
         // memory not managed here regardless of block type (except row starts)
@@ -167,13 +221,8 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
             d_coeffs      = csrParams->d_coeffs_odiag;
         }
 
-        // if block is not empty allocate and set up row starts and count nnz
-        if ( !d_is_empty ) {
-            d_nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + d_num_rows, 0 );
-        } else {
-            d_nnz = 0;
-        }
-
+        // count nnz and decide if block is empty
+        d_nnz      = std::accumulate( d_nnz_per_row, d_nnz_per_row + d_num_rows, 0 );
         d_is_empty = ( d_nnz == 0 );
 
     } else if ( matParams ) {
@@ -183,6 +232,7 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
         auto leftDOFManager  = matParams->getLeftDOFManager();
         auto rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( leftDOFManager && rightDOFManager );
+        AMP_ASSERT( matParams->d_CommListLeft && matParams->d_CommListRight );
 
         d_is_diag  = is_diag;
         d_is_empty = false;
@@ -196,7 +246,7 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
         // Count number of nonzeros depending on block type
         d_nnz = 0;
         for ( size_t i = 0; i < cols.size(); ++i ) {
-            if ( isColValid<Policy>( cols[i], d_is_diag, outer.d_first_row, outer.d_last_row ) ) {
+            if ( isColValid<Policy>( cols[i], d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
                 d_nnz++;
             }
         }
@@ -211,56 +261,46 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
             return;
         }
 
-        if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
+        // allocate internal arrays either directly or through Umpire
+        d_manage_nnz    = true;
+        d_manage_coeffs = true;
+        d_manage_cols   = true;
 
-            d_manage_nnz    = true;
-            d_manage_coeffs = true;
-            d_manage_cols   = true;
+        d_nnz_per_row = allocate<lidx_t, std::allocator>( d_num_rows, d_memory_location );
+        d_cols        = allocate<gidx_t, std::allocator>( d_nnz, d_memory_location );
+        d_cols_loc    = allocate<lidx_t, std::allocator>( d_nnz, d_memory_location );
+        d_coeffs      = allocate<scalar_t, std::allocator>( d_nnz, d_memory_location );
 
-            d_nnz_per_row = allocate<lidx_t, std::allocator>( d_num_rows );
-            d_cols        = allocate<gidx_t, std::allocator>( d_nnz );
-            d_cols_loc    = allocate<lidx_t, std::allocator>( d_nnz );
-            d_coeffs      = allocate<scalar_t, std::allocator>( d_nnz );
-
-            // Fill cols and nnz based on local row extents and on/off diag status
-            lidx_t cgi = 0, cli = 0; // indices into global and local arrays of columns
-            lidx_t nnzFilled = 0;
-            for ( gidx_t i = 0; i < d_num_rows; ++i ) {
-                d_nnz_per_row[i] = 0;
-                for ( lidx_t j = 0; j < nnzPerRowAll[i]; ++j ) {
-                    auto col = cols[cgi++];
-                    if ( isColValid<Policy>(
-                             col, d_is_diag, outer.d_first_row, outer.d_last_row ) ) {
-                        d_nnz_per_row[i]++;
-                        d_cols[cli] = col;
-                        if ( d_is_diag ) {
-                            d_cols_loc[cli] = static_cast<lidx_t>( col - outer.d_first_row );
-                        } else {
-                            d_cols_loc[cli] = static_cast<lidx_t>(
-                                matParams->d_CommListRight->getLocalGhostID( col ) );
-                        }
-                        cli++;
-                        nnzFilled++;
+        // Fill cols and nnz based on local row extents and on/off diag status
+        lidx_t cgi = 0, cli = 0; // indices into global and local arrays of columns
+        gidx_t nnzFilled = 0;
+        for ( gidx_t i = 0; i < d_num_rows; ++i ) {
+            d_nnz_per_row[i] = 0;
+            for ( lidx_t j = 0; j < nnzPerRowAll[i]; ++j ) {
+                auto col = cols[cgi++];
+                if ( isColValid<Policy>( col, d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
+                    d_nnz_per_row[i]++;
+                    d_cols[cli] = col;
+                    if ( d_is_diag ) {
+                        d_cols_loc[cli] = static_cast<lidx_t>( col - outer.d_first_col );
+                    } else {
+                        d_cols_loc[cli] = static_cast<lidx_t>(
+                            matParams->d_CommListRight->getLocalGhostID( col ) );
                     }
+                    cli++;
+                    nnzFilled++;
                 }
             }
-            AMP_DEBUG_ASSERT( nnzFilled == d_nnz );
-
-        } else if ( ( d_memory_location == AMP::Utilities::MemoryType::managed ) ||
-                    ( d_memory_location == AMP::Utilities::MemoryType::device ) ) {
-            AMP_ERROR(
-                "CSRSerialMatrixData: managed and device memory support not implemented yet" );
-        } else {
-            AMP_ERROR( "CSRSerialMatrixData: memory space undefined" );
         }
+        // Ensure that the right number of nnz were actually filled in
+        AMP_DEBUG_ASSERT( nnzFilled == d_nnz );
     } else {
         AMP_ERROR( "Check supplied MatrixParameter object" );
     }
 
-    // allocate and fill row starts array, this happens regardless of block type and parameter
-    // object type
+    // Fill in row starts
     if ( !d_is_empty ) {
-        d_row_starts = allocate<lidx_t, std::allocator>( d_num_rows + 1 );
+        // scan nnz counts to get starting index of each row
         std::exclusive_scan( d_nnz_per_row, d_nnz_per_row + d_num_rows, d_row_starts, 0 );
         d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
     }
@@ -273,34 +313,16 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::~CSRSerialMatrixData()
     auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
     if ( matParams ) {
-        if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
-
-            if ( d_row_starts ) {
-                std::allocator<lidx_t> allocator_l;
-                allocator_l.deallocate( d_row_starts, d_num_rows + 1 );
-            }
-            if ( d_manage_cols ) {
-                std::allocator<gidx_t> allocator_g;
-                std::allocator<lidx_t> allocator_l;
-                allocator_g.deallocate( d_cols, d_nnz );
-                allocator_l.deallocate( d_cols_loc, d_nnz );
-            }
-
-            if ( d_manage_nnz ) {
-                std::allocator<lidx_t> allocator_l;
-                allocator_l.deallocate( d_nnz_per_row, d_num_rows );
-            }
-
-            if ( d_manage_coeffs ) {
-                std::allocator<scalar_t> allocator_s;
-                allocator_s.deallocate( d_coeffs, d_nnz );
-            }
-        } else if ( ( d_memory_location == AMP::Utilities::MemoryType::managed ) ||
-                    ( d_memory_location == AMP::Utilities::MemoryType::device ) ) {
-            AMP_ERROR(
-                "CSRSerialMatrixData: managed and device memory support not implemented yet" );
-        } else {
-            AMP_ERROR( "CSRSerialMatrixData: memory space undefined" );
+        deallocate<lidx_t, std::allocator>( &d_row_starts, d_num_rows + 1, d_memory_location );
+        if ( d_manage_cols ) {
+            deallocate<gidx_t, std::allocator>( &d_cols, d_nnz, d_memory_location );
+            deallocate<lidx_t, std::allocator>( &d_cols_loc, d_nnz, d_memory_location );
+        }
+        if ( d_manage_nnz ) {
+            deallocate<lidx_t, std::allocator>( &d_nnz_per_row, d_num_rows, d_memory_location );
+        }
+        if ( d_manage_coeffs ) {
+            deallocate<scalar_t, std::allocator>( &d_coeffs, d_nnz, d_memory_location );
         }
     }
 }
@@ -308,7 +330,76 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::~CSRSerialMatrixData()
 template<typename Policy>
 std::shared_ptr<MatrixData> CSRMatrixData<Policy>::cloneMatrixData() const
 {
-    AMP_ERROR( "Not implemented" );
+    std::shared_ptr<CSRMatrixData> cloneData;
+
+    cloneData = std::make_shared<CSRMatrixData<Policy>>();
+
+    cloneData->d_memory_location = d_memory_location;
+    cloneData->d_is_square       = d_is_square;
+    cloneData->d_first_row       = d_first_row;
+    cloneData->d_last_row        = d_last_row;
+    cloneData->d_first_col       = d_first_col;
+    cloneData->d_last_col        = d_last_col;
+    cloneData->d_nnz             = d_nnz;
+    cloneData->d_leftDOFManager  = d_leftDOFManager;
+    cloneData->d_rightDOFManager = d_rightDOFManager;
+    cloneData->d_pParameters     = d_pParameters;
+
+    cloneData->d_diag_matrix     = d_diag_matrix->cloneMatrixData( *cloneData );
+    cloneData->d_off_diag_matrix = d_off_diag_matrix->cloneMatrixData( *cloneData );
+
+    return cloneData;
+}
+
+template<typename Policy>
+std::shared_ptr<typename CSRMatrixData<Policy>::CSRSerialMatrixData>
+CSRMatrixData<Policy>::CSRSerialMatrixData::cloneMatrixData( const CSRMatrixData<Policy> &outer )
+{
+    std::shared_ptr<CSRSerialMatrixData> cloneData;
+
+    cloneData = std::make_shared<CSRSerialMatrixData>( outer );
+
+    cloneData->d_is_diag         = d_is_diag;
+    cloneData->d_is_empty        = d_is_empty;
+    cloneData->d_num_rows        = d_num_rows;
+    cloneData->d_nnz             = d_nnz;
+    cloneData->d_memory_location = d_memory_location;
+    cloneData->d_pParameters     = d_pParameters;
+
+    if ( !d_is_empty ) {
+        cloneData->d_manage_nnz    = true;
+        cloneData->d_manage_coeffs = true;
+        cloneData->d_manage_cols   = true;
+
+        cloneData->d_nnz_per_row =
+            allocate<lidx_t, std::allocator>( d_num_rows, d_memory_location );
+        cloneData->d_cols     = allocate<gidx_t, std::allocator>( d_nnz, d_memory_location );
+        cloneData->d_cols_loc = allocate<lidx_t, std::allocator>( d_nnz, d_memory_location );
+        cloneData->d_coeffs   = allocate<scalar_t, std::allocator>( d_nnz, d_memory_location );
+        cloneData->d_row_starts =
+            allocate<lidx_t, std::allocator>( d_num_rows + 1, d_memory_location );
+
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+            std::copy( d_nnz_per_row, d_nnz_per_row + d_num_rows, cloneData->d_nnz_per_row );
+            std::copy( d_row_starts, d_row_starts + d_num_rows + 1, cloneData->d_row_starts );
+            std::copy( d_cols, d_cols + d_nnz, cloneData->d_cols );
+            std::copy( d_cols_loc, d_cols_loc + d_nnz, cloneData->d_cols_loc );
+        } else {
+            AMP_ERROR( "Device memory copies not implemented as yet" );
+        }
+    } else {
+        cloneData->d_manage_nnz    = false;
+        cloneData->d_manage_coeffs = false;
+        cloneData->d_manage_cols   = false;
+
+        cloneData->d_nnz_per_row = nullptr;
+        cloneData->d_cols        = nullptr;
+        cloneData->d_cols_loc    = nullptr;
+        cloneData->d_coeffs      = nullptr;
+        cloneData->d_row_starts  = nullptr;
+    }
+
+    return cloneData;
 }
 
 template<typename Policy>

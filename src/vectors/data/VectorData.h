@@ -78,6 +78,16 @@ public: // Get basic information
      */
     virtual size_t getGhostSize() const;
 
+    /**\brief Check if any entries "owned" by other cores are stored on this core
+     *\return True if any entries "owned" by other cores are stored on this core
+     */
+    virtual bool hasGhosts( void ) { return ( d_Ghosts != nullptr ); }
+
+    /**\brief Gets vector of entries "owned" by other cores that are stored on this core
+     *\return Vector of entries "owned" by other cores that are stored on this core
+     */
+    virtual std::vector<double> &getGhosts() const { return *d_Ghosts; }
+
     //! Return integer number of data components
     virtual size_t getNumberOfComponents() const;
 
@@ -437,7 +447,6 @@ public:
      */
     virtual void dumpGhostedData( std::ostream &out, size_t offset = 0 ) const;
 
-
 public: // Virtual functions dealing with the update status
     /** \brief  Return the current update state of the Vector
      * \details  This returns the effective update state of the vector,
@@ -634,10 +643,6 @@ public: // Non virtual functions
      * \param  rhs Pointer to share update state with
      */
     void setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs );
-
-    bool hasGhosts( void ) { return ( d_Ghosts != nullptr ); }
-
-    std::vector<double> &getGhosts() const { return *d_Ghosts; }
 
     //! Get a unique id hash for the vector
     uint64_t getID() const;

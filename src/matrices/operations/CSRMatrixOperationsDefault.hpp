@@ -47,13 +47,18 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
     auto outData                = out->getVectorData();
     scalar_t *outDataBlock      = outData->getRawDataBlock<scalar_t>( 0 );
 
-    AMP_DEBUG_INSIST( AMP::Utilities::getMemoryType( cols_loc_d ) !=
-                          AMP::Utilities::MemoryType::device,
-                      "CSRMatrixOperationsDefault is implemented only for host memory" );
+    AMP_INSIST( AMP::Utilities::getMemoryType( cols_loc_d ) != AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    AMP_DEBUG_INSIST(
+    AMP_INSIST(
         1 == inData->numberOfDataBlocks(),
         "CSRMatrixOperationsDefault::mult only implemented for vectors with one data block" );
+
+    AMP_INSIST(
+        ghosts.size() == inData->getGhostSize(),
+        "CSRMatrixOperationsDefault::mult only implemented for vectors with accessible ghosts" );
+
+    AMP_ASSERT( inDataBlock && outDataBlock );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
 
@@ -78,6 +83,7 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
         PROFILE( "CSRMatrixOperationsDefault::mult (ghost)" );
         auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
         lidx_t offset                                  = 0;
+
         for ( lidx_t row = 0; row < nRows; ++row ) {
             const auto nCols = nnz_od[row];
             const auto cloc  = &cols_loc_od[offset];
@@ -90,11 +96,6 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
             offset += nCols;
         }
     }
-
-    // {
-    //     PROFILE( "CSRMult::consistent_set" );
-    //     out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    // }
 }
 
 template<typename Policy>
@@ -390,25 +391,24 @@ AMP::Scalar CSRMatrixOperationsDefault<Policy>::L1Norm( MatrixData const &A ) co
     AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    const auto ncols = csrData->numLocalColumns();
-    auto begin_col   = csrData->beginCol();
+    const auto ncols = csrData->numGlobalColumns();
     std::vector<scalar_t> col_norms( ncols, 0.0 );
 
     const size_t tnnz_d = static_cast<size_t>( csrData->numberOfNonZerosDiag() );
     for ( size_t i = 0; i < tnnz_d; ++i ) {
-        const auto col = cols_loc_d[i] - begin_col;
-        col_norms[col] += std::abs( coeffs_d[i] );
+        col_norms[cols_d[i]] += std::abs( coeffs_d[i] );
     }
 
     if ( csrData->hasOffDiag() ) {
         const size_t tnnz_od = static_cast<size_t>( csrData->numberOfNonZerosOffDiag() );
         auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
         for ( size_t i = 0; i < tnnz_od; ++i ) {
-            const auto col = cols_loc_od[i] - begin_col;
-            col_norms[col] += std::abs( coeffs_od[i] );
+            col_norms[cols_od[i]] += std::abs( coeffs_od[i] );
         }
     }
-
+    // Reduce partial column sums across all ranks to get full column norms
+    AMP_MPI comm = csrData->getComm();
+    comm.sumReduce<scalar_t>( col_norms.data(), ncols );
 
     return *std::max_element( col_norms.begin(), col_norms.end() );
 }

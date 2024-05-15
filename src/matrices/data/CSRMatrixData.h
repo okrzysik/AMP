@@ -213,8 +213,12 @@ private:
                                       std::shared_ptr<MatrixParametersBase> params,
                                       bool is_diag );
 
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy> &outer );
+
         //! Destructor
         virtual ~CSRSerialMatrixData();
+
+        std::shared_ptr<CSRSerialMatrixData> cloneMatrixData( const CSRMatrixData<Policy> &outer );
 
         void getRowByGlobalID( const size_t local_row,
                                std::vector<size_t> &cols,

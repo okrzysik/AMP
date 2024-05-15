@@ -26,7 +26,9 @@
 
 #include "ProfilerApp.h"
 
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 // This test is adapted from testMatVec.cpp and is set up to give some basic
@@ -36,9 +38,9 @@
 // Number of products to evaluate to average out timings
 #define NUM_PRODUCTS 50
 
-void matVecTestWithDOFs( AMP::UnitTest *ut,
-                         std::string type,
-                         std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
+size_t matVecTestWithDOFs( AMP::UnitTest *ut,
+                           std::string type,
+                           std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
     auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     // Create the vectors
@@ -58,8 +60,8 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     fillWithPseudoLaplacian( matrix, dofManager );
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
-    auto nGlobalRows = matrix->numGlobalRows();
-    auto nLocalRows  = matrix->numLocalRows();
+    size_t nGlobalRows = matrix->numGlobalRows();
+    size_t nLocalRows  = matrix->numLocalRows();
     AMP::pout << type << " Global rows: " << nGlobalRows << " Local rows: " << nLocalRows
               << std::endl;
 
@@ -70,7 +72,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 #endif
 
     auto x = matrix->getRightVector();
-    auto y = matrix->getRightVector();
+    auto y = matrix->getLeftVector();
 
     x->setToScalar( 1.0 );
     // this shouldn't be necessary, but evidently is!
@@ -91,9 +93,11 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
                   << std::endl;
         ut->failure( type + ": Fails 1 norm test with pseudo Laplacian" );
     }
+
+    return nGlobalRows;
 }
 
-void matVecTest( AMP::UnitTest *ut, std::string input_file )
+size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
 {
     std::string log_file = "output_testMatVecPerf";
     AMP::logOnlyNodeZero( log_file );
@@ -121,7 +125,7 @@ void matVecTest( AMP::UnitTest *ut, std::string input_file )
 #if defined( AMP_USE_PETSC )
     matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs );
 #endif
-    matVecTestWithDOFs( ut, "CSRMatrix", scalarDOFs );
+    return matVecTestWithDOFs( ut, "CSRMatrix", scalarDOFs );
 }
 
 int main( int argc, char *argv[] )
@@ -140,12 +144,18 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testMatVecPerf-1" );
     }
 
+    size_t nGlobal = 0;
     for ( auto &file : files )
-        matVecTest( &ut, file );
+        nGlobal = matVecTest( &ut, file );
 
     ut.report();
 
-    PROFILE_SAVE( "testMatVecPerf" );
+    // build unique profile name to avoid collisions
+    std::ostringstream ss;
+    ss << "testMatVecPerf_r" << std::setw( 3 ) << std::setfill( '0' )
+       << AMP::AMPManager::getCommWorld().getSize() << "_n" << std::setw( 9 ) << std::setfill( '0' )
+       << nGlobal;
+    PROFILE_SAVE( ss.str() );
 
     int num_failed = ut.NumFailGlobal();
 
