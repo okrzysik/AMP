@@ -153,8 +153,8 @@ void BDFIntegrator::integratorSpecificInitialize( void )
     auto params = std::make_shared<AMP::Solver::SolverStrategyParameters>();
     params->d_vectors.push_back( d_solution_vector );
 
-    if ( d_solver )
-        d_solver->initialize( params );
+    //    if ( d_solver )
+    //        d_solver->initialize( params );
 }
 
 void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_from_restart )
