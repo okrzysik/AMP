@@ -1,6 +1,6 @@
-
-#include "MechanicsLinearElement.h"
+#include "AMP/operators/mechanics/MechanicsLinearElement.h"
 #include "AMP/utils/Utilities.h"
+
 
 namespace AMP::Operator {
 

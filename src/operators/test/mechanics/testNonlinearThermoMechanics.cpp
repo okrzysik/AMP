@@ -51,7 +51,8 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsOperator->getVolumeOperator() );
-    auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
+        nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
@@ -63,7 +64,8 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearThermalVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
-    auto thermalTransportModel = nonlinearThermalVolumeOperator->getTransportModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel =
+        nonlinearThermalVolumeOperator->getTransportModel();
 
     // create a column operator object for nonlinear thermomechanics
     auto nonlinearThermoMechanicsOperator = std::make_shared<AMP::Operator::ColumnOperator>();
@@ -151,8 +153,11 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     // now construct the linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "testLinearMechanicsOperator" ), "key missing!" );
     auto linearMechanicsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testLinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( meshAdapter,
+                                                        "testLinearMechanicsOperator",
+                                                        input_db,
+                                                        mechanicsMaterialModel,
+                                                        nullptr ) );
 
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );

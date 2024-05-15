@@ -85,11 +85,11 @@ void RK4TimeIntegrator::setupVectors()
     /*
      * Set initial value of vectors to 0.
      */
-    d_new_solution->setToScalar( (double) 0.0 );
-    d_k1_vec->setToScalar( (double) 0.0 );
-    d_k2_vec->setToScalar( (double) 0.0 );
-    d_k3_vec->setToScalar( (double) 0.0 );
-    d_k4_vec->setToScalar( (double) 0.0 );
+    d_new_solution->zero();
+    d_k1_vec->zero();
+    d_k2_vec->zero();
+    d_k3_vec->zero();
+    d_k4_vec->zero();
 }
 
 int RK4TimeIntegrator::advanceSolution( const double dt,
@@ -103,21 +103,29 @@ int RK4TimeIntegrator::advanceSolution( const double dt,
 
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
+    if ( d_pSourceTerm )
+        d_k1_vec->add( *d_k1_vec, *d_pSourceTerm );
     // u* = un+k1*dt/2
     d_new_solution->axpy( dt / 2.0, *d_k1_vec, *d_solution_vector );
 
     // k2 = f(t+dt/2, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
+    if ( d_pSourceTerm )
+        d_k2_vec->add( *d_k2_vec, *d_pSourceTerm );
     // u* = un+k2*dt/2
     d_new_solution->axpy( dt / 2.0, *d_k2_vec, *d_solution_vector );
 
     // k3 = f(t+dt/2, u*)
     d_operator->apply( d_new_solution, d_k3_vec );
+    if ( d_pSourceTerm )
+        d_k3_vec->add( *d_k3_vec, *d_pSourceTerm );
     // u* = un+k3*dt
     d_new_solution->axpy( dt, *d_k3_vec, *d_solution_vector );
 
     // k4 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k4_vec );
+    if ( d_pSourceTerm )
+        d_k4_vec->add( *d_k4_vec, *d_pSourceTerm );
     // u_new = un+ dt*(k1+2*k2+2*k3+k4)/6
     d_k1_vec->add( *d_k1_vec, *d_k4_vec );
     d_k2_vec->add( *d_k2_vec, *d_k3_vec );
@@ -126,6 +134,10 @@ int RK4TimeIntegrator::advanceSolution( const double dt,
 
     d_new_solution->axpy( dt / 6.0, *d_k1_vec, *d_solution_vector );
     out->copyVector( d_new_solution );
+    d_k1_vec->zero();
+    d_k2_vec->zero();
+    d_k3_vec->zero();
+    d_k4_vec->zero();
 
     return ( 1 );
 }

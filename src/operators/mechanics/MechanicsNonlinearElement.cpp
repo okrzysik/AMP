@@ -1,6 +1,6 @@
-
-#include "MechanicsNonlinearElement.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearElement.h"
 #include "AMP/utils/Utilities.h"
+
 
 namespace AMP::Operator {
 

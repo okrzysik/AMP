@@ -140,10 +140,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     // Integrate Nuclear Source over Desnity * Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
+            meshAdapter, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();
@@ -154,9 +153,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
 
     // CREATE THE THERMAL BVP OPERATOR
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "DiffusionBVPOperator", input_db, transportModel );
+        meshAdapter, "DiffusionBVPOperator", input_db );
 
     auto diffusionOperator =
         std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );

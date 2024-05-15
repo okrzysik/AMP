@@ -12,27 +12,20 @@ namespace AMP::Geometry {
  * Constructor                                           *
  ********************************************************/
 Sphere::Sphere( std::shared_ptr<const AMP::Database> db )
+    : LogicalGeometry( 3, 3, { 4, 4, 4, 4, 2, 1 } )
 {
-    d_ids         = { 4, 4, 4, 4, 2, 1 };
-    d_isPeriodic  = { false, false, false };
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
-    auto range    = db->getVector<double>( "Range" );
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
+    auto range  = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
     d_r = range[0];
 }
-Sphere::Sphere( double r ) : LogicalGeometry(), d_r( r )
+Sphere::Sphere( double r ) : LogicalGeometry( 3, 3, { 4, 4, 4, 4, 2, 1 } ), d_r( r )
 {
-    d_ids         = { 4, 4, 4, 4, 2, 1 };
-    d_isPeriodic  = { false, false, false };
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
 }
 
 

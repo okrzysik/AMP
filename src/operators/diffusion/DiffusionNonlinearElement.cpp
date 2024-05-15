@@ -1,7 +1,8 @@
-#include "DiffusionNonlinearElement.h"
+#include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
 
 #include <map>
 #include <vector>
+
 
 namespace AMP::Operator {
 

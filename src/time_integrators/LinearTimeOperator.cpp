@@ -1,6 +1,6 @@
-#include "LinearTimeOperator.h"
+#include "AMP/time_integrators/LinearTimeOperator.h"
+#include "AMP/time_integrators/TimeOperatorParameters.h"
 #include "AMP/utils/Database.h"
-#include "TimeOperatorParameters.h"
 
 
 namespace AMP::TimeIntegrator {

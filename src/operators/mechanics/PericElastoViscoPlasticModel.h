@@ -1,12 +1,11 @@
-
 #ifndef included_AMP_PericElastoViscoPlasticModel
 #define included_AMP_PericElastoViscoPlasticModel
 
-#include "MechanicsMaterialModel.h"
+#include "AMP/operators/mechanics/MechanicsMaterialModel.h"
 
 #include <memory>
-
 #include <vector>
+
 
 namespace AMP::Operator {
 

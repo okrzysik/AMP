@@ -1,5 +1,4 @@
-
-#include "NavierStokesLSWFElement.h"
+#include "AMP/operators/flow/NavierStokesLSWFElement.h"
 #include "AMP/utils/Utilities.h"
 
 namespace AMP::Operator {

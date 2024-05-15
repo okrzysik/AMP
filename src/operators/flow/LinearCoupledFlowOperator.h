@@ -1,10 +1,11 @@
 #ifndef included_AMP_LinearCoupledFlowOperator
 #define included_AMP_LinearCoupledFlowOperator
 
-
+#include "AMP/operators/flow/LinearCoupledFlowOperatorParameters.h"
 #include "AMP/vectors/Vector.h"
-#include "LinearCoupledFlowOperatorParameters.h"
+
 #include <vector>
+
 
 namespace AMP::Operator {
 

@@ -189,11 +189,9 @@ static void flowTest( AMP::UnitTest *ut )
     // CREATE THE FLOW OPERATOR
     AMP_INSIST( input_db->keyExists( "FlowFrapconOperator" ),
                 "Key ''FlowFrapconOperator'' is missing!" );
-
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
     auto flowOperator = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "FlowFrapconOperator", input_db, flowtransportModel ) );
+            meshAdapter, "FlowFrapconOperator", input_db ) );
 
     auto inputVariable  = flowOperator->getInputVariable();
     auto outputVariable = flowOperator->getOutputVariable();

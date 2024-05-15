@@ -67,7 +67,8 @@ structuredMeshIterator::structuredMeshIterator( const BoxMesh::MeshElementIndex 
                                                 const AMP::Mesh::BoxMesh *mesh,
                                                 size_t pos )
     : d_checkBoundary( false ),
-      d_isPeriodic( mesh->d_isPeriodic ),
+      d_isPeriodic(
+          { mesh->d_surfaceId[1] == -1, mesh->d_surfaceId[3] == -1, mesh->d_surfaceId[5] == -1 } ),
       d_globalSize( mesh->d_globalSize ),
       d_first( first ),
       d_last( last ),
@@ -89,7 +90,8 @@ structuredMeshIterator::structuredMeshIterator(
     const AMP::Mesh::BoxMesh *mesh,
     size_t pos )
     : d_checkBoundary( false ),
-      d_isPeriodic( mesh->d_isPeriodic ),
+      d_isPeriodic(
+          { mesh->d_surfaceId[1] == -1, mesh->d_surfaceId[3] == -1, mesh->d_surfaceId[5] == -1 } ),
       d_globalSize( mesh->d_globalSize ),
       d_elements( std::move( elements ) ),
       d_mesh( mesh )

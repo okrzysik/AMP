@@ -1,4 +1,4 @@
-#include "DiffusionTransportTensorModel.h"
+#include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
 #include "AMP/utils/Database.h"
 
 #include <cmath>

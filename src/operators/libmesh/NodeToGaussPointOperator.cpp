@@ -1,8 +1,8 @@
-#include "NodeToGaussPointOperator.h"
+#include "AMP/operators/libmesh/NodeToGaussPointOperator.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
-#include "ProfilerApp.h"
 
+#include "ProfilerApp.h"
 
 // Libmesh headers
 DISABLE_WARNINGS
@@ -18,6 +18,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 #include <cstring>
+
 
 namespace AMP::Operator {
 

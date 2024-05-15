@@ -1,4 +1,4 @@
-#include "SolverStrategy.h"
+#include "AMP/solvers/SolverStrategy.h"
 #include "AMP/utils/Utilities.h"
 #include <numeric>
 

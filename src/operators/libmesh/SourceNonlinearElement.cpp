@@ -1,5 +1,6 @@
-#include "SourceNonlinearElement.h"
+#include "AMP/operators/libmesh/SourceNonlinearElement.h"
 #include "AMP/utils/Utilities.h"
+
 #include "ProfilerApp.h"
 
 // Libmesh headers

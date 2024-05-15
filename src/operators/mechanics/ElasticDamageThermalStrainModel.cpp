@@ -1,10 +1,9 @@
-
-#include "ElasticDamageThermalStrainModel.h"
+#include "AMP/operators/mechanics/ElasticDamageThermalStrainModel.h"
 #include "AMP/materials/Property.h"
-#include "IsotropicElasticModel.h"
-#include "MechanicsConstants.h"
-
+#include "AMP/operators/mechanics/IsotropicElasticModel.h"
+#include "AMP/operators/mechanics/MechanicsConstants.h"
 #include "AMP/utils/Utilities.h"
+
 
 namespace AMP::Operator {
 

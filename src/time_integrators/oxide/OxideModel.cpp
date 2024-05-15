@@ -1,4 +1,4 @@
-#include "OxideModel.h"
+#include "AMP/time_integrators/oxide/OxideModel.h"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/UtilityMacros.h"
 

@@ -60,7 +60,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     auto nonlinOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearMechanicsOperator", input_db ) );
-    auto elementPhysicsModel = nonlinOperator->getMaterialModel();
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
+        nonlinOperator->getMaterialModel();
 
     auto linOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(

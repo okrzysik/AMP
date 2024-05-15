@@ -1,10 +1,10 @@
 #ifndef included_AMP_MassMatrixCorrection
 #define included_AMP_MassMatrixCorrection
 
-#include "BoundaryOperator.h"
-#include "DirichletMatrixCorrectionParameters.h"
-
+#include "AMP/operators/boundary/BoundaryOperator.h"
+#include "AMP/operators/boundary/DirichletMatrixCorrectionParameters.h"
 #include "AMP/vectors/Variable.h"
+
 
 namespace AMP::Operator {
 

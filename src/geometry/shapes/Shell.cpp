@@ -12,28 +12,22 @@ namespace AMP::Geometry {
  * Constructor                                           *
  ********************************************************/
 Shell::Shell( std::shared_ptr<const AMP::Database> db )
+    : LogicalGeometry( 3, 3, { -1, -1, -2, -2, 3, 4 } )
 {
-    d_ids         = { -1, -1, -1, -1, 3, 4 };
-    d_isPeriodic  = { true, false, false };
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
-    auto range    = db->getVector<double>( "Range" );
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
+    auto range  = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 2u, "Range must be an array of length 2" );
     d_r_min = range[0];
     d_r_max = range[1];
 }
-Shell::Shell( double r_min, double r_max ) : LogicalGeometry(), d_r_min( r_min ), d_r_max( r_max )
+Shell::Shell( double r_min, double r_max )
+    : LogicalGeometry( 3, 3, { -1, -1, -2, -2, 3, 4 } ), d_r_min( r_min ), d_r_max( r_max )
 {
-    d_ids         = { -1, -1, -1, -1, 3, 4 };
-    d_isPeriodic  = { true, false, false };
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
+    d_offset[0] = 0;
+    d_offset[1] = 0;
+    d_offset[2] = 0;
 }
 
 

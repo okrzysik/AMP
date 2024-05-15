@@ -1,13 +1,9 @@
 #ifndef included_AMP_MechanicsElement
 #define included_AMP_MechanicsElement
 
-#include <vector>
-
-#include <memory>
-
 // AMP headers
 #include "AMP/operators/ElementOperation.h"
-#include "MechanicsMaterialModel.h"
+#include "AMP/operators/mechanics/MechanicsMaterialModel.h"
 
 // Libmesh headers
 DISABLE_WARNINGS
@@ -16,6 +12,9 @@ DISABLE_WARNINGS
 #include "libmesh/fe_type.h"
 #include "libmesh/quadrature.h"
 ENABLE_WARNINGS
+
+#include <memory>
+#include <vector>
 
 
 namespace AMP::Operator {

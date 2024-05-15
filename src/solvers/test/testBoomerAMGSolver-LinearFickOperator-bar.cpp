@@ -22,7 +22,6 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-
 #include "testSolverHelpers.h"
 
 #include <fstream>

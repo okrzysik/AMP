@@ -169,10 +169,9 @@ void helperBuildPointLoadRHSForPelletMechanics(
     for ( unsigned int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++ ) {
         auto currOp      = nonlinearColumnOperator->getOperator( id );
         auto meshAdapter = currOp->getMesh();
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
-        auto loadOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+        auto loadOp      = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "PointLoad", global_input_db, dummyModel ) );
+                meshAdapter, "PointLoad", global_input_db ) );
         loadOp->setVariable( currOp->getOutputVariable() );
         loadOp->apply( nullVec, rhsVec );
     } // end for id

@@ -1,11 +1,10 @@
-
-#include "UpdatedLagrangianUtils.h"
-#include <algorithm>
-
-#include <cmath>
-
+#include "AMP/operators/mechanics/UpdatedLagrangianUtils.h"
 #include "AMP/utils/Utilities.h"
+
+#include <algorithm>
+#include <cmath>
 #include <iostream>
+
 
 namespace AMP::Operator {
 

@@ -6,11 +6,11 @@
 #include "AMP/operators/ManufacturedSourceModel2.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/libmesh/MassDensityModel.h"
-#include <memory>
 
 #include "ProfilerApp.h"
 
 #include <cstring>
+#include <memory>
 
 
 namespace AMP::Operator {

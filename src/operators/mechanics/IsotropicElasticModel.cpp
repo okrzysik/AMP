@@ -1,10 +1,10 @@
-
-#include "IsotropicElasticModel.h"
+#include "AMP/operators/mechanics/IsotropicElasticModel.h"
 #include "AMP/materials/Property.h"
-#include "MechanicsConstants.h"
-
+#include "AMP/operators/mechanics/MechanicsConstants.h"
 #include "AMP/utils/Utilities.h"
+
 #include <iostream>
+
 
 namespace AMP::Operator {
 

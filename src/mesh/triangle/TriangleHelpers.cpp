@@ -761,7 +761,7 @@ static inline std::vector<Point> getSurfacePoints( const AMP::Geometry::Geometry
             double x = ( 0.5 + i ) / (double) n;
             for ( int j = 0; j < n; j++ ) {
                 double y = ( 0.5 + j ) / (double) n;
-                Point s  = AMP::Geometry::GeometryHelpers::map_logical_sphere_surface( r, x, y );
+                Point s  = AMP::Geometry::GeometryHelpers::map_logical_sphere_surface( 1, r, x, y );
                 auto dir = normalize( s );
                 double d = geom.distance( x0, dir );
                 AMP_ASSERT( d < 0 );

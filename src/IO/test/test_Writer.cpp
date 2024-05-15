@@ -3,6 +3,7 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/geometry/LogicalGeometry.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -48,6 +49,31 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( std::shared_ptr<AMP::Mesh::Me
         DOF->getDOFs( elem.globalID(), dofs );
         AMP_ASSERT( dofs.size() == 1 );
         vec->addLocalValuesByGlobalID( 1, &dofs[0], &volume );
+    }
+    return vec;
+}
+
+
+// Calculate the logical coordinate of each vertex
+AMP::LinearAlgebra::Vector::shared_ptr calcLogical( std::shared_ptr<AMP::Mesh::Mesh> mesh )
+{
+    auto geom = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( mesh->getGeometry() );
+    if ( !geom )
+        return nullptr;
+    auto DOF = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 0, mesh->getDim(), false );
+    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "logical" );
+    auto vec = AMP::LinearAlgebra::createVector( DOF, var, true );
+    vec->zero();
+    std::vector<size_t> dofs;
+    uint8_t ndim = mesh->getDim();
+    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
+        auto x      = elem.coord();
+        auto y      = geom->logical( x );
+        double p[3] = { y.x(), y.y(), y.z() };
+        DOF->getDOFs( elem.globalID(), dofs );
+        AMP_ASSERT( dofs.size() == ndim );
+        vec->addLocalValuesByGlobalID( ndim, &dofs[0], p );
     }
     return vec;
 }
@@ -357,6 +383,10 @@ void testWriterMesh( AMP::UnitTest &ut,
                     }
                 }
             }
+            // Store the logical coordinate
+            auto logical = calcLogical( mesh2 );
+            if ( logical && properties.registerVectorWithMesh )
+                writer->registerVector( logical, mesh2, AMP::Mesh::GeomType::Vertex, "logical" );
         }
     }
 

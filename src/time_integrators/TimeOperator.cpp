@@ -1,7 +1,7 @@
-#include "TimeOperator.h"
+#include "AMP/time_integrators/TimeOperator.h"
+#include "AMP/time_integrators/TimeOperatorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/vectors/MultiVector.h"
-#include "TimeOperatorParameters.h"
 
 
 namespace AMP::TimeIntegrator {
@@ -21,7 +21,6 @@ TimeOperator::TimeOperator( std::shared_ptr<const AMP::Operator::OperatorParamet
     d_pRhsOperator  = params->d_pRhsOperator;
     d_pMassOperator = params->d_pMassOperator;
 
-    d_pSourceTerm        = params->d_pSourceTerm;
     d_pAlgebraicVariable = params->d_pAlgebraicVariable;
 
     reset( in_params );
@@ -125,10 +124,6 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "Output of M * yp-fRhs(y,t) in TimeOperator" << std::endl;
         AMP::pout << r << std::endl;
-    }
-
-    if ( d_pSourceTerm ) {
-        r->axpy( d_dGamma, *d_pSourceTerm, *r );
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {

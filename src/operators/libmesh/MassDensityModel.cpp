@@ -1,4 +1,4 @@
-#include "MassDensityModel.h"
+#include "AMP/operators/libmesh/MassDensityModel.h"
 #include "AMP/materials/CylindricallySymmetric.h"
 #include "AMP/materials/ScalarProperty.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"

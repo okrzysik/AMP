@@ -34,6 +34,14 @@ static unsigned int nextLocalMeshID = 1;
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+Mesh::Mesh()
+    : d_geometry( nullptr ),
+      GeomDim( GeomType::Vertex ),
+      PhysicalDim( 0 ),
+      d_max_gcw( 0 ),
+      d_meshID( 0 )
+{
+}
 Mesh::Mesh( std::shared_ptr<const MeshParameters> params )
 {
     // Set the base properties

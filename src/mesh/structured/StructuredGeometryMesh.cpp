@@ -13,10 +13,6 @@ namespace AMP::Mesh {
 StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParameters> params )
     : BoxMesh( params ), d_pos_hash( 0 )
 {
-    // Basic defaults
-    d_globalSize.fill( 1 );
-    d_isPeriodic.fill( false );
-    d_numBlocks.fill( 1 );
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );
     auto db = params->getDatabase();
@@ -37,16 +33,11 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     AMP_ASSERT( PhysicalDim == db->getWithDefault<int>( "dim", PhysicalDim ) );
     auto size = d_geometry2->getLogicalGridSize( db->getVector<size_t>( "Size" ) );
     AMP_ASSERT( size.ndim() == static_cast<size_t>( GeomDim ) );
-    for ( size_t d = 0; d < size.size(); d++ )
-        d_globalSize[d] = size[d];
-    auto isPeriodic = d_geometry2->getPeriodicDim();
-    for ( size_t d = 0; d < isPeriodic.size(); d++ )
-        d_isPeriodic[d] = isPeriodic[d];
-    auto surfaceIds = d_geometry2->getLogicalSurfaceIds();
-    for ( size_t d = 0; d < surfaceIds.size(); d++ )
-        d_surfaceId[d] = surfaceIds[d];
+    std::array<int, 3> size2 = { (int) size[0], (int) size[1], (int) size[2] };
+    auto surfaceIds          = d_geometry2->getLogicalSurfaceIds();
     // Initialize the logical mesh
-    BoxMesh::initialize( db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", {} ) );
+    BoxMesh::initialize(
+        size2, surfaceIds, db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", {} ) );
     BoxMesh::finalize( db->getString( "MeshName" ), getDisplacement( db ) );
 }
 StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &mesh )

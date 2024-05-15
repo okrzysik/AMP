@@ -1,10 +1,10 @@
-
 #ifndef included_AMP_IsotropicElasticModel
 #define included_AMP_IsotropicElasticModel
 
-#include "MechanicsMaterialModel.h"
+#include "AMP/operators/mechanics/MechanicsMaterialModel.h"
 
 #include <memory>
+
 
 namespace AMP::Operator {
 

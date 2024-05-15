@@ -3,6 +3,7 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/structured/BoxMesh.h"
+#include "AMP/mesh/testHelpers/meshGenerators.h"
 #include "AMP/mesh/testHelpers/meshTests.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -11,8 +12,6 @@
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
-
-#include "meshGenerators.h"
 
 
 // Function to test the creation/destruction of a mesh with the mesh generators

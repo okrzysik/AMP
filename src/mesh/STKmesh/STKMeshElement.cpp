@@ -188,18 +188,18 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
 /****************************************************************
  * Function to get the neighboring elements                      *
  ****************************************************************/
-std::vector<std::shared_ptr<MeshElement>> STKMeshElement::getNeighbors() const
+std::vector<std::unique_ptr<MeshElement>> STKMeshElement::getNeighbors() const
 {
-    std::vector<std::shared_ptr<MeshElement>> neighbors( 0 );
+    std::vector<std::unique_ptr<MeshElement>> neighbors( 0 );
     if ( d_globalID.type() == GeomType::Vertex ) {
         // Return the neighbors of the current node
         std::vector<stk::mesh::Entity *> neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
-        neighbors.resize( neighbor_nodes.size(), std::shared_ptr<MeshElement>() );
+        neighbors.resize( neighbor_nodes.size(), std::unique_ptr<MeshElement>() );
         for ( size_t i = 0; i < neighbor_nodes.size(); i++ ) {
             // There are no NULL neighbors
-            std::shared_ptr<STKMeshElement> neighbor(
+            std::unique_ptr<STKMeshElement> neighbor(
                 new STKMeshElement( d_dim, neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
-            neighbors[i] = neighbor;
+            neighbors[i] = std::move( neighbor );
         }
     } else if ( (int) d_globalID.type() == d_dim ) {
         // Return the neighbors of the current element
@@ -230,9 +230,9 @@ std::vector<std::shared_ptr<MeshElement>> STKMeshElement::getNeighbors() const
         neighbors.resize( adjacent_entities.size() );
         for ( size_t i = 0; i < neighbors.size(); i++ ) {
             stk::mesh::Entity *neighbor_elem = adjacent_entities[i];
-            std::shared_ptr<STKMeshElement> neighbor(
+            std::unique_ptr<STKMeshElement> neighbor(
                 new STKMeshElement( d_dim, neighbor_elem, d_rank, d_meshID, d_mesh ) );
-            neighbors[i] = neighbor;
+            neighbors[i] = std::move( neighbor );
         }
     } else {
         // We constructed a temporary STKmesh object and do not have access to the neighbor info

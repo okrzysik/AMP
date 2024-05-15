@@ -1,6 +1,4 @@
-
-#include "MassLinearFEOperator.h"
-
+#include "AMP/operators/libmesh/MassLinearFEOperator.h"
 #include "AMP/utils/Utilities.h"
 
 
