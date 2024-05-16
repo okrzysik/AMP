@@ -95,8 +95,8 @@ BoxMesh::BoxMesh( const BoxMesh &mesh )
       d_size( mesh.d_size ),
       d_globalSize( mesh.d_globalSize ),
       d_numBlocks( mesh.d_numBlocks ),
-      d_startIndex( mesh.d_startIndex ),
-      d_endIndex( mesh.d_endIndex ),
+      d_startIndex{ mesh.d_startIndex[0], mesh.d_startIndex[1], mesh.d_startIndex[2] },
+      d_endIndex{ mesh.d_endIndex[0], mesh.d_endIndex[1], mesh.d_endIndex[2] },
       d_localIndex( mesh.d_localIndex ),
       d_indexSize( mesh.d_indexSize ),
       d_surfaceId( mesh.d_surfaceId )
