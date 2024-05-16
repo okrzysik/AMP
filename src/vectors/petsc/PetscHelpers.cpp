@@ -7,14 +7,14 @@
 #include "petscsys.h"
 #include "petscvec.h"
 
-#if PETSC_VERSION_LT( 3, 7, 5 )
-    #error AMP only supports PETSc 3.7.5 or greater
+#if PETSC_VERSION_LT( 3, 19, 0 )
+    #error AMP only supports PETSc 3.19.0 or greater
 #endif
 
-#if 0
-/* map from NormType to IDs used to cache norm values, 1_AND_2 is excluded */
-extern PetscInt
-    NormIds[4];
+#ifdef __INTEL_LLVM_COMPILER
+extern "C" {
+PetscInt NormIds[7];
+}
 #endif
 
 namespace PETSC {

@@ -87,11 +87,13 @@ IF ( NOT ONLY_BUILD_DOCS )
     MESSAGE("  Libraries: ${TPL_LIBRARIES}")
     MESSAGE("  CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
     MESSAGE("  Running with ${NUMBER_OF_GPUS} GPUs")
+ELSE()
+    INCLUDE( "cmake/docs_only.cmake" )
 ENDIF()
 
 
 # Load a dummy timer if one was not include
-IF ( NOT DEFINED TIMER_INCLUDE )
+IF ( NOT DEFINED TIMER_INCLUDE AND NOT ONLY_BUILD_DOCS )
     INCLUDE( "${TPL_DIRECTORY}/cmake/FindTimer.cmake" )
     CONFIGURE_TIMER( FALSE "${${PROJ}_INSTALL_DIR}/include" TRUE )
     SET( TPL_INCLUDE_DIRS ${TPL_INCLUDE_DIRS} ${TIMER_INCLUDE} )
@@ -120,9 +122,11 @@ INCLUDE( CTest )
 
 
 # Configure AMP (all external libraries must be configured first)
-INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
-CONFIGURE_AMP()
-CONFIGURE_LINE_COVERAGE()
+IF ( NOT ONLY_BUILD_DOCS )
+    INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
+    CONFIGURE_AMP()
+    CONFIGURE_LINE_COVERAGE()
+ENDIF()
 
 
 # Create the target for documentation
@@ -155,7 +159,9 @@ ENDIF()
 
 
 # Create custom targets for distclean
-ADD_DISTCLEAN( src ampdir AMP compile_commands.json AMP-Data.tar.gz tpl-build tpl-builder )
+IF ( NOT ONLY_BUILD_DOCS )
+    ADD_DISTCLEAN( src ampdir AMP compile_commands.json AMP-Data.tar.gz tpl-build tpl-builder )
+ENDIF()
 
 
 # Write the version info
@@ -197,46 +203,50 @@ ENDIF()
 
 
 # Add the cppcheck tests
-SET( CPPCHECK_TIMEOUT 700 )
-SET( CPPCHECK_INCLUDE "${TIMER_INCLUDE}" "${${PROJ}_INSTALL_DIR}/include" )
-SET( CPPCHECK_IGNORE
-    "IO/test/test_HDF5.cpp"                 # Causes cppcheck 2.6 to segfault
-    "utils/DelaunayTessellation.cpp"        # Very slow
-    "${CMAKE_BINARY_DIR}/src/graphics/getLines/moc_mainwindow.cpp" ) # Generated file
-SET( CPPCHECK_USE_JSON TRUE )
-FIND_PACKAGE( Cppcheck )
+IF ( NOT ONLY_BUILD_DOCS )
+    SET( CPPCHECK_TIMEOUT 700 )
+    SET( CPPCHECK_INCLUDE "${TIMER_INCLUDE}" "${${PROJ}_INSTALL_DIR}/include" )
+    SET( CPPCHECK_IGNORE
+        "IO/test/test_HDF5.cpp"                 # Causes cppcheck 2.6 to segfault
+        "utils/DelaunayTessellation.cpp"        # Very slow
+        "${CMAKE_BINARY_DIR}/src/graphics/getLines/moc_mainwindow.cpp" ) # Generated file
+    SET( CPPCHECK_USE_JSON TRUE )
+    FIND_PACKAGE( Cppcheck )
+ENDIF()
 
 
 # Add the cppclean tests
-SET( CPPCLEAN_OPTIONS )
-SET( CPPCLEAN_EXCLUDE 
-    libmeshGenerators.h meshGenerators.h meshTests.h
-    DOFManager_tests.h test_Discretization.h
-    Vector.h VectorDataIterator.h PetscVector.h NativePetscVector.inline.h
-    Material.h
-)
-SET( CPPCLEAN_SUPPRESSIONS 
-    ".inline.h' does not need to be #included"
-    "tmpl.h' does not need to be #included"
-    ".I' does not need to be #included"
-    "'ProfilerApp.h' does not need to be #included"
-    "'Utilities.h' does not need to be #included"
-    "'UtilityMacros.h' does not need to be #included"
-    "'utils/Counter.h' does not need to be #included"
-    "'libmeshGenerators.h' does not need to be #included"
-    "should #include header file '.*/src/.*'"
-)
-SET( CPPCLEAN_UNNECESSARY_INCLUDE 1 )
-SET( CPPCLEAN_EXTRA_INCLUDE 1 )
-SET( CPPCLEAN_SHOULD_INCLUDE 1 )
-SET( CPPCLEAN_INCLUDE_NOT_FOUND 1 )
-SET( CPPCLEAN_FUN_NOT_FOUND 0 )
-SET( CPPCLEAN_DECLARED 0 )
-SET( CPPCLEAN_STATIC 0 )
-SET( CPPCLEAN_UNUSED_VARIABLE 0 )
-SET( CPPCLEAN_UNKNOWN 1 )
-SET( CPPCLEAN_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}" )
-FIND_PACKAGE( Cppclean )
+IF ( NOT ONLY_BUILD_DOCS )
+    SET( CPPCLEAN_OPTIONS )
+    SET( CPPCLEAN_EXCLUDE 
+        libmeshGenerators.h meshGenerators.h meshTests.h
+        DOFManager_tests.h test_Discretization.h
+        Vector.h VectorDataIterator.h PetscVector.h NativePetscVector.inline.h
+        Material.h
+    )
+    SET( CPPCLEAN_SUPPRESSIONS 
+        ".inline.h' does not need to be #included"
+        "tmpl.h' does not need to be #included"
+        ".I' does not need to be #included"
+        "'ProfilerApp.h' does not need to be #included"
+        "'Utilities.h' does not need to be #included"
+        "'UtilityMacros.h' does not need to be #included"
+        "'utils/Counter.h' does not need to be #included"
+        "'libmeshGenerators.h' does not need to be #included"
+        "should #include header file '.*/src/.*'"
+    )
+    SET( CPPCLEAN_UNNECESSARY_INCLUDE 1 )
+    SET( CPPCLEAN_EXTRA_INCLUDE 1 )
+    SET( CPPCLEAN_SHOULD_INCLUDE 1 )
+    SET( CPPCLEAN_INCLUDE_NOT_FOUND 1 )
+    SET( CPPCLEAN_FUN_NOT_FOUND 0 )
+    SET( CPPCLEAN_DECLARED 0 )
+    SET( CPPCLEAN_STATIC 0 )
+    SET( CPPCLEAN_UNUSED_VARIABLE 0 )
+    SET( CPPCLEAN_UNKNOWN 1 )
+    SET( CPPCLEAN_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}" )
+    FIND_PACKAGE( Cppclean )
+ENDIF()
 
 
 # Install the documentation

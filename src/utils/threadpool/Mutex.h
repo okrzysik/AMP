@@ -24,7 +24,7 @@ class AMP_MPI; // Forward decleration of AMP_MPI
 class Mutex
 {
 public:
-    //! Empty constructor (equivilent to Mutex(false) )
+    //! Empty constructor (equivalent to Mutex(false) )
     Mutex();
     /** Default constructor
      * \param recursive     If set to true a thread may repeated lock a mutex.
