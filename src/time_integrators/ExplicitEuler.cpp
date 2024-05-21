@@ -146,13 +146,6 @@ bool ExplicitEuler::checkNewSolution()
      * (proportional to the size of d_corrector) against a specified
      * tolerance.  For now, accept everything.
      */
-    if ( ( d_iDebugPrintInfoLevel > 0 ) && retcode ) {
-        AMP::pout << "\n++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-        AMP::pout << "End of timestep # " << d_integrator_step << std::endl;
-        AMP::pout << "Advance solution past " << d_current_time << std::endl;
-        AMP::pout << "++++++++++++++++++++++++++++++++++++++++++++++++\n" << std::endl;
-    }
-
     return ( retcode );
 }
 
@@ -172,7 +165,7 @@ void ExplicitEuler::updateSolution()
     if ( d_iDebugPrintInfoLevel > 0 ) {
 
         AMP::pout << "\n++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-        AMP::pout << "End of timestep # " << d_integrator_step - 1 << std::endl;
+        AMP::pout << "End of timestep # " << d_integrator_step << std::endl;
         AMP::pout << "Simulation time is " << d_current_time << std::endl;
         AMP::pout << "++++++++++++++++++++++++++++++++++++++++++++++++\n" << std::endl;
     }

@@ -39,6 +39,7 @@ void testIntegrator( const std::string &name,
                      double ans,
                      AMP::UnitTest &ut )
 {
+    AMP::pout << "Testing " << name << " with " << test << " operator" << std::endl;
     // Create the time integrator
     auto var            = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
     auto solution       = AMP::LinearAlgebra::createSimpleVector<double>( 1, var, AMP_COMM_WORLD );
@@ -54,20 +55,18 @@ void testIntegrator( const std::string &name,
     timeIntegrator->setInitialDt( 0.1 );
     while ( T < finalTime ) {
         timeIntegrator->advanceSolution( dt, T == 0, solution, x );
-        bool good_solution = timeIntegrator->checkNewSolution();
-        if ( good_solution ) {
+        if ( timeIntegrator->checkNewSolution() ) {
             timeIntegrator->updateSolution();
             solution->copyVector( x );
         } else {
             AMP_ERROR( "Solution didn't converge" );
         }
-        timeIntegrator->setCurrentTime( T );
         T += dt;
     }
 
     // Check the answer
     double ans2 = static_cast<double>( solution->max() );
-    if ( fabs( ans2 - ans ) < 1e-14 )
+    if ( AMP::Utilities::approx_equal( ans2, ans, 1e-12 ) )
         ut.passes( name + " - " + test );
     else
         ut.failure( AMP::Utilities::stringf( "%s - %s (%f)", name.data(), test.data(), ans2 ) );
@@ -87,39 +86,16 @@ void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
         db->putScalar<std::string>( "solver_name", "Solver" );
         db->putScalar<std::string>( "timestep_selection_strategy", "constant" );
         db->putScalar<bool>( "use_predictor", false );
-#if 0
         auto solver_db = AMP::Database::create( "name",
-                                                "NKASolver",
+                                                "CGSolver",
                                                 "print_info_level",
-                                                1,
+                                                2,
                                                 "max_iterations",
-                                                10,
-                                                "max_vectors",
-                                                5,
-                                                "angle_tolerance",
-                                                0.1,
+                                                100,
                                                 "absolute_tolerance",
                                                 1.0e-12,
                                                 "relative_tolerance",
-                                                1.0e-12,
-                                                "step_tolerance",
-                                                1.0e-14 );
-#else
-        auto solver_db = AMP::Database::create( "name",
-                                                "PetscSNESSolver",
-                                                "print_info_level",
-                                                1,
-                                                "max_iterations",
-                                                10,
-                                                "linear_solver_type",
-                                                "fgmres",
-                                                "absolute_tolerance",
-                                                1.0e-12,
-                                                "relative_tolerance",
-                                                1.0e-12,
-                                                "step_tolerance",
-                                                1.0e-14 );
-#endif
+                                                1.0e-12 );
         db->putDatabase( "Solver", std::move( solver_db ) );
     }
 }
