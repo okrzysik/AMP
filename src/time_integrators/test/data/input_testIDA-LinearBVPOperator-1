@@ -183,19 +183,9 @@ IDATimeIntegrator{
                              createLinearTimeOperatorInternally=TRUE
                              CallCalcIC=TRUE
   Preconditioner{
-     print_info_level = 0
-     max_iterations = 1
-     max_error = 1e-10
-     problem_symmetric =TRUE
-     smoother_pre_or_post = "both"
-     smoother_params{
-        relaxation_type = "Gauss-Seidel"
-        relaxation_sweeps = 2
-     }
-     coarse_max_size = 100
-//        print_info_level = 3
-//        max_iterations = 10
-//        max_error = 1e-10
+        print_info_level = 0
+        max_iterations = 10
+        max_error = 1e-10
    }
 }
 
