@@ -47,6 +47,85 @@ static bool addSurfacePoints( const AMP::Geometry::Geometry &geom,
 }
 
 
+// Generate points in a box
+static std::vector<Point>
+generatePoints( size_t N, int ndim, const Point &lb, const Point &ub, size_t seed = 0 )
+{
+    std::vector<Point> p( N, Point( ndim, { 0, 0, 0 } ) );
+    std::mt19937 gen;
+    if ( seed == 0 ) {
+        std::random_device rd;
+        gen = std::mt19937( rd() );
+    } else {
+        gen = std::mt19937( seed );
+    }
+    for ( int d = 0; d < ndim; d++ ) {
+        std::uniform_real_distribution<> dis( lb[d], ub[d] );
+        for ( size_t i = 0; i < N; i++ )
+            p[i][d] = dis( gen );
+    }
+    return p;
+}
+
+
+// Generate random points in the box containing the geometry
+static std::vector<Point> generatePoints( size_t N, const AMP::Geometry::Geometry &geom )
+{
+    auto logicalGeom = dynamic_cast<const AMP::Geometry::LogicalGeometry *>( &geom );
+    const auto ndim  = geom.getDim();
+    auto [lb, ub]    = geom.box();
+    if ( logicalGeom ) {
+        if ( ndim == logicalGeom->getLogicalDim() ) {
+            // All physical points should map
+            return generatePoints( N, ndim, lb, ub );
+        } else {
+            // Not all physical points can map, choose points in the logical domain
+            auto p = generatePoints( N, logicalGeom->getLogicalDim(), { 0, 0, 0 }, { 1, 1, 1 } );
+            for ( size_t i = 0; i < N; i++ )
+                p[i] = logicalGeom->physical( p[i] );
+            return p;
+        }
+    }
+    return generatePoints( N, ndim, lb, ub );
+}
+
+
+// Generate points inside the geometry
+static std::vector<Point> generateInteriorPoints( size_t N, const AMP::Geometry::Geometry &geom )
+{
+    const auto ndim  = geom.getDim();
+    auto [lb, ub]    = geom.box();
+    auto logicalGeom = dynamic_cast<const AMP::Geometry::LogicalGeometry *>( &geom );
+    if ( ndim == static_cast<int>( geom.getGeomType() ) ) {
+        // Estimate the centroid by randomly sampling space and test if it is inside the object
+        // Note we use a non-random seed to ensure test doesn't fail periodically due to tolerances
+        std::vector<Point> p;
+        size_t seed = 56871;
+        while ( p.size() < N ) {
+            auto p2 = generatePoints( N, ndim, lb, ub, seed );
+            for ( size_t i = 0; i < N && p.size() < N; i++ ) {
+                if ( geom.inside( p2[i] ) )
+                    p.push_back( p2[i] );
+            }
+            seed++;
+        }
+        return p;
+    } else if ( logicalGeom ) {
+        // Generate points in the logical domain and map to physical
+        // Note this is less reliable than the first method because it assume the
+        //    the mapping from logical to physical maintains the approximate same volume
+        auto p = generatePoints( N, logicalGeom->getLogicalDim(), { 0, 0, 0 }, { 1, 1, 1 } );
+        for ( size_t i = 0; i < p.size(); i++ )
+            p[i] = logicalGeom->physical( p[i] );
+        return p;
+    } else {
+        // Unable to generate points
+        AMP_WARN_ONCE( "Unable to generate points in geometry (not finished): " + geom.getName() );
+    }
+    return {};
+}
+
+
 // Run logical geometry specific tests
 static bool testLogicalGeometry( const AMP::Geometry::LogicalGeometry &geom, AMP::UnitTest &ut )
 {
@@ -55,29 +134,23 @@ static bool testLogicalGeometry( const AMP::Geometry::LogicalGeometry &geom, AMP
     int ndim  = geom.getDim();
     // Test logical/physical transformations
     PROFILE2( "testGeometry-logical " + name );
-    auto [lb, ub] = geom.box();
-    std::mt19937 gen( 54612 );
-    std::uniform_real_distribution<> dis[3];
-    for ( int d = 0; d < geom.getDim(); d++ ) {
-        double dx = ub[d] - lb[d];
-        dis[d]    = std::uniform_real_distribution<>( lb[d] - 0.2 * dx, ub[d] + 0.2 * dx );
-    }
-    auto p     = lb;
     size_t N   = 10000;
+    auto p     = generatePoints( N, geom );
     bool pass2 = true;
     for ( size_t i = 0; i < N; i++ ) {
-        for ( int d = 0; d < geom.getDim(); d++ )
-            p[d] = dis[d]( gen );
-        auto p2 = geom.logical( p );
+        auto p2 = geom.logical( p[i] );
         auto p3 = geom.physical( p2 );
-        for ( int d = 0; d < ndim; d++ )
-            pass2 = pass2 && fabs( p[d] - p3[d] ) < 1e-6;
+        for ( int d = 0; d < ndim; d++ ) {
+            pass2 = pass2 && fabs( p[i][d] - p3[d] ) < 1e-6;
+            if ( fabs( p[i][d] - p3[d] ) > 1e-6 ) {
+                geom.logical( p[i] );
+                geom.physical( p2 );
+            }
+        }
     }
     pass = pass && pass2;
-    if ( !pass2 && geom.getLogicalDim() == ndim )
+    if ( !pass2 )
         ut.failure( "testGeometry physical-logical-physical: " + name );
-    else if ( !pass2 )
-        ut.expected_failure( "testGeometry physical-logical-physical: " + name );
     return pass;
 }
 
@@ -98,34 +171,21 @@ static bool testCentroid( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut
         ut.failure( "testGeometry centroid/box: " + name );
         return false;
     }
-    // Check if we are dealing with a surface in a volume
-    if ( ndim != static_cast<int>( geom.getGeomType() ) ) {
-        ut.expected_failure( "testGeometry-centroid is not complete for ndim()!=geomType(): " +
-                             name );
+    // Estimate the centroid by randomly points in object
+    size_t N = 100000;
+    auto p   = generateInteriorPoints( N, geom );
+    if ( p.empty() ) {
+        ut.failure( "testGeometry-centroid did not generate interior points: " + name );
         return false;
     }
-    // Estimate the centroid by randomly sampling space if it is inside the object
-    // Note we use a non-random seed to ensure test doesn't fail periodically due to tolerances
-    Point p( ndim, { 0, 0, 0 } );
-    static std::mt19937 gen( 56871 );
-    std::uniform_real_distribution<double> dist[3];
-    for ( int d = 0; d < ndim; d++ )
-        dist[d] = std::uniform_real_distribution<double>( box.first[d], box.second[d] );
-    size_t N = 100000;
-    for ( size_t i = 0; i < N; ) {
-        Point pos( ndim, { 0, 0, 0 } );
-        for ( int d = 0; d < ndim; d++ )
-            pos[d] = dist[d]( gen );
-        if ( geom.inside( pos ) ) {
-            p += pos;
-            i++;
-        }
-    }
-    p *= 1.0 / N;
+    Point c( ndim, { 0, 0, 0 } );
+    for ( size_t i = 0; i < p.size(); i++ )
+        c += p[i];
+    c *= 1.0 / p.size();
     double err = 0;
     for ( int d = 0; d < ndim; d++ ) {
-        double dx = box.second[d] - box.first[d];
-        err       = std::max( err, fabs( p[d] - centroid[d] ) / dx );
+        double dx = geom.box().second[d] - geom.box().first[d];
+        err       = std::max( err, fabs( c[d] - centroid[d] ) / dx );
     }
     pass = err < 0.01;
     using AMP::Utilities::stringf;
