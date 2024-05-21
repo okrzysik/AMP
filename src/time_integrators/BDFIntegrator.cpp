@@ -1975,6 +1975,8 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     AMP_ASSERT( in != out );
     AMP_ASSERT( stepsRemaining() && ( d_current_time < d_final_time ) );
 
+    d_current_dt = dt;
+
     d_solution_vector->getVectorData()->reset();
 
     d_prev_solutions[0]->copyVector( in );
