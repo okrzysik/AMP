@@ -94,14 +94,6 @@ ENDIF()
 #MESSAGE( FATAL_ERROR "${importTargets}" )
 
 
-# Load a dummy timer if one was not include
-IF ( NOT DEFINED TIMER_INCLUDE AND NOT ONLY_BUILD_DOCS )
-    INCLUDE( "${TPL_DIRECTORY}/cmake/FindTimer.cmake" )
-    CONFIGURE_TIMER( FALSE "${${PROJ}_INSTALL_DIR}/include" TRUE )
-    SET( TPLs_INCLUDE_DIRS ${TPLs_INCLUDE_DIRS} ${TIMER_INCLUDE} )
-ENDIF()
-
-
 # Check the C++ version
 IF ( "${CMAKE_CXX_STANDARD}" LESS "17" )
     MESSAGE( FATAL_ERROR "AMP requires C++17 or later, C++${CMAKE_CXX_STANDARD} defined" )

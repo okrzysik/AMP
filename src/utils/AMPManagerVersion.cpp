@@ -57,12 +57,14 @@ int LIBMESH_MICRO_VERSION = 0;
 /****************************************************************************
  *  Functions to return version info                                         *
  ****************************************************************************/
-static std::ostream &operator<<( std::ostream &out, const std::array<int, 3> &version )
+[[maybe_unused]] static std::ostream &operator<<( std::ostream &out,
+                                                  const std::array<int, 3> &version )
 {
     out << version[0] << "." << version[1] << "." << version[2];
     return out;
 }
-static std::ostream &operator<<( std::ostream &out, std::initializer_list<int> &version )
+[[maybe_unused]] static std::ostream &operator<<( std::ostream &out,
+                                                  std::initializer_list<int> &version )
 {
     if ( version.size() > 0 ) {
         auto it = version.begin();
