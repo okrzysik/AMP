@@ -1,7 +1,6 @@
-// clang-format off
-#include "AMP/utils/AMPManager.h"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/AMP_Version.h"
+#include "AMP/utils/AMPManager.h"
 
 #include <sstream>
 
@@ -24,6 +23,15 @@
 #endif
 #ifdef AMP_USE_LIBMESH
     #include "libmesh/libmesh_version.h"
+    #ifndef LIBMESH_MAJOR_VERSION
+int LIBMESH_MAJOR_VERSION = 0;
+    #endif
+    #ifndef LIBMESH_MINOR_VERSION
+int LIBMESH_MINOR_VERSION = 0;
+    #endif
+    #ifndef LIBMESH_MICRO_VERSION
+int LIBMESH_MICRO_VERSION = 0;
+    #endif
 #endif
 #ifdef AMP_USE_HDF5
     #include "H5public.h"
@@ -49,6 +57,21 @@
 /****************************************************************************
  *  Functions to return version info                                         *
  ****************************************************************************/
+static std::ostream &operator<<( std::ostream &out, const std::array<int, 3> &version )
+{
+    out << version[0] << "." << version[1] << "." << version[2];
+    return out;
+}
+static std::ostream &operator<<( std::ostream &out, std::initializer_list<int> &version )
+{
+    if ( version.size() > 0 ) {
+        auto it = version.begin();
+        out << *it;
+        for ( ; it != version.end(); ++it )
+            out << '.' << *it;
+    }
+    return out;
+}
 std::array<int, 3> AMP::AMPManager::revision()
 {
     return { { AMP::Version::major, AMP::Version::minor, AMP::Version::build } };
@@ -57,8 +80,7 @@ std::string AMP::AMPManager::info()
 {
     std::stringstream out;
     out << "AMP:" << std::endl;
-    out << "   Version: " << AMP::Version::major << "." << AMP::Version::minor << "."
-        << AMP::Version::build << std::endl;
+    out << "   Version: " << revision() << std::endl;
     out << "   Hash: " << AMP::Version::short_hash << std::endl;
     out << "   C Compiler: " << AMP::Version::C << std::endl;
     out << "   C++ Compiler: " << AMP::Version::CXX << std::endl;
@@ -72,57 +94,48 @@ std::string AMP::AMPManager::info()
     out << "   C Flags: " << AMP::Version::C_FLAGS << std::endl;
     out << "   C++ Flags: " << AMP::Version::CXX_FLAGS << std::endl;
     out << "   Fortran Flags: " << AMP::Version::Fortran_FLAGS << std::endl;
-    #ifdef AMP_USE_TIMER
-        out << "ProfilerApp: " << TIMER_VERSION << std::endl;
-    #endif
-    #ifdef AMP_USE_SAMRAI
-        out << "SAMRAI: " << SAMRAI_VERSION_MAJOR << "." << SAMRAI_VERSION_MINOR << "." << SAMRAI_VERSION_PATCHLEVEL << std::endl;
-    #endif
-    #ifdef AMP_USE_PETSC
-        out << "PETSc: " << PETSC_VERSION_MAJOR << "." << PETSC_VERSION_MINOR << "." << PETSC_VERSION_SUBMINOR << std::endl;
-    #endif
-    #ifdef AMP_USE_TRILINOS
-        out << "Trilinos: " << TRILINOS_VERSION_STRING << std::endl;
-    #endif
-    #ifdef AMP_USE_SUNDIALS
-        #ifdef SUNDIALS_PACKAGE_VERSION
-            out << "Sundials: " << SUNDIALS_PACKAGE_VERSION << std::endl;
-        #elif defined( SUNDIALS_VERSION )
-            out << "Sundials: " << SUNDIALS_VERSION << std::endl;
-        #endif
-    #endif
-    #ifdef HYPRE_RELEASE_VERSION
-        out << "Hypre: " << HYPRE_RELEASE_VERSION << std::endl;
-    #elif defined( HYPRE_PACKAGE_VERSION )
-        out << "Hypre: " << HYPRE_PACKAGE_VERSION << std::endl;
-    #endif
-    #ifdef AMP_USE_LIBMESH
-        #ifndef LIBMESH_MAJOR_VERSION
-            int LIBMESH_MAJOR_VERSION = 0;
-        #endif
-        #ifndef LIBMESH_MINOR_VERSION
-            int LIBMESH_MINOR_VERSION = 0;
-        #endif
-        #ifndef LIBMESH_MICRO_VERSION
-            int LIBMESH_MICRO_VERSION = 0;
-        #endif
-        int libmeshVersion = LIBMESH_MAJOR_VERSION*10000 + LIBMESH_MINOR_VERSION*100 + LIBMESH_MICRO_VERSION;
-        out << "libMesh: " << libmeshVersion << std::endl;
-    #endif
-    #ifdef AMP_USE_HDF5
-        out << "HDF5: " << H5_VERS_MAJOR << "." << H5_VERS_MINOR << "." << H5_VERS_RELEASE << std::endl;
-    #endif
-    #ifdef AMP_USE_SILO
-        out << "SILO: " << SILO_VERS_MAJ << "." << SILO_VERS_MIN << "." << SILO_VERS_PAT << std::endl;
-    #endif
-    #ifdef AMP_USE_MPI
-        out << "MPI: " << AMP::AMP_MPI::info();
-    #endif
-    #ifdef AMP_USE_LAPACK_WRAPPERS
-        out << "Lapack: " << Lapack<double>::info();
-    #endif
+#ifdef AMP_USE_TIMER
+    auto TimerVersion = { TIMER::Version::major, TIMER::Version::minor, TIMER::Version::build };
+    out << "ProfilerApp: " << TimerVersion << std::endl;
+#endif
+#ifdef AMP_USE_SAMRAI
+    auto SAMRAIVersion = { SAMRAI_VERSION_MAJOR, SAMRAI_VERSION_MINOR, SAMRAI_VERSION_PATCHLEVEL };
+    out << "SAMRAI: " << SAMRAIVersion << std::endl;
+#endif
+#ifdef AMP_USE_PETSC
+    auto PETSCVersion = { PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR };
+    out << "PETSc: " << PETSCVersion << std::endl;
+#endif
+#ifdef AMP_USE_TRILINOS
+    out << "Trilinos: " << TRILINOS_VERSION_STRING << std::endl;
+#endif
+#ifdef SUNDIALS_PACKAGE_VERSION
+    out << "Sundials: " << SUNDIALS_PACKAGE_VERSION << std::endl;
+#elif defined( SUNDIALS_VERSION )
+    out << "Sundials: " << SUNDIALS_VERSION << std::endl;
+#endif
+#ifdef HYPRE_RELEASE_VERSION
+    out << "Hypre: " << HYPRE_RELEASE_VERSION << std::endl;
+#elif defined( HYPRE_PACKAGE_VERSION )
+    out << "Hypre: " << HYPRE_PACKAGE_VERSION << std::endl;
+#endif
+#ifdef AMP_USE_LIBMESH
+    auto libmeshVersion = { LIBMESH_MAJOR_VERSION, LIBMESH_MINOR_VERSION, LIBMESH_MICRO_VERSION };
+    out << "libMesh: " << libmeshVersion << std::endl;
+#endif
+#ifdef AMP_USE_HDF5
+    auto HDF5Version = { H5_VERS_MAJOR, H5_VERS_MINOR, H5_VERS_RELEASE };
+    out << "HDF5: " << HDF5Version << std::endl;
+#endif
+#ifdef AMP_USE_SILO
+    auto SILOVersion = { SILO_VERS_MAJ, SILO_VERS_MIN, SILO_VERS_PAT };
+    out << "SILO: " << SILOVersion << std::endl;
+#endif
+#ifdef AMP_USE_MPI
+    out << "MPI: " << AMP::AMP_MPI::info();
+#endif
+#ifdef AMP_USE_LAPACK_WRAPPERS
+    out << "Lapack: " << Lapack<double>::info();
+#endif
     return out.str();
 }
-
-
-// clang-format on
