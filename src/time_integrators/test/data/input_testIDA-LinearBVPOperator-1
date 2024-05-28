@@ -183,7 +183,7 @@ IDATimeIntegrator{
                              createLinearTimeOperatorInternally=TRUE
                              CallCalcIC=TRUE
   Preconditioner{
-        print_info_level = 3
+        print_info_level = 0
         max_iterations = 10
         max_error = 1e-10
    }
@@ -192,3 +192,4 @@ IDATimeIntegrator{
 
 
 
+  
