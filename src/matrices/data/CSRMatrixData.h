@@ -161,7 +161,7 @@ public:
 
     size_t beginCol() const { return d_first_col; }
 
-    std::tuple<lidx_t *, gidx_t const *, lidx_t const *, scalar_t const *> getCSRDiagData()
+    std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getCSRDiagData()
     {
         return std::make_tuple( d_diag_matrix->d_nnz_per_row,
                                 d_diag_matrix->d_cols,
@@ -169,7 +169,7 @@ public:
                                 d_diag_matrix->d_coeffs );
     }
 
-    std::tuple<lidx_t *, gidx_t const *, lidx_t const *, scalar_t const *> getCSROffDiagData()
+    std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getCSROffDiagData()
     {
         return std::make_tuple( d_off_diag_matrix->d_nnz_per_row,
                                 d_off_diag_matrix->d_cols,
@@ -195,6 +195,13 @@ public:
     auto numberOfNonZerosOffDiag() const { return d_off_diag_matrix->d_nnz; }
 
     bool hasOffDiag() const { return !d_off_diag_matrix->d_is_empty; }
+
+    auto getMemoryLocation() const { return d_memory_location; }
+
+    void generateColumnMap( std::vector<gidx_t> &colMap ) const
+    {
+        d_off_diag_matrix->generateColumnMap( colMap );
+    }
 
 private:
     // Private internal data class for managing the non-zero structure of the matrix
@@ -242,6 +249,8 @@ private:
                                   const typeID &id );
 
         std::vector<size_t> getColumnIDs( const size_t local_row ) const;
+
+        void generateColumnMap( std::vector<gidx_t> &colMap ) const;
 
     protected:
         const CSRMatrixData<Policy> &d_outer; // reference to the containing CSRMatrixData object
