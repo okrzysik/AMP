@@ -1,6 +1,5 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 
 #include "StackTrace/ErrorHandlers.h"
@@ -17,10 +16,6 @@
 #ifdef USE_CUDA
     #include <cuda.h>
     #include <cuda_runtime_api.h>
-#endif
-#ifdef AMP_USE_PETSC
-    #include "petsc.h"
-    #include "petscerror.h"
 #endif
 #ifdef AMP_USE_TIMER
     #include "MemoryApp.h"
@@ -135,30 +130,6 @@ herr_t hdf5_error_handler( hid_t err_stack, void * )
 
 
 /****************************************************************************
- *  Function to handle PETSc errors                                          *
- ****************************************************************************/
-#ifdef AMP_USE_PETSC
-static_assert( PETSC_VERSION_GE( 3, 7, 5 ), "AMP only supports PETSc 3.7.5 or greater" );
-static PetscErrorCode petsc_err_handler( MPI_Comm,
-                                         int line,
-                                         const char *dir,
-                                         const char *file,
-                                         PetscErrorCode,
-                                         PetscErrorType,
-                                         const char *buf,
-                                         void * )
-{
-    std::stringstream msg;
-    msg << "PETSc error:" << std::endl;
-    msg << "   File: " << dir << file << ", line: " << line << std::endl;
-    msg << "   " << buf << std::endl;
-    AMPManager::terminate_AMP( msg.str() );
-    return 0;
-}
-#endif
-
-
-/****************************************************************************
  *  Functions to handle MPI errors                                           *
  ****************************************************************************/
 void AMPManager::setMPIErrorHandler()
@@ -228,14 +199,9 @@ void AMPManager::setHandlers()
         setMPIErrorHandler();
     }
     // Set the error handlers for petsc
-#ifdef AMP_USE_PETSC
-    if ( d_properties.catch_PETSc ) {
-        PetscPopSignalHandler();
-        PetscPopErrorHandler();
-        PetscPushErrorHandler( &petsc_err_handler, nullptr );
-    }
-#endif
-    // Set the error handlers for SAMRAI
+    if ( d_properties.catch_PETSc )
+        set_PETSc_error_handler();
+        // Set the error handlers for SAMRAI
 #ifdef AMP_USE_SAMRAI
     if ( d_properties.catch_SAMRAI ) {
         SAMRAI::tbox::SAMRAI_MPI::setCallAbortInSerialInsteadOfExit( true );
@@ -280,10 +246,7 @@ void AMPManager::clearHandlers()
     StackTrace::clearSignals();
     StackTrace::clearSymbols();
     // Clear the error handlers for petsc
-#ifdef AMP_USE_PETSC
-    PetscPopSignalHandler();
-    PetscPopErrorHandler();
-#endif
+    clear_PETSc_error_handler();
     areErrorHandlersSet = false;
 }
 
