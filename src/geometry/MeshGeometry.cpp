@@ -16,12 +16,12 @@
 namespace AMP::Geometry {
 
 
-/********************************************************normalize
+/********************************************************
  * Constructors                                          *
  ********************************************************/
 MeshGeometry::MeshGeometry( std::shared_ptr<AMP::Mesh::Mesh> mesh )
-    : Geometry( d_mesh->getDim() ),
-      d_mesh( std::move( mesh ) ),
+    : Geometry( mesh->getDim() ),
+      d_mesh( mesh ),
       d_pos_hash( -1 ),
       d_isConvex( false ),
       d_volume( 0 )

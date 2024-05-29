@@ -260,19 +260,6 @@ template<typename Policy>
 std::shared_ptr<MatrixData> CSRMatrixData<Policy>::cloneMatrixData() const
 {
     std::shared_ptr<CSRMatrixData> cloneData;
-#ifdef AMP_USE_UMPIRE
-    auto &resourceManager = umpire::ResourceManager::getInstance();
-
-    umpire::Allocator allocator;
-    if ( d_memory_location <= AMP::Utilities::MemoryType::host )
-        allocator = resourceManager.getAllocator( "HOST" );
-    else if ( d_memory_location == AMP::Utilities::MemoryType::managed )
-        allocator = resourceManager.getAllocator( "UM" );
-    else if ( d_memory_location == AMP::Utilities::MemoryType::device )
-        allocator = resourceManager.getAllocator( "DEVICE" );
-    else
-        AMP_ERROR( "Unsupported memory location" );
-
     cloneData = std::make_shared<CSRMatrixData<Policy>>();
 
     cloneData->d_memory_location = d_memory_location;
@@ -288,27 +275,6 @@ std::shared_ptr<MatrixData> CSRMatrixData<Policy>::cloneMatrixData() const
     cloneData->d_manage_coeffs = true;
     cloneData->d_manage_cols   = true;
 
-    size_t N = d_last_row - d_first_row;
-
-    // we copy the data for the nnz_per_row, row_starts and d_cols
-    // as this specifies the data layout. We do not copy the coeffs
-    // as it's assumes the new matrix might have new coeffs
-    cloneData->d_nnz_per_row = static_cast<lidx_t *>( allocator.allocate( N * sizeof( lidx_t ) ) );
-    cloneData->d_row_starts =
-        static_cast<lidx_t *>( allocator.allocate( ( N + 1 ) * sizeof( lidx_t ) ) );
-    cloneData->d_cols = static_cast<gidx_t *>( allocator.allocate( d_nnz * sizeof( gidx_t ) ) );
-
-    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-        std::copy( d_nnz_per_row, d_nnz_per_row + N, cloneData->d_nnz_per_row );
-        std::copy( d_row_starts, d_row_starts + N + 1, cloneData->d_row_starts );
-        std::copy( d_cols, d_cols + d_nnz, cloneData->d_cols );
-    } else {
-        AMP_ERROR( "Device memory copies not implemented as yet" );
-    }
-
-    cloneData->d_coeffs =
-        static_cast<scalar_t *>( allocator.allocate( d_nnz * sizeof( scalar_t ) ) );
-
     // not sure whether we should really set these pointers
     // or do deep copies on these too -- the latter would be safer
     cloneData->d_leftDOFManager  = d_leftDOFManager;
@@ -318,10 +284,53 @@ std::shared_ptr<MatrixData> CSRMatrixData<Policy>::cloneMatrixData() const
     cloneData->d_other_data = d_other_data;
     cloneData->d_ghost_data = d_ghost_data;
 
+    size_t N = d_last_row - d_first_row;
+
+    if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
+        cloneData->d_nnz_per_row = allocate<lidx_t, std::allocator>( N );
+        cloneData->d_row_starts  = allocate<lidx_t, std::allocator>( N + 1 );
+        cloneData->d_cols        = allocate<gidx_t, std::allocator>( d_nnz );
+        cloneData->d_coeffs      = allocate<scalar_t, std::allocator>( d_nnz );
+        std::copy( d_nnz_per_row, d_nnz_per_row + N, cloneData->d_nnz_per_row );
+        std::copy( d_row_starts, d_row_starts + N + 1, cloneData->d_row_starts );
+        std::copy( d_cols, d_cols + d_nnz, cloneData->d_cols );
+    } else {
+#ifdef AMP_USE_UMPIRE
+        auto &resourceManager = umpire::ResourceManager::getInstance();
+
+        umpire::Allocator allocator;
+        if ( d_memory_location == AMP::Utilities::MemoryType::managed )
+            allocator = resourceManager.getAllocator( "UM" );
+        else if ( d_memory_location == AMP::Utilities::MemoryType::device )
+            allocator = resourceManager.getAllocator( "DEVICE" );
+        else
+            AMP_ERROR( "Unsupported memory location" );
+
+        // we copy the data for the nnz_per_row, row_starts and d_cols
+        // as this specifies the data layout. We do not copy the coeffs
+        // as it's assumes the new matrix might have new coeffs
+        cloneData->d_nnz_per_row =
+            static_cast<lidx_t *>( allocator.allocate( N * sizeof( lidx_t ) ) );
+        cloneData->d_row_starts =
+            static_cast<lidx_t *>( allocator.allocate( ( N + 1 ) * sizeof( lidx_t ) ) );
+        cloneData->d_cols = static_cast<gidx_t *>( allocator.allocate( d_nnz * sizeof( gidx_t ) ) );
+
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+            std::copy( d_nnz_per_row, d_nnz_per_row + N, cloneData->d_nnz_per_row );
+            std::copy( d_row_starts, d_row_starts + N + 1, cloneData->d_row_starts );
+            std::copy( d_cols, d_cols + d_nnz, cloneData->d_cols );
+        } else {
+            AMP_ERROR( "Device memory copies not implemented as yet" );
+        }
+
+        cloneData->d_coeffs =
+            static_cast<scalar_t *>( allocator.allocate( d_nnz * sizeof( scalar_t ) ) );
+
 #else
-    AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been "
-               "implemented as yet" );
+        AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been "
+                   "implemented as yet" );
 #endif
+    }
     return cloneData;
 }
 

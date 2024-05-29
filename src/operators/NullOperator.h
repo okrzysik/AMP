@@ -36,8 +36,9 @@ public:
 
     //! Empty apply call
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
-                        AMP::LinearAlgebra::Vector::shared_ptr ) override
+                        AMP::LinearAlgebra::Vector::shared_ptr v ) override
     {
+        v->zero();
     }
 
 protected:
