@@ -273,7 +273,7 @@ void ImplicitIntegrator::updateSolution()
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         AMP::pout << "\n++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-        AMP::pout << "End of timestep # " << d_integrator_step - 1 << std::endl;
+        AMP::pout << "End of timestep # " << d_integrator_step << std::endl;
         AMP::pout << "Simulation time is " << d_current_time << std::endl;
         AMP::pout << "++++++++++++++++++++++++++++++++++++++++++++++++\n" << std::endl;
     }
