@@ -10,7 +10,8 @@
 
 
 // Get the elapsed duration
-static double getDuration( const std::chrono::time_point<std::chrono::steady_clock> &start )
+[[maybe_unused]] static double
+getDuration( const std::chrono::time_point<std::chrono::steady_clock> &start )
 {
     auto stop  = std::chrono::steady_clock::now();
     int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( stop - start ).count();
