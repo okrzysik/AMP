@@ -1111,10 +1111,12 @@ int main( int argc, char *argv[] )
         // Test AMP_COMM_SELF
         MPI_CLASS selfComm = MPI_CLASS( AMP_COMM_SELF );
         record( ut, !selfComm.isNull(), "Self communicator created" );
+#ifdef AMP_USE_MPI
         record( ut,
                 selfComm.getCommunicator() == MPI_COMM_SELF,
                 "Communicator == MPI_COMM_SELF",
                 !useMPI );
+#endif
         testComm( selfComm, ut );
 
         // Test == and !=
@@ -1125,10 +1127,12 @@ int main( int argc, char *argv[] )
         MPI_CLASS nullComm = MPI_CLASS( AMP_COMM_NULL );
         record( ut, nullComm.isNull(), "Null communicator created" );
         record( ut, nullComm.getSize() == 0, "Null communicator has zero size" );
+#ifdef AMP_USE_MPI
         record( ut,
                 nullComm.getCommunicator() == MPI_COMM_NULL,
                 "Communicator == MPI_COMM_NULL",
                 !useMPI );
+#endif
 
         // Test dup
 #if !defined( AMP_USE_MPI ) && defined( AMP_USE_PETSC )

@@ -118,7 +118,7 @@ AMP::Mesh::GeomType Geometry::getGeomType() const
  ********************************************************/
 static inline uint8_t readPhysical( int64_t fid )
 {
-    uint8_t x;
+    uint8_t x = 0;
     readHDF5( fid, "physicalDim", x );
     return x;
 }
