@@ -4,7 +4,6 @@
 #include "AMP/operators/OperatorFactory.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/time_integrators/TimeIntegratorFactory.h"
-#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/FactoryStrategy.hpp"
 #include "AMP/utils/KokkosManager.h"
@@ -28,10 +27,6 @@
     // #include <cuda.h>
     #include <hip/hip_runtime_api.h>
     #include "AMP/utils/hip/helper_hip.h"
-#endif
-#ifdef AMP_USE_PETSC
-    #include "petsc.h"
-    #include "petscerror.h"
 #endif
 #ifdef AMP_USE_TIMER
     #include "MemoryApp.h"
@@ -349,47 +344,6 @@ double AMPManager::stop_SAMRAI()
 #else
 double AMPManager::start_SAMRAI() { return 0; }
 double AMPManager::stop_SAMRAI() { return 0; }
-#endif
-
-
-/****************************************************************************
- * Function to start/stop PETSc                                              *
- ****************************************************************************/
-#ifdef AMP_USE_PETSC
-static bool called_PetscInitialize = false;
-double AMPManager::start_PETSc()
-{
-    auto start = std::chrono::steady_clock::now();
-    if ( PetscInitializeCalled ) {
-        called_PetscInitialize = false;
-    } else {
-        int nargsPetsc       = 1;
-        const char *noMalloc = "-malloc no";
-        char **petscArgs     = const_cast<char **>( &noMalloc );
-        PetscInitialize( &nargsPetsc, &petscArgs, nullptr, nullptr );
-        called_PetscInitialize = true;
-    }
-    #ifndef AMP_USE_MPI
-    // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
-    AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
-    #endif
-    return getDuration( start );
-}
-double AMPManager::stop_PETSc()
-{
-    double time = 0;
-    if ( called_PetscInitialize ) {
-        auto start = std::chrono::steady_clock::now();
-        PetscPopSignalHandler();
-        PetscPopErrorHandler();
-        PetscFinalize();
-        time = getDuration( start );
-    }
-    return time;
-}
-#else
-double AMPManager::start_PETSc() { return 0; }
-double AMPManager::stop_PETSc() { return 0; }
 #endif
 
 

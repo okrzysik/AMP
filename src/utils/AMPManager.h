@@ -201,6 +201,10 @@ private:
     static double start_CUDA();
     static double stop_SAMRAI();
     static double stop_PETSc();
+
+    // Functions to set error handlers for specific packages
+    static void set_PETSc_error_handler();
+    static void clear_PETSc_error_handler();
 };
 
 } // namespace AMP

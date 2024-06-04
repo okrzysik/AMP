@@ -27,59 +27,10 @@
 #define MPI_CLASS_WARNING AMP_WARNING
 
 
-// Include mpi.h (or define MPI objects)
-// clang-format off
+// Include mpi.h (if building with MPI)
 #ifdef AMP_USE_MPI
-    // Building with mpi
     #include "mpi.h"
-#elif defined( AMP_USE_SAMRAI ) && defined( AMP_USE_PETSC )
-    // Building with SAMRAI and PETSc and without MPI is complicated
-    #include "petsc/mpiuni/mpi.h"
-    #undef MPI_REQUEST_NULL
-    #define HAVE_MPI
-    #ifndef included_tbox_SAMRAI_MPI
-        extern int MPI_REQUEST_NULL;
-        extern int MPI_ERR_IN_STATUS;
-    #endif
-    #ifdef INCLUDED_SAMRAI_CONFIG_H
-        #include "SAMRAI/tbox/SAMRAI_MPI.h"
-    #else
-        #define INCLUDED_SAMRAI_CONFIG_H
-        #define included_tbox_Utilities
-        #include "SAMRAI/tbox/SAMRAI_MPI.h"
-        #undef included_tbox_Utilities
-        #undef INCLUDED_SAMRAI_CONFIG_H
-    #endif
-    #undef HAVE_MPI
-#elif defined( AMP_USE_SAMRAI )
-    // SAMRAI serial builds define basic MPI types
-    #include "SAMRAI/tbox/SAMRAI_MPI.h"
-#elif defined( AMP_USE_PETSC )
-    // petsc serial builds include mpi.h
-    #include "petsc/mpiuni/mpi.h"
-#elif defined( AMP_USE_TRILINOS )
-    // trilinos serial builds include mpi.h
-    #include "mpi.h" 
-#elif defined(__has_include)
-    // Check if another package defines mpi.h
-    #if __has_include("mpi.h")
-        #include "mpi.h"
-    #else
-        #define SET_MPI_TYPES
-    #endif
-#else
-    #define SET_MPI_TYPES
 #endif
-#ifdef SET_MPI_TYPES
-    typedef uint32_t MPI_Comm;
-    typedef uint32_t MPI_Request;
-    typedef uint32_t MPI_Status;
-    typedef void *MPI_Errhandler;
-    #define MPI_COMM_NULL ( (MPI_Comm) 0xF4000010 )
-    #define MPI_COMM_WORLD ( (MPI_Comm) 0xF4000012 )
-    #define MPI_COMM_SELF ( (MPI_Comm) 0xF4000011 )
-#endif
-// clang-format on
 
 
 #define MPI_CLASS_ERROR_TYPE( MSG ) \
