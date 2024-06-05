@@ -20,16 +20,19 @@ The websites associated with the AMP package includes:
 * Issue tracker: https://bitbucket.org/AdvancedMultiPhysics/amp/issues?status=new&status=open
 
 # Team #
+
 * Bobby Philip (LANL)
 * Mark Berrill (ORNL)
 
 # Contributors #
+
 * Andrew Reisner (LANL)
 * Richard Berger (LANL)
 * Brian Romero (LANL)
 * Ian May (LANL)
 
 # Alumni #
+
 * Kevin Clarno (ORNL)
 * Damien Lebrun-Grandie (ORNL)
 * Gary Dilts (LANL)
