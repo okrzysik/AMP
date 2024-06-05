@@ -26,6 +26,8 @@ The websites associated with the AMP package includes:
 # Contributors #
 * Andrew Reisner (LANL)
 * Richard Berger (LANL)
+* Brian Romero (LANL)
+* Ian May (LANL)
 
 # Alumni #
 * Kevin Clarno (ORNL)
