@@ -19,7 +19,7 @@ namespace AMP {
 UnitTest::UnitTest() : d_verbose( false ), d_comm( AMP_COMM_SELF )
 {
     if ( AMP_MPI::MPI_Active() )
-        d_comm = MPI_COMM_WORLD;
+        d_comm = AMP_COMM_WORLD;
 }
 UnitTest::~UnitTest() { reset(); }
 void UnitTest::reset()

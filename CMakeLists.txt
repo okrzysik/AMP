@@ -59,8 +59,6 @@ IF ( NOT ONLY_BUILD_DOCS )
     IF ( NOT TPL_DIRECTORY )
         MESSAGE( FATAL_ERROR "TPL_DIRECTORY must be specified")
     ENDIF()
-    SET( CMAKE_MODULE_PATH "${TPL_DIRECTORY}" ${CMAKE_MODULE_PATH} )
-    MESSAGE( "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}" )
     IF ( NOT DEFINED TPL_LIST_REQUIRED )
         SET( TPL_LIST_REQUIRED STACKTRACE )
     ENDIF()
@@ -77,14 +75,14 @@ IF ( NOT ONLY_BUILD_DOCS )
     ENDIF()
     STRING( REGEX REPLACE  ","  ";"  TPL_LIST_REQUIRED  "${TPL_LIST_REQUIRED}" )
     STRING( REGEX REPLACE  ","  ";"  TPL_LIST_OPTIONAL  "${TPL_LIST_OPTIONAL}" )
-    FIND_PACKAGE( TPLs REQUIRED ${TPL_LIST_REQUIRED} OPTIONAL_COMPONENTS ${TPL_LIST_OPTIONAL} )
+    FIND_PACKAGE( TPLs REQUIRED ${TPL_LIST_REQUIRED} OPTIONAL_COMPONENTS ${TPL_LIST_OPTIONAL} PATHS "${TPL_DIRECTORY}" )
     MESSAGE("TPL_LIST ${TPL_LIST}")
     MESSAGE("  TPLs Required: ${TPL_LIST_REQUIRED}")
     MESSAGE("  TPLs Supported: ${TPL_LIST_OPTIONAL}")
-    MESSAGE("  TPLs Built: ${TPL_LIST}")
-    MESSAGE("  TPLs Included: ${TPL_LIST_INCLUDED}")
-    MESSAGE("  Include Paths: ${TPL_INCLUDE_DIRS}")
-    MESSAGE("  Libraries: ${TPL_LIBRARIES}")
+    MESSAGE("  TPLs Built: ${TPLs_LIST}")
+    MESSAGE("  TPLs Included: ${TPLs_LIST_INCLUDED}")
+    MESSAGE("  Include Paths: ${TPLs_INCLUDE_DIRS}")
+    MESSAGE("  Libraries: ${TPLs_LIBRARIES}")
     MESSAGE("  CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
     MESSAGE("  Running with ${NUMBER_OF_GPUS} GPUs")
 ELSE()
@@ -92,12 +90,8 @@ ELSE()
 ENDIF()
 
 
-# Load a dummy timer if one was not include
-IF ( NOT DEFINED TIMER_INCLUDE AND NOT ONLY_BUILD_DOCS )
-    INCLUDE( "${TPL_DIRECTORY}/cmake/FindTimer.cmake" )
-    CONFIGURE_TIMER( FALSE "${${PROJ}_INSTALL_DIR}/include" TRUE )
-    SET( TPL_INCLUDE_DIRS ${TPL_INCLUDE_DIRS} ${TIMER_INCLUDE} )
-ENDIF()
+#get_property(importTargets DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)
+#MESSAGE( FATAL_ERROR "${importTargets}" )
 
 
 # Check the C++ version
@@ -107,8 +101,8 @@ ENDIF()
 
 
 # Include the TPL inclde paths and libraries
-INCLUDE_DIRECTORIES( SYSTEM ${TPL_INCLUDE_DIRS} )
-SET( TPL_LIBS ${TPL_LIBRARIES} )
+INCLUDE_DIRECTORIES( SYSTEM ${TPLs_INCLUDE_DIRS} )
+SET( TPL_LIBS ${TPLs_LIBRARIES} )
 
 
 # Set testing paramaters
@@ -256,11 +250,20 @@ IF ( USE_EXT_DOXYGEN )
 ENDIF()
 
 
-# Save the configuration info for applications 
-IF ( NOT ONLY_BUILD_DOCS )
-    CONFIGURE_FILE( cmake/FindAMP.template.cmake "${${PROJ}_INSTALL_DIR}/FindAMP.cmake" @ONLY )
-    COPY_DATA_FILE( "${TPL_MACRO_CMAKE}" "${${PROJ}_INSTALL_DIR}/cmake/macros.cmake" )
-ENDIF()
-
+# Generate a Package Configuration File
+INCLUDE( CMakePackageConfigHelpers )
+SET( INCLUDE_INSTALL_DIR  "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "Location of header files" )
+SET( SYSCONFIG_INSTALL_DIR ${${PROJ}_INSTALL_DIR}/lib/cmake CACHE PATH "Location of configuration files" )
+CONFIGURE_PACKAGE_CONFIG_FILE( cmake/AMP.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/AMPConfig.cmake
+    INSTALL_DESTINATION "${${PROJ}_INSTALL_DIR}/lib/cmake/AMP"
+    PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR )
+WRITE_BASIC_PACKAGE_VERSION_FILE(
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/AMPVersion.cmake
+    VERSION ${${PROJ}_VERSION}
+    COMPATIBILITY SameMajorVersion )
+INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/AMPConfig.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/cmake/AMPVersion.cmake
+         DESTINATION ${${PROJ}_INSTALL_DIR}/lib/cmake )
 
 

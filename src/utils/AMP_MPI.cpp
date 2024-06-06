@@ -37,10 +37,32 @@
 #endif
 
 
-// Set MPI_REQUEST_NULL
-#if defined( USE_SAMRAI ) && defined( USE_PETSC ) && !defined( USE_MPI )
-int MPI_REQUEST_NULL  = 3;
-int MPI_ERR_IN_STATUS = 4;
+// Include mpi.h (or define MPI objects)
+#ifdef AMP_USE_MPI
+    #include "mpi.h"
+#elif defined( AMP_USE_PETSC )
+    #include "petsc/mpiuni/mpi.h"
+#elif defined( AMP_USE_SAMRAI )
+    #include "SAMRAI/tbox/SAMRAI_MPI.h"
+#elif defined( AMP_USE_TRILINOS )
+    #include "mpi.h"
+#elif defined( __has_include )
+    #if __has_include( "mpi.h" )
+        #include "mpi.h"
+    #else
+        #define SET_MPI_TYPES
+    #endif
+#else
+    #define SET_MPI_TYPES
+#endif
+#if defined( SET_MPI_TYPES )
+typedef uint32_t MPI_Comm;
+typedef uint32_t MPI_Request;
+typedef uint32_t MPI_Status;
+typedef void *MPI_Errhandler;
+    #define MPI_COMM_NULL ( (MPI_Comm) 0xF4000010 )
+    #define MPI_COMM_WORLD ( (MPI_Comm) 0xF4000012 )
+    #define MPI_COMM_SELF ( (MPI_Comm) 0xF4000011 )
 #endif
 
 
