@@ -9,11 +9,11 @@ template class AMP::LinearAlgebra::ArrayVectorData<float>;
 
 #ifdef USE_CUDA
 template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::FunctionTable, AMP::CudaDevAllocator<double>>;
+    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::CudaDevAllocator<double>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::FunctionTable, AMP::CudaDevAllocator<float>>;
+    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::CudaDevAllocator<float>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::FunctionTable, AMP::CudaManagedAllocator<double>>;
+    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<double>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::FunctionTable, AMP::CudaManagedAllocator<float>>;
+    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<float>>;
 #endif

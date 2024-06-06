@@ -80,7 +80,7 @@ AMPManagerProperties AMPManager::d_properties = AMPManagerProperties();
 /****************************************************************************
  *  Get the global communicator                                              *
  ****************************************************************************/
-static AMP_MPI comm_world = AMP::AMP_MPI( MPI_COMM_NULL );
+static AMP_MPI comm_world = AMP::AMP_MPI( AMP_COMM_NULL );
 const AMP_MPI &AMPManager::getCommWorld() { return comm_world; }
 void AMPManager::setCommWorld( const AMP::AMP_MPI &comm ) { comm_world = comm; }
 
