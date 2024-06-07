@@ -17,12 +17,10 @@
 #include <memory>
 #include <string>
 
-
 inline bool approx_equal( const AMP::Scalar &x, const AMP::Scalar &y, double tol )
 {
     return AMP::Utilities::approx_equal( static_cast<double>( x ), static_cast<double>( y ), tol );
 }
-
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
@@ -95,7 +93,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     else
         ut->failure( "Data copied from multivector to single vector" );
 }
-
 
 int main( int argc, char *argv[] )
 {

@@ -20,7 +20,6 @@
 
 #include <chrono>
 
-
 static inline double speedup( size_t x, size_t y )
 {
     return static_cast<double>( y ) / static_cast<double>( x );
@@ -92,7 +91,6 @@ struct test_times {
     }
 };
 
-
 #define runTest0( TEST )                                                                      \
     do {                                                                                      \
         auto t1 = std::chrono::steady_clock::now();                                           \
@@ -122,7 +120,6 @@ struct test_times {
         times.TEST = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count(); \
     } while ( 0 )
 
-
 test_times testPerformance( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
     test_times times;
@@ -150,7 +147,6 @@ test_times testPerformance( AMP::LinearAlgebra::Vector::shared_ptr vec )
 
     return times;
 }
-
 
 int main( int argc, char **argv )
 {
@@ -213,7 +209,7 @@ int main( int argc, char **argv )
             AMP::pout << std::endl;
         }
 #endif
-}
+    }
 
     AMP::AMPManager::shutdown();
     return 0;
