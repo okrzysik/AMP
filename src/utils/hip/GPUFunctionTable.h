@@ -163,7 +163,6 @@ private:
     static inline void rand( size_t N, TYPE *x );
 };
 } // namespace AMP
-//#include "AMP/utils/cuda/GPUFunctionTable.hpp"
 #include "GPUFunctionTable.hpp"
 
 

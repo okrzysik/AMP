@@ -48,8 +48,8 @@ bool testGet( TYPE x )
 template<class TYPE>
 bool testArithmetic()
 {
-    TYPE a = 17.2;
-    TYPE b = 3.7;
+    TYPE a = (TYPE)17.2;
+    TYPE b = (TYPE)3.7;
     AMP::Scalar x( a );
     AMP::Scalar y( b );
     bool pass = true;

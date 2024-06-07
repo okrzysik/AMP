@@ -6,9 +6,10 @@
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.hpp"
 #include "AMP/vectors/operations/hip/HIPOperationsHelpers.h"
-#include "AMP/vectors/operations/hip/VectorOperationsHIP.h"
+#include "AMP/vectors/operations/hip/VectorOperationsHip.h"
 
 #include <hip/hip_runtime_api.h>
+#include "AMP/utils/hip/helper_hip.h"
 
 
 namespace AMP {
@@ -107,7 +108,7 @@ void VectorOperationsHip<TYPE>::setToScalar( const Scalar &alpha_in, VectorData 
     x.setUpdateStatus( UpdateState::UNCHANGED );
     // Wait for hip data to complete
     if ( useGPU )
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
 }
 
 template<typename TYPE>
@@ -125,7 +126,7 @@ void VectorOperationsHip<TYPE>::copy( const VectorData &x, VectorData &y )
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto N     = y.sizeOfDataBlock( 0 );
         HipOperationsHelpers<TYPE>::copy( N, xdata, ydata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->copy( x, y );
@@ -140,7 +141,7 @@ void VectorOperationsHip<TYPE>::scale( const Scalar &alpha_in, VectorData &x )
         size_t N   = x.sizeOfDataBlock( 0 );
         TYPE alpha = alpha_in.get<TYPE>();
         HipOperationsHelpers<TYPE>::scale( alpha, N, data );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->scale( alpha_in, x );
@@ -156,7 +157,7 @@ void VectorOperationsHip<TYPE>::scale( const Scalar &alpha_in, const VectorData 
         auto N     = y.sizeOfDataBlock( 0 );
         auto alpha = alpha_in.get<TYPE>();
         HipOperationsHelpers<TYPE>::scale( alpha, N, xdata, ydata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->scale( alpha_in, x, y );
@@ -172,7 +173,7 @@ void VectorOperationsHip<TYPE>::add( const VectorData &x, const VectorData &y, V
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         auto N     = z.sizeOfDataBlock( 0 );
         HipOperationsHelpers<TYPE>::add( N, xdata, ydata, zdata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->add( x, y, z );
@@ -188,7 +189,7 @@ void VectorOperationsHip<TYPE>::subtract( const VectorData &x, const VectorData 
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
         HipOperationsHelpers<TYPE>::subtract( N, xdata, ydata, zdata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->subtract( x, y, z );
@@ -204,7 +205,7 @@ void VectorOperationsHip<TYPE>::multiply( const VectorData &x, const VectorData 
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
         HipOperationsHelpers<TYPE>::multiply( N, xdata, ydata, zdata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->multiply( x, y, z );
@@ -220,7 +221,7 @@ void VectorOperationsHip<TYPE>::divide( const VectorData &x, const VectorData &y
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
         HipOperationsHelpers<TYPE>::divide( N, xdata, ydata, zdata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->divide( x, y, z );
@@ -236,7 +237,7 @@ void VectorOperationsHip<TYPE>::reciprocal( const VectorData &x, VectorData &y )
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
         HipOperationsHelpers<TYPE>::reciprocal( N, xdata, ydata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->reciprocal( x, y );
@@ -259,7 +260,7 @@ void VectorOperationsHip<TYPE>::linearSum( const Scalar &alpha_in,
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
         HipOperationsHelpers<TYPE>::linearSum( alpha, N, xdata, beta, ydata, zdata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->linearSum( alpha_in, x, beta_in, y, z );
@@ -292,7 +293,7 @@ void VectorOperationsHip<TYPE>::abs( const VectorData &x, VectorData &y )
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
         HipOperationsHelpers<TYPE>::abs( N, xdata, ydata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->abs( x, y );
@@ -310,7 +311,7 @@ void VectorOperationsHip<TYPE>::addScalar( const VectorData &x,
         size_t N   = y.sizeOfDataBlock( 0 );
         TYPE alpha = alpha_in.get<TYPE>();
         HipOperationsHelpers<TYPE>::addScalar( N, xdata, alpha, ydata );
-        hipDeviceSynchronize();
+        checkHipErrors(hipDeviceSynchronize());
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->addScalar( x, alpha_in, y );

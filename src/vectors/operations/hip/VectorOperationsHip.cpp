@@ -1,5 +1,5 @@
-#include "AMP/vectors/operations/hip/VectorOperationsHIP.h"
-#include "AMP/vectors/operations/hip/VectorOperationsHIP.hpp"
+#include "AMP/vectors/operations/hip/VectorOperationsHip.h"
+#include "AMP/vectors/operations/hip/VectorOperationsHip.hpp"
 
 
 // Explicit instantiations

@@ -31,7 +31,7 @@
 #endif
 #ifdef USE_HIP
     #include "AMP/utils/hip/HipAllocator.h"
-    #include "AMP/vectors/operations/hip/VectorOperationsHIP.h"
+    #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
 #endif
 
 #include <string>

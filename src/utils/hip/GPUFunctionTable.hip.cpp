@@ -6,7 +6,8 @@
 #include <hip/hip_runtime_api.h>
 
 #include "AMP/utils/hip/GPUFunctionTable.h"
-// #include "GPUFunctionTable.h"
+#include "AMP/utils/hip/helper_hip.h"
+#include "GPUFunctionTable.h"
 
 
 namespace AMP{
@@ -38,7 +39,7 @@ static void inline setKernelDims(size_t n, dim3& BlockDim, dim3& GridDim)
 template <class TYPE, typename LAMBDA>
 __global__ void transform(LAMBDA &fun, TYPE* d_x, TYPE* d_y, size_t n)
 {
-    for(int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
+    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
         d_y[i] = fun(d_x[i]);
     }
 }
@@ -46,7 +47,7 @@ __global__ void transform(LAMBDA &fun, TYPE* d_x, TYPE* d_y, size_t n)
 template <class TYPE, typename LAMBDA>
 __global__ void transform(LAMBDA &fun, TYPE* d_x, TYPE* d_y, TYPE* d_z, size_t n)
 {
-    for(int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
+    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
         d_z[i] = fun( d_x[i], d_y[i]);
     }
 }
@@ -55,7 +56,7 @@ __global__ void transform(LAMBDA &fun, TYPE* d_x, TYPE* d_y, TYPE* d_z, size_t n
 template <class TYPE>
 __global__ void transformReLUKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 {
-    for(int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
+    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
         d_b[i] = fmax(d_a[i], static_cast<TYPE>(0));
     }
 
@@ -64,7 +65,7 @@ __global__ void transformReLUKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 template <class TYPE>
 __global__ void transformAbsKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 {
-    for(int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
+    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
         d_b[i] = fabs(d_a[i]);
     }
 }
@@ -72,7 +73,7 @@ __global__ void transformAbsKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 template <class TYPE>
 __global__ void transformTanhKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 {
-    for(int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
+    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
         d_b[i] = tanh(d_a[i]);
     }
 }
@@ -80,7 +81,7 @@ __global__ void transformTanhKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 template <class TYPE>
 __global__ void transformHardTanhKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 {
-    for(int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
+    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
         d_b[i] = fmax( -1.0, fmin(1.0, d_a[i]));
     }
 }
@@ -88,7 +89,7 @@ __global__ void transformHardTanhKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 template <class TYPE>
 __global__ void transformSigmoidKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 {
-    for(int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
+    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
         d_b[i] = 1.0 / (1.0 + exp(-d_a[i]));
     }
 }
@@ -96,7 +97,7 @@ __global__ void transformSigmoidKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 template <class TYPE>
 __global__ void transformSoftPlusKernel(const TYPE* d_a, TYPE* d_b, size_t n)
 {
-    for(int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
+    for(size_t i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i+= blockDim.x*gridDim.x){
         d_b[i] = log1p(exp(d_a[i]));
     }
 }
@@ -189,7 +190,7 @@ void transformReLUW(const TYPE* d_a, TYPE* d_b, size_t n)
     dim3 GridDim;
     setKernelDims(n,BlockDim,GridDim); 
     transformReLUKernel<TYPE><<<GridDim,BlockDim>>>(d_a, d_b, n);
-    hipDeviceSynchronize();
+    checkHipErrors(hipDeviceSynchronize());
 
 }
 
@@ -200,7 +201,7 @@ void transformAbsW(const TYPE* d_a, TYPE* d_b, size_t n)
     dim3 GridDim;
     setKernelDims(n,BlockDim,GridDim); 
     transformAbsKernel<TYPE><<<GridDim,BlockDim>>>(d_a, d_b, n);
-    hipDeviceSynchronize();
+    checkHipErrors(hipDeviceSynchronize());
 
 }
 
@@ -211,7 +212,7 @@ void transformTanhW(const TYPE* d_a, TYPE* d_b, size_t n)
     dim3 GridDim;
     setKernelDims(n,BlockDim,GridDim); 
     transformTanhKernel<TYPE><<<GridDim,BlockDim>>>(d_a, d_b, n);
-    hipDeviceSynchronize();
+    checkHipErrors(hipDeviceSynchronize());
 
 }
 
@@ -222,7 +223,7 @@ void transformHardTanhW(const TYPE* d_a, TYPE* d_b, size_t n)
     dim3 GridDim;
     setKernelDims(n,BlockDim,GridDim); 
     transformHardTanhKernel<TYPE><<<GridDim,BlockDim>>>( d_a, d_b, n);
-    hipDeviceSynchronize();
+    checkHipErrors(hipDeviceSynchronize());
 
 }
 
@@ -233,7 +234,7 @@ void transformSigmoidW(const TYPE* d_a, TYPE* d_b, size_t n)
     dim3 GridDim;
     setKernelDims(n,BlockDim,GridDim); 
     transformSigmoidKernel<TYPE><<<GridDim,BlockDim>>>(d_a, d_b, n);
-    hipDeviceSynchronize();
+    checkHipErrors(hipDeviceSynchronize());
 
 }
 
@@ -244,7 +245,7 @@ void transformSoftPlusW(const TYPE* d_a, TYPE* d_b, size_t n)
     dim3 GridDim;
     setKernelDims(n,BlockDim,GridDim); 
     transformSoftPlusKernel<TYPE><<<GridDim,BlockDim>>>(d_a, d_b, n);
-    hipDeviceSynchronize();
+    checkHipErrors(hipDeviceSynchronize());
 
 }
 
@@ -259,16 +260,16 @@ TYPE sumW(const TYPE* d_a, size_t n)
     TYPE* d_odata, *h_odata;
     size_t bytes = sizeof(TYPE)*blocks;
     h_odata = (TYPE*)malloc(bytes);
-    hipMalloc((void**)&d_odata, bytes); 
+    checkHipErrors(hipMalloc((void**)&d_odata, bytes)); 
     sumKernel<TYPE, 128><<<gridSize,blockSize,smemsize>>>(d_a,d_odata,n);
-    hipDeviceSynchronize();
-    hipMemcpy(h_odata, d_odata, bytes, hipMemcpyDeviceToHost);
+    checkHipErrors(hipDeviceSynchronize());
+    checkHipErrors(hipMemcpy(h_odata, d_odata, bytes, hipMemcpyDeviceToHost));
     TYPE sum = (TYPE) 0;
     for(int i = 0; i < blocks; i++){
         sum += h_odata[i];
     }
     free(h_odata);
-    hipFree(d_odata);
+    checkHipErrors(hipFree(d_odata));
     return sum;
 }
 
@@ -285,15 +286,15 @@ bool equalsW(const TYPE* d_a, const TYPE* d_b, TYPE tol, size_t n)
     bool* d_odata, *h_odata;
     size_t bytes = sizeof(bool)*blocks;
     h_odata = (bool*)malloc(bytes);
-    hipMalloc((void**)&d_odata, bytes); 
+    checkHipErrors(hipMalloc((void**)&d_odata, bytes));
     equalsKernel<TYPE, 128><<<gridSize,blockSize,smemsize>>>(d_a,d_b,d_odata,n,tol);
-    hipDeviceSynchronize();
-    hipMemcpy(h_odata, d_odata, bytes, hipMemcpyDeviceToHost);
+    checkHipErrors(hipDeviceSynchronize());
+    checkHipErrors(hipMemcpy(h_odata, d_odata, bytes, hipMemcpyDeviceToHost));
     for(int i = 0; i < blocks; i++){
         eq = eq && h_odata[i];
     }
     free(h_odata);
-    hipFree(d_odata);
+    checkHipErrors(hipFree(d_odata));
     return eq;
 
 } 
