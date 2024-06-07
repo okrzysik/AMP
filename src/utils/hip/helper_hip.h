@@ -17,7 +17,6 @@ enum class MemoryType : uint8_t;
 // Get the pointer type from hip
 AMP::Utilities::MemoryType getHipMemoryType( const void *ptr );
 
-
 // Get the name of a return code
 template<typename T>
 const char *hipGetName( T result );
@@ -25,10 +24,10 @@ const char *hipGetName( T result );
 // Check the return code
 template<typename T>
 void checkHipErrors( T result,
-                      const StackTrace::source_location &source = SOURCE_LOCATION_CURRENT() );
+                     const StackTrace::source_location &source = SOURCE_LOCATION_CURRENT() );
 
 // Get the last hip error
 void getLastHipError( const char *errorMessage,
-                       const StackTrace::source_location &source = SOURCE_LOCATION_CURRENT() );
+                      const StackTrace::source_location &source = SOURCE_LOCATION_CURRENT() );
 
 #endif

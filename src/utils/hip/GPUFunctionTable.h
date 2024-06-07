@@ -5,9 +5,7 @@
 
 #include <memory>
 
-
 namespace AMP {
-
 
 /*!
  * Class GPUFunctionTable is an accelerated function table class that defines
@@ -155,7 +153,6 @@ public:
     template<class TYPE, class FUN, class ALLOC>
     static TYPE sum( const Array<TYPE, FUN, ALLOC> &A );
 
-
     GPUFunctionTable(){};
 
 private:
@@ -164,6 +161,5 @@ private:
 };
 } // namespace AMP
 #include "GPUFunctionTable.hpp"
-
 
 #endif

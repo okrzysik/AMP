@@ -1,8 +1,8 @@
 #ifndef included_AMP_GPUDevAllocator
 #define included_AMP_GPUDevAllocator
 
-#include <hip/hip_runtime.h>
 #include "AMP/utils/hip/helper_hip.h"
+#include <hip/hip_runtime.h>
 
 namespace AMP {
 
@@ -31,7 +31,6 @@ public:
     }
 };
 
-
 /**
  * \class  HipManagedAllocator
  * @brief  Allocator based on hipMallocManaged
@@ -56,7 +55,6 @@ public:
         checkHipErrors( err );
     }
 };
-
 
 /**
  * \class  HipHostAllocator
@@ -84,6 +82,5 @@ public:
 };
 
 } // namespace AMP
-
 
 #endif

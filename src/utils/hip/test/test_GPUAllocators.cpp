@@ -1,4 +1,3 @@
-#include "AMP/utils/hip/testGPUAllocators.hpp"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
@@ -6,6 +5,7 @@
 #include "AMP/utils/FunctionTable.hpp"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/hip/HipAllocator.h"
+#include "AMP/utils/hip/testGPUAllocators.hpp"
 #include <hip/hip_runtime_api.h>
 
 #include <memory>
@@ -33,13 +33,14 @@ void ArrayTestWithAllocators( AMP::UnitTest &ut )
     KernelWrapper<T> K;
     K.setData( A.data(), 4.0, A.length() );
     K.opData( A.data(), A.length() );
-    checkHipErrors(hipDeviceSynchronize());
+    checkHipErrors( hipDeviceSynchronize() );
 
     B.resize( v2 );
     K.setData( B.data(), 4.0, B.length() );
     K.opData( B.data(), B.length() );
     R.resize( v2 );
-    checkHipErrors(hipMemcpy( R.data(), B.data(), sizeof( T ) * R.length(), hipMemcpyDeviceToHost ));
+    checkHipErrors(
+        hipMemcpy( R.data(), B.data(), sizeof( T ) * R.length(), hipMemcpyDeviceToHost ) );
     bool pass = true;
     for ( size_t i = 0; i < R.length(); i++ ) {
         if ( A.data()[i] != R.data()[i] ) {
@@ -68,9 +69,8 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    ArrayTestWithAllocators<double,
-                            AMP::HipManagedAllocator<double>,
-                            AMP::HipDevAllocator<double>>( ut );
+    ArrayTestWithAllocators<double, AMP::HipManagedAllocator<double>, AMP::HipDevAllocator<double>>(
+        ut );
 
     ArrayTestWithAllocators<float, ReboundManagedAllocator<float>, ReboundDevAllocator<float>>(
         ut );

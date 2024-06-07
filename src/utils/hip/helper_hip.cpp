@@ -33,7 +33,7 @@ void checkHipErrors( T result, const StackTrace::source_location &source )
                  hipGetName( result ),
                  source.function_name() );
         // Make sure we call HIP Device Reset before exiting
-        (void)hipDeviceReset();
+        (void) hipDeviceReset();
         exit( EXIT_FAILURE );
     }
 }
@@ -48,11 +48,10 @@ void getLastHipError( const char *errorMessage, const StackTrace::source_locatio
                  errorMessage,
                  (int) err,
                  hipGetErrorString( err ) );
-        (void)hipDeviceReset();
+        (void) hipDeviceReset();
         exit( EXIT_FAILURE );
     }
 }
-
 
 // HIP Runtime error messages
 template<>

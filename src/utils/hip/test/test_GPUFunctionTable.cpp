@@ -3,8 +3,8 @@
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/FunctionTable.hpp"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/hip/HipAllocator.h"
 #include "AMP/utils/hip/GPUFunctionTable.h"
+#include "AMP/utils/hip/HipAllocator.h"
 #include <hip/hip_runtime_api.h>
 
 template<class TYPE, class FUN, class ALLOC>
@@ -29,7 +29,8 @@ void TestFunctionTable( AMP::UnitTest *ut,
     }
     TYPE r1 = FUN::sum( A );
     TYPE r2 = FUN::sum( B );
-    if (  (fabs( (float) r1 - (float) n1 ) > thresh)  ||  (fabs( (float) r2 - (float) n2) > thresh)  ) {
+    if ( ( fabs( (float) r1 - (float) n1 ) > thresh ) ||
+         ( fabs( (float) r2 - (float) n2 ) > thresh ) ) {
         pass = false;
     }
 
