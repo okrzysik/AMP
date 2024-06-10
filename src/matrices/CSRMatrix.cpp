@@ -3,6 +3,7 @@
 #include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/data/CSRMatrixData.hpp"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.hpp"
+#include "AMP/matrices/operations/CSRMatrixOperationsKokkos.hpp"
 
 namespace AMP::LinearAlgebra {
 template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>>;

@@ -1,14 +1,18 @@
 #ifndef included_AMP_CSRMatrix_hpp
 #define included_AMP_CSRMatrix_hpp
 
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
-#include "AMP/vectors/VectorBuilder.h"
+
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+#include "AMP/matrices/operations/CSRMatrixOperationsKokkos.h"
+#endif
+
 #include <cstdio>
 #include <cstring>
-
 #include <numeric>
 
 namespace AMP::LinearAlgebra {
@@ -20,14 +24,26 @@ namespace AMP::LinearAlgebra {
 template<typename Policy>
 CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params ) : Matrix( params )
 {
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
     d_matrixData = std::make_shared<CSRMatrixData<Policy>>( params );
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+    std::cout << "<CSRMatrix> Using Kokkos ops" << std::endl;
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy>>();
+#else
+    std::cout << "<CSRMatrix> Using default ops" << std::endl;
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
+#endif
 }
 
 template<typename Policy>
 CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
-    d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+    std::cout << "<CSRMatrix> Using Kokkos ops" << std::endl;
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy>>();
+#else
+    std::cout << "<CSRMatrix> Using default ops" << std::endl;
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
+#endif
 }
 
 template<typename Policy>

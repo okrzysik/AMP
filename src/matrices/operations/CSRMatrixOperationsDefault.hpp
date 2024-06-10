@@ -8,22 +8,6 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy>
-static CSRMatrixData<Policy> const *getCSRMatrixData( MatrixData const &A )
-{
-    auto ptr = dynamic_cast<CSRMatrixData<Policy> const *>( &A );
-    AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
-    return ptr;
-}
-
-template<typename Policy>
-static CSRMatrixData<Policy> *getCSRMatrixData( MatrixData &A )
-{
-    auto ptr = dynamic_cast<CSRMatrixData<Policy> *>( &A );
-    AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
-    return ptr;
-}
-
 
 template<typename Policy>
 void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
