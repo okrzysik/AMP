@@ -21,6 +21,8 @@ class Amp(CMakePackage):
     depends_on("mpi", when="+mpi")
     depends_on("tpl-builder@master")
 
+    conflicts("+rocm +cuda")
+
     tpl_depends = ["stacktrace", "hypre", "cuda", "rocm"]
 
     for _variant in tpl_depends:
@@ -31,7 +33,7 @@ class Amp(CMakePackage):
 
         args = [
             "-D TPL_DIRECTORY="+self.spec["tpl-builder"].prefix,
-            "-D USE_CUDA={condition}".format(condition="1" if self.spec.satisfies("+cuda") else "0"),
+            "-D USE_HIP={condition}".format(condition="1" if self.spec.satisfies("+rocm") else "0"),         
             "-D AMP_INSTALL_DIR="+self.spec.prefix,
             "-D CXX_STD=17",
             "-D DISABLE_ALL_TESTS=ON",
@@ -39,9 +41,14 @@ class Amp(CMakePackage):
         
         #TODO have amp_data as a dependencie
         
-
         if self.spec.satisfies("+mpi"):
             args.append("-DCMAKE_CXX_COMPILER=mpicxx")
         return args
+        
+        if self.spec.satisfies("+cuda"):
+            args.append("-D USE_CUDA=1")
+            args.append("-D CMAKE_CUDA_ARCHITECTURES=native")
+            args.append("-D CMAKE_CUDA_COMPILER=" + self.spec["cuda"].prefix + "bin/nvcc")
 
-
+        else:
+            args.append("-D USE_CUDA=0")
