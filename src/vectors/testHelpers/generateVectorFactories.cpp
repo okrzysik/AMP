@@ -29,6 +29,10 @@
     #include "AMP/utils/cuda/GPUFunctionTable.h"
     #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
+#ifdef USE_HIP
+    #include "AMP/utils/hip/HipAllocator.h"
+    #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
+#endif
 
 #include <string>
 #include <vector>
@@ -117,6 +121,10 @@ bool isValid( const std::string &name )
     valid = valid && name.find( "cuda" ) == std::string::npos;
     valid = valid && name.find( "gpu" ) == std::string::npos;
 #endif
+#ifndef USE_HIP
+    valid = valid && name.find( "hip" ) == std::string::npos;
+    valid = valid && name.find( "gpu" ) == std::string::npos;
+#endif
     NULL_USE( name );
     return valid;
 }
@@ -156,6 +164,11 @@ generateSimpleVectorFactory( const std::string &name, int N, bool global, const 
         using DATA  = AMP::LinearAlgebra::VectorDataDefault<TYPE, ALLOC>;
         factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
 #endif
+#ifdef USE_HIP
+        using ALLOC = HipManagedAllocator<TYPE>;
+        using DATA  = AMP::LinearAlgebra::VectorDataDefault<TYPE, ALLOC>;
+        factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
+#endif
     } else {
         AMP_ERROR( "Unknown VectorData" );
     }
@@ -179,6 +192,11 @@ std::shared_ptr<VectorFactory> generateSimpleVectorFactory(
     } else if ( ops == "cuda" ) {
 #ifdef USE_CUDA
         factory = generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsCuda<TYPE>>(
+            name, N, global, data );
+#endif
+    } else if ( ops == "hip" ) {
+#ifdef USE_HIP
+        factory = generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsHip<TYPE>>(
             name, N, global, data );
 #endif
     } else {
