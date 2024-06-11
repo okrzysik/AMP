@@ -94,6 +94,7 @@ int RK2TimeIntegrator::advanceSolution( const double dt,
     PROFILE( "advanceSolution" );
 
     d_solution_vector = in;
+    d_current_dt      = dt;
 
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
