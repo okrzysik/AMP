@@ -11,11 +11,14 @@
     #include "AMP/utils/cuda/CudaAllocator.h"
     #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
+#ifdef USE_HIP
+    #include "AMP/utils/hip/HipAllocator.h"
+    #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
+#endif
 
 #include "ProfilerApp.h"
 
 #include <chrono>
-
 
 static inline double speedup( size_t x, size_t y )
 {
@@ -88,7 +91,6 @@ struct test_times {
     }
 };
 
-
 #define runTest0( TEST )                                                                      \
     do {                                                                                      \
         auto t1 = std::chrono::steady_clock::now();                                           \
@@ -118,7 +120,6 @@ struct test_times {
         times.TEST = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count(); \
     } while ( 0 )
 
-
 test_times testPerformance( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
     test_times times;
@@ -146,7 +147,6 @@ test_times testPerformance( AMP::LinearAlgebra::Vector::shared_ptr vec )
 
     return times;
 }
-
 
 int main( int argc, char **argv )
 {
@@ -192,6 +192,20 @@ int main( int argc, char **argv )
             AMP::pout << "SimpleVector<CUDA>:" << std::endl;
             time_cuda.print();
             time_cuda.print_speedup( time0 );
+            AMP::pout << std::endl;
+        }
+#endif
+
+#ifdef USE_HIP
+        using ALLOC = AMP::HipManagedAllocator<double>;
+        using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
+        using OPS   = AMP::LinearAlgebra::VectorOperationsHip<double>;
+        vec = AMP::LinearAlgebra::createSimpleVector<double, OPS, DATA>( N, var, globalComm );
+        auto time_hip = testPerformance( vec );
+        if ( rank == 0 ) {
+            AMP::pout << "SimpleVector<HIP>:" << std::endl;
+            time_hip.print();
+            time_hip.print_speedup( time0 );
             AMP::pout << std::endl;
         }
 #endif
