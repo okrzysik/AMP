@@ -1,9 +1,11 @@
 #include "AMP/vectors/data/ArrayVectorData.h"
 #ifdef USE_HIP
     #include "AMP/utils/hip/HipAllocator.h"
+    #include "AMP/utils/hip/GPUFunctionTable.h"
 #endif
 #ifdef USE_CUDA
     #include "AMP/utils/cuda/CudaAllocator.h"
+    #include "AMP/utils/cuda/GPUFunctionTable.h"
 #endif
 
 // Explicit instantiations
