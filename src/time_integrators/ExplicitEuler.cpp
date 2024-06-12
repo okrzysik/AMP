@@ -100,8 +100,6 @@ int ExplicitEuler::advanceSolution( const double dt,
             AMP::pout << "ExplicitEuler::advanceSolution "
                       << ", timestep # " << d_integrator_step << ", current_time " << d_current_time
                       << ", dt " << d_current_dt << std::endl;
-            AMP::pout << "L2 Norm of d_solution_vector " << d_solution_vector->L2Norm()
-                      << std::endl;
         }
         // f_vec = f(tn,un)
         {
@@ -109,9 +107,6 @@ int ExplicitEuler::advanceSolution( const double dt,
             d_operator->apply( d_solution_vector, d_f_vec );
             if ( d_pSourceTerm )
                 d_f_vec->add( *d_f_vec, *d_pSourceTerm );
-            if ( d_iDebugPrintInfoLevel > 0 ) {
-                AMP::pout << "L2 Norm of f(d_solution_vector) " << d_f_vec->L2Norm() << std::endl;
-            }
         }
 
 
@@ -119,9 +114,6 @@ int ExplicitEuler::advanceSolution( const double dt,
         {
             PROFILE( "ExplicitEuler::advanceSolution axby" );
             d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution_vector );
-            if ( d_iDebugPrintInfoLevel > 0 ) {
-                AMP::pout << "L2 Norm of d_new_solution " << d_new_solution->L2Norm() << std::endl;
-            }
         }
     }
 

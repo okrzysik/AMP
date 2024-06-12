@@ -17,12 +17,10 @@
 
 #include <iostream>
 
-
 using namespace AMP::unit_test;
 using namespace AMP::LinearAlgebra;
 using AMP::LinearAlgebra::generateVectorFactory;
 using AMP::LinearAlgebra::VectorTests;
-
 
 std::string SimpleFactory1 = "SimpleVectorFactory<15,false,double>";
 std::string SimpleFactory2 = "SimpleVectorFactory<45,true,double>";
@@ -34,7 +32,6 @@ std::string MVFactory1 = "MultiVectorFactory<" + SNEVFactory + ", 1, " + SNPVFac
 std::string MVFactory1 =
     "MultiVectorFactory<SimpleVectorFactory<15,false>,1," + SNEVFactory + ",1>";
 #endif
-
 
 int main( int argc, char **argv )
 {
