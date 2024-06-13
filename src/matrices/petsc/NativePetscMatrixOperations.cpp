@@ -49,6 +49,7 @@ void NativePetscMatrixOperations::multTranspose( std::shared_ptr<const Vector> i
                                                  MatrixData const &A,
                                                  std::shared_ptr<Vector> out )
 {
+    PROFILE( "NativePetscMatrixOperations::multTranspose" );
     MatMultTranspose( getMat( A ), *getVec( in ), *getVec( out ) );
 }
 

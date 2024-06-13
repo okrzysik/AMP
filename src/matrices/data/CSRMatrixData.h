@@ -177,6 +177,14 @@ public:
                                 d_off_diag_matrix->d_coeffs );
     }
 
+    lidx_t* getDiagRowStarts() {
+      return d_diag_matrix->d_row_starts;
+    }
+
+    lidx_t* getOffDiagRowStarts() {
+      return d_off_diag_matrix->d_row_starts;
+    }
+
     bool isSquare() const noexcept { return d_is_square; }
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> getLeftVariable()

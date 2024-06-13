@@ -26,10 +26,8 @@ CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params ) : M
 {
     d_matrixData = std::make_shared<CSRMatrixData<Policy>>( params );
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
-    std::cout << "<CSRMatrix> Using Kokkos ops" << std::endl;
     d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy>>();
 #else
-    std::cout << "<CSRMatrix> Using default ops" << std::endl;
     d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
 #endif
 }
@@ -38,10 +36,8 @@ template<typename Policy>
 CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
-    std::cout << "<CSRMatrix> Using Kokkos ops" << std::endl;
     d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy>>();
 #else
-    std::cout << "<CSRMatrix> Using default ops" << std::endl;
     d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
 #endif
 }

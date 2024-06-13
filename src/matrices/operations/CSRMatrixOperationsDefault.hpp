@@ -16,7 +16,6 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
 {
     PROFILE( "CSRMatrixOperationsDefault::mult" );
     AMP_DEBUG_ASSERT( in && out );
-    AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -87,85 +86,7 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
                                                         MatrixData const &A,
                                                         std::shared_ptr<Vector> out )
 {
-    // this is not meant to be an optimized version. It is provided for completeness
-    AMP_DEBUG_ASSERT( in && out );
-    AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-
-    out->zero();
-
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
-
-    auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
-
-    auto memType = AMP::Utilities::getMemoryType( cols_loc_d );
-    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is implemented only for host memory" );
-
-    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
-    auto maxColLen   = *std::max_element( nnz_d, nnz_d + nRows );
-    std::vector<size_t> rcols( maxColLen );
-    std::vector<scalar_t> vvals( maxColLen );
-
-    {
-        auto maxColLen = *std::max_element( nnz_d, nnz_d + nRows );
-        std::vector<size_t> rcols( maxColLen );
-        std::vector<scalar_t> vvals( maxColLen );
-        lidx_t offset = 0;
-        for ( lidx_t row = 0; row < nRows; ++row ) {
-
-            const auto nCols = nnz_d[row];
-
-            const auto cloc = &cols_d[offset];
-            const auto vloc = &coeffs_d[offset];
-
-            std::transform(
-                cloc, cloc + nCols, rcols.begin(), []( gidx_t col ) -> size_t { return col; } );
-
-            const auto val = in->getValueByGlobalID( row );
-
-            for ( lidx_t icol = 0; icol < nCols; ++icol ) {
-                vvals[icol] = vloc[icol] * val;
-            }
-
-            out->addValuesByGlobalID( nCols, rcols.data(), vvals.data() );
-
-            offset += nCols;
-        }
-    }
-
-    if ( csrData->hasOffDiag() ) {
-        auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSRDiagData();
-        auto maxColLen = *std::max_element( nnz_od, nnz_od + nRows );
-        std::vector<size_t> rcols( maxColLen );
-        std::vector<scalar_t> vvals( maxColLen );
-        lidx_t offset = 0;
-        for ( lidx_t row = 0; row < nRows; ++row ) {
-
-            const auto nCols = nnz_od[row];
-
-            const auto cloc = &cols_od[offset];
-            const auto vloc = &coeffs_od[offset];
-
-            std::transform(
-                cloc, cloc + nCols, rcols.begin(), []( gidx_t col ) -> size_t { return col; } );
-
-            const auto val = in->getValueByGlobalID( row );
-
-            for ( lidx_t icol = 0; icol < nCols; ++icol ) {
-                vvals[icol] = vloc[icol] * val;
-            }
-
-            out->addValuesByGlobalID( nCols, rcols.data(), vvals.data() );
-
-            offset += nCols;
-        }
-    }
-    // consistent add because some values might be remote
-    out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+  AMP_ERROR( "Not implemented" );
 }
 
 template<typename Policy>

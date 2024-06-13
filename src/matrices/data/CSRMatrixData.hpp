@@ -592,6 +592,9 @@ void CSRMatrixData<Policy>::CSRSerialMatrixData::getValuesByGlobalID( const size
                                                                       void *values,
                                                                       const typeID &id ) const
 {
+    if ( getTypeID<scalar_t>() != id ) {
+        AMP_ERROR( "Conversion not implemented" );
+    }
     // Don't do anything on empty matrices
     if ( d_is_empty ) {
         return;
@@ -614,34 +617,33 @@ template<typename Policy>
 void CSRMatrixData<Policy>::addValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
-    if ( getTypeID<scalar_t>() == id ) {
-
-        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-
-            auto values = reinterpret_cast<const scalar_t *>( vals );
-
-            for ( size_t i = 0u; i != num_rows; i++ ) {
-                if ( rows[i] >= static_cast<size_t>( d_first_row ) &&
-                     rows[i] < static_cast<size_t>( d_last_row ) ) {
-
-                    // Forward single row to diag and off diag blocks
-                    // auto lcols = &cols[num_cols * i];
-                    const auto local_row = rows[i] - d_first_row;
-                    auto lvals           = &values[num_cols * i];
-                    d_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-                    d_off_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-                } else {
-                    for ( size_t icol = 0; icol < num_cols; ++icol ) {
-                        d_other_data[rows[i]][cols[icol]] += values[num_cols * i + icol];
-                    }
-                }
-            }
-
-        } else {
-            AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
-        }
-    } else {
+    if ( getTypeID<scalar_t>() != id ) {
         AMP_ERROR( "Conversion not implemented" );
+    }
+
+    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+        
+        auto values = reinterpret_cast<const scalar_t *>( vals );
+	
+	for ( size_t i = 0u; i != num_rows; i++ ) {
+	    if ( rows[i] >= static_cast<size_t>( d_first_row ) &&
+		 rows[i] < static_cast<size_t>( d_last_row ) ) {
+	      
+	        // Forward single row to diag and off diag blocks
+	        // auto lcols = &cols[num_cols * i];
+	        const auto local_row = rows[i] - d_first_row;
+		auto lvals           = &values[num_cols * i];
+		d_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+		d_off_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+	    } else {
+	        for ( size_t icol = 0; icol < num_cols; ++icol ) {
+		    d_other_data[rows[i]][cols[icol]] += values[num_cols * i + icol];
+		}
+	    }
+	}
+	
+    } else {
+      AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
     }
 }
 
@@ -656,6 +658,10 @@ void CSRMatrixData<Policy>::CSRSerialMatrixData::addValuesByGlobalID( const size
         return;
     }
 
+    if ( getTypeID<scalar_t>() != id ) {
+        AMP_ERROR( "Conversion not implemented" );
+    }
+    
     const auto start = d_row_starts[local_row];
     const auto end   = d_row_starts[local_row + 1];
     // Inefficient because we don't assume order
@@ -673,34 +679,34 @@ template<typename Policy>
 void CSRMatrixData<Policy>::setValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
-    if ( getTypeID<scalar_t>() == id ) {
-        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-
-            auto values = reinterpret_cast<const scalar_t *>( vals );
-
-            for ( size_t i = 0u; i != num_rows; i++ ) {
-
-                if ( rows[i] >= static_cast<size_t>( d_first_row ) &&
-                     rows[i] < static_cast<size_t>( d_last_row ) ) {
-
-                    // Forward single row to diag and off diag blocks
-                    // auto lcols = &cols[num_cols * i];
-                    const auto local_row = rows[i] - d_first_row;
-                    auto lvals           = &values[num_cols * i];
-                    d_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-                    d_off_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-                } else {
-                    for ( size_t icol = 0; icol < num_cols; ++icol ) {
-                        d_ghost_data[rows[i]][cols[icol]] = values[num_cols * i + icol];
-                    }
-                }
-            }
-
-        } else {
-            AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
-        }
-    } else {
+    if ( getTypeID<scalar_t>() != id ) {
         AMP_ERROR( "Conversion not implemented" );
+    }
+    
+    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+      
+        auto values = reinterpret_cast<const scalar_t *>( vals );
+	
+	for ( size_t i = 0u; i != num_rows; i++ ) {
+	  
+	    if ( rows[i] >= static_cast<size_t>( d_first_row ) &&
+		 rows[i] < static_cast<size_t>( d_last_row ) ) {
+	      
+	        // Forward single row to diag and off diag blocks
+	        // auto lcols = &cols[num_cols * i];
+	        const auto local_row = rows[i] - d_first_row;
+		auto lvals           = &values[num_cols * i];
+		d_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+		d_off_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+	    } else {
+	        for ( size_t icol = 0; icol < num_cols; ++icol ) {
+		    d_ghost_data[rows[i]][cols[icol]] = values[num_cols * i + icol];
+		}
+	    }
+	}
+	
+    } else {
+      AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
     }
 }
 
@@ -713,6 +719,10 @@ void CSRMatrixData<Policy>::CSRSerialMatrixData::setValuesByGlobalID( const size
 {
     if ( d_is_empty ) {
         return;
+    }
+    
+    if ( getTypeID<scalar_t>() != id ) {
+        AMP_ERROR( "Conversion not implemented" );
     }
 
     const auto start = d_row_starts[local_row];
