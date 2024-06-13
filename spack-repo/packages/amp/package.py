@@ -15,6 +15,7 @@ class Amp(CMakePackage):
     variant("cuda", default=False)
     variant("cuda_arch", default="none", values = ("none", "10", "11", "12", "13", "20", "21", "30", "32", "35", "37", "50", "52", "53", "60", "61", "62", "70", "72", "75", "80", "86", "87", "89", "90"), multi=False)
     variant("rocm", default=False)
+    variant("openmp", default=False)
 
     depends_on("stacktrace@master")
     depends_on("cmake@3.26.0:", type="build")
@@ -55,9 +56,7 @@ class Amp(CMakePackage):
         
         if self.spec.satisfies("+cuda"):
             args.append("-DUSE_CUDA=TRUE")
-            args.append("-DCMAKE_CUDA_ARCHITECTURES=70")
             args.append("-DCMAKE_CUDA_FLAGS=--extended-lambda") 
-            args.append("-DCMAKE_CUDA_COMPILER=" + self.spec["cuda"].prefix + "/bin/nvcc")
 
         else:
             args.append("-D USE_CUDA=FALSE")
