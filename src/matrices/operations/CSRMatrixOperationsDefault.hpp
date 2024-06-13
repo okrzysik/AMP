@@ -98,14 +98,15 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
     AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
+    const auto nRows = static_cast<size_t>( csrData->numLocalRows() );
+    const auto beginRow = static_cast<size_t>( csrData->beginRow() );
     auto maxColLen   = *std::max_element( nnz, nnz + nRows );
 
     std::vector<size_t> rcols( maxColLen );
     std::vector<scalar_t> vvals( maxColLen );
 
     lidx_t offset = 0;
-    for ( lidx_t row = 0; row < nRows; ++row ) {
+    for ( size_t row = 0; row < nRows; ++row ) {
 
         const auto nCols = nnz[row];
 
@@ -115,7 +116,7 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
         std::transform(
             cloc, cloc + nCols, rcols.begin(), []( gidx_t col ) -> size_t { return col; } );
 
-        const auto val = in->getValueByGlobalID( row );
+        const auto val = in->getValueByGlobalID( row + beginRow );
 
         for ( lidx_t icol = 0; icol < nCols; ++icol ) {
             vvals[icol] = vloc[icol] * val;
