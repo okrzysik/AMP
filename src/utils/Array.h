@@ -298,6 +298,20 @@ public: // Views/copies/subset
     }
 
 
+    /*!
+     * Reinterpret the array as a new type (use with caution)
+     */
+    template<class TYPE2>
+    Array<TYPE2, FUN, std::allocator<TYPE2>> inline reinterpretArray() const
+    {
+        static_assert( sizeof( TYPE ) == sizeof( TYPE2 ) );
+        auto ptr = std::reinterpret_pointer_cast<TYPE2>( std::const_pointer_cast<TYPE>( d_ptr ) );
+        AMP::Array<TYPE2> y;
+        y.view2( d_size, ptr );
+        return y;
+    }
+
+
     /*! swap the raw data pointers for the Arrays after checking for compatibility */
     void swap( Array &other );
 
