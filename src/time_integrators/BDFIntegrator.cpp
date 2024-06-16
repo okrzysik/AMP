@@ -538,6 +538,10 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
 
         // set the source term to -( u^{n}+(dt/2-\eps)f(u^n) )
         f->axpy( -beta, *d_prev_function_vector, *f );
+        // we have to add this in again for CN
+        if ( d_pSourceTerm ) {
+            f->axpy( -d_gamma, *d_pSourceTerm, *f );
+        }
     }
 }
 
