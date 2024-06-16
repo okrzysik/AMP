@@ -66,9 +66,10 @@ void TimeOperator::applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x
 {
     AMP_INSIST( d_pRhsOperator, "RHS Operator is NULL" );
     d_pRhsOperator->apply( x, f );
-    if ( d_pSourceTerm ) {
-        f->add( *d_pSourceTerm, *f );
-    }
+    // this is already in the time integrator
+    //    if ( d_pSourceTerm ) {
+    //        f->add( *d_pSourceTerm, *f );
+    //    }
 }
 
 void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
@@ -115,14 +116,13 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
             AMP::pout << d_pScratchVector << std::endl;
         }
 
-        if ( d_pAlgebraicVariable ) {
-            auto algebraicComponent =
-                d_pScratchVector->subsetVectorForVariable( d_pAlgebraicVariable );
-            algebraicComponent->zero();
-        }
-
         // f =  M x^{n+1} - \gamma*fRhs(x^{n+1})
         r->axpy( -d_dGamma, *r, *d_pScratchVector );
+    }
+
+    if ( d_pAlgebraicVariable ) {
+        auto algebraicComponent = r->subsetVectorForVariable( d_pAlgebraicVariable );
+        algebraicComponent->zero();
     }
 
     if ( d_iDebugPrintInfoLevel > 5 ) {
