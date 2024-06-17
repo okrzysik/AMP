@@ -30,7 +30,7 @@ public:
     ~StackAllocator();
 
     // Copy/assignment constructors
-    StackAllocator( const StackAllocator & )            = delete;
+    StackAllocator( const StackAllocator & ) = delete;
     StackAllocator &operator=( const StackAllocator & ) = delete;
     StackAllocator( StackAllocator && );
     StackAllocator &operator=( StackAllocator && );

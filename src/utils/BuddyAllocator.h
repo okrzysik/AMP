@@ -29,7 +29,7 @@ public:
     ~BuddyAllocator();
 
     // Copy/assignment constructors
-    BuddyAllocator( const BuddyAllocator & )            = delete;
+    BuddyAllocator( const BuddyAllocator & ) = delete;
     BuddyAllocator &operator=( const BuddyAllocator & ) = delete;
     BuddyAllocator( BuddyAllocator && );
     BuddyAllocator &operator=( BuddyAllocator && );
