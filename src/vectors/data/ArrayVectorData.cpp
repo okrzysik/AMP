@@ -1,7 +1,7 @@
 #include "AMP/vectors/data/ArrayVectorData.h"
 #ifdef USE_HIP
-    #include "AMP/utils/hip/HipAllocator.h"
     #include "AMP/utils/hip/GPUFunctionTable.h"
+    #include "AMP/utils/hip/HipAllocator.h"
 #endif
 #ifdef USE_CUDA
     #include "AMP/utils/cuda/CudaAllocator.h"
@@ -24,11 +24,11 @@ template class AMP::LinearAlgebra::
 #endif
 #ifdef USE_HIP
 template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::FunctionTable, AMP::HipDevAllocator<double>>;
+    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::HipDevAllocator<double>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::FunctionTable, AMP::HipDevAllocator<float>>;
+    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::HipDevAllocator<float>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::FunctionTable, AMP::HipManagedAllocator<double>>;
+    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::HipManagedAllocator<double>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::FunctionTable, AMP::HipManagedAllocator<float>>;
+    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::HipManagedAllocator<float>>;
 #endif
