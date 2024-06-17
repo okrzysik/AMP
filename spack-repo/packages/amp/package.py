@@ -13,7 +13,6 @@ class Amp(CMakePackage):
     variant("mpi", default=True, description="build with mpi")
     variant("hypre", default=False)
     variant("cuda", default=False)
-    variant("cuda_arch", default="none", values = ("none", "10", "11", "12", "13", "20", "21", "30", "32", "35", "37", "50", "52", "53", "60", "61", "62", "70", "72", "75", "80", "86", "87", "89", "90"), multi=False)
     variant("rocm", default=False)
     variant("openmp", default=False)
 
@@ -31,12 +30,6 @@ class Amp(CMakePackage):
         depends_on("tpl-builder@master+" + _variant, when="+" + _variant)
         depends_on("tpl-builder@master~" + _variant, when="~" + _variant)
 
-    #shamelessly stollen from the hypre spack package
-    for sm_ in CudaPackage.cuda_arch_values:
-        depends_on(
-            "tpl-builder@master+cuda cuda_arch={0}".format(sm_),
-            when="+cuda cuda_arch={0}".format(sm_),
-        )
 
 
     def cmake_args(self):
@@ -47,6 +40,8 @@ class Amp(CMakePackage):
             "-D AMP_INSTALL_DIR="+self.spec.prefix,
             "-D CXX_STD=17",
             "-D DISABLE_ALL_TESTS=ON",
+            self.define_from_variant("USE_OPENMP", "openmp"),
+            self.degine_from_variant("USE_CUDA", "cuda")
         ]
         
         #TODO have amp_data as a dependencie
@@ -55,10 +50,7 @@ class Amp(CMakePackage):
             args.append("-DCMAKE_CXX_COMPILER=mpicxx")
         
         if self.spec.satisfies("+cuda"):
-            args.append("-DUSE_CUDA=TRUE")
             args.append("-DCMAKE_CUDA_FLAGS=--extended-lambda") 
 
-        else:
-            args.append("-D USE_CUDA=FALSE")
-
+ 
         return args
