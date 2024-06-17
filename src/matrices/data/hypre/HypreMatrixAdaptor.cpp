@@ -31,7 +31,7 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 
         auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
         auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
-        csrData->generateColumnMap( d_colMap );
+        csrData->getOffDiagColumnMap( d_colMap );
 
         AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d,
                     "diagonal block layout cannot be NULL" );

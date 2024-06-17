@@ -82,9 +82,9 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
 }
 
 template<typename Policy>
-void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Vector> in,
-                                                        MatrixData const &A,
-                                                        std::shared_ptr<Vector> out )
+void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Vector> ,
+                                                        MatrixData const &,
+                                                        std::shared_ptr<Vector>  )
 {
   AMP_ERROR( "Not implemented" );
 }

@@ -206,9 +206,28 @@ public:
 
     auto getMemoryLocation() const { return d_memory_location; }
 
-    void generateColumnMap( std::vector<gidx_t> &colMap ) const
+    std::tuple<gidx_t, gidx_t *> getDiagColumnMap() const
     {
-        d_off_diag_matrix->generateColumnMap( colMap );
+        return std::make_tuple( d_diag_matrix->d_ncols_unq,
+				d_diag_matrix->d_cols_unq );
+    }
+
+    std::tuple<gidx_t, gidx_t *> getOffDiagColumnMap() const
+    {
+        return std::make_tuple( d_off_diag_matrix->d_ncols_unq,
+				d_off_diag_matrix->d_cols_unq );
+    }
+
+    void getOffDiagColumnMap( std::vector<gidx_t> &colMap ) const
+    {
+        // Don't do anything if empty
+        if ( d_off_diag_matrix->d_is_empty ) { return; }
+	
+	// Resize and fill colMap
+	colMap.resize( d_off_diag_matrix->d_ncols_unq );
+	std::copy( d_off_diag_matrix->d_cols_unq,
+		   d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
+		   colMap.begin() );
     }
 
 private:
@@ -258,8 +277,6 @@ private:
 
         std::vector<size_t> getColumnIDs( const size_t local_row ) const;
 
-        void generateColumnMap( std::vector<gidx_t> &colMap ) const;
-
     protected:
         const CSRMatrixData<Policy> &d_outer; // reference to the containing CSRMatrixData object
         bool d_is_diag  = true;
@@ -270,9 +287,14 @@ private:
         lidx_t *d_cols_loc    = nullptr;
         gidx_t *d_cols        = nullptr;
         scalar_t *d_coeffs    = nullptr;
+      
+        gidx_t *d_cols_unq    = nullptr;
+        gidx_t *d_cols_unq_b  = nullptr;
 
-        gidx_t d_num_rows = 0;
-        gidx_t d_nnz      = 0;
+        gidx_t d_num_rows  = 0;
+        gidx_t d_nnz       = 0;
+        gidx_t d_ncols_unq = 0;
+        gidx_t d_nnz_pad   = 0;
 
         AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
 

@@ -249,17 +249,19 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
         // also track un-referenced columns if off-diagonal
         std::vector<gidx_t> colPad;
         std::set<gidx_t> colSet;
+	const bool doPadding = true;
+	d_nnz_pad = 0;
         d_nnz = 0;
         for ( size_t i = 0; i < cols.size(); ++i ) {
             if ( isColValid<Policy>( cols[i], d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
                 d_nnz++;
-                if ( !d_is_diag ) {
+                if ( !d_is_diag && doPadding) {
                     colSet.insert( cols[i] );
                 }
             }
         }
         // attempt to insert all remote dofs into colSet to see which are un-referenced
-        if ( !d_is_diag ) {
+        if ( !d_is_diag && doPadding ) {
             auto remoteDOFs = rightDOFManager->getRemoteDOFs();
             for ( auto rdof : remoteDOFs ) {
                 auto cs = colSet.insert( rdof );
@@ -267,11 +269,10 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
                     // insertion success means this DOF is un-referenced
                     // add it to the padding list
                     colPad.push_back( rdof );
+		    d_nnz++;
+		    d_nnz_pad++;
                 }
             }
-            // colPad now holds the un-referenced global ghost
-            // indices that get padded in below
-            d_nnz += colPad.size();
         }
 
         // bail out for degenerate case with no nnz
@@ -318,13 +319,13 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
         }
 
         // If off-diag pad in the un-referenced ghosts to the final row
-        if ( !d_is_diag ) {
-            lidx_t nPad = colPad.size();
-            d_nnz_per_row[d_num_rows - 1] += nPad;
-            for ( auto col : colPad ) {
+        if ( !d_is_diag && doPadding ) {
+            d_nnz_per_row[d_num_rows - 1] += d_nnz_pad;
+
+	    for ( auto col : colPad ) {
                 d_cols[cli] = col;
                 d_cols_loc[cli] =
-                    static_cast<lidx_t>( matParams->d_CommListRight->getLocalGhostID( col ) );
+		  static_cast<lidx_t>( matParams->d_CommListRight->getLocalGhostID( col ) );
                 d_coeffs[cli] = 0.0;
                 cli++;
                 nnzFilled++;
@@ -337,11 +338,25 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
         AMP_ERROR( "Check supplied MatrixParameter object" );
     }
 
-    // Fill in row starts
+    // Fill in row starts and find unique columns
     if ( !d_is_empty ) {
         // scan nnz counts to get starting index of each row
         std::exclusive_scan( d_nnz_per_row, d_nnz_per_row + d_num_rows, d_row_starts, 0 );
         d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
+	
+
+	// Set will automatically remove duplicates
+	std::set<gidx_t> colSet( d_cols, d_cols + d_nnz );
+	d_ncols_unq = static_cast<gidx_t>( colSet.size() );
+
+	// Allocate forward and reverse maps, fill from set
+	d_cols_unq   = allocate<gidx_t>( d_ncols_unq, d_memory_location );
+	d_cols_unq_b = allocate<gidx_t>( d_ncols_unq, d_memory_location );
+
+	std::copy( colSet.begin(), colSet.end(), d_cols_unq );
+	// for ( gidx_t n = 0; n < d_ncols_unq; ++n ) {
+	//   d_cols_unq_b[] = d_cols_unq[];
+	// }
     }
 }
 
@@ -353,6 +368,8 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::~CSRSerialMatrixData()
 
     if ( matParams ) {
         deallocate<lidx_t>( &d_row_starts, d_num_rows + 1, d_memory_location );
+        deallocate<gidx_t>( &d_cols_unq, d_ncols_unq, d_memory_location );
+        deallocate<gidx_t>( &d_cols_unq_b, d_ncols_unq, d_memory_location );
         if ( d_manage_cols ) {
             deallocate<gidx_t>( &d_cols, d_nnz, d_memory_location );
             deallocate<lidx_t>( &d_cols_loc, d_nnz, d_memory_location );
@@ -434,28 +451,11 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::cloneMatrixData( const CSRMatrixData
         cloneData->d_cols_loc    = nullptr;
         cloneData->d_coeffs      = nullptr;
         cloneData->d_row_starts  = nullptr;
+	cloneData->d_cols_unq    = nullptr;
+	cloneData->d_cols_unq_b  = nullptr;
     }
 
     return cloneData;
-}
-
-// This function generates, but does not own, a column map that is usable by hypre
-// This is only useful if called on the off-diagonal block
-template<typename Policy>
-void CSRMatrixData<Policy>::CSRSerialMatrixData::generateColumnMap(
-    std::vector<gidx_t> &colMap ) const
-{
-    // Don't do anything if empty
-    if ( d_is_empty ) {
-        return;
-    }
-
-    // Find number of unique columns
-    std::set<gidx_t> colSet( d_cols, d_cols + d_nnz );
-
-    // Resize and fill colMap
-    colMap.resize( colSet.size() );
-    std::copy( colSet.begin(), colSet.end(), colMap.begin() );
 }
 
 template<typename Policy>
@@ -733,6 +733,9 @@ void CSRMatrixData<Policy>::CSRSerialMatrixData::setValuesByGlobalID( const size
         for ( lidx_t j = start; j < end; ++j ) {
             if ( d_cols[j] == static_cast<gidx_t>( cols[icol] ) ) {
                 d_coeffs[j] = vals[icol];
+		if (j > (d_nnz - d_nnz_pad)) {
+		  AMP_INSIST( d_coeffs[j]==0.0, " Assigning non-zero to padded location" );
+		}
             }
         }
     }
@@ -852,8 +855,13 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::getColumnIDs( const size_t local_row
 
         std::vector<size_t> cols;
         const auto row_offset = static_cast<size_t>( local_row );
-        const auto offset     = std::accumulate( d_nnz_per_row, d_nnz_per_row + row_offset, 0 );
-        const auto n          = d_nnz_per_row[row_offset];
+        const auto offset     = d_row_starts[local_row];
+        auto n                = d_nnz_per_row[row_offset];
+
+	if ( !d_is_diag && local_row == d_num_rows - 1) {
+#warning This code is jank. Go fix the constructor that needs padding.
+	  n -= d_nnz_pad;
+	}
 
         if constexpr ( std::is_same_v<size_t, gidx_t> ) {
             std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );

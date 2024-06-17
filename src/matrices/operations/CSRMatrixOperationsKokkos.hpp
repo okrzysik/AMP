@@ -141,74 +141,78 @@ void CSRMatrixOperationsKokkos<Policy>::multTranspose( std::shared_ptr<const Vec
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
-
-    auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
-
-    auto memType = AMP::Utilities::getMemoryType( cols_loc_d );
-    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
+    
+    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsKokkos is implemented only for host memory" );
 
+    auto inData                 = in->getVectorData();
+    const scalar_t *inDataBlock = inData->getRawDataBlock<scalar_t>( 0 );
+
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
-    auto beginRow = static_cast<size_t>( csrData->beginRow() );
-    auto maxColLen   = *std::max_element( nnz_d, nnz_d + nRows );
-    std::vector<size_t> rcols( maxColLen );
-    std::vector<scalar_t> vvals( maxColLen );
 
     {
         PROFILE( "CSRMatrixOperationsKokkos::multTranspose (d)" );
-        auto maxColLen = *std::max_element( nnz_d, nnz_d + nRows );
-        std::vector<size_t> rcols( maxColLen );
-        std::vector<scalar_t> vvals( maxColLen );
+	auto [nnz, cols, cols_loc, coeffs] = csrData->getCSRDiagData();
+	auto [num_unq, cols_unq] = csrData->getDiagColumnMap();
+	
+        std::vector<scalar_t> vvals( num_unq, 0.0 );
+	
         lidx_t offset = 0;
-        for ( size_t row = 0; row < static_cast<size_t>( nRows ); ++row ) {
+        for ( lidx_t row = 0; row < nRows; ++row ) {
 
-            const auto nCols = nnz_d[row];
+            const auto ncols = nnz[row];
+            const auto cloc = &cols[offset];
+            const auto vloc = &coeffs[offset];
+            const auto val = inDataBlock[ row ];
 
-            const auto cloc = &cols_d[offset];
-            const auto vloc = &coeffs_d[offset];
-
-            std::transform(
-                cloc, cloc + nCols, rcols.begin(), []( gidx_t col ) -> size_t { return col; } );
-
-            const auto val = in->getValueByGlobalID( row + beginRow );
-
-            for ( lidx_t icol = 0; icol < nCols; ++icol ) {
-                vvals[icol] = vloc[icol] * val;
+            for ( lidx_t j = 0; j < ncols; ++j ) {
+	        auto cit = std::lower_bound( cols_unq, cols_unq + num_unq, cloc[j] );
+		auto idx = std::distance( cols_unq, cit );
+                vvals[idx] += vloc[j] * val;
             }
 
-            out->addValuesByGlobalID( nCols, rcols.data(), vvals.data() );
-
-            offset += nCols;
+            offset += ncols;
         }
+
+	// convert colmap to size_t and write out data
+	std::vector<size_t> rcols( num_unq );
+	std::transform( cols_unq, cols_unq + num_unq, rcols.begin(),
+			[]( gidx_t col ) -> size_t { return col; } );
+	out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
     }
+    out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsKokkos::multTranspose (od)" );
-        auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
-        auto maxColLen = *std::max_element( nnz_od, nnz_od + nRows );
-        std::vector<size_t> rcols( maxColLen );
-        std::vector<scalar_t> vvals( maxColLen );
+	auto [nnz, cols, cols_loc, coeffs] = csrData->getCSROffDiagData();
+	auto [num_unq, cols_unq] = csrData->getOffDiagColumnMap();
+	
+        std::vector<scalar_t> vvals( num_unq, 0.0 );
+	
         lidx_t offset = 0;
-        for ( size_t row = 0; row < static_cast<size_t>( nRows ); ++row ) {
+        for ( lidx_t row = 0; row < nRows; ++row ) {
 
-            const auto nCols = nnz_od[row];
+            const auto ncols = nnz[row];
+	    if ( ncols == 0 ) { continue; }
+	    
+            const auto cloc = &cols[offset];
+            const auto vloc = &coeffs[offset];
+            const auto val = inDataBlock[ row ];
 
-            const auto cloc = &cols_od[offset];
-            const auto vloc = &coeffs_od[offset];
-
-            std::transform(
-                cloc, cloc + nCols, rcols.begin(), []( gidx_t col ) -> size_t { return col; } );
-
-            const auto val = in->getValueByGlobalID( row + beginRow );
-
-            for ( lidx_t icol = 0; icol < nCols; ++icol ) {
-                vvals[icol] = vloc[icol] * val;
+            for ( lidx_t j = 0; j < ncols; ++j ) {
+	        auto cit = std::lower_bound( cols_unq, cols_unq + num_unq, cloc[j] );
+		auto idx = std::distance( cols_unq, cit );
+                vvals[idx] += vloc[j] * val;
             }
 
-            out->addValuesByGlobalID( nCols, rcols.data(), vvals.data() );
-
-            offset += nCols;
+            offset += ncols;
         }
+
+	// convert colmap to size_t and write out data
+	std::vector<size_t> rcols( num_unq );
+	std::transform( cols_unq, cols_unq + num_unq, rcols.begin(),
+			[]( gidx_t col ) -> size_t { return col; } );
+	out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
     }
 }
 
