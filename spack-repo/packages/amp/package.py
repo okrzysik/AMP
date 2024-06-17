@@ -41,7 +41,7 @@ class Amp(CMakePackage):
             "-D CXX_STD=17",
             "-D DISABLE_ALL_TESTS=ON",
             self.define_from_variant("USE_OPENMP", "openmp"),
-            self.degine_from_variant("USE_CUDA", "cuda")
+            self.define_from_variant("USE_CUDA", "cuda")
         ]
         
         #TODO have amp_data as a dependencie
