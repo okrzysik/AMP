@@ -16,7 +16,6 @@ class Amp(CMakePackage):
     variant("rocm", default=False)
     variant("openmp", default=False)
 
-    depends_on("stacktrace@master")
     depends_on("cmake@3.26.0:", type="build")
     depends_on("mpi", when="+mpi")
     depends_on("tpl-builder@master+stacktrace")
@@ -27,8 +26,8 @@ class Amp(CMakePackage):
 
 
     for _variant in tpl_depends:
-        depends_on("tpl-builder@master+" + _variant, when="+" + _variant)
-        depends_on("tpl-builder@master~" + _variant, when="~" + _variant)
+        depends_on("tpl-builder@master+stacktrace+" + _variant, when="+" + _variant)
+        depends_on("tpl-builder@master+stacktrace~" + _variant, when="~" + _variant)
 
 
 
