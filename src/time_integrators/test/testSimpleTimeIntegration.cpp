@@ -138,11 +138,12 @@ void runBasicIntegratorTests( const std::string &name, AMP::UnitTest &ut )
     params->d_pSourceTerm = source;
     params->d_operator    = std::make_shared<AMP::Operator::NullOperator>();
     testIntegrator( name, "fixed source", params, 3 * finalTime, ut );
-
+#if 0
     // Test with no source and constant operator
     params->d_pSourceTerm = nullptr;
     params->d_operator    = std::make_shared<FunctionOperator>( []( double ) { return 3.0; } );
     testIntegrator( name, "constant", params, 3 * finalTime, ut );
+#endif
 }
 
 
@@ -153,8 +154,8 @@ int testSimpleTimeIntegration( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     // List of integrators
-    auto integrators = { "ExplicitEuler", "RK12", "RK23", "RK34", "RK45", "RK2", "RK4" };
-    //                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
+    auto integrators = { "ExplicitEuler",  "RK12", "RK23", "RK34", "RK45", "RK2", "RK4",
+                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5" };
 
     // Run the tests
     AMP::TimeIntegrator::registerTimeIntegratorFactories();

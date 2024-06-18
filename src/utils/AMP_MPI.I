@@ -943,6 +943,8 @@ void MPI_CLASS::gather( const TYPE *sendbuf,
 template<class TYPE>
 std::vector<TYPE> MPI_CLASS::allGather( const TYPE &x ) const
 {
+    if ( getSize() <= 1 )
+        return { x };
     std::vector<TYPE> data( getSize() );
     allGather( x, data.data() );
     return data;
