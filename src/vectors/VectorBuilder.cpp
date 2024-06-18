@@ -7,6 +7,9 @@
 #ifdef USE_CUDA
     #include "AMP/utils/cuda/CudaAllocator.h"
 #endif
+#ifdef USE_HIP
+    #include "AMP/utils/hip/HipAllocator.h"
+#endif
 
 #include <iostream>
 
@@ -132,6 +135,15 @@ template Vector::shared_ptr
     createSimpleVector<double,
                        VectorOperationsDefault<double>,
                        VectorDataDefault<double, AMP::CudaManagedAllocator<double>>>(
+        std::shared_ptr<Variable>,
+        std::shared_ptr<AMP::Discretization::DOFManager>,
+        std::shared_ptr<CommunicationList> );
+#endif
+#ifdef USE_HIP
+template Vector::shared_ptr
+    createSimpleVector<double,
+                       VectorOperationsDefault<double>,
+                       VectorDataDefault<double, AMP::HipManagedAllocator<double>>>(
         std::shared_ptr<Variable>,
         std::shared_ptr<AMP::Discretization::DOFManager>,
         std::shared_ptr<CommunicationList> );

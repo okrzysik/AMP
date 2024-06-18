@@ -66,9 +66,10 @@ void TimeOperator::applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x
 {
     AMP_INSIST( d_pRhsOperator, "RHS Operator is NULL" );
     d_pRhsOperator->apply( x, f );
-    if ( d_pSourceTerm ) {
-        f->add( *d_pSourceTerm, *f );
-    }
+    // this is already in the time integrator
+    //    if ( d_pSourceTerm ) {
+    //        f->add( *d_pSourceTerm, *f );
+    //    }
 }
 
 void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
@@ -91,6 +92,7 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
     } else {
         u = u_in;
     }
+
 
     // fRhs(x^{n+1})
     applyRhs( u, r );

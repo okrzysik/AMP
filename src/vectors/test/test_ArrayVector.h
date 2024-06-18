@@ -1,6 +1,5 @@
 #include "AMP/vectors/data/ArrayVectorData.h"
 
-
 /// \cond UNDOCUMENTED
 
 namespace AMP::unit_test {

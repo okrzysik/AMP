@@ -11,7 +11,6 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-
 static void runTest( AMP::UnitTest *ut )
 {
 
@@ -72,7 +71,6 @@ static void runTest( AMP::UnitTest *ut )
     }
     ut->passes( "Test ran to completion" );
 }
-
 
 int main( int argc, char *argv[] )
 {
