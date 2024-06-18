@@ -36,10 +36,10 @@ class Amp(CMakePackage):
 
         args = [
             "-D TPL_DIRECTORY="+self.spec["tpl-builder"].prefix,
-            "-D USE_HIP={condition}".format(condition="1" if self.spec.satisfies("+rocm") else "0"),         
             "-D AMP_INSTALL_DIR="+self.spec.prefix,
             "-D CXX_STD=17",
             "-D DISABLE_ALL_TESTS=ON",
+            self.define_from_variant("USE_HIP", "rocm"),
             self.define_from_variant("USE_OPENMP", "openmp"),
             self.define_from_variant("USE_CUDA", "cuda")
         ]
