@@ -9,23 +9,6 @@
 namespace AMP::LinearAlgebra {
 
 template<typename Policy>
-static CSRMatrixData<Policy> const *getCSRMatrixData( MatrixData const &A )
-{
-    auto ptr = dynamic_cast<CSRMatrixData<Policy> const *>( &A );
-    AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
-    return ptr;
-}
-
-template<typename Policy>
-static CSRMatrixData<Policy> *getCSRMatrixData( MatrixData &A )
-{
-    auto ptr = dynamic_cast<CSRMatrixData<Policy> *>( &A );
-    AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
-    return ptr;
-}
-
-
-template<typename Policy>
 void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
                                                MatrixData const &A,
                                                std::shared_ptr<Vector> out )
@@ -103,85 +86,85 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
                                                         MatrixData const &A,
                                                         std::shared_ptr<Vector> out )
 {
+    PROFILE( "CSRMatrixOperationsDefault::multTranspose" );
+    
     // this is not meant to be an optimized version. It is provided for completeness
     AMP_DEBUG_ASSERT( in && out );
-    AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     out->zero();
 
-    using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
-
-    auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
-
-    auto memType = AMP::Utilities::getMemoryType( cols_loc_d );
-    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
+    
+    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
+    auto inData                 = in->getVectorData();
+    const scalar_t *inDataBlock = inData->getRawDataBlock<scalar_t>( 0 );
+
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
-    auto maxColLen   = *std::max_element( nnz_d, nnz_d + nRows );
-    std::vector<size_t> rcols( maxColLen );
-    std::vector<scalar_t> vvals( maxColLen );
 
     {
-        auto maxColLen = *std::max_element( nnz_d, nnz_d + nRows );
-        std::vector<size_t> rcols( maxColLen );
-        std::vector<scalar_t> vvals( maxColLen );
+        PROFILE( "CSRMatrixOperationsDefault::multTranspose (d)" );
+	auto [nnz, cols, cols_loc, coeffs] = csrData->getCSRDiagData();
+	const auto num_unq = csrData->numLocalColumns();
+	
+        std::vector<scalar_t> vvals( num_unq, 0.0 );
+	std::vector<size_t> rcols( num_unq );
+	
         lidx_t offset = 0;
         for ( lidx_t row = 0; row < nRows; ++row ) {
 
-            const auto nCols = nnz_d[row];
+            const auto ncols = nnz[row];
+            const auto cloc = &cols_loc[offset];
+            const auto vloc = &coeffs[offset];
+            const auto val = inDataBlock[ row ];
 
-            const auto cloc = &cols_d[offset];
-            const auto vloc = &coeffs_d[offset];
-
-            std::transform(
-                cloc, cloc + nCols, rcols.begin(), []( gidx_t col ) -> size_t { return col; } );
-
-            const auto val = in->getValueByGlobalID( row );
-
-            for ( lidx_t icol = 0; icol < nCols; ++icol ) {
-                vvals[icol] = vloc[icol] * val;
+            for ( lidx_t j = 0; j < ncols; ++j ) {
+	        rcols[cloc[j]] = cols[offset + j];
+                vvals[cloc[j]] += vloc[j] * val;
             }
 
-            out->addValuesByGlobalID( nCols, rcols.data(), vvals.data() );
-
-            offset += nCols;
+            offset += ncols;
         }
+
+	// Write out data, adding to any already present
+	out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
     }
+    out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     if ( csrData->hasOffDiag() ) {
-        auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSRDiagData();
-        auto maxColLen = *std::max_element( nnz_od, nnz_od + nRows );
-        std::vector<size_t> rcols( maxColLen );
-        std::vector<scalar_t> vvals( maxColLen );
+        PROFILE( "CSRMatrixOperationsDefault::multTranspose (od)" );
+	auto [nnz, cols, cols_loc, coeffs] = csrData->getCSROffDiagData();
+	
+	std::vector<size_t> rcols;
+	csrData->getOffDiagColumnMap( rcols );
+	const auto num_unq = rcols.size();
+	
+        std::vector<scalar_t> vvals( num_unq, 0.0 );
+	
         lidx_t offset = 0;
         for ( lidx_t row = 0; row < nRows; ++row ) {
 
-            const auto nCols = nnz_od[row];
+            const auto ncols = nnz[row];
+	    if ( ncols == 0 ) { continue; }
+	    
+            const auto cloc = &cols_loc[offset];
+            const auto vloc = &coeffs[offset];
+            const auto val = inDataBlock[ row ];
 
-            const auto cloc = &cols_od[offset];
-            const auto vloc = &coeffs_od[offset];
-
-            std::transform(
-                cloc, cloc + nCols, rcols.begin(), []( gidx_t col ) -> size_t { return col; } );
-
-            const auto val = in->getValueByGlobalID( row );
-
-            for ( lidx_t icol = 0; icol < nCols; ++icol ) {
-                vvals[icol] = vloc[icol] * val;
+            for ( lidx_t j = 0; j < ncols; ++j ) {
+                vvals[cloc[j]] += vloc[j] * val;
             }
 
-            out->addValuesByGlobalID( nCols, rcols.data(), vvals.data() );
-
-            offset += nCols;
+            offset += ncols;
         }
+
+	// convert colmap to size_t and write out data
+	out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
     }
-    // consistent add because some values might be remote
-    out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 template<typename Policy>
@@ -228,7 +211,7 @@ void CSRMatrixOperationsDefault<Policy>::axpy( AMP::Scalar alpha_in,
                                                const MatrixData &X,
                                                MatrixData &Y )
 {
-    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     const auto csrDataX = getCSRMatrixData<Policy>( const_cast<MatrixData &>( X ) );
@@ -250,7 +233,7 @@ void CSRMatrixOperationsDefault<Policy>::axpy( AMP::Scalar alpha_in,
     {
         const auto tnnz = csrDataX->numberOfNonZerosDiag();
         auto y_p        = const_cast<scalar_t *>( coeffs_d_y );
-        for ( gidx_t i = 0; i < tnnz; ++i ) {
+        for ( lidx_t i = 0; i < tnnz; ++i ) {
             y_p[i] += alpha * coeffs_d_x[i];
         }
     }
@@ -261,7 +244,7 @@ void CSRMatrixOperationsDefault<Policy>::axpy( AMP::Scalar alpha_in,
         auto [nnz_od_y, cols_od_y, cols_loc_od_y, coeffs_od_y] = csrDataY->getCSROffDiagData();
         const auto tnnz = csrDataX->numberOfNonZerosOffDiag();
         auto y_p        = const_cast<scalar_t *>( coeffs_od_y );
-        for ( gidx_t i = 0; i < tnnz; ++i ) {
+        for ( lidx_t i = 0; i < tnnz; ++i ) {
             y_p[i] += alpha * coeffs_od_x[i];
         }
     }

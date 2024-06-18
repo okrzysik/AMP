@@ -38,7 +38,6 @@ private:
     void initializeHypreMatrix( AMP::Utilities::MemoryType,
                                 HYPRE_BigInt first_row,
                                 HYPRE_BigInt last_row,
-                                bool has_off_diag,
                                 HYPRE_BigInt nnz_total_d,
                                 HYPRE_Int *csr_ia_d,
                                 HYPRE_BigInt *csr_bja_d,

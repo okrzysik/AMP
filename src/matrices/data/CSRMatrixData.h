@@ -177,6 +177,14 @@ public:
                                 d_off_diag_matrix->d_coeffs );
     }
 
+    lidx_t* getDiagRowStarts() {
+      return d_diag_matrix->d_row_starts;
+    }
+
+    lidx_t* getOffDiagRowStarts() {
+      return d_off_diag_matrix->d_row_starts;
+    }
+
     bool isSquare() const noexcept { return d_is_square; }
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> getLeftVariable()
@@ -198,9 +206,33 @@ public:
 
     auto getMemoryLocation() const { return d_memory_location; }
 
-    void generateColumnMap( std::vector<gidx_t> &colMap ) const
+    template<typename idx_t>
+    void getOffDiagColumnMap( std::vector<idx_t> &colMap ) const
     {
-        d_off_diag_matrix->generateColumnMap( colMap );
+        // Don't do anything if empty
+        if ( d_off_diag_matrix->d_is_empty ) { return; }
+
+	// Column maps formed lazily, ensure it exists
+	d_off_diag_matrix->findColumnMap();
+
+	if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+	
+	  // Resize and fill colMap
+	  colMap.resize( d_off_diag_matrix->d_ncols_unq );
+
+	  if constexpr ( std::is_same_v<idx_t, gidx_t> ) {
+	    std::copy( d_off_diag_matrix->d_cols_unq,
+		       d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
+		       colMap.begin() );
+	  } else {
+	    std::transform( d_off_diag_matrix->d_cols_unq,
+			    d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
+			    colMap.begin(),
+			    []( gidx_t c ) -> idx_t { return c; } );
+	  }
+	} else {
+	  AMP_ERROR( "Copies from device to host memory not implemented yet" );
+	}
     }
 
 private:
@@ -250,7 +282,7 @@ private:
 
         std::vector<size_t> getColumnIDs( const size_t local_row ) const;
 
-        void generateColumnMap( std::vector<gidx_t> &colMap ) const;
+        void findColumnMap();
 
     protected:
         const CSRMatrixData<Policy> &d_outer; // reference to the containing CSRMatrixData object
@@ -259,20 +291,21 @@ private:
 
         lidx_t *d_nnz_per_row = nullptr;
         lidx_t *d_row_starts  = nullptr;
-        lidx_t *d_cols_loc    = nullptr;
         gidx_t *d_cols        = nullptr;
+        gidx_t *d_cols_unq    = nullptr;
+        lidx_t *d_cols_loc    = nullptr;
         scalar_t *d_coeffs    = nullptr;
 
-        gidx_t d_num_rows = 0;
-        gidx_t d_nnz      = 0;
+        lidx_t d_num_rows  = 0;
+        lidx_t d_nnz       = 0;
+        lidx_t d_nnz_pad   = 0;
+        lidx_t d_ncols_unq = 0;
 
         AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
 
         std::shared_ptr<MatrixParametersBase> d_pParameters;
 
-        bool d_manage_cols   = true;
-        bool d_manage_nnz    = true;
-        bool d_manage_coeffs = true;
+        bool d_own_data = true;
     };
 
 protected:
@@ -281,7 +314,7 @@ protected:
     gidx_t d_last_row  = 0;
     gidx_t d_first_col = 0;
     gidx_t d_last_col  = 0;
-    gidx_t d_nnz       = 0;
+    lidx_t d_nnz       = 0;
 
     AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
 
@@ -301,6 +334,22 @@ protected:
     void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &,
                        AMP::LinearAlgebra::ScatterType );
 };
+
+template<typename Policy>
+static CSRMatrixData<Policy> const *getCSRMatrixData( MatrixData const &A )
+{
+    auto ptr = dynamic_cast<CSRMatrixData<Policy> const *>( &A );
+    AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
+    return ptr;
+}
+
+template<typename Policy>
+static CSRMatrixData<Policy> *getCSRMatrixData( MatrixData &A )
+{
+    auto ptr = dynamic_cast<CSRMatrixData<Policy> *>( &A );
+    AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
+    return ptr;
+}
 
 } // namespace AMP::LinearAlgebra
 

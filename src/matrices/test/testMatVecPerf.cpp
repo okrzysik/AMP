@@ -94,6 +94,24 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
         ut->failure( type + ": Fails 1 norm test with pseudo Laplacian" );
     }
 
+    // Repeat test with transpose multiply (Laplacian is symmetric)
+    y->setToScalar( 1.0 );
+    y->makeConsistent();
+    x->zero();
+    // for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
+    matrix->multTranspose( y, x );
+    // }
+
+    auto xNorm = static_cast<scalar_t>( x->L1Norm() );
+
+    if ( xNorm == static_cast<scalar_t>( matrix->numGlobalRows() ) ) {
+        ut->passes( type + ": Passes 1 norm test with pseudo Laplacian transpose" );
+    } else {
+        AMP::pout << "1 Norm " << xNorm << ", number of rows " << matrix->numGlobalRows()
+                  << std::endl;
+        ut->failure( type + ": Fails 1 norm test with pseudo Laplacian transpose" );
+    }
+
     return nGlobalRows;
 }
 
