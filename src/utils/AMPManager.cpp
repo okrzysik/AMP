@@ -23,6 +23,11 @@
     #include <cuda_runtime_api.h>
     #include "AMP/utils/cuda/helper_cuda.h"
 #endif
+#ifdef USE_HIP
+    // #include <cuda.h>
+    #include <hip/hip_runtime_api.h>
+    #include "AMP/utils/hip/helper_hip.h"
+#endif
 #ifdef AMP_USE_TIMER
     #include "MemoryApp.h"
 #endif
@@ -80,7 +85,7 @@ AMPManagerProperties AMPManager::d_properties = AMPManagerProperties();
 /****************************************************************************
  *  Get the global communicator                                              *
  ****************************************************************************/
-static AMP_MPI comm_world = AMP::AMP_MPI( MPI_COMM_NULL );
+static AMP_MPI comm_world = AMP::AMP_MPI( AMP_COMM_NULL );
 const AMP_MPI &AMPManager::getCommWorld() { return comm_world; }
 void AMPManager::setCommWorld( const AMP::AMP_MPI &comm ) { comm_world = comm; }
 

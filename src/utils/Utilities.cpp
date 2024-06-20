@@ -32,6 +32,7 @@
     #include "AMP/utils/cuda/helper_cuda.h"
 #endif
 #if defined( AMP_USE_HIP ) || defined( USE_HIP )
+    #include "AMP/utils/hip/helper_hip.h"
 #endif
 
 // Include system dependent headers
@@ -119,7 +120,9 @@ MemoryType getMemoryType( const void *ptr )
         return type;
 #endif
 #if defined( AMP_USE_HIP ) || defined( USE_HIP )
-    #error Not finished
+    type = getHipMemoryType( ptr );
+    if ( type != MemoryType::unregistered )
+        return type;
 #endif
     return type;
 }

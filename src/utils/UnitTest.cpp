@@ -201,7 +201,7 @@ std::vector<std::vector<std::string>>
 UnitTest::gatherMessages( const std::vector<std::string> &local_messages, int tag ) const
 {
     const int rank = d_comm.getRank();
-    const int size = d_comm.getSize();
+    const int size = std::max( d_comm.getSize(), 1 );
     std::vector<std::vector<std::string>> messages( size );
     if ( rank == 0 ) {
         // Rank 0 should receive all messages

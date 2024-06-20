@@ -1,0 +1,4 @@
+ADD_AMP_TEST( test_GPUAllocators GPU )
+ADD_AMP_TEST( test_GPUFunctionTable GPU )
+ADD_AMP_TEST( test_HelperHip GPU )
+# SET_SOURCE_FILES_PROPERTIES( test_HelperHip.cpp PROPERTIES LANGUAGE HIP )
