@@ -71,6 +71,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     using scalar_t = typename Policy::scalar_t;
 
     gidx_t firstRow, endRow;
+    lidx_t nnz_pad;
     std::vector<lidx_t> nnz_d, nnz_od;
     std::vector<lidx_t> rowstart_d, rowstart_od;
     std::vector<gidx_t> cols_d, cols_od;
@@ -89,7 +90,8 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 						   rowstart_od,
                                                    cols_od,
                                                    cols_loc_od,
-                                                   coeffs_od );
+                                                   coeffs_od,
+						   nnz_pad );
 
     AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_d
       { nnz_d.data(),
@@ -110,6 +112,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
                                                                            endRow,
 									   pars_d,
 									   pars_od,
+									   nnz_pad,
                                                                            comm );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );

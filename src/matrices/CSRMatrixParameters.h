@@ -40,6 +40,7 @@ public:
                                   gidx_t last_row,
 				  const CSRSerialMatrixParameters& diag,
 				  const CSRSerialMatrixParameters& off_diag,
+				  lidx_t nnz_pad,
                                   const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
           d_is_square( true ),
@@ -59,6 +60,7 @@ public:
                                   gidx_t last_col,
 				  const CSRSerialMatrixParameters& diag,
 				  const CSRSerialMatrixParameters& off_diag,
+				  lidx_t nnz_pad,
                                   const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
           d_is_square( is_square ),
@@ -67,7 +69,8 @@ public:
           d_first_col( first_col ),
           d_last_col( last_col ),
 	  d_diag( diag ),
-          d_off_diag( off_diag )
+          d_off_diag( off_diag ),
+	  d_nnz_pad( nnz_pad )
     {
     }
 
@@ -82,6 +85,7 @@ public:
     gidx_t d_last_col;
     // Blockwise information
     CSRSerialMatrixParameters d_diag, d_off_diag;
+    lidx_t d_nnz_pad; // only applies to off-diag block
 };
 } // namespace AMP::LinearAlgebra
 

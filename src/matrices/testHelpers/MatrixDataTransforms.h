@@ -21,7 +21,8 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
                         std::vector<typename Policy::lidx_t> &rowstart_od,
                         std::vector<typename Policy::gidx_t> &cols_od,
                         std::vector<typename Policy::lidx_t> &cols_loc_od,
-                        std::vector<typename Policy::scalar_t> &coeffs_od )
+                        std::vector<typename Policy::scalar_t> &coeffs_od,
+			typename Policy::lidx_t &nnz_pad)
 {
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
@@ -81,8 +82,8 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
     }
 
     // Pad cols and cols_loc to ensure that all remote_DOFs are actually used
+    nnz_pad = 0;
     if ( have_ghosts ) {
-      lidx_t nnz_pad = 0;
       std::set<gidx_t> colSet( cols_od.begin(),cols_od.end() );
       for ( auto rd : remote_DOFs ) {
 	auto col = static_cast<gidx_t>( rd );
@@ -96,7 +97,6 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
 	}
       }
       nnz_od.back() += nnz_pad;
-#warning Need to also pass nnz_pad back out...
     }
 
     // Fill in row starts from nnz patterns

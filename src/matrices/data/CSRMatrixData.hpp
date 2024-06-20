@@ -215,6 +215,7 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
 	d_cols        = blParams.d_cols;
 	d_cols_loc    = blParams.d_cols_loc;
 	d_coeffs      = blParams.d_coeffs;
+	d_nnz_pad     = d_is_diag ? 0 : csrParams->d_nnz_pad;
 
         // count nnz and decide if block is empty
         d_nnz      = std::accumulate( d_nnz_per_row, d_nnz_per_row + d_num_rows, 0 );
