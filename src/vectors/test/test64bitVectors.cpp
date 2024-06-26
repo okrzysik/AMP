@@ -21,7 +21,6 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-
 // Create a vector with the desired number of unknowns and run some simple tests
 static void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
                                         std::shared_ptr<AMP::Mesh::Mesh> mesh,
@@ -71,7 +70,6 @@ static void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
     ut->passes( "Test ran to completion" );
 }
 
-
 static void runTest( AMP::UnitTest *ut, std::string input_file )
 {
     // Read the input file
@@ -101,7 +99,6 @@ static void runTest( AMP::UnitTest *ut, std::string input_file )
     // Run the test with > 2^32 DOFs
     // simpleDOFManagerVectorTest( ut, mesh, 0x100000001, true );
 }
-
 
 int main( int argc, char *argv[] )
 {

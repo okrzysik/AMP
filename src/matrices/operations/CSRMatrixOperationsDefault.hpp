@@ -8,7 +8,6 @@
 
 namespace AMP::LinearAlgebra {
 
-
 template<typename Policy>
 void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
                                                MatrixData const &A,
@@ -86,7 +85,85 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
                                                         MatrixData const &,
                                                         std::shared_ptr<Vector>  )
 {
-  AMP_ERROR( "Not implemented" );
+    PROFILE( "CSRMatrixOperationsDefault::multTranspose" );
+    
+    // this is not meant to be an optimized version. It is provided for completeness
+    AMP_DEBUG_ASSERT( in && out );
+
+    out->zero();
+
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
+    
+    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
+
+    auto inData                 = in->getVectorData();
+    const scalar_t *inDataBlock = inData->getRawDataBlock<scalar_t>( 0 );
+
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
+
+    {
+        PROFILE( "CSRMatrixOperationsDefault::multTranspose (d)" );
+	auto [nnz, cols, cols_loc, coeffs] = csrData->getCSRDiagData();
+	const auto num_unq = csrData->numLocalColumns();
+	
+        std::vector<scalar_t> vvals( num_unq, 0.0 );
+	std::vector<size_t> rcols( num_unq );
+	
+        lidx_t offset = 0;
+        for ( lidx_t row = 0; row < nRows; ++row ) {
+
+            const auto ncols = nnz[row];
+            const auto cloc = &cols_loc[offset];
+            const auto vloc = &coeffs[offset];
+            const auto val = inDataBlock[ row ];
+
+            for ( lidx_t j = 0; j < ncols; ++j ) {
+	        rcols[cloc[j]] = cols[offset + j];
+                vvals[cloc[j]] += vloc[j] * val;
+            }
+
+            offset += ncols;
+        }
+
+	// Write out data, adding to any already present
+	out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
+    }
+    out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+
+    if ( csrData->hasOffDiag() ) {
+        PROFILE( "CSRMatrixOperationsDefault::multTranspose (od)" );
+	auto [nnz, cols, cols_loc, coeffs] = csrData->getCSROffDiagData();
+	
+	std::vector<size_t> rcols;
+	csrData->getOffDiagColumnMap( rcols );
+	const auto num_unq = rcols.size();
+	
+        std::vector<scalar_t> vvals( num_unq, 0.0 );
+	
+        lidx_t offset = 0;
+        for ( lidx_t row = 0; row < nRows; ++row ) {
+
+            const auto ncols = nnz[row];
+	    if ( ncols == 0 ) { continue; }
+	    
+            const auto cloc = &cols_loc[offset];
+            const auto vloc = &coeffs[offset];
+            const auto val = inDataBlock[ row ];
+
+            for ( lidx_t j = 0; j < ncols; ++j ) {
+                vvals[cloc[j]] += vloc[j] * val;
+            }
+
+            offset += ncols;
+        }
+
+	// convert colmap to size_t and write out data
+	out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
+    }
 }
 
 template<typename Policy>
@@ -133,7 +210,7 @@ void CSRMatrixOperationsDefault<Policy>::axpy( AMP::Scalar alpha_in,
                                                const MatrixData &X,
                                                MatrixData &Y )
 {
-    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     const auto csrDataX = getCSRMatrixData<Policy>( const_cast<MatrixData &>( X ) );
@@ -155,7 +232,7 @@ void CSRMatrixOperationsDefault<Policy>::axpy( AMP::Scalar alpha_in,
     {
         const auto tnnz = csrDataX->numberOfNonZerosDiag();
         auto y_p        = const_cast<scalar_t *>( coeffs_d_y );
-        for ( gidx_t i = 0; i < tnnz; ++i ) {
+        for ( lidx_t i = 0; i < tnnz; ++i ) {
             y_p[i] += alpha * coeffs_d_x[i];
         }
     }
@@ -166,7 +243,7 @@ void CSRMatrixOperationsDefault<Policy>::axpy( AMP::Scalar alpha_in,
         auto [nnz_od_y, cols_od_y, cols_loc_od_y, coeffs_od_y] = csrDataY->getCSROffDiagData();
         const auto tnnz = csrDataX->numberOfNonZerosOffDiag();
         auto y_p        = const_cast<scalar_t *>( coeffs_od_y );
-        for ( gidx_t i = 0; i < tnnz; ++i ) {
+        for ( lidx_t i = 0; i < tnnz; ++i ) {
             y_p[i] += alpha * coeffs_od_x[i];
         }
     }
