@@ -246,7 +246,6 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
         d_nnz = 0;
         for ( size_t i = 0; i < cols.size(); ++i ) {
             if ( isColValid<Policy>( cols[i], d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
-
                 ++d_nnz;
                 if ( !d_is_diag ) {
                     colSet.insert( cols[i] );
@@ -254,7 +253,7 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
             }
         }
         // attempt to insert all remote dofs into colSet to see which are un-referenced
-        if ( !d_is_diag && doPadding ) {
+        if ( !d_is_diag ) {
             auto remoteDOFs = rightDOFManager->getRemoteDOFs();
             for ( auto rdof : remoteDOFs ) {
                 auto cs = colSet.insert( rdof );
@@ -726,10 +725,6 @@ void CSRMatrixData<Policy>::CSRSerialMatrixData::setValuesByGlobalID( const size
                                                                       const typeID &id )
 {
     if ( d_is_empty ) { return; }
-    
-    if ( getTypeID<scalar_t>() != id ) {
-        AMP_ERROR( "Conversion not implemented" );
-    }
     
     if ( getTypeID<scalar_t>() != id ) {
         AMP_ERROR( "Conversion not implemented" );

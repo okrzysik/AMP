@@ -295,9 +295,6 @@ private:
         gidx_t *d_cols_unq    = nullptr;
         lidx_t *d_cols_loc    = nullptr;
         scalar_t *d_coeffs    = nullptr;
-      
-        gidx_t *d_cols_unq    = nullptr;
-        gidx_t *d_cols_unq_b  = nullptr;
 
         lidx_t d_num_rows  = 0;
         lidx_t d_nnz       = 0;
