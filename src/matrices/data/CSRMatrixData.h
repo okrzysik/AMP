@@ -12,13 +12,17 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy>
+template<typename Policy, class Allocator = std::allocator<int>>
 class CSRMatrixData : public MatrixData
 {
 public:
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
+    using gidxAllocator   = typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
+    using lidxAllocator   = typename std::allocator_traits<Allocator>::template rebind_alloc<lidx_t>;
+    using scalarAllocator = typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
+
 
     /** \brief Constructor
      * \param[in] params  Description of the matrix
@@ -225,7 +229,7 @@ private:
         //! Destructor
         virtual ~CSRSerialMatrixData();
 
-        std::shared_ptr<CSRSerialMatrixData> cloneMatrixData( const CSRMatrixData<Policy> &outer );
+      std::shared_ptr<CSRSerialMatrixData> cloneMatrixData( const CSRMatrixData<Policy,Allocator> &outer );
 
         void getRowByGlobalID( const size_t local_row,
                                std::vector<size_t> &cols,
