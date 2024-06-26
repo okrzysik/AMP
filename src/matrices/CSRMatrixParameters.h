@@ -49,8 +49,9 @@ public:
           d_first_col( first_row ),
           d_last_col( last_row ),
 	  d_diag( diag ),
-          d_off_diag( off_diag )
-  {
+          d_off_diag( off_diag ),
+	  d_nnz_pad( nnz_pad )
+    {
     }
 
     explicit CSRMatrixParameters( bool is_square,

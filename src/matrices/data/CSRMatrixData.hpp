@@ -246,7 +246,7 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
         d_nnz = 0;
         for ( size_t i = 0; i < cols.size(); ++i ) {
             if ( isColValid<Policy>( cols[i], d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
-                d_nnz++;
+                ++d_nnz;
                 if ( !d_is_diag ) {
                     colSet.insert( cols[i] );
                 }
@@ -261,8 +261,8 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
                     // insertion success means this DOF is un-referenced
                     // add it to the padding list
                     colPad.push_back( rdof );
-		    d_nnz++;
-		    d_nnz_pad++;
+		    ++d_nnz;
+		    ++d_nnz_pad;
                 }
             }
         }
@@ -300,8 +300,8 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
                             matParams->d_CommListRight->getLocalGhostID( col ) );
                     }
                     d_coeffs[cli] = 0.0;
-                    cli++;
-                    nnzFilled++;
+                    ++cli;
+                    ++nnzFilled;
                 }
             }
         }
@@ -315,8 +315,8 @@ CSRMatrixData<Policy>::CSRSerialMatrixData::CSRSerialMatrixData(
                 d_cols_loc[cli] =
 		  static_cast<lidx_t>( matParams->d_CommListRight->getLocalGhostID( col ) );
                 d_coeffs[cli] = 0.0;
-                cli++;
-                nnzFilled++;
+                ++cli;
+                ++nnzFilled;
             }
         }
 	
@@ -342,7 +342,7 @@ void CSRMatrixData<Policy>::CSRSerialMatrixData::findColumnMap()
   // Number of unique (global) columns is largest value in local cols
   d_ncols_unq = *( std::max_element( d_cols_loc,
 				     d_cols_loc + d_nnz ) );
-  d_ncols_unq++; // plus one for zero-based indexing
+  ++d_ncols_unq; // plus one for zero-based indexing
 
   // Map is not allocated by default
   d_cols_unq = allocate<gidx_t>( d_ncols_unq, d_memory_location );
