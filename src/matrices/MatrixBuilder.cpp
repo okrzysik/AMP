@@ -284,6 +284,9 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     using DeviceAllocator = AMP::CudaDevAllocator<int>;
     using ManagedAllocator = AMP::CudaManagedAllocator<int>;
 #endif
+    using HostAllocator = std::allocator<int>;
+
+    auto memType = AMP::Utilities::getMemoryType( rightVec->getRawDataBlockAsVoid(0) );
     
     // Build the matrix
     std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix;
@@ -292,10 +295,16 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     } else if ( type == "NativePetscMatrix" ) {
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
     } else if ( type == "CSRMatrix" ) {
-      // if (memtype==host)
-      // else if ( memtype == managed)
-      // etc
-      matrix = createCSRMatrix<DefaultCSRPolicy,DeviceAllocator>( leftVec, rightVec, getRow );
+      if ( memType <= AMP::Utilities::MemoryType::host ) {
+        matrix = createCSRMatrix<DefaultCSRPolicy,HostAllocator>( leftVec, rightVec, getRow );
+      } else if ( memType == AMP::Utilities::MemoryType::managed ) {
+        matrix = createCSRMatrix<DefaultCSRPolicy,ManagedAllocator>( leftVec, rightVec, getRow );
+      } else if ( memType == AMP::Utilities::MemoryType::device ) {
+        matrix = createCSRMatrix<DefaultCSRPolicy,DeviceAllocator>( leftVec, rightVec, getRow );
+      } else {
+        AMP_ERROR( "Unknown memory location specified for data" );
+      }
+
     } else if ( type == "DenseSerialMatrix" ) {
         matrix = createDenseSerialMatrix( leftVec, rightVec );
     } else {
