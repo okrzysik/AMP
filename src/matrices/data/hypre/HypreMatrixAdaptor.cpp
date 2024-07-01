@@ -31,7 +31,7 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 
         auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
         auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
-        csrData->generateColumnMap( d_colMap );
+        csrData->getOffDiagColumnMap( d_colMap );
 
         AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d,
                     "diagonal block layout cannot be NULL" );
@@ -39,7 +39,6 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
         initializeHypreMatrix( csrData->getMemoryLocation(),
                                firstRow,
                                lastRow,
-                               csrData->hasOffDiag(),
                                csrData->numberOfNonZerosDiag(),
                                nnz_d,
                                cols_d,
@@ -99,7 +98,6 @@ HypreMatrixAdaptor::~HypreMatrixAdaptor()
 void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_loc,
                                                 HYPRE_BigInt first_row,
                                                 HYPRE_BigInt last_row,
-                                                bool has_off_diag,
                                                 HYPRE_BigInt nnz_total_d,
                                                 HYPRE_Int *nnz_per_row_d,
                                                 HYPRE_BigInt *csr_bja_d,
@@ -124,7 +122,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
     // Manually create ParCSR and fill fields as needed
     // Roughly based on hypre_IJMatrixInitializeParCSR_v2 from IJMatrix_parcsr.c
     //   and the various functions that it calls
-    AMP::pout << "Create ParCSR" << std::endl;
     hypre_IJMatrixCreateParCSR( d_matrix );
     hypre_ParCSRMatrix *par_matrix = static_cast<hypre_ParCSRMatrix *>( d_matrix->object );
     hypre_CSRMatrix *diag          = par_matrix->diag;
@@ -147,12 +144,10 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
     // fields regardless of ->owns_data. Calling matrix initialize will let
     // hypre do those allocations. ->big_j, ->j, and ->data should not get
     // allocated since ->num_nonzeros == 0
-    AMP::pout << "initialize diag/off_diag" << std::endl;
     hypre_CSRMatrixInitialize( diag );
     hypre_CSRMatrixInitialize( off_diag );
 
     // Fill in the ->i and ->rownnz fields of diag and off_diag
-    AMP::pout << "set i/nnz" << std::endl;
     diag->i[0]     = 0;
     off_diag->i[0] = 0;
     for ( HYPRE_BigInt n = 0; n < nrows; ++n ) {
@@ -161,12 +156,10 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
     }
 
     // This is where we tell hypre to stop owning any data
-    AMP::pout << "override ownership" << std::endl;
     hypre_CSRMatrixSetDataOwner( diag, 0 );
     hypre_CSRMatrixSetDataOwner( off_diag, 0 );
 
     // Now set diag/off_diag members to point at our data
-    AMP::pout << "assign data" << std::endl;
     diag->big_j = csr_bja_d;
     diag->data  = csr_aa_d;
     diag->j     = csr_lja_d;
@@ -176,7 +169,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
     off_diag->j     = csr_lja_od;
 
     // Update metadata fields to match what we've inserted
-    AMP::pout << "assign metadata" << std::endl;
     diag->num_nonzeros     = nnz_total_d;
     off_diag->num_nonzeros = nnz_total_od;
 
@@ -236,17 +228,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
     hypre_ParCSRMatrix *par_matrix = static_cast<hypre_ParCSRMatrix *>( d_matrix->object );
     hypre_CSRMatrix *diag          = par_matrix->diag;
     hypre_CSRMatrix *off_diag      = par_matrix->offd;
-    AMP::pout << "Diag matrix"
-              << "\n  nrows: " << diag->num_rows << "\n  ncols: " << diag->num_cols
-              << "\n  nnz: " << diag->num_nonzeros << "\n  owns_data: " << diag->owns_data
-              << "\n  pattern: " << diag->pattern_only << "\n  nrownnz: "
-              << diag->num_rownnz
-              // << "\n  i: " << diag->i[0]
-              // << "\n  j: " << diag->j[0]
-              // << "\n  big_j: " << diag->big_j[0]
-              // << "\n  data: " << diag->data[0]
-              << std::endl
-              << std::endl;
 #endif
 }
 
