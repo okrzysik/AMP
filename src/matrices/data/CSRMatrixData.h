@@ -235,6 +235,19 @@ public:
 	}
     }
 
+  void printMemLoc() const
+  {
+    if ( d_memory_location == AMP::Utilities::MemoryType::host ) {
+      AMP::pout << "CSRMatrixData on host" << std::endl;
+    } else if ( d_memory_location == AMP::Utilities::MemoryType::managed ) {
+      AMP::pout << "CSRMatrixData on managed" << std::endl;
+    } else if ( d_memory_location == AMP::Utilities::MemoryType::device ) {
+      AMP::pout << "CSRMatrixData on device" << std::endl;
+    } else {
+      AMP::pout << "CSRMatrixData on other" << std::endl;
+    }
+  }
+
 private:
     // Private internal data class for managing the non-zero structure of the matrix
     // One instance will be made for the diagonal block and another for the off-diagonal block

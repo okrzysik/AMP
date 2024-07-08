@@ -14,6 +14,10 @@
     #include "umpire/ResourceManager.hpp"
 #endif
 
+#ifdef USE_HIP
+#include "AMP/utils/hip/HipAllocator.h"
+#endif
+
 #include <memory>
 #include <numeric>
 #include <algorithm>
@@ -32,16 +36,24 @@ static T *allocate( size_t N, AMP::Utilities::MemoryType mem_type )
     if ( mem_type == AMP::Utilities::MemoryType::host ) {
         std::allocator<T> alloc;
         return alloc.allocate( N );
-    } else if ( mem_type == AMP::Utilities::MemoryType::managed ||
-                mem_type == AMP::Utilities::MemoryType::device ) {
+    } else if ( mem_type == AMP::Utilities::MemoryType::managed ) {
+#if defined( AMP_USE_UMPIRE )
+        auto &resourceManager = umpire::ResourceManager::getInstance();
+        auto alloc            = resourceManager.getAllocator( "UM" );
+        return static_cast<T *>( alloc.allocate( N * sizeof( T ) ) );
+#elif defined( USE_HIP )
+	AMP::HipManagedAllocator<T> alloc;
+	return alloc.allocate( N );
+#else
+	AMP_ERROR( " No valid managed memory allocator found" );
+#endif
+    } else if ( mem_type == AMP::Utilities::MemoryType::device ) {
 #ifdef AMP_USE_UMPIRE
         auto &resourceManager = umpire::ResourceManager::getInstance();
-        auto alloc            = ( mem_type == AMP::Utilities::MemoryType::managed ) ?
-                                    resourceManager.getAllocator( "UM" ) :
-                                    resourceManager.getAllocator( "DEVICE" );
+        auto alloc            = resourceManager.getAllocator( "DEVICE" );
         return static_cast<T *>( alloc.allocate( N * sizeof( T ) ) );
 #else
-        AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been "
+        AMP_ERROR( "CSRMatrixData: device memory handling without Umpire has not been "
                    "implemented as yet" );
 #endif
     } else {
@@ -59,20 +71,34 @@ void deallocate( T **data, size_t N, AMP::Utilities::MemoryType mem_type )
             alloc.deallocate( *data, N );
             *data = nullptr;
         }
-    } else if ( mem_type == AMP::Utilities::MemoryType::managed ||
-                mem_type == AMP::Utilities::MemoryType::device ) {
+    } else if ( mem_type == AMP::Utilities::MemoryType::managed ) {
+#if defined( AMP_USE_UMPIRE )
+        auto &resourceManager = umpire::ResourceManager::getInstance();
+        auto alloc            = resourceManager.getAllocator( "UM" );
+        if ( *data ) {
+            alloc.deallocate( data );
+            *data = nullptr;
+        }
+#elif defined( USE_HIP )
+	AMP::HipManagedAllocator<T> alloc;
+        if ( *data ) {
+            alloc.deallocate( *data, N );
+            *data = nullptr;
+        }
+#else
+	AMP_ERROR( " No valid managed memory allocator found" );
+#endif
+    } else if ( mem_type == AMP::Utilities::MemoryType::device ) {
 #ifdef AMP_USE_UMPIRE
         auto &resourceManager = umpire::ResourceManager::getInstance();
-        auto alloc            = ( mem_type == AMP::Utilities::MemoryType::managed ) ?
-                                    resourceManager.getAllocator( "UM" ) :
-                                    resourceManager.getAllocator( "DEVICE" );
+        auto alloc            = resourceManager.getAllocator( "DEVICE" );
         if ( *data ) {
             alloc.deallocate( data );
             *data = nullptr;
         }
 #else
-        AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been "
-                   "implemented as yet" );
+        AMP_ERROR( "CSRMatrixData: device memory handling without Umpire has not been "
+                   "implemented yet" );
 #endif
     } else {
         AMP_ERROR( "Memory type undefined" );
@@ -456,7 +482,7 @@ void CSRMatrixData<Policy>::extractDiagonal( std::shared_ptr<Vector> buf ) const
 
     auto *rawVecData = buf->getRawDataBlock<scalar_t>();
     auto memType     = AMP::Utilities::getMemoryType( rawVecData );
-    if ( memType < AMP::Utilities::MemoryType::device ) {
+    if ( memType != d_memory_location ) {
 
         const size_t N = d_last_row - d_first_row;
         for ( size_t i = 0; i < N; ++i ) {

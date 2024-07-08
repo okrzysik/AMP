@@ -36,11 +36,12 @@
 // classes
 
 // Number of products to evaluate to average out timings
-#define NUM_PRODUCTS 50
+#define NUM_PRODUCTS 1000
 
 size_t matVecTestWithDOFs( AMP::UnitTest *ut,
                            std::string type,
-                           std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
+                           std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
+			   bool testTranspose )
 {
     auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     // Create the vectors
@@ -77,7 +78,6 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
     x->setToScalar( 1.0 );
     // this shouldn't be necessary, but evidently is!
     x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
     y->zero();
 
     for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
@@ -94,22 +94,24 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
         ut->failure( type + ": Fails 1 norm test with pseudo Laplacian" );
     }
 
-    // Repeat test with transpose multiply (Laplacian is symmetric)
-    y->setToScalar( 1.0 );
-    y->makeConsistent();
-    x->zero();
-    // for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
-    matrix->multTranspose( y, x );
-    // }
+    if ( testTranspose ) {
+        // Repeat test with transpose multiply (Laplacian is symmetric)
+        y->setToScalar( 1.0 );
+	y->makeConsistent();
+	x->zero();
+	for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
+	    matrix->multTranspose( y, x );
+	}
 
-    auto xNorm = static_cast<scalar_t>( x->L1Norm() );
-
-    if ( xNorm == static_cast<scalar_t>( matrix->numGlobalRows() ) ) {
-        ut->passes( type + ": Passes 1 norm test with pseudo Laplacian transpose" );
-    } else {
-        AMP::pout << "1 Norm " << xNorm << ", number of rows " << matrix->numGlobalRows()
-                  << std::endl;
-        ut->failure( type + ": Fails 1 norm test with pseudo Laplacian transpose" );
+	auto xNorm = static_cast<scalar_t>( x->L1Norm() );
+	
+	if ( xNorm == static_cast<scalar_t>( matrix->numGlobalRows() ) ) {
+	    ut->passes( type + ": Passes 1 norm test with pseudo Laplacian transpose" );
+	} else {
+	    AMP::pout << "Transpose 1 Norm " << xNorm << ", number of rows " << matrix->numGlobalRows()
+		      << std::endl;
+	    ut->failure( type + ": Fails 1 norm test with pseudo Laplacian transpose" );
+	}
     }
 
     return nGlobalRows;
@@ -138,12 +140,12 @@ size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
 
     // Test on defined matrix types
 #if defined( AMP_USE_TRILINOS )
-    matVecTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs );
+    matVecTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs, true );
 #endif
 #if defined( AMP_USE_PETSC )
-    matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs );
+    matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, true );
 #endif
-    return matVecTestWithDOFs( ut, "CSRMatrix", scalarDOFs );
+    return matVecTestWithDOFs( ut, "CSRMatrix", scalarDOFs, true );
 }
 
 int main( int argc, char *argv[] )

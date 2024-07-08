@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ProfilerApp.h"
 
 namespace AMP::LinearAlgebra {
 
@@ -269,6 +270,8 @@ void VectorData::setValuesByGlobalID( size_t N, const size_t *ndx, const TYPE *v
 template<typename TYPE>
 void VectorData::addValuesByGlobalID( size_t N, const size_t *ndx, const TYPE *vals )
 {
+    PROFILE( "VectorData::addValuesByGlobalID" );
+    
     constexpr size_t N_max = 128;
     while ( N > N_max ) {
         addValuesByGlobalID( N_max, ndx, vals );

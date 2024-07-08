@@ -39,6 +39,8 @@ IF( USE_LIBMESH AND AMP_DATA )
   COPY_TEST_FILE( input_testMatVec-1 )
   COPY_TEST_FILE( input_testMatVec-2 )
   COPY_TEST_FILE( input_testMatVecPerf-1 )
+  COPY_TEST_FILE( input_testMatVecPerf-2 )
+  COPY_TEST_FILE( input_testMatVecPerf-3 )
   ADD_AMP_TEST_1_2_4( testMatMultiply )
 ENDIF()
 

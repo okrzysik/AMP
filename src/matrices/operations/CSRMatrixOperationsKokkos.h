@@ -5,7 +5,7 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy>
+template<typename Policy, class ExecSpace>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
 
@@ -75,6 +75,10 @@ class CSRMatrixOperationsKokkos : public MatrixOperations
      * \return  The L1 norm of the matrix
      */
     AMP::Scalar L1Norm( const MatrixData &X ) const override;
+
+protected:
+
+  ExecSpace d_exec_space;
 };
 
 } // namespace AMP::LinearAlgebra

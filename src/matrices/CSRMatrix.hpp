@@ -8,6 +8,7 @@
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
 
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+#include "Kokkos_Core.hpp"
 #include "AMP/matrices/operations/CSRMatrixOperationsKokkos.h"
 #endif
 
@@ -26,7 +27,7 @@ CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params ) : M
 {
     d_matrixData = std::make_shared<CSRMatrixData<Policy>>( params );
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy>>();
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy,Kokkos::DefaultExecutionSpace>>();
 #else
     d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
 #endif
@@ -36,7 +37,7 @@ template<typename Policy>
 CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy>>();
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy,Kokkos::DefaultExecutionSpace>>();
 #else
     d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
 #endif

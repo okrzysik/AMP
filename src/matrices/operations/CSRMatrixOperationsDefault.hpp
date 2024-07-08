@@ -15,6 +15,7 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
 {
     PROFILE( "CSRMatrixOperationsDefault::mult" );
     AMP_DEBUG_ASSERT( in && out );
+    AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -81,9 +82,9 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
 }
 
 template<typename Policy>
-void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Vector> ,
-                                                        MatrixData const &,
-                                                        std::shared_ptr<Vector>  )
+void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Vector> in,
+                                                        MatrixData const &A,
+                                                        std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsDefault::multTranspose" );
     

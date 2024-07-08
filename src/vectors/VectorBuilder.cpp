@@ -101,7 +101,16 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
         }
         comm.barrier();
         // Create the vector
+	// ===== TEMPORARY =====
+#ifdef USE_HIP
+	// ALLOC, DATA, and OPS, are added just for now to get vectors on device
+        using ALLOC = AMP::HipManagedAllocator<double>;
+        using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
+        using OPS   = AMP::LinearAlgebra::VectorOperationsHip<double>;
+        auto vector = createSimpleVector<double, OPS, DATA>( variable, DOFs, comm_list );
+#else
         auto vector = createSimpleVector<double>( variable, DOFs, comm_list );
+#endif
         return vector;
     }
     return Vector::shared_ptr();
