@@ -245,18 +245,18 @@ private:
     class CSRSerialMatrixData : public AMP::enable_shared_from_this<CSRSerialMatrixData>
     {
         // The outer CSRMatrixData class should have direct access to the internals of this class
-        friend class CSRMatrixData<Policy>;
+        friend class CSRMatrixData<Policy,Allocator>;
 
     public:
         /** \brief Constructor
          * \param[in] params Description of the matrix
          * \param[in] is_diag True if this is the diag block, influences which dofs are used/ignored
          */
-        explicit CSRSerialMatrixData( const CSRMatrixData<Policy> &outer,
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy,Allocator> &outer,
                                       std::shared_ptr<MatrixParametersBase> params,
                                       bool is_diag );
 
-        explicit CSRSerialMatrixData( const CSRMatrixData<Policy> &outer );
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy,Allocator> &outer );
 
         //! Destructor
         virtual ~CSRSerialMatrixData();
@@ -289,7 +289,7 @@ private:
         void findColumnMap();
 
     protected:
-        const CSRMatrixData<Policy> &d_outer; // reference to the containing CSRMatrixData object
+        const CSRMatrixData<Policy,Allocator> &d_outer; // reference to the containing CSRMatrixData object
         bool d_is_diag  = true;
         bool d_is_empty = false;
 

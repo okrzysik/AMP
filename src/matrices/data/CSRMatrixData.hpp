@@ -101,7 +101,7 @@ CSRMatrixData<Policy,Allocator>::CSRMatrixData()
 
 template<typename Policy, class Allocator>
 CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
-    const CSRMatrixData<Policy> &outer )
+    const CSRMatrixData<Policy,Allocator> &outer )
     : d_outer( outer )
 {
     AMPManager::incrementResource( "CSRSerialMatrixData" );
@@ -189,7 +189,7 @@ CSRMatrixData<Policy,Allocator>::~CSRMatrixData()
  ********************************************************/
 template<typename Policy, class Allocator>
 CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
-    const CSRMatrixData<Policy> &outer, std::shared_ptr<MatrixParametersBase> params, bool is_diag )
+    const CSRMatrixData<Policy,Allocator> &outer, std::shared_ptr<MatrixParametersBase> params, bool is_diag )
     : d_outer( outer )
 {
     AMPManager::incrementResource( "CSRSerialMatrixData" );
@@ -381,7 +381,7 @@ std::shared_ptr<MatrixData> CSRMatrixData<Policy,Allocator>::cloneMatrixData() c
 {
     std::shared_ptr<CSRMatrixData> cloneData;
 
-    cloneData = std::make_shared<CSRMatrixData<Policy>>();
+    cloneData = std::make_shared<CSRMatrixData<Policy,Allocator>>();
 
     cloneData->d_memory_location = d_memory_location;
     cloneData->d_is_square       = d_is_square;
