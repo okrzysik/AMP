@@ -139,7 +139,7 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     }
     // Create the matrix
     auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy,Allocator>>( params );
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( data );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy,Allocator>>( data );
     // Initialize the matrix
     newMatrix->zero();
     newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );

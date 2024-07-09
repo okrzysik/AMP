@@ -12,7 +12,7 @@ namespace AMP::LinearAlgebra {
  * \details  This is a concrete class that stores a dense local matrix.
  *    This is not a distributed matrix and requires that the comm is AMP_COMM_SELF.
  */
-template<typename Policy>
+template<typename Policy, typename Allocator=std::allocator<int>>
 class CSRMatrix : public Matrix
 {
 public:

@@ -346,18 +346,18 @@ protected:
                        AMP::LinearAlgebra::ScatterType );
 };
 
-template<typename Policy>
-static CSRMatrixData<Policy> const *getCSRMatrixData( MatrixData const &A )
+template<typename Policy, typename Allocator>
+static CSRMatrixData<Policy,Allocator> const *getCSRMatrixData( MatrixData const &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy> const *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy,Allocator> const *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
 
-template<typename Policy>
-static CSRMatrixData<Policy> *getCSRMatrixData( MatrixData &A )
+template<typename Policy, typename Allocator>
+static CSRMatrixData<Policy,Allocator> *getCSRMatrixData( MatrixData &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy> *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy,Allocator> *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
