@@ -17,6 +17,12 @@
     #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
     #include <Epetra_CrsMatrix.h>
 #endif
+#ifdef USE_HIP
+    #include "AMP/utils/hip/HipAllocator.h"
+#endif
+#ifdef USE_CUDA
+    #include "AMP/utils/cuda/CudaAllocator.h"
+#endif
 
 #include <functional>
 
@@ -101,7 +107,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 /********************************************************
  * Build a CSRMatrix                                    *
  ********************************************************/
-template<typename Policy>
+template<typename Policy, class Allocator>
 std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                  AMP::LinearAlgebra::Vector::shared_ptr rightVec,
@@ -132,8 +138,8 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         params->addColumns( cols );
     }
     // Create the matrix
-    auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy>>( params );
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( data );
+    auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy,Allocator>>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy,Allocator>>( data );
     // Initialize the matrix
     newMatrix->zero();
     newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -142,10 +148,10 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 
 using DefaultCSRPolicy = CSRPolicy<size_t, int, double>;
 
-template std::shared_ptr<AMP::LinearAlgebra::Matrix>
-createCSRMatrix<DefaultCSRPolicy>( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
-                                   AMP::LinearAlgebra::Vector::shared_ptr rightVec,
-                                   const std::function<std::vector<size_t>( size_t )> &getRow );
+// template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+// createCSRMatrix<DefaultCSRPolicy>( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+//                                    AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+//                                    const std::function<std::vector<size_t>( size_t )> &getRow );
 
 
 /********************************************************
@@ -270,6 +276,18 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
             return rightDOF->getRowDOFs( elem );
         };
     }
+
+#if defined(USE_HIP)
+    using DeviceAllocator = AMP::HipDevAllocator<int>;
+    using ManagedAllocator = AMP::HipManagedAllocator<int>;
+#elif defined(USE_CUDA)
+    using DeviceAllocator = AMP::CudaDevAllocator<int>;
+    using ManagedAllocator = AMP::CudaManagedAllocator<int>;
+#endif
+    using HostAllocator = std::allocator<int>;
+
+    auto memType = AMP::Utilities::getMemoryType( rightVec->getRawDataBlockAsVoid(0) );
+    
     // Build the matrix
     std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix;
     if ( type == "ManagedEpetraMatrix" ) {
@@ -277,7 +295,16 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     } else if ( type == "NativePetscMatrix" ) {
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
     } else if ( type == "CSRMatrix" ) {
-        matrix = createCSRMatrix<DefaultCSRPolicy>( leftVec, rightVec, getRow );
+      if ( memType <= AMP::Utilities::MemoryType::host ) {
+        matrix = createCSRMatrix<DefaultCSRPolicy,HostAllocator>( leftVec, rightVec, getRow );
+      } else if ( memType == AMP::Utilities::MemoryType::managed ) {
+        matrix = createCSRMatrix<DefaultCSRPolicy,ManagedAllocator>( leftVec, rightVec, getRow );
+      } else if ( memType == AMP::Utilities::MemoryType::device ) {
+        matrix = createCSRMatrix<DefaultCSRPolicy,DeviceAllocator>( leftVec, rightVec, getRow );
+      } else {
+        AMP_ERROR( "Unknown memory location specified for data" );
+      }
+
     } else if ( type == "DenseSerialMatrix" ) {
         matrix = createDenseSerialMatrix( leftVec, rightVec );
     } else {
