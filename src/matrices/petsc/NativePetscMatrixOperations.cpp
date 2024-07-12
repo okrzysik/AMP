@@ -7,6 +7,7 @@
 #include "petscmat.h"
 #include "petscvec.h"
 
+#include "ProfilerApp.h"
 
 namespace AMP::LinearAlgebra {
 
@@ -40,6 +41,7 @@ void NativePetscMatrixOperations::mult( std::shared_ptr<const Vector> in,
                                         MatrixData const &A,
                                         std::shared_ptr<Vector> out )
 {
+    PROFILE( "NativePetscMatrixOperations::mult" );
     MatMult( getMat( A ), *getVec( in ), *getVec( out ) );
 }
 

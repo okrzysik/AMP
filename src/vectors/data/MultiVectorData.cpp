@@ -85,6 +85,12 @@ size_t MultiVectorData::getGhostSize() const
         ans += data->getGhostSize();
     return ans;
 }
+std::vector<double> &MultiVectorData::getGhosts() const
+{
+    AMP_INSIST( d_data.size() == 1,
+                "Calling getGhosts on MultiVectorData with more than one block is not supported" );
+    return d_data[0]->getGhosts();
+}
 uint64_t MultiVectorData::getDataID() const { return 0; }
 typeID MultiVectorData::getType( size_t block ) const
 {
