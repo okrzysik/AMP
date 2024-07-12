@@ -352,6 +352,7 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     HYPRE_ParVector par_x;
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
+    AMP::pout << "Migrating ij matrix to: " << d_memory_location << std::endl;
     hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
 
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );

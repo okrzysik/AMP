@@ -313,7 +313,7 @@ int main( int argc, char *argv[] )
 #endif
 
 #ifdef AMP_USE_HYPRE
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );

@@ -83,13 +83,13 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     }
 }
 
-#define TMP_FLAG_DBG 1
+#define TMP_FLAG_DBG 0
 
 HypreMatrixAdaptor::~HypreMatrixAdaptor()
 {
 #if ( TMP_FLAG_DBG )
     hypre_ParCSRMatrix *par_matrix = static_cast<hypre_ParCSRMatrix *>( d_matrix->object );
-    par_matrix->col_map_offd       = NULL;
+    par_matrix->col_map_offd       = nullptr;
 #endif
     // Now the standard IJMatrixDestroy can be called
     HYPRE_IJMatrixDestroy( d_matrix );
@@ -133,7 +133,7 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
 
     // Verify that Hypre CSRMatrices are on host memory
     AMP_INSIST( diag->memory_location == HYPRE_MEMORY_HOST &&
-                    off_diag->memory_location == HYPRE_MEMORY_HOST,
+		off_diag->memory_location == HYPRE_MEMORY_HOST,
                 "Hypre matrices need to be on host memory for adaptor to work" );
 
     // Verify that diag and off_diag are "empty"
