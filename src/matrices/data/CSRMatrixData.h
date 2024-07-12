@@ -12,13 +12,17 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy>
+template<typename Policy, class Allocator = std::allocator<int>>
 class CSRMatrixData : public MatrixData
 {
 public:
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
+    using gidxAllocator_t   = typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
+    using lidxAllocator_t   = typename std::allocator_traits<Allocator>::template rebind_alloc<lidx_t>;
+    using scalarAllocator_t = typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
+
 
     /** \brief Constructor
      * \param[in] params  Description of the matrix
@@ -254,23 +258,23 @@ private:
     class CSRSerialMatrixData : public AMP::enable_shared_from_this<CSRSerialMatrixData>
     {
         // The outer CSRMatrixData class should have direct access to the internals of this class
-        friend class CSRMatrixData<Policy>;
+        friend class CSRMatrixData<Policy,Allocator>;
 
     public:
         /** \brief Constructor
          * \param[in] params Description of the matrix
          * \param[in] is_diag True if this is the diag block, influences which dofs are used/ignored
          */
-        explicit CSRSerialMatrixData( const CSRMatrixData<Policy> &outer,
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy,Allocator> &outer,
                                       std::shared_ptr<MatrixParametersBase> params,
                                       bool is_diag );
 
-        explicit CSRSerialMatrixData( const CSRMatrixData<Policy> &outer );
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy,Allocator> &outer );
 
         //! Destructor
         virtual ~CSRSerialMatrixData();
 
-        std::shared_ptr<CSRSerialMatrixData> cloneMatrixData( const CSRMatrixData<Policy> &outer );
+      std::shared_ptr<CSRSerialMatrixData> cloneMatrixData( const CSRMatrixData<Policy,Allocator> &outer );
 
         void getRowByGlobalID( const size_t local_row,
                                std::vector<size_t> &cols,
@@ -298,7 +302,7 @@ private:
         void findColumnMap();
 
     protected:
-        const CSRMatrixData<Policy> &d_outer; // reference to the containing CSRMatrixData object
+        const CSRMatrixData<Policy,Allocator> &d_outer; // reference to the containing CSRMatrixData object
         bool d_is_diag  = true;
         bool d_is_empty = false;
 
@@ -315,6 +319,9 @@ private:
         lidx_t d_ncols_unq = 0;
 
         AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+        gidxAllocator_t gidxAllocator;
+        lidxAllocator_t lidxAllocator;
+        scalarAllocator_t scalarAllocator;
 
         std::shared_ptr<MatrixParametersBase> d_pParameters;
 
@@ -330,6 +337,10 @@ protected:
     lidx_t d_nnz       = 0;
 
     AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+    gidxAllocator_t gidxAllocator;
+    lidxAllocator_t lidxAllocator;
+    scalarAllocator_t scalarAllocator;
+
 
     std::shared_ptr<CSRSerialMatrixData> d_diag_matrix     = nullptr;
     std::shared_ptr<CSRSerialMatrixData> d_off_diag_matrix = nullptr;
@@ -348,18 +359,18 @@ protected:
                        AMP::LinearAlgebra::ScatterType );
 };
 
-template<typename Policy>
-static CSRMatrixData<Policy> const *getCSRMatrixData( MatrixData const &A )
+template<typename Policy, typename Allocator>
+static CSRMatrixData<Policy,Allocator> const *getCSRMatrixData( MatrixData const &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy> const *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy,Allocator> const *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
 
-template<typename Policy>
-static CSRMatrixData<Policy> *getCSRMatrixData( MatrixData &A )
+template<typename Policy, typename Allocator>
+static CSRMatrixData<Policy,Allocator> *getCSRMatrixData( MatrixData &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy> *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy,Allocator> *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
