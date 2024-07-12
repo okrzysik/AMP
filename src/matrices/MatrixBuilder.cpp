@@ -298,9 +298,18 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
       if ( memType <= AMP::Utilities::MemoryType::host ) {
         matrix = createCSRMatrix<DefaultCSRPolicy,HostAllocator>( leftVec, rightVec, getRow );
       } else if ( memType == AMP::Utilities::MemoryType::managed ) {
+#if defined(USE_HIP) || defined(USE_CUDA)
         matrix = createCSRMatrix<DefaultCSRPolicy,ManagedAllocator>( leftVec, rightVec, getRow );
+#else
+        AMP_ERROR("No device found!");
+#endif
+          
       } else if ( memType == AMP::Utilities::MemoryType::device ) {
+#if defined(USE_HIP) || defined(USE_CUDA)
         matrix = createCSRMatrix<DefaultCSRPolicy,DeviceAllocator>( leftVec, rightVec, getRow );
+#else
+        AMP_ERROR("No device found!");
+#endif
       } else {
         AMP_ERROR( "Unknown memory location specified for data" );
       }
