@@ -440,6 +440,7 @@ CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::cloneMatrixData( const CSR
 #warning May remove fill here when padding is removed
             std::fill( d_coeffs, d_coeffs + d_nnz, 0.0 );
         } else {
+#if defined(USE_CUDA) || defined(USE_HIP)
             // I hope this is temporary. Generally, I advocate for CSRMatrixData being
             // execution space agnostic. I have some ideas for that. (Brian Romero)
             thrust::copy_n( thrust::device, d_nnz_per_row, d_num_rows, cloneData->d_nnz_per_row );
@@ -449,6 +450,9 @@ CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::cloneMatrixData( const CSR
 	    // need to zero out coeffs so that padded region has valid data
 #warning May remove fill here when padding is removed
             thrust::fill_n( thrust::device, d_coeffs, d_nnz, 0.0 );
+#else
+    AMP_ERROR( "No device found!" );
+#endif
         }
     } else {
         cloneData->d_own_data    = false;
