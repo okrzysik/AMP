@@ -75,7 +75,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         for ( size_t row = row_start; row < row_end; row++ ) {
             auto cols = getRow( row );
             params->setEntriesInRow( row - row_start, cols.size() );
-            params->addColumns( cols );
+            // params->addColumns( cols );
         }
 
         // Create the matrix
@@ -135,10 +135,10 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     for ( size_t row = row_start; row < row_end; row++ ) {
         auto cols = getRow( row );
         params->setEntriesInRow( row - row_start, cols.size() );
-        params->addColumns( cols );
+        // params->addColumns( cols );
     }
     // Create the matrix
-    auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy,Allocator>>( params );
+    auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy,Allocator>>( params, getRow );
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy,Allocator>>( data );
     // Initialize the matrix
     newMatrix->zero();
@@ -213,12 +213,11 @@ createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     for ( size_t row = row_start; row < row_end; row++ ) {
         auto cols = getRow( row );
         params->setEntriesInRow( row - row_start, cols.size() );
-        params->addColumns( cols );
+        // params->addColumns( cols );
     }
     // Create the matrix
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::NativePetscMatrix>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::NativePetscMatrix>( params, getRow );
     // Initialize the matrix
-    //    newMatrix->zero();
     newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     return newMatrix;
 #else
@@ -255,7 +254,7 @@ static void test( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 
 
 /********************************************************
- * Matrix builder                                        *
+ * Matrix builder                                       *
  ********************************************************/
 std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,

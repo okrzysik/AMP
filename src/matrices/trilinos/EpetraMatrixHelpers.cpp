@@ -8,7 +8,7 @@
 namespace AMP::LinearAlgebra {
 
 /********************************************************
- * Get an Epetra vector from an AMP vector               *
+ * Get an Epetra matrix from an AMP matrix              *
  ********************************************************/
 std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> mat )
 {
@@ -25,7 +25,7 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
             const int i = row - mat->beginRow();
             auto cols   = mat->getColumnIDs( row );
             matParams->setEntriesInRow( i, static_cast<int>( cols.size() ) );
-            matParams->addColumns( cols );
+            // matParams->addColumns( cols );
         }
 
         auto epetraMat = std::make_shared<ManagedEpetraMatrix>( matParams );

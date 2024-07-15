@@ -17,7 +17,8 @@ class NativePetscMatrixData : public MatrixData
 public:
     NativePetscMatrixData();
 
-    explicit NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params );
+    explicit NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params,
+				    const std::function<std::vector<size_t>( size_t )> &getRow );
 
     /** \brief  Construct a matrix from a PETSc Mat.
      * \param[in] m  The Mat to wrap

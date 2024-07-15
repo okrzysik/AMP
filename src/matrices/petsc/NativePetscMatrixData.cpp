@@ -23,7 +23,8 @@ NativePetscMatrixData::NativePetscMatrixData( Mat m, bool internally_created )
     d_MatCreatedInternally = internally_created;
 }
 
-NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params )
+NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params,
+					      const std::function<std::vector<size_t>( size_t )> &getRow )
     : MatrixData( params )
 {
     auto parameters = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
@@ -32,47 +33,50 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBa
     const auto nrows = parameters->getLocalNumberOfRows();
     const auto ncols = parameters->getLocalNumberOfColumns();
     MatCreate( comm, &d_Mat );
-    MatSetType( d_Mat, MATMPIAIJ );
+    MatSetType( d_Mat, MATAIJ );
     MatSetFromOptions( d_Mat );
-    MatSetSizes( d_Mat,
-                 nrows,
-                 ncols,
-                 parameters->getGlobalNumberOfRows(),
-                 parameters->getGlobalNumberOfColumns() );
-    MatSetUp( d_Mat );
-#if 1
-    auto nnz_p     = parameters->entryList();
-    const auto nnz = *( std::max_element( nnz_p, nnz_p + nrows ) );
-    MatMPIAIJSetPreallocation( d_Mat, nnz, nullptr, PETSC_DETERMINE, nullptr );
-    MatSeqAIJSetPreallocation( d_Mat, nnz, nullptr );
-#else
-    // this is possibly more optimal, but at present gives an error
-    MatMPIAIJSetPreallocation(
-        d_Mat, PETSC_DEFAULT, parameters->entryList(), PETSC_DEFAULT, PETSC_NULL );
-    MatSeqAIJSetPreallocation( d_Mat, PETSC_DEFAULT, parameters->entryList() );
-#endif
-    // zero out the rows explicitly
+    MatSetSizes( d_Mat, nrows, ncols, PETSC_DETERMINE, PETSC_DETERMINE );
+    
+    auto row_nnz           = parameters->entryList();
+    const auto max_row_nnz = *( std::max_element( row_nnz, row_nnz + nrows ) );
 
-    std::vector<PetscInt> petsc_rows( nrows );
+    // this allocates twice as much memory as needed
+    // parameters->entryList() is just nnz per row, but whether it is on/off diag
+    // is not known from here. This allocates equal space in both on and off diag
+    // to guarantee insertions work
+    std::vector<PetscInt> petsc_row_nnz(nrows,0);
+    std::transform(row_nnz, row_nnz + nrows, petsc_row_nnz.begin(),
+		   []( size_t r ) -> PetscInt { return r; } );
+    AMP::pout << "petsc nnz: ";
+    for ( auto&& n : petsc_row_nnz) {
+      AMP::pout << n << " ";
+    }
+    AMP::pout << std::endl;
+    // Safe to call both preallocation routines
+    // Only first used for serial runs, only second used for multiprocess runs
+    MatSeqAIJSetPreallocation( d_Mat, 0, petsc_row_nnz.data() );
+    MatMPIAIJSetPreallocation( d_Mat,
+			       0, petsc_row_nnz.data(),
+			       0, petsc_row_nnz.data() );
+    MatSetUp( d_Mat );
+
+    // Insert zeros into all rows explicitly, sets the non-zero structure
     auto rowDOFs = parameters->getLeftDOFManager();
     AMP_ASSERT( rowDOFs );
     const auto srow  = rowDOFs->beginDOF();
-    const auto &cols = parameters->getColumns();
-    std::vector<PetscInt> petsc_cols( cols.size() );
-    for ( size_t i = 0; i < petsc_cols.size(); ++i ) // type conversion happening
-        petsc_cols[i] = cols[i];
-
-    auto row_nnz     = parameters->entryList();
-    auto current_loc = 0;
-
+    std::vector<PetscInt> petsc_cols(max_row_nnz,0);
     for ( size_t i = 0; i < nrows; ++i ) {
         PetscInt global_row = srow + i;
         const auto nvals    = row_nnz[i];
+	auto cols = getRow( global_row );
+	std::transform( cols.begin(), cols.end(), petsc_cols.begin(),
+			[]( size_t c ) -> PetscInt { return c; } );
         std::vector<double> vals( nvals, 0.0 );
-        MatSetValues(
-            d_Mat, 1, &global_row, nvals, &petsc_cols[current_loc], vals.data(), INSERT_VALUES );
-        current_loc += nvals;
+        MatSetValues( d_Mat, 1, &global_row, nvals,
+		      petsc_cols.data(), vals.data(), INSERT_VALUES );
     }
+    MatAssemblyBegin( d_Mat, MAT_FINAL_ASSEMBLY );
+    MatAssemblyEnd( d_Mat, MAT_FINAL_ASSEMBLY );
 
     d_MatCreatedInternally = true;
 }

@@ -82,12 +82,12 @@ public:
     /** \brief Return a vector of all columns with non-zero entries for this process
      * \return a vector of global column ids
      */
-    std::vector<size_t> &getColumns() { return d_vColumns; }
+    //std::vector<size_t> &getColumns() { return d_vColumns; }
 
     /** \brief  Add columns to a description
      * \param[in] cols  The column ids
      */
-    void addColumns( const std::vector<size_t> &cols );
+    // void addColumns( const std::vector<size_t> &cols );
 
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
@@ -116,7 +116,7 @@ protected:
     std::vector<int> d_vEntriesPerRow;
 
     //!  The set of columns with non-zero entries this processor has
-    std::vector<size_t> d_vColumns;
+    // std::vector<size_t> d_vColumns;
 };
 } // namespace AMP::LinearAlgebra
 
