@@ -63,8 +63,7 @@ CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
 }
 
 template<typename Policy, class Allocator>
-CSRMatrixData<Policy,Allocator>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params,
-						const std::function<std::vector<size_t>( size_t )> &getRow )
+CSRMatrixData<Policy,Allocator>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params )
     : MatrixData( params )
 {
 
@@ -87,8 +86,8 @@ CSRMatrixData<Policy,Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameters
 
         if ( d_memory_location != AMP::Utilities::MemoryType::device ) {
             // Construct on/off diag blocks
-            d_diag_matrix     = std::make_shared<CSRSerialMatrixData>( *this, params, true, getRow );
-            d_off_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, false, getRow );
+            d_diag_matrix     = std::make_shared<CSRSerialMatrixData>( *this, params, true );
+            d_off_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, false );
 
             // get total nnz count
             d_nnz = d_diag_matrix->d_nnz + d_off_diag_matrix->d_nnz;
@@ -125,8 +124,8 @@ CSRMatrixData<Policy,Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameters
         d_last_col  = d_rightDOFManager->endDOF();
 
         // send params forward to the on/off diagonal blocks
-        d_diag_matrix     = std::make_shared<CSRSerialMatrixData>( *this, params, true, getRow );
-        d_off_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, false, getRow );
+        d_diag_matrix     = std::make_shared<CSRSerialMatrixData>( *this, params, true );
+        d_off_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, false );
         d_nnz             = d_diag_matrix->d_nnz + d_off_diag_matrix->d_nnz;
 
     } else {
@@ -147,8 +146,7 @@ template<typename Policy, class Allocator>
 CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
     const CSRMatrixData<Policy,Allocator> &outer,
     std::shared_ptr<MatrixParametersBase> params,
-    bool is_diag,
-    const std::function<std::vector<size_t>( size_t )> &getRow )
+    bool is_diag )
     : d_outer( outer )
 {
     AMPManager::incrementResource( "CSRSerialMatrixData" );
@@ -192,10 +190,7 @@ CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
 
         d_is_empty = false;
 
-        auto *nnzPerRowAll = matParams->entryList();
-        AMP_INSIST(
-            getRow,
-            "CSRSerialMatrixData not constructable from MatrixParameters without getRow function" );
+        const auto &getRow = matParams->getRowFunction();
 
         // Count number of nonzeros depending on block type
         // also track un-referenced columns if off-diagonal
@@ -251,8 +246,7 @@ CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         for ( lidx_t i = 0; i < d_num_rows; ++i ) {
             d_nnz_per_row[i] = 0;
 	    auto cols = getRow( outer.d_first_row + i );
-            for ( lidx_t j = 0; j < nnzPerRowAll[i]; ++j ) {
-                auto col = cols[j];
+            for ( auto&& col : cols ) {
                 if ( isColValid<Policy>( col, d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
                     d_nnz_per_row[i]++;
                     d_cols[cli] = col;

@@ -22,8 +22,7 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit CSRMatrix( std::shared_ptr<MatrixParametersBase> params,
-			const std::function<std::vector<size_t>( size_t )> getRow=[](size_t){return std::vector<size_t>(); } );
+    explicit CSRMatrix( std::shared_ptr<MatrixParametersBase> params );
 
     /** \brief Constructor
      * \param[in] params  MatrixData object associated with matrix

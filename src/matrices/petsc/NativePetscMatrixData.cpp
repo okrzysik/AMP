@@ -23,8 +23,7 @@ NativePetscMatrixData::NativePetscMatrixData( Mat m, bool internally_created )
     d_MatCreatedInternally = internally_created;
 }
 
-NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params,
-					      const std::function<std::vector<size_t>( size_t )> &getRow )
+NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params )
     : MatrixData( params )
 {
     auto parameters = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
@@ -32,48 +31,60 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBa
     const auto &comm = parameters->getComm().getCommunicator();
     const auto nrows = parameters->getLocalNumberOfRows();
     const auto ncols = parameters->getLocalNumberOfColumns();
+    const auto& getRow = parameters->getRowFunction();
+    const auto rowDOFs = parameters->getLeftDOFManager();
+    const auto colDOFs = parameters->getRightDOFManager();
+    AMP_INSIST( rowDOFs && colDOFs,
+		"Non-null DOFManagers required to build NativePetscMatrixData" );
+    const auto srow = rowDOFs->beginDOF();
+    const auto fcol = colDOFs->beginDOF(); // start of on-diagonal entries (inclusive)
+    const auto lcol = colDOFs->endDOF();   // end of on-diagonal entries (exclusive)
+
+    // Create petsc matrix as MATAIJ type and set sizes from local DOF counts
     MatCreate( comm, &d_Mat );
     MatSetType( d_Mat, MATAIJ );
     MatSetFromOptions( d_Mat );
     MatSetSizes( d_Mat, nrows, ncols, PETSC_DETERMINE, PETSC_DETERMINE );
-    
-    auto row_nnz           = parameters->entryList();
-    const auto max_row_nnz = *( std::max_element( row_nnz, row_nnz + nrows ) );
 
-    // this allocates twice as much memory as needed
-    // parameters->entryList() is just nnz per row, but whether it is on/off diag
-    // is not known from here. This allocates equal space in both on and off diag
-    // to guarantee insertions work
-    std::vector<PetscInt> petsc_row_nnz(nrows,0);
-    std::transform(row_nnz, row_nnz + nrows, petsc_row_nnz.begin(),
-		   []( size_t r ) -> PetscInt { return r; } );
-    AMP::pout << "petsc nnz: ";
-    for ( auto&& n : petsc_row_nnz) {
-      AMP::pout << n << " ";
+    // count number of local and remote dofs in each row
+    // to find the on and off diag nnz counts
+    std::vector<PetscInt> diag_nnz( nrows, 0 ),off_diag_nnz( nrows, 0 );
+    size_t max_row_nnz = 0;
+    for ( size_t i = 0; i < nrows; ++i ) {
+      const auto cols = getRow( i + srow );
+      // test if columns are on/off diag and increment accordingly
+      for ( auto&& col : cols ) {
+	if ( fcol <= col && col < lcol) {
+	  diag_nnz[i]++;
+	} else {
+	  off_diag_nnz[i]++;
+	}
+      }
+      // also track the longest row (regardless of where the nnz go)
+      const auto row_nnz = cols.size();
+      max_row_nnz = row_nnz > max_row_nnz ? row_nnz : max_row_nnz;
     }
-    AMP::pout << std::endl;
+    
+    // Allocate space in matrix using above nnz counts
     // Safe to call both preallocation routines
     // Only first used for serial runs, only second used for multiprocess runs
-    MatSeqAIJSetPreallocation( d_Mat, 0, petsc_row_nnz.data() );
+    MatSeqAIJSetPreallocation( d_Mat, 0, diag_nnz.data() );
     MatMPIAIJSetPreallocation( d_Mat,
-			       0, petsc_row_nnz.data(),
-			       0, petsc_row_nnz.data() );
+			       0, diag_nnz.data(),
+			       0, off_diag_nnz.data() );
     MatSetUp( d_Mat );
 
     // Insert zeros into all rows explicitly, sets the non-zero structure
-    auto rowDOFs = parameters->getLeftDOFManager();
-    AMP_ASSERT( rowDOFs );
-    const auto srow  = rowDOFs->beginDOF();
     std::vector<PetscInt> petsc_cols(max_row_nnz,0);
+    std::vector<PetscReal> petsc_vals(max_row_nnz,0);
     for ( size_t i = 0; i < nrows; ++i ) {
         PetscInt global_row = srow + i;
-        const auto nvals    = row_nnz[i];
-	auto cols = getRow( global_row );
-	std::transform( cols.begin(), cols.end(), petsc_cols.begin(),
+	const auto amp_cols = getRow( global_row );
+	std::transform( amp_cols.begin(), amp_cols.end(), petsc_cols.begin(),
 			[]( size_t c ) -> PetscInt { return c; } );
-        std::vector<double> vals( nvals, 0.0 );
+	PetscInt nvals = static_cast<PetscInt>( amp_cols.size() );
         MatSetValues( d_Mat, 1, &global_row, nvals,
-		      petsc_cols.data(), vals.data(), INSERT_VALUES );
+		      petsc_cols.data(), petsc_vals.data(), INSERT_VALUES );
     }
     MatAssemblyBegin( d_Mat, MAT_FINAL_ASSEMBLY );
     MatAssemblyEnd( d_Mat, MAT_FINAL_ASSEMBLY );

@@ -9,16 +9,13 @@ namespace AMP::LinearAlgebra {
 
 /** \class NativePetscMatrixData
  * \brief  This is a thin wrapper around PETSc Mat
- * \details  As opposed to ManagedPetscMatrixData, this is a
- *    thin wrapper around a PETSc Mat.
  */
 class NativePetscMatrixData : public MatrixData
 {
 public:
     NativePetscMatrixData();
 
-    explicit NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params,
-				    const std::function<std::vector<size_t>( size_t )> &getRow );
+    explicit NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params );
 
     /** \brief  Construct a matrix from a PETSc Mat.
      * \param[in] m  The Mat to wrap

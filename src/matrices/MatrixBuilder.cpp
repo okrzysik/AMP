@@ -62,7 +62,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 
         // Create the matrix parameters
         auto params =
-            std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
+	  std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm, getRow );
         params->d_CommListLeft  = leftVec->getCommunicationList();
         params->d_CommListRight = rightVec->getCommunicationList();
         params->d_VariableLeft  = leftVec->getVariable();
@@ -75,7 +75,6 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         for ( size_t row = row_start; row < row_end; row++ ) {
             auto cols = getRow( row );
             params->setEntriesInRow( row - row_start, cols.size() );
-            // params->addColumns( cols );
         }
 
         // Create the matrix
@@ -123,22 +122,14 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
     // Create the matrix parameters
-    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm, getRow );
     params->d_CommListLeft  = leftVec->getCommunicationList();
     params->d_CommListRight = rightVec->getCommunicationList();
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
 
-    // Add the row sizes and local columns to the matrix parameters
-    size_t row_start = leftDOF->beginDOF();
-    size_t row_end   = leftDOF->endDOF();
-    for ( size_t row = row_start; row < row_end; row++ ) {
-        auto cols = getRow( row );
-        params->setEntriesInRow( row - row_start, cols.size() );
-        // params->addColumns( cols );
-    }
     // Create the matrix
-    auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy,Allocator>>( params, getRow );
+    auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy,Allocator>>( params );
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy,Allocator>>( data );
     // Initialize the matrix
     newMatrix->zero();
@@ -147,12 +138,6 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 }
 
 using DefaultCSRPolicy = CSRPolicy<size_t, int, double>;
-
-// template std::shared_ptr<AMP::LinearAlgebra::Matrix>
-// createCSRMatrix<DefaultCSRPolicy>( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
-//                                    AMP::LinearAlgebra::Vector::shared_ptr rightVec,
-//                                    const std::function<std::vector<size_t>( size_t )> &getRow );
-
 
 /********************************************************
  * Build a DenseSerialMatrix                             *
@@ -202,21 +187,12 @@ createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                    "be fixed" );
     AMP_MPI comm = leftDOF->getComm();
     // Create the matrix parameters
-    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm, getRow );
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
 
-    // Add the row sizes and local columns to the matrix parameters
-    std::set<size_t> columns;
-    size_t row_start = leftDOF->beginDOF();
-    size_t row_end   = leftDOF->endDOF();
-    for ( size_t row = row_start; row < row_end; row++ ) {
-        auto cols = getRow( row );
-        params->setEntriesInRow( row - row_start, cols.size() );
-        // params->addColumns( cols );
-    }
     // Create the matrix
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::NativePetscMatrix>( params, getRow );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::NativePetscMatrix>( params );
     // Initialize the matrix
     newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     return newMatrix;

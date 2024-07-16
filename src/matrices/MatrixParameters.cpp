@@ -10,13 +10,24 @@ namespace AMP::LinearAlgebra {
 
 MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
                                     std::shared_ptr<AMP::Discretization::DOFManager> right,
-                                    const AMP_MPI &comm )
-    : MatrixParametersBase( comm )
+                                    const AMP_MPI &comm,
+				    const std::function<std::vector<size_t>( size_t )> getRow )
+  : MatrixParametersBase( comm ),d_getRowFunction( getRow )
 {
     AMP_ASSERT( left );
     AMP_ASSERT( right );
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;
+
+    // Create default getRow function if not provided
+    // This was migrated to here from createMatrix in MatrixBuilder.cpp
+    if ( !d_getRowFunction && d_DOFManagerLeft && d_DOFManagerRight ) {
+        d_getRowFunction = [ldof=d_DOFManagerLeft,rdof=d_DOFManagerRight]( size_t row ) {
+            auto elem = ldof->getElement( row );
+            return rdof->getRowDOFs( elem );
+        };
+    }
+    
     d_vEntriesPerRow.resize( getLocalNumberOfRows() );
 }
 
@@ -45,11 +56,6 @@ std::shared_ptr<AMP::Discretization::DOFManager> MatrixParameters::getRightDOFMa
 {
     return d_DOFManagerRight;
 }
-
-// void MatrixParameters::addColumns( const std::vector<size_t> &col )
-// {
-//     d_vColumns.insert( d_vColumns.end(), col.begin(), col.end() );
-// }
 
 const int *MatrixParameters::entryList() const { return &*d_vEntriesPerRow.begin(); }
 

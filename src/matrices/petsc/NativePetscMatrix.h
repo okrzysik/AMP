@@ -19,8 +19,7 @@ protected:
 
 public:
     NativePetscMatrix();
-    NativePetscMatrix( std::shared_ptr<MatrixParametersBase> params,
-		       const std::function<std::vector<size_t>( size_t )> getRow=[](size_t){AMP_ERROR( "Default getRow used" ); return std::vector<size_t>();} );
+    NativePetscMatrix( std::shared_ptr<MatrixParametersBase> params );
 
     /** \brief  Construct a matrix from a PETSc Mat.
      * \param[in] m  The Mat to wrap

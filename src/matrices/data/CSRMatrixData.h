@@ -28,8 +28,7 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit CSRMatrixData( std::shared_ptr<MatrixParametersBase> params,
-			    const std::function<std::vector<size_t>( size_t )> &getRow );
+    explicit CSRMatrixData( std::shared_ptr<MatrixParametersBase> params );
 
     //! Destructor
     virtual ~CSRMatrixData();
@@ -256,8 +255,7 @@ private:
          */
         explicit CSRSerialMatrixData( const CSRMatrixData<Policy,Allocator> &outer,
                                       std::shared_ptr<MatrixParametersBase> params,
-                                      bool is_diag,
-				      const std::function<std::vector<size_t>( size_t )> &getRow );
+                                      bool is_diag );
 
         explicit CSRSerialMatrixData( const CSRMatrixData<Policy,Allocator> &outer );
 
