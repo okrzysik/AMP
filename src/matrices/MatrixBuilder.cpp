@@ -69,23 +69,23 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         params->d_VariableRight = rightVec->getVariable();
 
         // Add the row sizes and local columns to the matrix parameters
-        std::set<size_t> columns;
-        size_t row_start = leftDOF->beginDOF();
-        size_t row_end   = leftDOF->endDOF();
-        for ( size_t row = row_start; row < row_end; row++ ) {
-            auto cols = getRow( row );
-            params->setEntriesInRow( row - row_start, cols.size() );
-        }
+        // std::set<size_t> columns;
+        // size_t row_start = leftDOF->beginDOF();
+        // size_t row_end   = leftDOF->endDOF();
+        // for ( size_t row = row_start; row < row_end; row++ ) {
+        //     auto cols = getRow( row );
+        //     params->setEntriesInRow( row - row_start, cols.size() );
+        // }
 
         // Create the matrix
         auto newMatrixData = std::make_shared<AMP::LinearAlgebra::EpetraMatrixData>( params );
-        newMatrixData->setEpetraMaps( leftVec, rightVec );
+        // newMatrixData->setEpetraMaps( leftVec, rightVec );
         // Initialize the matrix
-        for ( size_t row = row_start; row < row_end; row++ ) {
-            auto col = getRow( row );
-            newMatrixData->createValuesByGlobalID( row, col );
-        }
-        newMatrixData->fillComplete();
+        // for ( size_t row = row_start; row < row_end; row++ ) {
+        //     auto col = getRow( row );
+        //     newMatrixData->createValuesByGlobalID( row, col );
+        // }
+        // newMatrixData->fillComplete();
         auto newMatrix = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( newMatrixData );
         newMatrix->zero();
         newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );

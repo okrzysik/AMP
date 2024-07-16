@@ -27,8 +27,6 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
             return rdof->getRowDOFs( elem );
         };
     }
-    
-    d_vEntriesPerRow.resize( getLocalNumberOfRows() );
 }
 
 
@@ -56,15 +54,5 @@ std::shared_ptr<AMP::Discretization::DOFManager> MatrixParameters::getRightDOFMa
 {
     return d_DOFManagerRight;
 }
-
-const int *MatrixParameters::entryList() const { return &*d_vEntriesPerRow.begin(); }
-
-int *MatrixParameters::entryList() { return &( d_vEntriesPerRow[0] ); }
-
-void MatrixParameters::setEntriesInRow( int row, int entries ) { d_vEntriesPerRow[row] = entries; }
-
-int &MatrixParameters::entriesInRow( int i ) { return d_vEntriesPerRow[i]; }
-
-int MatrixParameters::entriesInRow( int i ) const { return d_vEntriesPerRow[i]; }
 
 } // namespace AMP::LinearAlgebra

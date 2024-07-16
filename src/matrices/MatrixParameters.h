@@ -50,36 +50,6 @@ public:
     //! Return the global number of columns
     size_t getGlobalNumberOfColumns() const;
 
-    /** \brief Return the number of entries in each row
-     * \return  An integer array of the number of entries in each
-     * local row
-     */
-    const int *entryList() const;
-
-    /** \brief Return the number of entries in each row
-     * \return  An integer array of the number of entries in each
-     * local row
-     */
-    int *entryList();
-
-    /** \brief Set the number of non-zeros in a particular row
-     * \param[in] row  The row number
-     * \param[in] entries  The number of non-zero entries
-     */
-    void setEntriesInRow( int row, int entries );
-
-    /** \brief Return the number of non-zero entries in a local row
-     * \param[in] i The local row id
-     * \return  The number of entries in the row
-     */
-    int &entriesInRow( int i );
-
-    /** \brief Return the number of non-zero entries in a local row
-     * \param[in] i The local row id
-     * \return  The number of entries in the row
-     */
-    int entriesInRow( int i ) const;
-
     /** \brief Get the bound function that generates column IDs for each row
      */
     const std::function<std::vector<size_t>( size_t) > &getRowFunction() const
@@ -109,9 +79,6 @@ protected:
 
     // The DOFManager for the right vector ( may be null )
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
-
-    //! The number of nonzeros per row of the matrix
-    std::vector<int> d_vEntriesPerRow;
 
     //! Function that generates column ids for each row of the matrix
     std::function<std::vector<size_t>( size_t) > d_getRowFunction;
