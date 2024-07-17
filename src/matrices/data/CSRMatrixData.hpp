@@ -14,11 +14,8 @@
     #include "umpire/ResourceManager.hpp"
 #endif
 
-#if defined(USE_CUDA) || defined(USE_HIP)
-    #include <thrust/device_vector.h>
-    #include <thrust/execution_policy.h>
-    #include <thrust/for_each.h>
-    #include <thrust/inner_product.h>
+#ifdef USE_DEVICE
+    #include "AMP/utils/device/operationsHelpers.h"
 #endif
 
 
@@ -440,16 +437,16 @@ CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::cloneMatrixData( const CSR
 #warning May remove fill here when padding is removed
             std::fill( d_coeffs, d_coeffs + d_nnz, 0.0 );
         } else {
-#if defined(USE_CUDA) || defined(USE_HIP)
+#ifdef USE_DEVICE
             // I hope this is temporary. Generally, I advocate for CSRMatrixData being
             // execution space agnostic. I have some ideas for that. (Brian Romero)
-            thrust::copy_n( thrust::device, d_nnz_per_row, d_num_rows, cloneData->d_nnz_per_row );
-            thrust::copy_n( thrust::device, d_num_rows + d_row_starts, 1, cloneData->d_row_starts );
-            thrust::copy_n( thrust::device, d_cols, d_nnz, cloneData->d_cols );
-            thrust::copy_n( thrust::device, d_cols_loc, d_nnz, cloneData->d_cols_loc );
+            AMP::LinearAlgebra::OperationsHelpers<lidx_t>::copy_n( d_nnz_per_row, d_num_rows, cloneData->d_nnz_per_row );
+            AMP::LinearAlgebra::OperationsHelpers<lidx_t>::copy_n( d_num_rows + d_row_starts, 1, cloneData->d_row_starts );
+            AMP::LinearAlgebra::OperationsHelpers<gidx_t>::copy_n( d_cols, d_nnz, cloneData->d_cols );
+            AMP::LinearAlgebra::OperationsHelpers<lidx_t>::copy_n( d_cols_loc, d_nnz, cloneData->d_cols_loc );
 	    // need to zero out coeffs so that padded region has valid data
 #warning May remove fill here when padding is removed
-            thrust::fill_n( thrust::device, d_coeffs, d_nnz, 0.0 );
+            AMP::LinearAlgebra::OperationsHelpers<scalar_t>::fill_n( d_coeffs, d_nnz, 0.0 );
 #else
     AMP_ERROR( "No device found!" );
 #endif

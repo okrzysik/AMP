@@ -21,6 +21,17 @@ template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::HipManagedAllo
 template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::HipManagedAllocator<int>>;
 } // namespace AMP::LinearAlgebra
 #endif
+#ifdef USE_CUDA
+    #include "AMP/utils/cuda/CudaAllocator.h"
+namespace AMP::LinearAlgebra {
+template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, AMP::CudaDevAllocator<int>>;
+template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::CudaDevAllocator<int>>;
+template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::CudaDevAllocator<int>>;
+template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, AMP::CudaManagedAllocator<int>>;
+template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::CudaManagedAllocator<int>>;
+template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::CudaManagedAllocator<int>>;
+} // namespace AMP::LinearAlgebra
+#endif
 
 
 #if defined( AMP_USE_HYPRE )
