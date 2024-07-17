@@ -328,7 +328,7 @@ void VectorData::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     if ( d_CommList ) {
         auto id = manager->registerObject( d_CommList );
-        AMP_ASSERT( id == reinterpret_cast<uint64_t>( d_CommList.get() ) );
+        AMP_ASSERT( id == d_CommList->getID() );
     }
     if ( d_UpdateState ) {
         auto id = manager->registerObject( d_UpdateState );
@@ -345,7 +345,7 @@ void VectorData::registerChildObjects( AMP::IO::RestartManager *manager ) const
 }
 void VectorData::writeRestart( int64_t fid ) const
 {
-    uint64_t commListID  = reinterpret_cast<uint64_t>( d_CommList.get() );
+    uint64_t commListID  = d_CommList ? d_CommList->getID() : 0;
     uint64_t updateID    = reinterpret_cast<uint64_t>( d_UpdateState.get() );
     uint64_t ghostID     = reinterpret_cast<uint64_t>( d_Ghosts.get() );
     uint64_t addBufferID = reinterpret_cast<uint64_t>( d_AddBuffer.get() );
