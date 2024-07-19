@@ -1,9 +1,9 @@
 # To run valgrind:
-# valgrind --leak-check=yes --show-reachable=yes --track-origins=yes --suppressions=../../../../../../AMP/ValgrindSuppresionFile --log-file=memory.log ./test_AMPManager
-# valgrind --leak-check=yes --show-reachable=yes --track-origins=yes --suppressions=../../../../../../AMP/ValgrindSuppresionFile --gen-suppressions=all --log-file=memory.log ./test_AMPManager
+# valgrind --leak-check=yes --show-reachable=yes --track-origins=yes --suppressions=/projects/AMP/AMP/ValgrindSuppresionFile --log-file=memory.log ./test_AMPManager
+# valgrind --leak-check=yes --show-reachable=yes --track-origins=yes --suppressions=/projects/AMP/AMP/ValgrindSuppresionFile --gen-suppressions=all --log-file=memory.log ./test_AMPManager
 #
 # For slightly better performance:
-# valgrind --leak-check=yes --show-reachable=yes --suppressions=../../../../../../AMP/ValgrindSuppresionFile --log-file=memory.log ./test_AMPManager
+# valgrind --leak-check=yes --show-reachable=yes --suppressions=/projects/AMP/AMP/ValgrindSuppresionFile --log-file=memory.log ./test_AMPManager
 
 
 #### Supress AMP errors
@@ -35,6 +35,49 @@
    ...
    obj:/usr/lib/libstdc++.so.6.0.13
    fun:_ZNSt8ios_base15sync_with_stdioEb
+   ...
+}
+
+
+#### Supress static_initialization_and_destruction
+{
+   static_initialization_and_destruction
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_Z41__static_initialization_and_destruction_0ii
+   ...
+}
+
+
+#### Supress MPI memory errors
+{
+   mpichInitThread
+   Memcheck:Leak
+   ...
+   fun:PMPI_Init_thread
+   fun:_ZN3AMP7AMP_MPI9start_MPIERiPPci
+   ...
+}
+
+
+#### Supress nvidia errors
+{
+   libnvidia-opencl
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.*
+   ...
+}
+
+
+#### Supress HDF5 memory errors
+{
+   HDF5_H5Eset_auto2
+   Memcheck:Leak
+   ...
+   fun:H5_init_library
+   fun:H5Eset_auto2
    ...
 }
 
