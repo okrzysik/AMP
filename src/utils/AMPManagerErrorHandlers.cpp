@@ -241,7 +241,7 @@ void AMPManager::clearHandlers()
 {
     if ( !areErrorHandlersSet )
         return;
-    // Clear the error handler for HDF5
+        // Clear the error handler for HDF5
 #ifdef AMP_USE_HDF5
     if ( d_properties.catch_HDF5 ) {
         H5Eset_auto2( H5E_DEFAULT, nullptr, nullptr );

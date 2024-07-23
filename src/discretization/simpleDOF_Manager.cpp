@@ -456,20 +456,14 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
  ****************************************************************/
 void simpleDOFManager::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
-    // Register the mesh
+    DOFManager::registerChildObjects( manager );
     manager->registerObject( d_mesh );
     manager->registerObject( d_localIterator.shared_from_this() );
     manager->registerObject( d_ghostIterator.shared_from_this() );
 }
 void simpleDOFManager::writeRestart( int64_t fid ) const
 {
-    // DOFManager variables
-#ifdef AMP_USE_HDF5
-    writeHDF5( fid, "begin", d_begin );
-    writeHDF5( fid, "end", d_end );
-    writeHDF5( fid, "global", d_global );
-    writeHDF5( fid, "comm", d_comm.hash() );
-    // simpleDOFManager variables
+    DOFManager::writeRestart( fid );
     writeHDF5( fid, "isBaseMesh", d_isBaseMesh );
     writeHDF5( fid, "geomType", d_type );
     writeHDF5( fid, "DOFsPerElement", d_DOFsPerElement );
@@ -480,24 +474,11 @@ void simpleDOFManager::writeRestart( int64_t fid ) const
     writeHDF5( fid, "local_id", d_local_id );
     writeHDF5( fid, "remote_id", d_remote_id );
     writeHDF5( fid, "remote_dof", d_remote_dof );
-#else
-    NULL_USE( fid );
-    AMP_ERROR( "Requires HDF5" );
-#endif
 }
 simpleDOFManager::simpleDOFManager( int64_t fid, AMP::IO::RestartManager *manager )
+    : DOFManager( fid, manager )
 {
-    // DOFManager variables
-    // simpleDOFManager variables
     uint64_t localIteratorID, ghostIteratorID;
-
-#ifdef AMP_USE_HDF5
-    uint64_t commHash;
-    readHDF5( fid, "comm", commHash );
-    auto comm = manager->getComm( commHash );
-    readHDF5( fid, "begin", d_begin );
-    readHDF5( fid, "end", d_end );
-    readHDF5( fid, "global", d_global );
     readHDF5( fid, "isBaseMesh", d_isBaseMesh );
     readHDF5( fid, "geomType", d_type );
     readHDF5( fid, "DOFsPerElement", d_DOFsPerElement );
@@ -508,10 +489,6 @@ simpleDOFManager::simpleDOFManager( int64_t fid, AMP::IO::RestartManager *manage
     readHDF5( fid, "local_id", d_local_id );
     readHDF5( fid, "remote_id", d_remote_id );
     readHDF5( fid, "remote_dof", d_remote_dof );
-#else
-    NULL_USE( fid );
-    AMP_ERROR( "Requires HDF5" );
-#endif
     d_mesh          = manager->getData<AMP::Mesh::Mesh>( d_meshID.getHash() );
     d_localIterator = *manager->getData<AMP::Mesh::MeshIterator>( localIteratorID );
     d_ghostIterator = *manager->getData<AMP::Mesh::MeshIterator>( ghostIteratorID );
