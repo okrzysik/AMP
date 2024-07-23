@@ -17,12 +17,7 @@
     #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
     #include <Epetra_CrsMatrix.h>
 #endif
-#ifdef USE_HIP
-    #include "AMP/utils/hip/HipAllocator.h"
-#endif
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
-#endif
+#include "AMP/utils/memory.h"
 
 #include <functional>
 
@@ -277,15 +272,6 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         };
     }
 
-#if defined(USE_HIP)
-    using DeviceAllocator = AMP::HipDevAllocator<int>;
-    using ManagedAllocator = AMP::HipManagedAllocator<int>;
-#elif defined(USE_CUDA)
-    using DeviceAllocator = AMP::CudaDevAllocator<int>;
-    using ManagedAllocator = AMP::CudaManagedAllocator<int>;
-#endif
-    using HostAllocator = std::allocator<int>;
-
     auto memType = AMP::Utilities::getMemoryType( rightVec->getRawDataBlockAsVoid(0) );
     
     // Build the matrix
@@ -296,17 +282,17 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
     } else if ( type == "CSRMatrix" ) {
       if ( memType <= AMP::Utilities::MemoryType::host ) {
-        matrix = createCSRMatrix<DefaultCSRPolicy,HostAllocator>( leftVec, rightVec, getRow );
+        matrix = createCSRMatrix<DefaultCSRPolicy,AMP::HostAllocator<int>>( leftVec, rightVec, getRow );
       } else if ( memType == AMP::Utilities::MemoryType::managed ) {
-#if defined(USE_HIP) || defined(USE_CUDA)
-        matrix = createCSRMatrix<DefaultCSRPolicy,ManagedAllocator>( leftVec, rightVec, getRow );
+#ifdef USE_DEVICE
+        matrix = createCSRMatrix<DefaultCSRPolicy,AMP::ManagedAllocator<int>>( leftVec, rightVec, getRow );
 #else
         AMP_ERROR("No device found!");
 #endif
           
       } else if ( memType == AMP::Utilities::MemoryType::device ) {
-#if defined(USE_HIP) || defined(USE_CUDA)
-        matrix = createCSRMatrix<DefaultCSRPolicy,DeviceAllocator>( leftVec, rightVec, getRow );
+#ifdef USE_DEVICE
+        matrix = createCSRMatrix<DefaultCSRPolicy,AMP::DeviceAllocator<int>>( leftVec, rightVec, getRow );
 #else
         AMP_ERROR("No device found!");
 #endif
