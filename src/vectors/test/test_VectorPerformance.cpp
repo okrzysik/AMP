@@ -8,13 +8,13 @@
     #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
 #ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
     #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 #ifdef USE_HIP
-    #include "AMP/utils/hip/HipAllocator.h"
     #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
 #endif
+#include "AMP/utils/memory.h"
+
 
 #include "ProfilerApp.h"
 
@@ -183,7 +183,7 @@ int main( int argc, char **argv )
 #endif
 
 #ifdef USE_CUDA
-        using ALLOC = AMP::CudaManagedAllocator<double>;
+        using ALLOC = AMP::ManagedAllocator<double>;
         using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
         using OPS   = AMP::LinearAlgebra::VectorOperationsCuda<double>;
         vec = AMP::LinearAlgebra::createSimpleVector<double, OPS, DATA>( N, var, globalComm );
@@ -197,7 +197,7 @@ int main( int argc, char **argv )
 #endif
 
 #ifdef USE_HIP
-        using ALLOC = AMP::HipManagedAllocator<double>;
+        using ALLOC = AMP::ManagedAllocator<double>;
         using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
         using OPS   = AMP::LinearAlgebra::VectorOperationsHip<double>;
         vec = AMP::LinearAlgebra::createSimpleVector<double, OPS, DATA>( N, var, globalComm );

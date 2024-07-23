@@ -4,11 +4,6 @@
 #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
-
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
-#endif
-
 #include <numeric>
 
 namespace AMP::LinearAlgebra {

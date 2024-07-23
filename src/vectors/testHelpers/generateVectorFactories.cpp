@@ -25,12 +25,10 @@
     #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
 #ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
     #include "AMP/utils/cuda/GPUFunctionTable.h"
     #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 #ifdef USE_HIP
-    #include "AMP/utils/hip/HipAllocator.h"
     #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
 #endif
 
@@ -159,16 +157,9 @@ generateSimpleVectorFactory( const std::string &name, int N, bool global, const 
         using DATA = AMP::LinearAlgebra::VectorDataDefault<TYPE>;
         factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
     } else if ( data == "gpu" ) {
-#ifdef USE_CUDA
-        using ALLOC = CudaManagedAllocator<TYPE>;
+        using ALLOC = ManagedAllocator<TYPE>;
         using DATA  = AMP::LinearAlgebra::VectorDataDefault<TYPE, ALLOC>;
         factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
-#endif
-#ifdef USE_HIP
-        using ALLOC = HipManagedAllocator<TYPE>;
-        using DATA  = AMP::LinearAlgebra::VectorDataDefault<TYPE, ALLOC>;
-        factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
-#endif
     } else {
         AMP_ERROR( "Unknown VectorData" );
     }

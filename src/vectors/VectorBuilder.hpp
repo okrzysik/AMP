@@ -9,7 +9,7 @@
     #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 #ifdef USE_HIP
-    #include "AMP/utils/hip/HipAllocator.h"
+    #include "AMP/utils/hip/GPUFunctionTable.h"
     #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
 #endif
 #include "AMP/utils/memory.h"

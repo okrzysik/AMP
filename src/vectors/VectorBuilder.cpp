@@ -3,14 +3,7 @@
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.hpp"
-
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
-#endif
-#ifdef USE_HIP
-    #include "AMP/utils/hip/HipAllocator.h"
-#endif
-
+#include "AMP/utils/memory.h"
 #include <iostream>
 
 
@@ -134,7 +127,7 @@ INSTANTIATE_VECTOR( float )
 template Vector::shared_ptr
     createSimpleVector<double,
                        VectorOperationsDefault<double>,
-                       VectorDataDefault<double, AMP::CudaManagedAllocator<double>>>(
+                       VectorDataDefault<double, AMP::ManagedAllocator<double>>>(
         std::shared_ptr<Variable>,
         std::shared_ptr<AMP::Discretization::DOFManager>,
         std::shared_ptr<CommunicationList> );
@@ -143,7 +136,7 @@ template Vector::shared_ptr
 template Vector::shared_ptr
     createSimpleVector<double,
                        VectorOperationsDefault<double>,
-                       VectorDataDefault<double, AMP::HipManagedAllocator<double>>>(
+                       VectorDataDefault<double, AMP::ManagedAllocator<double>>>(
         std::shared_ptr<Variable>,
         std::shared_ptr<AMP::Discretization::DOFManager>,
         std::shared_ptr<CommunicationList> );

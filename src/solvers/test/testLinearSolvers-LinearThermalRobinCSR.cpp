@@ -32,13 +32,10 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/utils/memory.h"
 
 #ifdef AMP_USE_HYPRE
     #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-#endif
-
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
 #endif
 
 #include <iomanip>
@@ -82,7 +79,7 @@ createVectorInSpace( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
     return AMP::LinearAlgebra::createSimpleVector<
         double,
         AMP::LinearAlgebra::VectorOperationsDefault<double>,
-        AMP::LinearAlgebra::VectorDataDefault<double, AMP::CudaManagedAllocator<double>>>(
+        AMP::LinearAlgebra::VectorDataDefault<double, AMP::ManagedAllocator<double>>>(
         var, DOFs, comm_list );
 #else
     return AMP::LinearAlgebra::createVector( DOFs, var );
