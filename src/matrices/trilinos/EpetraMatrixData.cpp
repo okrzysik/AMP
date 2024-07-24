@@ -197,9 +197,8 @@ void EpetraMatrixData::createValuesByGlobalID( size_t row, const std::vector<siz
 
     std::vector<double> values( cols.size(), 0 );
 
-    VerifyEpetraReturn(
-        d_epetraMatrix->InsertGlobalValues( row, cols.size(), values.data(), indices.data() ),
-        "setValuesByGlobalID" );
+    VerifyEpetraReturn(d_epetraMatrix->InsertGlobalValues( row, cols.size(), values.data(), indices.data() ),
+		       "createValuesByGlobalID" );
 }
 
 /********************************************************
@@ -356,8 +355,8 @@ void EpetraMatrixData::setValuesByGlobalID(
     if ( id == getTypeID<double>() ) {
         auto values = reinterpret_cast<const double *>( vals );
         for ( size_t i = 0; i != num_rows; i++ ) {
-            VerifyEpetraReturn( d_epetraMatrix->ReplaceGlobalValues(
-                                    rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
+            VerifyEpetraReturn( d_epetraMatrix->ReplaceGlobalValues(rows[i], num_cols,
+								    values + num_cols * i, epetra_cols.data() ),
                                 "setValuesByGlobalID" );
             if ( rows[i] < MyFirstRow || rows[i] >= MyEndRow ) {
                 for ( size_t j = 0; j != num_cols; j++ ) {

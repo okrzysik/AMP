@@ -131,6 +131,10 @@ CSRMatrixData<Policy,Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameters
     } else {
         AMP_ERROR( "Check supplied MatrixParameter object" );
     }
+
+    AMP::pout << "Constructed CSRMatrixData with DMs: "
+	      << d_leftDOFManager->className() << " and "
+	      << d_rightDOFManager->className() << std::endl;
 }
 
 template<typename Policy, class Allocator>
@@ -447,8 +451,8 @@ void CSRMatrixData<Policy,Allocator>::extractDiagonal( std::shared_ptr<Vector> b
 }
 template<typename Policy, class Allocator>
 void CSRMatrixData<Policy,Allocator>::getRowByGlobalID( size_t row,
-                                              std::vector<size_t> &cols,
-                                              std::vector<double> &vals ) const
+							std::vector<size_t> &cols,
+							std::vector<double> &vals ) const
 {
     AMP_INSIST( row >= static_cast<size_t>( d_first_row ) &&
                     row < static_cast<size_t>( d_last_row ),

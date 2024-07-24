@@ -4,6 +4,7 @@
 #include "AMP/matrices/trilinos/EpetraMatrixData.h"
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
+#include <functional>
 
 namespace AMP::LinearAlgebra {
 
@@ -18,8 +19,22 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
     } else {
         // the next piece of code is VERY inefficient and should be optimized in future
         // if we don't deprecate Epetra
-        auto matParams = std::make_shared<MatrixParameters>(
-            mat->getLeftDOFManager(), mat->getRightDOFManager(), mat->getComm() );
+      AMP::pout << "Generating Epetra matrix from: " << mat->type() << std::endl;
+      AMP::pout << "  with dm types: "
+		<< mat->getLeftDOFManager()->className() << " and "
+		<< mat->getRightDOFManager()->className() << std::endl;
+
+      auto getRow = [mat](size_t row) -> std::vector<size_t> {
+        std::vector<size_t> cols;
+        std::vector<double> vals;
+	mat->getRowByGlobalID( row, cols, vals );
+	return cols;
+      };
+      
+        auto matParams = std::make_shared<MatrixParameters>( mat->getLeftDOFManager(),
+							     mat->getRightDOFManager(),
+							     mat->getComm(),
+							     getRow );
 
         auto epetraMat = std::make_shared<ManagedEpetraMatrix>( matParams );
 
@@ -30,7 +45,6 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
         std::vector<double> vals;
         for ( size_t row = mat->beginRow(); row != mat->endRow(); ++row ) {
             mat->getRowByGlobalID( row, cols, vals );
-            data->createValuesByGlobalID( row, cols );
             epetraMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), vals.data() );
         }
         epetraMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
