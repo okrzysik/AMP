@@ -259,7 +259,7 @@ void MPI_CLASS::balanceProcesses( const MPI_CLASS &globalComm,
 /************************************************************************
  *  Empty constructor                                                    *
  ************************************************************************/
-MPI_CLASS::MPI_CLASS() : d_comm( MPI_COMM_NULL ), d_size( 0 ) {}
+MPI_CLASS::MPI_CLASS() : d_comm( MPI_COMM_NULL ), d_size( 0 ), d_rand( std::random_device()() ) {}
 
 
 /************************************************************************
@@ -305,6 +305,7 @@ void MPI_CLASS::reset()
     d_isNull     = true;
     d_currentTag = nullptr;
     d_call_abort = true;
+    d_rand       = std::mt19937( std::random_device()() );
 }
 
 
@@ -322,7 +323,8 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
       d_hash( comm.d_hash ),
       d_currentTag( comm.d_currentTag ),
       d_ranks( comm.d_ranks ),
-      d_count( nullptr )
+      d_count( nullptr ),
+      d_rand( std::mt19937( comm.rand() ) )
 {
     // Initialize the data members to the existing comm object
     if ( d_currentTag != nullptr )
@@ -347,6 +349,7 @@ MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ) : MPI_CLASS()
     std::swap( d_hash, rhs.d_hash );
     std::swap( d_currentTag, rhs.d_currentTag );
     std::swap( d_count, rhs.d_count );
+    std::swap( d_rand, rhs.d_rand );
 }
 
 
@@ -376,6 +379,8 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     this->d_count = comm.d_count;
     if ( this->d_count != nullptr )
         ++( *d_count );
+    // Initialize the random number generator
+    this->d_rand = std::mt19937( comm.rand() );
     return *this;
 }
 MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
@@ -394,6 +399,7 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
     std::swap( d_hash, rhs.d_hash );
     std::swap( d_currentTag, rhs.d_currentTag );
     std::swap( d_count, rhs.d_count );
+    std::swap( d_rand, rhs.d_rand );
     return *this;
 }
 
@@ -525,6 +531,19 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     d_call_abort = true;
     // Create the hash
     d_hash = hashComm( d_comm );
+    // Initialize the random number generator (try not to use communication)
+    if ( d_size <= 1 ) {
+        d_rand = std::mt19937( std::random_device()() );
+    } else if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
+        static auto seed = std::mt19937( bcast<size_t>( std::random_device()(), 0 ) );
+        d_rand           = std::mt19937( seed() );
+    } else if ( d_comm == MPI_COMM_WORLD ) {
+        static auto seed = std::mt19937( bcast<size_t>( std::random_device()(), 0 ) );
+        d_rand           = std::mt19937( seed() );
+    } else {
+        auto seed = bcast<size_t>( std::random_device()(), 0 );
+        d_rand    = std::mt19937( seed );
+    }
 }
 
 
@@ -581,14 +600,9 @@ uint64_t MPI_CLASS::hashRanks() const
  ************************************************************************/
 size_t MPI_CLASS::rand() const
 {
-    size_t val = 0;
-    if ( getRank() == 0 ) {
-        static std::random_device rd;
-        static std::mt19937 gen( rd() );
-        static std::uniform_int_distribution<size_t> dist;
-        val = dist( gen );
-    }
-    val = bcast( val, 0 );
+    std::uniform_int_distribution<size_t> dist;
+    size_t val = dist( d_rand );
+    AMP_DEBUG_ASSERT( val == bcast( val, 0 ) );
     return val;
 }
 
