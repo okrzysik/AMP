@@ -1425,6 +1425,7 @@ private: // data members
     using atomic_ptr = std::atomic_int *volatile;
     using atomic_int = volatile std::atomic_int64_t;
     using int_ptr    = int *volatile;
+    using rand_ptr   = std::shared_ptr<std::mt19937>;
 
     Comm d_comm             = commNull;     //!< The internal MPI communicator
     bool d_isNull           = true;         //!< Is the communicator NULL
@@ -1437,7 +1438,7 @@ private: // data members
     int_ptr d_currentTag    = nullptr;      //!< The current tag
     mutable int_ptr d_ranks = nullptr;      //!< The ranks of the comm in the global comm
     atomic_ptr d_count      = 0;            //!< How many objects share the communicator
-    mutable std::mt19937 d_rand;            //!< Internal random number generator
+    mutable rand_ptr d_rand;                //!< Internal random number generator
     static short profile_level;             //!< The level for the profiles of MPI
     static atomic_int N_MPI_Comm_created;   //!< Number of MPI_Comm objects created over time
     static atomic_int N_MPI_Comm_destroyed; //!< Number of MPI_Comm objects destroyed over time
