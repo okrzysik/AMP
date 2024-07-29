@@ -57,16 +57,16 @@ EpetraMatrixData::EpetraMatrixData( std::shared_ptr<MatrixParametersBase> params
     const auto &getRow = matParams->getRowFunction();
     std::vector<int> entries( nrows, 0 );
     for ( size_t i = 0; i < nrows; ++i ) {
-      const auto cols = getRow( i + srow );
-      entries[i] = static_cast<int>( cols.size() );
+        const auto cols = getRow( i + srow );
+        entries[i] = static_cast<int>( cols.size() );
     }
     d_epetraMatrix = new Epetra_FECrsMatrix( Copy, *d_RangeMap, entries.data(), false );
     d_DeleteMatrix = true;
 
     // Fill matrix and call fillComplete to set the nz structure
     for ( size_t i = 0; i < nrows; ++i ) {
-      const auto cols = getRow( i + srow );
-      createValuesByGlobalID( i + srow, cols);
+        const auto cols = getRow( i + srow );
+	createValuesByGlobalID( i + srow, cols);
     }
     fillComplete();
 }
@@ -86,7 +86,7 @@ EpetraMatrixData::EpetraMatrixData( const EpetraMatrixData &rhs )
         rhs.getRowByGlobalID( (int) i, cols, vals );
         std::vector<size_t> cols2( cols.size() );
         for ( size_t j = 0; j != cols.size(); j++ )
-            cols2[j] = cols[j];
+	    cols2[j] = cols[j];
         createValuesByGlobalID( i, cols2 );
     }
     d_RangeMap  = rhs.d_RangeMap;
@@ -309,19 +309,20 @@ std::shared_ptr<Vector> EpetraMatrixData::getLeftVector() const
 }
 
 size_t EpetraMatrixData::numGlobalRows() const { return d_epetraMatrix->NumGlobalRows(); }
+
 size_t EpetraMatrixData::numGlobalColumns() const { return d_epetraMatrix->NumGlobalCols(); }
 
 size_t EpetraMatrixData::numLocalRows() const
 {
     return std::dynamic_pointer_cast<MatrixParameters>( d_pParameters )->getLocalNumberOfRows();
 }
+
 size_t EpetraMatrixData::numLocalColumns() const
 {
     return std::dynamic_pointer_cast<MatrixParameters>( d_pParameters )->getLocalNumberOfColumns();
 }
 
 AMP::AMP_MPI EpetraMatrixData::getComm() const { return d_pParameters->getComm(); }
-
 
 /********************************************************
  * Set/Add values by global id                           *

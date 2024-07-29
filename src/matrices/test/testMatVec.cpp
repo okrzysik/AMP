@@ -41,7 +41,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 #if defined( AMP_USE_TRILINOS )
     type = "ManagedEpetraMatrix";
 #elif defined( AMP_USE_PETSC )
-    type         = "NativePetscMatrix";
+    type = "NativePetscMatrix";
 #else
     AMP_ERROR( "This test requires either Trilinos or Petsc matrices to be enabled" );
 #endif
@@ -143,7 +143,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 
     matrix->mult( x1, y1 );
 
-    auto y1Norm = static_cast<scalar_t>( y1->L1Norm() );
+    const auto y1Norm = static_cast<scalar_t>( y1->L1Norm() );
 
     if ( y1Norm == static_cast<scalar_t>( matrix->numGlobalRows() ) ) {
         ut->passes( "Passes 1 norm test with pseudo Laplacian with default matvec" );
@@ -156,7 +156,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     csrMatrix->mult( x2, y2 );
     y2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    auto y2Norm = static_cast<scalar_t>( y2->L1Norm() );
+    const auto y2Norm = static_cast<scalar_t>( y2->L1Norm() );
 
     if ( y2Norm == static_cast<scalar_t>( csrMatrix->numGlobalRows() ) ) {
         ut->passes( "Passes 1 norm test with pseudo Laplacian with CSR matvec" );

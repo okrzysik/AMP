@@ -84,7 +84,7 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
     // Pad cols and cols_loc to ensure that all remote_DOFs are actually used
     nnz_pad = 0;
     if ( have_ghosts ) {
-      std::set<gidx_t> colSet( cols_od.begin(),cols_od.end() );
+      std::set<gidx_t> colSet( cols_od.begin(), cols_od.end() );
       for ( auto rd : remote_DOFs ) {
 	auto col = static_cast<gidx_t>( rd );
 	auto cs = colSet.insert( col );

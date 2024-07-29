@@ -23,22 +23,26 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
     // This was migrated to here from createMatrix in MatrixBuilder.cpp
     if ( !d_getRowFunction && d_DOFManagerLeft && d_DOFManagerRight ) {
         d_getRowFunction = [ldof=d_DOFManagerLeft,rdof=d_DOFManagerRight]( size_t row ) {
-            auto elem = ldof->getElement( row );
-            return rdof->getRowDOFs( elem );
+	    auto elem = ldof->getElement( row );
+	    return rdof->getRowDOFs( elem );
         };
     }
 }
 
-
-size_t MatrixParameters::getLocalNumberOfRows() const { return d_DOFManagerLeft->numLocalDOF(); }
-
+size_t MatrixParameters::getLocalNumberOfRows() const
+{
+    return d_DOFManagerLeft->numLocalDOF();
+}
 
 size_t MatrixParameters::getLocalNumberOfColumns() const
 {
     return d_DOFManagerRight->numLocalDOF();
 }
 
-size_t MatrixParameters::getGlobalNumberOfRows() const { return d_DOFManagerLeft->numGlobalDOF(); }
+size_t MatrixParameters::getGlobalNumberOfRows() const
+{
+    return d_DOFManagerLeft->numGlobalDOF();
+}
 
 size_t MatrixParameters::getGlobalNumberOfColumns() const
 {

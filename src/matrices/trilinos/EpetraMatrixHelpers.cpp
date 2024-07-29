@@ -17,27 +17,24 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
     if ( mat->type() == "ManagedEpetraMatrix" ) {
         return std::dynamic_pointer_cast<ManagedEpetraMatrix>( mat );
     } else {
-        // the next piece of code is VERY inefficient and should be optimized in future
-        // if we don't deprecate Epetra
-      AMP::pout << "Generating Epetra matrix from: " << mat->type() << std::endl;
-      AMP::pout << "  with dm types: "
-		<< mat->getLeftDOFManager()->className() << " and "
-		<< mat->getRightDOFManager()->className() << std::endl;
+        // Wrap the input matrix's getRowByGlobalID function into a new getRow function
+        // This is necessary in the event that the DOFManagers of the input matrix are
+        // of the base type (e.g. getElement is not defined)
+        auto getRow = [mat](size_t row) -> std::vector<size_t> {
+	    std::vector<size_t> cols;
+	    std::vector<double> vals;
+	    mat->getRowByGlobalID( row, cols, vals );
+	    return cols;
+	};
 
-      auto getRow = [mat](size_t row) -> std::vector<size_t> {
-        std::vector<size_t> cols;
-        std::vector<double> vals;
-	mat->getRowByGlobalID( row, cols, vals );
-	return cols;
-      };
-      
+	// This approach of making a whole new EpetraMatrix is inefficient
+	// -> should consider deprecating, but likely can't if ML still used...
         auto matParams = std::make_shared<MatrixParameters>( mat->getLeftDOFManager(),
 							     mat->getRightDOFManager(),
 							     mat->getComm(),
 							     getRow );
 
         auto epetraMat = std::make_shared<ManagedEpetraMatrix>( matParams );
-
         auto data = std::dynamic_pointer_cast<EpetraMatrixData>( epetraMat->getMatrixData() );
         AMP_ASSERT( data );
 

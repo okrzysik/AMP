@@ -107,7 +107,6 @@ CSRMatrixData<Policy,Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameters
             } else {
                 AMP_ERROR( "Non-square matrices not handled at present" );
             }
-
         } else {
             AMP_WARNING( "CSRMatrixData: device memory handling has not been implemented yet" );
         }
@@ -131,10 +130,6 @@ CSRMatrixData<Policy,Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameters
     } else {
         AMP_ERROR( "Check supplied MatrixParameter object" );
     }
-
-    AMP::pout << "Constructed CSRMatrixData with DMs: "
-	      << d_leftDOFManager->className() << " and "
-	      << d_rightDOFManager->className() << std::endl;
 }
 
 template<typename Policy, class Allocator>
