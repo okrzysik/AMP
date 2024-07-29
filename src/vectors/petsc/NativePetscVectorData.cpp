@@ -41,8 +41,24 @@ NativePetscVectorData::~NativePetscVectorData()
         PETSC::vecDestroy( &d_petscVec );
 }
 
+void NativePetscVectorData::makeConsistent( ScatterType t)
+{
+  (void) t;
+  //VectorData::makeConsistent( t );
+  resetArray();
+  assemble();
+}
+
+void NativePetscVectorData::makeConsistent()
+{
+  //VectorData::makeConsistent();
+  resetArray();
+  assemble();
+}
+
 void NativePetscVectorData::putRawData( const void *in, const typeID &id )
 {
+    resetArray();
     constexpr auto type = getTypeID<double>();
     auto data           = reinterpret_cast<const double *>( in );
     AMP_ASSERT( id == type );
@@ -55,15 +71,14 @@ void NativePetscVectorData::putRawData( const void *in, const typeID &id )
     VecSetValues( d_petscVec, offs.size(), offs.data(), data, INSERT_VALUES );
 }
 
-
 void NativePetscVectorData::getRawData( void *out, const typeID &id ) const
 {
+    resetArray();
     constexpr auto type = getTypeID<double>();
     AMP_ASSERT( id == type );
     auto data = reinterpret_cast<double *>( out );
     std::copy( getRawDataBlock<double>( 0 ), getRawDataBlock<double>( 0 ) + getLocalSize(), data );
 }
-
 
 void NativePetscVectorData::swapData( VectorData &other )
 {
@@ -71,8 +86,6 @@ void NativePetscVectorData::swapData( VectorData &other )
     auto otherData = dynamic_cast<NativePetscVectorData *>( &other );
     otherData->resetArray();
     VecSwap( d_petscVec, otherData->getVec() );
-    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( d_petscVec ) );
-    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( otherData->getVec() ) );
 }
 
 std::shared_ptr<VectorData> NativePetscVectorData::cloneData( const std::string & ) const
@@ -84,7 +97,6 @@ std::shared_ptr<VectorData> NativePetscVectorData::cloneData( const std::string 
 }
 
 size_t NativePetscVectorData::numberOfDataBlocks() const { return 1; }
-
 
 size_t NativePetscVectorData::sizeOfDataBlock( size_t i ) const
 {
@@ -123,6 +135,7 @@ void NativePetscVectorData::setValuesByLocalID( size_t N,
     for ( size_t i = 0; i < N; i++ )
         idx[i] = indices[i] + d_localStart;
     VecSetValues( d_petscVec, N, idx.data(), data, INSERT_VALUES );
+    assemble();
 }
 
 
@@ -140,8 +153,8 @@ void NativePetscVectorData::addValuesByLocalID( size_t N,
     for ( size_t i = 0; i < N; i++ )
         idx[i] = indices[i] + d_localStart;
     VecSetValues( d_petscVec, N, idx.data(), data, ::ADD_VALUES );
+    assemble();
 }
-
 
 void NativePetscVectorData::getValuesByLocalID( size_t N,
                                                 const size_t *indices,
@@ -156,7 +169,6 @@ void NativePetscVectorData::getValuesByLocalID( size_t N,
         idx[i] = indices[i] + d_localStart;
     VecGetValues( d_petscVec, N, idx.data(), data );
 }
-
 
 void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i )
 {
@@ -177,7 +189,6 @@ const void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i ) const
     }
     return d_pArray;
 }
-
 
 void NativePetscVectorData::assemble()
 {

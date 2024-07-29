@@ -34,6 +34,11 @@ public:
     //! Destructor
     virtual ~NativePetscVectorData();
 
+  // Overrides to makeConsistent ensure that the internal Petsc Vector
+  // is in a valid state by calling assemble
+    void makeConsistent( ScatterType t) override;
+    void makeConsistent() override;
+
     std::string VectorDataName() const override { return "NativePetscVector"; }
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;

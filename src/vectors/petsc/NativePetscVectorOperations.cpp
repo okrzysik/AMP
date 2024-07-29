@@ -215,7 +215,8 @@ Scalar NativePetscVectorOperations::max( const VectorData &x ) const
 Scalar NativePetscVectorOperations::L1Norm( const VectorData &x ) const
 {
     double ans;
-    VecNorm( getConstPetscVec( x ), NORM_1, &ans );
+    PetscErrorCode ierr = VecNorm( getConstPetscVec( x ), NORM_1, &ans );
+    AMP_INSIST( ierr == 0, "Error in NativePetscVectorOperations::L1Norm" );
     return ans;
 }
 
