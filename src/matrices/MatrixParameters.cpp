@@ -18,15 +18,6 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
     AMP_ASSERT( right );
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;
-
-    // Create default getRow function if not provided
-    // This was migrated to here from createMatrix in MatrixBuilder.cpp
-    if ( !d_getRowFunction && d_DOFManagerLeft && d_DOFManagerRight ) {
-        d_getRowFunction = [ldof=d_DOFManagerLeft,rdof=d_DOFManagerRight]( size_t row ) {
-	    auto elem = ldof->getElement( row );
-	    return rdof->getRowDOFs( elem );
-        };
-    }
 }
 
 size_t MatrixParameters::getLocalNumberOfRows() const
