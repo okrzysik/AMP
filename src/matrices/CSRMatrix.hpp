@@ -18,20 +18,21 @@ namespace AMP::LinearAlgebra {
  * Constructor/Destructor                                *
  ********************************************************/
 template<typename Policy, typename Allocator>
-CSRMatrix<Policy,Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params ) : Matrix( params )
+CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params )
+    : Matrix( params )
 {
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy,Allocator>>();
-    d_matrixData = std::make_shared<CSRMatrixData<Policy,Allocator>>( params );
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+    d_matrixData = std::make_shared<CSRMatrixData<Policy, Allocator>>( params );
 }
 
 template<typename Policy, typename Allocator>
-CSRMatrix<Policy,Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
+CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
-    d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy,Allocator>>();
+    d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
 }
 
 template<typename Policy, typename Allocator>
-CSRMatrix<Policy,Allocator>::~CSRMatrix()
+CSRMatrix<Policy, Allocator>::~CSRMatrix()
 {
 }
 
@@ -39,16 +40,16 @@ CSRMatrix<Policy,Allocator>::~CSRMatrix()
  * Copy/transpose the matrix                             *
  ********************************************************/
 template<typename Policy, typename Allocator>
-std::shared_ptr<Matrix> CSRMatrix<Policy,Allocator>::clone() const
+std::shared_ptr<Matrix> CSRMatrix<Policy, Allocator>::clone() const
 {
-    return std::make_shared<CSRMatrix<Policy,Allocator>>( d_matrixData->cloneMatrixData() );
+    return std::make_shared<CSRMatrix<Policy, Allocator>>( d_matrixData->cloneMatrixData() );
 }
 
 template<typename Policy, typename Allocator>
-std::shared_ptr<Matrix> CSRMatrix<Policy,Allocator>::transpose() const
+std::shared_ptr<Matrix> CSRMatrix<Policy, Allocator>::transpose() const
 {
     auto data = d_matrixData->transpose();
-    return std::make_shared<CSRMatrix<Policy,Allocator>>( data );
+    return std::make_shared<CSRMatrix<Policy, Allocator>>( data );
 }
 
 /********************************************************
@@ -57,16 +58,16 @@ std::shared_ptr<Matrix> CSRMatrix<Policy,Allocator>::transpose() const
  * C(N,M) = A(N,K)*B(K,M)
  ********************************************************/
 template<typename Policy, typename Allocator>
-void CSRMatrix<Policy,Allocator>::multiply( std::shared_ptr<Matrix> other_op,
-                                  std::shared_ptr<Matrix> &result )
+void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
+                                             std::shared_ptr<Matrix> &result )
 {
     // Create the matrix
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
         getLeftDOFManager(), other_op->getRightDOFManager(), getComm() );
 
     // Create the matrix
-    auto newData   = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy,Allocator>>( params );
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy,Allocator>>( newData );
+    auto newData = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( newData );
     AMP_ASSERT( newMatrix );
     result = newMatrix;
 
@@ -77,7 +78,7 @@ void CSRMatrix<Policy,Allocator>::multiply( std::shared_ptr<Matrix> other_op,
  * Get/Set the diagonal                                  *
  ********************************************************/
 template<typename Policy, typename Allocator>
-Vector::shared_ptr CSRMatrix<Policy,Allocator>::extractDiagonal( Vector::shared_ptr buf ) const
+Vector::shared_ptr CSRMatrix<Policy, Allocator>::extractDiagonal( Vector::shared_ptr buf ) const
 {
     Vector::shared_ptr out = buf;
     if ( !buf )
@@ -92,15 +93,17 @@ Vector::shared_ptr CSRMatrix<Policy,Allocator>::extractDiagonal( Vector::shared_
  * Get the left/right vectors and DOFManagers            *
  ********************************************************/
 template<typename Policy, typename Allocator>
-Vector::shared_ptr CSRMatrix<Policy,Allocator>::getRightVector() const
+Vector::shared_ptr CSRMatrix<Policy, Allocator>::getRightVector() const
 {
-    auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy,Allocator>>( d_matrixData )->getRightVariable();
+    auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
+                   ->getRightVariable();
     return createVector( getRightDOFManager(), var );
 }
 template<typename Policy, typename Allocator>
-Vector::shared_ptr CSRMatrix<Policy,Allocator>::getLeftVector() const
+Vector::shared_ptr CSRMatrix<Policy, Allocator>::getLeftVector() const
 {
-    auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy,Allocator>>( d_matrixData )->getLeftVariable();
+    auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
+                   ->getLeftVariable();
     return createVector( getLeftDOFManager(), var );
 }
 
