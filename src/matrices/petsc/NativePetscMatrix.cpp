@@ -26,7 +26,7 @@ NativePetscMatrix::NativePetscMatrix( Mat m, bool internally_created )
 NativePetscMatrix::NativePetscMatrix( std::shared_ptr<MatrixParametersBase> params )
     : Matrix( params )
 {
-  d_matrixData = std::make_shared<NativePetscMatrixData>( params );
+    d_matrixData = std::make_shared<NativePetscMatrixData>( params );
     d_matrixOps  = std::make_shared<NativePetscMatrixOperations>();
 }
 

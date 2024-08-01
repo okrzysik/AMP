@@ -11,8 +11,8 @@ namespace AMP::LinearAlgebra {
 MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
                                     std::shared_ptr<AMP::Discretization::DOFManager> right,
                                     const AMP_MPI &comm,
-				    const std::function<std::vector<size_t>( size_t )> getRow )
-  : MatrixParametersBase( comm ),d_getRowFunction( getRow )
+                                    const std::function<std::vector<size_t>( size_t )> getRow )
+    : MatrixParametersBase( comm ), d_getRowFunction( getRow )
 {
     AMP_ASSERT( left );
     AMP_ASSERT( right );
@@ -20,20 +20,14 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
     d_DOFManagerRight = right;
 }
 
-size_t MatrixParameters::getLocalNumberOfRows() const
-{
-    return d_DOFManagerLeft->numLocalDOF();
-}
+size_t MatrixParameters::getLocalNumberOfRows() const { return d_DOFManagerLeft->numLocalDOF(); }
 
 size_t MatrixParameters::getLocalNumberOfColumns() const
 {
     return d_DOFManagerRight->numLocalDOF();
 }
 
-size_t MatrixParameters::getGlobalNumberOfRows() const
-{
-    return d_DOFManagerLeft->numGlobalDOF();
-}
+size_t MatrixParameters::getGlobalNumberOfRows() const { return d_DOFManagerLeft->numGlobalDOF(); }
 
 size_t MatrixParameters::getGlobalNumberOfColumns() const
 {

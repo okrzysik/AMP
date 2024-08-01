@@ -47,31 +47,31 @@ EpetraMatrixData::EpetraMatrixData( std::shared_ptr<MatrixParametersBase> params
     const auto rowDOFs = matParams->getLeftDOFManager();
     const auto colDOFs = matParams->getRightDOFManager();
     AMP_INSIST( rowDOFs && colDOFs,
-		"MatrixParameters must provide non-null DOFManagers to build EpetraMatrixData" );
-    d_RangeMap = createEpetraMap( rowDOFs, params->getComm() );
+                "MatrixParameters must provide non-null DOFManagers to build EpetraMatrixData" );
+    d_RangeMap  = createEpetraMap( rowDOFs, params->getComm() );
     d_DomainMap = createEpetraMap( colDOFs, params->getComm() );
 
-	
+
     // count up entries per row and build matrix if the getRow function exists
     const auto &getRow = matParams->getRowFunction();
 
     if ( getRow ) {
         const auto nrows = rowDOFs->numLocalDOF();
-	const auto srow = rowDOFs->beginDOF();
+        const auto srow  = rowDOFs->beginDOF();
         std::vector<int> entries( nrows, 0 );
         for ( size_t i = 0; i < nrows; ++i ) {
-	    const auto cols = getRow( i + srow );
-	    entries[i] = static_cast<int>( cols.size() );
-	}
-	d_epetraMatrix = new Epetra_FECrsMatrix( Copy, *d_RangeMap, entries.data(), false );
-	// Fill matrix and call fillComplete to set the nz structure
-	for ( size_t i = 0; i < nrows; ++i ) {
-	    const auto cols = getRow( i + srow );
-	    createValuesByGlobalID( i + srow, cols);
-	}
-	fillComplete();
+            const auto cols = getRow( i + srow );
+            entries[i]      = static_cast<int>( cols.size() );
+        }
+        d_epetraMatrix = new Epetra_FECrsMatrix( Copy, *d_RangeMap, entries.data(), false );
+        // Fill matrix and call fillComplete to set the nz structure
+        for ( size_t i = 0; i < nrows; ++i ) {
+            const auto cols = getRow( i + srow );
+            createValuesByGlobalID( i + srow, cols );
+        }
+        fillComplete();
     } else {
-	d_epetraMatrix = new Epetra_FECrsMatrix( Copy, *d_RangeMap, 0, false );
+        d_epetraMatrix = new Epetra_FECrsMatrix( Copy, *d_RangeMap, 0, false );
     }
     d_DeleteMatrix = true;
 }
@@ -90,14 +90,15 @@ EpetraMatrixData::EpetraMatrixData( const EpetraMatrixData &rhs )
         std::vector<double> vals;
         rhs.getRowByGlobalID( i, cols, vals );
 
-	// cast down to ints
-	const int ii = static_cast<int>( i );
-	const int ncols = static_cast<int>( cols.size() );
-	std::vector<int> ep_cols( ncols );
-	std::transform(cols.begin(),cols.end(),ep_cols.begin(),[](size_t c)->int { return c;});
-	VerifyEpetraReturn( d_epetraMatrix->ReplaceGlobalValues(ii, ncols,
-								vals.data(), ep_cols.data() ),
-			    "EpetraMatrixData copy constructor" );
+        // cast down to ints
+        const int ii    = static_cast<int>( i );
+        const int ncols = static_cast<int>( cols.size() );
+        std::vector<int> ep_cols( ncols );
+        std::transform(
+            cols.begin(), cols.end(), ep_cols.begin(), []( size_t c ) -> int { return c; } );
+        VerifyEpetraReturn(
+            d_epetraMatrix->ReplaceGlobalValues( ii, ncols, vals.data(), ep_cols.data() ),
+            "EpetraMatrixData copy constructor" );
     }
     d_RangeMap  = rhs.d_RangeMap;
     d_DomainMap = rhs.d_DomainMap;
@@ -202,13 +203,14 @@ void EpetraMatrixData::createValuesByGlobalID( size_t row, const std::vector<siz
     if ( cols.empty() )
         return;
     std::vector<int> indices( cols.size(), 0 );
-    std::transform( cols.begin(), cols.end(), indices.begin(),
-		    []( size_t c ) -> int { return c; });
+    std::transform(
+        cols.begin(), cols.end(), indices.begin(), []( size_t c ) -> int { return c; } );
 
     std::vector<double> values( cols.size(), 0 );
 
-    VerifyEpetraReturn(d_epetraMatrix->InsertGlobalValues( row, cols.size(), values.data(), indices.data() ),
-		       "createValuesByGlobalID" );
+    VerifyEpetraReturn(
+        d_epetraMatrix->InsertGlobalValues( row, cols.size(), values.data(), indices.data() ),
+        "createValuesByGlobalID" );
 }
 
 /********************************************************
@@ -367,8 +369,8 @@ void EpetraMatrixData::setValuesByGlobalID(
     if ( id == getTypeID<double>() ) {
         auto values = reinterpret_cast<const double *>( vals );
         for ( size_t i = 0; i != num_rows; i++ ) {
-            VerifyEpetraReturn( d_epetraMatrix->ReplaceGlobalValues(rows[i], num_cols,
-								    values + num_cols * i, epetra_cols.data() ),
+            VerifyEpetraReturn( d_epetraMatrix->ReplaceGlobalValues(
+                                    rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
                                 "setValuesByGlobalID" );
             if ( rows[i] < MyFirstRow || rows[i] >= MyEndRow ) {
                 for ( size_t j = 0; j != num_cols; j++ ) {
@@ -471,7 +473,7 @@ std::vector<size_t> EpetraMatrixData::getColumnIDs( size_t row ) const
         std::vector<double> values( numCols );
         std::vector<int> epetra_cols( numCols );
         VerifyEpetraReturn( d_epetraMatrix->ExtractGlobalRowCopy(
-				row, numCols, numCols, values.data() , epetra_cols.data() ),
+                                row, numCols, numCols, values.data(), epetra_cols.data() ),
                             "getRowByGlobalID" );
         std::copy( epetra_cols.begin(), epetra_cols.end(), cols.begin() );
     }

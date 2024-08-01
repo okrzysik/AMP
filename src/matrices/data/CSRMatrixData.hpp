@@ -190,31 +190,31 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         d_is_empty = false;
 
         const auto &getRow = matParams->getRowFunction();
-	AMP_INSIST( getRow,
-		    "Explicitly defined getRow function must be present in MatrixParameters"
-		    " to construct CSRMatrixData and CSRSerialMatrixData" );
+        AMP_INSIST( getRow,
+                    "Explicitly defined getRow function must be present in MatrixParameters"
+                    " to construct CSRMatrixData and CSRSerialMatrixData" );
 
         // Count number of nonzeros depending on block type
         // also track un-referenced columns if off-diagonal
         std::vector<gidx_t> colPad;
         std::set<gidx_t> colSet;
-	d_nnz_pad = 0;
+        d_nnz_pad = 0;
         d_nnz     = 0;
         for ( gidx_t i = outer.d_first_row; i < outer.d_last_row; ++i ) {
-	    for ( auto&& col : getRow( i ) ) {
-		if ( isColValid<Policy>( col, d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
-		    ++d_nnz;
-		    if ( !d_is_diag ) {
-			colSet.insert( col );
-		    }
-		}
-	    }
-	}
+            for ( auto &&col : getRow( i ) ) {
+                if ( isColValid<Policy>( col, d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
+                    ++d_nnz;
+                    if ( !d_is_diag ) {
+                        colSet.insert( col );
+                    }
+                }
+            }
+        }
 
         // attempt to insert all remote dofs into colSet to see which are un-referenced
         if ( !d_is_diag ) {
             auto remoteDOFs = rightDOFManager->getRemoteDOFs();
-            for ( auto&& rdof : remoteDOFs ) {
+            for ( auto &&rdof : remoteDOFs ) {
                 auto cs = colSet.insert( rdof );
                 if ( cs.second ) {
                     // insertion success means this DOF is un-referenced
@@ -243,12 +243,12 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         d_coeffs      = scalarAllocator.allocate( d_nnz );
 
         // Fill cols and nnz based on local row extents and on/off diag status
-        lidx_t cli = 0; // index into local array of columns as it is filled in
+        lidx_t cli       = 0; // index into local array of columns as it is filled in
         lidx_t nnzFilled = 0;
         for ( lidx_t i = 0; i < d_num_rows; ++i ) {
             d_nnz_per_row[i] = 0;
-	    auto cols = getRow( outer.d_first_row + i );
-            for ( auto&& col : cols ) {
+            auto cols        = getRow( outer.d_first_row + i );
+            for ( auto &&col : cols ) {
                 if ( isColValid<Policy>( col, d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
                     d_nnz_per_row[i]++;
                     d_cols[cli] = col;

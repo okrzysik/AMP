@@ -28,17 +28,17 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBa
 {
     auto parameters = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
     AMP_ASSERT( parameters );
-    const auto &comm = parameters->getComm().getCommunicator();
-    const auto nrows = parameters->getLocalNumberOfRows();
-    const auto ncols = parameters->getLocalNumberOfColumns();
-    const auto& getRow = parameters->getRowFunction();
+    const auto &comm   = parameters->getComm().getCommunicator();
+    const auto nrows   = parameters->getLocalNumberOfRows();
+    const auto ncols   = parameters->getLocalNumberOfColumns();
+    const auto &getRow = parameters->getRowFunction();
     AMP_INSIST( getRow,
-		"Explicitly defined getRow function must be present in MatrixParameters"
-		" to construct NativePetscMatrixData" );
+                "Explicitly defined getRow function must be present in MatrixParameters"
+                " to construct NativePetscMatrixData" );
     const auto rowDOFs = parameters->getLeftDOFManager();
     const auto colDOFs = parameters->getRightDOFManager();
     AMP_INSIST( rowDOFs && colDOFs,
-		"Non-null DOFManagers required to build NativePetscMatrixData" );
+                "Non-null DOFManagers required to build NativePetscMatrixData" );
     const auto srow = rowDOFs->beginDOF();
     const auto fcol = colDOFs->beginDOF(); // start of on-diagonal entries (inclusive)
     const auto lcol = colDOFs->endDOF();   // end of on-diagonal entries (exclusive)
@@ -51,43 +51,43 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBa
 
     // count number of local and remote dofs in each row
     // to find the on and off diag nnz counts
-    std::vector<PetscInt> diag_nnz( nrows, 0 ),off_diag_nnz( nrows, 0 );
+    std::vector<PetscInt> diag_nnz( nrows, 0 ), off_diag_nnz( nrows, 0 );
     size_t max_row_nnz = 0;
     for ( size_t i = 0; i < nrows; ++i ) {
-      const auto cols = getRow( i + srow );
-      // test if columns are on/off diag and increment accordingly
-      for ( auto&& col : cols ) {
-	if ( fcol <= col && col < lcol) {
-	  diag_nnz[i]++;
-	} else {
-	  off_diag_nnz[i]++;
-	}
-      }
-      // also track the longest row (regardless of where the nnz go)
-      const auto row_nnz = cols.size();
-      max_row_nnz = row_nnz > max_row_nnz ? row_nnz : max_row_nnz;
+        const auto cols = getRow( i + srow );
+        // test if columns are on/off diag and increment accordingly
+        for ( auto &&col : cols ) {
+            if ( fcol <= col && col < lcol ) {
+                diag_nnz[i]++;
+            } else {
+                off_diag_nnz[i]++;
+            }
+        }
+        // also track the longest row (regardless of where the nnz go)
+        const auto row_nnz = cols.size();
+        max_row_nnz        = row_nnz > max_row_nnz ? row_nnz : max_row_nnz;
     }
-    
+
     // Allocate space in matrix using above nnz counts
     // Safe to call both preallocation routines
     // Only first used for serial runs, only second used for multiprocess runs
     MatSeqAIJSetPreallocation( d_Mat, 0, diag_nnz.data() );
-    MatMPIAIJSetPreallocation( d_Mat,
-			       0, diag_nnz.data(),
-			       0, off_diag_nnz.data() );
+    MatMPIAIJSetPreallocation( d_Mat, 0, diag_nnz.data(), 0, off_diag_nnz.data() );
     MatSetUp( d_Mat );
 
     // Insert zeros into all rows explicitly, sets the non-zero structure
-    std::vector<PetscInt> petsc_cols(max_row_nnz,0);
-    std::vector<PetscReal> petsc_vals(max_row_nnz,0);
+    std::vector<PetscInt> petsc_cols( max_row_nnz, 0 );
+    std::vector<PetscReal> petsc_vals( max_row_nnz, 0 );
     for ( size_t i = 0; i < nrows; ++i ) {
         PetscInt global_row = srow + i;
-	const auto amp_cols = getRow( global_row );
-	std::transform( amp_cols.begin(), amp_cols.end(), petsc_cols.begin(),
-			[]( size_t c ) -> PetscInt { return c; } );
-	PetscInt nvals = static_cast<PetscInt>( amp_cols.size() );
-        MatSetValues( d_Mat, 1, &global_row, nvals,
-		      petsc_cols.data(), petsc_vals.data(), INSERT_VALUES );
+        const auto amp_cols = getRow( global_row );
+        std::transform( amp_cols.begin(),
+                        amp_cols.end(),
+                        petsc_cols.begin(),
+                        []( size_t c ) -> PetscInt { return c; } );
+        PetscInt nvals = static_cast<PetscInt>( amp_cols.size() );
+        MatSetValues(
+            d_Mat, 1, &global_row, nvals, petsc_cols.data(), petsc_vals.data(), INSERT_VALUES );
     }
     MatAssemblyBegin( d_Mat, MAT_FINAL_ASSEMBLY );
     MatAssemblyEnd( d_Mat, MAT_FINAL_ASSEMBLY );

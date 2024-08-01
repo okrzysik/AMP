@@ -33,7 +33,7 @@ public:
     explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
                                std::shared_ptr<AMP::Discretization::DOFManager> right,
                                const AMP_MPI &comm,
-			       const std::function<std::vector<size_t>( size_t )> getRow = {});
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
     //! Deconstructor
     virtual ~MatrixParameters() = default;
@@ -52,9 +52,9 @@ public:
 
     /** \brief Get the bound function that generates column IDs for each row
      */
-    const std::function<std::vector<size_t>( size_t) > &getRowFunction() const
+    const std::function<std::vector<size_t>( size_t )> &getRowFunction() const
     {
-      return d_getRowFunction;
+        return d_getRowFunction;
     }
 
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
@@ -81,7 +81,7 @@ protected:
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
 
     //! Function that generates column ids for each row of the matrix
-    std::function<std::vector<size_t>( size_t) > d_getRowFunction;
+    std::function<std::vector<size_t>( size_t )> d_getRowFunction;
 };
 } // namespace AMP::LinearAlgebra
 
