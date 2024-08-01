@@ -32,6 +32,9 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBa
     const auto nrows = parameters->getLocalNumberOfRows();
     const auto ncols = parameters->getLocalNumberOfColumns();
     const auto& getRow = parameters->getRowFunction();
+    AMP_INSIST( getRow,
+		"Explicitly defined getRow function must be present in MatrixParameters"
+		" to construct NativePetscMatrixData" );
     const auto rowDOFs = parameters->getLeftDOFManager();
     const auto colDOFs = parameters->getRightDOFManager();
     AMP_INSIST( rowDOFs && colDOFs,

@@ -190,6 +190,9 @@ CSRMatrixData<Policy,Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         d_is_empty = false;
 
         const auto &getRow = matParams->getRowFunction();
+	AMP_INSIST( getRow,
+		    "Explicitly defined getRow function must be present in MatrixParameters"
+		    " to construct CSRMatrixData and CSRSerialMatrixData" );
 
         // Count number of nonzeros depending on block type
         // also track un-referenced columns if off-diagonal
