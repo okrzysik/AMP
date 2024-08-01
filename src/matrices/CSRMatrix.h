@@ -3,6 +3,7 @@
 
 #include "AMP/matrices/Matrix.h"
 #include "AMP/vectors/Vector.h"
+#include <functional>
 #include <memory>
 
 namespace AMP::LinearAlgebra {
@@ -22,7 +23,6 @@ public:
      * \param[in] params  Description of the matrix
      */
     explicit CSRMatrix( std::shared_ptr<MatrixParametersBase> params );
-
 
     /** \brief Constructor
      * \param[in] params  MatrixData object associated with matrix

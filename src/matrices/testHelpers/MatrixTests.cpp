@@ -35,7 +35,6 @@ void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix
             matrix->setValuesByGlobalID( 1, cols.size(), &i, cols.data(), vals.data() );
         }
     } else {
-
         for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
             auto cols        = matrix->getColumnIDs( i );
             const auto ncols = cols.size();

@@ -3,6 +3,7 @@
 
 #include "AMP/matrices/data/MatrixData.h"
 
+#include <functional>
 #include <map>
 #include <tuple>
 

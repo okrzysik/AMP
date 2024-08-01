@@ -34,61 +34,6 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructor/Destructor helper functions              *
  ********************************************************/
-// template<typename T>
-// static T *allocate( size_t N, AMP::Utilities::MemoryType mem_type )
-// {
-//     if ( mem_type == AMP::Utilities::MemoryType::host ) {
-//         std::allocator<T> alloc;
-//         return alloc.allocate( N );
-//     } else if ( mem_type == AMP::Utilities::MemoryType::managed ||
-//                 mem_type == AMP::Utilities::MemoryType::device ) {
-// #ifdef AMP_USE_UMPIRE
-//         auto &resourceManager = umpire::ResourceManager::getInstance();
-//         auto alloc            = ( mem_type == AMP::Utilities::MemoryType::managed ) ?
-//                                     resourceManager.getAllocator( "UM" ) :
-//                                     resourceManager.getAllocator( "DEVICE" );
-//         return static_cast<T *>( alloc.allocate( N * sizeof( T ) ) );
-// #else
-//         AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been
-//         "
-//                    "implemented as yet" );
-// #endif
-//     } else {
-//         AMP_ERROR( "Memory type undefined" );
-//     }
-//     return nullptr; // Unreachable
-// }
-
-// template<typename T>
-// void deallocate( T **data, size_t N, AMP::Utilities::MemoryType mem_type )
-// {
-//     if ( mem_type == AMP::Utilities::MemoryType::host ) {
-//         std::allocator<T> alloc;
-//         if ( *data ) {
-//             alloc.deallocate( *data, N );
-//             *data = nullptr;
-//         }
-//     } else if ( mem_type == AMP::Utilities::MemoryType::managed ||
-//                 mem_type == AMP::Utilities::MemoryType::device ) {
-// #ifdef AMP_USE_UMPIRE
-//         auto &resourceManager = umpire::ResourceManager::getInstance();
-//         auto alloc            = ( mem_type == AMP::Utilities::MemoryType::managed ) ?
-//                                     resourceManager.getAllocator( "UM" ) :
-//                                     resourceManager.getAllocator( "DEVICE" );
-//         if ( *data ) {
-//             alloc.deallocate( data );
-//             *data = nullptr;
-//         }
-// #else
-//         AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been
-//         "
-//                    "implemented as yet" );
-// #endif
-//     } else {
-//         AMP_ERROR( "Memory type undefined" );
-//     }
-// }
-
 template<typename Policy>
 bool isColValid( typename Policy::gidx_t col,
                  bool is_diag,
@@ -162,7 +107,6 @@ CSRMatrixData<Policy, Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameter
             } else {
                 AMP_ERROR( "Non-square matrices not handled at present" );
             }
-
         } else {
             AMP_WARNING( "CSRMatrixData: device memory handling has not been implemented yet" );
         }
@@ -215,9 +159,6 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
     // Number of rows owned by this rank
     d_num_rows = outer.d_last_row - outer.d_first_row;
 
-    // // row starts always internally allocated
-    // d_row_starts = lidxAllocator.allocate( d_num_rows + 1 );
-
     if ( csrParams ) {
         // Pull out block specific parameters
         auto &blParams = d_is_diag ? csrParams->d_diag : csrParams->d_off_diag;
@@ -248,11 +189,10 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
 
         d_is_empty = false;
 
-        auto *nnzPerRowAll = matParams->entryList();
-        auto &cols         = matParams->getColumns();
-        AMP_INSIST(
-            !cols.empty(),
-            "CSRSerialMatrixData not constructable from MatrixParameters with emtpy columns" );
+        const auto &getRow = matParams->getRowFunction();
+        AMP_INSIST( getRow,
+                    "Explicitly defined getRow function must be present in MatrixParameters"
+                    " to construct CSRMatrixData and CSRSerialMatrixData" );
 
         // Count number of nonzeros depending on block type
         // also track un-referenced columns if off-diagonal
@@ -260,18 +200,21 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         std::set<gidx_t> colSet;
         d_nnz_pad = 0;
         d_nnz     = 0;
-        for ( size_t i = 0; i < cols.size(); ++i ) {
-            if ( isColValid<Policy>( cols[i], d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
-                ++d_nnz;
-                if ( !d_is_diag ) {
-                    colSet.insert( cols[i] );
+        for ( gidx_t i = outer.d_first_row; i < outer.d_last_row; ++i ) {
+            for ( auto &&col : getRow( i ) ) {
+                if ( isColValid<Policy>( col, d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
+                    ++d_nnz;
+                    if ( !d_is_diag ) {
+                        colSet.insert( col );
+                    }
                 }
             }
         }
+
         // attempt to insert all remote dofs into colSet to see which are un-referenced
         if ( !d_is_diag ) {
             auto remoteDOFs = rightDOFManager->getRemoteDOFs();
-            for ( auto rdof : remoteDOFs ) {
+            for ( auto &&rdof : remoteDOFs ) {
                 auto cs = colSet.insert( rdof );
                 if ( cs.second ) {
                     // insertion success means this DOF is un-referenced
@@ -300,12 +243,12 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         d_coeffs      = scalarAllocator.allocate( d_nnz );
 
         // Fill cols and nnz based on local row extents and on/off diag status
-        lidx_t cgi = 0, cli = 0; // indices into global and local arrays of columns
+        lidx_t cli       = 0; // index into local array of columns as it is filled in
         lidx_t nnzFilled = 0;
         for ( lidx_t i = 0; i < d_num_rows; ++i ) {
             d_nnz_per_row[i] = 0;
-            for ( lidx_t j = 0; j < nnzPerRowAll[i]; ++j ) {
-                auto col = cols[cgi++];
+            auto cols        = getRow( outer.d_first_row + i );
+            for ( auto &&col : cols ) {
                 if ( isColValid<Policy>( col, d_is_diag, outer.d_first_col, outer.d_last_col ) ) {
                     d_nnz_per_row[i]++;
                     d_cols[cli] = col;

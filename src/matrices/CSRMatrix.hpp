@@ -58,20 +58,9 @@ std::shared_ptr<Matrix> CSRMatrix<Policy, Allocator>::transpose() const
  * C(N,M) = A(N,K)*B(K,M)
  ********************************************************/
 template<typename Policy, typename Allocator>
-void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
-                                             std::shared_ptr<Matrix> &result )
+void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix>, std::shared_ptr<Matrix> & )
 {
-    // Create the matrix
-    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        getLeftDOFManager(), other_op->getRightDOFManager(), getComm() );
-
-    // Create the matrix
-    auto newData = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( newData );
-    AMP_ASSERT( newMatrix );
-    result = newMatrix;
-
-    d_matrixOps->matMultiply( *getMatrixData(), *other_op->getMatrixData(), *newData );
+    AMP_ERROR( "Not implemented" );
 }
 
 /********************************************************
