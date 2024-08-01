@@ -1,0 +1,48 @@
+// Mesh to use
+Mesh{
+    MeshName = "PelletMeshes"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    MeshArray_1 {
+        N = 3
+        iterator = "%i"
+        indicies = 1, 2, 3
+        MeshName = "pellet_%i"
+        MeshType = "AMP"
+        dim = 3
+        Generator = "cylinder"
+        Size = 8, 10
+        Range = 5, 0, 13
+        z_offset = 0, 13, 26
+        static = TRUE
+    }
+}
+
+// Set the power source 
+source_1 {
+    Mesh = "PelletMeshes"
+    Power = 500 W/m^3
+}
+
+// Specify the material
+material = "APG1"
+
+// Set the boundary conditions
+pellet_1 {
+    boundary_ids = 2
+    boundary_values = 300 K
+}
+/*pellet_3 {
+    boundary_ids = 1
+    boundary_values = 300 K
+}*/
+maps {
+    MapType = "NodeToNode"
+    N_maps = 2
+    Mesh1 = "pellet_1", "pellet_2"
+    Surface1 = 1
+    Mesh2 = "pellet_2", "pellet_3"
+    Surface2 = 2
+}
+

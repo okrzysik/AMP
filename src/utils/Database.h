@@ -95,9 +95,9 @@ public:
 protected:
     KeyData() {}
     KeyData( const Units &unit ) : d_unit( unit ) {}
-    KeyData( KeyData && )      = delete;
-    KeyData( const KeyData & ) = delete;
-    KeyData &operator=( KeyData && ) = delete;
+    KeyData( KeyData && )                 = delete;
+    KeyData( const KeyData & )            = delete;
+    KeyData &operator=( KeyData && )      = delete;
     KeyData &operator=( const KeyData & ) = delete;
 
 protected:
@@ -447,8 +447,9 @@ public:
      *
      * @param key       Key name in database
      */
-    std::shared_ptr<const MathExpr>
-    getEquation( std::string_view key, source_location src = source_location::current() ) const;
+    std::unique_ptr<MathExpr> getEquation( std::string_view key,
+                                           const Units &unit   = Units(),
+                                           source_location src = source_location::current() ) const;
 
 
     //! Check if the entry can be stored as the given type

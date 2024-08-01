@@ -20,6 +20,7 @@ ENDFUNCTION()
 
 
 # Add the AMP folders and libraries
+ADD_AMP_LIBRARY( applications )
 ADD_AMP_LIBRARY( discretization )
 ADD_AMP_LIBRARY( geometry )
 ADD_AMP_LIBRARY( graphics )

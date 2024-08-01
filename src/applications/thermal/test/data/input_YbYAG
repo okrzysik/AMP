@@ -1,0 +1,94 @@
+// Mesh to use
+Mesh{
+    MeshName = "Crystal"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
+    LoadBalanceMethod = 0
+
+    Mesh_1 {
+        MeshName = "YbYAG"
+        MeshType = "AMP"
+        dim = 3
+        Generator = "cube"
+        Size = 30, 30, 10
+        Range = -1.5, 1.5, -1.5, 1.5, 0, 0.2
+        static = TRUE
+    }
+
+    Mesh_2{
+        MeshName = "cladding"
+        MeshType = "Multimesh"
+        MeshDatabasePrefix = "Mesh_"
+        MeshArrayDatabasePrefix = "MeshArray_"
+        LoadBalanceMethod = 0
+        Mesh_1 {
+            MeshName = "crYAGtop"
+            MeshType = "AMP"
+            dim = 3
+            Generator = "cube"
+            Size = 10, 50, 10
+            Range = 1.5, 2.5, -2.5, 2.5, 0, 0.2
+            static = TRUE
+        }
+        Mesh_2 {
+            MeshName = "crYAGbot"
+            MeshType = "AMP"
+            dim = 3
+            Generator = "cube"
+            Size = 10, 50, 10
+            Range = -2.5, -1.5, -2.5, 2.5, 0, 0.2
+            static = TRUE
+        }
+        Mesh_3 {
+            MeshName = "crYAGleft"
+            MeshType = "AMP"
+            dim = 3
+            Generator = "cube"
+            Size = 30, 10, 10
+            Range = -1.5, 1.5, -2.5, -1.5, 0, 0.2
+            static = TRUE
+        }
+        Mesh_4 {
+            MeshName = "crYAGright"
+            MeshType = "AMP"
+            dim = 3
+            Generator = "cube"
+            Size = 30, 10, 10
+            Range = -1.5, 1.5, 1.5, 2.5, 0, 0.2
+            static = TRUE
+        }
+    }
+}
+
+// Set the power source 
+source_1 {
+    Mesh = "YbYAG"
+    Power = @(x, y, z) 45*exp(-10*floor((x*x+y*y)/1.3225)); W/cm^3
+}
+source_2 {
+    Mesh = "crYAGtop"
+    Power = @(x, y, z) 450*exp(-5*(x-1.5)); W/cm^3
+}
+source_3 {
+    Mesh = "crYAGbot"
+    Power = @(x, y, z) 450*exp(-5*(-x-1.5)); W/cm^3
+}
+source_4 {
+    Mesh = "crYAGleft"
+    Power = @(x, y, z) 450*exp(-5*(-y-1.5)); W/cm^3
+}
+source_5 {
+    Mesh = "crYAGright"
+    Power = @(x, y, z) 450*exp(-5*(y-1.5)); W/cm^3
+}
+
+// Specify the material
+material = "YAG"
+
+// Set the boundary conditions
+boundary_ids = 6
+boundary_values = 77 K
+boundary_impedance = 6700 W/(m^2*K)
+
+
