@@ -39,9 +39,9 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 
     std::string type;
 #if defined( AMP_USE_TRILINOS )
-    type = "ManagedEpetraMatrix";
+    type        = "ManagedEpetraMatrix";
 #elif defined( AMP_USE_PETSC )
-    type = "NativePetscMatrix";
+    type        = "NativePetscMatrix";
 #else
     AMP_ERROR( "This test requires either Trilinos or Petsc matrices to be enabled" );
 #endif

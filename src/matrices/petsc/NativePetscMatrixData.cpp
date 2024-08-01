@@ -282,16 +282,14 @@ std::shared_ptr<MatrixData> NativePetscMatrixData::cloneMatrixData() const
     MatDuplicate( d_Mat, MAT_DO_NOT_COPY_VALUES, &new_mat );
     return std::make_shared<NativePetscMatrixData>( new_mat, true );
 }
+  
 std::shared_ptr<MatrixData> NativePetscMatrixData::transpose() const
 {
     Mat new_mat;
-    // note that PETSc documentation states that the new Mat is
-    // not actually formed. Instead the transposed operations are
-    // done with the original matrix. This could cause memory leaks
-    /// for our wrappers potentially
-    MatCreateTranspose( d_Mat, &new_mat );
+    MatTranspose( d_Mat, MAT_INITIAL_MATRIX, &new_mat );
     return std::make_shared<NativePetscMatrixData>( new_mat, true );
 }
+  
 std::shared_ptr<MatrixData> NativePetscMatrixData::duplicateMat( Mat m )
 {
     Mat newMat;
@@ -304,7 +302,6 @@ void NativePetscMatrixData::extractDiagonal( std::shared_ptr<Vector> v ) const
     auto data = std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() );
     MatGetDiagonal( d_Mat, data->getVec() );
 }
-
 
 /********************************************************
  * Copy                                                  *
