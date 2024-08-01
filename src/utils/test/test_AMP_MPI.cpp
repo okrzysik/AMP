@@ -1053,6 +1053,56 @@ void testCommDup( UnitTest &ut )
 }
 
 
+// Test rand
+bool addRand( const AMP::AMP_MPI &comm, std::vector<size_t> &vals )
+{
+    auto v1 = comm.rand();
+    auto v2 = comm.rand();
+    vals.push_back( v1 );
+    vals.push_back( v2 );
+    return v1 == comm.bcast( v1, 0 ) && v2 == comm.bcast( v2, 0 );
+}
+void testRand( UnitTest &ut )
+{
+    bool pass = true;
+    // Create communicators and call rand on them
+    std::vector<size_t> vals;
+    pass = pass && addRand( AMP::AMP_MPI(), vals );
+    pass = pass && addRand( AMP_COMM_NULL, vals );
+    pass = pass && addRand( AMP_COMM_NULL, vals );
+    pass = pass && addRand( AMP_COMM_SELF, vals );
+    pass = pass && addRand( AMP_COMM_SELF, vals );
+    pass = pass && addRand( AMP_COMM_WORLD, vals );
+#ifdef AMP_USE_MPI
+    pass = pass && addRand( MPI_COMM_WORLD, vals );
+#endif
+    auto comm  = AMP::AMP_MPI( AMP_COMM_WORLD );
+    pass       = pass && addRand( comm, vals );
+    auto comm1 = comm.dup();
+    auto comm2 = comm.dup();
+    pass       = pass && addRand( comm, vals );
+    pass       = pass && addRand( comm1, vals );
+    pass       = pass && addRand( comm2, vals );
+#ifdef AMP_USE_MPI
+    MPI_Comm tmp;
+    MPI_Comm_dup( MPI_COMM_WORLD, &tmp );
+    auto comm3 = AMP::AMP_MPI( tmp, true );
+    pass       = pass && addRand( comm2, vals );
+#endif
+    if ( !pass )
+        ut.failure( "rand() is not consistent across all ranks" );
+    // Verify that all values are unique
+    auto vals2 = vals;
+    AMP::Utilities::unique( vals2 );
+    if ( vals2.size() != vals.size() ) {
+        pass = false;
+        ut.failure( "Failed to generate unique random numbers" );
+    }
+    if ( pass )
+        ut.passes( "rand()" );
+}
+
+
 //  This test will test the AMP::AMP_MPI class
 int main( int argc, char *argv[] )
 {
@@ -1141,6 +1191,9 @@ int main( int argc, char *argv[] )
         MPI_CLASS dupComm = globalComm.dup();
         record( ut, nullComm.dup().isNull(), "Null communicator duplicates a Null communicator" );
         testCommDup( ut );
+
+        // Test rand()
+        testRand( ut );
 
         // Test compare
         record( ut, globalComm.compare( globalComm ) == 1, "compare comm global==global" );

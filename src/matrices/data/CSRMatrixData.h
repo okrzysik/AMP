@@ -20,9 +20,12 @@ public:
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
-    using gidxAllocator_t   = typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
-    using lidxAllocator_t   = typename std::allocator_traits<Allocator>::template rebind_alloc<lidx_t>;
-    using scalarAllocator_t = typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
+    using gidxAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
+    using lidxAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<lidx_t>;
+    using scalarAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
 
 
     /** \brief Constructor
@@ -182,13 +185,9 @@ public:
                                 d_off_diag_matrix->d_coeffs );
     }
 
-    lidx_t* getDiagRowStarts() {
-      return d_diag_matrix->d_row_starts;
-    }
+    lidx_t *getDiagRowStarts() { return d_diag_matrix->d_row_starts; }
 
-    lidx_t* getOffDiagRowStarts() {
-      return d_off_diag_matrix->d_row_starts;
-    }
+    lidx_t *getOffDiagRowStarts() { return d_off_diag_matrix->d_row_starts; }
 
     bool isSquare() const noexcept { return d_is_square; }
 
@@ -215,29 +214,31 @@ public:
     void getOffDiagColumnMap( std::vector<idx_t> &colMap ) const
     {
         // Don't do anything if empty
-        if ( d_off_diag_matrix->d_is_empty ) { return; }
+        if ( d_off_diag_matrix->d_is_empty ) {
+            return;
+        }
 
-	// Column maps formed lazily, ensure it exists
-	d_off_diag_matrix->findColumnMap();
+        // Column maps formed lazily, ensure it exists
+        d_off_diag_matrix->findColumnMap();
 
-	if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-	
-	  // Resize and fill colMap
-	  colMap.resize( d_off_diag_matrix->d_ncols_unq );
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
 
-	  if constexpr ( std::is_same_v<idx_t, gidx_t> ) {
-	    std::copy( d_off_diag_matrix->d_cols_unq,
-		       d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
-		       colMap.begin() );
-	  } else {
-	    std::transform( d_off_diag_matrix->d_cols_unq,
-			    d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
-			    colMap.begin(),
-			    []( gidx_t c ) -> idx_t { return c; } );
-	  }
-	} else {
-	  AMP_ERROR( "Copies from device to host memory not implemented yet" );
-	}
+            // Resize and fill colMap
+            colMap.resize( d_off_diag_matrix->d_ncols_unq );
+
+            if constexpr ( std::is_same_v<idx_t, gidx_t> ) {
+                std::copy( d_off_diag_matrix->d_cols_unq,
+                           d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
+                           colMap.begin() );
+            } else {
+                std::transform( d_off_diag_matrix->d_cols_unq,
+                                d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
+                                colMap.begin(),
+                                []( gidx_t c ) -> idx_t { return c; } );
+            }
+        } else {
+            AMP_ERROR( "Copies from device to host memory not implemented yet" );
+        }
     }
 
 private:
@@ -246,23 +247,24 @@ private:
     class CSRSerialMatrixData : public AMP::enable_shared_from_this<CSRSerialMatrixData>
     {
         // The outer CSRMatrixData class should have direct access to the internals of this class
-        friend class CSRMatrixData<Policy,Allocator>;
+        friend class CSRMatrixData<Policy, Allocator>;
 
     public:
         /** \brief Constructor
          * \param[in] params Description of the matrix
          * \param[in] is_diag True if this is the diag block, influences which dofs are used/ignored
          */
-        explicit CSRSerialMatrixData( const CSRMatrixData<Policy,Allocator> &outer,
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy, Allocator> &outer,
                                       std::shared_ptr<MatrixParametersBase> params,
                                       bool is_diag );
 
-        explicit CSRSerialMatrixData( const CSRMatrixData<Policy,Allocator> &outer );
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy, Allocator> &outer );
 
         //! Destructor
         virtual ~CSRSerialMatrixData();
 
-      std::shared_ptr<CSRSerialMatrixData> cloneMatrixData( const CSRMatrixData<Policy,Allocator> &outer );
+        std::shared_ptr<CSRSerialMatrixData>
+        cloneMatrixData( const CSRMatrixData<Policy, Allocator> &outer );
 
         void getRowByGlobalID( const size_t local_row,
                                std::vector<size_t> &cols,
@@ -290,7 +292,8 @@ private:
         void findColumnMap();
 
     protected:
-        const CSRMatrixData<Policy,Allocator> &d_outer; // reference to the containing CSRMatrixData object
+        const CSRMatrixData<Policy, Allocator>
+            &d_outer; // reference to the containing CSRMatrixData object
         bool d_is_diag  = true;
         bool d_is_empty = false;
 
@@ -348,17 +351,17 @@ protected:
 };
 
 template<typename Policy, typename Allocator>
-static CSRMatrixData<Policy,Allocator> const *getCSRMatrixData( MatrixData const &A )
+static CSRMatrixData<Policy, Allocator> const *getCSRMatrixData( MatrixData const &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy,Allocator> const *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator> const *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
 
 template<typename Policy, typename Allocator>
-static CSRMatrixData<Policy,Allocator> *getCSRMatrixData( MatrixData &A )
+static CSRMatrixData<Policy, Allocator> *getCSRMatrixData( MatrixData &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy,Allocator> *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator> *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }

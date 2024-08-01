@@ -113,8 +113,8 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     params->d_VariableRight = rightVec->getVariable();
 
     // Create the matrix
-    auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy,Allocator>>( params );
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy,Allocator>>( data );
+    auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( data );
     // Initialize the matrix
     newMatrix->zero();
     newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -236,17 +236,17 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         };
     }
 
-#if defined(USE_HIP)
-    using DeviceAllocator = AMP::HipDevAllocator<int>;
+#if defined( USE_HIP )
+    using DeviceAllocator  = AMP::HipDevAllocator<int>;
     using ManagedAllocator = AMP::HipManagedAllocator<int>;
-#elif defined(USE_CUDA)
-    using DeviceAllocator = AMP::CudaDevAllocator<int>;
+#elif defined( USE_CUDA )
+    using DeviceAllocator  = AMP::CudaDevAllocator<int>;
     using ManagedAllocator = AMP::CudaManagedAllocator<int>;
 #endif
     using HostAllocator = std::allocator<int>;
 
-    auto memType = AMP::Utilities::getMemoryType( rightVec->getRawDataBlockAsVoid(0) );
-    
+    auto memType = AMP::Utilities::getMemoryType( rightVec->getRawDataBlockAsVoid( 0 ) );
+
     // Build the matrix
     std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix;
     if ( type == "ManagedEpetraMatrix" ) {
@@ -254,24 +254,26 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     } else if ( type == "NativePetscMatrix" ) {
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
     } else if ( type == "CSRMatrix" ) {
-      if ( memType <= AMP::Utilities::MemoryType::host ) {
-        matrix = createCSRMatrix<DefaultCSRPolicy,HostAllocator>( leftVec, rightVec, getRow );
-      } else if ( memType == AMP::Utilities::MemoryType::managed ) {
-#if defined(USE_HIP) || defined(USE_CUDA)
-        matrix = createCSRMatrix<DefaultCSRPolicy,ManagedAllocator>( leftVec, rightVec, getRow );
+        if ( memType <= AMP::Utilities::MemoryType::host ) {
+            matrix = createCSRMatrix<DefaultCSRPolicy, HostAllocator>( leftVec, rightVec, getRow );
+        } else if ( memType == AMP::Utilities::MemoryType::managed ) {
+#if defined( USE_HIP ) || defined( USE_CUDA )
+            matrix =
+                createCSRMatrix<DefaultCSRPolicy, ManagedAllocator>( leftVec, rightVec, getRow );
 #else
-        AMP_ERROR("No device found!");
+            AMP_ERROR( "No device found!" );
 #endif
-          
-      } else if ( memType == AMP::Utilities::MemoryType::device ) {
-#if defined(USE_HIP) || defined(USE_CUDA)
-        matrix = createCSRMatrix<DefaultCSRPolicy,DeviceAllocator>( leftVec, rightVec, getRow );
+
+        } else if ( memType == AMP::Utilities::MemoryType::device ) {
+#if defined( USE_HIP ) || defined( USE_CUDA )
+            matrix =
+                createCSRMatrix<DefaultCSRPolicy, DeviceAllocator>( leftVec, rightVec, getRow );
 #else
-        AMP_ERROR("No device found!");
+            AMP_ERROR( "No device found!" );
 #endif
-      } else {
-        AMP_ERROR( "Unknown memory location specified for data" );
-      }
+        } else {
+            AMP_ERROR( "Unknown memory location specified for data" );
+        }
 
     } else if ( type == "DenseSerialMatrix" ) {
         matrix = createDenseSerialMatrix( leftVec, rightVec );

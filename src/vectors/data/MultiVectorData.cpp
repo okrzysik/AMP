@@ -531,6 +531,7 @@ void MultiVectorData::dumpGhostedData( std::ostream &out, size_t offset ) const
  ****************************************************************/
 void MultiVectorData::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
+    VectorData::registerChildObjects( manager );
     manager->registerComm( d_comm );
     for ( auto data : d_data )
         manager->registerObject( data->shared_from_this() );
@@ -540,6 +541,7 @@ void MultiVectorData::registerChildObjects( AMP::IO::RestartManager *manager ) c
 }
 void MultiVectorData::writeRestart( int64_t fid ) const
 {
+    VectorData::writeRestart( fid );
     std::vector<uint64_t> dataHash( d_data.size() );
     std::vector<uint64_t> dofsHash( d_subDOFManager.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
@@ -552,6 +554,7 @@ void MultiVectorData::writeRestart( int64_t fid ) const
     writeHDF5( fid, "DOFManagerHash", dofsHash );
 }
 MultiVectorData::MultiVectorData( int64_t fid, AMP::IO::RestartManager *manager )
+    : VectorData( fid, manager )
 {
     uint64_t commHash, globalDOFsHash;
     std::vector<uint64_t> vectorDataHash, DOFManagerHash;
