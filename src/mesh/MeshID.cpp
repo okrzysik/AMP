@@ -105,8 +105,8 @@ void AMP::readHDF5Scalar<AMP::Mesh::MeshElementID>( hid_t fid,
     AMP_ASSERT( x.size() == 1u );
     data = x( 0 );
 }
-INSTANTIATE_HDF5( AMP::Mesh::MeshElementID );
 #endif
+INSTANTIATE_HDF5( AMP::Mesh::MeshElementID );
 
 
 /********************************************************

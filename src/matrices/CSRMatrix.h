@@ -3,6 +3,7 @@
 
 #include "AMP/matrices/Matrix.h"
 #include "AMP/vectors/Vector.h"
+#include <functional>
 #include <memory>
 
 namespace AMP::LinearAlgebra {
@@ -12,7 +13,7 @@ namespace AMP::LinearAlgebra {
  * \details  This is a concrete class that stores a dense local matrix.
  *    This is not a distributed matrix and requires that the comm is AMP_COMM_SELF.
  */
-template<typename Policy, typename Allocator=std::allocator<int>>
+template<typename Policy, typename Allocator = std::allocator<int>>
 class CSRMatrix : public Matrix
 {
 public:
@@ -22,7 +23,6 @@ public:
      * \param[in] params  Description of the matrix
      */
     explicit CSRMatrix( std::shared_ptr<MatrixParametersBase> params );
-
 
     /** \brief Constructor
      * \param[in] params  MatrixData object associated with matrix

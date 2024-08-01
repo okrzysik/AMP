@@ -253,7 +253,7 @@ DOFManager::DOFManager( int64_t fid, AMP::IO::RestartManager *manager )
     readHDF5( fid, "begin", d_begin );
     readHDF5( fid, "end", d_end );
     readHDF5( fid, "global", d_global );
-    auto comm = manager->getComm( commHash );
+    d_comm = manager->getComm( commHash );
 }
 void DOFManager::registerChildObjects( AMP::IO::RestartManager * ) const {}
 
