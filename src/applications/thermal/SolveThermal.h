@@ -12,10 +12,10 @@
 
 // Integrate a nodal or gauss point source vector to a nodal source vector
 std::shared_ptr<AMP::LinearAlgebra::Vector>
-integrateSouceVector( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                      std::shared_ptr<const AMP::LinearAlgebra::Vector> src,
-                      std::string srcName = "",
-                      std::string dstName = "" );
+integrateSourceVector( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                       std::shared_ptr<const AMP::LinearAlgebra::Vector> src,
+                       std::string srcName = "",
+                       std::string dstName = "" );
 
 
 // Solve for the temperature

@@ -27,9 +27,13 @@
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearKrylovAccelerator.h"
 #include "AMP/solvers/SolverFactory.h"
+#ifdef AMP_USE_PETSC
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
+#endif
+#ifdef AMP_USE_TRILINOS
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#endif
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/utils/Utilities.h"
 
@@ -48,10 +52,10 @@
  * Integrate a nodal or gauss point source vector to a nodal source vector  *
  ***************************************************************************/
 std::shared_ptr<AMP::LinearAlgebra::Vector>
-integrateSouceVector( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                      std::shared_ptr<const AMP::LinearAlgebra::Vector> src,
-                      std::string srcName,
-                      std::string dstName )
+integrateSourceVector( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                       std::shared_ptr<const AMP::LinearAlgebra::Vector> src,
+                       std::string srcName,
+                       std::string dstName )
 {
     // Get the Input/Output variable names
     if ( srcName.empty() )
@@ -549,12 +553,12 @@ solveTemperature( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 #else
 
 std::shared_ptr<AMP::LinearAlgebra::Vector>
-integrateSouceVector( std::shared_ptr<AMP::Mesh::Mesh>,
-                      std::shared_ptr<const AMP::LinearAlgebra::Vector>,
-                      std::string,
-                      std::string )
+integrateSourceVector( std::shared_ptr<AMP::Mesh::Mesh>,
+                       std::shared_ptr<const AMP::LinearAlgebra::Vector>,
+                       std::string,
+                       std::string )
 {
-    AMP_ERROR( "integrateSouceVector requires libmesh" );
+    AMP_ERROR( "integrateSourceVector requires libmesh" );
 }
 std::tuple<std::shared_ptr<AMP::LinearAlgebra::Vector>, std::shared_ptr<AMP::Operator::Operator>>
 solveTemperature( std::shared_ptr<AMP::Mesh::Mesh>,
