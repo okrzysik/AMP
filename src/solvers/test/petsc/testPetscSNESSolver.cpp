@@ -29,8 +29,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+#ifdef AMP_USE_MPI
     auto solverComm = globalComm.dup(); // Create a unique solver comm to test proper cleanup
-
+#else
+    auto solverComm = globalComm; // a dup fails for no MPI
+#endif
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
