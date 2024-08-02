@@ -238,7 +238,7 @@ static inline std::string operator+( std::string_view x, std::string_view y )
             _Pragma( "GCC diagnostic ignored \"-Waggressive-loop-optimizations\"" )
         #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
     #elif defined( USING_ICC )
-        if defined ( __INTEL_LLVM_COMPILER )
+        #if defined ( __INTEL_LLVM_COMPILER )
             // have to figure these warnings out
             #define DISABLE_WARNINGS                \
                 _Pragma( "warning (push)" )
