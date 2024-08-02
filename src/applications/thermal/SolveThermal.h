@@ -2,8 +2,8 @@
 #define included_AMP_SolveThermal
 
 
-#include "AMP/operators/Operator.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/operators/Operator.h"
 #include "AMP/vectors/Vector.h"
 
 #include <string>
@@ -12,10 +12,10 @@
 
 // Integrate a nodal or gauss point source vector to a nodal source vector
 std::shared_ptr<AMP::LinearAlgebra::Vector>
-integrateSouceVector( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                      std::shared_ptr<const AMP::LinearAlgebra::Vector> src,
-                      std::string srcName = "",
-                      std::string dstName = "" );
+integrateSourceVector( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                       std::shared_ptr<const AMP::LinearAlgebra::Vector> src,
+                       std::string srcName = "",
+                       std::string dstName = "" );
 
 
 // Solve for the temperature

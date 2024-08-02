@@ -117,16 +117,16 @@ void myTest( const std::string &input_file, AMP::UnitTest &ut )
     auto powerVar = std::make_shared<AMP::LinearAlgebra::Variable>( "power" );
     auto power    = AMP::LinearAlgebra::createVector( nodalDofMap, powerVar );
     power->zero();
-    for ( int i=0; i<100; i++) {
-        if ( db->keyExists( "source_" + std::to_string(i) ) ) {
-            auto db2 = db->getDatabase( "source_" + std::to_string(i) );
+    for ( int i = 0; i < 100; i++ ) {
+        if ( db->keyExists( "source_" + std::to_string( i ) ) ) {
+            auto db2 = db->getDatabase( "source_" + std::to_string( i ) );
             addSouce( db2, mesh, power );
         }
     }
     power->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Solve for the SS temperature
-    auto rhs          = integrateSouceVector( mesh, power );
+    auto rhs          = integrateSourceVector( mesh, power );
     auto [solVec, op] = solveTemperature( mesh, rhs, db );
     double T_min      = static_cast<double>( solVec->min() );
     double T_max      = static_cast<double>( solVec->max() );
