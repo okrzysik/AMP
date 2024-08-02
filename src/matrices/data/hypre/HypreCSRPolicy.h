@@ -3,11 +3,9 @@
 
 #include "AMP/matrices/CSRPolicy.h"
 
-extern "C" {
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
 #include "HYPRE_utilities.h"
-}
 
 namespace AMP::LinearAlgebra {
 using HypreCSRPolicy = CSRPolicy<HYPRE_BigInt, HYPRE_Int, HYPRE_Real>;
