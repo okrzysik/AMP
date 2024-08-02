@@ -239,7 +239,10 @@ static inline std::string operator+( std::string_view x, std::string_view y )
         #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
     #elif defined( USING_ICC )
         if defined ( __INTEL_LLVM_COMPILER )
-           // have to figure these warnings out
+            // have to figure these warnings out
+            #define DISABLE_WARNINGS                \
+                _Pragma( "warning (push)" )
+            #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
         #else
            #define DISABLE_WARNINGS                \
                _Pragma( "warning (push)" )         \
