@@ -2,8 +2,8 @@
 #define included_AMP_SolveThermal
 
 
-#include "AMP/operators/Operator.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/operators/Operator.h"
 #include "AMP/vectors/Vector.h"
 
 #include <string>

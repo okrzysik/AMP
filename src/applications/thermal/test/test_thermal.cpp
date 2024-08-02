@@ -1,10 +1,10 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
+#include "AMP/applications/thermal/SolveThermal.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
 #include "AMP/materials/ScalarProperty.h"
-#include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
@@ -16,7 +16,6 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
-#include "AMP/applications/thermal/SolveThermal.h"
 
 #include <iostream>
 #include <memory>
@@ -58,31 +57,41 @@ public:
         addScalarProperty( "Specific Heat", 590, "J/(kg*K)" );
         addScalarProperty( "Thermal Shock Resistant", 800, "W/m" );
         std::array<double, 2> range = { 20, 550 };
-        std::vector<double> Tc = { 20.,  40.,  60.,  80.,  100., 120., 150., 200.,
-                    250., 300., 350., 400., 450., 500., 550. };
-        std::vector<double> Kc = { 15.,  3.5,    1.5,   0.8,   0.5,   0.38,  0.27, 0.176,
-                    0.13, 0.1120, 0.087, 0.077, 0.069, 0.063, 0.058 };
-        d_propertyMap["Thermal Conductivity"] = std::make_shared<AMP::Materials::InterpolatedProperty>(
-            "YAG::Thermal Conductivity", "W/(cm*K)", "temperature", Tc, Kc, range, "K", 300, "" );
+        std::vector<double> Tc      = { 20.,  40.,  60.,  80.,  100., 120., 150., 200.,
+                                   250., 300., 350., 400., 450., 500., 550. };
+        std::vector<double> Kc      = { 15.,  3.5,    1.5,   0.8,   0.5,   0.38,  0.27, 0.176,
+                                   0.13, 0.1120, 0.087, 0.077, 0.069, 0.063, 0.058 };
+        d_propertyMap["Thermal Conductivity"] =
+            std::make_shared<AMP::Materials::InterpolatedProperty>( "YAG::Thermal Conductivity",
+                                                                    "W/(cm*K)",
+                                                                    "temperature",
+                                                                    Tc,
+                                                                    Kc,
+                                                                    range,
+                                                                    "K",
+                                                                    300,
+                                                                    "" );
     }
     std::string materialName() const override { return "YAG"; }
 };
 
 
 // Add a thermal source
-void addSouce( std::shared_ptr<AMP::Database> db, std::shared_ptr<AMP::Mesh::Mesh> mesh, std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
+void addSouce( std::shared_ptr<AMP::Database> db,
+               std::shared_ptr<AMP::Mesh::Mesh> mesh,
+               std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 {
     // Get the appropriate mesh
     auto meshName = db->getString( "Mesh" );
-    auto mesh2 = mesh->Subset( meshName );
+    auto mesh2    = mesh->Subset( meshName );
     AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2 );
-    auto v2  = vec->select( meshSelector, vec->getVariable()->getName() );
+    auto v2 = vec->select( meshSelector, vec->getVariable()->getName() );
     // Apply the source
     auto expr = db->getEquation( "Power", "W/cm^3" );
     auto DOFs = v2->getDOFManager();
     std::vector<size_t> dofs;
     for ( const auto &node : mesh2->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
-        auto point = node.coord();
+        auto point   = node.coord();
         double power = expr->operator()( { point.x(), point.y(), point.z() } );
         DOFs->getDOFs( node.globalID(), dofs );
         double data;
@@ -117,9 +126,9 @@ void myTest( const std::string &input_file, AMP::UnitTest &ut )
     auto powerVar = std::make_shared<AMP::LinearAlgebra::Variable>( "power" );
     auto power    = AMP::LinearAlgebra::createVector( nodalDofMap, powerVar );
     power->zero();
-    for ( int i=0; i<100; i++) {
-        if ( db->keyExists( "source_" + std::to_string(i) ) ) {
-            auto db2 = db->getDatabase( "source_" + std::to_string(i) );
+    for ( int i = 0; i < 100; i++ ) {
+        if ( db->keyExists( "source_" + std::to_string( i ) ) ) {
+            auto db2 = db->getDatabase( "source_" + std::to_string( i ) );
             addSouce( db2, mesh, power );
         }
     }
