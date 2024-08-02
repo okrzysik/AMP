@@ -14,11 +14,9 @@ template struct CSRPolicy<size_t, int32_t, float>;
 
 #ifdef AMP_USE_HYPRE
 
-extern "C" {
     #include "HYPRE.h"
     #include "HYPRE_IJ_mv.h"
     #include "HYPRE_utilities.h"
-}
 
 namespace AMP::LinearAlgebra {
 template struct CSRPolicy<HYPRE_BigInt, HYPRE_Int, HYPRE_Real>;
