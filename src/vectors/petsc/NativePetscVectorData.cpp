@@ -42,7 +42,7 @@ NativePetscVectorData::~NativePetscVectorData()
     }
 }
 
-void NativePetscVectorData::makeConsistent( ScatterType t)
+void NativePetscVectorData::makeConsistent( ScatterType t )
 {
     (void) t;
     // resetArray ensures that any grabbed raw data is returned
@@ -62,7 +62,7 @@ void NativePetscVectorData::putRawData( const void *in, const typeID &id )
     resetArray();
     constexpr auto type = getTypeID<double>();
     AMP_ASSERT( id == type );
-    auto data           = reinterpret_cast<const double *>( in );
+    auto data = reinterpret_cast<const double *>( in );
     int a, b;
     VecGetOwnershipRange( d_petscVec, &a, &b );
     AMP_ASSERT( b - a == (int) getLocalSize() );
@@ -102,7 +102,9 @@ size_t NativePetscVectorData::numberOfDataBlocks() const { return 1; }
 
 size_t NativePetscVectorData::sizeOfDataBlock( size_t i ) const
 {
-    if ( i != 0 ) { return 0; }
+    if ( i != 0 ) {
+        return 0;
+    }
     return getLocalSize();
 }
 
@@ -178,7 +180,9 @@ void NativePetscVectorData::getValuesByLocalID( size_t N,
 
 void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i )
 {
-    if ( i > 0 ) { return nullptr; }
+    if ( i > 0 ) {
+        return nullptr;
+    }
     if ( d_pArray == nullptr ) {
         VecGetArray( d_petscVec, &d_pArray );
     }
@@ -187,7 +191,9 @@ void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i )
 
 const void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i ) const
 {
-    if ( i > 0 ) { return nullptr; }
+    if ( i > 0 ) {
+        return nullptr;
+    }
     if ( d_pArrayRead == nullptr ) {
         VecGetArrayRead( d_petscVec, &d_pArrayRead );
     }
