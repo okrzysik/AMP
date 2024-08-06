@@ -9,9 +9,9 @@
 namespace AMP::LinearAlgebra {
 
 template<typename Policy, typename Allocator>
-void CSRMatrixOperationsDefault<Policy,Allocator>::mult( std::shared_ptr<const Vector> in,
-                                               MatrixData const &A,
-                                               std::shared_ptr<Vector> out )
+void CSRMatrixOperationsDefault<Policy, Allocator>::mult( std::shared_ptr<const Vector> in,
+                                                          MatrixData const &A,
+                                                          std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsDefault::mult" );
     AMP_DEBUG_ASSERT( in && out );
@@ -20,7 +20,7 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::mult( std::shared_ptr<const V
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy,Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -81,13 +81,13 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::mult( std::shared_ptr<const V
     }
 }
 
-template<typename Policy,typename Allocator>
-void CSRMatrixOperationsDefault<Policy,Allocator>::multTranspose( std::shared_ptr<const Vector> in,
-                                                        MatrixData const &A,
-                                                        std::shared_ptr<Vector> out )
+template<typename Policy, typename Allocator>
+void CSRMatrixOperationsDefault<Policy, Allocator>::multTranspose( std::shared_ptr<const Vector> in,
+                                                                   MatrixData const &A,
+                                                                   std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsDefault::multTranspose" );
-    
+
     // this is not meant to be an optimized version. It is provided for completeness
     AMP_DEBUG_ASSERT( in && out );
 
@@ -96,8 +96,8 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::multTranspose( std::shared_pt
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy,Allocator>( const_cast<MatrixData &>( A ) );
-    
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+
     AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
@@ -108,52 +108,54 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::multTranspose( std::shared_pt
 
     {
         PROFILE( "CSRMatrixOperationsDefault::multTranspose (d)" );
-	auto [nnz, cols, cols_loc, coeffs] = csrData->getCSRDiagData();
-	const auto num_unq = csrData->numLocalColumns();
-	
+        auto [nnz, cols, cols_loc, coeffs] = csrData->getCSRDiagData();
+        const auto num_unq                 = csrData->numLocalColumns();
+
         std::vector<scalar_t> vvals( num_unq, 0.0 );
-	std::vector<size_t> rcols( num_unq );
-	
+        std::vector<size_t> rcols( num_unq );
+
         lidx_t offset = 0;
         for ( lidx_t row = 0; row < nRows; ++row ) {
 
             const auto ncols = nnz[row];
-            const auto cloc = &cols_loc[offset];
-            const auto vloc = &coeffs[offset];
-            const auto val = inDataBlock[ row ];
+            const auto cloc  = &cols_loc[offset];
+            const auto vloc  = &coeffs[offset];
+            const auto val   = inDataBlock[row];
 
             for ( lidx_t j = 0; j < ncols; ++j ) {
-	        rcols[cloc[j]] = cols[offset + j];
+                rcols[cloc[j]] = cols[offset + j];
                 vvals[cloc[j]] += vloc[j] * val;
             }
 
             offset += ncols;
         }
 
-	// Write out data, adding to any already present
-	out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
+        // Write out data, adding to any already present
+        out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
     }
     out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsDefault::multTranspose (od)" );
-	auto [nnz, cols, cols_loc, coeffs] = csrData->getCSROffDiagData();
-	
-	std::vector<size_t> rcols;
-	csrData->getOffDiagColumnMap( rcols );
-	const auto num_unq = rcols.size();
-	
+        auto [nnz, cols, cols_loc, coeffs] = csrData->getCSROffDiagData();
+
+        std::vector<size_t> rcols;
+        csrData->getOffDiagColumnMap( rcols );
+        const auto num_unq = rcols.size();
+
         std::vector<scalar_t> vvals( num_unq, 0.0 );
-	
+
         lidx_t offset = 0;
         for ( lidx_t row = 0; row < nRows; ++row ) {
 
             const auto ncols = nnz[row];
-	    if ( ncols == 0 ) { continue; }
-	    
+            if ( ncols == 0 ) {
+                continue;
+            }
+
             const auto cloc = &cols_loc[offset];
             const auto vloc = &coeffs[offset];
-            const auto val = inDataBlock[ row ];
+            const auto val  = inDataBlock[row];
 
             for ( lidx_t j = 0; j < ncols; ++j ) {
                 vvals[cloc[j]] += vloc[j] * val;
@@ -162,17 +164,17 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::multTranspose( std::shared_pt
             offset += ncols;
         }
 
-	// convert colmap to size_t and write out data
-	out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
+        // convert colmap to size_t and write out data
+        out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
     }
 }
 
 template<typename Policy, typename Allocator>
-void CSRMatrixOperationsDefault<Policy,Allocator>::scale( AMP::Scalar alpha_in, MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator>::scale( AMP::Scalar alpha_in, MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy,Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -199,25 +201,25 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::scale( AMP::Scalar alpha_in, 
 }
 
 template<typename Policy, typename Allocator>
-void CSRMatrixOperationsDefault<Policy,Allocator>::matMultiply( MatrixData const &,
-                                                      MatrixData const &,
-                                                      MatrixData & )
+void CSRMatrixOperationsDefault<Policy, Allocator>::matMultiply( MatrixData const &,
+                                                                 MatrixData const &,
+                                                                 MatrixData & )
 {
     AMP_WARNING( "SpGEMM for CSRMatrixOperationsDefault not implemented" );
 }
 
 template<typename Policy, typename Allocator>
-void CSRMatrixOperationsDefault<Policy,Allocator>::axpy( AMP::Scalar alpha_in,
-                                               const MatrixData &X,
-                                               MatrixData &Y )
+void CSRMatrixOperationsDefault<Policy, Allocator>::axpy( AMP::Scalar alpha_in,
+                                                          const MatrixData &X,
+                                                          MatrixData &Y )
 {
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    const auto csrDataX = getCSRMatrixData<Policy,Allocator>( const_cast<MatrixData &>( X ) );
+    const auto csrDataX = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( X ) );
     const auto [nnz_d_x, cols_d_x, cols_loc_d_x, coeffs_d_x] = csrDataX->getCSRDiagData();
 
-    auto csrDataY                                      = getCSRMatrixData<Policy,Allocator>( Y );
+    auto csrDataY                                      = getCSRMatrixData<Policy, Allocator>( Y );
     auto [nnz_d_y, cols_d_y, cols_loc_d_y, coeffs_d_y] = csrDataY->getCSRDiagData();
 
     auto memType_x = AMP::Utilities::getMemoryType( cols_loc_d_x );
@@ -251,11 +253,11 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::axpy( AMP::Scalar alpha_in,
 }
 
 template<typename Policy, typename Allocator>
-void CSRMatrixOperationsDefault<Policy,Allocator>::setScalar( AMP::Scalar alpha_in, MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator>::setScalar( AMP::Scalar alpha_in, MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy,Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -279,15 +281,15 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::setScalar( AMP::Scalar alpha_
 }
 
 template<typename Policy, typename Allocator>
-void CSRMatrixOperationsDefault<Policy,Allocator>::zero( MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator>::zero( MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
     setScalar( static_cast<scalar_t>( 0.0 ), A );
 }
 
 template<typename Policy, typename Allocator>
-void CSRMatrixOperationsDefault<Policy,Allocator>::setDiagonal( std::shared_ptr<const Vector> in,
-                                                      MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator>::setDiagonal( std::shared_ptr<const Vector> in,
+                                                                 MatrixData &A )
 {
     using lidx_t   = typename Policy::lidx_t;
     using gidx_t   = typename Policy::gidx_t;
@@ -298,7 +300,7 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::setDiagonal( std::shared_ptr<
 
     const scalar_t *vvals_p = in->getRawDataBlock<scalar_t>();
 
-    auto csrData = getCSRMatrixData<Policy,Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -326,7 +328,7 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::setDiagonal( std::shared_ptr<
 }
 
 template<typename Policy, typename Allocator>
-void CSRMatrixOperationsDefault<Policy,Allocator>::setIdentity( MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator>::setIdentity( MatrixData &A )
 {
     using lidx_t   = typename Policy::lidx_t;
     using gidx_t   = typename Policy::gidx_t;
@@ -334,7 +336,7 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::setIdentity( MatrixData &A )
 
     zero( A );
 
-    auto csrData = getCSRMatrixData<Policy,Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -362,11 +364,11 @@ void CSRMatrixOperationsDefault<Policy,Allocator>::setIdentity( MatrixData &A )
 }
 
 template<typename Policy, typename Allocator>
-AMP::Scalar CSRMatrixOperationsDefault<Policy,Allocator>::L1Norm( MatrixData const &A ) const
+AMP::Scalar CSRMatrixOperationsDefault<Policy, Allocator>::L1Norm( MatrixData const &A ) const
 {
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy,Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 

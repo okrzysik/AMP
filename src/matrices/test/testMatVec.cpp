@@ -41,7 +41,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 #if defined( AMP_USE_TRILINOS )
     type = "ManagedEpetraMatrix";
 #elif defined( AMP_USE_PETSC )
-    type         = "NativePetscMatrix";
+    type = "NativePetscMatrix";
 #else
     AMP_ERROR( "This test requires either Trilinos or Petsc matrices to be enabled" );
 #endif
@@ -82,38 +82,27 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
                                                    firstRow,
                                                    endRow,
                                                    nnz_d,
-						   rowstart_d,
+                                                   rowstart_d,
                                                    cols_d,
                                                    cols_loc_d,
                                                    coeffs_d,
                                                    nnz_od,
-						   rowstart_od,
+                                                   rowstart_od,
                                                    cols_od,
                                                    cols_loc_od,
                                                    coeffs_od,
-						   nnz_pad );
+                                                   nnz_pad );
 
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_d
-      { nnz_d.data(),
-	rowstart_d.data(),
-	cols_d.data(),
-	cols_loc_d.data(),
-	coeffs_d.data() };
+    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_d{
+        nnz_d.data(), rowstart_d.data(), cols_d.data(), cols_loc_d.data(), coeffs_d.data()
+    };
 
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_od
-      { nnz_od.data(),
-	rowstart_od.data(),
-	cols_od.data(),
-	cols_loc_od.data(),
-	coeffs_od.data() };
+    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_od{
+        nnz_od.data(), rowstart_od.data(), cols_od.data(), cols_loc_od.data(), coeffs_od.data()
+    };
 
-    auto csrParams =
-        std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>( firstRow,
-                                                                           endRow,
-									   pars_d,
-									   pars_od,
-									   nnz_pad,
-                                                                           comm );
+    auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
+        firstRow, endRow, pars_d, pars_od, nnz_pad, comm );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
     AMP_ASSERT( csrMatrix );
@@ -127,8 +116,8 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
         ut->failure( "Number of local and global rows don't match for default and CSR matrices" );
     }
 
-    auto x1  = matrix->getRightVector();
-    auto x2  = matrix->getRightVector();
+    auto x1 = matrix->getRightVector();
+    auto x2 = matrix->getRightVector();
     auto y1 = matrix->getRightVector();
     auto y2 = matrix->getRightVector();
 
@@ -143,7 +132,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 
     matrix->mult( x1, y1 );
 
-    auto y1Norm = static_cast<scalar_t>( y1->L1Norm() );
+    const auto y1Norm = static_cast<scalar_t>( y1->L1Norm() );
 
     if ( y1Norm == static_cast<scalar_t>( matrix->numGlobalRows() ) ) {
         ut->passes( "Passes 1 norm test with pseudo Laplacian with default matvec" );
@@ -156,7 +145,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     csrMatrix->mult( x2, y2 );
     y2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    auto y2Norm = static_cast<scalar_t>( y2->L1Norm() );
+    const auto y2Norm = static_cast<scalar_t>( y2->L1Norm() );
 
     if ( y2Norm == static_cast<scalar_t>( csrMatrix->numGlobalRows() ) ) {
         ut->passes( "Passes 1 norm test with pseudo Laplacian with CSR matvec" );
@@ -215,7 +204,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
                   << std::endl;
         ut->failure( "Fails 1 norm test with pseudo Laplacian with default transpose matvec" );
     }
-    
+
     csrMatrix->multTranspose( y2, x2 );
     auto x2Norm = static_cast<scalar_t>( x2->L1Norm() );
     if ( x2Norm == static_cast<scalar_t>( csrMatrix->numGlobalRows() ) ) {

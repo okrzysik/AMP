@@ -189,6 +189,7 @@ duplicateAssignExpression:*/src/operators/test/mechanics/testNonlinearMechanics_
 duplicateAssignExpression:*/src/solvers/test/testSolversForUserMatrix.cpp
 duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity_2.cpp
 duplicateAssignExpression:*/src/utils/test/test_MathExpr.cpp
+duplicateAssignExpression:*/src/utils/test/test_AMP_MPI.cpp
 duplicateExpression:*/test/test*
 duplicateExpression:*/src/discretization/test/DOFManager_tests.h
 knownConditionTrueFalse:*/src/mesh/test/testDendroSearch.cpp
