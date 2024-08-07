@@ -159,12 +159,12 @@ void MultiGeometry::writeRestart( int64_t fid ) const
     std::vector<uint64_t> geomID( d_geom.size() );
     for ( size_t i = 0; i < d_geom.size(); i++ )
         geomID[i] = d_geom[i]->getID();
-    writeHDF5( fid, "geomID", geomID );
+    IO::writeHDF5( fid, "geomID", geomID );
 }
 MultiGeometry::MultiGeometry( int64_t fid, AMP::IO::RestartManager *manager ) : Geometry( fid )
 {
     std::vector<uint64_t> geomID;
-    readHDF5( fid, "geomID", geomID );
+    IO::readHDF5( fid, "geomID", geomID );
     d_geom.resize( geomID.size() );
     for ( size_t i = 0; i < d_geom.size(); i++ )
         d_geom[i] = manager->getData<Geometry>( geomID[i] );

@@ -54,12 +54,12 @@ StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &me
 void StructuredGeometryMesh::writeRestart( int64_t fid ) const
 {
     BoxMesh::writeRestart( fid );
-    writeHDF5( fid, "d_pos_hash", d_pos_hash );
+    IO::writeHDF5( fid, "d_pos_hash", d_pos_hash );
 }
 StructuredGeometryMesh::StructuredGeometryMesh( int64_t fid, AMP::IO::RestartManager *manager )
     : BoxMesh( fid, manager )
 {
-    readHDF5( fid, "d_pos_hash", d_pos_hash );
+    IO::readHDF5( fid, "d_pos_hash", d_pos_hash );
     d_geometry2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
 }
 

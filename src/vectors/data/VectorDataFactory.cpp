@@ -10,7 +10,7 @@ std::shared_ptr<VectorData> VectorDataFactory::create( int64_t fid,
                                                        AMP::IO::RestartManager *manager )
 {
     std::string type;
-    readHDF5( fid, "ClassType", type );
+    AMP::IO::readHDF5( fid, "ClassType", type );
     std::shared_ptr<VectorData> data;
     if ( type == "MultiVectorData" ) {
         data = std::make_shared<AMP::LinearAlgebra::MultiVectorData>( fid, manager );

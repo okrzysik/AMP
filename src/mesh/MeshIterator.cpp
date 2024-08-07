@@ -234,18 +234,18 @@ void MeshIterator::writeRestart( int64_t fid ) const
     if ( d_iterator != nullptr ) {
         d_iterator->writeRestart( fid );
     } else {
-        writeHDF5( fid, "typeHash", d_typeHash );
-        writeHDF5( fid, "iteratorType", d_iteratorType );
-        writeHDF5( fid, "size", d_size );
-        writeHDF5( fid, "pos", d_pos );
+        IO::writeHDF5( fid, "typeHash", d_typeHash );
+        IO::writeHDF5( fid, "iteratorType", d_iteratorType );
+        IO::writeHDF5( fid, "size", d_size );
+        IO::writeHDF5( fid, "pos", d_pos );
     }
 }
 MeshIterator::MeshIterator( int64_t fid ) : MeshIterator()
 {
-    readHDF5( fid, "typeHash", d_typeHash );
-    readHDF5( fid, "iteratorType", d_iteratorType );
-    readHDF5( fid, "size", d_size );
-    readHDF5( fid, "pos", d_pos );
+    IO::readHDF5( fid, "typeHash", d_typeHash );
+    IO::readHDF5( fid, "iteratorType", d_iteratorType );
+    IO::readHDF5( fid, "size", d_size );
+    IO::readHDF5( fid, "pos", d_pos );
 }
 
 /********************************************************

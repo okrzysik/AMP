@@ -957,12 +957,12 @@ void MultiMesh::writeRestart( int64_t fid ) const
     std::vector<MeshID> meshIDs;
     for ( auto &mesh : d_meshes )
         meshIDs.push_back( mesh->meshID() );
-    writeHDF5( fid, "meshIDs", meshIDs );
+    IO::writeHDF5( fid, "meshIDs", meshIDs );
 }
 MultiMesh::MultiMesh( int64_t fid, AMP::IO::RestartManager *manager ) : Mesh( fid, manager )
 {
     std::vector<MeshID> meshIDs;
-    readHDF5( fid, "meshIDs", meshIDs );
+    IO::readHDF5( fid, "meshIDs", meshIDs );
     d_meshes.resize( meshIDs.size() );
     for ( size_t i = 0; i < meshIDs.size(); i++ )
         d_meshes[i] = manager->getData<Mesh>( meshIDs[i].getHash() );
