@@ -282,14 +282,14 @@ std::shared_ptr<MatrixData> NativePetscMatrixData::cloneMatrixData() const
     MatDuplicate( d_Mat, MAT_DO_NOT_COPY_VALUES, &new_mat );
     return std::make_shared<NativePetscMatrixData>( new_mat, true );
 }
-  
+
 std::shared_ptr<MatrixData> NativePetscMatrixData::transpose() const
 {
     Mat new_mat;
     MatTranspose( d_Mat, MAT_INITIAL_MATRIX, &new_mat );
     return std::make_shared<NativePetscMatrixData>( new_mat, true );
 }
-  
+
 std::shared_ptr<MatrixData> NativePetscMatrixData::duplicateMat( Mat m )
 {
     Mat newMat;

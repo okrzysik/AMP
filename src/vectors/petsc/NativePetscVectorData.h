@@ -78,10 +78,10 @@ protected:
 
 private:
     friend class NativePetscVectorOperations;
-    bool d_bDeleteMe;
-    Vec d_petscVec;
-    mutable double *d_pArray; // mutable so that we can cache the value
-    mutable const double *d_pArrayRead;
+    bool d_bDeleteMe = false;
+    Vec d_petscVec = nullptr;
+    mutable double *d_pArray = nullptr; // mutable so that we can cache the value
+    mutable const double *d_pArrayRead = nullptr;
 };
 
 

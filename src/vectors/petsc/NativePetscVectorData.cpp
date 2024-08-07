@@ -11,9 +11,10 @@ namespace AMP::LinearAlgebra {
 NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm ) : VectorData()
 {
     // Set the vector
-    d_petscVec  = v;
-    d_pArray    = nullptr;
-    d_bDeleteMe = deleteable;
+    d_petscVec   = v;
+    d_pArray     = nullptr;
+    d_pArrayRead = nullptr;
+    d_bDeleteMe  = deleteable;
     // Get the correct communicator if it is not set
     MPI_Comm comm2 = comm.getCommunicator(); // Get a MPI_comm object from AMP_MPI to pass to PETSc
     PetscObjectGetComm( reinterpret_cast<PetscObject>( v ), &comm2 );
@@ -182,7 +183,7 @@ void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i )
     if ( d_pArray == nullptr ) {
         VecGetArray( d_petscVec, &d_pArray );
     }
-    return d_pArray;
+    return static_cast<void *>( d_pArray );
 }
 
 const void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i ) const
@@ -191,7 +192,7 @@ const void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i ) const
     if ( d_pArrayRead == nullptr ) {
         VecGetArrayRead( d_petscVec, &d_pArrayRead );
     }
-    return d_pArrayRead;
+    return static_cast<const void *>( d_pArrayRead );
 }
 
 void NativePetscVectorData::assemble()
