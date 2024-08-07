@@ -269,19 +269,19 @@ bool Tube::operator==( const Geometry &rhs ) const
 void Tube::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "offset", d_offset );
-    AMP::writeHDF5( fid, "r_min", d_r_min );
-    AMP::writeHDF5( fid, "r_max", d_r_max );
-    AMP::writeHDF5( fid, "z_min", d_z_min );
-    AMP::writeHDF5( fid, "z_max", d_z_max );
+    AMP::IO::writeHDF5( fid, "offset", d_offset );
+    AMP::IO::writeHDF5( fid, "r_min", d_r_min );
+    AMP::IO::writeHDF5( fid, "r_max", d_r_max );
+    AMP::IO::writeHDF5( fid, "z_min", d_z_min );
+    AMP::IO::writeHDF5( fid, "z_max", d_z_max );
 }
 Tube::Tube( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "offset", d_offset );
-    AMP::readHDF5( fid, "r_min", d_r_min );
-    AMP::readHDF5( fid, "r_max", d_r_max );
-    AMP::readHDF5( fid, "z_min", d_z_min );
-    AMP::readHDF5( fid, "z_max", d_z_max );
+    AMP::IO::readHDF5( fid, "offset", d_offset );
+    AMP::IO::readHDF5( fid, "r_min", d_r_min );
+    AMP::IO::readHDF5( fid, "r_max", d_r_max );
+    AMP::IO::readHDF5( fid, "z_min", d_z_min );
+    AMP::IO::readHDF5( fid, "z_max", d_z_max );
 }
 
 

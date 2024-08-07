@@ -1,4 +1,5 @@
 #include "AMP/IO/HDF5.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/IO/HDF5.hpp"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Utilities.h"
@@ -10,7 +11,7 @@
 #include <vector>
 
 
-namespace AMP {
+namespace AMP::IO {
 
 
 #ifdef AMP_USE_HDF5 // USE HDF5
@@ -19,7 +20,7 @@ namespace AMP {
 /******************************************************************
  * Open/close HDF5 files                                           *
  ******************************************************************/
-hid_t openHDF5( const std::string_view &filename, const char *mode, Compression compress )
+hid_t openHDF5( const std::string &filename, const char *mode, Compression compress )
 {
     // Set cache size to 3MBs and instruct the cache to discard the fully read chunk
     auto pid = H5P_DEFAULT;
@@ -34,6 +35,8 @@ hid_t openHDF5( const std::string_view &filename, const char *mode, Compression 
     if ( strcmp( mode, "r" ) == 0 ) {
         fid = H5Fopen( filename.data(), H5F_ACC_RDONLY, pid );
     } else if ( strcmp( mode, "w" ) == 0 ) {
+        auto pwd = IO::path( filename );
+        IO::recursiveMkdir( pwd, ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
         fid = H5Fcreate( filename.data(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
     } else if ( strcmp( mode, "rw" ) == 0 ) {
         fid = H5Fopen( filename.data(), H5F_ACC_RDWR, H5P_DEFAULT );
@@ -211,7 +214,7 @@ hid_t createChunk( AMP::ArraySize dims, Compression compress, size_t objSize )
 /************************************************************************
  * HDF5 helper routines                                                  *
  ************************************************************************/
-bool H5Gexists( hid_t fid, const std::string_view &name )
+bool H5Gexists( hid_t fid, const std::string &name )
 {
     H5E_auto2_t func;
     void *client;
@@ -221,7 +224,7 @@ bool H5Gexists( hid_t fid, const std::string_view &name )
     H5Eset_auto2( H5E_DEFAULT, func, client );
     return status == 0;
 }
-bool H5Dexists( hid_t fid, const std::string_view &name )
+bool H5Dexists( hid_t fid, const std::string &name )
 {
     H5E_auto2_t func;
     void *client;
@@ -235,13 +238,13 @@ bool H5Dexists( hid_t fid, const std::string_view &name )
     return exists;
 }
 static char nullName[] = "---null---";
-hid_t createGroup( hid_t fid, const std::string_view &name )
+hid_t createGroup( hid_t fid, const std::string &name )
 {
     if ( name.empty() )
         return H5Gcreate2( fid, nullName, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
     return H5Gcreate2( fid, name.data(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
 }
-hid_t openGroup( hid_t fid, const std::string_view &name )
+hid_t openGroup( hid_t fid, const std::string &name )
 {
     if ( name.empty() )
         return openGroup( fid, nullName );
@@ -255,7 +258,7 @@ void closeGroup( hid_t gid ) { H5Gclose( gid ); }
 /************************************************************************
  * Read/write bytes to HDF5                                              *
  ************************************************************************/
-void writeHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, const void *data )
+void writeHDF5( hid_t fid, const std::string &name, size_t N_bytes, const void *data )
 {
     hsize_t dim[1] = { N_bytes };
     hid_t plist    = H5P_DEFAULT;
@@ -277,7 +280,7 @@ void writeHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, const v
     if ( plist != H5P_DEFAULT )
         H5Pclose( plist );
 }
-void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *data )
+void readHDF5( hid_t fid, const std::string &name, size_t N_bytes, void *data )
 {
     if ( !H5Dexists( fid, name ) ) {
         AMP_ERROR( "Variable does not exist in file: " + std::string( name ) );
@@ -296,15 +299,15 @@ void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *da
 
 #else // No HDF5
 // Dummy implementations for no HDF5
-hid_t openHDF5( const std::string_view &, const char *, AMP::Compression ) { return 0; }
+hid_t openHDF5( const std::string &, const char *, AMP::IO::Compression ) { return 0; }
 void closeHDF5( hid_t, bool ) {}
-bool H5Gexists( hid_t, const std::string_view & ) { return false; }
-bool H5Dexists( hid_t, const std::string_view & ) { return false; }
-hid_t createGroup( hid_t, const std::string_view & ) { return 0; }
-hid_t openGroup( hid_t, const std::string_view & ) { return 0; }
+bool H5Gexists( hid_t, const std::string & ) { return false; }
+bool H5Dexists( hid_t, const std::string & ) { return false; }
+hid_t createGroup( hid_t, const std::string & ) { return 0; }
+hid_t openGroup( hid_t, const std::string & ) { return 0; }
 void closeGroup( hid_t ) {}
-void writeHDF5( hid_t, const std::string_view &, size_t, const std::byte * );
-void readHDF5( hid_t, const std::string_view &, size_t, std::byte * );
+void writeHDF5( hid_t, const std::string &, size_t, const std::byte * );
+void readHDF5( hid_t, const std::string &, size_t, std::byte * );
 std::tuple<std::vector<hid_t>,
            std::vector<hid_t>,
            std::vector<hid_t>,
@@ -317,4 +320,4 @@ openObjects( hid_t )
 }
 #endif
 
-} // namespace AMP
+} // namespace AMP::IO

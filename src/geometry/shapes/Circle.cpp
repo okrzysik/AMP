@@ -186,13 +186,13 @@ bool Circle::operator==( const Geometry &rhs ) const
 void Circle::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "offset", d_offset );
-    AMP::writeHDF5( fid, "R", d_R );
+    AMP::IO::writeHDF5( fid, "offset", d_offset );
+    AMP::IO::writeHDF5( fid, "R", d_R );
 }
 Circle::Circle( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "offset", d_offset );
-    AMP::readHDF5( fid, "R", d_R );
+    AMP::IO::readHDF5( fid, "offset", d_offset );
+    AMP::IO::readHDF5( fid, "R", d_R );
 }
 
 

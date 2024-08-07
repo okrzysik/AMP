@@ -409,31 +409,31 @@ template<std::size_t NDIM>
 void Box<NDIM>::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "range", d_range );
+    AMP::IO::writeHDF5( fid, "range", d_range );
 }
 template<std::size_t NDIM>
 void Grid<NDIM>::writeRestart( int64_t fid ) const
 {
     Box<NDIM>::writeRestart( fid );
-    AMP::writeHDF5( fid, "coord_x", d_coord[0] );
+    AMP::IO::writeHDF5( fid, "coord_x", d_coord[0] );
     if ( NDIM >= 2 )
-        AMP::writeHDF5( fid, "coord_y", d_coord[1] );
+        AMP::IO::writeHDF5( fid, "coord_y", d_coord[1] );
     if ( NDIM >= 3 )
-        AMP::writeHDF5( fid, "coord_z", d_coord[2] );
+        AMP::IO::writeHDF5( fid, "coord_z", d_coord[2] );
 }
 template<std::size_t NDIM>
 Box<NDIM>::Box( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "range", d_range );
+    AMP::IO::readHDF5( fid, "range", d_range );
 }
 template<std::size_t NDIM>
 Grid<NDIM>::Grid( int64_t fid ) : Box<NDIM>( fid )
 {
-    AMP::readHDF5( fid, "coord_x", d_coord[0] );
+    AMP::IO::readHDF5( fid, "coord_x", d_coord[0] );
     if ( NDIM >= 2 )
-        AMP::readHDF5( fid, "coord_y", d_coord[1] );
+        AMP::IO::readHDF5( fid, "coord_y", d_coord[1] );
     if ( NDIM >= 3 )
-        AMP::readHDF5( fid, "coord_z", d_coord[2] );
+        AMP::IO::readHDF5( fid, "coord_z", d_coord[2] );
 }
 
 

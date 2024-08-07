@@ -36,14 +36,14 @@ template<class TYPE>
 void checkHDF5( hid_t fid, const std::string &name, const TYPE &x, AMP::UnitTest &ut )
 {
     TYPE y;
-    AMP::readHDF5( fid, name, y );
+    AMP::IO::readHDF5( fid, name, y );
     record( x == y, name, ut );
 }
 
 
 // Read the data from HDF5 using the class interface
 template<class TYPE>
-void checkScalar( const AMP::HDF5data &ptr,
+void checkScalar( const AMP::IO::HDF5data &ptr,
                   const std::string &name,
                   const TYPE &x,
                   AMP::UnitTest &ut )
@@ -56,7 +56,7 @@ void checkScalar( const AMP::HDF5data &ptr,
     record( x == y, "HDF5Class: " + name, ut );
 }
 template<class TYPE>
-void checkVector( const AMP::HDF5data &ptr,
+void checkVector( const AMP::IO::HDF5data &ptr,
                   const std::string &name,
                   const std::vector<TYPE> &x,
                   AMP::UnitTest &ut )
@@ -68,7 +68,7 @@ void checkVector( const AMP::HDF5data &ptr,
     record( x == y, "HDF5Class: " + name, ut );
 }
 template<class TYPE, std::size_t N>
-void checkArray( const AMP::HDF5data &ptr,
+void checkArray( const AMP::IO::HDF5data &ptr,
                  const std::string &name,
                  const std::array<TYPE, N> &x,
                  AMP::UnitTest &ut )
@@ -83,7 +83,7 @@ void checkArray( const AMP::HDF5data &ptr,
     record( x == y, "HDF5Class: " + name, ut );
 }
 template<class TYPE>
-void checkArray( const AMP::HDF5data &ptr,
+void checkArray( const AMP::IO::HDF5data &ptr,
                  const std::string &name,
                  const AMP::Array<TYPE> &x,
                  AMP::UnitTest &ut )
@@ -179,12 +179,12 @@ public:
     }
     void write( hid_t fid )
     {
-        AMP::writeHDF5( fid, name, scalar );
-        AMP::writeHDF5( fid, "std::vector<" + name + ">", vec );
-        AMP::writeHDF5( fid, "std::array<" + name + ">", array );
-        AMP::writeHDF5( fid, "AMP::Array<" + name + ">", Array );
+        AMP::IO::writeHDF5( fid, name, scalar );
+        AMP::IO::writeHDF5( fid, "std::vector<" + name + ">", vec );
+        AMP::IO::writeHDF5( fid, "std::array<" + name + ">", array );
+        AMP::IO::writeHDF5( fid, "AMP::Array<" + name + ">", Array );
     }
-    void check( hid_t fid, const AMP::HDF5data *ptr, AMP::UnitTest &ut )
+    void check( hid_t fid, const AMP::IO::HDF5data *ptr, AMP::UnitTest &ut )
     {
         // Check a direct read
         checkHDF5( fid, name, scalar, ut );
@@ -232,7 +232,7 @@ public: // Functions
     }
     void check( hid_t fid, AMP::UnitTest &ut )
     {
-        auto data = AMP::readHDF5( fid, "/" );
+        auto data = AMP::IO::readHDF5( fid, "/" );
         auto ptr  = data.get();
         c.check( fid, ptr, ut );
         u8.check( fid, ptr, ut );
@@ -276,21 +276,21 @@ void testCompression( AMP::UnitTest &ut )
     zeros1.fill( 0.0 );
     zeros2.fill( 0.0 );
     zeros3.fill( 0.0 );
-    auto fid1 = AMP::openHDF5( "test_HDF5.none.hdf5", "w", AMP::Compression::None );
-    auto fid2 = AMP::openHDF5( "test_HDF5.gzip.hdf5", "w", AMP::Compression::GZIP );
-    auto fid3 = AMP::openHDF5( "test_HDF5.szip.hdf5", "w", AMP::Compression::SZIP );
-    AMP::writeHDF5( fid1, "zeros1", zeros1 );
-    AMP::writeHDF5( fid1, "zeros2", zeros2 );
-    AMP::writeHDF5( fid1, "zeros3", zeros3 );
-    AMP::writeHDF5( fid2, "zeros1", zeros1 );
-    AMP::writeHDF5( fid2, "zeros2", zeros2 );
-    AMP::writeHDF5( fid2, "zeros3", zeros3 );
-    AMP::writeHDF5( fid3, "zeros1", zeros1 );
-    AMP::writeHDF5( fid3, "zeros2", zeros2 );
-    AMP::writeHDF5( fid3, "zeros3", zeros3 );
-    AMP::closeHDF5( fid1 );
-    AMP::closeHDF5( fid2 );
-    AMP::closeHDF5( fid3 );
+    auto fid1 = AMP::IO::openHDF5( "test_HDF5.none.hdf5", "w", AMP::IO::Compression::None );
+    auto fid2 = AMP::IO::openHDF5( "test_HDF5.gzip.hdf5", "w", AMP::IO::Compression::GZIP );
+    auto fid3 = AMP::IO::openHDF5( "test_HDF5.szip.hdf5", "w", AMP::IO::Compression::SZIP );
+    AMP::IO::writeHDF5( fid1, "zeros1", zeros1 );
+    AMP::IO::writeHDF5( fid1, "zeros2", zeros2 );
+    AMP::IO::writeHDF5( fid1, "zeros3", zeros3 );
+    AMP::IO::writeHDF5( fid2, "zeros1", zeros1 );
+    AMP::IO::writeHDF5( fid2, "zeros2", zeros2 );
+    AMP::IO::writeHDF5( fid2, "zeros3", zeros3 );
+    AMP::IO::writeHDF5( fid3, "zeros1", zeros1 );
+    AMP::IO::writeHDF5( fid3, "zeros2", zeros2 );
+    AMP::IO::writeHDF5( fid3, "zeros3", zeros3 );
+    AMP::IO::closeHDF5( fid1 );
+    AMP::IO::closeHDF5( fid2 );
+    AMP::IO::closeHDF5( fid3 );
     NULL_USE( ut );
 }
 
@@ -306,9 +306,9 @@ void testLarge( AMP::UnitTest &ut )
     // for ( size_t i=0; i<data.length(); i++)
     //    data(i) = dist(gen);
     printf( "Writing large array\n" );
-    auto fid = AMP::openHDF5( "test_HDF5.large.hdf5", "w", AMP::Compression::GZIP );
-    AMP::writeHDF5( fid, "data", data );
-    AMP::closeHDF5( fid, true );
+    auto fid = AMP::IO::openHDF5( "test_HDF5.large.hdf5", "w", AMP::IO::Compression::GZIP );
+    AMP::IO::writeHDF5( fid, "data", data );
+    AMP::IO::closeHDF5( fid, true );
     NULL_USE( ut );
 }
 
@@ -323,7 +323,7 @@ int main( int argc, char *argv[] )
 
         // Test catching an hdf5 error
         try {
-            AMP::openHDF5( "", "w" );
+            AMP::IO::openHDF5( "", "w" );
             ut.failure( "Failed to catch HDF5 error" );
         } catch ( ... ) {
             ut.passes( "Caught HDF5 error" );
@@ -331,14 +331,14 @@ int main( int argc, char *argv[] )
 
         // Write variables to HDF5
         data_struct data;
-        auto fid = AMP::openHDF5( "test_HDF5.hdf5", "w" );
+        auto fid = AMP::IO::openHDF5( "test_HDF5.hdf5", "w" );
         data.write( fid );
-        AMP::closeHDF5( fid, true );
+        AMP::IO::closeHDF5( fid, true );
 
         // Read the variables from HDF5
-        fid = AMP::openHDF5( "test_HDF5.hdf5", "r" );
+        fid = AMP::IO::openHDF5( "test_HDF5.hdf5", "r" );
         data.check( fid, ut );
-        AMP::closeHDF5( fid, true );
+        AMP::IO::closeHDF5( fid, true );
 
         // Test compression
         testCompression( ut );

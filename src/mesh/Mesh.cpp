@@ -504,28 +504,28 @@ void Mesh::registerChildObjects( AMP::IO::RestartManager *manager ) const
 void Mesh::writeRestart( int64_t fid ) const
 {
     uint64_t geomID = d_geometry ? d_geometry->getID() : 0;
-    writeHDF5( fid, "Geometry", geomID );
-    writeHDF5( fid, "GeomDim", GeomDim );
-    writeHDF5( fid, "PhysicalDim", PhysicalDim );
-    writeHDF5( fid, "max_gcw", d_max_gcw );
-    writeHDF5( fid, "comm", d_comm.hash() );
-    writeHDF5( fid, "meshID", d_meshID );
-    writeHDF5( fid, "name", d_name );
-    writeHDF5( fid, "box", d_box );
-    writeHDF5( fid, "box_local", d_box_local );
+    IO::writeHDF5( fid, "Geometry", geomID );
+    IO::writeHDF5( fid, "GeomDim", GeomDim );
+    IO::writeHDF5( fid, "PhysicalDim", PhysicalDim );
+    IO::writeHDF5( fid, "max_gcw", d_max_gcw );
+    IO::writeHDF5( fid, "comm", d_comm.hash() );
+    IO::writeHDF5( fid, "meshID", d_meshID );
+    IO::writeHDF5( fid, "name", d_name );
+    IO::writeHDF5( fid, "box", d_box );
+    IO::writeHDF5( fid, "box_local", d_box_local );
 }
 Mesh::Mesh( int64_t fid, AMP::IO::RestartManager *manager )
 {
     uint64_t commHash, geomID;
-    readHDF5( fid, "Geometry", geomID );
-    readHDF5( fid, "GeomDim", GeomDim );
-    readHDF5( fid, "PhysicalDim", PhysicalDim );
-    readHDF5( fid, "max_gcw", d_max_gcw );
-    readHDF5( fid, "comm", commHash );
-    readHDF5( fid, "meshID", d_meshID );
-    readHDF5( fid, "name", d_name );
-    readHDF5( fid, "box", d_box );
-    readHDF5( fid, "box_local", d_box_local );
+    IO::readHDF5( fid, "Geometry", geomID );
+    IO::readHDF5( fid, "GeomDim", GeomDim );
+    IO::readHDF5( fid, "PhysicalDim", PhysicalDim );
+    IO::readHDF5( fid, "max_gcw", d_max_gcw );
+    IO::readHDF5( fid, "comm", commHash );
+    IO::readHDF5( fid, "meshID", d_meshID );
+    IO::readHDF5( fid, "name", d_name );
+    IO::readHDF5( fid, "box", d_box );
+    IO::readHDF5( fid, "box_local", d_box_local );
     d_comm = manager->getComm( commHash );
     if ( geomID != 0 )
         d_geometry = manager->getData<AMP::Geometry::Geometry>( geomID );

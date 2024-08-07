@@ -185,12 +185,12 @@ void MultiVariable::writeRestart( int64_t fid ) const
     std::vector<uint64_t> var_ids;
     for ( auto var : d_vVariables )
         var_ids.push_back( var->getID() );
-    writeHDF5( fid, "vars", var_ids );
+    IO::writeHDF5( fid, "vars", var_ids );
 }
 MultiVariable::MultiVariable( int64_t fid, AMP::IO::RestartManager *manager ) : Variable( fid )
 {
     std::vector<uint64_t> var_ids;
-    readHDF5( fid, "vars", var_ids );
+    IO::readHDF5( fid, "vars", var_ids );
     d_vVariables.resize( var_ids.size() );
     for ( size_t i = 0; i < var_ids.size(); i++ )
         d_vVariables[i] = manager->getData<Variable>( var_ids[i] );

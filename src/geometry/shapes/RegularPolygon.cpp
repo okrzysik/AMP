@@ -239,15 +239,15 @@ bool RegularPolygon::operator==( const Geometry &rhs ) const
 void RegularPolygon::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "N", d_N );
-    AMP::writeHDF5( fid, "R", d_R );
-    AMP::writeHDF5( fid, "offset", d_offset );
+    AMP::IO::writeHDF5( fid, "N", d_N );
+    AMP::IO::writeHDF5( fid, "R", d_R );
+    AMP::IO::writeHDF5( fid, "offset", d_offset );
 }
 RegularPolygon::RegularPolygon( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "N", d_N );
-    AMP::readHDF5( fid, "R", d_R );
-    AMP::readHDF5( fid, "offset", d_offset );
+    AMP::IO::readHDF5( fid, "N", d_N );
+    AMP::IO::readHDF5( fid, "R", d_R );
+    AMP::IO::readHDF5( fid, "offset", d_offset );
     computeNorms();
 }
 
