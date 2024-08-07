@@ -5,7 +5,6 @@
 
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
-#include "HYPRE_utilities.h"
 
 #include <vector>
 
