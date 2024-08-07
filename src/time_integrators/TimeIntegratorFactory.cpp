@@ -49,7 +49,7 @@ std::shared_ptr<TimeIntegrator> TimeIntegratorFactory::create( int64_t fid,
                                                                AMP::IO::RestartManager *manager )
 {
     std::string type;
-    AMP::readHDF5( fid, "type", type );
+    AMP::IO::readHDF5( fid, "type", type );
     std::shared_ptr<TimeIntegrator> ti;
     if ( type == "RK12" )
         ti = std::make_shared<RK12TimeIntegrator>( fid, manager );

@@ -52,14 +52,14 @@ std::array<bool, 3> LogicalGeometry::getPeriodicDim() const
 void LogicalGeometry::writeRestart( int64_t fid ) const
 {
     Geometry::writeRestart( fid );
-    writeHDF5( fid, "logicalDim", d_logicalDim );
-    writeHDF5( fid, "ids", d_ids );
+    IO::writeHDF5( fid, "logicalDim", d_logicalDim );
+    IO::writeHDF5( fid, "ids", d_ids );
 }
 template<class TYPE>
 static inline TYPE read( int64_t fid, const std::string &name )
 {
     TYPE x;
-    readHDF5( fid, name, x );
+    IO::readHDF5( fid, name, x );
     return x;
 }
 LogicalGeometry::LogicalGeometry( int64_t fid )

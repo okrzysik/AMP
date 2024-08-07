@@ -364,12 +364,12 @@ void MultiVector::writeRestart( int64_t fid ) const
     std::vector<uint64_t> vecs;
     for ( auto vec2 : d_vVectors )
         vecs.push_back( vec2->getID() );
-    writeHDF5( fid, "vecs", vecs );
+    IO::writeHDF5( fid, "vecs", vecs );
 }
 MultiVector::MultiVector( int64_t fid, AMP::IO::RestartManager *manager ) : Vector( fid, manager )
 {
     std::vector<uint64_t> vecs;
-    readHDF5( fid, "vecs", vecs );
+    IO::readHDF5( fid, "vecs", vecs );
     d_vVectors.resize( vecs.size() );
     for ( size_t i = 0; i < vecs.size(); i++ )
         d_vVectors[i] = manager->getData<AMP::LinearAlgebra::Vector>( vecs[i] );

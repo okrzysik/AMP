@@ -130,7 +130,7 @@ std::shared_ptr<AMP::Mesh::Mesh> AMP::Mesh::MeshFactory::create( int64_t fid,
                                                                  AMP::IO::RestartManager *manager )
 {
     std::string type;
-    readHDF5( fid, "MeshType", type );
+    AMP::IO::readHDF5( fid, "MeshType", type );
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( type == "MultiMesh" || type.substr( 0, 10 ) == "MultiMesh<" ) {
         mesh = std::make_shared<AMP::Mesh::MultiMesh>( fid, manager );

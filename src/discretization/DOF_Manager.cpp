@@ -241,18 +241,18 @@ uint64_t DOFManager::getID() const
  ****************************************************************/
 void DOFManager::writeRestart( int64_t fid ) const
 {
-    writeHDF5( fid, "begin", d_begin );
-    writeHDF5( fid, "end", d_end );
-    writeHDF5( fid, "global", d_global );
-    writeHDF5( fid, "comm", d_comm.hash() );
+    IO::writeHDF5( fid, "begin", d_begin );
+    IO::writeHDF5( fid, "end", d_end );
+    IO::writeHDF5( fid, "global", d_global );
+    IO::writeHDF5( fid, "comm", d_comm.hash() );
 }
 DOFManager::DOFManager( int64_t fid, AMP::IO::RestartManager *manager )
 {
     uint64_t commHash;
-    readHDF5( fid, "comm", commHash );
-    readHDF5( fid, "begin", d_begin );
-    readHDF5( fid, "end", d_end );
-    readHDF5( fid, "global", d_global );
+    IO::readHDF5( fid, "comm", commHash );
+    IO::readHDF5( fid, "begin", d_begin );
+    IO::readHDF5( fid, "end", d_end );
+    IO::readHDF5( fid, "global", d_global );
     d_comm = manager->getComm( commHash );
 }
 void DOFManager::registerChildObjects( AMP::IO::RestartManager * ) const {}

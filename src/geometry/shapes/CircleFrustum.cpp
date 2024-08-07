@@ -393,17 +393,17 @@ bool CircleFrustum::operator==( const Geometry &rhs ) const
 void CircleFrustum::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "offset", d_offset );
-    AMP::writeHDF5( fid, "dir", d_dir );
-    AMP::writeHDF5( fid, "h", d_h );
-    AMP::writeHDF5( fid, "r", d_r );
+    AMP::IO::writeHDF5( fid, "offset", d_offset );
+    AMP::IO::writeHDF5( fid, "dir", d_dir );
+    AMP::IO::writeHDF5( fid, "h", d_h );
+    AMP::IO::writeHDF5( fid, "r", d_r );
 }
 CircleFrustum::CircleFrustum( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "offset", d_offset );
-    AMP::readHDF5( fid, "dir", d_dir );
-    AMP::readHDF5( fid, "h", d_h );
-    AMP::readHDF5( fid, "r", d_r );
+    AMP::IO::readHDF5( fid, "offset", d_offset );
+    AMP::IO::readHDF5( fid, "dir", d_dir );
+    AMP::IO::readHDF5( fid, "h", d_h );
+    AMP::IO::readHDF5( fid, "r", d_r );
 }
 
 

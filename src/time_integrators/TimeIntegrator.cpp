@@ -231,20 +231,20 @@ void TimeIntegrator::writeRestart( int64_t fid ) const
 {
     d_pParameters->d_db->putScalar<double>( "initial_time", d_current_time );
     d_pParameters->d_db->putScalar<double>( "initial_dt", d_current_dt );
-    writeHDF5( fid, "ti_db", *( d_pParameters->d_db ) );
-    writeHDF5( fid, "ic_vec", d_solution_vector->getID() );
-    writeHDF5( fid, "global_db", *( d_pParameters->d_global_db ) );
+    IO::writeHDF5( fid, "ti_db", *( d_pParameters->d_db ) );
+    IO::writeHDF5( fid, "ic_vec", d_solution_vector->getID() );
+    IO::writeHDF5( fid, "global_db", *( d_pParameters->d_global_db ) );
 }
 TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
 {
     AMPManager::incrementResource( "TimeIntegrator" );
     uint64_t vecID;
-    AMP::readHDF5( fid, "ic_vec", vecID );
+    AMP::IO::readHDF5( fid, "ic_vec", vecID );
     auto ic_vector = manager->getData<AMP::LinearAlgebra::Vector>( vecID );
 
     AMP::Database db, db_global;
-    readHDF5( fid, "ti_db", db );
-    readHDF5( fid, "global_db", db_global );
+    IO::readHDF5( fid, "ti_db", db );
+    IO::readHDF5( fid, "global_db", db_global );
 
     d_pParameters =
         std::make_shared<TimeIntegratorParameters>( std::make_shared<AMP::Database>( db ) );
@@ -270,18 +270,18 @@ template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::TimeIntegrator::TimeIntegrator>::write(
     hid_t fid, const std::string &name ) const
 {
-    hid_t gid = createGroup( fid, name );
-    writeHDF5( gid, "type", d_data->type() );
+    hid_t gid = IO::createGroup( fid, name );
+    IO::writeHDF5( gid, "type", d_data->type() );
     d_data->writeRestart( gid );
-    closeGroup( gid );
+    IO::closeGroup( gid );
 }
 template<>
 std::shared_ptr<AMP::TimeIntegrator::TimeIntegrator>
 AMP::IO::RestartManager::DataStoreType<AMP::TimeIntegrator::TimeIntegrator>::read(
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid       = openGroup( fid, name );
+    hid_t gid       = IO::openGroup( fid, name );
     auto integrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( gid, manager );
-    closeGroup( gid );
+    IO::closeGroup( gid );
     return integrator;
 }

@@ -381,35 +381,35 @@ bool SquareFrustum::operator==( const Geometry &rhs ) const
 void SquareFrustum::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "dir", d_dir );
-    AMP::writeHDF5( fid, "range", d_range );
-    AMP::writeHDF5( fid, "pyramid_size", d_pyramid_size );
-    AMP::writeHDF5( fid, "scale_height", d_scale_height );
-    AMP::writeHDF5( fid, "volume", d_volume );
-    AMP::writeHDF5( fid, "centroid", d_centroid );
-    AMP::writeHDF5( fid, "face_1", d_face[0] );
-    AMP::writeHDF5( fid, "face_2", d_face[1] );
-    AMP::writeHDF5( fid, "face_3", d_face[2] );
-    AMP::writeHDF5( fid, "face_4", d_face[3] );
-    AMP::writeHDF5( fid, "face_5", d_face[4] );
-    AMP::writeHDF5( fid, "face_6", d_face[5] );
-    AMP::writeHDF5( fid, "normal", d_normal );
+    AMP::IO::writeHDF5( fid, "dir", d_dir );
+    AMP::IO::writeHDF5( fid, "range", d_range );
+    AMP::IO::writeHDF5( fid, "pyramid_size", d_pyramid_size );
+    AMP::IO::writeHDF5( fid, "scale_height", d_scale_height );
+    AMP::IO::writeHDF5( fid, "volume", d_volume );
+    AMP::IO::writeHDF5( fid, "centroid", d_centroid );
+    AMP::IO::writeHDF5( fid, "face_1", d_face[0] );
+    AMP::IO::writeHDF5( fid, "face_2", d_face[1] );
+    AMP::IO::writeHDF5( fid, "face_3", d_face[2] );
+    AMP::IO::writeHDF5( fid, "face_4", d_face[3] );
+    AMP::IO::writeHDF5( fid, "face_5", d_face[4] );
+    AMP::IO::writeHDF5( fid, "face_6", d_face[5] );
+    AMP::IO::writeHDF5( fid, "normal", d_normal );
 }
 SquareFrustum::SquareFrustum( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "dir", d_dir );
-    AMP::readHDF5( fid, "range", d_range );
-    AMP::readHDF5( fid, "pyramid_size", d_pyramid_size );
-    AMP::readHDF5( fid, "scale_height", d_scale_height );
-    AMP::readHDF5( fid, "volume", d_volume );
-    AMP::readHDF5( fid, "centroid", d_centroid );
-    AMP::readHDF5( fid, "face_1", d_face[0] );
-    AMP::readHDF5( fid, "face_2", d_face[1] );
-    AMP::readHDF5( fid, "face_3", d_face[2] );
-    AMP::readHDF5( fid, "face_4", d_face[3] );
-    AMP::readHDF5( fid, "face_5", d_face[4] );
-    AMP::readHDF5( fid, "face_6", d_face[5] );
-    AMP::readHDF5( fid, "normal", d_normal );
+    AMP::IO::readHDF5( fid, "dir", d_dir );
+    AMP::IO::readHDF5( fid, "range", d_range );
+    AMP::IO::readHDF5( fid, "pyramid_size", d_pyramid_size );
+    AMP::IO::readHDF5( fid, "scale_height", d_scale_height );
+    AMP::IO::readHDF5( fid, "volume", d_volume );
+    AMP::IO::readHDF5( fid, "centroid", d_centroid );
+    AMP::IO::readHDF5( fid, "face_1", d_face[0] );
+    AMP::IO::readHDF5( fid, "face_2", d_face[1] );
+    AMP::IO::readHDF5( fid, "face_3", d_face[2] );
+    AMP::IO::readHDF5( fid, "face_4", d_face[3] );
+    AMP::IO::readHDF5( fid, "face_5", d_face[4] );
+    AMP::IO::readHDF5( fid, "face_6", d_face[5] );
+    AMP::IO::readHDF5( fid, "normal", d_normal );
 }
 
 

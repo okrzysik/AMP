@@ -13,7 +13,7 @@ void write_points( size_t N, hid_t fid, const std::string &filename, AMP::Xdmf &
 {
     std::string meshname = NDIM == 2 ? "Points_2D" : "Points_3D";
     meshname += "_" + std::to_string( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() );
-    auto gid = AMP::createGroup( fid, meshname );
+    auto gid = AMP::IO::createGroup( fid, meshname );
 
     // Create the coordinate data
     std::random_device rd;
@@ -35,8 +35,8 @@ void write_points( size_t N, hid_t fid, const std::string &filename, AMP::Xdmf &
     }
 
     // Write the data to HDF5
-    writeHDF5( gid, "XY", x );
-    writeHDF5( gid, "dist", distance );
+    AMP::IO::writeHDF5( gid, "XY", x );
+    AMP::IO::writeHDF5( gid, "dist", distance );
 
     // Register the data with XDMF
     auto center = AMP::Xdmf::Center::Node;
@@ -46,7 +46,7 @@ void write_points( size_t N, hid_t fid, const std::string &filename, AMP::Xdmf &
         "distance", distance.size(), AMP::Xdmf::RankType::Scalar, center, prefix + "dist" );
     mesh.addVariable( "vector", x.size(), AMP::Xdmf::RankType::Vector, center, prefix + "XY" );
     xmf.addMesh( "points", mesh );
-    AMP::closeGroup( gid );
+    AMP::IO::closeGroup( gid );
 }
 
 
@@ -56,7 +56,7 @@ void write_rays(
 {
     std::string meshname = "rays";
     meshname += "_" + std::to_string( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() );
-    auto gid = AMP::createGroup( fid, meshname );
+    auto gid = AMP::IO::createGroup( fid, meshname );
 
     // Create the coordinate data
     std::random_device rd;
@@ -83,8 +83,8 @@ void write_rays(
             sqrt( x( 0, i ) * x( 0, i ) + x( 1, i ) * x( 1, i ) + x( 2, i ) * x( 2, i ) );
 
     // Write the data to HDF5
-    writeHDF5( gid, "XYZ", x );
-    writeHDF5( gid, "dist", distance );
+    AMP::IO::writeHDF5( gid, "XYZ", x );
+    AMP::IO::writeHDF5( gid, "dist", distance );
 
     // Register the data with XDMF
     auto center = AMP::Xdmf::Center::Node;
@@ -97,7 +97,7 @@ void write_rays(
     mesh.addVariable(
         "distance", distance.size(), AMP::Xdmf::RankType::Scalar, center, prefix + "dist" );
     xmf.addMesh( "rays", mesh );
-    AMP::closeGroup( gid );
+    AMP::IO::closeGroup( gid );
 }
 
 
@@ -126,9 +126,9 @@ void write_uniform( size_t Nx, size_t Ny, hid_t fid, const std::string &filename
     }
 
     // Write the data to HDF5
-    writeHDF5( fid, "Uniform_Pressure", pressure );
-    writeHDF5( fid, "Uniform_VelocityX", velocityx );
-    writeHDF5( fid, "Uniform_Velocity", velocity );
+    AMP::IO::writeHDF5( fid, "Uniform_Pressure", pressure );
+    AMP::IO::writeHDF5( fid, "Uniform_VelocityX", velocityx );
+    AMP::IO::writeHDF5( fid, "Uniform_Velocity", velocity );
 
     // Register the data with XDMF
     auto mesh = AMP::Xdmf::createUniformMesh( "uniform", { -1, 1, -1, 1 }, { Nx, Ny } );
@@ -191,11 +191,11 @@ void write_curvilinear(
     }
 
     // Write the data to HDF5
-    writeHDF5( fid, "2D_X", x );
-    writeHDF5( fid, "2D_Y", y );
-    writeHDF5( fid, "2D_Pressure", pressure );
-    writeHDF5( fid, "2D_VelocityX", velocityx );
-    writeHDF5( fid, "2D_Velocity", velocity );
+    AMP::IO::writeHDF5( fid, "2D_X", x );
+    AMP::IO::writeHDF5( fid, "2D_Y", y );
+    AMP::IO::writeHDF5( fid, "2D_Pressure", pressure );
+    AMP::IO::writeHDF5( fid, "2D_VelocityX", velocityx );
+    AMP::IO::writeHDF5( fid, "2D_Velocity", velocity );
 
     // Register the data with XDMF
     auto mesh = AMP::Xdmf::createCurvilinearMesh(
@@ -264,11 +264,11 @@ void write_unstructured(
     }
 
     // Write the data file
-    writeHDF5( fid, "Unstructured_Quadrilaterals", connectivity );
-    writeHDF5( fid, "Unstructured_XY", xyz );
-    writeHDF5( fid, "Unstructured_ScalarInt", scalarInt );
-    writeHDF5( fid, "Unstructured_ScalarFloat", scalarFloat );
-    writeHDF5( fid, "Unstructured_ScalarDouble", scalarDouble );
+    AMP::IO::writeHDF5( fid, "Unstructured_Quadrilaterals", connectivity );
+    AMP::IO::writeHDF5( fid, "Unstructured_XY", xyz );
+    AMP::IO::writeHDF5( fid, "Unstructured_ScalarInt", scalarInt );
+    AMP::IO::writeHDF5( fid, "Unstructured_ScalarFloat", scalarFloat );
+    AMP::IO::writeHDF5( fid, "Unstructured_ScalarDouble", scalarDouble );
 
     // Write the xml
     auto mesh = AMP::Xdmf::createUnstructuredMesh( "2D Unstructured Mesh",
@@ -308,7 +308,7 @@ void writeTime( int i )
     // Open HDF5 file(s)
     int rank      = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
     auto filename = "test_XDMF_" + std::to_string( i ) + "." + std::to_string( rank ) + ".h5";
-    auto fid      = AMP::openHDF5( filename, "w", AMP::Compression::GZIP );
+    auto fid      = AMP::IO::openHDF5( filename, "w", AMP::IO::Compression::GZIP );
 
     // Create the Xdmf writer
     AMP::Xdmf xmf;
@@ -328,7 +328,7 @@ void writeTime( int i )
     xmf.addMultiMesh( "all", { "uniform", "curvilinear", "2D Unstructured Mesh" } );
 
     // Close the HDF5 file
-    AMP::closeHDF5( fid );
+    AMP::IO::closeHDF5( fid );
 
     // Gather the Xdmf info for all ranks and write the results
     xmf.gather( AMP_COMM_WORLD );
