@@ -136,34 +136,34 @@ static_assert( approx_equal( Units( "ohm" ).convert( Units( microOhm ) ), 1e6 ) 
 #include "AMP/utils/Array.hpp"
 #ifdef AMP_USE_HDF5
 template<>
-hid_t AMP::getHDF5datatype<AMP::Units>()
+hid_t AMP::IO::getHDF5datatype<AMP::Units>()
 {
     AMP_ERROR( "Not finished" );
     return 0;
 }
 template<>
-void AMP::writeHDF5Array<AMP::Units>( hid_t,
-                                      const std::string_view &,
-                                      const AMP::Array<AMP::Units> & )
+void AMP::IO::writeHDF5Array<AMP::Units>( hid_t,
+                                          const std::string &,
+                                          const AMP::Array<AMP::Units> & )
 {
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::readHDF5Array<AMP::Units>( hid_t, const std::string_view &, AMP::Array<AMP::Units> & )
+void AMP::IO::readHDF5Array<AMP::Units>( hid_t, const std::string &, AMP::Array<AMP::Units> & )
 {
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::writeHDF5Scalar<AMP::Units>( hid_t fid,
-                                       const std::string_view &name,
-                                       const AMP::Units &data )
+void AMP::IO::writeHDF5Scalar<AMP::Units>( hid_t fid,
+                                           const std::string &name,
+                                           const AMP::Units &data )
 {
-    AMP::writeHDF5( fid, name, sizeof( data ), &data );
+    AMP::IO::writeHDF5( fid, name, sizeof( data ), &data );
 }
 template<>
-void AMP::readHDF5Scalar<AMP::Units>( hid_t fid, const std::string_view &name, AMP::Units &data )
+void AMP::IO::readHDF5Scalar<AMP::Units>( hid_t fid, const std::string &name, AMP::Units &data )
 {
-    AMP::readHDF5( fid, name, sizeof( data ), &data );
+    AMP::IO::readHDF5( fid, name, sizeof( data ), &data );
 }
 #endif
 INSTANTIATE_HDF5( AMP::Units );

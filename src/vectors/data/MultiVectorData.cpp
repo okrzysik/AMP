@@ -542,20 +542,20 @@ void MultiVectorData::writeRestart( int64_t fid ) const
         dataHash[i] = d_data[i]->getID();
     for ( size_t i = 0; i < d_subDOFManager.size(); i++ )
         dofsHash[i] = d_subDOFManager[i]->getID();
-    writeHDF5( fid, "CommHash", d_comm.hash() );
-    writeHDF5( fid, "globalDOFsHash", d_globalDOFManager->getID() );
-    writeHDF5( fid, "VectorDataHash", dataHash );
-    writeHDF5( fid, "DOFManagerHash", dofsHash );
+    IO::writeHDF5( fid, "CommHash", d_comm.hash() );
+    IO::writeHDF5( fid, "globalDOFsHash", d_globalDOFManager->getID() );
+    IO::writeHDF5( fid, "VectorDataHash", dataHash );
+    IO::writeHDF5( fid, "DOFManagerHash", dofsHash );
 }
 MultiVectorData::MultiVectorData( int64_t fid, AMP::IO::RestartManager *manager )
     : VectorData( fid, manager )
 {
     uint64_t commHash, globalDOFsHash;
     std::vector<uint64_t> vectorDataHash, DOFManagerHash;
-    readHDF5( fid, "CommHash", commHash );
-    readHDF5( fid, "globalDOFsHash", globalDOFsHash );
-    readHDF5( fid, "VectorDataHash", vectorDataHash );
-    readHDF5( fid, "DOFManagerHash", DOFManagerHash );
+    IO::readHDF5( fid, "CommHash", commHash );
+    IO::readHDF5( fid, "globalDOFsHash", globalDOFsHash );
+    IO::readHDF5( fid, "VectorDataHash", vectorDataHash );
+    IO::readHDF5( fid, "DOFManagerHash", DOFManagerHash );
     d_comm = manager->getComm( commHash );
     d_data.resize( vectorDataHash.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )

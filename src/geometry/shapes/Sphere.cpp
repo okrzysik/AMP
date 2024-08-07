@@ -193,13 +193,13 @@ bool Sphere::operator==( const Geometry &rhs ) const
 void Sphere::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "offset", d_offset );
-    AMP::writeHDF5( fid, "R", d_r );
+    AMP::IO::writeHDF5( fid, "offset", d_offset );
+    AMP::IO::writeHDF5( fid, "R", d_r );
 }
 Sphere::Sphere( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "offset", d_offset );
-    AMP::readHDF5( fid, "R", d_r );
+    AMP::IO::readHDF5( fid, "offset", d_offset );
+    AMP::IO::readHDF5( fid, "R", d_r );
 }
 
 

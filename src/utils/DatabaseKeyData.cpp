@@ -192,21 +192,21 @@ size_t EquationKeyData::unpack( const std::byte *buf )
         d_eq = new MathExpr( expr, vars );
     return N;
 }
-void EquationKeyData::writeHDF5( int64_t fid, std::string_view name ) const
+void EquationKeyData::writeHDF5( int64_t fid, const std::string &name ) const
 {
-    hid_t gid = createGroup( fid, name );
-    AMP::writeHDF5( gid, "expr", d_eq->getExpr() );
-    AMP::writeHDF5( gid, "vars", d_eq->getVars() );
-    closeGroup( gid );
+    hid_t gid = AMP::IO::createGroup( fid, name );
+    AMP::IO::writeHDF5( gid, "expr", d_eq->getExpr() );
+    AMP::IO::writeHDF5( gid, "vars", d_eq->getVars() );
+    AMP::IO::closeGroup( gid );
 }
-void EquationKeyData::readHDF5( int64_t fid, std::string_view name )
+void EquationKeyData::readHDF5( int64_t fid, const std::string &name )
 {
     std::string expr;
     std::vector<std::string> vars;
-    hid_t gid = openGroup( fid, name );
-    AMP::readHDF5( gid, "expr", expr );
-    AMP::readHDF5( gid, "vars", vars );
-    closeGroup( gid );
+    hid_t gid = AMP::IO::openGroup( fid, name );
+    AMP::IO::readHDF5( gid, "expr", expr );
+    AMP::IO::readHDF5( gid, "vars", vars );
+    AMP::IO::closeGroup( gid );
     delete d_eq;
     d_eq = nullptr;
     if ( !expr.empty() )

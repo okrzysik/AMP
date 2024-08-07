@@ -313,26 +313,26 @@ void structuredMeshIterator::writeRestart( int64_t fid ) const
     auto elements = d_elements;
     if ( !elements )
         elements = std::make_shared<std::vector<BoxMesh::MeshElementIndex>>();
-    writeHDF5( fid, "checkBoundary", d_checkBoundary );
-    writeHDF5( fid, "isPeriodic", d_isPeriodic );
-    writeHDF5( fid, "globalSize", d_globalSize );
-    writeHDF5( fid, "first", d_first );
-    writeHDF5( fid, "last", d_last );
-    writeHDF5( fid, "elements", *elements );
-    writeHDF5( fid, "meshID", d_mesh->meshID() );
+    IO::writeHDF5( fid, "checkBoundary", d_checkBoundary );
+    IO::writeHDF5( fid, "isPeriodic", d_isPeriodic );
+    IO::writeHDF5( fid, "globalSize", d_globalSize );
+    IO::writeHDF5( fid, "first", d_first );
+    IO::writeHDF5( fid, "last", d_last );
+    IO::writeHDF5( fid, "elements", *elements );
+    IO::writeHDF5( fid, "meshID", d_mesh->meshID() );
 }
 structuredMeshIterator::structuredMeshIterator( int64_t fid, AMP::IO::RestartManager *manager )
     : MeshIterator( fid )
 {
     MeshID meshID;
     std::vector<BoxMesh::MeshElementIndex> elements;
-    readHDF5( fid, "checkBoundary", d_checkBoundary );
-    readHDF5( fid, "isPeriodic", d_isPeriodic );
-    readHDF5( fid, "globalSize", d_globalSize );
-    readHDF5( fid, "first", d_first );
-    readHDF5( fid, "last", d_last );
-    readHDF5( fid, "elements", elements );
-    readHDF5( fid, "meshID", meshID );
+    IO::readHDF5( fid, "checkBoundary", d_checkBoundary );
+    IO::readHDF5( fid, "isPeriodic", d_isPeriodic );
+    IO::readHDF5( fid, "globalSize", d_globalSize );
+    IO::readHDF5( fid, "first", d_first );
+    IO::readHDF5( fid, "last", d_last );
+    IO::readHDF5( fid, "elements", elements );
+    IO::readHDF5( fid, "meshID", meshID );
     d_elements.reset();
     if ( !elements.empty() )
         d_elements = std::make_shared<decltype( elements )>( std::move( elements ) );
