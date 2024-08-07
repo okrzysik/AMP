@@ -16,7 +16,7 @@ The websites associated with the AMP package includes:
 
 * Wiki: https://bitbucket.org/AdvancedMultiPhysics/amp/wiki/Home
 * Doxygen documentation: https://advancedmultiphysics.bitbucket.io
-* Git repositories:  https://bitbucket.org/AdvancedMultiPhysics/amp
+* Git repositories: git@github.com:AdvancedMultiPhysics/AMP
 * Issue tracker: https://bitbucket.org/AdvancedMultiPhysics/amp/issues?status=new&status=open
 
 # Team #

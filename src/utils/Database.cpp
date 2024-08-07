@@ -365,17 +365,23 @@ bool Database::isEquation( std::string_view key, source_location src ) const
     DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
     return data->isType<MathExpr>();
 }
-std::shared_ptr<const MathExpr> Database::getEquation( std::string_view key,
-                                                       source_location src ) const
+std::unique_ptr<MathExpr>
+Database::getEquation( std::string_view key, const Units &unit, source_location src ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
-    auto eq_data = dynamic_cast<const EquationKeyData *>( data );
-    if ( eq_data )
-        return eq_data->getEq();
+    double factor = data->convertUnits( unit, key );
+    auto eq_data  = dynamic_cast<const EquationKeyData *>( data );
+    if ( eq_data ) {
+        auto expr = eq_data->getEq().getExpr();
+        auto vars = eq_data->getEq().getVars();
+        if ( factor != 1.0 )
+            expr = std::to_string( factor ) + "*( " + expr + ")";
+        return std::make_unique<MathExpr>( expr, vars );
+    }
     if ( data->isType<double>() && data->arraySize().length() == 1 ) {
-        double v = data->convertToDouble()( 0 );
-        return std::make_shared<MathExpr>( std::to_string( v ) );
+        double v = factor * data->convertToDouble()( 0 );
+        return std::make_unique<MathExpr>( std::to_string( v ) );
     }
     DATABASE_ERROR( src, "Variable %s was not an equation", key.data() );
     return nullptr;

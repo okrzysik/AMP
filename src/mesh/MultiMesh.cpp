@@ -327,10 +327,12 @@ MultiMesh::createDatabases( std::shared_ptr<const AMP::Database> database )
     }
     // Find all of the meshes in the database
     AMP_ASSERT( database != nullptr );
-    AMP_INSIST( database->keyExists( "MeshDatabasePrefix" ),
-                "MeshDatabasePrefix must exist in input database" );
-    AMP_INSIST( database->keyExists( "MeshArrayDatabasePrefix" ),
-                "MeshArrayDatabasePrefix must exist in input database" );
+    if ( !database->keyExists( "MeshDatabasePrefix" ) ||
+         !database->keyExists( "MeshArrayDatabasePrefix" ) ) {
+        std::string msg = "Missing field MeshDatabasePrefix/MeshArrayDatabasePrefix in database:\n";
+        msg += database->print( "   " );
+        AMP_ERROR( msg );
+    }
     auto MeshPrefix      = database->getString( "MeshDatabasePrefix" );
     auto MeshArrayPrefix = database->getString( "MeshArrayDatabasePrefix" );
     AMP_ASSERT( !check_prefix( MeshPrefix, MeshArrayPrefix ) );

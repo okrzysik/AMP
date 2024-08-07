@@ -197,8 +197,8 @@ class EquationKeyData final : public KeyData
 public:
     EquationKeyData() = default;
     EquationKeyData( std::string_view eq, const Units &unit = Units() );
-    EquationKeyData( std::shared_ptr<const MathExpr> eq, const Units &unit = Units() );
-    virtual ~EquationKeyData() = default;
+    EquationKeyData( MathExpr eq, const Units &unit = Units() );
+    virtual ~EquationKeyData();
     typeID getClassType() const override { return getTypeID<EquationKeyData>(); }
     std::unique_ptr<KeyData> clone() const override;
     void print( std::ostream &, std::string_view = "", bool = true, bool = false ) const override;
@@ -209,7 +209,7 @@ public:
     Array<double> convertToDouble() const override;
     Array<int64_t> convertToInt64() const override;
     bool operator==( const KeyData &rhs ) const override;
-    auto getEq() const { return d_eq; }
+    const auto &getEq() const { return *d_eq; }
     size_t packSize() const override;
     size_t pack( std::byte *buf ) const override;
     size_t unpack( const std::byte * ) override;
@@ -217,7 +217,7 @@ public:
     void readHDF5( int64_t, std::string_view ) override;
 
 private:
-    std::shared_ptr<const MathExpr> d_eq;
+    MathExpr *d_eq = nullptr;
 };
 template<class TYPE>
 class KeyDataScalar final : public KeyData
