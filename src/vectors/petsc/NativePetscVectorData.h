@@ -36,7 +36,7 @@ public:
 
     // Overrides to makeConsistent ensure that the internal Petsc Vector
     // is in a valid state by calling assemble/resetArray as needed
-    void makeConsistent( ScatterType t) override;
+    void makeConsistent( ScatterType t ) override;
     void makeConsistent() override;
 
     std::string VectorDataName() const override { return "NativePetscVector"; }
