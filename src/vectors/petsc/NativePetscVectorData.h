@@ -34,6 +34,11 @@ public:
     //! Destructor
     virtual ~NativePetscVectorData();
 
+    // Overrides to makeConsistent ensure that the internal Petsc Vector
+    // is in a valid state by calling assemble/resetArray as needed
+    void makeConsistent( ScatterType t ) override;
+    void makeConsistent() override;
+
     std::string VectorDataName() const override { return "NativePetscVector"; }
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
@@ -73,9 +78,10 @@ protected:
 
 private:
     friend class NativePetscVectorOperations;
-    bool d_bDeleteMe;
-    Vec d_petscVec;
-    mutable double *d_pArray; // mutable so that we can cache the value
+    bool d_bDeleteMe                   = false;
+    Vec d_petscVec                     = nullptr;
+    mutable double *d_pArray           = nullptr; // mutable so that we can cache the value
+    mutable const double *d_pArrayRead = nullptr;
 };
 
 
