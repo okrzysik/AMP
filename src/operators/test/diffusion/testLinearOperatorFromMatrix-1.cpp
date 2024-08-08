@@ -63,20 +63,12 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     const auto ampComm   = userVector->getComm();
 
     // construct a dof manager
-    const auto userDM     = userVector->getDOFManager();
-    const auto dofManager = std::make_shared<AMP::Discretization::DOFManager>(
-        localSize, ampComm, userDM->getRemoteDOFs() );
+    const auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( localSize, ampComm );
     const auto copyVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "copyVariable" );
 
     // create a vector based on the dofs and variable
     auto ampVector = AMP::LinearAlgebra::createVector( dofManager, copyVariable );
     AMP_INSIST( ampVector != nullptr, "ampVector is null" );
-
-    // **DEBUG**
-    // auto avdm = ampVector->getDOFManager();
-    // AMP::pout  << "ampVector type: " << ampVector->type()
-    // 	      << ", avdm remote: " << avdm->getRemoteDOFs().size()
-    // 	      << std::endl;
 
     // copy values from one vector to another
     std::copy( userVector->begin(), userVector->end(), ampVector->begin() );
@@ -89,7 +81,6 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
 
     // create a matrix based on the dimensions of the copied vector
     auto ampMat = AMP::LinearAlgebra::createMatrix( ampVector, ampVector, "auto", getColumnIDS );
-
 
     // construct a LinearOperator and set its matrix
     const auto linearOpDB = std::make_shared<AMP::Database>( "linearOperatorDB" );
