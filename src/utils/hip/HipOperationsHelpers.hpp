@@ -6,6 +6,7 @@
 #include <thrust/for_each.h>
 #include <thrust/inner_product.h>
 
+#include "AMP/utils/hip/helper_hip.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -175,10 +176,9 @@ TYPE DeviceOperationsHelpers<TYPE>::localWrmsNorm( size_t N, const TYPE *x, cons
 
 } // namespace LinearAlgebra
 
-void DeviceSynchronize();
-checkHipErrors( hipDeviceSynchronize() );
+void DeviceSynchronize(){
+    checkHipErrors( hipDeviceSynchronize() );
 }
-
 
 } // namespace AMP
 

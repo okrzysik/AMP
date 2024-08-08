@@ -1,6 +1,5 @@
-#include "AMP/utils/hip/HipOperationsHelpers.hpp"
 #include "AMP/utils/device/DeviceOperationsHelpers.h"
-
+#include "AMP/utils/hip/HipOperationsHelpers.hpp"
 
 // Explicit instantiations
 template class AMP::LinearAlgebra::DeviceOperationsHelpers<double>;
