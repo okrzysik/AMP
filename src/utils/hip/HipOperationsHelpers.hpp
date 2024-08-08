@@ -176,10 +176,10 @@ TYPE DeviceOperationsHelpers<TYPE>::localWrmsNorm( size_t N, const TYPE *x, cons
 } // namespace LinearAlgebra
 
 void DeviceSynchronize();
-    checkHipErrors( hipDeviceSynchronize() );
+checkHipErrors( hipDeviceSynchronize() );
 }
 
-  
+
 } // namespace AMP
 
 #endif

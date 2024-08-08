@@ -175,8 +175,9 @@ std::shared_ptr<VectorFactory> generateSimpleVectorFactory(
 #endif
     } else if ( ops == "gpu" ) {
 #ifdef USE_DEVICE
-        factory = generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsDevice<TYPE>>(
-            name, N, global, data );
+        factory =
+            generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsDevice<TYPE>>(
+                name, N, global, data );
 #endif
     } else {
         AMP_ERROR( "Unknown VectorOperations" );

@@ -1,6 +1,6 @@
 #include "AMP/vectors/data/VectorDataDefault.h"
-#include "AMP/vectors/data/VectorDataDefault.hpp"
 #include "AMP/utils/memory.h"
+#include "AMP/vectors/data/VectorDataDefault.hpp"
 
 
 // Explicit instantiations
