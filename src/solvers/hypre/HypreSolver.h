@@ -6,9 +6,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 
-extern "C" {
 #include "HYPRE_utilities.h"
-}
 
 // Forward declares
 struct hypre_Solver_struct;

@@ -11,6 +11,12 @@
 
 #include <numeric>
 
+extern "C" {
+#include "HYPRE_utilities.h"
+#include "_hypre_IJ_mv.h"
+#include "_hypre_parcsr_mv.h"
+}
+
 namespace AMP::LinearAlgebra {
 
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )

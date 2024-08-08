@@ -101,7 +101,7 @@ std::string AMP::AMPManager::info()
     out << "   C++ Flags: " << AMP::Version::CXX_FLAGS << std::endl;
     out << "   Fortran Flags: " << AMP::Version::Fortran_FLAGS << std::endl;
 #ifdef AMP_USE_TIMER
-    auto TimerVersion = { TIMER::Version::major, TIMER::Version::minor, TIMER::Version::build };
+    auto TimerVersion = { Timer::Version::major, Timer::Version::minor, Timer::Version::build };
     out << "ProfilerApp: " << TimerVersion << std::endl;
 #endif
 #ifdef AMP_USE_SAMRAI

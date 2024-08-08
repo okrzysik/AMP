@@ -328,7 +328,7 @@ void VectorData::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     if ( d_CommList ) {
         auto id = manager->registerObject( d_CommList );
-        AMP_ASSERT( id == reinterpret_cast<uint64_t>( d_CommList.get() ) );
+        AMP_ASSERT( id == d_CommList->getID() );
     }
     if ( d_UpdateState ) {
         auto id = manager->registerObject( d_UpdateState );
@@ -345,30 +345,30 @@ void VectorData::registerChildObjects( AMP::IO::RestartManager *manager ) const
 }
 void VectorData::writeRestart( int64_t fid ) const
 {
-    uint64_t commListID  = reinterpret_cast<uint64_t>( d_CommList.get() );
+    uint64_t commListID  = d_CommList ? d_CommList->getID() : 0;
     uint64_t updateID    = reinterpret_cast<uint64_t>( d_UpdateState.get() );
     uint64_t ghostID     = reinterpret_cast<uint64_t>( d_Ghosts.get() );
     uint64_t addBufferID = reinterpret_cast<uint64_t>( d_AddBuffer.get() );
-    writeHDF5( fid, "localSize", d_localSize );
-    writeHDF5( fid, "globalSize", d_globalSize );
-    writeHDF5( fid, "localStart", d_localStart );
-    writeHDF5( fid, "commListID", commListID );
-    writeHDF5( fid, "updateID", updateID );
-    writeHDF5( fid, "ghostID", ghostID );
-    writeHDF5( fid, "addBufferID", addBufferID );
+    IO::writeHDF5( fid, "localSize", d_localSize );
+    IO::writeHDF5( fid, "globalSize", d_globalSize );
+    IO::writeHDF5( fid, "localStart", d_localStart );
+    IO::writeHDF5( fid, "commListID", commListID );
+    IO::writeHDF5( fid, "updateID", updateID );
+    IO::writeHDF5( fid, "ghostID", ghostID );
+    IO::writeHDF5( fid, "addBufferID", addBufferID );
 }
 
 
 VectorData::VectorData( int64_t fid, AMP::IO::RestartManager *manager )
 {
     uint64_t commListID, updateID, ghostID, addBufferID;
-    readHDF5( fid, "localSize", d_localSize );
-    readHDF5( fid, "globalSize", d_globalSize );
-    readHDF5( fid, "localStart", d_localStart );
-    readHDF5( fid, "commListID", commListID );
-    readHDF5( fid, "updateID", updateID );
-    readHDF5( fid, "ghostID", ghostID );
-    readHDF5( fid, "addBufferID", addBufferID );
+    IO::readHDF5( fid, "localSize", d_localSize );
+    IO::readHDF5( fid, "globalSize", d_globalSize );
+    IO::readHDF5( fid, "localStart", d_localStart );
+    IO::readHDF5( fid, "commListID", commListID );
+    IO::readHDF5( fid, "updateID", updateID );
+    IO::readHDF5( fid, "ghostID", ghostID );
+    IO::readHDF5( fid, "addBufferID", addBufferID );
     if ( commListID != 0 )
         d_CommList = manager->getData<CommunicationList>( commListID );
     if ( updateID != 0 )

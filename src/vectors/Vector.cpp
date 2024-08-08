@@ -376,21 +376,21 @@ void Vector::registerChildObjects( AMP::IO::RestartManager *manager ) const
 }
 void Vector::writeRestart( int64_t fid ) const
 {
-    writeHDF5( fid, "units", d_units );
-    writeHDF5( fid, "var", d_Variable->getID() );
-    writeHDF5( fid, "dofs", d_DOFManager->getID() );
-    writeHDF5( fid, "data", d_VectorData->getID() );
-    writeHDF5( fid, "ops", d_VectorOps->getID() );
+    IO::writeHDF5( fid, "units", d_units );
+    IO::writeHDF5( fid, "var", d_Variable->getID() );
+    IO::writeHDF5( fid, "dofs", d_DOFManager->getID() );
+    IO::writeHDF5( fid, "data", d_VectorData->getID() );
+    IO::writeHDF5( fid, "ops", d_VectorOps->getID() );
 }
 Vector::Vector( int64_t fid, AMP::IO::RestartManager *manager )
 {
     AMPManager::incrementResource( "Vector" );
     uint64_t variableID, DOFManagerID, VectorDataID, VectorOpsID;
-    readHDF5( fid, "units", d_units );
-    readHDF5( fid, "var", variableID );
-    readHDF5( fid, "dofs", DOFManagerID );
-    readHDF5( fid, "data", VectorDataID );
-    readHDF5( fid, "ops", VectorOpsID );
+    IO::readHDF5( fid, "units", d_units );
+    IO::readHDF5( fid, "var", variableID );
+    IO::readHDF5( fid, "dofs", DOFManagerID );
+    IO::readHDF5( fid, "data", VectorDataID );
+    IO::readHDF5( fid, "ops", VectorOpsID );
     d_Variable   = manager->getData<AMP::LinearAlgebra::Variable>( variableID );
     d_DOFManager = manager->getData<AMP::Discretization::DOFManager>( DOFManagerID );
     d_VectorData = manager->getData<AMP::LinearAlgebra::VectorData>( VectorDataID );
@@ -421,18 +421,18 @@ template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::write(
     hid_t fid, const std::string &name ) const
 {
-    hid_t gid = createGroup( fid, name );
-    writeHDF5( gid, "type", d_data->type() );
+    hid_t gid = IO::createGroup( fid, name );
+    IO::writeHDF5( gid, "type", d_data->type() );
     d_data->writeRestart( gid );
-    closeGroup( gid );
+    IO::closeGroup( gid );
 }
 template<>
 std::shared_ptr<AMP::LinearAlgebra::Vector>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::read(
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid = openGroup( fid, name );
+    hid_t gid = IO::openGroup( fid, name );
     auto vec  = AMP::LinearAlgebra::VectorFactory::create( gid, manager );
-    closeGroup( gid );
+    IO::closeGroup( gid );
     return vec;
 }

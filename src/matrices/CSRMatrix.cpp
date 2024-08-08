@@ -14,10 +14,12 @@ template class CSRMatrix<CSRPolicy<size_t, int, double>, std::allocator<int>>;
 #ifdef USE_HIP
     #include "AMP/utils/hip/HipAllocator.h"
 namespace AMP::LinearAlgebra {
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, AMP::HipDevAllocator<int>>;
+template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>,
+                                          AMP::HipDevAllocator<int>>;
 template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::HipDevAllocator<int>>;
 template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::HipDevAllocator<int>>;
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, AMP::HipManagedAllocator<int>>;
+template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>,
+                                          AMP::HipManagedAllocator<int>>;
 template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::HipManagedAllocator<int>>;
 template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::HipManagedAllocator<int>>;
 } // namespace AMP::LinearAlgebra

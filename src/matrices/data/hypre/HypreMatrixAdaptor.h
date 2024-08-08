@@ -3,14 +3,8 @@
 
 #include "AMP/matrices/data/MatrixData.h"
 
-extern "C" {
-#include "_hypre_IJ_mv.h"
-#include "_hypre_parcsr_mv.h"
-
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
-#include "HYPRE_utilities.h"
-}
 
 #include <vector>
 

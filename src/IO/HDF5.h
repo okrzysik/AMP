@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <cstring>
 #include <memory>
-#include <string_view>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -25,7 +25,7 @@ typedef size_t hsize_t;
 #endif
 
 
-namespace AMP {
+namespace AMP::IO {
 
 
 enum class Compression : uint8_t { None, GZIP, SZIP };
@@ -45,7 +45,7 @@ enum class Compression : uint8_t { None, GZIP, SZIP };
  * @param[in] compress      Default compression
  * @return                  Return a handle to the file.
  */
-hid_t openHDF5( const std::string_view &filename,
+hid_t openHDF5( const std::string &filename,
                 const char *mode,
                 Compression compress = Compression::None );
 
@@ -89,7 +89,7 @@ hid_t createChunk( AMP::ArraySize dims, Compression compress, size_t objSize = 0
  * @param[in] data          The structure to write
  */
 template<class T>
-void writeHDF5( hid_t fid, const std::string_view &name, const T &data );
+void writeHDF5( hid_t fid, const std::string &name, const T &data );
 
 
 /**
@@ -103,7 +103,7 @@ void writeHDF5( hid_t fid, const std::string_view &name, const T &data );
  * @param[out] data         The structure to read
  */
 template<class T>
-void readHDF5( hid_t fid, const std::string_view &name, T &data );
+void readHDF5( hid_t fid, const std::string &name, T &data );
 
 
 /**
@@ -117,8 +117,7 @@ void readHDF5( hid_t fid, const std::string_view &name, T &data );
  * @param[in] comm          The communicator of the object
  */
 template<class T>
-std::unique_ptr<T>
-readHDF5( hid_t fid, const std::string_view &name, AMP_MPI comm = AMP_COMM_SELF );
+std::unique_ptr<T> readHDF5( hid_t fid, const std::string &name, AMP_MPI comm = AMP_COMM_SELF );
 
 
 /**
@@ -129,7 +128,7 @@ readHDF5( hid_t fid, const std::string_view &name, AMP_MPI comm = AMP_COMM_SELF 
  * @param[in] N_bytes       The number of bytes to write
  * @param[in] data          The data to write
  */
-void writeHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, const void *data );
+void writeHDF5( hid_t fid, const std::string &name, size_t N_bytes, const void *data );
 
 
 /**
@@ -140,7 +139,7 @@ void writeHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, const v
  * @param[in] N_bytes       The number of bytes to write
  * @param[out] data         The data to read
  */
-void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *data );
+void readHDF5( hid_t fid, const std::string &name, size_t N_bytes, void *data );
 
 
 /**
@@ -149,7 +148,7 @@ void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *da
  * @param[in] fid           ID of group or database to read
  * @param[in] name          The name of the group
  */
-bool H5Gexists( hid_t fid, const std::string_view &name );
+bool H5Gexists( hid_t fid, const std::string &name );
 
 
 /**
@@ -158,7 +157,7 @@ bool H5Gexists( hid_t fid, const std::string_view &name );
  * @param[in] fid           File to open
  * @param[in] name          The name of the dataset
  */
-bool H5Dexists( hid_t fid, const std::string_view &name );
+bool H5Dexists( hid_t fid, const std::string &name );
 
 
 /**
@@ -167,7 +166,7 @@ bool H5Dexists( hid_t fid, const std::string_view &name );
  * @param[in] fid       File or group to write to
  * @param[in] name      The name of the group
  */
-hid_t createGroup( hid_t fid, const std::string_view &name );
+hid_t createGroup( hid_t fid, const std::string &name );
 
 
 /**
@@ -176,7 +175,7 @@ hid_t createGroup( hid_t fid, const std::string_view &name );
  * @param[in] fid       File or group to write to
  * @param[in] name      The name of the group
  */
-hid_t openGroup( hid_t fid, const std::string_view &name );
+hid_t openGroup( hid_t fid, const std::string &name );
 
 
 /**
@@ -210,6 +209,6 @@ template<class T>
 hid_t getHDF5datatype();
 
 
-} // namespace AMP
+} // namespace AMP::IO
 
 #endif

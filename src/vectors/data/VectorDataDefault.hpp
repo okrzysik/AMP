@@ -272,19 +272,19 @@ void VectorDataDefault<TYPE, Allocator>::writeRestart( int64_t fid ) const
 {
     AMP::Array<TYPE> data( d_localSize );
     getRawData( data.data(), getTypeID<TYPE>() );
-    writeHDF5( fid, "data", data );
-    writeHDF5( fid, "localSize", d_localSize );
-    writeHDF5( fid, "globalSize", d_globalSize );
-    writeHDF5( fid, "localStart", d_localStart );
+    IO::writeHDF5( fid, "data", data );
+    IO::writeHDF5( fid, "localSize", d_localSize );
+    IO::writeHDF5( fid, "globalSize", d_globalSize );
+    IO::writeHDF5( fid, "localStart", d_localStart );
 }
 template<typename TYPE, class Allocator>
 VectorDataDefault<TYPE, Allocator>::VectorDataDefault( int64_t fid, AMP::IO::RestartManager * )
 {
     AMP::Array<TYPE> data;
-    readHDF5( fid, "data", data );
-    readHDF5( fid, "localSize", d_localSize );
-    readHDF5( fid, "globalSize", d_globalSize );
-    readHDF5( fid, "localStart", d_localStart );
+    IO::readHDF5( fid, "data", data );
+    IO::readHDF5( fid, "localSize", d_localSize );
+    IO::readHDF5( fid, "globalSize", d_globalSize );
+    IO::readHDF5( fid, "localStart", d_localStart );
     d_data = d_alloc.allocate( d_localSize );
     putRawData( data.data(), getTypeID<TYPE>() );
 }

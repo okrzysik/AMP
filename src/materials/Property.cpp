@@ -194,7 +194,8 @@ std::unique_ptr<Property> createProperty( std::string_view key, const Database &
         AMP_ERROR( "Not finished (Database)" );
     } else if ( db.isEquation( key ) ) {
         // We are dealing with an equation
-        return std::make_unique<EquationProperty>( key, db.getEquation( key ), unit );
+        return std::make_unique<EquationProperty>(
+            key, std::shared_ptr<MathExpr>( db.getEquation( key ) ), unit );
     } else if ( keyData->is_floating_point() ) {
         // We are dealing with a scalar
         auto data = keyData->convertToDouble();

@@ -189,16 +189,16 @@ public:
     size_t packSize() const override { return 0; }
     size_t pack( std::byte * ) const override { return 0; }
     size_t unpack( const std::byte * ) override { return 0; }
-    void writeHDF5( int64_t, std::string_view ) const override {}
-    void readHDF5( int64_t, std::string_view ) override {}
+    void writeHDF5( int64_t, const std::string & ) const override {}
+    void readHDF5( int64_t, const std::string & ) override {}
 };
 class EquationKeyData final : public KeyData
 {
 public:
     EquationKeyData() = default;
     EquationKeyData( std::string_view eq, const Units &unit = Units() );
-    EquationKeyData( std::shared_ptr<const MathExpr> eq, const Units &unit = Units() );
-    virtual ~EquationKeyData() = default;
+    EquationKeyData( MathExpr eq, const Units &unit = Units() );
+    virtual ~EquationKeyData();
     typeID getClassType() const override { return getTypeID<EquationKeyData>(); }
     std::unique_ptr<KeyData> clone() const override;
     void print( std::ostream &, std::string_view = "", bool = true, bool = false ) const override;
@@ -209,15 +209,15 @@ public:
     Array<double> convertToDouble() const override;
     Array<int64_t> convertToInt64() const override;
     bool operator==( const KeyData &rhs ) const override;
-    auto getEq() const { return d_eq; }
+    const auto &getEq() const { return *d_eq; }
     size_t packSize() const override;
     size_t pack( std::byte *buf ) const override;
     size_t unpack( const std::byte * ) override;
-    void writeHDF5( int64_t, std::string_view ) const override;
-    void readHDF5( int64_t, std::string_view ) override;
+    void writeHDF5( int64_t, const std::string & ) const override;
+    void readHDF5( int64_t, const std::string & ) override;
 
 private:
-    std::shared_ptr<const MathExpr> d_eq;
+    MathExpr *d_eq = nullptr;
 };
 template<class TYPE>
 class KeyDataScalar final : public KeyData
@@ -291,33 +291,33 @@ public:
         N += AMP::unpack( d_data, &buf[N] );
         return N;
     }
-    void writeHDF5( int64_t fid, std::string_view name ) const override
+    void writeHDF5( int64_t fid, const std::string &name ) const override
     {
         if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
             typedef typename TYPE::element_type TYPE1;
             typedef typename std::remove_cv_t<TYPE1> TYPE2;
-            AMP::writeHDF5<TYPE2>( fid, name, *d_data );
+            AMP::IO::writeHDF5<TYPE2>( fid, name, *d_data );
         } else {
             typedef typename std::remove_reference_t<TYPE> TYPE1;
             typedef typename std::remove_cv_t<TYPE1> TYPE2;
-            AMP::writeHDF5<TYPE2>( fid, name, d_data );
+            AMP::IO::writeHDF5<TYPE2>( fid, name, d_data );
         }
     }
-    void readHDF5( int64_t fid, std::string_view name ) override
+    void readHDF5( int64_t fid, const std::string &name ) override
     {
         if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
             typedef typename TYPE::element_type TYPE2;
             if constexpr ( std::is_const_v<TYPE2> )
                 AMP_ERROR( "Unable to read into const object" );
             else
-                AMP::readHDF5( fid, name, *d_data );
+                AMP::IO::readHDF5( fid, name, *d_data );
         } else if constexpr ( std::is_const_v<TYPE> ) {
             NULL_USE( fid );
             NULL_USE( name );
             AMP_ERROR( "Unable to read into const object" );
         } else {
             typedef typename std::remove_reference_t<TYPE> TYPE2;
-            AMP::readHDF5<TYPE2>( fid, name, d_data );
+            AMP::IO::readHDF5<TYPE2>( fid, name, d_data );
         }
     }
 
@@ -408,7 +408,7 @@ public:
         N += AMP::unpack( d_data, &buf[N] );
         return N;
     }
-    void writeHDF5( int64_t fid, std::string_view name ) const override
+    void writeHDF5( int64_t fid, const std::string &name ) const override
     {
         if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
             typedef typename TYPE::element_type TYPE1;
@@ -416,23 +416,23 @@ public:
             AMP::Array<TYPE2> y( d_data.size() );
             for ( size_t i = 0; i < d_data.length(); i++ )
                 y( i ) = *d_data( i );
-            AMP::writeHDF5( fid, name, y );
+            AMP::IO::writeHDF5( fid, name, y );
         } else {
-            AMP::writeHDF5( fid, name, d_data );
+            AMP::IO::writeHDF5( fid, name, d_data );
         }
     }
-    void readHDF5( int64_t fid, std::string_view name ) override
+    void readHDF5( int64_t fid, const std::string &name ) override
     {
         if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
             typedef typename TYPE::element_type TYPE1;
             typedef typename AMP::remove_cvref_t<TYPE1> TYPE2;
             AMP::Array<TYPE2> y;
-            AMP::readHDF5( fid, name, y );
+            AMP::IO::readHDF5( fid, name, y );
             d_data.resize( y.size() );
             for ( size_t i = 0; i < d_data.length(); i++ )
                 d_data( i ) = std::make_shared<TYPE2>( y( i ) );
         } else {
-            AMP::readHDF5( fid, name, d_data );
+            AMP::IO::readHDF5( fid, name, d_data );
         }
     }
 
@@ -516,13 +516,13 @@ public:
             N += db.unpack( &buf[N] );
         return N;
     }
-    void writeHDF5( int64_t fid, std::string_view name ) const override
+    void writeHDF5( int64_t fid, const std::string &name ) const override
     {
-        AMP::writeHDF5( fid, name, d_data );
+        AMP::IO::writeHDF5( fid, name, d_data );
     }
-    void readHDF5( int64_t fid, std::string_view name ) override
+    void readHDF5( int64_t fid, const std::string &name ) override
     {
-        AMP::readHDF5( fid, name, d_data );
+        AMP::IO::readHDF5( fid, name, d_data );
     }
 
 private:

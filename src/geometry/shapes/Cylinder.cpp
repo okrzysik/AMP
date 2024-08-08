@@ -276,19 +276,19 @@ bool Cylinder::operator==( const Geometry &rhs ) const
 void Cylinder::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "r", d_r );
-    AMP::writeHDF5( fid, "z_min", d_z_min );
-    AMP::writeHDF5( fid, "z_max", d_z_max );
-    AMP::writeHDF5( fid, "offset", d_offset );
-    AMP::writeHDF5( fid, "chamfer", d_chamfer );
+    AMP::IO::writeHDF5( fid, "r", d_r );
+    AMP::IO::writeHDF5( fid, "z_min", d_z_min );
+    AMP::IO::writeHDF5( fid, "z_max", d_z_max );
+    AMP::IO::writeHDF5( fid, "offset", d_offset );
+    AMP::IO::writeHDF5( fid, "chamfer", d_chamfer );
 }
 Cylinder::Cylinder( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "r", d_r );
-    AMP::readHDF5( fid, "z_min", d_z_min );
-    AMP::readHDF5( fid, "z_max", d_z_max );
-    AMP::readHDF5( fid, "offset", d_offset );
-    AMP::readHDF5( fid, "chamfer", d_chamfer );
+    AMP::IO::readHDF5( fid, "r", d_r );
+    AMP::IO::readHDF5( fid, "z_min", d_z_min );
+    AMP::IO::readHDF5( fid, "z_max", d_z_max );
+    AMP::IO::readHDF5( fid, "offset", d_offset );
+    AMP::IO::readHDF5( fid, "chamfer", d_chamfer );
 }
 
 

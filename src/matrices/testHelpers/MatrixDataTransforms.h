@@ -22,12 +22,12 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
                         std::vector<typename Policy::gidx_t> &cols_od,
                         std::vector<typename Policy::lidx_t> &cols_loc_od,
                         std::vector<typename Policy::scalar_t> &coeffs_od,
-			typename Policy::lidx_t &nnz_pad)
+                        typename Policy::lidx_t &nnz_pad )
 {
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
-  
+
     AMP_ASSERT( matrix );
 
     firstRow = static_cast<gidx_t>( matrix->beginRow() );
@@ -65,12 +65,12 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
         for ( size_t i = 0; i < rcols.size(); ++i ) {
             const auto col = static_cast<gidx_t>( rcols[i] );
             if ( firstRow <= col && col < endRow ) {
-                nnzd++;
+                ++nnzd;
                 cols_d.push_back( col );
                 cols_loc_d.push_back( static_cast<lidx_t>( col - firstRow ) );
                 coeffs_d.push_back( static_cast<scalar_t>( rvals[i] ) );
             } else if ( have_ghosts ) {
-                nnzod++;
+                ++nnzod;
                 cols_od.push_back( col );
                 auto loc_col = comm_list->getLocalGhostID( rcols[i] );
                 cols_loc_od.push_back( static_cast<lidx_t>( loc_col ) );
@@ -84,19 +84,19 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
     // Pad cols and cols_loc to ensure that all remote_DOFs are actually used
     nnz_pad = 0;
     if ( have_ghosts ) {
-      std::set<gidx_t> colSet( cols_od.begin(),cols_od.end() );
-      for ( auto rd : remote_DOFs ) {
-	auto col = static_cast<gidx_t>( rd );
-	auto cs = colSet.insert( col );
-	if ( cs.second ) {
-	  cols_od.push_back( col );
-	  auto loc_col = comm_list->getLocalGhostID( rd );
-	  cols_loc_od.push_back( static_cast<lidx_t>( loc_col ) );
-	  coeffs_od.push_back( 0.0 );
-	  nnz_pad++;
-	}
-      }
-      nnz_od.back() += nnz_pad;
+        std::set<gidx_t> colSet( cols_od.begin(), cols_od.end() );
+        for ( auto rd : remote_DOFs ) {
+            auto col = static_cast<gidx_t>( rd );
+            auto cs  = colSet.insert( col );
+            if ( cs.second ) {
+                cols_od.push_back( col );
+                auto loc_col = comm_list->getLocalGhostID( rd );
+                cols_loc_od.push_back( static_cast<lidx_t>( loc_col ) );
+                coeffs_od.push_back( 0.0 );
+                nnz_pad++;
+            }
+        }
+        nnz_od.back() += nnz_pad;
     }
 
     // Fill in row starts from nnz patterns
@@ -105,7 +105,7 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
     rowstart_od.resize( nRows + 1 );
     std::exclusive_scan( nnz_d.begin(), nnz_d.end(), rowstart_d.begin(), 0 );
     std::exclusive_scan( nnz_od.begin(), nnz_od.end(), rowstart_od.begin(), 0 );
-    rowstart_d[nRows] = rowstart_d[nRows - 1] + nnz_d[nRows - 1];
+    rowstart_d[nRows]  = rowstart_d[nRows - 1] + nnz_d[nRows - 1];
     rowstart_od[nRows] = rowstart_od[nRows - 1] + nnz_od[nRows - 1];
 }
 } // namespace AMP::LinearAlgebra

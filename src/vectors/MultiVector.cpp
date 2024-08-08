@@ -309,11 +309,14 @@ void MultiVector::swapVectors( Vector &other )
 std::unique_ptr<Vector> MultiVector::rawClone( const std::shared_ptr<Variable> name ) const
 {
     std::unique_ptr<MultiVector> retVec( new MultiVector( name->getName(), getComm() ) );
+    std::vector<std::shared_ptr<Vector>> vecs;
+    vecs.resize( d_vVectors.size() );
+    for ( size_t i = 0; i != d_vVectors.size(); i++ )
+        vecs[i] = d_vVectors[i]->clone();
+    retVec->addVector( vecs );
     retVec->d_DOFManager = d_DOFManager;
     retVec->setCommunicationList( getCommunicationList() );
-    retVec->d_vVectors.resize( d_vVectors.size() );
-    for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        retVec->d_vVectors[i] = d_vVectors[i]->clone();
+
     retVec->resetVectorData();
     retVec->resetVectorOperations();
     return retVec;
@@ -361,12 +364,12 @@ void MultiVector::writeRestart( int64_t fid ) const
     std::vector<uint64_t> vecs;
     for ( auto vec2 : d_vVectors )
         vecs.push_back( vec2->getID() );
-    writeHDF5( fid, "vecs", vecs );
+    IO::writeHDF5( fid, "vecs", vecs );
 }
 MultiVector::MultiVector( int64_t fid, AMP::IO::RestartManager *manager ) : Vector( fid, manager )
 {
     std::vector<uint64_t> vecs;
-    readHDF5( fid, "vecs", vecs );
+    IO::readHDF5( fid, "vecs", vecs );
     d_vVectors.resize( vecs.size() );
     for ( size_t i = 0; i < vecs.size(); i++ )
         d_vVectors[i] = manager->getData<AMP::LinearAlgebra::Vector>( vecs[i] );
