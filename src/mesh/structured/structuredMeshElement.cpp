@@ -774,7 +774,7 @@ Point structuredMeshElement::norm() const
         return normalize( n );
     } else if ( d_index.type() == GeomType::Face ) {
         AMP_ASSERT( N == 4 );
-        std::array<std::array<double, 3>, 4> p = { { 0 } };
+        std::array<std::array<double, 3>, 4> p = { std::array<double, 3>{ 0, 0, 0 } };
         d_mesh->coord( nodes[0], p[0].data() );
         d_mesh->coord( nodes[1], p[1].data() );
         d_mesh->coord( nodes[2], p[2].data() );
