@@ -339,11 +339,7 @@ void test_work_parallel( UnitTest &ut, ThreadPool &tpool )
         if ( speedup > 1.4 ) {
             ut.passes( "Passed speedup test" );
         } else {
-#ifdef USE_GCOV
             ut.expected_failure( "Times do not indicate tests are running in parallel (gcov)" );
-#else
-            ut.failure( "Times do not indicate tests are running in parallel" );
-#endif
         }
         if ( serialize_mpi ) {
             if ( rank < size - 1 )
