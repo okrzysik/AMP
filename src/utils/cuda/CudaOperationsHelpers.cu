@@ -1,4 +1,4 @@
-#include "AMP/utils/cuda/CudaOperationsHelpers.h"
+#include "AMP/utils/device/DeviceOperationsHelpers.h"
 #include "AMP/utils/cuda/CudaOperationsHelpers.hpp"
 
 
