@@ -11,12 +11,6 @@
     #error AMP only supports PETSc 3.19.0 or greater
 #endif
 
-#ifdef __INTEL_LLVM_COMPILER
-extern "C" {
-PetscInt NormIds[7];
-}
-#endif
-
 namespace PETSC {
 
 
@@ -548,10 +542,6 @@ PetscErrorCode _AMP_norm_local( Vec in, NormType type, PetscReal *ans )
         *( ans + 1 ) = ops->localL2Norm( *x->getVectorData() ).get<double>();
     } else
         AMP_ERROR( "Unknown norm type" );
-    if ( type != NORM_1_AND_2 ) {
-        PetscObjectComposedDataSetReal(
-            reinterpret_cast<::PetscObject>( in ), NormIds[type], ans[0] );
-    }
     increaseState( in );
     return 0;
 }
@@ -569,10 +559,6 @@ PetscErrorCode _AMP_norm( Vec in, NormType type, PetscReal *ans )
         *( ans + 1 ) = static_cast<double>( x->L2Norm() );
     } else
         AMP_ERROR( "Unknown norm type" );
-    if ( type != NORM_1_AND_2 ) {
-        PetscObjectComposedDataSetReal(
-            reinterpret_cast<::PetscObject>( in ), NormIds[type], ans[0] );
-    }
     increaseState( in );
     return 0;
 }

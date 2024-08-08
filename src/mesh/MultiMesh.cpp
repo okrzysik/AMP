@@ -327,10 +327,12 @@ MultiMesh::createDatabases( std::shared_ptr<const AMP::Database> database )
     }
     // Find all of the meshes in the database
     AMP_ASSERT( database != nullptr );
-    AMP_INSIST( database->keyExists( "MeshDatabasePrefix" ),
-                "MeshDatabasePrefix must exist in input database" );
-    AMP_INSIST( database->keyExists( "MeshArrayDatabasePrefix" ),
-                "MeshArrayDatabasePrefix must exist in input database" );
+    if ( !database->keyExists( "MeshDatabasePrefix" ) ||
+         !database->keyExists( "MeshArrayDatabasePrefix" ) ) {
+        std::string msg = "Missing field MeshDatabasePrefix/MeshArrayDatabasePrefix in database:\n";
+        msg += database->print( "   " );
+        AMP_ERROR( msg );
+    }
     auto MeshPrefix      = database->getString( "MeshDatabasePrefix" );
     auto MeshArrayPrefix = database->getString( "MeshArrayDatabasePrefix" );
     AMP_ASSERT( !check_prefix( MeshPrefix, MeshArrayPrefix ) );
@@ -955,12 +957,12 @@ void MultiMesh::writeRestart( int64_t fid ) const
     std::vector<MeshID> meshIDs;
     for ( auto &mesh : d_meshes )
         meshIDs.push_back( mesh->meshID() );
-    writeHDF5( fid, "meshIDs", meshIDs );
+    IO::writeHDF5( fid, "meshIDs", meshIDs );
 }
 MultiMesh::MultiMesh( int64_t fid, AMP::IO::RestartManager *manager ) : Mesh( fid, manager )
 {
     std::vector<MeshID> meshIDs;
-    readHDF5( fid, "meshIDs", meshIDs );
+    IO::readHDF5( fid, "meshIDs", meshIDs );
     d_meshes.resize( meshIDs.size() );
     for ( size_t i = 0; i < meshIDs.size(); i++ )
         d_meshes[i] = manager->getData<Mesh>( meshIDs[i].getHash() );

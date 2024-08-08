@@ -579,12 +579,12 @@ void MultiVectorOperations::writeRestart( int64_t fid ) const
     std::vector<uint64_t> opsHash( d_operations.size() );
     for ( size_t i = 0; i < d_operations.size(); i++ )
         opsHash[i] = d_operations[i]->getID();
-    writeHDF5( fid, "VectorOperationsHash", opsHash );
+    IO::writeHDF5( fid, "VectorOperationsHash", opsHash );
 }
 MultiVectorOperations::MultiVectorOperations( int64_t fid, AMP::IO::RestartManager *manager )
 {
     std::vector<uint64_t> opsHash;
-    readHDF5( fid, "VectorOperationsHash", opsHash );
+    IO::readHDF5( fid, "VectorOperationsHash", opsHash );
     d_operations.resize( opsHash.size() );
     for ( size_t i = 0; i < d_operations.size(); i++ )
         d_operations[i] = manager->getData<VectorOperations>( opsHash[i] );

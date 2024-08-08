@@ -119,12 +119,15 @@ AMP::Mesh::GeomType Geometry::getGeomType() const
 static inline uint8_t readPhysical( int64_t fid )
 {
     uint8_t x = 0;
-    readHDF5( fid, "physicalDim", x );
+    IO::readHDF5( fid, "physicalDim", x );
     return x;
 }
 uint64_t Geometry::getID() const { return reinterpret_cast<uint64_t>( this ); }
 void Geometry::registerChildObjects( AMP::IO::RestartManager * ) const {}
-void Geometry::writeRestart( int64_t fid ) const { writeHDF5( fid, "physicalDim", d_physicalDim ); }
+void Geometry::writeRestart( int64_t fid ) const
+{
+    IO::writeHDF5( fid, "physicalDim", d_physicalDim );
+}
 Geometry::Geometry( int64_t fid ) : d_physicalDim( readPhysical( fid ) ) {}
 
 
@@ -160,7 +163,7 @@ AMP::IO::RestartManager::DataStoreType<AMP::Geometry::Geometry>::read(
     using namespace AMP::Geometry;
     int64_t gid = openGroup( fid, name );
     std::string type;
-    readHDF5( gid, "GeomType", type );
+    IO::readHDF5( gid, "GeomType", type );
     std::shared_ptr<AMP::Geometry::Geometry> geom;
     if ( type == "MultiGeometry" ) {
         geom = std::make_shared<MultiGeometry>( gid, manager );

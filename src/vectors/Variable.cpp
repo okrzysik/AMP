@@ -51,14 +51,14 @@ uint64_t Variable::getID() const { return reinterpret_cast<uint64_t>( this ); }
 void Variable::registerChildObjects( AMP::IO::RestartManager * ) const {}
 void Variable::writeRestart( int64_t fid ) const
 {
-    writeHDF5( fid, "type", className() );
-    writeHDF5( fid, "name", d_VariableName );
-    writeHDF5( fid, "units", d_Units );
+    IO::writeHDF5( fid, "type", className() );
+    IO::writeHDF5( fid, "name", d_VariableName );
+    IO::writeHDF5( fid, "units", d_Units );
 }
 Variable::Variable( int64_t fid )
 {
-    readHDF5( fid, "name", d_VariableName );
-    readHDF5( fid, "units", d_Units );
+    IO::readHDF5( fid, "name", d_VariableName );
+    IO::readHDF5( fid, "units", d_Units );
 }
 
 
@@ -84,9 +84,9 @@ template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Variable>::write(
     hid_t fid, const std::string &name ) const
 {
-    hid_t gid = createGroup( fid, name );
+    hid_t gid = IO::createGroup( fid, name );
     d_data->writeRestart( gid );
-    closeGroup( gid );
+    IO::closeGroup( gid );
 }
 template<>
 std::shared_ptr<AMP::LinearAlgebra::Variable>
@@ -94,9 +94,9 @@ AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Variable>::read(
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
     std::shared_ptr<AMP::LinearAlgebra::Variable> var;
-    hid_t gid = openGroup( fid, name );
+    hid_t gid = IO::openGroup( fid, name );
     std::string type;
-    readHDF5( gid, "type", type );
+    IO::readHDF5( gid, "type", type );
     if ( type == "Variable" ) {
         var = std::make_shared<AMP::LinearAlgebra::Variable>( gid );
     } else if ( type == "MultiVariable" ) {
@@ -104,6 +104,6 @@ AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Variable>::read(
     } else {
         AMP_ERROR( "Unknown variable type: " + type );
     }
-    closeGroup( gid );
+    IO::closeGroup( gid );
     return var;
 }

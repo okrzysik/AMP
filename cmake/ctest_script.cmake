@@ -99,6 +99,10 @@ IF ( NOT DEFINED N_PROCS )
             STRING( REGEX REPLACE "^.*Total Number of Cores: ([0-9]+).*$" "\\1" N_PROCS "${info}" )
         ENDIF()
     ENDIF()
+    # Windows:
+    IF(WIN32)
+        SET(N_PROCS "$ENV{NUMBER_OF_PROCESSORS}")
+    ENDIF()
 ENDIF()
 
 

@@ -12,7 +12,7 @@
 #include "AMP/utils/Array.h"
 
 
-namespace AMP {
+namespace AMP::IO {
 
 
 //! Class to wrap HDF5 data
@@ -76,7 +76,7 @@ protected:
 std::unique_ptr<HDF5data> readHDF5( hid_t fid, const std::string_view &name );
 
 
-} // namespace AMP
+} // namespace AMP::IO
 
 
 #endif

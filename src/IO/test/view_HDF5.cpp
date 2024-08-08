@@ -34,9 +34,9 @@ int main( int argc, char *argv[] )
             std::cerr << "File does not exist\n";
             return -1;
         }
-        auto fid  = AMP::openHDF5( argv[i], "r" );
-        auto data = AMP::readHDF5( fid, "/" );
-        AMP::closeHDF5( fid );
+        auto fid  = AMP::IO::openHDF5( argv[i], "r" );
+        auto data = AMP::IO::readHDF5( fid, "/" );
+        AMP::IO::closeHDF5( fid );
         data->print( 2, "  " );
         std::cout << std::endl;
     }

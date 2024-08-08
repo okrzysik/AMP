@@ -84,15 +84,16 @@ EquationKeyData::EquationKeyData( std::string_view eq, const Units &unit ) : Key
             i = j + 1;
         }
     }
-    d_eq = std::make_shared<MathExpr>( equation, vars );
+    d_eq = new MathExpr( equation, vars );
 }
-EquationKeyData::EquationKeyData( std::shared_ptr<const MathExpr> eq, const Units &unit )
-    : KeyData( unit ), d_eq( eq )
+EquationKeyData::EquationKeyData( MathExpr eq, const Units &unit )
+    : KeyData( unit ), d_eq( new MathExpr( std::move( eq ) ) )
 {
 }
+EquationKeyData::~EquationKeyData() { delete d_eq; }
 std::unique_ptr<KeyData> EquationKeyData::clone() const
 {
-    return std::make_unique<EquationKeyData>( d_eq, d_unit );
+    return std::make_unique<EquationKeyData>( d_eq->clone(), d_unit );
 }
 void EquationKeyData::print( std::ostream &os, std::string_view indent, bool, bool printType ) const
 {
@@ -185,29 +186,31 @@ size_t EquationKeyData::unpack( const std::byte *buf )
     size_t N = 0;
     N += AMP::unpack( expr, &buf[N] );
     N += AMP::unpack( vars, &buf[N] );
-    d_eq.reset();
+    delete d_eq;
+    d_eq = nullptr;
     if ( !expr.empty() )
-        d_eq = std::make_shared<MathExpr>( expr, vars );
+        d_eq = new MathExpr( expr, vars );
     return N;
 }
-void EquationKeyData::writeHDF5( int64_t fid, std::string_view name ) const
+void EquationKeyData::writeHDF5( int64_t fid, const std::string &name ) const
 {
-    hid_t gid = createGroup( fid, name );
-    AMP::writeHDF5( gid, "expr", d_eq->getExpr() );
-    AMP::writeHDF5( gid, "vars", d_eq->getVars() );
-    closeGroup( gid );
+    hid_t gid = AMP::IO::createGroup( fid, name );
+    AMP::IO::writeHDF5( gid, "expr", d_eq->getExpr() );
+    AMP::IO::writeHDF5( gid, "vars", d_eq->getVars() );
+    AMP::IO::closeGroup( gid );
 }
-void EquationKeyData::readHDF5( int64_t fid, std::string_view name )
+void EquationKeyData::readHDF5( int64_t fid, const std::string &name )
 {
     std::string expr;
     std::vector<std::string> vars;
-    hid_t gid = openGroup( fid, name );
-    AMP::readHDF5( gid, "expr", expr );
-    AMP::readHDF5( gid, "vars", vars );
-    closeGroup( gid );
-    d_eq.reset();
+    hid_t gid = AMP::IO::openGroup( fid, name );
+    AMP::IO::readHDF5( gid, "expr", expr );
+    AMP::IO::readHDF5( gid, "vars", vars );
+    AMP::IO::closeGroup( gid );
+    delete d_eq;
+    d_eq = nullptr;
     if ( !expr.empty() )
-        d_eq = std::make_shared<MathExpr>( expr, vars );
+        d_eq = new MathExpr( expr, vars );
 }
 
 

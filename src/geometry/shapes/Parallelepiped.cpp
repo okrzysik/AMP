@@ -293,27 +293,27 @@ bool Parallelepiped::operator==( const Geometry &rhs ) const
 void Parallelepiped::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "a", d_a );
-    AMP::writeHDF5( fid, "b", d_b );
-    AMP::writeHDF5( fid, "c", d_c );
-    AMP::writeHDF5( fid, "offset", d_offset );
-    AMP::writeHDF5( fid, "M_inv", d_M_inv );
-    AMP::writeHDF5( fid, "V", d_V );
-    AMP::writeHDF5( fid, "n_ab", d_n_ab );
-    AMP::writeHDF5( fid, "n_ac", d_n_ac );
-    AMP::writeHDF5( fid, "n_bc", d_n_bc );
+    AMP::IO::writeHDF5( fid, "a", d_a );
+    AMP::IO::writeHDF5( fid, "b", d_b );
+    AMP::IO::writeHDF5( fid, "c", d_c );
+    AMP::IO::writeHDF5( fid, "offset", d_offset );
+    AMP::IO::writeHDF5( fid, "M_inv", d_M_inv );
+    AMP::IO::writeHDF5( fid, "V", d_V );
+    AMP::IO::writeHDF5( fid, "n_ab", d_n_ab );
+    AMP::IO::writeHDF5( fid, "n_ac", d_n_ac );
+    AMP::IO::writeHDF5( fid, "n_bc", d_n_bc );
 }
 Parallelepiped::Parallelepiped( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "a", d_a );
-    AMP::readHDF5( fid, "b", d_b );
-    AMP::readHDF5( fid, "c", d_c );
-    AMP::readHDF5( fid, "offset", d_offset );
-    AMP::readHDF5( fid, "M_inv", d_M_inv );
-    AMP::readHDF5( fid, "V", d_V );
-    AMP::readHDF5( fid, "n_ab", d_n_ab );
-    AMP::readHDF5( fid, "n_ac", d_n_ac );
-    AMP::readHDF5( fid, "n_bc", d_n_bc );
+    AMP::IO::readHDF5( fid, "a", d_a );
+    AMP::IO::readHDF5( fid, "b", d_b );
+    AMP::IO::readHDF5( fid, "c", d_c );
+    AMP::IO::readHDF5( fid, "offset", d_offset );
+    AMP::IO::readHDF5( fid, "M_inv", d_M_inv );
+    AMP::IO::readHDF5( fid, "V", d_V );
+    AMP::IO::readHDF5( fid, "n_ab", d_n_ab );
+    AMP::IO::readHDF5( fid, "n_ac", d_n_ac );
+    AMP::IO::readHDF5( fid, "n_bc", d_n_bc );
 }
 
 

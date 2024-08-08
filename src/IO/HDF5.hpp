@@ -40,7 +40,7 @@ class TimeIntegrator;
 }
 
 
-namespace AMP {
+namespace AMP::IO {
 
 
 #ifdef AMP_USE_HDF5
@@ -51,28 +51,28 @@ namespace AMP {
  ******************************************************************/
 template<>
 void writeHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
-    hid_t, const std::string_view &, const std::shared_ptr<AMP::Geometry::Geometry> & );
+    hid_t, const std::string &, const std::shared_ptr<AMP::Geometry::Geometry> & );
 template<>
 void writeHDF5<std::shared_ptr<const AMP::Geometry::Geometry>>(
-    hid_t, const std::string_view &, const std::shared_ptr<const AMP::Geometry::Geometry> & );
+    hid_t, const std::string &, const std::shared_ptr<const AMP::Geometry::Geometry> & );
 template<>
 void readHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
-    hid_t, const std::string_view &, std::shared_ptr<AMP::Geometry::Geometry> & );
+    hid_t, const std::string &, std::shared_ptr<AMP::Geometry::Geometry> & );
 
 
 /******************************************************************
  * Default implementation                                          *
  ******************************************************************/
 template<class T>
-void writeHDF5Array( hid_t, const std::string_view &, const AMP::Array<T> & );
+void writeHDF5Array( hid_t, const std::string &, const AMP::Array<T> & );
 template<class T>
-void readHDF5Array( hid_t, const std::string_view &, AMP::Array<T> & );
+void readHDF5Array( hid_t, const std::string &, AMP::Array<T> & );
 template<class T>
-void writeHDF5Scalar( hid_t, const std::string_view &, const T & );
+void writeHDF5Scalar( hid_t, const std::string &, const T & );
 template<class T>
-void readHDF5Scalar( hid_t, const std::string_view &, T & );
+void readHDF5Scalar( hid_t, const std::string &, T & );
 template<class TYPE>
-void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )
+void writeHDF5( hid_t fid, const std::string &name, const TYPE &x )
 {
     NULL_USE( fid );
     if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
@@ -114,7 +114,7 @@ void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )
     } else if constexpr ( std::is_same_v<TYPE, std::string> ) {
         // We are dealing with a std::string
         writeHDF5Scalar( fid, name, x );
-    } else if constexpr ( std::is_same_v<TYPE, std::string_view> || std::is_same_v<TYPE, char *> ||
+    } else if constexpr ( std::is_same_v<TYPE, std::string> || std::is_same_v<TYPE, char *> ||
                           std::is_same_v<TYPE, const char *> ) {
         // We are dealing with a string or char array
         writeHDF5( fid, name, std::string( x ) );
@@ -129,7 +129,7 @@ void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )
     }
 }
 template<class TYPE>
-void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
+void readHDF5( hid_t fid, const std::string &name, TYPE &x )
 {
     NULL_USE( fid );
     if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
@@ -300,7 +300,7 @@ inline std::vector<size_t> convertSize( int N, const hsize_t *dims )
  * Helper functions for reading/writing AMP::Array<TYPE>           *
  ******************************************************************/
 template<class T>
-void readHDF5ArrayDefault( hid_t fid, const std::string_view &name, AMP::Array<T> &data )
+void readHDF5ArrayDefault( hid_t fid, const std::string &name, AMP::Array<T> &data )
 {
     if ( !H5Dexists( fid, name ) ) {
         // Dataset does not exist
@@ -330,7 +330,7 @@ void readHDF5ArrayDefault( hid_t fid, const std::string_view &name, AMP::Array<T
     H5Sclose( dataspace );
 }
 template<class T>
-void writeHDF5ArrayDefault( hid_t fid, const std::string_view &name, const AMP::Array<T> &data )
+void writeHDF5ArrayDefault( hid_t fid, const std::string &name, const AMP::Array<T> &data )
 {
     size_t N_bytes = data.length() * sizeof( T );
     auto dim       = arraySize( data );
@@ -363,9 +363,9 @@ void writeHDF5ArrayDefault( hid_t fid, const std::string_view &name, const AMP::
 
 // Default no-op implementations for use without HDF5
 // clang-format off
-template<class T> void writeHDF5( hid_t, const std::string_view &, const T & ) {}
-template<class T> void readHDF5( hid_t, const std::string_view &, T & ) {}
-template<class T> std::unique_ptr<T> readHDF5( hid_t, const std::string_view &, AMP_MPI ) {}
+template<class T> void writeHDF5( hid_t, const std::string &, const T & ) {}
+template<class T> void readHDF5( hid_t, const std::string &, T & ) {}
+template<class T> std::unique_ptr<T> readHDF5( hid_t, const std::string &, AMP_MPI ) {}
 template<class T> hid_t getHDF5datatype() { return 0; }
     // clang-format on
 
@@ -373,51 +373,51 @@ template<class T> hid_t getHDF5datatype() { return 0; }
 #endif
 
 
-} // namespace AMP
+} // namespace AMP::IO
 
 
 #ifdef AMP_USE_HDF5 // USE HDF5
-    #define INSTANTIATE_SCALAR_HDF5( TYPE )                                                 \
-        template hid_t AMP::getHDF5datatype<TYPE>();                                        \
-        template void AMP::readHDF5Scalar<TYPE>( hid_t, const std::string_view &, TYPE & ); \
-        template void AMP::writeHDF5Scalar<TYPE>( hid_t, const std::string_view &, const TYPE & )
+    #define INSTANTIATE_SCALAR_HDF5( TYPE )                                                \
+        template hid_t AMP::IO::getHDF5datatype<TYPE>();                                   \
+        template void AMP::IO::readHDF5Scalar<TYPE>( hid_t, const std::string &, TYPE & ); \
+        template void AMP::IO::writeHDF5Scalar<TYPE>( hid_t, const std::string &, const TYPE & )
 
-    #define INSTANTIATE_RWARRAY_HDF5( TYPE )                       \
-        template void AMP::readHDF5Array<TYPE>(                    \
-            hid_t, const std::string_view &, AMP::Array<TYPE> & ); \
-        template void AMP::writeHDF5Array<TYPE>(                   \
-            hid_t, const std::string_view &, const AMP::Array<TYPE> & )
+    #define INSTANTIATE_RWARRAY_HDF5( TYPE )                  \
+        template void AMP::IO::readHDF5Array<TYPE>(           \
+            hid_t, const std::string &, AMP::Array<TYPE> & ); \
+        template void AMP::IO::writeHDF5Array<TYPE>(          \
+            hid_t, const std::string &, const AMP::Array<TYPE> & )
 
-    #define INSTANTIATE_HDF5( TYPE )                                                         \
-        template void AMP::readHDF5<TYPE>( hid_t, const std::string_view &, TYPE & );        \
-        template void AMP::readHDF5<std::vector<TYPE>>(                                      \
-            hid_t, const std::string_view &, std::vector<TYPE> & );                          \
-        template void AMP::writeHDF5<TYPE>( hid_t, const std::string_view &, const TYPE & ); \
-        template void AMP::writeHDF5<std::vector<TYPE>>(                                     \
-            hid_t, const std::string_view &, const std::vector<TYPE> & )
+    #define INSTANTIATE_HDF5( TYPE )                                                        \
+        template void AMP::IO::readHDF5<TYPE>( hid_t, const std::string &, TYPE & );        \
+        template void AMP::IO::readHDF5<std::vector<TYPE>>(                                 \
+            hid_t, const std::string &, std::vector<TYPE> & );                              \
+        template void AMP::IO::writeHDF5<TYPE>( hid_t, const std::string &, const TYPE & ); \
+        template void AMP::IO::writeHDF5<std::vector<TYPE>>(                                \
+            hid_t, const std::string &, const std::vector<TYPE> & )
 
-    #define INSTANTIATE_AMPARRAY_HDF5( TYPE )                      \
-        template void AMP::readHDF5<AMP::Array<TYPE>>(             \
-            hid_t, const std::string_view &, AMP::Array<TYPE> & ); \
-        template void AMP::writeHDF5<AMP::Array<TYPE>>(            \
-            hid_t, const std::string_view &, const AMP::Array<TYPE> & )
+    #define INSTANTIATE_AMPARRAY_HDF5( TYPE )                 \
+        template void AMP::IO::readHDF5<AMP::Array<TYPE>>(    \
+            hid_t, const std::string &, AMP::Array<TYPE> & ); \
+        template void AMP::IO::writeHDF5<AMP::Array<TYPE>>(   \
+            hid_t, const std::string &, const AMP::Array<TYPE> & )
 #else
     #define INSTANTIATE_SCALAR_HDF5( TYPE )
     #define INSTANTIATE_RWARRAY_HDF5( TYPE )
 
-    #define INSTANTIATE_HDF5( TYPE )                                                         \
-        template void AMP::readHDF5<TYPE>( hid_t, const std::string_view &, TYPE & );        \
-        template void AMP::readHDF5<std::vector<TYPE>>(                                      \
-            hid_t, const std::string_view &, std::vector<TYPE> & );                          \
-        template void AMP::writeHDF5<TYPE>( hid_t, const std::string_view &, const TYPE & ); \
-        template void AMP::writeHDF5<std::vector<TYPE>>(                                     \
-            hid_t, const std::string_view &, const std::vector<TYPE> & )
+    #define INSTANTIATE_HDF5( TYPE )                                                        \
+        template void AMP::IO::readHDF5<TYPE>( hid_t, const std::string &, TYPE & );        \
+        template void AMP::IO::readHDF5<std::vector<TYPE>>(                                 \
+            hid_t, const std::string &, std::vector<TYPE> & );                              \
+        template void AMP::IO::writeHDF5<TYPE>( hid_t, const std::string &, const TYPE & ); \
+        template void AMP::IO::writeHDF5<std::vector<TYPE>>(                                \
+            hid_t, const std::string &, const std::vector<TYPE> & )
 
-    #define INSTANTIATE_AMPARRAY_HDF5( TYPE )                      \
-        template void AMP::readHDF5<AMP::Array<TYPE>>(             \
-            hid_t, const std::string_view &, AMP::Array<TYPE> & ); \
-        template void AMP::writeHDF5<AMP::Array<TYPE>>(            \
-            hid_t, const std::string_view &, const AMP::Array<TYPE> & )
+    #define INSTANTIATE_AMPARRAY_HDF5( TYPE )                 \
+        template void AMP::IO::readHDF5<AMP::Array<TYPE>>(    \
+            hid_t, const std::string &, AMP::Array<TYPE> & ); \
+        template void AMP::IO::writeHDF5<AMP::Array<TYPE>>(   \
+            hid_t, const std::string &, const AMP::Array<TYPE> & )
 #endif
 
 

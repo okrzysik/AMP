@@ -23,14 +23,14 @@ static inline MeshElementIndex convert( const std::array<int, 4> &x )
 }
 static_assert( sizeof( MeshElementIndex ) == 16 );
 template<>
-hid_t AMP::getHDF5datatype<MeshElementIndex>()
+hid_t AMP::IO::getHDF5datatype<MeshElementIndex>()
 {
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::writeHDF5Array<MeshElementIndex>( hid_t fid,
-                                            const std::string_view &name,
-                                            const AMP::Array<MeshElementIndex> &data )
+void AMP::IO::writeHDF5Array<MeshElementIndex>( hid_t fid,
+                                                const std::string &name,
+                                                const AMP::Array<MeshElementIndex> &data )
 {
     AMP::Array<int> data2( AMP::cat( AMP::ArraySize( 4 ), data.size() ) );
     for ( size_t i = 0; i < data.length(); i++ ) {
@@ -43,32 +43,32 @@ void AMP::writeHDF5Array<MeshElementIndex>( hid_t fid,
     writeHDF5Array( fid, name, data2 );
 }
 template<>
-void AMP::readHDF5Array<MeshElementIndex>( hid_t fid,
-                                           const std::string_view &name,
-                                           AMP::Array<MeshElementIndex> &data )
+void AMP::IO::readHDF5Array<MeshElementIndex>( hid_t fid,
+                                               const std::string &name,
+                                               AMP::Array<MeshElementIndex> &data )
 {
     AMP::Array<int> data2;
-    AMP::readHDF5Array<int>( fid, name, data2 );
+    readHDF5Array<int>( fid, name, data2 );
     data.resize( pop( data2.size() ) );
     for ( size_t i = 0; i < data.length(); i++ ) {
         data( i ) = convert( { data2( 0, i ), data2( 1, i ), data2( 2, i ), data2( 3, i ) } );
     }
 }
 template<>
-void AMP::writeHDF5Scalar<MeshElementIndex>( hid_t fid,
-                                             const std::string_view &name,
-                                             const MeshElementIndex &data )
+void AMP::IO::writeHDF5Scalar<MeshElementIndex>( hid_t fid,
+                                                 const std::string &name,
+                                                 const MeshElementIndex &data )
 {
     auto data2 = convert( data );
-    writeHDF5( fid, name, data2 );
+    IO::writeHDF5( fid, name, data2 );
 }
 template<>
-void AMP::readHDF5Scalar<MeshElementIndex>( hid_t fid,
-                                            const std::string_view &name,
-                                            MeshElementIndex &data )
+void AMP::IO::readHDF5Scalar<MeshElementIndex>( hid_t fid,
+                                                const std::string &name,
+                                                MeshElementIndex &data )
 {
     std::array<int, 4> data2 = { 0 };
-    readHDF5( fid, name, data2 );
+    IO::readHDF5( fid, name, data2 );
     data = convert( data2 );
 }
 #endif

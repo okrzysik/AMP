@@ -16,7 +16,7 @@
 #ifdef AMP_USE_HDF5 // USE HDF5
 
 
-namespace AMP {
+namespace AMP::IO {
 
 
 static inline std::string HDF5_getMemberName( hid_t id, unsigned idx )
@@ -127,7 +127,7 @@ class HDF5_primitive final : public HDF5data
 public:
     HDF5_primitive( hid_t fid, const std::string_view &name ) : HDF5data( fid, name )
     {
-        readHDF5( fid, name, d_data );
+        readHDF5( fid, std::string( name ), d_data );
     }
     HDF5_primitive( const std::string_view &name, const TYPE &data )
         : HDF5data( 0, name ), d_data( 1 )
@@ -650,14 +650,14 @@ std::unique_ptr<HDF5data> readHDF5( hid_t fid, const std::string_view &name )
 }
 
 
-} // namespace AMP
+} // namespace AMP::IO
 
 
     /********************************************************
      *  Explicit instantiations of Array                     *
      ********************************************************/
     #include "AMP/utils/Array.hpp"
-instantiateArrayConstructors( std::shared_ptr<AMP::HDF5data> );
+instantiateArrayConstructors( std::shared_ptr<AMP::IO::HDF5data> );
 
 
 #endif

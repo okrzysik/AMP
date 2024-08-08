@@ -110,25 +110,25 @@ BoxMesh::BoxMesh( const BoxMesh &mesh )
 void BoxMesh::writeRestart( int64_t fid ) const
 {
     Mesh::writeRestart( fid );
-    writeHDF5( fid, "rank", d_rank );
-    writeHDF5( fid, "size", d_size );
-    writeHDF5( fid, "globalSize", d_globalSize );
-    writeHDF5( fid, "numBlocks", d_numBlocks );
-    writeHDF5( fid, "startIndex[0]", d_startIndex[0] );
-    writeHDF5( fid, "startIndex[1]", d_startIndex[1] );
-    writeHDF5( fid, "startIndex[2]", d_startIndex[2] );
-    writeHDF5( fid, "endIndex[0]", d_endIndex[0] );
-    writeHDF5( fid, "endIndex[1]", d_endIndex[1] );
-    writeHDF5( fid, "endIndex[2]", d_endIndex[2] );
-    writeHDF5( fid, "localIndex", d_localIndex );
-    writeHDF5( fid, "indexSize", d_indexSize );
-    writeHDF5( fid, "surfaceId", d_surfaceId );
+    IO::writeHDF5( fid, "rank", d_rank );
+    IO::writeHDF5( fid, "size", d_size );
+    IO::writeHDF5( fid, "globalSize", d_globalSize );
+    IO::writeHDF5( fid, "numBlocks", d_numBlocks );
+    IO::writeHDF5( fid, "startIndex[0]", d_startIndex[0] );
+    IO::writeHDF5( fid, "startIndex[1]", d_startIndex[1] );
+    IO::writeHDF5( fid, "startIndex[2]", d_startIndex[2] );
+    IO::writeHDF5( fid, "endIndex[0]", d_endIndex[0] );
+    IO::writeHDF5( fid, "endIndex[1]", d_endIndex[1] );
+    IO::writeHDF5( fid, "endIndex[2]", d_endIndex[2] );
+    IO::writeHDF5( fid, "localIndex", d_localIndex );
+    IO::writeHDF5( fid, "indexSize", d_indexSize );
+    IO::writeHDF5( fid, "surfaceId", d_surfaceId );
 }
 template<class TYPE>
 static inline TYPE read( int64_t fid, const std::string &name )
 {
     TYPE x;
-    readHDF5( fid, name, x );
+    IO::readHDF5( fid, name, x );
     return x;
 }
 BoxMesh::BoxMesh( int64_t fid, AMP::IO::RestartManager *manager )
@@ -141,12 +141,12 @@ BoxMesh::BoxMesh( int64_t fid, AMP::IO::RestartManager *manager )
       d_indexSize( read<std::array<int, 3>>( fid, "indexSize" ) ),
       d_surfaceId( read<std::array<int, 6>>( fid, "surfaceId" ) )
 {
-    readHDF5( fid, "startIndex[0]", const_cast<std::vector<int> &>( d_startIndex[0] ) );
-    readHDF5( fid, "startIndex[1]", const_cast<std::vector<int> &>( d_startIndex[1] ) );
-    readHDF5( fid, "startIndex[2]", const_cast<std::vector<int> &>( d_startIndex[2] ) );
-    readHDF5( fid, "endIndex[0]", const_cast<std::vector<int> &>( d_endIndex[0] ) );
-    readHDF5( fid, "endIndex[1]", const_cast<std::vector<int> &>( d_endIndex[1] ) );
-    readHDF5( fid, "endIndex[2]", const_cast<std::vector<int> &>( d_endIndex[2] ) );
+    IO::readHDF5( fid, "startIndex[0]", const_cast<std::vector<int> &>( d_startIndex[0] ) );
+    IO::readHDF5( fid, "startIndex[1]", const_cast<std::vector<int> &>( d_startIndex[1] ) );
+    IO::readHDF5( fid, "startIndex[2]", const_cast<std::vector<int> &>( d_startIndex[2] ) );
+    IO::readHDF5( fid, "endIndex[0]", const_cast<std::vector<int> &>( d_endIndex[0] ) );
+    IO::readHDF5( fid, "endIndex[1]", const_cast<std::vector<int> &>( d_endIndex[1] ) );
+    IO::readHDF5( fid, "endIndex[2]", const_cast<std::vector<int> &>( d_endIndex[2] ) );
 }
 
 

@@ -364,7 +364,7 @@ createKeyData( std::string_view key,
         }
         if ( data2.length() > 1 )
             AMP_ERROR( "Arrays of equations are not currently supported" );
-        data = std::make_unique<EquationKeyData>( std::string( data2( 0 ) ) );
+        data = std::make_unique<EquationKeyData>( std::string( data2( 0 ) ), unit );
     } else if ( data_type == class_type::BOOL ) {
         // We are dealing with logical values
         Array<bool> data2( values.size() );

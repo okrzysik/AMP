@@ -50,18 +50,18 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh
 void MovableBoxMesh::writeRestart( int64_t fid ) const
 {
     BoxMesh::writeRestart( fid );
-    writeHDF5( fid, "pos_hash", d_pos_hash );
-    writeHDF5( fid, "index", d_index );
-    writeHDF5( fid, "coord", d_coord );
-    writeHDF5( fid, "ids", d_ids );
+    IO::writeHDF5( fid, "pos_hash", d_pos_hash );
+    IO::writeHDF5( fid, "index", d_index );
+    IO::writeHDF5( fid, "coord", d_coord );
+    IO::writeHDF5( fid, "ids", d_ids );
 }
 MovableBoxMesh::MovableBoxMesh( int64_t fid, AMP::IO::RestartManager *manager )
     : BoxMesh( fid, manager )
 {
-    readHDF5( fid, "pos_hash", d_pos_hash );
-    readHDF5( fid, "index", d_index );
-    readHDF5( fid, "coord", d_coord );
-    readHDF5( fid, "ids", d_ids );
+    IO::readHDF5( fid, "pos_hash", d_pos_hash );
+    IO::readHDF5( fid, "index", d_index );
+    IO::readHDF5( fid, "coord", d_coord );
+    IO::readHDF5( fid, "ids", d_ids );
     BoxMesh::finalize( d_name, {} );
 }
 
