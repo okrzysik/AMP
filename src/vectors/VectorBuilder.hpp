@@ -109,16 +109,16 @@ Vector::shared_ptr createVectorAdaptor( const std::string &name,
         vecData = ArrayVectorData<T>::create( DOFs->numLocalDOF(), commList, data );
     } else if ( memType == AMP::Utilities::MemoryType::managed ) {
 #ifdef USE_DEVICE
-        vecOps = std::make_shared<VectorOperationsDevice<T>>();
-#endif
+        vecOps  = std::make_shared<VectorOperationsDevice<T>>();
         vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::ManagedAllocator<T>>::create(
             DOFs->numLocalDOF(), commList, data );
+#endif
     } else if ( memType == AMP::Utilities::MemoryType::device ) {
 #ifdef USE_DEVICE
-        vecOps = std::make_shared<VectorOperationsDevice<T>>();
-#endif
+        vecOps  = std::make_shared<VectorOperationsDevice<T>>();
         vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::DeviceAllocator<T>>::create(
             DOFs->numLocalDOF(), commList, data );
+#endif
     } else {
         AMP_ERROR( "Unknown memory location specified for data" );
     }

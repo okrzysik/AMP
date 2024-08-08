@@ -10,6 +10,7 @@
 template class AMP::LinearAlgebra::ArrayVectorData<double>;
 template class AMP::LinearAlgebra::ArrayVectorData<float>;
 
+#ifdef USE_DEVICE
 template class AMP::LinearAlgebra::
     ArrayVectorData<double, AMP::GPUFunctionTable, AMP::DeviceAllocator<double>>;
 template class AMP::LinearAlgebra::
@@ -18,3 +19,4 @@ template class AMP::LinearAlgebra::
     ArrayVectorData<double, AMP::GPUFunctionTable, AMP::ManagedAllocator<double>>;
 template class AMP::LinearAlgebra::
     ArrayVectorData<float, AMP::GPUFunctionTable, AMP::ManagedAllocator<float>>;
+#endif
