@@ -7,11 +7,8 @@
 #ifdef USE_OPENMP
     #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
-#ifdef USE_CUDA
-    #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
-#endif
-#ifdef USE_HIP
-    #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
+#ifdef USE_DEVICE
+    #include "AMP/vectors/operations/VectorOperationsDevice.h"
 #endif
 #include "AMP/utils/memory.h"
 
@@ -182,30 +179,16 @@ int main( int argc, char **argv )
         }
 #endif
 
-#ifdef USE_CUDA
+#ifdef USE_DEVICE
         using ALLOC = AMP::ManagedAllocator<double>;
         using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
-        using OPS   = AMP::LinearAlgebra::VectorOperationsCuda<double>;
+        using OPS   = AMP::LinearAlgebra::VectorOperationsDevice<double>;
         vec = AMP::LinearAlgebra::createSimpleVector<double, OPS, DATA>( N, var, globalComm );
         auto time_cuda = testPerformance( vec );
         if ( rank == 0 ) {
             AMP::pout << "SimpleVector<CUDA>:" << std::endl;
             time_cuda.print();
             time_cuda.print_speedup( time0 );
-            AMP::pout << std::endl;
-        }
-#endif
-
-#ifdef USE_HIP
-        using ALLOC = AMP::ManagedAllocator<double>;
-        using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
-        using OPS   = AMP::LinearAlgebra::VectorOperationsHip<double>;
-        vec = AMP::LinearAlgebra::createSimpleVector<double, OPS, DATA>( N, var, globalComm );
-        auto time_hip = testPerformance( vec );
-        if ( rank == 0 ) {
-            AMP::pout << "SimpleVector<HIP>:" << std::endl;
-            time_hip.print();
-            time_hip.print_speedup( time0 );
             AMP::pout << std::endl;
         }
 #endif

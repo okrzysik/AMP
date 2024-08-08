@@ -123,16 +123,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
 INSTANTIATE_VECTOR( double )
 INSTANTIATE_VECTOR( float )
 
-#ifdef USE_CUDA
-template Vector::shared_ptr
-    createSimpleVector<double,
-                       VectorOperationsDefault<double>,
-                       VectorDataDefault<double, AMP::ManagedAllocator<double>>>(
-        std::shared_ptr<Variable>,
-        std::shared_ptr<AMP::Discretization::DOFManager>,
-        std::shared_ptr<CommunicationList> );
-#endif
-#ifdef USE_HIP
+#ifdef USE_DEVICE
 template Vector::shared_ptr
     createSimpleVector<double,
                        VectorOperationsDefault<double>,

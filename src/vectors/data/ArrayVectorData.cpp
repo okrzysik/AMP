@@ -1,9 +1,6 @@
 #include "AMP/vectors/data/ArrayVectorData.h"
-#ifdef USE_HIP
-    #include "AMP/utils/hip/GPUFunctionTable.h"
-#endif
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/GPUFunctionTable.h"
+#ifdef USE_DEVICE
+    #include "AMP/utils/device/GPUFunctionTable.h"
 #endif
 
 #include "AMP/utils/memory.h"

@@ -24,11 +24,8 @@
 #ifdef USE_OPENMP
     #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
-#ifdef USE_CUDA
-    #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
-#endif
-#ifdef USE_HIP
-    #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
+#ifdef USE_DEVICE
+    #include "AMP/vectors/operations/VectorOperationsDevice.h"
 #endif
 #include "AMP/utils/memory.h"
 
@@ -119,12 +116,6 @@ bool isValid( const std::string &name )
 #ifndef USE_DEVICE
     valid = valid && name.find( "gpu" ) == std::string::npos;
 #endif
-#ifndef USE_CUDA
-    valid = valid && name.find( "cuda" ) == std::string::npos;
-#endif
-#ifndef USE_HIP
-    valid = valid && name.find( "hip" ) == std::string::npos;
-#endif
     NULL_USE( name );
     return valid;
 }
@@ -182,14 +173,9 @@ std::shared_ptr<VectorFactory> generateSimpleVectorFactory(
             generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsOpenMP<TYPE>>(
                 name, N, global, data );
 #endif
-    } else if ( ops == "cuda" ) {
-#ifdef USE_CUDA
-        factory = generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsCuda<TYPE>>(
-            name, N, global, data );
-#endif
-    } else if ( ops == "hip" ) {
-#ifdef USE_HIP
-        factory = generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsHip<TYPE>>(
+    } else if ( ops == "gpu" ) {
+#ifdef USE_DEVICE
+        factory = generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsDevice<TYPE>>(
             name, N, global, data );
 #endif
     } else {
@@ -320,14 +306,12 @@ std::vector<std::string> getSimpleVectorFactories()
     list.emplace_back( "SimpleVectorFactory<45,true,double>" );
     list.emplace_back( "SimpleVectorFactory<15,false,double,openmp,cpu>" );
     // list.push_back( "SimpleVectorFactory<15,false,double,default,gpu>" ); // Requires UVM
-    list.emplace_back( "SimpleVectorFactory<15,false,double,cuda,gpu>" );
-    list.emplace_back( "SimpleVectorFactory<15,false,double,hip,gpu>" );
+    list.emplace_back( "SimpleVectorFactory<15,false,double,gpu,gpu>" );
     list.emplace_back( "SimpleVectorFactory<15,false,float>" );
     list.emplace_back( "SimpleVectorFactory<15,true,float>" );
     list.emplace_back( "SimpleVectorFactory<15,false,float,openmp,cpu>" );
     // list.push_back( "SimpleVectorFactory<15,false,float,default,gpu>" ); // Requires UVM
-    list.emplace_back( "SimpleVectorFactory<15,false,float,cuda,gpu>" );
-    list.emplace_back( "SimpleVectorFactory<15,false,float,hip,gpu>" );
+    list.emplace_back( "SimpleVectorFactory<15,false,float,gpu,gpu>" );
     list = cleanList( list );
     return list;
 }

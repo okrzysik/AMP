@@ -1,5 +1,5 @@
-#ifndef included_AMP_CudaOperationsHelpers_h
-#define included_AMP_CudaOperationsHelpers_h
+#ifndef included_AMP_HIPOperationsHelpers_h
+#define included_AMP_HIPOperationsHelpers_h
 
 
 namespace AMP {
@@ -8,11 +8,11 @@ namespace LinearAlgebra {
 
 /**
  * \brief  A default set of helper functions for vector operations
- * \details CudaOperationsHelpers impliments a default set of
+ * \details HipOperationsHelpers impliments a default set of
  *    vector operations on the GPU.
  */
 template<typename TYPE>
-class CudaOperationsHelpers
+class DeviceOperationsHelpers
 {
 public:
     //  functions that operate on VectorData
@@ -41,6 +41,9 @@ public:
 
 
 } // namespace LinearAlgebra
+
+void DeviceSynchronize();
+
 } // namespace AMP
 
 
