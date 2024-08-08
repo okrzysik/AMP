@@ -1,4 +1,5 @@
 #include "AMP/utils/device/DeviceOperationsHelpers.h"
+
 #include "AMP/utils/hip/HipOperationsHelpers.hpp"
 
 // Explicit instantiations
