@@ -5,7 +5,7 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, typename Allocator>
+template<typename Policy>
 class CSRMatrixOperationsDefault : public MatrixOperations
 {
 

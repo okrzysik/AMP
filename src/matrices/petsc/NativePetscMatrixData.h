@@ -9,6 +9,8 @@ namespace AMP::LinearAlgebra {
 
 /** \class NativePetscMatrixData
  * \brief  This is a thin wrapper around PETSc Mat
+ * \details  As opposed to ManagedPetscMatrixData, this is a
+ *    thin wrapper around a PETSc Mat.
  */
 class NativePetscMatrixData : public MatrixData
 {

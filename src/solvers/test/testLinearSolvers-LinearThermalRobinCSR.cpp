@@ -32,10 +32,13 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/utils/memory.h"
 
 #ifdef AMP_USE_HYPRE
     #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
+#endif
+
+#ifdef USE_CUDA
+    #include "AMP/utils/cuda/CudaAllocator.h"
 #endif
 
 #include <iomanip>
@@ -79,7 +82,7 @@ createVectorInSpace( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
     return AMP::LinearAlgebra::createSimpleVector<
         double,
         AMP::LinearAlgebra::VectorOperationsDefault<double>,
-        AMP::LinearAlgebra::VectorDataDefault<double, AMP::ManagedAllocator<double>>>(
+        AMP::LinearAlgebra::VectorDataDefault<double, AMP::CudaManagedAllocator<double>>>(
         var, DOFs, comm_list );
 #else
     return AMP::LinearAlgebra::createVector( DOFs, var );
@@ -190,38 +193,33 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     using scalar_t = typename Policy::scalar_t;
 
     gidx_t firstRow, endRow;
-    lidx_t nnz_pad;
-    std::vector<lidx_t> nnz_d, nnz_od;
-    std::vector<lidx_t> rowstart_d, rowstart_od;
-    std::vector<gidx_t> cols_d, cols_od;
-    std::vector<lidx_t> cols_loc_d, cols_loc_od;
-    std::vector<scalar_t> coeffs_d, coeffs_od;
+    std::vector<lidx_t> nnz;
+    std::vector<gidx_t> cols;
+    std::vector<scalar_t> coeffs;
 
-    AMP::LinearAlgebra::transformDofToCSR<Policy>( diffusionOperator->getMatrix(),
-                                                   firstRow,
-                                                   endRow,
-                                                   nnz_d,
-                                                   rowstart_d,
-                                                   cols_d,
-                                                   cols_loc_d,
-                                                   coeffs_d,
-                                                   nnz_od,
-                                                   rowstart_od,
-                                                   cols_od,
-                                                   cols_loc_od,
-                                                   coeffs_od,
-                                                   nnz_pad );
+    AMP::LinearAlgebra::transformDofToCSR<Policy>(
+        diffusionOperator->getMatrix(), firstRow, endRow, nnz, cols, coeffs );
 
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_d{
-        nnz_d.data(), rowstart_d.data(), cols_d.data(), cols_loc_d.data(), coeffs_d.data()
-    };
+    lidx_t *nnz_p      = nullptr;
+    gidx_t *cols_p     = nullptr;
+    scalar_t *coeffs_p = nullptr;
 
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_od{
-        nnz_od.data(), rowstart_od.data(), cols_od.data(), cols_loc_od.data(), coeffs_od.data()
-    };
+#ifdef USE_CUDA
+    cudaMallocManaged( (void **) &nnz_p, sizeof( lidx_t ) * nnz.size() );
+    cudaMallocManaged( (void **) &cols_p, sizeof( gidx_t ) * cols.size() );
+    cudaMallocManaged( (void **) &coeffs_p, sizeof( scalar_t ) * coeffs.size() );
+
+    std::memcpy( nnz_p, nnz.data(), sizeof( lidx_t ) * nnz.size() );
+    std::memcpy( cols_p, cols.data(), sizeof( gidx_t ) * cols.size() );
+    std::memcpy( coeffs_p, coeffs.data(), sizeof( scalar_t ) * coeffs.size() );
+#else
+    nnz_p        = nnz.data();
+    cols_p       = cols.data();
+    coeffs_p     = coeffs.data();
+#endif
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
-        firstRow, endRow, pars_d, pars_od, nnz_pad, meshAdapter->getComm() );
+        firstRow, endRow, nnz_p, cols_p, coeffs_p, meshAdapter->getComm() );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
     AMP_ASSERT( csrMatrix );
@@ -303,7 +301,8 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR"
+        //        );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
@@ -318,7 +317,8 @@ int main( int argc, char *argv[] )
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
-    // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
     #endif

@@ -117,10 +117,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     const auto ampComm   = userVector->getComm();
 
     // construct a dof manager
-    const auto userDM     = userVector->getDOFManager();
-    const auto dofManager = std::make_shared<AMP::Discretization::DOFManager>(
-        localSize, ampComm, userDM->getRemoteDOFs() );
-
+    const auto dofManager = std::make_shared<AMP::Discretization::DOFManager>( localSize, ampComm );
     const auto copyVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "copyVariable" );
 
     // create a vector based on the dofs and variable

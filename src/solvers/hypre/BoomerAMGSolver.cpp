@@ -11,13 +11,11 @@
 #include <numeric>
 
 DISABLE_WARNINGS
-extern "C" {
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
 #include "HYPRE_parcsr_ls.h"
 #include "HYPRE_parcsr_mv.h"
 #include "_hypre_parcsr_mv.h"
-}
 ENABLE_WARNINGS
 
 
@@ -31,7 +29,6 @@ BoomerAMGSolver::BoomerAMGSolver() : HypreSolver() { d_bCreationPhase = true; }
 BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : HypreSolver( parameters )
 {
-    d_bCreationPhase = true;
     HYPRE_BoomerAMGCreate( &d_solver );
     AMP_ASSERT( parameters );
     BoomerAMGSolver::initialize( parameters );

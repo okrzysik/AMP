@@ -5,41 +5,18 @@
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.hpp"
 
 namespace AMP::LinearAlgebra {
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, std::allocator<int>>;
-template class CSRMatrixData<CSRPolicy<size_t, int, double>, std::allocator<int>>;
-template class CSRMatrix<CSRPolicy<size_t, int, double>, std::allocator<int>>;
+template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>>;
+template class CSRMatrixData<CSRPolicy<size_t, int, double>>;
+template class CSRMatrix<CSRPolicy<size_t, int, double>>;
 } // namespace AMP::LinearAlgebra
-
-#include "AMP/utils/memory.h"
-#ifdef USE_HIP
-namespace AMP::LinearAlgebra {
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, AMP::DeviceAllocator<int>>;
-template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::DeviceAllocator<int>>;
-template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::DeviceAllocator<int>>;
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, AMP::ManagedAllocator<int>>;
-template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::ManagedAllocator<int>>;
-template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::ManagedAllocator<int>>;
-} // namespace AMP::LinearAlgebra
-#endif
-#ifdef USE_CUDA
-namespace AMP::LinearAlgebra {
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, AMP::DeviceAllocator<int>>;
-template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::DeviceAllocator<int>>;
-template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::DeviceAllocator<int>>;
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, AMP::ManagedAllocator<int>>;
-template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::ManagedAllocator<int>>;
-template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::ManagedAllocator<int>>;
-} // namespace AMP::LinearAlgebra
-#endif
-
 
 #if defined( AMP_USE_HYPRE )
 
     #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
 
 namespace AMP::LinearAlgebra {
-template class CSRMatrixOperationsDefault<HypreCSRPolicy, std::allocator<int>>;
-template class CSRMatrix<HypreCSRPolicy, std::allocator<int>>;
+template class CSRMatrixOperationsDefault<HypreCSRPolicy>;
+template class CSRMatrix<HypreCSRPolicy>;
 } // namespace AMP::LinearAlgebra
 
 #endif

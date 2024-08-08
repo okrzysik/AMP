@@ -60,6 +60,13 @@ protected:
      */
     void VerifyEpetraReturn( int err, const char *func ) const;
 
+    /** \brief Constructor
+     * \param[in]  m1  Rowmap to create the Epetra matrix
+     * \param m2  Unused
+     * \param[in] entriesRow  The number of entries in the matrix per local row
+     */
+    EpetraMatrixData( Epetra_Map &m1, Epetra_Map *m2, int *entriesRow );
+
 public:
     explicit EpetraMatrixData( std::shared_ptr<MatrixParametersBase> params );
 

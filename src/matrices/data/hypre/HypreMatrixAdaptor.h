@@ -3,16 +3,9 @@
 
 #include "AMP/matrices/data/MatrixData.h"
 
-extern "C" {
-#include "_hypre_IJ_mv.h"
-#include "_hypre_parcsr_mv.h"
-
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
 #include "HYPRE_utilities.h"
-}
-
-#include <vector>
 
 namespace AMP::LinearAlgebra {
 
@@ -35,26 +28,14 @@ public:
 
 private:
     //! Main internal routine for initializing the matrix
-    void initializeHypreMatrix( AMP::Utilities::MemoryType,
-                                HYPRE_BigInt first_row,
+    void initializeHypreMatrix( HYPRE_BigInt first_row,
                                 HYPRE_BigInt last_row,
-                                HYPRE_BigInt nnz_total_d,
-                                HYPRE_Int *csr_ia_d,
-                                HYPRE_BigInt *csr_bja_d,
-                                HYPRE_Int *csr_lja_d,
-                                HYPRE_Real *csr_aa_d,
-                                HYPRE_BigInt nnz_total_od,
-                                HYPRE_Int *csr_ia_od,
-                                HYPRE_BigInt *csr_bja_od,
-                                HYPRE_Int *csr_lja_od,
-                                HYPRE_Real *csr_aa_od,
-                                HYPRE_BigInt csr_col_map_size,
-                                HYPRE_BigInt *csr_col_map );
+                                HYPRE_Int *const csr_ia,
+                                HYPRE_BigInt const *const csr_ja,
+                                HYPRE_Real const *const csr_aa );
 
     //! hypre IJ matrix that this class wraps
     HYPRE_IJMatrix d_matrix;
-
-    std::vector<HYPRE_BigInt> d_colMap;
 };
 
 } // namespace AMP::LinearAlgebra

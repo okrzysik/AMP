@@ -17,7 +17,6 @@
     #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
     #include <Epetra_CrsMatrix.h>
 #endif
-#include "AMP/utils/memory.h"
 
 #include <functional>
 
@@ -56,15 +55,32 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
             comm = AMP_MPI( AMP_COMM_SELF );
 
         // Create the matrix parameters
-        auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-            leftDOF, rightDOF, comm, getRow );
+        auto params =
+            std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
         params->d_CommListLeft  = leftVec->getCommunicationList();
         params->d_CommListRight = rightVec->getCommunicationList();
         params->d_VariableLeft  = leftVec->getVariable();
         params->d_VariableRight = rightVec->getVariable();
 
+        // Add the row sizes and local columns to the matrix parameters
+        std::set<size_t> columns;
+        size_t row_start = leftDOF->beginDOF();
+        size_t row_end   = leftDOF->endDOF();
+        for ( size_t row = row_start; row < row_end; row++ ) {
+            auto cols = getRow( row );
+            params->setEntriesInRow( row - row_start, cols.size() );
+            params->addColumns( cols );
+        }
+
         // Create the matrix
         auto newMatrixData = std::make_shared<AMP::LinearAlgebra::EpetraMatrixData>( params );
+        newMatrixData->setEpetraMaps( leftVec, rightVec );
+        // Initialize the matrix
+        for ( size_t row = row_start; row < row_end; row++ ) {
+            auto col = getRow( row );
+            newMatrixData->createValuesByGlobalID( row, col );
+        }
+        newMatrixData->fillComplete();
         auto newMatrix = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( newMatrixData );
         newMatrix->zero();
         newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -85,7 +101,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 /********************************************************
  * Build a CSRMatrix                                    *
  ********************************************************/
-template<typename Policy, class Allocator>
+template<typename Policy>
 std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                  AMP::LinearAlgebra::Vector::shared_ptr rightVec,
@@ -101,16 +117,21 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
     // Create the matrix parameters
-    auto params =
-        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm, getRow );
-    params->d_CommListLeft  = leftVec->getCommunicationList();
-    params->d_CommListRight = rightVec->getCommunicationList();
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
 
+    // Add the row sizes and local columns to the matrix parameters
+    size_t row_start = leftDOF->beginDOF();
+    size_t row_end   = leftDOF->endDOF();
+    for ( size_t row = row_start; row < row_end; row++ ) {
+        auto cols = getRow( row );
+        params->setEntriesInRow( row - row_start, cols.size() );
+        params->addColumns( cols );
+    }
     // Create the matrix
-    auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( data );
+    auto data      = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy>>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( data );
     // Initialize the matrix
     newMatrix->zero();
     newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -118,6 +139,12 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 }
 
 using DefaultCSRPolicy = CSRPolicy<size_t, int, double>;
+
+template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix<DefaultCSRPolicy>( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+                                   AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+                                   const std::function<std::vector<size_t>( size_t )> &getRow );
+
 
 /********************************************************
  * Build a DenseSerialMatrix                             *
@@ -167,14 +194,23 @@ createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                    "be fixed" );
     AMP_MPI comm = leftDOF->getComm();
     // Create the matrix parameters
-    auto params =
-        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm, getRow );
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
 
+    // Add the row sizes and local columns to the matrix parameters
+    std::set<size_t> columns;
+    size_t row_start = leftDOF->beginDOF();
+    size_t row_end   = leftDOF->endDOF();
+    for ( size_t row = row_start; row < row_end; row++ ) {
+        auto cols = getRow( row );
+        params->setEntriesInRow( row - row_start, cols.size() );
+        params->addColumns( cols );
+    }
     // Create the matrix
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::NativePetscMatrix>( params );
     // Initialize the matrix
+    //    newMatrix->zero();
     newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     return newMatrix;
 #else
@@ -211,7 +247,7 @@ static void test( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 
 
 /********************************************************
- * Matrix builder                                       *
+ * Matrix builder                                        *
  ********************************************************/
 std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
@@ -232,9 +268,6 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
             return rightDOF->getRowDOFs( elem );
         };
     }
-
-    auto memType = AMP::Utilities::getMemoryType( rightVec->getRawDataBlockAsVoid(0) );
-
     // Build the matrix
     std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix;
     if ( type == "ManagedEpetraMatrix" ) {
@@ -242,15 +275,7 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     } else if ( type == "NativePetscMatrix" ) {
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
     } else if ( type == "CSRMatrix" ) {
-      if ( memType <= AMP::Utilities::MemoryType::host ) {
-        matrix = createCSRMatrix<DefaultCSRPolicy,AMP::HostAllocator<int>>( leftVec, rightVec, getRow );
-      } else if ( memType == AMP::Utilities::MemoryType::managed ) {
-        matrix = createCSRMatrix<DefaultCSRPolicy,AMP::ManagedAllocator<int>>( leftVec, rightVec, getRow );
-      } else if ( memType == AMP::Utilities::MemoryType::device ) {
-        matrix = createCSRMatrix<DefaultCSRPolicy,AMP::DeviceAllocator<int>>( leftVec, rightVec, getRow );
-      } else {
-        AMP_ERROR( "Unknown memory location specified for data" );
-      }
+        matrix = createCSRMatrix<DefaultCSRPolicy>( leftVec, rightVec, getRow );
     } else if ( type == "DenseSerialMatrix" ) {
         matrix = createDenseSerialMatrix( leftVec, rightVec );
     } else {

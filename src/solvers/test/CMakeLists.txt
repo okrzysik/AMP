@@ -99,14 +99,9 @@ IF ( USE_LIBMESH )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 2 )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 4 )
 
-    
-    IF( USE_CUDA )
-        MESSAGE( WARNING "TEMPORARILY DISABLING LinearThermalRobinCSR TESTS WITH Cuda.  DO NOT MERGE INTO MASTER UNTIL FIXED.")
-    else()
-        ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR PROCS 1 )
-        ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR PROCS 2 )
-        ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR PROCS 4 )
-    ENDIF()
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR PROCS 1 )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR PROCS 2 )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR PROCS 4 )
 
     ADD_AMP_TEST( testSolversForUserMatrix PROCS 1 )
     ADD_AMP_TEST( testSolversForUserMatrix PROCS 2 )
