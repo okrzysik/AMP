@@ -115,9 +115,6 @@ CSRMatrixData<Policy, Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameter
         d_rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
 
-	AMP::pout << "DOF manager types are " << d_leftDOFManager->className()
-		  << " and " << d_rightDOFManager->className() << std::endl;
-
         d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
         d_first_row = d_leftDOFManager->beginDOF();
         d_last_row  = d_leftDOFManager->endDOF();

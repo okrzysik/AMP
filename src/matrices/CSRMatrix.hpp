@@ -27,6 +27,7 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
     : Matrix( params )
 {
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+    AMP::pout << "Using Kokkos operations" << std::endl;
     d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator, Kokkos::DefaultExecutionSpace>>();
 #else
     d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
@@ -38,9 +39,10 @@ template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+    AMP::pout << "Using Kokkos operations" << std::endl;
     d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator, Kokkos::DefaultExecutionSpace>>();
 #else
-  d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
 #endif
 }
 

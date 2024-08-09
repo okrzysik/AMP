@@ -5,7 +5,7 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class ExecSpace>
+template<typename Policy, typename Allocator, class ExecSpace>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
 
