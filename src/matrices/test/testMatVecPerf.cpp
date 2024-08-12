@@ -98,9 +98,9 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
     y->setToScalar( 1.0 );
     y->makeConsistent();
     x->zero();
-    // for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
-    matrix->multTranspose( y, x );
-    // }
+    for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
+        matrix->multTranspose( y, x );
+    }
 
     auto xNorm = static_cast<scalar_t>( x->L1Norm() );
 

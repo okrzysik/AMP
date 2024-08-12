@@ -120,7 +120,7 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 using DefaultCSRPolicy = CSRPolicy<size_t, int, double>;
 
 template std::shared_ptr<AMP::LinearAlgebra::Matrix>
-createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator>(
+createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<int>>(
     AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     const std::function<std::vector<size_t>( size_t )> &getRow );
@@ -251,18 +251,18 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
     } else if ( type == "CSRMatrix" ) {
         if ( memType <= AMP::Utilities::MemoryType::host ) {
-            matrix =
-                createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator>( leftVec, rightVec, getRow );
+            matrix = createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<int>>(
+                leftVec, rightVec, getRow );
         } else if ( memType == AMP::Utilities::MemoryType::managed ) {
 #ifdef USE_DEVICE
-            matrix = createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator>(
+            matrix = createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator<int>>(
                 leftVec, rightVec, getRow );
 #else
             AMP_ERROR( "Creating CSRMatrix in managed memory requires HIP or CUDA support" );
 #endif
         } else if ( memType == AMP::Utilities::MemoryType::device ) {
 #ifdef USE_DEVICE
-            matrix = createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator>(
+            matrix = createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator<int>>(
                 leftVec, rightVec, getRow );
 #else
             AMP_ERROR( "Creating CSRMatrix in device memory requires HIP or CUDA support" );
