@@ -89,7 +89,7 @@ void VectorOperationsDevice<TYPE>::setToScalar( const Scalar &alpha_in, VectorDa
     if ( useGPU ) {
         TYPE *data = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        OperationsHelpersDevice<TYPE>::setToScalar( alpha, N, data );
+        DeviceOperationsHelpers<TYPE>::setToScalar( alpha, N, data );
     } else {
         // Default to cpu version
         auto curMe = x.begin<TYPE>();
@@ -125,7 +125,7 @@ void VectorOperationsDevice<TYPE>::copy( const VectorData &x, VectorData &y )
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto N     = y.sizeOfDataBlock( 0 );
-        OperationsHelpersDevice<TYPE>::copy( N, xdata, ydata );
+        DeviceOperationsHelpers<TYPE>::copy( N, xdata, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -140,7 +140,7 @@ void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in, VectorData &x 
         TYPE *data = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
         TYPE alpha = alpha_in.get<TYPE>();
-        OperationsHelpersDevice<TYPE>::scale( alpha, N, data );
+        DeviceOperationsHelpers<TYPE>::scale( alpha, N, data );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -156,7 +156,7 @@ void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in, const VectorDa
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto N     = y.sizeOfDataBlock( 0 );
         auto alpha = alpha_in.get<TYPE>();
-        OperationsHelpersDevice<TYPE>::scale( alpha, N, xdata, ydata );
+        DeviceOperationsHelpers<TYPE>::scale( alpha, N, xdata, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -172,7 +172,7 @@ void VectorOperationsDevice<TYPE>::add( const VectorData &x, const VectorData &y
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         auto N     = z.sizeOfDataBlock( 0 );
-        OperationsHelpersDevice<TYPE>::add( N, xdata, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::add( N, xdata, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -188,7 +188,7 @@ void VectorOperationsDevice<TYPE>::subtract( const VectorData &x, const VectorDa
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
-        OperationsHelpersDevice<TYPE>::subtract( N, xdata, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::subtract( N, xdata, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -204,7 +204,7 @@ void VectorOperationsDevice<TYPE>::multiply( const VectorData &x, const VectorDa
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
-        OperationsHelpersDevice<TYPE>::multiply( N, xdata, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::multiply( N, xdata, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -220,7 +220,7 @@ void VectorOperationsDevice<TYPE>::divide( const VectorData &x, const VectorData
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
-        OperationsHelpersDevice<TYPE>::divide( N, xdata, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::divide( N, xdata, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -236,7 +236,7 @@ void VectorOperationsDevice<TYPE>::reciprocal( const VectorData &x, VectorData &
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
-        OperationsHelpersDevice<TYPE>::reciprocal( N, xdata, ydata );
+        DeviceOperationsHelpers<TYPE>::reciprocal( N, xdata, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -259,7 +259,7 @@ void VectorOperationsDevice<TYPE>::linearSum( const Scalar &alpha_in,
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
-        OperationsHelpersDevice<TYPE>::linearSum( alpha, N, xdata, beta, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::linearSum( alpha, N, xdata, beta, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -292,7 +292,7 @@ void VectorOperationsDevice<TYPE>::abs( const VectorData &x, VectorData &y )
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
-        OperationsHelpersDevice<TYPE>::abs( N, xdata, ydata );
+        DeviceOperationsHelpers<TYPE>::abs( N, xdata, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -310,7 +310,7 @@ void VectorOperationsDevice<TYPE>::addScalar( const VectorData &x,
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
         TYPE alpha = alpha_in.get<TYPE>();
-        OperationsHelpersDevice<TYPE>::addScalar( N, xdata, alpha, ydata );
+        DeviceOperationsHelpers<TYPE>::addScalar( N, xdata, alpha, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -324,7 +324,7 @@ Scalar VectorOperationsDevice<TYPE>::localMin( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return OperationsHelpersDevice<TYPE>::localMin( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localMin( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMin( x );
@@ -337,7 +337,7 @@ Scalar VectorOperationsDevice<TYPE>::localMax( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return OperationsHelpersDevice<TYPE>::localMax( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localMax( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMax( x );
@@ -350,7 +350,7 @@ Scalar VectorOperationsDevice<TYPE>::localSum( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return OperationsHelpersDevice<TYPE>::localSum( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localSum( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localSum( x );
@@ -363,7 +363,7 @@ Scalar VectorOperationsDevice<TYPE>::localL1Norm( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return OperationsHelpersDevice<TYPE>::localL1Norm( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localL1Norm( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localL1Norm( x );
@@ -376,7 +376,7 @@ Scalar VectorOperationsDevice<TYPE>::localL2Norm( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return OperationsHelpersDevice<TYPE>::localL2Norm( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localL2Norm( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localL2Norm( x );
@@ -389,7 +389,7 @@ Scalar VectorOperationsDevice<TYPE>::localMaxNorm( const VectorData &x ) const
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return OperationsHelpersDevice<TYPE>::localMaxNorm( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localMaxNorm( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMaxNorm( x );
@@ -403,7 +403,7 @@ Scalar VectorOperationsDevice<TYPE>::localDot( const VectorData &x, const Vector
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return OperationsHelpersDevice<TYPE>::localDot( N, xdata, ydata );
+        return DeviceOperationsHelpers<TYPE>::localDot( N, xdata, ydata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localDot( x, y );
@@ -417,7 +417,7 @@ Scalar VectorOperationsDevice<TYPE>::localMinQuotient( const VectorData &x, cons
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return OperationsHelpersDevice<TYPE>::localMinQuotient( N, xdata, ydata );
+        return DeviceOperationsHelpers<TYPE>::localMinQuotient( N, xdata, ydata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMinQuotient( x, y );
@@ -431,7 +431,7 @@ Scalar VectorOperationsDevice<TYPE>::localWrmsNorm( const VectorData &x, const V
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return OperationsHelpersDevice<TYPE>::localWrmsNorm( N, xdata, ydata );
+        return DeviceOperationsHelpers<TYPE>::localWrmsNorm( N, xdata, ydata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localWrmsNorm( x, y );

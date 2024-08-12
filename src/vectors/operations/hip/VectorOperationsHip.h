@@ -11,25 +11,25 @@ namespace LinearAlgebra {
 
 /**
  * \brief  A default set of vector operations
- * \details VectorOperationsHip impliments a default set of
+ * \details VectorOperationsDevice impliments a default set of
  *    vector operations on the CPU.
  */
 template<typename TYPE = double>
-class VectorOperationsHip : public VectorOperations
+class VectorOperationsDevice : public VectorOperations
 {
 public:
     // Constructor
-    VectorOperationsHip() {}
+    VectorOperationsDevice() {}
 
     //! Destructor
-    virtual ~VectorOperationsHip();
+    virtual ~VectorOperationsDevice();
 
     //! Clone the operations
     virtual std::shared_ptr<VectorOperations> cloneOperations() const override;
 
 public:
     //  functions that operate on VectorData
-    std::string VectorOpName() const override { return "VectorOperationsHip"; }
+    std::string VectorOpName() const override { return "VectorOperationsDevice"; }
     void zero( VectorData &z ) override;
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;
