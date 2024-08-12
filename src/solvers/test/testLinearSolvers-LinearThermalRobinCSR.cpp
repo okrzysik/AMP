@@ -312,7 +312,8 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
     #ifdef AMP_USE_PETSC
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
+            // files.emplace_back(
+            // "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
     #endif
 #endif
 

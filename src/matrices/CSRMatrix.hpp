@@ -1,15 +1,15 @@
 #ifndef included_AMP_CSRMatrix_hpp
 #define included_AMP_CSRMatrix_hpp
 
-#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
-#include "Kokkos_Core.hpp"
-#include "AMP/matrices/operations/CSRMatrixOperationsKokkos.h"
+    #include "AMP/matrices/operations/CSRMatrixOperationsKokkos.h"
+    #include "Kokkos_Core.hpp"
 #endif
 
 #include <cstdio>
@@ -26,11 +26,13 @@ template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params )
     : Matrix( params )
 {
-#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+#if defined( USE_HIP ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     AMP::pout << "Using Kokkos operations" << std::endl;
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator, Kokkos::DefaultExecutionSpace>>();
+    d_matrixOps = std::make_shared<
+        CSRMatrixOperationsKokkos<Policy, Allocator, Kokkos::DefaultExecutionSpace>>();
 #else
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+    AMP::pout << "Using default operations" << std::endl;
+    d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
 #endif
     d_matrixData = std::make_shared<CSRMatrixData<Policy, Allocator>>( params );
 }
@@ -38,11 +40,13 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
 template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
-#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+#if defined( USE_HIP ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     AMP::pout << "Using Kokkos operations" << std::endl;
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator, Kokkos::DefaultExecutionSpace>>();
+    d_matrixOps = std::make_shared<
+        CSRMatrixOperationsKokkos<Policy, Allocator, Kokkos::DefaultExecutionSpace>>();
 #else
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+    AMP::pout << "Using default operations" << std::endl;
+    d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
 #endif
 }
 

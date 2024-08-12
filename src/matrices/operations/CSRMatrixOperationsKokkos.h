@@ -38,18 +38,14 @@ class CSRMatrixOperationsKokkos : public MatrixOperations
      * \param[in] B  A multiplicand
      * \return The product \f$\mathbf{AB}\f$.
      */
-    void matMultiply( MatrixData const &A,
-		      MatrixData const &B,
-		      MatrixData &C ) override;
+    void matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C ) override;
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar
      * \param[in] X matrix
      * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
      */
-    void axpy( AMP::Scalar alpha,
-	       const MatrixData &X,
-	       MatrixData &Y ) override;
+    void axpy( AMP::Scalar alpha, const MatrixData &X, MatrixData &Y ) override;
 
     /** \brief  Set the non-zeros of the matrix to a scalar
      * \param[in]  alpha  The value to set the non-zeros to
@@ -64,8 +60,7 @@ class CSRMatrixOperationsKokkos : public MatrixOperations
     /** \brief  Set the diagonal to the values in a vector
      * \param[in] in The values to set the diagonal to
      */
-    void setDiagonal( std::shared_ptr<const Vector> in,
-		      MatrixData &A ) override;
+    void setDiagonal( std::shared_ptr<const Vector> in, MatrixData &A ) override;
 
     /** \brief  Set the matrix to the identity matrix
      */
@@ -77,8 +72,7 @@ class CSRMatrixOperationsKokkos : public MatrixOperations
     AMP::Scalar L1Norm( const MatrixData &X ) const override;
 
 protected:
-
-  ExecSpace d_exec_space;
+    ExecSpace d_exec_space;
 };
 
 } // namespace AMP::LinearAlgebra

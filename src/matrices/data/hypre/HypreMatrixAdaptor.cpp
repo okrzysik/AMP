@@ -139,7 +139,7 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
 
     // Verify that Hypre CSRMatrices are on host memory
     AMP_INSIST( diag->memory_location == HYPRE_MEMORY_HOST &&
-		off_diag->memory_location == HYPRE_MEMORY_HOST,
+                    off_diag->memory_location == HYPRE_MEMORY_HOST,
                 "Hypre matrices need to be on host memory for adaptor to work" );
 
     // Verify that diag and off_diag are "empty"
