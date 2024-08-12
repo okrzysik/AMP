@@ -1,12 +1,12 @@
-#ifndef included_AMP_HIPOperationsHelpers_hpp
-#define included_AMP_HIPOperationsHelpers_hpp
+#ifndef included_AMP_CudaOperationsHelpers_hpp
+#define included_AMP_CudaOperationsHelpers_hpp
 
+#include <cuda.h>
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 #include <thrust/for_each.h>
 #include <thrust/inner_product.h>
 
-#include "AMP/utils/hip/helper_hip.h"
 
 namespace AMP {
 namespace LinearAlgebra {
@@ -175,9 +175,6 @@ TYPE DeviceOperationsHelpers<TYPE>::localWrmsNorm( size_t N, const TYPE *x, cons
 
 
 } // namespace LinearAlgebra
-
-void DeviceSynchronize() { checkHipErrors( hipDeviceSynchronize() ); }
-
 } // namespace AMP
 
 #endif

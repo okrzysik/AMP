@@ -1,6 +1,6 @@
-#include "AMP/utils/device/DeviceOperationsHelpers.h"
+#include "AMP/vectors/operations/cuda/CudaOperationsHelpers.h"
+#include "AMP/vectors/operations/cuda/CudaOperationsHelpers.hpp"
 
-#include "AMP/utils/hip/HipOperationsHelpers.hpp"
 
 // Explicit instantiations
 template class AMP::LinearAlgebra::DeviceOperationsHelpers<double>;
