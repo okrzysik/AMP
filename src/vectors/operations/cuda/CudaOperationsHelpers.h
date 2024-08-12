@@ -8,11 +8,11 @@ namespace LinearAlgebra {
 
 /**
  * \brief  A default set of helper functions for vector operations
- * \details CudaOperationsHelpers impliments a default set of
+ * \details OperationsHelpers impliments a default set of
  *    vector operations on the GPU.
  */
 template<typename TYPE>
-class CudaOperationsHelpers
+class DeviceOperationsHelpers
 {
 public:
     //  functions that operate on VectorData

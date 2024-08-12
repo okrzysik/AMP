@@ -12,7 +12,7 @@ namespace LinearAlgebra {
  *    vector operations on the GPU.
  */
 template<typename TYPE>
-class HipOperationsHelpers
+class DeviceOperationsHelpers
 {
 public:
     //  functions that operate on VectorData

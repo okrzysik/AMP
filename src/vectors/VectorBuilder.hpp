@@ -4,16 +4,11 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/data/ArrayVectorData.h"
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
-    #include "AMP/utils/cuda/GPUFunctionTable.h"
-    #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
+#ifdef USE_DEVICE
+    #include "AMP/utils/device/GPUFunctionTable.h"
+    #include "AMP/vectors/operations/VectorOperationsDevice.h"
 #endif
-#ifdef USE_HIP
-    #include "AMP/utils/hip/GPUFunctionTable.h"
-    #include "AMP/utils/hip/HipAllocator.h"
-    #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
-#endif
+#include "AMP/utils/memory.h"
 
 #include "math.h"
 
@@ -113,34 +108,16 @@ Vector::shared_ptr createVectorAdaptor( const std::string &name,
         vecOps  = std::make_shared<VectorOperationsDefault<T>>();
         vecData = ArrayVectorData<T>::create( DOFs->numLocalDOF(), commList, data );
     } else if ( memType == AMP::Utilities::MemoryType::managed ) {
-#ifdef USE_CUDA
-        vecOps  = std::make_shared<VectorOperationsCuda<T>>();
-        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<T>>::create(
+#ifdef USE_DEVICE
+        vecOps  = std::make_shared<VectorOperationsDevice<T>>();
+        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::ManagedAllocator<T>>::create(
             DOFs->numLocalDOF(), commList, data );
-// #else
-//         AMP_ERROR( "CUDA not enabled" );
-#endif
-#ifdef USE_HIP
-        vecOps  = std::make_shared<VectorOperationsHip<T>>();
-        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::HipManagedAllocator<T>>::create(
-            DOFs->numLocalDOF(), commList, data );
-// #else
-//         AMP_ERROR( "HIP not enabled" );
 #endif
     } else if ( memType == AMP::Utilities::MemoryType::device ) {
-#ifdef USE_CUDA
-        vecOps  = std::make_shared<VectorOperationsCuda<T>>();
-        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::CudaDevAllocator<T>>::create(
+#ifdef USE_DEVICE
+        vecOps  = std::make_shared<VectorOperationsDevice<T>>();
+        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::DeviceAllocator<T>>::create(
             DOFs->numLocalDOF(), commList, data );
-// #else
-//         AMP_ERROR( "CUDA not enabled" );
-#endif
-#ifdef USE_HIP
-        vecOps  = std::make_shared<VectorOperationsHip<T>>();
-        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::HipDevAllocator<T>>::create(
-            DOFs->numLocalDOF(), commList, data );
-// #else
-//         AMP_ERROR( "HIP not enabled" );
 #endif
     } else {
         AMP_ERROR( "Unknown memory location specified for data" );

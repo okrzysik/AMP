@@ -1,16 +1,9 @@
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/utils/memory.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.hpp"
-
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
-#endif
-#ifdef USE_HIP
-    #include "AMP/utils/hip/HipAllocator.h"
-#endif
-
 #include <iostream>
 
 
@@ -130,20 +123,11 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
 INSTANTIATE_VECTOR( double )
 INSTANTIATE_VECTOR( float )
 
-#ifdef USE_CUDA
+#ifdef USE_DEVICE
 template Vector::shared_ptr
     createSimpleVector<double,
                        VectorOperationsDefault<double>,
-                       VectorDataDefault<double, AMP::CudaManagedAllocator<double>>>(
-        std::shared_ptr<Variable>,
-        std::shared_ptr<AMP::Discretization::DOFManager>,
-        std::shared_ptr<CommunicationList> );
-#endif
-#ifdef USE_HIP
-template Vector::shared_ptr
-    createSimpleVector<double,
-                       VectorOperationsDefault<double>,
-                       VectorDataDefault<double, AMP::HipManagedAllocator<double>>>(
+                       VectorDataDefault<double, AMP::ManagedAllocator<double>>>(
         std::shared_ptr<Variable>,
         std::shared_ptr<AMP::Discretization::DOFManager>,
         std::shared_ptr<CommunicationList> );
