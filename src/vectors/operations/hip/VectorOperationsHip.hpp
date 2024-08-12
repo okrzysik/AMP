@@ -64,7 +64,8 @@ inline VectorOperationsDefault<TYPE> *VectorOperationsDevice<TYPE>::getDefaultOp
 }
 
 template<typename TYPE>
-inline const VectorOperationsDefault<TYPE> *VectorOperationsDevice<TYPE>::getDefaultOps( void ) const
+inline const VectorOperationsDefault<TYPE> *
+VectorOperationsDevice<TYPE>::getDefaultOps( void ) const
 {
     if ( !d_default_ops )
         d_default_ops = new VectorOperationsDefault<TYPE>();
@@ -149,7 +150,9 @@ void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in, VectorData &x 
 }
 
 template<typename TYPE>
-void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in, const VectorData &x, VectorData &y )
+void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in,
+                                          const VectorData &x,
+                                          VectorData &y )
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
@@ -181,7 +184,9 @@ void VectorOperationsDevice<TYPE>::add( const VectorData &x, const VectorData &y
 }
 
 template<typename TYPE>
-void VectorOperationsDevice<TYPE>::subtract( const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsDevice<TYPE>::subtract( const VectorData &x,
+                                             const VectorData &y,
+                                             VectorData &z )
 {
     if ( checkData<TYPE>( x, y, z ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
@@ -197,7 +202,9 @@ void VectorOperationsDevice<TYPE>::subtract( const VectorData &x, const VectorDa
 }
 
 template<typename TYPE>
-void VectorOperationsDevice<TYPE>::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsDevice<TYPE>::multiply( const VectorData &x,
+                                             const VectorData &y,
+                                             VectorData &z )
 {
     if ( checkData<TYPE>( x, y, z ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
@@ -247,10 +254,10 @@ void VectorOperationsDevice<TYPE>::reciprocal( const VectorData &x, VectorData &
 
 template<typename TYPE>
 void VectorOperationsDevice<TYPE>::linearSum( const Scalar &alpha_in,
-                                           const VectorData &x,
-                                           const Scalar &beta_in,
-                                           const VectorData &y,
-                                           VectorData &z )
+                                              const VectorData &x,
+                                              const Scalar &beta_in,
+                                              const VectorData &y,
+                                              VectorData &z )
 {
     if ( checkData<TYPE>( x, y, z ) ) {
         TYPE alpha = alpha_in.get<TYPE>();
@@ -269,18 +276,18 @@ void VectorOperationsDevice<TYPE>::linearSum( const Scalar &alpha_in,
 
 template<typename TYPE>
 void VectorOperationsDevice<TYPE>::axpy( const Scalar &alpha_in,
-                                      const VectorData &x,
-                                      const VectorData &y,
-                                      VectorData &z )
+                                         const VectorData &x,
+                                         const VectorData &y,
+                                         VectorData &z )
 {
     VectorOperationsDevice<TYPE>::linearSum( alpha_in, x, 1.0, y, z );
 }
 
 template<typename TYPE>
 void VectorOperationsDevice<TYPE>::axpby( const Scalar &alpha_in,
-                                       const Scalar &beta_in,
-                                       const VectorData &x,
-                                       VectorData &z )
+                                          const Scalar &beta_in,
+                                          const VectorData &x,
+                                          VectorData &z )
 {
     VectorOperationsDevice<TYPE>::linearSum( alpha_in, x, beta_in, z, z );
 }
@@ -302,8 +309,8 @@ void VectorOperationsDevice<TYPE>::abs( const VectorData &x, VectorData &y )
 
 template<typename TYPE>
 void VectorOperationsDevice<TYPE>::addScalar( const VectorData &x,
-                                           const Scalar &alpha_in,
-                                           VectorData &y )
+                                              const Scalar &alpha_in,
+                                              VectorData &y )
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
@@ -411,7 +418,8 @@ Scalar VectorOperationsDevice<TYPE>::localDot( const VectorData &x, const Vector
 }
 
 template<typename TYPE>
-Scalar VectorOperationsDevice<TYPE>::localMinQuotient( const VectorData &x, const VectorData &y ) const
+Scalar VectorOperationsDevice<TYPE>::localMinQuotient( const VectorData &x,
+                                                       const VectorData &y ) const
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
@@ -440,8 +448,8 @@ Scalar VectorOperationsDevice<TYPE>::localWrmsNorm( const VectorData &x, const V
 
 template<typename TYPE>
 Scalar VectorOperationsDevice<TYPE>::localWrmsNormMask( const VectorData &x,
-                                                     const VectorData &mask,
-                                                     const VectorData &y ) const
+                                                        const VectorData &mask,
+                                                        const VectorData &y ) const
 {
     // Default to VectorOperationsDefault (on cpu)
     return getDefaultOps()->localWrmsNormMask( x, mask, y );
@@ -449,8 +457,8 @@ Scalar VectorOperationsDevice<TYPE>::localWrmsNormMask( const VectorData &x,
 
 template<typename TYPE>
 bool VectorOperationsDevice<TYPE>::localEquals( const VectorData &x,
-                                             const VectorData &y,
-                                             const Scalar &tol_in ) const
+                                                const VectorData &y,
+                                                const Scalar &tol_in ) const
 {
     TYPE tol = tol_in.get<TYPE>();
     if ( checkData<TYPE>( x, y ) ) {
