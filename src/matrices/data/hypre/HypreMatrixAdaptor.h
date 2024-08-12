@@ -3,9 +3,11 @@
 
 #include "AMP/matrices/data/MatrixData.h"
 
+extern "C" {
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
 #include "HYPRE_utilities.h"
+}
 
 namespace AMP::LinearAlgebra {
 

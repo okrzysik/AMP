@@ -3,6 +3,7 @@
 
 #include "AMP/matrices/data/MatrixData.h"
 
+#include <functional>
 #include <map>
 #include <tuple>
 
@@ -12,13 +13,20 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy>
+template<typename Policy, class Allocator = std::allocator<int>>
 class CSRMatrixData : public MatrixData
 {
 public:
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
+    using gidxAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
+    using lidxAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<lidx_t>;
+    using scalarAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
+
 
     /** \brief Constructor
      * \param[in] params  Description of the matrix
@@ -161,10 +169,25 @@ public:
 
     size_t beginCol() const { return d_first_col; }
 
-    std::tuple<lidx_t *, gidx_t const *, scalar_t const *> getCSRData()
+    std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getCSRDiagData()
     {
-        return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
+        return std::make_tuple( d_diag_matrix->d_nnz_per_row,
+                                d_diag_matrix->d_cols,
+                                d_diag_matrix->d_cols_loc,
+                                d_diag_matrix->d_coeffs );
     }
+
+    std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getCSROffDiagData()
+    {
+        return std::make_tuple( d_off_diag_matrix->d_nnz_per_row,
+                                d_off_diag_matrix->d_cols,
+                                d_off_diag_matrix->d_cols_loc,
+                                d_off_diag_matrix->d_coeffs );
+    }
+
+    lidx_t *getDiagRowStarts() { return d_diag_matrix->d_row_starts; }
+
+    lidx_t *getOffDiagRowStarts() { return d_off_diag_matrix->d_row_starts; }
 
     bool isSquare() const noexcept { return d_is_square; }
 
@@ -179,25 +202,139 @@ public:
 
     auto numberOfNonZeros() const { return d_nnz; }
 
+    auto numberOfNonZerosDiag() const { return d_diag_matrix->d_nnz; }
+
+    auto numberOfNonZerosOffDiag() const { return d_off_diag_matrix->d_nnz; }
+
+    bool hasOffDiag() const { return !d_off_diag_matrix->d_is_empty; }
+
+    auto getMemoryLocation() const { return d_memory_location; }
+
+    template<typename idx_t>
+    void getOffDiagColumnMap( std::vector<idx_t> &colMap ) const
+    {
+        // Don't do anything if empty
+        if ( d_off_diag_matrix->d_is_empty ) {
+            return;
+        }
+
+        // Column maps formed lazily, ensure it exists
+        d_off_diag_matrix->findColumnMap();
+
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+
+            // Resize and fill colMap
+            colMap.resize( d_off_diag_matrix->d_ncols_unq );
+
+            if constexpr ( std::is_same_v<idx_t, gidx_t> ) {
+                std::copy( d_off_diag_matrix->d_cols_unq,
+                           d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
+                           colMap.begin() );
+            } else {
+                std::transform( d_off_diag_matrix->d_cols_unq,
+                                d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
+                                colMap.begin(),
+                                []( gidx_t c ) -> idx_t { return c; } );
+            }
+        } else {
+            AMP_ERROR( "Copies from device to host memory not implemented yet" );
+        }
+    }
+
+private:
+    // Private internal data class for managing the non-zero structure of the matrix
+    // One instance will be made for the diagonal block and another for the off-diagonal block
+    class CSRSerialMatrixData : public AMP::enable_shared_from_this<CSRSerialMatrixData>
+    {
+        // The outer CSRMatrixData class should have direct access to the internals of this class
+        friend class CSRMatrixData<Policy, Allocator>;
+
+    public:
+        /** \brief Constructor
+         * \param[in] params Description of the matrix
+         * \param[in] is_diag True if this is the diag block, influences which dofs are used/ignored
+         */
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy, Allocator> &outer,
+                                      std::shared_ptr<MatrixParametersBase> params,
+                                      bool is_diag );
+
+        explicit CSRSerialMatrixData( const CSRMatrixData<Policy, Allocator> &outer );
+
+        //! Destructor
+        virtual ~CSRSerialMatrixData();
+
+        std::shared_ptr<CSRSerialMatrixData>
+        cloneMatrixData( const CSRMatrixData<Policy, Allocator> &outer );
+
+        void getRowByGlobalID( const size_t local_row,
+                               std::vector<size_t> &cols,
+                               std::vector<double> &values ) const;
+
+        void getValuesByGlobalID( const size_t local_row,
+                                  const size_t col,
+                                  void *values,
+                                  const typeID &id ) const;
+
+        void addValuesByGlobalID( const size_t num_cols,
+                                  const size_t rows,
+                                  const size_t *cols,
+                                  const scalar_t *vals,
+                                  const typeID &id );
+
+        void setValuesByGlobalID( const size_t num_cols,
+                                  const size_t rows,
+                                  const size_t *cols,
+                                  const scalar_t *vals,
+                                  const typeID &id );
+
+        std::vector<size_t> getColumnIDs( const size_t local_row ) const;
+
+        void findColumnMap();
+
+    protected:
+        const CSRMatrixData<Policy, Allocator>
+            &d_outer; // reference to the containing CSRMatrixData object
+        bool d_is_diag  = true;
+        bool d_is_empty = false;
+
+        lidx_t *d_nnz_per_row = nullptr;
+        lidx_t *d_row_starts  = nullptr;
+        gidx_t *d_cols        = nullptr;
+        gidx_t *d_cols_unq    = nullptr;
+        lidx_t *d_cols_loc    = nullptr;
+        scalar_t *d_coeffs    = nullptr;
+
+        lidx_t d_num_rows  = 0;
+        lidx_t d_nnz       = 0;
+        lidx_t d_nnz_pad   = 0;
+        lidx_t d_ncols_unq = 0;
+
+        AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+        gidxAllocator_t gidxAllocator;
+        lidxAllocator_t lidxAllocator;
+        scalarAllocator_t scalarAllocator;
+
+        std::shared_ptr<MatrixParametersBase> d_pParameters;
+
+        bool d_own_data = true;
+    };
+
 protected:
     bool d_is_square   = true;
     gidx_t d_first_row = 0;
     gidx_t d_last_row  = 0;
     gidx_t d_first_col = 0;
     gidx_t d_last_col  = 0;
-
-    lidx_t *d_nnz_per_row = nullptr;
-    lidx_t *d_row_starts  = nullptr;
-    gidx_t *d_cols        = nullptr;
-    scalar_t *d_coeffs    = nullptr;
-
-    lidx_t d_nnz = 0;
+    lidx_t d_nnz       = 0;
 
     AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+    gidxAllocator_t gidxAllocator;
+    lidxAllocator_t lidxAllocator;
+    scalarAllocator_t scalarAllocator;
 
-    bool d_manage_cols   = true;
-    bool d_manage_nnz    = true;
-    bool d_manage_coeffs = true;
+
+    std::shared_ptr<CSRSerialMatrixData> d_diag_matrix     = nullptr;
+    std::shared_ptr<CSRSerialMatrixData> d_off_diag_matrix = nullptr;
 
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
     std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;
@@ -212,6 +349,22 @@ protected:
     void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &,
                        AMP::LinearAlgebra::ScatterType );
 };
+
+template<typename Policy, typename Allocator>
+static CSRMatrixData<Policy, Allocator> const *getCSRMatrixData( MatrixData const &A )
+{
+    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator> const *>( &A );
+    AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
+    return ptr;
+}
+
+template<typename Policy, typename Allocator>
+static CSRMatrixData<Policy, Allocator> *getCSRMatrixData( MatrixData &A )
+{
+    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator> *>( &A );
+    AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
+    return ptr;
+}
 
 } // namespace AMP::LinearAlgebra
 
