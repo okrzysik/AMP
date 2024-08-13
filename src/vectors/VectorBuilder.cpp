@@ -15,7 +15,8 @@ namespace AMP::LinearAlgebra {
  ********************************************************/
 Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                  std::shared_ptr<Variable> variable,
-                                 bool split )
+                                 bool split,
+                                 AMP::Utilities::MemoryType memType )
 {
     if ( !DOFs )
         return Vector::shared_ptr();
@@ -49,7 +50,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
         // Create the Vector for each variable, then combine
         std::vector<Vector::shared_ptr> vectors;
         for ( auto var : *multiVariable )
-            vectors.push_back( createVector( DOFs, var, split ) );
+            vectors.push_back( createVector( DOFs, var, split, memType ) );
         // Create the multivector
         AMP_MPI comm = DOFs->getComm();
         AMP_ASSERT( !comm.isNull() );
@@ -64,7 +65,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
         // Get the vectors for each DOF manager
         std::vector<Vector::shared_ptr> vectors( subDOFs.size() );
         for ( size_t i = 0; i < subDOFs.size(); i++ )
-            vectors[i] = createVector( subDOFs[i], variable, split );
+            vectors[i] = createVector( subDOFs[i], variable, split, memType );
         // Create the multivector
         AMP_MPI comm = DOFs->getComm();
         AMP_ASSERT( !comm.isNull() );
@@ -93,18 +94,35 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
             comm_list             = std::make_shared<CommunicationList>( params );
         }
         comm.barrier();
-        // Create the vector
-        // ===== TEMPORARY =====
-#ifdef USE_HIP
-        // ALLOC, DATA, and OPS, are added just for now to get vectors on device
-        using ALLOC = AMP::HipManagedAllocator<double>;
-        using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
-        using OPS   = AMP::LinearAlgebra::VectorOperationsHip<double>;
-        auto vector = createSimpleVector<double, OPS, DATA>( variable, DOFs, comm_list );
+        // Create the vector in the requested memory space
+        if ( memType <= AMP::Utilities::MemoryType::host ) {
+            auto vector = createSimpleVector<double>( variable, DOFs, comm_list );
+            return vector;
+        } else if ( memType == AMP::Utilities::MemoryType::managed ) {
+#ifdef USE_DEVICE
+            auto vector =
+                createSimpleVector<double,
+                                   VectorOperationsDefault<double>,
+                                   VectorDataDefault<double, AMP::ManagedAllocator<double>>>(
+                    variable, DOFs, comm_list );
+            return vector;
 #else
-        auto vector = createSimpleVector<double>( variable, DOFs, comm_list );
+            AMP_ERROR( "Creating Vector in managed memory requires HIP or CUDA support" );
 #endif
-        return vector;
+        } else if ( memType == AMP::Utilities::MemoryType::device ) {
+#ifdef USE_DEVICE
+            auto vector =
+                createSimpleVector<double,
+                                   VectorOperationsDevice<double>,
+                                   VectorDataDefault<double, AMP::DeviceAllocator<double>>>(
+                    variable, DOFs, comm_list );
+            return vector;
+#else
+            AMP_ERROR( "Creating Vector in device memory requires HIP or CUDA support" );
+#endif
+        } else {
+            AMP_ERROR( "Unknown memory space in createVector" );
+        }
     }
     return Vector::shared_ptr();
 }

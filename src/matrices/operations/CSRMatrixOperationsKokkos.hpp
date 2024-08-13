@@ -118,7 +118,7 @@ struct Mult {
         outDataBlock( row ) += sum;
     }
 
-    // process a block of rows heirarchically
+    // process a block of rows hierarchically
     KOKKOS_INLINE_FUNCTION
     void operator()( const typename Kokkos::TeamPolicy<ExecSpace>::member_type &tm ) const
     {
@@ -145,6 +145,86 @@ struct Mult {
     }
 };
 
+template<typename Policy,
+         class ExecSpace,
+         class IAView,
+         class RSView,
+         class JAView,
+         class AAView,
+         class XView,
+         class YView>
+struct MultTranspose {
+    typedef typename Policy::lidx_t lidx_t;
+    typedef typename Policy::scalar_t scalar_t;
+
+    lidx_t num_rows;
+    lidx_t num_rows_team;
+    IAView nnz;
+    RSView rowstarts;
+    JAView cols_loc;
+    AAView coeffs;
+    XView inDataBlock;
+    YView outDataBlock;
+
+    MultTranspose( lidx_t num_rows_,
+                   lidx_t num_rows_team_,
+                   IAView nnz_,
+                   RSView rowstarts_,
+                   JAView cols_loc_,
+                   AAView coeffs_,
+                   XView inDataBlock_,
+                   YView outDataBlock_ )
+        : num_rows( num_rows_ ),
+          num_rows_team( num_rows_team_ ),
+          nnz( nnz_ ),
+          rowstarts( rowstarts_ ),
+          cols_loc( cols_loc_ ),
+          coeffs( coeffs_ ),
+          inDataBlock( inDataBlock_ ),
+          outDataBlock( outDataBlock_ )
+    {
+        // TODO: Add assertion that YView has atomic memory trait
+    }
+
+    // Calculate product for a single specific row
+    KOKKOS_INLINE_FUNCTION
+    void operator()( const lidx_t row ) const
+    {
+        if ( row >= num_rows ) {
+            return;
+        }
+        const auto nC = nnz( row );
+        const auto rs = rowstarts( row );
+        const auto xi = inDataBlock( row );
+        for ( lidx_t c = rs; c < rs + nC; ++c ) {
+            const auto cl = cols_loc( c );
+            outDataBlock( cl ) += xi * coeffs( c );
+        }
+    }
+
+    // process a block of rows hierarchically
+    KOKKOS_INLINE_FUNCTION
+    void operator()( const typename Kokkos::TeamPolicy<ExecSpace>::member_type &tm ) const
+    {
+        const auto lRank = tm.league_rank();
+        const auto fRow  = lRank * num_rows_team;
+        Kokkos::parallel_for(
+            Kokkos::TeamThreadRange( tm, num_rows_team ), [&]( const lidx_t tIdx ) {
+                const auto row = fRow + tIdx;
+                if ( row >= num_rows ) {
+                    return;
+                }
+                const auto nC = nnz( row );
+                const auto rs = rowstarts( row );
+                const auto xi = inDataBlock( row );
+                Kokkos::parallel_for( Kokkos::ThreadVectorRange( tm, nC ), [&]( lidx_t &c ) {
+                    const auto cl = cols_loc( rs + c );
+                    outDataBlock( cl ) += xi * coeffs( rs + c );
+                } );
+            } );
+    }
+};
+
 } // namespace CSRMatOpsKokkosFunctor
 
 template<typename Policy, typename Allocator, class ExecSpace>
@@ -153,6 +233,8 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::mult(
 {
     PROFILE( "CSRMatrixOperationsKokkos::mult" );
     AMP_DEBUG_ASSERT( in && out );
+
+    out->zero();
 
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -179,6 +261,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::mult(
         ghosts.size() == inData->getGhostSize(),
         "CSRMatrixOperationsKokkos::mult only implemented for vectors with accessible ghosts" );
 
+
     // Wrap in/out data into Kokkos Views
     Kokkos::View<const scalar_t *,
                  Kokkos::LayoutRight,
@@ -193,10 +276,6 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::mult(
                  Kokkos::MemoryTraits<Kokkos::RandomAccess>>
         ghostDataBlock( ghosts.data(), nGhosts );
 
-    // To make the SpMV functors work on both diag and off-diag blocks
-    // we need to accumulate into the output vector => must zero it first
-    Kokkos::deep_copy( d_exec_space, outDataBlock, 0.0 );
-
     {
         // lambda capture of structured bindings throws warning on c++17
         // unpack the tuple of views manually
@@ -208,8 +287,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::mult(
 
         const lidx_t team_rows     = 64;
         const lidx_t vector_length = 8;
-
-        const lidx_t num_teams = ( nRows + team_rows - 1 ) / team_rows;
+        const lidx_t num_teams     = ( nRows + team_rows - 1 ) / team_rows;
 
         CSRMatOpsKokkosFunctor::Mult<Policy,
                                      ExecSpace,
@@ -293,49 +371,61 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::multTranspose(
     auto outData     = out->getVectorData();
 
     // Wrap in/out data into Kokkos Views
-    Kokkos::View<const scalar_t *, Kokkos::LayoutRight, Kokkos::SharedSpace> inDB(
+    Kokkos::View<const scalar_t *, Kokkos::LayoutRight, Kokkos::SharedSpace> inDataBlock(
         inData->getRawDataBlock<scalar_t>( 0 ), nRows );
 
     {
         // lambda capture of structured bindings throws warning on c++17
         // unpack the tuple of views manually
-        auto vtpl      = wrapCSRDiagDataKokkos( csrData );
-        auto nnz       = std::get<0>( vtpl );
-        auto cols_loc  = std::get<2>( vtpl );
-        auto coeffs    = std::get<3>( vtpl );
-        auto rowstarts = std::get<4>( vtpl );
+        auto vtpl        = wrapCSRDiagDataKokkos( csrData );
+        auto nnz_d       = std::get<0>( vtpl );
+        auto cols_loc_d  = std::get<2>( vtpl );
+        auto coeffs_d    = std::get<3>( vtpl );
+        auto rowstarts_d = std::get<4>( vtpl );
 
         // Make temporary views for output columns and values
-        auto outDB = Kokkos::View<scalar_t *,
-                                  Kokkos::LayoutRight,
-                                  Kokkos::SharedSpace,
-                                  Kokkos::MemoryTraits<Kokkos::Atomic>>(
+        auto outDataBlock = Kokkos::View<scalar_t *,
+                                         Kokkos::LayoutRight,
+                                         Kokkos::SharedSpace,
+                                         Kokkos::MemoryTraits<Kokkos::Atomic>>(
             outData->getRawDataBlock<scalar_t>( 0 ), nCols );
-        Kokkos::deep_copy( d_exec_space, outDB, 0.0 );
+
+        const lidx_t team_rows     = 64;
+        const lidx_t vector_length = 8;
+        const lidx_t num_teams     = ( nRows + team_rows - 1 ) / team_rows;
+
+        CSRMatOpsKokkosFunctor::MultTranspose<Policy,
+                                              ExecSpace,
+                                              decltype( nnz_d ),
+                                              decltype( rowstarts_d ),
+                                              decltype( cols_loc_d ),
+                                              decltype( coeffs_d ),
+                                              decltype( inDataBlock ),
+                                              decltype( outDataBlock )>
+            ftor( nRows,
+                  team_rows,
+                  nnz_d,
+                  rowstarts_d,
+                  cols_loc_d,
+                  coeffs_d,
+                  inDataBlock,
+                  outDataBlock );
+
+        Kokkos::TeamPolicy<ExecSpace, Kokkos::Schedule<Kokkos::Dynamic>> team_policy(
+            d_exec_space, num_teams, Kokkos::AUTO, vector_length );
 
         Kokkos::parallel_for(
-            Kokkos::TeamPolicy<ExecSpace, Kokkos::IndexType<lidx_t>>( d_exec_space, nRows, 1, 64 ),
-            KOKKOS_LAMBDA( const typename Kokkos::TeamPolicy<ExecSpace>::member_type &tm ) {
-                lidx_t row    = tm.league_rank();
-                const auto n  = nnz( row );
-                const auto rs = rowstarts( row );
-                auto val      = inDB( n );
-                Kokkos::parallel_for( Kokkos::TeamVectorRange( tm, n ), [=]( const lidx_t &j ) {
-                    const auto cl = cols_loc( rs + j );
-                    outDB( cl ) += val * coeffs( rs + j );
-                } );
-            } );
+            "CSRMatrixOperationsKokkos::multTranspose (local)", team_policy, ftor );
     }
 
     if ( csrData->hasOffDiag() ) {
         // lambda capture of structured bindings throws warning on c++17
         // unpack the tuple of views manually
-        auto vtpl      = wrapCSROffDiagDataKokkos( csrData );
-        auto nnz       = std::get<0>( vtpl );
-        auto cols      = std::get<1>( vtpl );
-        auto cols_loc  = std::get<2>( vtpl );
-        auto coeffs    = std::get<3>( vtpl );
-        auto rowstarts = std::get<4>( vtpl );
+        auto vtpl         = wrapCSROffDiagDataKokkos( csrData );
+        auto nnz_od       = std::get<0>( vtpl );
+        auto cols_loc_od  = std::get<2>( vtpl );
+        auto coeffs_od    = std::get<3>( vtpl );
+        auto rowstarts_od = std::get<4>( vtpl );
 
         // get diag map but leave in std::vector
         // it is not needed inside compute kernel this time
@@ -350,17 +440,19 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::multTranspose(
                                   Kokkos::MemoryTraits<Kokkos::Atomic>>( "vvals", num_unq );
         Kokkos::deep_copy( d_exec_space, vvals, 0.0 );
 
-        Kokkos::parallel_for(
-            "CSRMatrixOperationsKokkos::multTranspose (od)",
-            Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, nRows ),
-            KOKKOS_LAMBDA( const lidx_t n ) {
-                auto rs  = rowstarts( n );
-                auto val = inDB( n );
-                for ( lidx_t j = 0; j < nnz( n ); ++j ) {
-                    auto cl = cols_loc( rs + j );
-                    vvals( cl ) += val * coeffs( rs + j );
-                }
-            } );
+        CSRMatOpsKokkosFunctor::MultTranspose<Policy,
+                                              ExecSpace,
+                                              decltype( nnz_od ),
+                                              decltype( rowstarts_od ),
+                                              decltype( cols_loc_od ),
+                                              decltype( coeffs_od ),
+                                              decltype( inDataBlock ),
+                                              decltype( vvals )>
+            ftor( nRows, 1, nnz_od, rowstarts_od, cols_loc_od, coeffs_od, inDataBlock, vvals );
+
+        Kokkos::parallel_for( "CSRMatrixOperationsKokkos::multTranspose (ghost)",
+                              Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, nRows ),
+                              ftor );
 
         // Need to fence before sending values off to be written out
         d_exec_space.fence();

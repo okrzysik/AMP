@@ -9,7 +9,6 @@
 
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
     #include "AMP/matrices/operations/CSRMatrixOperationsKokkos.h"
-    #include "Kokkos_Core.hpp"
 #endif
 
 #include <cstdio>
@@ -26,10 +25,9 @@ template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params )
     : Matrix( params )
 {
-#if defined( USE_HIP ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+#if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     AMP::pout << "Using Kokkos operations" << std::endl;
-    d_matrixOps = std::make_shared<
-        CSRMatrixOperationsKokkos<Policy, Allocator, Kokkos::DefaultExecutionSpace>>();
+    d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
 #else
     AMP::pout << "Using default operations" << std::endl;
     d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
@@ -40,10 +38,9 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
 template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
-#if defined( USE_HIP ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+#if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     AMP::pout << "Using Kokkos operations" << std::endl;
-    d_matrixOps = std::make_shared<
-        CSRMatrixOperationsKokkos<Policy, Allocator, Kokkos::DefaultExecutionSpace>>();
+    d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
 #else
     AMP::pout << "Using default operations" << std::endl;
     d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();

@@ -47,8 +47,15 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
     // Create the vectors
     auto inVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
     auto outVar = std::make_shared<AMP::LinearAlgebra::Variable>( "outputVar" );
-    auto inVec  = AMP::LinearAlgebra::createVector( dofManager, inVar );
-    auto outVec = AMP::LinearAlgebra::createVector( dofManager, outVar );
+#ifdef USE_DEVICE
+    auto inVec = AMP::LinearAlgebra::createVector(
+        dofManager, inVar, false, AMP::Utilities::MemoryType::managed );
+    auto outVec = AMP::LinearAlgebra::createVector(
+        dofManager, outVar, false, AMP::Utilities::MemoryType::managed );
+#else
+    auto inVec     = AMP::LinearAlgebra::createVector( dofManager, inVar );
+    auto outVec    = AMP::LinearAlgebra::createVector( dofManager, outVar );
+#endif
 
     // Create the matrix
     auto matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec, type );
@@ -143,9 +150,9 @@ size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
     // matVecTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs, true );
 #endif
 #if defined( AMP_USE_PETSC )
-    // matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, false );
+    matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, true );
 #endif
-    return matVecTestWithDOFs( ut, "CSRMatrix", scalarDOFs, false );
+    return matVecTestWithDOFs( ut, "CSRMatrix", scalarDOFs, true );
 }
 
 int main( int argc, char *argv[] )

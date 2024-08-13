@@ -100,6 +100,7 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     AMP_MPI comm = leftDOF->getComm();
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
+
     // Create the matrix parameters
     auto params =
         std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm, getRow );
@@ -107,6 +108,15 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     params->d_CommListRight = rightVec->getCommunicationList();
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
+
+    // set memory type to match allocator
+#ifdef USE_DEVICE
+    if ( std::is_same<Allocator, AMP::ManagedAllocator<int>>::value ) {
+        params->d_memory_location = AMP::Utilities::MemoryType::managed;
+    } else if ( std::is_same<Allocator, AMP::DeviceAllocator<int>>::value ) {
+        params->d_memory_location = AMP::Utilities::MemoryType::device;
+    }
+#endif
 
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
@@ -124,6 +134,20 @@ createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<int>>(
     AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     const std::function<std::vector<size_t>( size_t )> &getRow );
+
+#ifdef USE_DEVICE
+template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator<int>>(
+    AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+    AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+    const std::function<std::vector<size_t>( size_t )> &getRow );
+
+template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator<int>>(
+    AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+    AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+    const std::function<std::vector<size_t>( size_t )> &getRow );
+#endif
 
 
 /********************************************************
@@ -251,10 +275,12 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
     } else if ( type == "CSRMatrix" ) {
         if ( memType <= AMP::Utilities::MemoryType::host ) {
+            AMP::pout << "Building csrmatrix in host memory" << std::endl;
             matrix = createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<int>>(
                 leftVec, rightVec, getRow );
         } else if ( memType == AMP::Utilities::MemoryType::managed ) {
 #ifdef USE_DEVICE
+            AMP::pout << "Building csrmatrix in managed memory" << std::endl;
             matrix = createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator<int>>(
                 leftVec, rightVec, getRow );
 #else
@@ -262,6 +288,7 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
 #endif
         } else if ( memType == AMP::Utilities::MemoryType::device ) {
 #ifdef USE_DEVICE
+            AMP::pout << "Building csrmatrix in device memory" << std::endl;
             matrix = createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator<int>>(
                 leftVec, rightVec, getRow );
 #else
