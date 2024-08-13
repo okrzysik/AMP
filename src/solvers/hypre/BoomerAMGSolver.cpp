@@ -29,7 +29,6 @@ BoomerAMGSolver::BoomerAMGSolver() : HypreSolver() { d_bCreationPhase = true; }
 BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : HypreSolver( parameters )
 {
-    d_bCreationPhase = true;
     HYPRE_BoomerAMGCreate( &d_solver );
     AMP_ASSERT( parameters );
     BoomerAMGSolver::initialize( parameters );

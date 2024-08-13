@@ -72,12 +72,6 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     auto ampVector = AMP::LinearAlgebra::createVector( dofManager, copyVariable );
     AMP_INSIST( ampVector != nullptr, "ampVector is null" );
 
-    // **DEBUG**
-    // auto avdm = ampVector->getDOFManager();
-    // AMP::pout  << "ampVector type: " << ampVector->type()
-    // 	      << ", avdm remote: " << avdm->getRemoteDOFs().size()
-    // 	      << std::endl;
-
     // copy values from one vector to another
     std::copy( userVector->begin(), userVector->end(), ampVector->begin() );
     ampVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );

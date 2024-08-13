@@ -3,5 +3,5 @@
 
 
 // Explicit instantiations
-template class AMP::LinearAlgebra::VectorOperationsCuda<double>;
-template class AMP::LinearAlgebra::VectorOperationsCuda<float>;
+template class AMP::LinearAlgebra::VectorOperationsDevice<double>;
+template class AMP::LinearAlgebra::VectorOperationsDevice<float>;

@@ -2,6 +2,7 @@
 #define included_AMP_CSRMatrixData_h
 
 #include "AMP/matrices/data/MatrixData.h"
+#include "AMP/utils/memory.h"
 
 #include <functional>
 #include <map>
@@ -13,7 +14,7 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator = std::allocator<int>>
+template<typename Policy, class Allocator = AMP::HostAllocator<int>>
 class CSRMatrixData : public MatrixData
 {
 public:

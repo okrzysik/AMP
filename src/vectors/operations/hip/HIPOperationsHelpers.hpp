@@ -12,58 +12,58 @@ namespace LinearAlgebra {
 
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::setToScalar( TYPE alpha, size_t N, TYPE *x )
+void DeviceOperationsHelpers<TYPE>::setToScalar( TYPE alpha, size_t N, TYPE *x )
 {
     thrust::fill_n( thrust::device, x, N, alpha );
 }
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::copy( size_t N, const TYPE *x, TYPE *y )
+void DeviceOperationsHelpers<TYPE>::copy( size_t N, const TYPE *x, TYPE *y )
 {
     thrust::copy_n( thrust::device, x, N, y );
 }
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::scale( TYPE alpha, size_t N, TYPE *x )
+void DeviceOperationsHelpers<TYPE>::scale( TYPE alpha, size_t N, TYPE *x )
 {
     auto lambda = [alpha] __device__( TYPE y ) { return y * alpha; };
     thrust::transform( thrust::device, x, x + N, x, lambda );
 }
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::scale( TYPE alpha, size_t N, const TYPE *x, TYPE *y )
+void DeviceOperationsHelpers<TYPE>::scale( TYPE alpha, size_t N, const TYPE *x, TYPE *y )
 {
     auto lambda = [alpha] __device__( TYPE x ) { return x * alpha; };
     thrust::transform( thrust::device, x, x + N, y, lambda );
 }
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::add( size_t N, const TYPE *x, const TYPE *y, TYPE *z )
+void DeviceOperationsHelpers<TYPE>::add( size_t N, const TYPE *x, const TYPE *y, TYPE *z )
 {
     thrust::transform( thrust::device, x, x + N, y, z, thrust::plus<TYPE>() );
 }
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::subtract( size_t N, const TYPE *x, const TYPE *y, TYPE *z )
+void DeviceOperationsHelpers<TYPE>::subtract( size_t N, const TYPE *x, const TYPE *y, TYPE *z )
 {
     thrust::transform( thrust::device, x, x + N, y, z, thrust::minus<TYPE>() );
 }
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::multiply( size_t N, const TYPE *x, const TYPE *y, TYPE *z )
+void DeviceOperationsHelpers<TYPE>::multiply( size_t N, const TYPE *x, const TYPE *y, TYPE *z )
 {
     thrust::transform( thrust::device, x, x + N, y, z, thrust::multiplies<TYPE>() );
 }
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::divide( size_t N, const TYPE *x, const TYPE *y, TYPE *z )
+void DeviceOperationsHelpers<TYPE>::divide( size_t N, const TYPE *x, const TYPE *y, TYPE *z )
 {
     thrust::transform( thrust::device, x, x + N, y, z, thrust::divides<TYPE>() );
 }
 
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::reciprocal( size_t N, const TYPE *x, TYPE *y )
+void DeviceOperationsHelpers<TYPE>::reciprocal( size_t N, const TYPE *x, TYPE *y )
 {
     auto lambda = [] __device__( TYPE x ) { return (TYPE) 1 / x; };
     thrust::transform( thrust::device, x, x + N, y, lambda );
@@ -71,7 +71,7 @@ void HipOperationsHelpers<TYPE>::reciprocal( size_t N, const TYPE *x, TYPE *y )
 
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::linearSum(
+void DeviceOperationsHelpers<TYPE>::linearSum(
     TYPE alpha, size_t N, const TYPE *x, TYPE beta, const TYPE *y, TYPE *z )
 {
     auto lambda = [alpha, beta] __device__( TYPE x, TYPE y ) { return alpha * x + beta * y; };
@@ -80,28 +80,28 @@ void HipOperationsHelpers<TYPE>::linearSum(
 
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::abs( size_t N, const TYPE *x, TYPE *y )
+void DeviceOperationsHelpers<TYPE>::abs( size_t N, const TYPE *x, TYPE *y )
 {
     auto lambda = [] __device__( TYPE x ) { return x < 0 ? -x : x; };
     thrust::transform( thrust::device, x, x + N, y, lambda );
 }
 
 template<typename TYPE>
-void HipOperationsHelpers<TYPE>::addScalar( size_t N, const TYPE *x, TYPE alpha, TYPE *y )
+void DeviceOperationsHelpers<TYPE>::addScalar( size_t N, const TYPE *x, TYPE alpha, TYPE *y )
 {
     auto lambda = [alpha] __device__( TYPE x ) { return x + alpha; };
     thrust::transform( thrust::device, x, x + N, y, lambda );
 }
 
 template<typename TYPE>
-TYPE HipOperationsHelpers<TYPE>::localMin( size_t N, const TYPE *x )
+TYPE DeviceOperationsHelpers<TYPE>::localMin( size_t N, const TYPE *x )
 {
     return thrust::reduce(
         thrust::device, x, x + N, std::numeric_limits<TYPE>::max(), thrust::minimum<TYPE>() );
 }
 
 template<typename TYPE>
-TYPE HipOperationsHelpers<TYPE>::localMax( size_t N, const TYPE *x )
+TYPE DeviceOperationsHelpers<TYPE>::localMax( size_t N, const TYPE *x )
 {
     auto lambda = [=] __device__( TYPE x ) { return x; };
     return thrust::transform_reduce(
@@ -110,13 +110,13 @@ TYPE HipOperationsHelpers<TYPE>::localMax( size_t N, const TYPE *x )
 
 
 template<typename TYPE>
-TYPE HipOperationsHelpers<TYPE>::localSum( size_t N, const TYPE *x )
+TYPE DeviceOperationsHelpers<TYPE>::localSum( size_t N, const TYPE *x )
 {
     return thrust::reduce( thrust::device, x, x + N, 0, thrust::plus<TYPE>() );
 }
 
 template<typename TYPE>
-TYPE HipOperationsHelpers<TYPE>::localL1Norm( size_t N, const TYPE *x )
+TYPE DeviceOperationsHelpers<TYPE>::localL1Norm( size_t N, const TYPE *x )
 {
     auto lambda = [=] __device__( TYPE x ) { return x < 0 ? -x : x; };
     return thrust::transform_reduce(
@@ -124,7 +124,7 @@ TYPE HipOperationsHelpers<TYPE>::localL1Norm( size_t N, const TYPE *x )
 }
 
 template<typename TYPE>
-TYPE HipOperationsHelpers<TYPE>::localL2Norm( size_t N, const TYPE *x )
+TYPE DeviceOperationsHelpers<TYPE>::localL2Norm( size_t N, const TYPE *x )
 {
     auto lambda = [=] __device__( TYPE x ) { return x * x; };
     auto result = thrust::transform_reduce(
@@ -133,7 +133,7 @@ TYPE HipOperationsHelpers<TYPE>::localL2Norm( size_t N, const TYPE *x )
 }
 
 template<typename TYPE>
-TYPE HipOperationsHelpers<TYPE>::localMaxNorm( size_t N, const TYPE *x )
+TYPE DeviceOperationsHelpers<TYPE>::localMaxNorm( size_t N, const TYPE *x )
 {
     auto lambda = [=] __device__( TYPE x ) { return x < 0 ? -x : x; };
     return thrust::transform_reduce(
@@ -141,13 +141,13 @@ TYPE HipOperationsHelpers<TYPE>::localMaxNorm( size_t N, const TYPE *x )
 }
 
 template<typename TYPE>
-TYPE HipOperationsHelpers<TYPE>::localDot( size_t N, const TYPE *x, const TYPE *y )
+TYPE DeviceOperationsHelpers<TYPE>::localDot( size_t N, const TYPE *x, const TYPE *y )
 {
     return thrust::inner_product( thrust::device, x, x + N, y, (TYPE) 0 );
 }
 
 template<typename TYPE>
-TYPE HipOperationsHelpers<TYPE>::localMinQuotient( size_t N, const TYPE *x, const TYPE *y )
+TYPE DeviceOperationsHelpers<TYPE>::localMinQuotient( size_t N, const TYPE *x, const TYPE *y )
 {
     return thrust::inner_product( thrust::device,
                                   x,
@@ -166,7 +166,7 @@ struct thrust_wrs {
 };
 
 template<typename TYPE>
-TYPE HipOperationsHelpers<TYPE>::localWrmsNorm( size_t N, const TYPE *x, const TYPE *y )
+TYPE DeviceOperationsHelpers<TYPE>::localWrmsNorm( size_t N, const TYPE *x, const TYPE *y )
 {
     return thrust::inner_product(
         thrust::device, x, x + N, y, 0, thrust::plus<TYPE>(), thrust_wrs<TYPE>() );

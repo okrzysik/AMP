@@ -16,21 +16,21 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-extern template class VectorOperationsHip<double>; // Suppresses implicit instantiation below --
-extern template class VectorOperationsHip<float>;  // Suppresses implicit instantiation below --
+extern template class VectorOperationsDevice<double>; // Suppresses implicit instantiation below --
+extern template class VectorOperationsDevice<float>;  // Suppresses implicit instantiation below --
 
 
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
 template<typename TYPE>
-std::shared_ptr<VectorOperations> VectorOperationsHip<TYPE>::cloneOperations() const
+std::shared_ptr<VectorOperations> VectorOperationsDevice<TYPE>::cloneOperations() const
 {
-    return std::make_shared<VectorOperationsHip<TYPE>>();
+    return std::make_shared<VectorOperationsDevice<TYPE>>();
 }
 
 template<typename TYPE>
-VectorOperationsHip<TYPE>::~VectorOperationsHip<TYPE>()
+VectorOperationsDevice<TYPE>::~VectorOperationsDevice<TYPE>()
 {
     if ( d_default_ops )
         delete d_default_ops;
@@ -56,7 +56,7 @@ inline bool checkData( const VectorData &x, const VectorData &y, const VectorDat
 }
 
 template<typename TYPE>
-inline VectorOperationsDefault<TYPE> *VectorOperationsHip<TYPE>::getDefaultOps( void )
+inline VectorOperationsDefault<TYPE> *VectorOperationsDevice<TYPE>::getDefaultOps( void )
 {
     if ( !d_default_ops )
         d_default_ops = new VectorOperationsDefault<TYPE>();
@@ -64,7 +64,8 @@ inline VectorOperationsDefault<TYPE> *VectorOperationsHip<TYPE>::getDefaultOps( 
 }
 
 template<typename TYPE>
-inline const VectorOperationsDefault<TYPE> *VectorOperationsHip<TYPE>::getDefaultOps( void ) const
+inline const VectorOperationsDefault<TYPE> *
+VectorOperationsDevice<TYPE>::getDefaultOps( void ) const
 {
     if ( !d_default_ops )
         d_default_ops = new VectorOperationsDefault<TYPE>();
@@ -75,21 +76,21 @@ inline const VectorOperationsDefault<TYPE> *VectorOperationsHip<TYPE>::getDefaul
 // Static functions that operate on VectorData objects
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::zero( VectorData &x )
+void VectorOperationsDevice<TYPE>::zero( VectorData &x )
 {
-    VectorOperationsHip<TYPE>::setToScalar( 0.0, x );
+    VectorOperationsDevice<TYPE>::setToScalar( 0.0, x );
     x.setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::setToScalar( const Scalar &alpha_in, VectorData &x )
+void VectorOperationsDevice<TYPE>::setToScalar( const Scalar &alpha_in, VectorData &x )
 {
     bool useGPU = checkData( x );
     TYPE alpha  = alpha_in.get<TYPE>();
     if ( useGPU ) {
         TYPE *data = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        HipOperationsHelpers<TYPE>::setToScalar( alpha, N, data );
+        DeviceOperationsHelpers<TYPE>::setToScalar( alpha, N, data );
     } else {
         // Default to cpu version
         auto curMe = x.begin<TYPE>();
@@ -112,20 +113,20 @@ void VectorOperationsHip<TYPE>::setToScalar( const Scalar &alpha_in, VectorData 
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::setRandomValues( VectorData &x )
+void VectorOperationsDevice<TYPE>::setRandomValues( VectorData &x )
 {
     // Default to VectorOperationsDefault (on cpu)
     getDefaultOps()->setRandomValues( x );
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::copy( const VectorData &x, VectorData &y )
+void VectorOperationsDevice<TYPE>::copy( const VectorData &x, VectorData &y )
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto N     = y.sizeOfDataBlock( 0 );
-        HipOperationsHelpers<TYPE>::copy( N, xdata, ydata );
+        DeviceOperationsHelpers<TYPE>::copy( N, xdata, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -134,13 +135,13 @@ void VectorOperationsHip<TYPE>::copy( const VectorData &x, VectorData &y )
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::scale( const Scalar &alpha_in, VectorData &x )
+void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in, VectorData &x )
 {
     if ( checkData( x ) ) {
         TYPE *data = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
         TYPE alpha = alpha_in.get<TYPE>();
-        HipOperationsHelpers<TYPE>::scale( alpha, N, data );
+        DeviceOperationsHelpers<TYPE>::scale( alpha, N, data );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -149,14 +150,16 @@ void VectorOperationsHip<TYPE>::scale( const Scalar &alpha_in, VectorData &x )
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::scale( const Scalar &alpha_in, const VectorData &x, VectorData &y )
+void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in,
+                                          const VectorData &x,
+                                          VectorData &y )
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto N     = y.sizeOfDataBlock( 0 );
         auto alpha = alpha_in.get<TYPE>();
-        HipOperationsHelpers<TYPE>::scale( alpha, N, xdata, ydata );
+        DeviceOperationsHelpers<TYPE>::scale( alpha, N, xdata, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -165,14 +168,14 @@ void VectorOperationsHip<TYPE>::scale( const Scalar &alpha_in, const VectorData 
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::add( const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsDevice<TYPE>::add( const VectorData &x, const VectorData &y, VectorData &z )
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         auto N     = z.sizeOfDataBlock( 0 );
-        HipOperationsHelpers<TYPE>::add( N, xdata, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::add( N, xdata, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -181,14 +184,16 @@ void VectorOperationsHip<TYPE>::add( const VectorData &x, const VectorData &y, V
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::subtract( const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsDevice<TYPE>::subtract( const VectorData &x,
+                                             const VectorData &y,
+                                             VectorData &z )
 {
     if ( checkData<TYPE>( x, y, z ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
-        HipOperationsHelpers<TYPE>::subtract( N, xdata, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::subtract( N, xdata, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -197,14 +202,16 @@ void VectorOperationsHip<TYPE>::subtract( const VectorData &x, const VectorData 
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::multiply( const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsDevice<TYPE>::multiply( const VectorData &x,
+                                             const VectorData &y,
+                                             VectorData &z )
 {
     if ( checkData<TYPE>( x, y, z ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
-        HipOperationsHelpers<TYPE>::multiply( N, xdata, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::multiply( N, xdata, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -213,14 +220,14 @@ void VectorOperationsHip<TYPE>::multiply( const VectorData &x, const VectorData 
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::divide( const VectorData &x, const VectorData &y, VectorData &z )
+void VectorOperationsDevice<TYPE>::divide( const VectorData &x, const VectorData &y, VectorData &z )
 {
     if ( checkData<TYPE>( x, y, z ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
-        HipOperationsHelpers<TYPE>::divide( N, xdata, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::divide( N, xdata, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -230,13 +237,13 @@ void VectorOperationsHip<TYPE>::divide( const VectorData &x, const VectorData &y
 
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::reciprocal( const VectorData &x, VectorData &y )
+void VectorOperationsDevice<TYPE>::reciprocal( const VectorData &x, VectorData &y )
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
-        HipOperationsHelpers<TYPE>::reciprocal( N, xdata, ydata );
+        DeviceOperationsHelpers<TYPE>::reciprocal( N, xdata, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -246,11 +253,11 @@ void VectorOperationsHip<TYPE>::reciprocal( const VectorData &x, VectorData &y )
 
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::linearSum( const Scalar &alpha_in,
-                                           const VectorData &x,
-                                           const Scalar &beta_in,
-                                           const VectorData &y,
-                                           VectorData &z )
+void VectorOperationsDevice<TYPE>::linearSum( const Scalar &alpha_in,
+                                              const VectorData &x,
+                                              const Scalar &beta_in,
+                                              const VectorData &y,
+                                              VectorData &z )
 {
     if ( checkData<TYPE>( x, y, z ) ) {
         TYPE alpha = alpha_in.get<TYPE>();
@@ -259,7 +266,7 @@ void VectorOperationsHip<TYPE>::linearSum( const Scalar &alpha_in,
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
-        HipOperationsHelpers<TYPE>::linearSum( alpha, N, xdata, beta, ydata, zdata );
+        DeviceOperationsHelpers<TYPE>::linearSum( alpha, N, xdata, beta, ydata, zdata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -268,31 +275,31 @@ void VectorOperationsHip<TYPE>::linearSum( const Scalar &alpha_in,
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::axpy( const Scalar &alpha_in,
-                                      const VectorData &x,
-                                      const VectorData &y,
-                                      VectorData &z )
+void VectorOperationsDevice<TYPE>::axpy( const Scalar &alpha_in,
+                                         const VectorData &x,
+                                         const VectorData &y,
+                                         VectorData &z )
 {
-    VectorOperationsHip<TYPE>::linearSum( alpha_in, x, 1.0, y, z );
+    VectorOperationsDevice<TYPE>::linearSum( alpha_in, x, 1.0, y, z );
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::axpby( const Scalar &alpha_in,
-                                       const Scalar &beta_in,
-                                       const VectorData &x,
-                                       VectorData &z )
+void VectorOperationsDevice<TYPE>::axpby( const Scalar &alpha_in,
+                                          const Scalar &beta_in,
+                                          const VectorData &x,
+                                          VectorData &z )
 {
-    VectorOperationsHip<TYPE>::linearSum( alpha_in, x, beta_in, z, z );
+    VectorOperationsDevice<TYPE>::linearSum( alpha_in, x, beta_in, z, z );
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::abs( const VectorData &x, VectorData &y )
+void VectorOperationsDevice<TYPE>::abs( const VectorData &x, VectorData &y )
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
-        HipOperationsHelpers<TYPE>::abs( N, xdata, ydata );
+        DeviceOperationsHelpers<TYPE>::abs( N, xdata, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -301,16 +308,16 @@ void VectorOperationsHip<TYPE>::abs( const VectorData &x, VectorData &y )
 }
 
 template<typename TYPE>
-void VectorOperationsHip<TYPE>::addScalar( const VectorData &x,
-                                           const Scalar &alpha_in,
-                                           VectorData &y )
+void VectorOperationsDevice<TYPE>::addScalar( const VectorData &x,
+                                              const Scalar &alpha_in,
+                                              VectorData &y )
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
         TYPE alpha = alpha_in.get<TYPE>();
-        HipOperationsHelpers<TYPE>::addScalar( N, xdata, alpha, ydata );
+        DeviceOperationsHelpers<TYPE>::addScalar( N, xdata, alpha, ydata );
         checkHipErrors( hipDeviceSynchronize() );
     } else {
         // Default to VectorOperationsDefault (on cpu)
@@ -319,12 +326,12 @@ void VectorOperationsHip<TYPE>::addScalar( const VectorData &x,
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localMin( const VectorData &x ) const
+Scalar VectorOperationsDevice<TYPE>::localMin( const VectorData &x ) const
 {
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return HipOperationsHelpers<TYPE>::localMin( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localMin( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMin( x );
@@ -332,12 +339,12 @@ Scalar VectorOperationsHip<TYPE>::localMin( const VectorData &x ) const
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localMax( const VectorData &x ) const
+Scalar VectorOperationsDevice<TYPE>::localMax( const VectorData &x ) const
 {
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return HipOperationsHelpers<TYPE>::localMax( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localMax( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMax( x );
@@ -345,12 +352,12 @@ Scalar VectorOperationsHip<TYPE>::localMax( const VectorData &x ) const
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localSum( const VectorData &x ) const
+Scalar VectorOperationsDevice<TYPE>::localSum( const VectorData &x ) const
 {
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return HipOperationsHelpers<TYPE>::localSum( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localSum( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localSum( x );
@@ -358,12 +365,12 @@ Scalar VectorOperationsHip<TYPE>::localSum( const VectorData &x ) const
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localL1Norm( const VectorData &x ) const
+Scalar VectorOperationsDevice<TYPE>::localL1Norm( const VectorData &x ) const
 {
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return HipOperationsHelpers<TYPE>::localL1Norm( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localL1Norm( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localL1Norm( x );
@@ -371,12 +378,12 @@ Scalar VectorOperationsHip<TYPE>::localL1Norm( const VectorData &x ) const
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localL2Norm( const VectorData &x ) const
+Scalar VectorOperationsDevice<TYPE>::localL2Norm( const VectorData &x ) const
 {
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return HipOperationsHelpers<TYPE>::localL2Norm( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localL2Norm( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localL2Norm( x );
@@ -384,12 +391,12 @@ Scalar VectorOperationsHip<TYPE>::localL2Norm( const VectorData &x ) const
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localMaxNorm( const VectorData &x ) const
+Scalar VectorOperationsDevice<TYPE>::localMaxNorm( const VectorData &x ) const
 {
     if ( checkData( x ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return HipOperationsHelpers<TYPE>::localMaxNorm( N, xdata );
+        return DeviceOperationsHelpers<TYPE>::localMaxNorm( N, xdata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMaxNorm( x );
@@ -397,13 +404,13 @@ Scalar VectorOperationsHip<TYPE>::localMaxNorm( const VectorData &x ) const
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
+Scalar VectorOperationsDevice<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return HipOperationsHelpers<TYPE>::localDot( N, xdata, ydata );
+        return DeviceOperationsHelpers<TYPE>::localDot( N, xdata, ydata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localDot( x, y );
@@ -411,13 +418,14 @@ Scalar VectorOperationsHip<TYPE>::localDot( const VectorData &x, const VectorDat
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localMinQuotient( const VectorData &x, const VectorData &y ) const
+Scalar VectorOperationsDevice<TYPE>::localMinQuotient( const VectorData &x,
+                                                       const VectorData &y ) const
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return HipOperationsHelpers<TYPE>::localMinQuotient( N, xdata, ydata );
+        return DeviceOperationsHelpers<TYPE>::localMinQuotient( N, xdata, ydata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localMinQuotient( x, y );
@@ -425,13 +433,13 @@ Scalar VectorOperationsHip<TYPE>::localMinQuotient( const VectorData &x, const V
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localWrmsNorm( const VectorData &x, const VectorData &y ) const
+Scalar VectorOperationsDevice<TYPE>::localWrmsNorm( const VectorData &x, const VectorData &y ) const
 {
     if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
-        return HipOperationsHelpers<TYPE>::localWrmsNorm( N, xdata, ydata );
+        return DeviceOperationsHelpers<TYPE>::localWrmsNorm( N, xdata, ydata );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         return getDefaultOps()->localWrmsNorm( x, y );
@@ -439,18 +447,18 @@ Scalar VectorOperationsHip<TYPE>::localWrmsNorm( const VectorData &x, const Vect
 }
 
 template<typename TYPE>
-Scalar VectorOperationsHip<TYPE>::localWrmsNormMask( const VectorData &x,
-                                                     const VectorData &mask,
-                                                     const VectorData &y ) const
+Scalar VectorOperationsDevice<TYPE>::localWrmsNormMask( const VectorData &x,
+                                                        const VectorData &mask,
+                                                        const VectorData &y ) const
 {
     // Default to VectorOperationsDefault (on cpu)
     return getDefaultOps()->localWrmsNormMask( x, mask, y );
 }
 
 template<typename TYPE>
-bool VectorOperationsHip<TYPE>::localEquals( const VectorData &x,
-                                             const VectorData &y,
-                                             const Scalar &tol_in ) const
+bool VectorOperationsDevice<TYPE>::localEquals( const VectorData &x,
+                                                const VectorData &y,
+                                                const Scalar &tol_in ) const
 {
     TYPE tol = tol_in.get<TYPE>();
     if ( checkData<TYPE>( x, y ) ) {

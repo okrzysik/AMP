@@ -4,10 +4,7 @@
 #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
-
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
-#endif
+#include "AMP/utils/memory.h"
 
 #include <numeric>
 
@@ -89,14 +86,10 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     }
 }
 
-#define TMP_FLAG_DBG 0
-
 HypreMatrixAdaptor::~HypreMatrixAdaptor()
 {
-#if ( TMP_FLAG_DBG )
     hypre_ParCSRMatrix *par_matrix = static_cast<hypre_ParCSRMatrix *>( d_matrix->object );
     par_matrix->col_map_offd       = nullptr;
-#endif
     // Now the standard IJMatrixDestroy can be called
     HYPRE_IJMatrixDestroy( d_matrix );
 }
@@ -124,7 +117,7 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
     }
 
     const auto nrows = last_row - first_row + 1;
-#if ( TMP_FLAG_DBG )
+
     // Manually create ParCSR and fill fields as needed
     // Roughly based on hypre_IJMatrixInitializeParCSR_v2 from IJMatrix_parcsr.c
     //   and the various functions that it calls
@@ -209,32 +202,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
 
     // set assemble flag to indicate that we are done
     d_matrix->assemble_flag = 1;
-
-#else
-    HYPRE_IJMatrixSetDiagOffdSizes( d_matrix, nnz_per_row_d, nnz_per_row_od );
-    HYPRE_IJMatrixInitialize( d_matrix );
-
-    HYPRE_BigInt *cols_d = csr_bja_d, *cols_od = csr_bja_od;
-    HYPRE_Real *vals_d = csr_aa_d, *vals_od = csr_aa_od;
-    for ( HYPRE_BigInt row = first_row; row <= last_row; ++row ) {
-        HYPRE_BigInt i = row - first_row;
-
-        HYPRE_Int ncols = nnz_per_row_d[i];
-        HYPRE_IJMatrixSetValues( d_matrix, 1, &ncols, &row, cols_d, vals_d );
-        cols_d += ncols;
-        vals_d += ncols;
-
-        ncols = nnz_per_row_od[i];
-        HYPRE_IJMatrixSetValues( d_matrix, 1, &ncols, &row, cols_od, vals_od );
-        cols_od += ncols;
-        vals_od += ncols;
-    }
-
-    HYPRE_IJMatrixAssemble( d_matrix );
-    hypre_ParCSRMatrix *par_matrix = static_cast<hypre_ParCSRMatrix *>( d_matrix->object );
-    hypre_CSRMatrix *diag          = par_matrix->diag;
-    hypre_CSRMatrix *off_diag      = par_matrix->offd;
-#endif
 }
 
 } // namespace AMP::LinearAlgebra

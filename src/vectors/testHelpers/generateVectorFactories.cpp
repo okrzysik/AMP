@@ -24,15 +24,11 @@
 #ifdef USE_OPENMP
     #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
-    #include "AMP/utils/cuda/GPUFunctionTable.h"
-    #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
+#ifdef USE_DEVICE
+    #include "AMP/vectors/operations/VectorOperationsDevice.h"
 #endif
-#ifdef USE_HIP
-    #include "AMP/utils/hip/HipAllocator.h"
-    #include "AMP/vectors/operations/hip/VectorOperationsHip.h"
-#endif
+#include "AMP/utils/memory.h"
+
 
 #include <string>
 #include <vector>
@@ -117,12 +113,7 @@ bool isValid( const std::string &name )
 #ifndef USE_OPENMP
     valid = valid && name.find( "openmp" ) == std::string::npos;
 #endif
-#ifndef USE_CUDA
-    valid = valid && name.find( "cuda" ) == std::string::npos;
-    valid = valid && name.find( "gpu" ) == std::string::npos;
-#endif
-#ifndef USE_HIP
-    valid = valid && name.find( "hip" ) == std::string::npos;
+#ifndef USE_DEVICE
     valid = valid && name.find( "gpu" ) == std::string::npos;
 #endif
     NULL_USE( name );
@@ -159,13 +150,8 @@ generateSimpleVectorFactory( const std::string &name, int N, bool global, const 
         using DATA = AMP::LinearAlgebra::VectorDataDefault<TYPE>;
         factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
     } else if ( data == "gpu" ) {
-#ifdef USE_CUDA
-        using ALLOC = CudaManagedAllocator<TYPE>;
-        using DATA  = AMP::LinearAlgebra::VectorDataDefault<TYPE, ALLOC>;
-        factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
-#endif
-#ifdef USE_HIP
-        using ALLOC = HipManagedAllocator<TYPE>;
+#ifdef USE_DEVICE
+        using ALLOC = ManagedAllocator<TYPE>;
         using DATA  = AMP::LinearAlgebra::VectorDataDefault<TYPE, ALLOC>;
         factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
 #endif
@@ -189,15 +175,11 @@ std::shared_ptr<VectorFactory> generateSimpleVectorFactory(
             generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsOpenMP<TYPE>>(
                 name, N, global, data );
 #endif
-    } else if ( ops == "cuda" ) {
-#ifdef USE_CUDA
-        factory = generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsCuda<TYPE>>(
-            name, N, global, data );
-#endif
-    } else if ( ops == "hip" ) {
-#ifdef USE_HIP
-        factory = generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsHip<TYPE>>(
-            name, N, global, data );
+    } else if ( ops == "gpu" ) {
+#ifdef USE_DEVICE
+        factory =
+            generateSimpleVectorFactory<TYPE, AMP::LinearAlgebra::VectorOperationsDevice<TYPE>>(
+                name, N, global, data );
 #endif
     } else {
         AMP_ERROR( "Unknown VectorOperations" );
@@ -327,12 +309,12 @@ std::vector<std::string> getSimpleVectorFactories()
     list.emplace_back( "SimpleVectorFactory<45,true,double>" );
     list.emplace_back( "SimpleVectorFactory<15,false,double,openmp,cpu>" );
     // list.push_back( "SimpleVectorFactory<15,false,double,default,gpu>" ); // Requires UVM
-    list.emplace_back( "SimpleVectorFactory<15,false,double,cuda,gpu>" );
+    list.emplace_back( "SimpleVectorFactory<15,false,double,gpu,gpu>" );
     list.emplace_back( "SimpleVectorFactory<15,false,float>" );
     list.emplace_back( "SimpleVectorFactory<15,true,float>" );
     list.emplace_back( "SimpleVectorFactory<15,false,float,openmp,cpu>" );
     // list.push_back( "SimpleVectorFactory<15,false,float,default,gpu>" ); // Requires UVM
-    list.emplace_back( "SimpleVectorFactory<15,false,float,cuda,gpu>" );
+    list.emplace_back( "SimpleVectorFactory<15,false,float,gpu,gpu>" );
     list = cleanList( list );
     return list;
 }
