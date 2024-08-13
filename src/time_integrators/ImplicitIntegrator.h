@@ -168,6 +168,8 @@ public:
      *
      * @param dt Time step size
      * @param first_step Whether this is the first step after grid change
+     * @param in            Input vector
+     * @param out           Output vector
      *
      */
     int advanceSolution( const double dt,

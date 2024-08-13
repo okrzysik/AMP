@@ -47,10 +47,12 @@ public:
     /**
      * Constructor
      * \param name      name of property (required)
+     * \param size      size of returned evaluation
+     * \param unit      Units of property
      * \param source    literature reference for model and notes
-     * \param params    default parameter values
      * \param args      names of arguments
-     * \param units     Optional units for each argument
+     * \param ranges    valid ranges for arguments
+     * \param argUnits  Optional units for each argument
      */
     Property( std::string_view name,
               const ArraySize &size                     = { 1 },
@@ -221,8 +223,6 @@ public: // Evaluators
      * \brief    Evaluate the property
      * \details  This function evaluates the property at the desired conditions for multiple points.
      * \param r         std::vector of return values
-     * \param unit      The desired units of the result.  If this is not specified,
-     *                  the native units of the property are use (see get_units())
      * \param args      Optional arguments specifying input arguments to the eval() function.
      *                  In general arguments are of the form:
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
@@ -248,9 +248,7 @@ public: // Evaluators
     /**
      * \brief    Evaluate the property
      * \details  This function evaluates the property at the desired conditions for multiple points.
-     * \param r         std::vector of return values
-     * \param unit      The desired units of the result.  If this is not specified,
-     *                  the native units of the property are use (see get_units())
+     * \param r         Vector of vector of return values
      * \param args      Optional arguments specifying input arguments to the eval() function.
      *                  In general arguments are of the form:
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
@@ -274,9 +272,7 @@ public: // Evaluators
     /**
      * \brief    Evaluate the property
      * \details  This function evaluates the property at the desired conditions for multiple points.
-     * \param r         std::vector of return values
-     * \param unit      The desired units of the result.  If this is not specified,
-     *                  the native units of the property are use (see get_units())
+     * \param r         Vector of return values
      * \param args      Optional arguments specifying input arguments to the eval() function.
      *                  In general arguments are of the form:
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
@@ -303,8 +299,6 @@ public: // Evaluators
      * \brief    Evaluate the property
      * \details  This function evaluates the property at the desired conditions for multiple points.
      * \param r         std::vector of return values
-     * \param unit      The desired units of the result.  If this is not specified,
-     *                  the native units of the property are use (see get_units())
      * \param args      Optional arguments specifying input arguments to the eval() function.
      *                  In general arguments are of the form:
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
@@ -319,8 +313,6 @@ public: // Evaluators
 protected: // Virtual function to override to load the property
     /**
      * scalar evaluation function for a single argument set
-     * \param args list of argument values, in correct order, in the correct units, given by
-     *    get_arguments()
      *  \param result       Output result (N)
      *  \param args         Input arguments (MxN)
      * \return scalar value of property

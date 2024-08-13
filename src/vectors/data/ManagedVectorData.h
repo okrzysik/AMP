@@ -25,7 +25,7 @@ class ManagedVectorData : public VectorData, public DataChangeListener
 
 public:
     /** \brief Construct a ManagedVector from a set of parameters
-     * \param[in] params  The description of the ManagedVector
+     * \param[in] vec  The description of the ManagedVector
      */
     explicit ManagedVectorData( std::shared_ptr<Vector> vec );
 

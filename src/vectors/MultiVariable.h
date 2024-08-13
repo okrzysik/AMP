@@ -141,7 +141,7 @@ class VS_MultiVariable : public VectorSelector
 
 public:
     /** \brief Constructor
-     * \param[in] name  The name of the variable to subset on
+     * \param[in] var  The variable to subset on
      */
     explicit VS_MultiVariable( const std::shared_ptr<MultiVariable> &var );
 

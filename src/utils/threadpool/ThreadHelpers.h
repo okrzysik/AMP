@@ -33,7 +33,7 @@ void setProcessAffinity( const std::vector<int> &procs );
  *  Function to return the affinity of the given thread
  *  @param thread   The native thread handle
  */
-std::vector<int> getThreadAffinity( std::thread::native_handle_type );
+std::vector<int> getThreadAffinity( std::thread::native_handle_type thread );
 
 
 /*!
@@ -41,7 +41,7 @@ std::vector<int> getThreadAffinity( std::thread::native_handle_type );
  *  @param thread   The native thread handle
  *  @param procs    The processors to use
  */
-void setThreadAffinity( std::thread::native_handle_type, const std::vector<int> &procs );
+void setThreadAffinity( std::thread::native_handle_type thread, const std::vector<int> &procs );
 
 
 } // namespace AMP::Thread
