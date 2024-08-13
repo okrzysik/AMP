@@ -1,34 +1,22 @@
 #include "AMP/vectors/data/ArrayVectorData.h"
-#ifdef USE_HIP
-    #include "AMP/utils/hip/GPUFunctionTable.h"
-    #include "AMP/utils/hip/HipAllocator.h"
+#ifdef USE_DEVICE
+    #include "AMP/utils/device/GPUFunctionTable.h"
 #endif
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
-    #include "AMP/utils/cuda/GPUFunctionTable.h"
-#endif
+
+#include "AMP/utils/memory.h"
+
 
 // Explicit instantiations
 template class AMP::LinearAlgebra::ArrayVectorData<double>;
 template class AMP::LinearAlgebra::ArrayVectorData<float>;
 
-#ifdef USE_CUDA
+#ifdef USE_DEVICE
 template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::CudaDevAllocator<double>>;
+    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::DeviceAllocator<double>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::CudaDevAllocator<float>>;
+    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::DeviceAllocator<float>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<double>>;
+    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::ManagedAllocator<double>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<float>>;
-#endif
-#ifdef USE_HIP
-template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::HipDevAllocator<double>>;
-template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::HipDevAllocator<float>>;
-template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::HipManagedAllocator<double>>;
-template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::HipManagedAllocator<float>>;
+    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::ManagedAllocator<float>>;
 #endif

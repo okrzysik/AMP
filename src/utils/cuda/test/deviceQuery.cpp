@@ -284,23 +284,31 @@ int main( int argc, char **argv )
 
     // driver version
     sProfileString += ", CUDA Driver Version = ";
-    snprintf( cTemp, 10, "%d.%d", driverVersion / 1000, ( driverVersion % 100 ) / 10 );
+    snprintf( cTemp,
+              5 * sizeof( char ),
+              "%2lu.%1lu",
+              ( driverVersion / 1000 ) % 100lu,
+              ( ( driverVersion % 100 ) / 10 ) % 10lu );
     sProfileString += cTemp;
 
     // Runtime version
     sProfileString += ", CUDA Runtime Version = ";
-    snprintf( cTemp, 10, "%d.%d", runtimeVersion / 1000, ( runtimeVersion % 100 ) / 10 );
+    snprintf( cTemp,
+              5 * sizeof( char ),
+              "%2lu.%1lu",
+              ( runtimeVersion / 1000 ) % 100lu,
+              ( ( runtimeVersion % 100 ) / 10 ) % 10lu );
     sProfileString += cTemp;
 
     // Device count
     sProfileString += ", NumDevs = ";
-    snprintf( cTemp, 10, "%d", deviceCount );
+    snprintf( cTemp, 3 * sizeof( char ), "%2lu", deviceCount % 100lu );
 
     sProfileString += cTemp;
 
     // Print Out all device Names
     for ( dev = 0; dev < deviceCount; ++dev ) {
-        snprintf( cTemp, 13, ", Device%d = ", dev );
+        snprintf( cTemp, 14 * sizeof( char ), ", Device%02lu = ", dev % 100lu );
         cudaDeviceProp deviceProp;
         cudaGetDeviceProperties( &deviceProp, dev );
         sProfileString += cTemp;

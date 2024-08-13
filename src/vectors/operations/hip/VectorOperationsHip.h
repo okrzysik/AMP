@@ -11,46 +11,45 @@ namespace LinearAlgebra {
 
 /**
  * \brief  A default set of vector operations
- * \details VectorOperationsHip impliments a default set of
+ * \details VectorOperationsDevice impliments a default set of
  *    vector operations on the CPU.
  */
 template<typename TYPE = double>
-class VectorOperationsHip : public VectorOperations
+class VectorOperationsDevice : public VectorOperations
 {
 public:
     // Constructor
-    VectorOperationsHip() {}
+    VectorOperationsDevice() {}
 
     //! Destructor
-    virtual ~VectorOperationsHip();
+    virtual ~VectorOperationsDevice();
 
     //! Clone the operations
     virtual std::shared_ptr<VectorOperations> cloneOperations() const override;
 
 public:
     //  functions that operate on VectorData
-    std::string VectorOpName() const override { return "VectorOperationsHip"; }
+    std::string VectorOpName() const override { return "VectorOperationsDevice"; }
     void zero( VectorData & ) override;
     void setToScalar( const Scalar &, VectorData & ) override;
     void setRandomValues( VectorData & ) override;
     void copy( const VectorData &, VectorData & ) override;
     void scale( const Scalar &, const VectorData &, VectorData & ) override;
-    void scale( const Scalar &, VectorData & ) override;
+    void scale( const Scalar &, VectorData &x ) override;
     void add( const VectorData &, const VectorData &, VectorData & ) override;
     void subtract( const VectorData &, const VectorData &, VectorData & ) override;
     void multiply( const VectorData &, const VectorData &, VectorData & ) override;
     void divide( const VectorData &, const VectorData &, VectorData & ) override;
     void reciprocal( const VectorData &, VectorData & ) override;
-    void linearSum( const Scalar &alpha,
+    void linearSum( const Scalar &,
                     const VectorData &,
-                    const Scalar &beta,
+                    const Scalar &,
                     const VectorData &,
                     VectorData & ) override;
-    void axpy( const Scalar &alpha, const VectorData &, const VectorData &, VectorData & ) override;
-    void
-    axpby( const Scalar &alpha, const Scalar &beta, const VectorData &, VectorData & ) override;
+    void axpy( const Scalar &, const VectorData &, const VectorData &, VectorData & ) override;
+    void axpby( const Scalar &, const Scalar &, const VectorData &, VectorData & ) override;
     void abs( const VectorData &, VectorData & ) override;
-    void addScalar( const VectorData &, const Scalar &alpha_in, VectorData & ) override;
+    void addScalar( const VectorData &, const Scalar &, VectorData & ) override;
 
     Scalar localMin( const VectorData & ) const override;
     Scalar localMax( const VectorData & ) const override;
@@ -61,9 +60,8 @@ public:
     Scalar localDot( const VectorData &, const VectorData & ) const override;
     Scalar localMinQuotient( const VectorData &, const VectorData & ) const override;
     Scalar localWrmsNorm( const VectorData &, const VectorData & ) const override;
-    Scalar localWrmsNormMask( const VectorData &,
-                              const VectorData &mask,
-                              const VectorData & ) const override;
+    Scalar
+    localWrmsNormMask( const VectorData &, const VectorData &, const VectorData & ) const override;
     bool
     localEquals( const VectorData &, const VectorData &, const Scalar &tol = 1e-6 ) const override;
 
