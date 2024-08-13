@@ -20,7 +20,12 @@ public:
     CSRMatrixParameters() = delete;
 
     /** \brief Constructor
-     * \param[in] comm     Communicator for the matrix
+     * \param[in] first_row     Index for first row
+     * \param[in] last_row      Index for last row
+     * \param[in] nnz_per_row   Number of non-zero entries per row
+     * \param[in] cols          Column indicies
+     * \param[in] coeffs        Values
+     * \param[in] comm          Communicator for the matrix
      */
     explicit CSRMatrixParameters( gidx_t first_row,
                                   gidx_t last_row,

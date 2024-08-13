@@ -195,6 +195,7 @@ protected:
 
     /** Constructor:  create a MultiVector with a particular variable
      * \param[in]  name  The vector to create the MultiVector from
+     * \param[in]  comm  The communicator over which the vector exists
      */
     explicit MultiVector( const std::string &name, const AMP_MPI &comm );
 

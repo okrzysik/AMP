@@ -115,7 +115,7 @@ public:
 
     // The following are not implemented:
     ImplicitIntegrator( const ImplicitIntegrator & ) = delete;
-    void operator=( const ImplicitIntegrator & ) = delete;
+    void operator=( const ImplicitIntegrator & )     = delete;
 
     /**
      * Empty destructor for ImplicitIntegrator
@@ -168,6 +168,8 @@ public:
      *
      * @param dt Time step size
      * @param first_step Whether this is the first step after grid change
+     * @param in            Input vector
+     * @param out           Output vector
      *
      */
     int advanceSolution( const double dt,

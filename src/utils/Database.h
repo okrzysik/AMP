@@ -95,9 +95,9 @@ public:
 protected:
     KeyData() {}
     KeyData( const Units &unit ) : d_unit( unit ) {}
-    KeyData( KeyData && )      = delete;
-    KeyData( const KeyData & ) = delete;
-    KeyData &operator=( KeyData && ) = delete;
+    KeyData( KeyData && )                 = delete;
+    KeyData( const KeyData & )            = delete;
+    KeyData &operator=( KeyData && )      = delete;
     KeyData &operator=( const KeyData & ) = delete;
 
 protected:
@@ -191,6 +191,7 @@ public:
     /**
      * Open an database file
      * @param filename       Name of input file to open
+     * @param[in] src        Source location in case of error
      */
     void readDatabase( const std::string &filename,
                        source_location src = source_location::current() );
@@ -271,8 +272,8 @@ public:
 
     /**
      * Get the key as a string
-     *
-     * @param[in] key           Key name in database.
+     * @param[in] key       Key name in database.
+     * @param[in] src       Source location in case of error
      */
     inline std::string getString( std::string_view key,
                                   source_location src = source_location::current() ) const
@@ -287,8 +288,9 @@ public:
      * is not a scalar of the given type, then an error message is printed and
      * the program exits.
      *
-     * @param[in] key           Key name in database.
-     * @param[in] unit          Desired units
+     * @param[in] key       Key name in database.
+     * @param[in] unit      Desired units
+     * @param[in] src       Source location in case of error
      */
     template<class TYPE>
     TYPE getScalar( std::string_view key,
@@ -301,9 +303,10 @@ public:
      * name.  If the specified key does not exist in the database the
      * the default value will be printed
      *
-     * @param[in] key           Key name in database
-     * @param[in] value         Default value
-     * @param[in] unit          Desired units
+     * @param[in] key       Key name in database
+     * @param[in] value     Default value
+     * @param[in] unit      Desired units
+     * @param[in] src       Source location in case of error
      */
     template<class TYPE>
     TYPE getWithDefault( std::string_view key,
@@ -318,8 +321,9 @@ public:
      * is not of the given type, then an error message is printed and
      * the program exits.
      *
-     * @param key           Key name in database.
-     * @param unit          Desired units
+     * @param[in] key       Key name in database.
+     * @param[in] unit      Desired units
+     * @param[in] src       Source location in case of error
      */
     template<class TYPE>
     Array<TYPE> getArray( std::string_view key,
@@ -333,8 +337,9 @@ public:
      * is not of the given type, then an error message is printed and
      * the program exits.
      *
-     * @param key           Key name in database.
-     * @param unit          Desired units
+     * @param[in] key       Key name in database.
+     * @param[in] unit      Desired units
+     * @param[in] src       Source location in case of error
      */
     template<class TYPE>
     std::vector<TYPE> getVector( std::string_view key,
@@ -344,10 +349,11 @@ public:
 
     /**
      * Put the scalar entry into the database with the specified key name.
-     * @param key           Key name in database.
-     * @param value         Value to store
-     * @param unit          Desired units
-     * @param check     Optional value to indicate the behavior of the database if the key exists.
+     * @param[in] key       Key name in database.
+     * @param[in] value     Value to store
+     * @param[in] unit      Desired units
+     * @param[in] check     Optional value to indicate the behavior if the key exists
+     * @param[in] src       Source location in case of error
      */
     template<class TYPE>
     void putScalar( std::string_view key,
@@ -363,10 +369,11 @@ public:
      * is not of the given type, then an error message is printed and
      * the program exits.
      *
-     * @param key           Key name in database.
-     * @param data          Data to store
-     * @param unit          Desired units
-     * @param check     Optional value to indicate the behavior of the database if the key exists.
+     * @param[in] key       Key name in database.
+     * @param[in] data      Data to store
+     * @param[in] unit      Desired units
+     * @param[in] check     Optional value to indicate the behavior if the key exists
+     * @param[in] src       Source location in case of error
      */
     template<class TYPE>
     void putArray( std::string_view key,
@@ -382,10 +389,11 @@ public:
      * is not of the given type, then an error message is printed and
      * the program exits.
      *
-     * @param key           Key name in database.
-     * @param data          Data to store
-     * @param unit          Desired units
-     * @param check     Optional value to indicate the behavior of the database if the key exists.
+     * @param[in] key       Key name in database.
+     * @param[in] data      Data to store
+     * @param[in] unit      Desired units
+     * @param[in] check     Optional value to indicate the behavior if the key exists
+     * @param[in] src       Source location in case of error
      */
     template<class TYPE>
     void putVector( std::string_view key,
@@ -415,9 +423,10 @@ public:
     /**
      * Put the data for a key in the database.
      *
-     * @param key       Key name in database.
-     * @param data      Data to store
-     * @param check     Optional value to indicate the behavior of the database if the key exists.
+     * @param[in] key       Key name in database.
+     * @param[in] data      Data to store
+     * @param[in] check     Optional value to indicate the behavior if the key exists
+     * @param[in] src       Source location in case of error
      */
     void putData( std::string_view key,
                   std::unique_ptr<KeyData> data,
@@ -436,7 +445,8 @@ public:
      * Check if the named entry is an equation
      * Note: scalar values can be represented as an equation and will return true
      *
-     * @param key       Key name in database
+     * @param[in] key       Key name in database
+     * @param[in] src       Source location in case of error
      */
     bool isEquation( std::string_view key, source_location src = source_location::current() ) const;
 
@@ -445,7 +455,9 @@ public:
      * Return an equation for the key
      * Note: scalar values can be represented as an equation and will return a new scalar equation
      *
-     * @param key       Key name in database
+     * @param[in] key       Key name in database
+     * @param[in] unit      Desired units
+     * @param[in] src       Source location in case of error
      */
     std::unique_ptr<MathExpr> getEquation( std::string_view key,
                                            const Units &unit   = Units(),
@@ -463,7 +475,8 @@ public:
      * Get a raw pointer to the database for a key in the database.
      * If the specified key does not exist, a null pointer is returned.
      *
-     * @param key Key name in database.
+     * @param[in] key       Key name in database
+     * @param[in] src       Source location in case of error
      */
     std::shared_ptr<Database> getDatabase( std::string_view key,
                                            source_location src = source_location::current() );
@@ -472,7 +485,8 @@ public:
      * Get a raw pointer to the database for a key in the database.
      * If the specified key does not exist, a null pointer is returned.
      *
-     * @param key Key name in database.
+     * @param[in] key       Key name in database
+     * @param[in] src       Source location in case of error
      */
     std::shared_ptr<const Database>
     getDatabase( std::string_view key, source_location src = source_location::current() ) const;
@@ -481,7 +495,8 @@ public:
     /**
      * Access the database
      *
-     * @param key Key name in database.
+     * @param[in] key       Key name in database
+     * @param[in] src       Source location in case of error
      */
     const Database &operator()( std::string_view key,
                                 source_location src = source_location::current() ) const;
@@ -511,7 +526,6 @@ public:
      * \endcode
      *
      * @param key       Key name in database.
-     * @param db        Database to store
      */
     inline std::shared_ptr<Database> createAddDatabase( std::string_view key )
     {

@@ -8,8 +8,8 @@ To run the test compile the example and then run the command "createMesh inputFi
 If AMP was compiled with silo, the mesh will be written to a silo file named
 "output/inputFile.silo".
 
-\par createMesh.cc
-\include createMesh.cc
+\par createMesh.cpp
+\include createMesh.cpp
 
 \par Example 1:
 The example input shows the creation of a simple cube mesh in 3d.

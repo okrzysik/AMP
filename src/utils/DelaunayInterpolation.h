@@ -23,7 +23,7 @@ public:
     DelaunayInterpolation();
 
     // Deleted constructors
-    DelaunayInterpolation( const DelaunayInterpolation & ) = delete;
+    DelaunayInterpolation( const DelaunayInterpolation & )            = delete;
     DelaunayInterpolation &operator=( const DelaunayInterpolation & ) = delete;
 
     //! Empty destructor.
@@ -70,11 +70,9 @@ public:
      * It does not check if the provided tessellation is valid.  It allows the user to
      * provide their own tesselation if desired.
      * If sucessful, this routine returns 0.
-     * @param N         The number of vertices
      * @param x         The coordinates of the vertices( ndim x N )
      *                  or to update the coordinate pointers before each call.
      *                  See update_coordinates for more information.
-     * @param N_tri     The number of simplexes (triangles in 2D)
      * @param tri       The tesselation( ndim+1 x N_tri )
      */
     void create_tessellation( const Array<TYPE> &x, const Array<int> &tri );
@@ -93,7 +91,6 @@ public:
      * It is able to do perform the search in O(N^(1/ndim)) on average.
      * Note: this function requires the calculate of the node lists if they are not stored (see
      * set_storage_level)
-     * @param Ni        The number of points in xi and yi
      * @param xi        Coordinates of the query points ( ndim x Ni )
      * @return          Return the index of the nearest neighbor (N)
      */
@@ -159,7 +156,6 @@ public:
     /*!
      * This function performs nearest-neighbor interpoaltion.
      * @param f         Function values at the triangle vertices( 1 x N )
-     * @param Ni        Number of points to perform the interpolation
      * @param xi        Coordinates of the query points( ndim x Ni )
      * @param nearest   The nearest-neighbor points (see find_nearest)( 1 x Ni)
      * @return          Return the interpolated function values at xi( 1 x Ni)
@@ -176,7 +172,6 @@ public:
      * If a valid triangle index is not given, NaN will be returned.
      * If extrap is false and the point is not within the triangle, NaN will be returned.
      * @param f         Function values at the triangle vertices( 1 x N )
-     * @param Ni        Number of points to perform the interpolation
      * @param xi        Coordinates of the query points( ndim x Ni )
      * @param index     The index of the triangle containing the point (see find_tri)
      * @param extrap    Do we want to extrapolate from the current triangle
@@ -200,7 +195,6 @@ public:
      * @param f         Function values at the triangle vertices( 1 x N )
      * @param g         Gradient of f(x) at the triangle vertices( ndim x N ) (see
      * calc_node_gradient if unknown)
-     * @param Ni        Number of points to perform the interpolation
      * @param xi        Coordinates of the query points( ndim x Ni )
      * @param index     The index of the triangle containing the point (see find_tri)
      * @param extrap    Do we want to extrapolate from the current triangle

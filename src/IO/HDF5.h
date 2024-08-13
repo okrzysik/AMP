@@ -38,7 +38,7 @@ enum class Compression : uint8_t { None, GZIP, SZIP };
  * @param[in] filename  File to open
  * @param[in] mode      C string containing a file access mode. It can be:
  *                      "r"    read: Open file for input operations. The file must exist.
- *                      "w"    write: Create an empty file for output operations. <cstddef>
+ *                      "w"    write: Create an empty file for output operations.
  *                          If a file with the same name already exists, its contents
  *                          are discarded and the file is treated as a new empty file.
  *                      "rw" read+write: Open file for reading and writing.  The file must exist.

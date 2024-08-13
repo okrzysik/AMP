@@ -208,7 +208,7 @@ public:
      * \brief    Check if elements are in the mesh
      * \details  This function queries the mesh to determine if each of the given elements
      *           is a member of the mesh and returns an iterator over those elements
-     * \param id    Mesh element id we are querying.
+     * \param it    Mesh element id we are querying.
      */
     MeshIterator isMember( const MeshIterator &it ) const override;
 
@@ -336,7 +336,7 @@ public: // Default constructors
     MultiMesh()                           = delete;
     explicit MultiMesh( MultiMesh &&rhs ) = default;
     explicit MultiMesh( const MultiMesh &rhs );
-    MultiMesh &operator=( MultiMesh &&rhs ) = delete;
+    MultiMesh &operator=( MultiMesh &&rhs )      = delete;
     MultiMesh &operator=( const MultiMesh &rhs ) = delete;
 
 public: // Functions to help with load balancing

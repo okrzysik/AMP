@@ -52,7 +52,6 @@ public:
 
     /**
      * Evaluate the manufactured solution at a point.
-     *  \param result output derivatives (length >= 10)
      *  \param x x-coordinate
      *  \param y y-coordinate
      *  \param z z-coordinate
@@ -76,20 +75,16 @@ private:
      *	\brief unit cube, quadratic, all Neumann BC's.
      *	The normal derivative \f$\frac{\partial u}{\partial n}\f$
      *	has the values \f$c_i, i=0,\dots,5\f$ on the planes \f$x=0, x=1, y=0, y=1, z=0, z=1\f$,
-     *	respectively. Note that \f$\frac{\partial u}{\partial n} = - \frac{\partial u}{\partial
-     *x}\f$
+     *	respectively.
+     *  Note that \f$\frac{\partial u}{\partial n} = - \frac{\partial u}{\partial x}\f$
      *	at \f$x=0\f$ and similarly for \f$y=0\f$ and \f$z=0\f$. The derivatives up to order
      *	two are returned in the order
-     *	\f[
-     *	u, \frac{\partial u}{\partial x}, \frac{\partial u}{\partial y}, \frac{\partial u}{\partial
-     *z},
+     *	\f[ u,
+     *	\frac{\partial u}{\partial x}, \frac{\partial u}{\partial y}, \frac{\partial u}{\partial z},
      *	\frac{\partial^2 u}{\partial x^2}, \frac{\partial^2 u}{\partial x \partial y},
-     *\frac{\partial^2 u}{\partial x
-     *\partial z},
+     *  \frac{\partial^2 u}{\partial x \partial z},
      *	\frac{\partial^2 u}{\partial y^2},  \frac{\partial^2 u}{\partial y \partial z},
-     *\frac{\partial^2 u}{\partial
-     *z^2},
-     *	\f]
+     *  \frac{\partial^2 u}{\partial z^2}, \f]
      *
      *	or more succinctly,
      *
@@ -98,7 +93,6 @@ private:
      *
      *	which is also true for cylindrical coordinates [x,y,z]->[r,th,z]
      *
-     *  \param result output derivatives (length >= 10)
      *  \param x x-coordinate
      *  \param y y-coordinate
      *  \param z z-coordinate

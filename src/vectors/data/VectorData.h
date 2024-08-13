@@ -259,13 +259,15 @@ public: // Get/Set data
 
 public: // Advanced (virtual) get/set values
     /**\brief Copy data into this vector
-     *\param[in] buf  Buffer to copy from
+     * \param[in] buf  Buffer to copy from
+     * \param[in] id   typeID of raw data
      */
     virtual void putRawData( const void *buf, const typeID &id ) = 0;
 
     /**\brief Copy data out of this vector
-     *\param[out] buf  Buffer to copy to
-     *\details The Vector should be pre-allocated to the correct size (getLocalSize())
+     * \param[out] buf  Buffer to copy to
+     * \param[in] id   typeID of raw data
+     * \details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
     virtual void getRawData( void *buf, const typeID &id ) const = 0;
 
@@ -274,6 +276,7 @@ public: // Advanced (virtual) get/set values
      * \param[in] num  number of values to set
      * \param[in] indices the indices of the values to set
      * \param[in] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      * \details This will set the owned values for this core.  All indices are
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
@@ -286,6 +289,7 @@ public: // Advanced (virtual) get/set values
      * \param[in] num  number of values to set
      * \param[in] indices the indices of the values to set
      * \param[in] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      *
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
@@ -299,6 +303,7 @@ public: // Advanced (virtual) get/set values
      * \param[in] num  number of values to set
      * \param[in] indices the indices of the values to set
      * \param[in] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      * \details This will set the owned values for this core.  All indices are
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
@@ -312,6 +317,7 @@ public: // Advanced (virtual) get/set values
      * \param[in] num  number of values to add
      * \param[in] indices the indices of the values to add
      * \param[in] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      */
     virtual void addGhostValuesByGlobalID( size_t num,
                                            const size_t *indices,
@@ -323,6 +329,7 @@ public: // Advanced (virtual) get/set values
      * \param[in] num  number of values to set
      * \param[in] indices the indices of the values to set
      * \param[in] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      * \details This will get the ghosted updates this processor has made.  All indices are
      * from global 0.
      */
@@ -337,6 +344,7 @@ public: // Advanced (virtual) get/set values
      * \param[in] num  number of values to set
      * \param[in] indices the indices of the values to set
      * \param[out] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      * \details This will get any value used by this core.
      */
     virtual void
@@ -347,6 +355,7 @@ public: // Advanced (virtual) get/set values
      * \param[in] num  number of values to set
      * \param[in] indices the indices of the values to set
      * \param[out] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      * \details This will get any value owned by this core.
      */
     virtual void getGhostValuesByGlobalID( size_t num,
@@ -387,7 +396,7 @@ public: // Advanced functions
     virtual typeID getType( size_t block ) const = 0;
 
     /** \brief Is the data of the given type
-     * \param typeid   The typeid
+     * \param id       The typeid
      * \param block    The block id to check
      */
     inline bool isType( const typeID &id, size_t block ) const;

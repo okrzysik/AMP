@@ -32,32 +32,11 @@ public: // Virtual functions
     std::string VectorDataName() const override { return "MultiVectorData"; }
 
 
-    /** \brief Number of blocks of contiguous data in the Vector
-     * \return Number of blocks in the Vector
-     * \details  A vector is not necessarily contiguous in memory.  This method
-     * returns the number of contiguous blocks in memory used by this vector
-     */
+public: // Basic virtual functions
     size_t numberOfDataBlocks() const override;
-
-    /** \brief Number of elements in a data block
-     * \param[in] i  particular data block
-     * \return The size of a particular block
-     */
     size_t sizeOfDataBlock( size_t i = 0 ) const override;
-
-
-    /**\brief Copy data into this vector
-     *\param[in] buf  Buffer to copy from
-     */
     void putRawData( const void *buf, const typeID &id ) override;
-
-    /**\brief Copy data out of this vector
-     *\param[out] buf  Buffer to copy to
-     *\details The Vector should be pre-allocated to the correct size (getLocalSize())
-     */
     void getRawData( void *buf, const typeID &id ) const override;
-
-
     void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
     void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
     void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;

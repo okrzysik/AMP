@@ -105,8 +105,7 @@ public:
 
     /**
      * \brief Scatter data stored here to processors that share the data.
-     * \param[in] in  A list of data to send to other processors
-     * \param[out] out The data received from other processors
+     * \param[in,out] vec  Data to set
      * \details  The convention is if data are set on different processes, then
      * the owner of the data has the correct value.  As such, in a scatter_set,
      * the owner of data scatters the data out which overwrites the data on cores
@@ -116,8 +115,7 @@ public:
 
     /**
      * \brief Scatter data shared here to processors that own the data.
-     * \param[in] in  A list of data to send to other processors
-     * \param[out] out The data received from other processors
+     * \param[in,out] vec  Data to add
      * \details  When adding data to a vector, any process that shares the data
      * can contribute to the value of the data.  Therefore, this will scatter data
      * that is shared to the core that owns it.  A call to scatter_add is generally
