@@ -19,7 +19,7 @@ class BandedSolver : public SolverStrategy
 public:
     /**
      *  Main constructor for the base class.
-     *  @param[in] parameters   The parameters object contains a database object which must contain
+     *  @param[in] params   The parameters object contains a database object which must contain
      * the
      *                          following fields:
      *                          1. type: integer, name: KL (required)
@@ -27,17 +27,17 @@ public:
      *                          1. type: integer, name: KU (required)
      *                             acceptable values (non-negative integer values)
      */
-    explicit BandedSolver( std::shared_ptr<SolverStrategyParameters> parameters );
+    explicit BandedSolver( std::shared_ptr<SolverStrategyParameters> params );
 
     /**
      * static create routine that is used by SolverFactory
-     @param [in] parameters The parameters object
+     @param [in] params The parameters object
      contains a database objects with the fields listed for the constructor above
      */
     static std::unique_ptr<SolverStrategy>
-    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    createSolver( std::shared_ptr<SolverStrategyParameters> params )
     {
-        return std::make_unique<BandedSolver>( solverStrategyParameters );
+        return std::make_unique<BandedSolver>( params );
     }
 
     /**
@@ -58,18 +58,15 @@ public:
 
     /**
      * Resets the operator registered with the solver with new parameters if necessary
-     * @param parameters
-     *        OperatorParameters object that is NULL by default
+     * @param params  OperatorParameters object that is NULL by default
      */
-    void
-    resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> parameters ) override;
+    void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
-     * @param parameters
-     *        BandedSolverParameters object that is NULL by default
+     * @param params  BandedSolverParameters object that is NULL by default
      */
-    void reset( std::shared_ptr<SolverStrategyParameters> parameters ) override;
+    void reset( std::shared_ptr<SolverStrategyParameters> params ) override;
 
 
 protected:

@@ -31,8 +31,9 @@ public:
      *    of DOFs on each processor.  It will not contain info to relate that to a mesh.
      *    A derived implementation should be used for more advanced features.
      *    For example see simpleDOFManager and multiDOFManager.
-     * \param[in]  N_local  The local number of DOFs
-     * \param[in]  comm     The comm over which the DOFManager exists
+     * \param[in]  N_local      The local number of DOFs
+     * \param[in]  comm         The comm over which the DOFManager exists
+     * \param[in]  remoteDOFs   Optional list of remote DOFs
      */
     DOFManager( size_t N_local, const AMP_MPI &comm, std::vector<size_t> remoteDOFs = {} );
 

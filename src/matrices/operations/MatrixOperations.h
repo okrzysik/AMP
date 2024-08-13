@@ -15,8 +15,9 @@ public:
     virtual ~MatrixOperations() {}
 
     /** \brief  Matrix-vector multiplication
-     * \param[in]  in  The vector to multiply
-     * \param[out] out The resulting vectory
+     * \param[in]  x  The vector to multiply
+     * \param[in] A The input matrix A
+     * \param[out] y The resulting vectory
      * \details  Compute \f$\mathbf{Ax} = \mathbf{y}\f$.
      */
     virtual void
@@ -24,6 +25,7 @@ public:
 
     /** \brief  Matrix transpose-vector multiplication
      * \param[in]  in  The vector to multiply
+     * \param[in] A The input matrix A
      * \param[out] out The resulting vectory
      * \details  Compute \f$\mathbf{A}^T\mathbf{in} = \mathbf{out}\f$.
      */
@@ -33,6 +35,7 @@ public:
 
     /** \brief  Scale the matrix by a scalar
      * \param[in] alpha  The value to scale by
+     * \param[in] A The input matrix A
      * \details  Compute \f$\mathbf{A} = \alpha\mathbf{A}\f$
      */
     virtual void scale( AMP::Scalar alpha, MatrixData &A ) = 0;
@@ -40,19 +43,21 @@ public:
     /** \brief  Compute the product of two matrices
      * \param[in] A  A multiplicand
      * \param[in] B  A multiplicand
-     * \return The product \f$\mathbf{AB}\f$.
+     * \param[out] C The product \f$\mathbf{AB}\f$.
      */
     virtual void matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C ) = 0;
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar
      * \param[in] X matrix
+     * \param[out] Y Output matrix Y
      * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
      */
     virtual void axpy( AMP::Scalar alpha, const MatrixData &X, MatrixData &Y ) = 0;
 
     /** \brief  Set the non-zeros of the matrix to a scalar
      * \param[in]  alpha  The value to set the non-zeros to
+     * \param[out] A    Matrix to set
      */
     virtual void setScalar( AMP::Scalar alpha, MatrixData &A ) = 0;
 
@@ -63,6 +68,7 @@ public:
 
     /** \brief  Set the diagonal to the values in a vector
      * \param[in] in The values to set the diagonal to
+     * \param[out] A The matrix A to set
      */
     virtual void setDiagonal( std::shared_ptr<const Vector> in, MatrixData &A ) = 0;
 

@@ -21,10 +21,6 @@ public:
      * \brief    Default constructor
      * \details  This will simulate creating a new load balance
      * \param params  Input parameters for the mesh that will be used
-     * \param ranks   List of processor ranks that will be used
-     * \param N_elements    Optional argument specifying the number of elements on the mesh
-     *                      (0: Get the number of elements through a call to
-     * Mesh::estimateMeshSize())
      */
     loadBalanceSimulator( std::shared_ptr<const AMP::Database> params );
 

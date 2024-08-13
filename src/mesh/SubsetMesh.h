@@ -160,7 +160,7 @@ public:
      * \brief    Check if elements are in the mesh
      * \details  This function queries the mesh to determine if each of the given elements
      *           is a member of the mesh and returns an iterator over those elements
-     * \param id    Mesh element id we are querying.
+     * \param it    Mesh element id we are querying.
      */
     MeshIterator isMember( const MeshIterator &it ) const override;
 

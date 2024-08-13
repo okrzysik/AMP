@@ -34,8 +34,8 @@ public:
 
     /**
      * static create routine that is used by SolverFactory
-     @param [in] parameters The parameters object
-     contains a database objects with the fields listed for the constructor above
+     @param [in] solverStrategyParameters   The parameters object contains a database objects with
+     the fields listed for the constructor above
      */
     static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )

@@ -64,8 +64,9 @@ std::shared_ptr<Vector> createVector( Vec v,
 
 /**
  * \brief  Create an epetra vector
- * \param[in] params        Epetra vector parameters
- * \param[in] var           Optional
+ * \param[in] commList      Communication list
+ * \param[in] DOFs          DOF manager
+ * \param[in] p             Optional vector data
  */
 std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> commList,
                                             std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
@@ -157,7 +158,9 @@ Vector::shared_ptr createArrayVector( const ArraySize &localSize, std::shared_pt
 /** \brief    Create a ArrayVector
  * \details  This is the factory method for the ArrayVector.
  * \param    localSize  The number of elements in the vector on this processor
- * \param    var The variable associated with the new vector
+ * \param    blockIndex The index of the current block
+ * \param    comm       The communicator to use
+ * \param    var        The variable associated with the new vector
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
 Vector::shared_ptr createArrayVector( const ArraySize &localSize,
