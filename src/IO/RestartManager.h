@@ -44,6 +44,7 @@ public: // User functions
      * \details  Write all of the data currently registered with the manager to the disk
      * and close file
      * @param[in] filename  Filename to use
+     * @param[in] compress  Compression method to use
      */
     void write( const std::string &filename, Compression compress = Compression::None );
 
@@ -111,7 +112,6 @@ public: // Developer functions
     /**
      * \brief  Register SAMRAI data with the restart manager
      * \details This function registers a SAMRAI object with the restart manager
-     * @param[in] name      Name to use for object
      * @param[in] data      Data to register
      */
     template<class TYPE>

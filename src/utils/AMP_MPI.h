@@ -844,7 +844,7 @@ public: // Member functions
      *   The receiving processor must know the length of the array.
      *   This call must be paired  with a matching call to Irecv.
      *
-     * @param[in] buf       Data to send
+     * @param[in] data      Data to send
      * @param[in] recv_proc Receiving processor number.
      * @param[in] tag       Integer argument specifying an integer tag
      *                      to be sent with this message.
@@ -1119,21 +1119,18 @@ public: // Member functions
      * Each processor sends multiple values to root
      * @param[in] send_data     Input array
      * @param[in] send_cnt      The number of values to send
-
-
-     * @param[in] send_data     Input array
-     * @param[in] send_cnt      The number of values to send
-     * @param[in] recv_data     Output array of received values
+     * @param[out] recv_data    Array of received values
      * @param[in] recv_cnt      The number of values to receive from each processor (N).
      *                          If known, this should be provided as an input.
      * @param[in] recv_disp     The displacement (relative to the start of the array)
      *                          from which to store the data received from processor i.
      *                          If known, this should be provided as an input.
+     * @param[in] root          The root processor
      */
     template<class type>
-    void gather( const type *sendbuf,
-                 int sendcount,
-                 type *recvbuf,
+    void gather( const type *send_data,
+                 int send_cnt,
+                 type *recv_data,
                  const int *recv_cnt,
                  const int *recv_disp,
                  int root ) const;

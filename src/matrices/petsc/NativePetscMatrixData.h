@@ -50,29 +50,13 @@ public:
 
     void extractDiagonal( std::shared_ptr<Vector> buf ) const override;
 
-    void addValuesByGlobalID( size_t num_rows,
-                              size_t num_cols,
-                              size_t *rows,
-                              size_t *cols,
-                              void *values,
-                              const typeID &id ) override;
-    void setValuesByGlobalID( size_t num_rows,
-                              size_t num_cols,
-                              size_t *rows,
-                              size_t *cols,
-                              void *values,
-                              const typeID &id ) override;
-    void getValuesByGlobalID( size_t num_rows,
-                              size_t num_cols,
-                              size_t *rows,
-                              size_t *cols,
-                              void *values,
-                              const typeID &id ) const override;
-    void getRowByGlobalID( size_t row,
-                           std::vector<size_t> &cols,
-                           std::vector<double> &values ) const override;
+    void addValuesByGlobalID( size_t, size_t, size_t *, size_t *, void *, const typeID & ) override;
+    void setValuesByGlobalID( size_t, size_t, size_t *, size_t *, void *, const typeID & ) override;
+    void getValuesByGlobalID(
+        size_t, size_t, size_t *, size_t *, void *, const typeID & ) const override;
+    void getRowByGlobalID( size_t, std::vector<size_t> &, std::vector<double> & ) const override;
 
-    std::vector<size_t> getColumnIDs( size_t row ) const override;
+    std::vector<size_t> getColumnIDs( size_t ) const override;
 
     void makeConsistent( AMP::LinearAlgebra::ScatterType t ) override;
 

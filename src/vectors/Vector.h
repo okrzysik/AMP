@@ -306,8 +306,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \brief Returns the minimum of the quotient of two vectors:
      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
      * \param[in] x a vector
-     * \param[in] y a vector
-     * \return \f[\min_{i,y_i\neq0} x_i/y_i\f]
+     * \return \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
      */
     Scalar minQuotient( const Vector &x ) const;
 
@@ -819,6 +818,7 @@ public: // Set values
     /**
      * \brief Set a value in the vector.
      * \param[in] i The global index into the vector
+     * \param[in] v The value to set
      * \details This uses setValuesByGlobalID to set the value
      */
     template<typename TYPE>

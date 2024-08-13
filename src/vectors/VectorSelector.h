@@ -97,7 +97,7 @@ public:
      * \param[in]  offset  The offset to stride
      * \param[in]  length  The length to stride
      */
-    explicit VS_Stride( size_t a, size_t b );
+    explicit VS_Stride( size_t offset, size_t length );
 
 public: // Functions inherited from VectorSelector
     virtual bool isSelected( const Vector &v ) const override;

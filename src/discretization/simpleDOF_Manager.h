@@ -44,10 +44,9 @@ public:
      * \brief Create a new DOF manager object
      * \details  This is the standard constructor for creating a new DOF manager object.
      * \param mesh          Mesh over which we want to construct the DOF map
-     * \param it1           Local iterator
-     * \param it2           Ghost iterator
+     * \param local         Local iterator
+     * \param ghost         Ghost iterator
      * \param type          The geometric entity type for the DOF map
-     * \param gcw           The desired ghost width
      * \param DOFsPerElement The desired number of DOFs per element
      */
     simpleDOFManager( std::shared_ptr<AMP::Mesh::Mesh> mesh,
