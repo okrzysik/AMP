@@ -26,7 +26,7 @@ public:
 
 
     /** \brief Constructor
-     * \param[in] params  MatrixData object associated with matrix
+     * \param[in] data  MatrixData object associated with matrix
      */
     explicit CSRMatrix( std::shared_ptr<MatrixData> data );
 

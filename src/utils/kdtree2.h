@@ -116,6 +116,7 @@ public:
      * \details  This function will return all points within the given distance to the ray
      * \param[in] x       The coordinates of the starting point (NDIM)
      * \param[in] dir     The direction vector (NDIM)
+     * \param[in] dist    The distance to search
      * @return            Returns a vector of candidates for the nearest points to a ray.
      */
     std::vector<std::tuple<Point, TYPE>>

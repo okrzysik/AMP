@@ -69,7 +69,8 @@ public:
      * \param[in] num_cols The number of cols represented in values
      * \param[in] rows  The row ids of values
      * \param[in] cols  The column ids of values
-     * \param[in] values  The values to add to the matrix (row-major ordering)
+     * \param[in] values  The values to add to the matrix
+     * \param[in] id   typeID of raw data
      * \details  This method may fail if the matrix has not
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
@@ -86,7 +87,8 @@ public:
      * \param[in] num_cols The number of cols represented in values
      * \param[in] rows  The row ids of values
      * \param[in] cols  The column ids of values
-     * \param[in] values  The values to set to the matrix (row-major ordering)
+     * \param[in] values  The values to set to the matrix
+     * \param[in] id   typeID of raw data
      * \details  This method may fail if the matrix has not
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
@@ -103,7 +105,8 @@ public:
      * \param[in] num_cols The number of cols represented in values
      * \param[in] rows  The row ids of values
      * \param[in] cols  The column ids of values
-     * \param[out] values  The values to get from the matrix (row-major ordering)
+     * \param[in] values  The values to get from the matrix (row-major ordering)
+     * \param[in] id   typeID of raw data
      * \details  This method will return zero for any entries that
      *   have not been allocated or are not ghosts on the current processor.
      */

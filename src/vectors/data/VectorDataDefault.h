@@ -55,11 +55,13 @@ public: // Virtual functions
 
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from
+     * \param[in] id   typeID of raw data
      */
     void putRawData( const void *buf, const typeID &id ) override;
 
     /**\brief Copy data out of this vector
-     *\param[out] buf  Buffer to copy to
+     * \param[out] buf  Buffer to copy to
+     * \param[in] id   typeID of raw data
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
     void getRawData( void *buf, const typeID &id ) const override;
@@ -69,6 +71,7 @@ public: // Virtual functions
      * \param[in] num  number of values to set
      * \param[in] indices the indices of the values to set
      * \param[in] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      * \details This will set the owned values for this core.  All indices are
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
@@ -83,6 +86,7 @@ public: // Virtual functions
      * \param[in] num  number of values to set
      * \param[in] indices the indices of the values to set
      * \param[in] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      * \details This will set the owned values for this core.  All indices are
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
@@ -98,6 +102,7 @@ public: // Virtual functions
      * \param[in] num  number of values to get
      * \param[in] indices the indices of the values to get
      * \param[in] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
      * \details This will get the owned values for this core.  All indices are
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
