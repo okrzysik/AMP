@@ -58,9 +58,9 @@ public:
         addScalarProperty( "Thermal Shock Resistant", 800, "W/m" );
         std::array<double, 2> range = { 20, 550 };
         std::vector<double> Tc      = { 20.,  40.,  60.,  80.,  100., 120., 150., 200.,
-                                   250., 300., 350., 400., 450., 500., 550. };
+                                        250., 300., 350., 400., 450., 500., 550. };
         std::vector<double> Kc      = { 15.,  3.5,    1.5,   0.8,   0.5,   0.38,  0.27, 0.176,
-                                   0.13, 0.1120, 0.087, 0.077, 0.069, 0.063, 0.058 };
+                                        0.13, 0.1120, 0.087, 0.077, 0.069, 0.063, 0.058 };
         d_propertyMap["Thermal Conductivity"] =
             std::make_shared<AMP::Materials::InterpolatedProperty>( "YAG::Thermal Conductivity",
                                                                     "W/(cm*K)",
@@ -135,8 +135,8 @@ void myTest( const std::string &input_file, AMP::UnitTest &ut )
     power->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Solve for the SS temperature
-    auto rhs          = integrateSourceVector( mesh, power );
-    auto [solVec, op] = solveTemperature( mesh, rhs, db );
+    auto rhs          = AMP::applications::integrateSourceVector( mesh, power );
+    auto [solVec, op] = AMP::applications::solveTemperature( mesh, rhs, db );
     double T_min      = static_cast<double>( solVec->min() );
     double T_max      = static_cast<double>( solVec->max() );
     printf( "Minimum temperature: %0.1f\n", T_min );
