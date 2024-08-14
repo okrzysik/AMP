@@ -11,9 +11,10 @@ namespace AMP::LinearAlgebra {
 NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm ) : VectorData()
 {
     // Set the vector
-    d_petscVec  = v;
-    d_pArray    = nullptr;
-    d_bDeleteMe = deleteable;
+    d_petscVec   = v;
+    d_pArray     = nullptr;
+    d_pArrayRead = nullptr;
+    d_bDeleteMe  = deleteable;
     // Get the correct communicator if it is not set
     MPI_Comm comm2 = comm.getCommunicator(); // Get a MPI_comm object from AMP_MPI to pass to PETSc
     PetscObjectGetComm( reinterpret_cast<PetscObject>( v ), &comm2 );
@@ -37,15 +38,32 @@ NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI co
 NativePetscVectorData::~NativePetscVectorData()
 {
     resetArray();
-    if ( d_bDeleteMe )
+    if ( d_bDeleteMe ) {
         PETSC::vecDestroy( &d_petscVec );
+    }
+}
+
+void NativePetscVectorData::makeConsistent( ScatterType t )
+{
+    (void) t;
+    // resetArray ensures that any grabbed raw data is returned
+    resetArray();
+    // assemble inserts/adds any values that have changed
+    assemble();
+}
+
+void NativePetscVectorData::makeConsistent()
+{
+    resetArray();
+    assemble();
 }
 
 void NativePetscVectorData::putRawData( const void *in, const typeID &id )
 {
+    resetArray();
     constexpr auto type = getTypeID<double>();
-    auto data           = reinterpret_cast<const double *>( in );
     AMP_ASSERT( id == type );
+    auto data = reinterpret_cast<const double *>( in );
     int a, b;
     VecGetOwnershipRange( d_petscVec, &a, &b );
     AMP_ASSERT( b - a == (int) getLocalSize() );
@@ -55,15 +73,15 @@ void NativePetscVectorData::putRawData( const void *in, const typeID &id )
     VecSetValues( d_petscVec, offs.size(), offs.data(), data, INSERT_VALUES );
 }
 
-
 void NativePetscVectorData::getRawData( void *out, const typeID &id ) const
 {
+    resetArray(); // return possibly outstanding raw data block
     constexpr auto type = getTypeID<double>();
     AMP_ASSERT( id == type );
     auto data = reinterpret_cast<double *>( out );
     std::copy( getRawDataBlock<double>( 0 ), getRawDataBlock<double>( 0 ) + getLocalSize(), data );
+    resetArray(); // return block just requested
 }
-
 
 void NativePetscVectorData::swapData( VectorData &other )
 {
@@ -71,8 +89,6 @@ void NativePetscVectorData::swapData( VectorData &other )
     auto otherData = dynamic_cast<NativePetscVectorData *>( &other );
     otherData->resetArray();
     VecSwap( d_petscVec, otherData->getVec() );
-    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( d_petscVec ) );
-    PetscObjectStateIncrease( reinterpret_cast<::PetscObject>( otherData->getVec() ) );
 }
 
 std::shared_ptr<VectorData> NativePetscVectorData::cloneData( const std::string & ) const
@@ -85,11 +101,11 @@ std::shared_ptr<VectorData> NativePetscVectorData::cloneData( const std::string 
 
 size_t NativePetscVectorData::numberOfDataBlocks() const { return 1; }
 
-
 size_t NativePetscVectorData::sizeOfDataBlock( size_t i ) const
 {
-    if ( i != 0 )
+    if ( i != 0 ) {
         return 0;
+    }
     return getLocalSize();
 }
 
@@ -99,6 +115,10 @@ void NativePetscVectorData::resetArray()
         VecRestoreArray( d_petscVec, &d_pArray );
         d_pArray = nullptr;
     }
+    if ( d_pArrayRead ) {
+        VecRestoreArrayRead( d_petscVec, &d_pArrayRead );
+        d_pArrayRead = nullptr;
+    }
 }
 
 void NativePetscVectorData::resetArray() const
@@ -107,6 +127,10 @@ void NativePetscVectorData::resetArray() const
         VecRestoreArray( d_petscVec, &d_pArray );
         d_pArray = nullptr;
     }
+    if ( d_pArrayRead ) {
+        VecRestoreArrayRead( d_petscVec, &d_pArrayRead );
+        d_pArrayRead = nullptr;
+    }
 }
 
 void NativePetscVectorData::setValuesByLocalID( size_t N,
@@ -114,14 +138,13 @@ void NativePetscVectorData::setValuesByLocalID( size_t N,
                                                 const void *vals,
                                                 const typeID &id )
 {
+    resetArray();
     AMP_ASSERT( id == getTypeID<double>() );
     auto data = reinterpret_cast<const double *>( vals );
-    resetArray();
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
     std::vector<PetscInt> idx( N );
-    for ( size_t i = 0; i < N; i++ )
+    for ( size_t i = 0; i < N; i++ ) {
         idx[i] = indices[i] + d_localStart;
+    }
     VecSetValues( d_petscVec, N, idx.data(), data, INSERT_VALUES );
 }
 
@@ -131,53 +154,52 @@ void NativePetscVectorData::addValuesByLocalID( size_t N,
                                                 const void *vals,
                                                 const typeID &id )
 {
+    resetArray();
     AMP_ASSERT( id == getTypeID<double>() );
     auto data = reinterpret_cast<const double *>( vals );
-    resetArray();
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
     std::vector<PetscInt> idx( N );
-    for ( size_t i = 0; i < N; i++ )
+    for ( size_t i = 0; i < N; i++ ) {
         idx[i] = indices[i] + d_localStart;
+    }
     VecSetValues( d_petscVec, N, idx.data(), data, ::ADD_VALUES );
 }
-
 
 void NativePetscVectorData::getValuesByLocalID( size_t N,
                                                 const size_t *indices,
                                                 void *vals,
                                                 const typeID &id ) const
 {
+    resetArray();
     AMP_ASSERT( id == getTypeID<double>() );
     auto data = reinterpret_cast<double *>( vals );
-    resetArray();
     std::vector<PetscInt> idx( N );
-    for ( size_t i = 0; i < N; i++ )
+    for ( size_t i = 0; i < N; i++ ) {
         idx[i] = indices[i] + d_localStart;
+    }
     VecGetValues( d_petscVec, N, idx.data(), data );
 }
 
-
 void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i )
 {
-    if ( i > 0 )
+    if ( i > 0 ) {
         return nullptr;
+    }
     if ( d_pArray == nullptr ) {
         VecGetArray( d_petscVec, &d_pArray );
     }
-    return d_pArray;
+    return static_cast<void *>( d_pArray );
 }
 
 const void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i ) const
 {
-    if ( i > 0 )
+    if ( i > 0 ) {
         return nullptr;
-    if ( d_pArray == nullptr ) {
-        VecGetArray( d_petscVec, &d_pArray );
     }
-    return d_pArray;
+    if ( d_pArrayRead == nullptr ) {
+        VecGetArrayRead( d_petscVec, &d_pArrayRead );
+    }
+    return static_cast<const void *>( d_pArrayRead );
 }
-
 
 void NativePetscVectorData::assemble()
 {

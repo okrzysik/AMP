@@ -215,7 +215,8 @@ Scalar NativePetscVectorOperations::max( const VectorData &x ) const
 Scalar NativePetscVectorOperations::L1Norm( const VectorData &x ) const
 {
     double ans;
-    VecNorm( getConstPetscVec( x ), NORM_1, &ans );
+    PetscErrorCode ierr = VecNorm( getConstPetscVec( x ), NORM_1, &ans );
+    AMP_INSIST( ierr == 0, "Error in NativePetscVectorOperations::L1Norm" );
     return ans;
 }
 
@@ -242,7 +243,7 @@ Scalar NativePetscVectorOperations::dot( const VectorData &x, const VectorData &
 
 Scalar NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
 {
-    Vec x = getPetscVec( vx );
+    Vec x = getConstPetscVec( vx );
 
     double ans = 0;
     PetscErrorCode ierr;
@@ -253,7 +254,7 @@ Scalar NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
 
 Scalar NativePetscVectorOperations::localL2Norm( const VectorData &vx ) const
 {
-    Vec x = getPetscVec( vx );
+    Vec x = getConstPetscVec( vx );
 
     double ans = 0;
     PetscErrorCode ierr;
@@ -265,7 +266,7 @@ Scalar NativePetscVectorOperations::localL2Norm( const VectorData &vx ) const
 
 Scalar NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
 {
-    Vec x = getPetscVec( vx );
+    Vec x = getConstPetscVec( vx );
 
     double ans = 0;
     PetscErrorCode ierr;
@@ -277,7 +278,7 @@ Scalar NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
 
 Scalar NativePetscVectorOperations::localDot( const VectorData &vx, const VectorData &vy ) const
 {
-    Vec x = getPetscVec( vx );
+    Vec x = getConstPetscVec( vx );
 
     PetscScalar ans;
     PetscErrorCode ierr;
