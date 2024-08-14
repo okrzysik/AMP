@@ -49,9 +49,9 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
     auto outVar = std::make_shared<AMP::LinearAlgebra::Variable>( "outputVar" );
 #ifdef USE_DEVICE
     auto inVec = AMP::LinearAlgebra::createVector(
-        dofManager, inVar, false, AMP::Utilities::MemoryType::managed );
+        dofManager, inVar, true, AMP::Utilities::MemoryType::managed );
     auto outVec = AMP::LinearAlgebra::createVector(
-        dofManager, outVar, false, AMP::Utilities::MemoryType::managed );
+        dofManager, outVar, true, AMP::Utilities::MemoryType::managed );
 #else
     auto inVec     = AMP::LinearAlgebra::createVector( dofManager, inVar );
     auto outVec    = AMP::LinearAlgebra::createVector( dofManager, outVar );
