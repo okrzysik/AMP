@@ -9,7 +9,7 @@ namespace AMP::LinearAlgebra {
 template<typename Policy, typename Allocator, class ExecSpace = Kokkos::DefaultExecutionSpace>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
-
+public:
     /** \brief  Matrix-vector multiplication
      * \param[in]  in  The vector to multiply
      * \param[out] out The resulting vectory

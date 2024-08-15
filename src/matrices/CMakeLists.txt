@@ -15,9 +15,7 @@ IF ( USE_PETSC )
 ENDIF()
 
 # Ensure that NVCC is used as needed on Kokkos code
-IF ( USE_KOKKOS AND USE_CUDA )
-    SET_NVCC( CSRMatrix.cpp )
-ENDIF()
+SET_NVCC( CSRMatrix.cpp )
 
 # Set the default matrix type
 SET( MATRIX_TYPES "ManagedEpetraMatrix" "NativePetscMatrix" "CSRMatrix" "DenseSerialMatrix" "NULL" )
