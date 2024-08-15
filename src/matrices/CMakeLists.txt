@@ -16,7 +16,7 @@ ENDIF()
 
 # Ensure that NVCC is used as needed on Kokkos code
 IF ( USE_KOKKOS )
-    SET_NVCC( operations/CSRMatrixOperationsKokkos.hpp )
+    SET_NVCC( CSRMatrix.cpp )
 ENDIF()
 
 # Set the default matrix type
