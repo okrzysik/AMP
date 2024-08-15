@@ -9,12 +9,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
 
-#ifdef AMP_USE_UMPIRE
-    #include "umpire/Allocator.hpp"
-    #include "umpire/ResourceManager.hpp"
-#endif
-
-#if defined( USE_CUDA ) || defined( USE_HIP )
+#ifdef USE_DEVICE
     #include <thrust/device_vector.h>
     #include <thrust/execution_policy.h>
     #include <thrust/for_each.h>
@@ -386,7 +381,7 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
 #warning May remove fill here when padding is removed
             std::fill( d_coeffs, d_coeffs + d_nnz, 0.0 );
         } else {
-#if defined( USE_CUDA ) || defined( USE_HIP )
+#ifdef USE_DEVICE
             // I hope this is temporary. Generally, I advocate for CSRMatrixData being
             // execution space agnostic. I have some ideas for that. (Brian Romero)
             thrust::copy_n( thrust::device, d_nnz_per_row, d_num_rows, cloneData->d_nnz_per_row );
