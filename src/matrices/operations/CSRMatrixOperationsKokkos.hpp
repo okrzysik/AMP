@@ -486,7 +486,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::scale( AMP::Scalar
     Kokkos::parallel_for(
         "CSRMatrixOperationsKokkos::scale (d)",
         Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, tnnz_d ),
-        KOKKOS_LAMBDA( const lidx_t n ) { coeffs_d( n ) *= alpha; } );
+        KOKKOS_LAMBDA( lidx_t n ) { coeffs_d( n ) *= alpha; } );
 
     if ( csrData->hasOffDiag() ) {
         auto coeffs_od = std::get<3>( wrapCSROffDiagDataKokkos( csrData ) );
@@ -496,7 +496,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::scale( AMP::Scalar
         Kokkos::parallel_for(
             "CSRMatrixOperationsKokkos::scale (od)",
             Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, tnnz_od ),
-            KOKKOS_LAMBDA( const lidx_t n ) { coeffs_od( n ) *= alpha; } );
+            KOKKOS_LAMBDA( lidx_t n ) { coeffs_od( n ) *= alpha; } );
     }
 
     d_exec_space.fence();
@@ -540,7 +540,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::axpy( AMP::Scalar 
         Kokkos::parallel_for(
             "CSRMatrixOperationsKokkos::axpy (d)",
             Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, tnnz_d ),
-            KOKKOS_LAMBDA( const gidx_t n ) { coeffsY_d( n ) += alpha * coeffsX_d( n ); } );
+            KOKKOS_LAMBDA( gidx_t n ) { coeffsY_d( n ) += alpha * coeffsX_d( n ); } );
     }
 
     if ( csrDataX->hasOffDiag() ) {
@@ -551,7 +551,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::axpy( AMP::Scalar 
         Kokkos::parallel_for(
             "CSRMatrixOperationsKokkos::axpy (od)",
             Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, tnnz_od ),
-            KOKKOS_LAMBDA( const gidx_t n ) { coeffsY_od( n ) += alpha * coeffsX_od( n ); } );
+            KOKKOS_LAMBDA( gidx_t n ) { coeffsY_od( n ) += alpha * coeffsX_od( n ); } );
     }
 
     d_exec_space.fence();
@@ -620,7 +620,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setDiagonal(
     Kokkos::parallel_for(
         "CSRMatrixOperationsKokkos::setDiagonal",
         Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, nRows ),
-        KOKKOS_LAMBDA( const lidx_t row ) {
+        KOKKOS_LAMBDA( lidx_t row ) {
             const auto nC = nnz_d( row );
             const auto rs = rowstarts_d( row );
 
@@ -659,7 +659,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setIdentity( Matri
     Kokkos::parallel_for(
         "CSRMatrixOperationsKokkos::setIdentity",
         Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, nRows ),
-        KOKKOS_LAMBDA( const lidx_t row ) {
+        KOKKOS_LAMBDA( lidx_t row ) {
             const auto nC = nnz_d( row );
             const auto rs = rowstarts_d( row );
 
