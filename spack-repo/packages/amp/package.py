@@ -1,55 +1,59 @@
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (Apache-2.0 OR MIT)
 from spack.package import *
 
 
-class Amp(CMakePackage):
+class Amp(CMakePackage, CudaPackage, ROCmPackage):
+    """The Advanced Multi-Physics (AMP) package.
 
-    homepage = "https://re-git.lanl.gov/xcap/oss/solvers/amp"
-    git = "ssh://git@re-git.lanl.gov:10022/xcap/oss/solvers/amp.git"
-    
+    The Advanced Multi-Physics (AMP) package is an open source parallel
+    object-oriented computational framework that is designed with single
+    and multi-domain multi-physics applications in mind.
+    """
+
+    homepage = "https://github.com/AdvancedMultiPhysics/AMP"
+    git = "https://github.com/AdvancedMultiPhysics/AMP.git"
+
+    maintainers("bobby-philip", "gllongo", "rbberger")
+
     version("master", branch="master")
-    version("3.0.0", tag="3.0.0")
+    version("3.0.1", tag="3.0.1", commit="9efc5735844fdcc29681e3a908afab713a078446")
 
-    
-    variant("mpi", default=True, description="build with mpi")
-    variant("hypre", default=False)
-    variant("cuda", default=False)
-    variant("rocm", default=False)
-    variant("openmp", default=False)
+    variant("mpi", default=True, description="Build with MPI support")
+    variant("hypre", default=False, description="Build with support for hypre")
+    variant("kokkos", default=False, description="Build with support for Kokkos")
+    variant("openmp", default=False, description="Build with OpenMP support")
+    variant("shared", default=False, description="Build shared libraries")
 
-    depends_on("cmake@3.26.0:", type="build")
-    depends_on("mpi", when="+mpi")
-    depends_on("tpl-builder@master+stacktrace")
+    depends_on("cmake@3.26.0:")
+    depends_on("tpl-builder+stacktrace")
 
-    conflicts("+rocm +cuda")
+    tpl_depends = ["hypre", "kokkos", "mpi", "openmp", "cuda", "rocm", "shared"]
 
-    tpl_depends = ["hypre", "cuda", "rocm"]
+    for v in tpl_depends:
+        depends_on(f"tpl-builder+{v}", when=f"+{v}")
+        depends_on(f"tpl-builder~{v}", when=f"~{v}")
 
+    for _flag in CudaPackage.cuda_arch_values:
+        depends_on("tpl-builder+cuda cuda_arch=" + _flag, when="+cuda cuda_arch=" + _flag)
 
-    for _variant in tpl_depends:
-        depends_on("tpl-builder@master+stacktrace+" + _variant, when="+" + _variant)
-        depends_on("tpl-builder@master+stacktrace~" + _variant, when="~" + _variant)
-
-
+    for _flag in ROCmPackage.amdgpu_targets:
+        depends_on("tpl-builder+rocm amdgpu_target=" + _flag, when="+rocm amdgpu_target=" + _flag)
 
     def cmake_args(self):
+        spec = self.spec
 
-        args = [
-            "-D TPL_DIRECTORY="+self.spec["tpl-builder"].prefix,
-            "-D AMP_INSTALL_DIR="+self.spec.prefix,
-            "-D CXX_STD=17",
-            "-D DISABLE_ALL_TESTS=ON",
-            self.define_from_variant("USE_HIP", "rocm"),
-            self.define_from_variant("USE_OPENMP", "openmp"),
-            self.define_from_variant("USE_CUDA", "cuda")
+        options = [
+            self.define("TPL_DIRECTORY", spec["tpl-builder"].prefix),
+            self.define("AMP_ENABLE_TESTS", self.run_tests),
+            self.define("EXCLUDE_TESTS_FROM_ALL", not self.run_tests),
+            self.define("AMP_ENABLE_EXAMPLES", False),
+            self.define("CXX_STD", "17"),
         ]
-        
-        #TODO have amp_data as a dependencie
-        
-        if self.spec.satisfies("+mpi"):
-            args.append("-DCMAKE_CXX_COMPILER=mpicxx")
-        
-        if self.spec.satisfies("+cuda"):
-            args.append("-DCMAKE_CUDA_FLAGS=--extended-lambda") 
 
- 
-        return args
+        if "+rocm" in spec:
+            options.append(self.define("COMPILE_CXX_AS_HIP", True))
+
+        return options
