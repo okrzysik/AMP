@@ -29,7 +29,13 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     HYPRE_IJMatrixSetObjectType( d_matrix, HYPRE_PARCSR );
     HYPRE_IJMatrixSetMaxOffProcElmts( d_matrix, 0 );
 
-    auto csrData = std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy>>( matrixData );
+    // Attempt dynamic pointer casts to supported types
+    // Policy must match HypreCSRPolicy
+    // Allocator must be either host for now
+    auto csrData =
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
+            matrixData );
+
     if ( csrData ) {
 
         auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();

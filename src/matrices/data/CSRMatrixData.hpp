@@ -39,6 +39,15 @@ bool isColValid( typename Policy::gidx_t col,
     return ( dValid || odValid );
 }
 
+template<typename size_type, class data_allocator>
+std::shared_ptr<typename data_allocator::value_type[]> sharedArrayBuilder( size_type N,
+                                                                           data_allocator &alloc )
+{
+    AMP_DEBUG_ASSERT( std::is_integral_v<size_type> );
+    return std::shared_ptr<typename data_allocator::value_type[]>(
+        alloc.allocate( N ), [N, &alloc]( auto p ) -> void { alloc.deallocate( p, N ); } );
+}
+
 /********************************************************
  * Constructors/Destructor                              *
  ********************************************************/
@@ -161,15 +170,16 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         d_own_data = false;
 
         // copy in data pointers
-        d_nnz_per_row = blParams.d_nnz_per_row;
-        d_row_starts  = blParams.d_row_starts;
-        d_cols        = blParams.d_cols;
-        d_cols_loc    = blParams.d_cols_loc;
-        d_coeffs      = blParams.d_coeffs;
-        d_nnz_pad     = d_is_diag ? 0 : csrParams->d_nnz_pad;
+        AMP_ERROR( "Construction from csrParams instead of matParams disabled for now" );
+        // d_nnz_per_row = blParams.d_nnz_per_row;
+        // d_row_starts = blParams.d_row_starts;
+        // d_cols       = blParams.d_cols;
+        // d_cols_loc   = blParams.d_cols_loc;
+        // d_coeffs     = blParams.d_coeffs;
+        d_nnz_pad = d_is_diag ? 0 : csrParams->d_nnz_pad;
 
         // count nnz and decide if block is empty
-        d_nnz      = std::accumulate( d_nnz_per_row, d_nnz_per_row + d_num_rows, 0 );
+        d_nnz      = std::accumulate( d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, 0 );
         d_is_empty = ( d_nnz == 0 );
 
     } else if ( matParams ) {
@@ -229,12 +239,13 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         }
 
         // allocate internal arrays
-        d_own_data    = true;
-        d_nnz_per_row = lidxAllocator.allocate( d_num_rows );
-        d_row_starts  = lidxAllocator.allocate( d_num_rows + 1 );
-        d_cols        = gidxAllocator.allocate( d_nnz );
-        d_cols_loc    = lidxAllocator.allocate( d_nnz );
-        d_coeffs      = scalarAllocator.allocate( d_nnz );
+        // d_nnz_per_row = sharedArrayBuilder<decltype( d_num_rows ), decltype( lidxAllocator )>(
+        //     d_num_rows, lidxAllocator );
+        d_nnz_per_row = sharedArrayBuilder( d_num_rows, lidxAllocator );
+        d_row_starts  = sharedArrayBuilder( d_num_rows + 1, lidxAllocator );
+        d_cols        = sharedArrayBuilder( d_nnz, gidxAllocator );
+        d_cols_loc    = sharedArrayBuilder( d_nnz, lidxAllocator );
+        d_coeffs      = sharedArrayBuilder( d_nnz, scalarAllocator );
 
         // Fill cols and nnz based on local row extents and on/off diag status
         lidx_t cli       = 0; // index into local array of columns as it is filled in
@@ -274,7 +285,8 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         }
 
         // scan nnz counts to get starting index of each row
-        std::exclusive_scan( d_nnz_per_row, d_nnz_per_row + d_num_rows, d_row_starts, 0 );
+        std::exclusive_scan(
+            d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, d_row_starts.get(), 0 );
         d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
 
         // Ensure that the right number of nnz were actually filled in
@@ -293,11 +305,11 @@ void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::findColumnMap()
 
     // Otherwise allocate and fill the map
     // Number of unique (global) columns is largest value in local cols
-    d_ncols_unq = *( std::max_element( d_cols_loc, d_cols_loc + d_nnz ) );
+    d_ncols_unq = *( std::max_element( d_cols_loc.get(), d_cols_loc.get() + d_nnz ) );
     ++d_ncols_unq; // plus one for zero-based indexing
 
     // Map is not allocated by default
-    d_cols_unq = gidxAllocator.allocate( d_ncols_unq );
+    d_cols_unq = sharedArrayBuilder( d_ncols_unq, gidxAllocator );
 
     // Fill by writing in d_cols indexed by d_cols_loc
     for ( lidx_t n = 0; n < d_nnz; ++n ) {
@@ -309,19 +321,6 @@ template<typename Policy, class Allocator>
 CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::~CSRSerialMatrixData()
 {
     AMPManager::decrementResource( "CSRSerialMatrixData" );
-
-    // Always attempt deletion of column map since it is created
-    // lazily and not loaned to other instances
-    gidxAllocator.deallocate( d_cols_unq, d_ncols_unq );
-
-    // Deallocate remaining data only if this instance owns it
-    if ( d_own_data ) {
-        lidxAllocator.deallocate( d_row_starts, d_num_rows + 1 );
-        gidxAllocator.deallocate( d_cols, d_nnz );
-        lidxAllocator.deallocate( d_cols_loc, d_nnz );
-        lidxAllocator.deallocate( d_nnz_per_row, d_num_rows );
-        scalarAllocator.deallocate( d_coeffs, d_nnz );
-    }
 }
 
 template<typename Policy, class Allocator>
@@ -365,24 +364,25 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
     cloneData->d_pParameters     = d_pParameters;
 
     if ( !d_is_empty ) {
-        cloneData->d_own_data    = true;
-        cloneData->d_nnz_per_row = lidxAllocator.allocate( d_num_rows );
-        cloneData->d_row_starts  = lidxAllocator.allocate( d_num_rows + 1 );
-        cloneData->d_cols        = gidxAllocator.allocate( d_nnz );
-        cloneData->d_cols_loc    = lidxAllocator.allocate( d_nnz );
-        cloneData->d_coeffs      = scalarAllocator.allocate( d_nnz );
+        cloneData->d_nnz_per_row = sharedArrayBuilder( d_num_rows, lidxAllocator );
+        cloneData->d_row_starts  = sharedArrayBuilder( d_num_rows + 1, lidxAllocator );
+        cloneData->d_cols        = sharedArrayBuilder( d_nnz, gidxAllocator );
+        cloneData->d_cols_loc    = sharedArrayBuilder( d_nnz, lidxAllocator );
+        cloneData->d_coeffs      = sharedArrayBuilder( d_nnz, scalarAllocator );
 
         AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                     "Cloning not supported for pure device CSRMatrixData" );
-        std::copy( d_nnz_per_row, d_nnz_per_row + d_num_rows, cloneData->d_nnz_per_row );
-        std::copy( d_row_starts, d_row_starts + d_num_rows + 1, cloneData->d_row_starts );
-        std::copy( d_cols, d_cols + d_nnz, cloneData->d_cols );
-        std::copy( d_cols_loc, d_cols_loc + d_nnz, cloneData->d_cols_loc );
+        std::copy(
+            d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, cloneData->d_nnz_per_row.get() );
+        std::copy( d_row_starts.get(),
+                   d_row_starts.get() + d_num_rows + 1,
+                   cloneData->d_row_starts.get() );
+        std::copy( d_cols.get(), d_cols.get() + d_nnz, cloneData->d_cols.get() );
+        std::copy( d_cols_loc.get(), d_cols_loc.get() + d_nnz, cloneData->d_cols_loc.get() );
         // need to zero out coeffs so that padded region has valid data
 #warning May remove fill here when padding is removed
-        std::fill( d_coeffs, d_coeffs + d_nnz, 0.0 );
+        std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, 0.0 );
     } else {
-        cloneData->d_own_data    = false;
         cloneData->d_nnz_per_row = nullptr;
         cloneData->d_row_starts  = nullptr;
         cloneData->d_cols        = nullptr;
@@ -579,7 +579,7 @@ void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::getRowByGlobalID(
     if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
         const size_t last_row = d_num_rows - 1;
         const auto row_offset = static_cast<size_t>( local_row );
-        const auto offset     = std::accumulate( d_nnz_per_row, d_nnz_per_row + row_offset, 0 );
+        const auto offset     = d_row_starts[local_row];
         auto n                = d_nnz_per_row[row_offset];
         if ( local_row == last_row ) {
             n -= d_nnz_pad;
