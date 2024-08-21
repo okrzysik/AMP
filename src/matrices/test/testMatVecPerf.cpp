@@ -11,7 +11,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
+// include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -76,7 +76,7 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
 #if defined( AMP_USE_HYPRE )
     using scalar_t = typename AMP::LinearAlgebra::HypreCSRPolicy::scalar_t;
 #else
-    using scalar_t = typename double;
+    using scalar_t = double;
 #endif
 
     auto x = matrix->getRightVector();
@@ -87,9 +87,11 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
     x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     y->zero();
 
+    AMP::pout << "Starting mult loop" << std::endl;
     for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
         matrix->mult( x, y );
     }
+    AMP::pout << "Stopping mult loop" << std::endl;
 
     auto yNorm = static_cast<scalar_t>( y->L1Norm() );
 
@@ -106,9 +108,9 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
         y->setToScalar( 1.0 );
         y->makeConsistent();
         x->zero();
-        for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
-            matrix->multTranspose( y, x );
-        }
+        // for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
+        matrix->multTranspose( y, x );
+        // }
 
         auto xNorm = static_cast<scalar_t>( x->L1Norm() );
 

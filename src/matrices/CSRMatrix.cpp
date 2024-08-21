@@ -34,7 +34,6 @@ namespace AMP::LinearAlgebra {
 template class CSRMatrixOperationsDefault<HypreCSRPolicy, AMP::HostAllocator<int>>;
 template class CSRMatrix<HypreCSRPolicy, AMP::HostAllocator<int>>;
 
-
     #if ( defined USE_DEVICE )
 template class CSRMatrixOperationsDefault<HypreCSRPolicy, AMP::DeviceAllocator<int>>;
 template class CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>;

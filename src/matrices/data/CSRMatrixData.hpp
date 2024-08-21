@@ -372,29 +372,15 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
         cloneData->d_cols_loc    = lidxAllocator.allocate( d_nnz );
         cloneData->d_coeffs      = scalarAllocator.allocate( d_nnz );
 
-        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-            std::copy( d_nnz_per_row, d_nnz_per_row + d_num_rows, cloneData->d_nnz_per_row );
-            std::copy( d_row_starts, d_row_starts + d_num_rows + 1, cloneData->d_row_starts );
-            std::copy( d_cols, d_cols + d_nnz, cloneData->d_cols );
-            std::copy( d_cols_loc, d_cols_loc + d_nnz, cloneData->d_cols_loc );
-            // need to zero out coeffs so that padded region has valid data
+        AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                    "Cloning not supported for pure device CSRMatrixData" );
+        std::copy( d_nnz_per_row, d_nnz_per_row + d_num_rows, cloneData->d_nnz_per_row );
+        std::copy( d_row_starts, d_row_starts + d_num_rows + 1, cloneData->d_row_starts );
+        std::copy( d_cols, d_cols + d_nnz, cloneData->d_cols );
+        std::copy( d_cols_loc, d_cols_loc + d_nnz, cloneData->d_cols_loc );
+        // need to zero out coeffs so that padded region has valid data
 #warning May remove fill here when padding is removed
-            std::fill( d_coeffs, d_coeffs + d_nnz, 0.0 );
-        } else {
-#ifdef USE_DEVICE
-            // I hope this is temporary. Generally, I advocate for CSRMatrixData being
-            // execution space agnostic. I have some ideas for that. (Brian Romero)
-            thrust::copy_n( thrust::device, d_nnz_per_row, d_num_rows, cloneData->d_nnz_per_row );
-            thrust::copy_n( thrust::device, d_num_rows + d_row_starts, 1, cloneData->d_row_starts );
-            thrust::copy_n( thrust::device, d_cols, d_nnz, cloneData->d_cols );
-            thrust::copy_n( thrust::device, d_cols_loc, d_nnz, cloneData->d_cols_loc );
-                // need to zero out coeffs so that padded region has valid data
-    #warning May remove fill here when padding is removed
-            thrust::fill_n( thrust::device, d_coeffs, d_nnz, 0.0 );
-#else
-            AMP_ERROR( "No device found!" );
-#endif
-        }
+        std::fill( d_coeffs, d_coeffs + d_nnz, 0.0 );
     } else {
         cloneData->d_own_data    = false;
         cloneData->d_nnz_per_row = nullptr;
