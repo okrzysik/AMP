@@ -19,7 +19,7 @@ class Amp(CMakePackage, CudaPackage, ROCmPackage):
     maintainers("bobby-philip", "gllongo", "rbberger")
 
     version("master", branch="master")
-    version("3.0.1", tag="3.0.1", commit="9efc5735844fdcc29681e3a908afab713a078446")
+    version("3.0.1", tag="3.0.1", commit="93f0e77ba6f97d979d18f14cfdcb274274e20c93")
 
     variant("mpi", default=True, description="Build with MPI support")
     variant("hypre", default=False, description="Build with support for hypre")
