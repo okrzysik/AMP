@@ -16,7 +16,7 @@ MESSAGE ("===============")
 SET( PROJ AMP )                 # Set the project name for CMake
 SET( AMP_LIB amp )              # Set the final library name
 SET( AMP_INC AMP )              # Set an optional subfolder for includes (e.g. include/name/...)
-SET( AMP_MAJOR_VERSION 2 )      # Set the major version
+SET( AMP_MAJOR_VERSION 3 )      # Set the major version
 SET( AMP_MINOR_VERSION 0 )      # Set the minor version
 IF ( NOT ${PROJ}_INSTALL_DIR )
     SET( ${PROJ}_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}" )
@@ -261,7 +261,7 @@ CONFIGURE_PACKAGE_CONFIG_FILE( cmake/AMP.cmake.in
     PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR )
 WRITE_BASIC_PACKAGE_VERSION_FILE(
     ${CMAKE_CURRENT_BINARY_DIR}/cmake/AMPVersion.cmake
-    VERSION ${${PROJ}_VERSION}
+    VERSION "${${PROJ}_MAJOR_VERSION}.${${PROJ}_MINOR_VERSION}.${${PROJ}_BUILD_VERSION}"
     COMPATIBILITY SameMajorVersion )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/AMPConfig.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/cmake/AMPVersion.cmake

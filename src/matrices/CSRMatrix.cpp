@@ -32,6 +32,17 @@ template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::ManagedAllocator<i
 namespace AMP::LinearAlgebra {
 template class CSRMatrixOperationsDefault<HypreCSRPolicy, AMP::HostAllocator<int>>;
 template class CSRMatrix<HypreCSRPolicy, AMP::HostAllocator<int>>;
+
+    #if ( defined USE_DEVICE )
+template class CSRMatrixOperationsDefault<HypreCSRPolicy, AMP::DeviceAllocator<int>>;
+template class CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>;
+template class CSRMatrix<HypreCSRPolicy, AMP::DeviceAllocator<int>>;
+
+template class CSRMatrixOperationsDefault<HypreCSRPolicy, AMP::ManagedAllocator<int>>;
+template class CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>;
+template class CSRMatrix<HypreCSRPolicy, AMP::ManagedAllocator<int>>;
+    #endif
+
 } // namespace AMP::LinearAlgebra
 
 #endif

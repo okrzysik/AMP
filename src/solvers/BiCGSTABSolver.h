@@ -28,7 +28,7 @@ public:
 
     /**
      * main constructor
-     @param [in] parameters The parameters object
+     @param [in] params The parameters object
      contains a database objects containing the following fields:
 
      1. type: double, name : relative_tolerance, default value of $1.0e-9$, relative tolerance for
@@ -43,17 +43,17 @@ public:
      acceptable values ("RIGHT", "LEFT", "SYMMETRIC" )
          active only when uses_preconditioner set to true
      */
-    explicit BiCGSTABSolver( std::shared_ptr<SolverStrategyParameters> parameters );
+    explicit BiCGSTABSolver( std::shared_ptr<SolverStrategyParameters> params );
 
     /**
      * static create routine that is used by SolverFactory
-     @param [in] parameters The parameters object
+     @param [in] params The parameters object
      contains a database objects with the fields listed for the constructor above
      */
     static std::unique_ptr<SolverStrategy>
-    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    createSolver( std::shared_ptr<SolverStrategyParameters> params )
     {
-        return std::make_unique<BiCGSTABSolver<T>>( solverStrategyParameters );
+        return std::make_unique<BiCGSTABSolver<T>>( params );
     }
 
     /**
@@ -73,9 +73,9 @@ public:
 
     /**
      * Initialize the BiCGSTABSolver. Should not be necessary for the user to call in general.
-     * @param parameters
+     * @param params
      */
-    void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
+    void initialize( std::shared_ptr<const SolverStrategyParameters> params ) override;
 
     /**
      * sets a shared pointer to a preconditioner object. The preconditioner is derived from
@@ -94,10 +94,9 @@ public:
 
     /**
      * Resets the registered operator internally with new parameters if necessary
-     * @param parameters    OperatorParameters object that is NULL by default
+     * @param params    OperatorParameters object that is NULL by default
      */
-    void
-    resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> parameters ) override;
+    void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );

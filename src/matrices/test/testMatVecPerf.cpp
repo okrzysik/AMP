@@ -11,7 +11,6 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -68,7 +67,7 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
 #if defined( AMP_USE_HYPRE )
     using scalar_t = typename AMP::LinearAlgebra::HypreCSRPolicy::scalar_t;
 #else
-    using scalar_t = typename double;
+    using scalar_t = double;
 #endif
 
     auto x = matrix->getRightVector();

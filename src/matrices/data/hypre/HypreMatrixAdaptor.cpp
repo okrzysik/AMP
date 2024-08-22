@@ -16,6 +16,21 @@ extern "C" {
 
 namespace AMP::LinearAlgebra {
 
+
+template void HypreMatrixAdaptor::initializeHypreMatrix<
+    CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>> );
+
+#ifdef USE_DEVICE
+template void HypreMatrixAdaptor::initializeHypreMatrix<
+    CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>> );
+
+template void HypreMatrixAdaptor::initializeHypreMatrix<
+    CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>> );
+#endif
+
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 {
     int ierr;
@@ -29,32 +44,31 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     HYPRE_IJMatrixSetObjectType( d_matrix, HYPRE_PARCSR );
     HYPRE_IJMatrixSetMaxOffProcElmts( d_matrix, 0 );
 
-    auto csrData = std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy>>( matrixData );
-    if ( csrData ) {
+    // Attempt dynamic pointer casts to supported types
+    // Policy must match HypreCSRPolicy
+    // need to match supported allocators depending on device support
+    auto csrDataHost =
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
+            matrixData );
+#ifdef USE_DEVICE
+    auto csrDataManaged =
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
+            matrixData );
+    auto csrDataDevice =
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
+            matrixData );
+#else
+    // Just default out these to nullptrs to make logic below simpler
+    decltype( csrDataHost ) csrDataManaged = nullptr;
+    decltype( csrDataHost ) csrDataDevice  = nullptr;
+#endif
 
-        auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
-        auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
-        csrData->getOffDiagColumnMap( d_colMap );
-
-        AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d,
-                    "diagonal block layout cannot be NULL" );
-
-        initializeHypreMatrix( csrData->getMemoryLocation(),
-                               firstRow,
-                               lastRow,
-                               csrData->numberOfNonZerosDiag(),
-                               nnz_d,
-                               cols_d,
-                               cols_loc_d,
-                               coeffs_d,
-                               csrData->numberOfNonZerosOffDiag(),
-                               nnz_od,
-                               cols_od,
-                               cols_loc_od,
-                               coeffs_od,
-                               d_colMap.size(),
-                               d_colMap.data() );
-
+    if ( csrDataHost ) {
+        initializeHypreMatrix( csrDataHost );
+    } else if ( csrDataManaged ) {
+        initializeHypreMatrix( csrDataManaged );
+    } else if ( csrDataDevice ) {
+        initializeHypreMatrix( csrDataDevice );
     } else {
 
         HYPRE_IJMatrixInitialize( d_matrix );
@@ -94,23 +108,21 @@ HypreMatrixAdaptor::~HypreMatrixAdaptor()
     HYPRE_IJMatrixDestroy( d_matrix );
 }
 
-void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_loc,
-                                                HYPRE_BigInt first_row,
-                                                HYPRE_BigInt last_row,
-                                                HYPRE_BigInt nnz_total_d,
-                                                HYPRE_Int *nnz_per_row_d,
-                                                HYPRE_BigInt *csr_bja_d,
-                                                HYPRE_Int *csr_lja_d,
-                                                HYPRE_Real *csr_aa_d,
-                                                HYPRE_BigInt nnz_total_od,
-                                                HYPRE_Int *nnz_per_row_od,
-                                                HYPRE_BigInt *csr_bja_od,
-                                                HYPRE_Int *csr_lja_od,
-                                                HYPRE_Real *csr_aa_od,
-                                                HYPRE_BigInt csr_col_map_size,
-                                                HYPRE_BigInt *csr_col_map_offd )
+template<class csr_data_type>
+void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData )
 {
-    if ( mem_loc == AMP::Utilities::MemoryType::host ) {
+    // extract fields from csrData
+    HYPRE_BigInt first_row = static_cast<HYPRE_BigInt>( csrData->beginRow() );
+    HYPRE_BigInt last_row  = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
+    csrData->getOffDiagColumnMap( d_colMap );
+    HYPRE_BigInt nnz_total_d  = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosDiag() );
+    HYPRE_BigInt nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
+    auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
+    auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
+
+    AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
+
+    if ( csrData->getMemoryLocation() == AMP::Utilities::MemoryType::host ) {
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
     } else {
         AMP_ERROR( "Non-host memory not yet supported in HypreMatrixAdaptor" );
@@ -150,8 +162,8 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
     diag->i[0]     = 0;
     off_diag->i[0] = 0;
     for ( HYPRE_BigInt n = 0; n < nrows; ++n ) {
-        diag->i[n + 1]     = diag->i[n] + nnz_per_row_d[n];
-        off_diag->i[n + 1] = off_diag->i[n] + nnz_per_row_od[n];
+        diag->i[n + 1]     = diag->i[n] + nnz_d[n];
+        off_diag->i[n + 1] = off_diag->i[n] + nnz_od[n];
     }
 
     // This is where we tell hypre to stop owning any data
@@ -159,13 +171,13 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
     hypre_CSRMatrixSetDataOwner( off_diag, 0 );
 
     // Now set diag/off_diag members to point at our data
-    diag->big_j = csr_bja_d;
-    diag->data  = csr_aa_d;
-    diag->j     = csr_lja_d;
+    diag->big_j = cols_d;
+    diag->data  = coeffs_d;
+    diag->j     = cols_loc_d;
 
-    off_diag->big_j = csr_bja_od;
-    off_diag->data  = csr_aa_od;
-    off_diag->j     = csr_lja_od;
+    off_diag->big_j = cols_od;
+    off_diag->data  = coeffs_od;
+    off_diag->j     = cols_loc_od;
 
     // Update metadata fields to match what we've inserted
     diag->num_nonzeros     = nnz_total_d;
@@ -193,8 +205,8 @@ void HypreMatrixAdaptor::initializeHypreMatrix( AMP::Utilities::MemoryType mem_l
 
     // Set colmap inside ParCSR and flag that assembly is already done
     // See destructor above regarding ownership of this field
-    par_matrix->col_map_offd = csr_col_map_offd;
-    off_diag->num_cols       = csr_col_map_size;
+    par_matrix->col_map_offd = d_colMap.data();
+    off_diag->num_cols       = d_colMap.size();
 
     // Update ->rownnz fields, note that we don't own these
     hypre_CSRMatrixSetRownnz( diag );

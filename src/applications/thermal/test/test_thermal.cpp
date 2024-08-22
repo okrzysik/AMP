@@ -135,8 +135,8 @@ void myTest( const std::string &input_file, AMP::UnitTest &ut )
     power->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Solve for the SS temperature
-    auto rhs          = integrateSourceVector( mesh, power );
-    auto [solVec, op] = solveTemperature( mesh, rhs, db );
+    auto rhs          = AMP::applications::integrateSourceVector( mesh, power );
+    auto [solVec, op] = AMP::applications::solveTemperature( mesh, rhs, db );
     double T_min      = static_cast<double>( solVec->min() );
     double T_max      = static_cast<double>( solVec->max() );
     printf( "Minimum temperature: %0.1f\n", T_min );

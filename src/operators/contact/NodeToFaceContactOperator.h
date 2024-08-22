@@ -1,16 +1,15 @@
-// \cond HIDDEN_SYMBOLS
-#ifndef included_AMP_NoteToGeomType::FaceContactOperator
-    #define included_AMP_NoteToGeomType ::FaceContactOperator
+#ifndef included_AMP_NoteToGeomType_FaceContactOperator
+#define included_AMP_NoteToGeomType_FaceContactOperator
 
 
-    #include "AMP/matrices/Matrix.h"
-    #include "AMP/operators/contact/ContactOperator.h"
-    #include "AMP/vectors/Variable.h"
-    #include "AMP/vectors/Vector.h"
-    #include <fstream>
-    #include <memory>
+#include "AMP/matrices/Matrix.h"
+#include "AMP/operators/contact/ContactOperator.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include <fstream>
+#include <memory>
 
-namespace AMP::Operator {
+namespace AMP::Operator::NodeToGeomType {
 
 
 /**
@@ -19,7 +18,7 @@ namespace AMP::Operator {
   an implementation of the apply() function.
   @see Operator
   */
-class NodeToGeomType::FaceContactOperator : public ContactOperator
+class FaceContactOperator : public ContactOperator
 {
 
 public:
@@ -27,7 +26,7 @@ public:
       Constructor. This resets the matrix shared pointer.
       @param [in] params
       */
-    NodeToGeomType::FaceContactOperator( std::shared_ptr<const ContactOperatorParameters> params )
+    FaceContactOperator( std::shared_ptr<const ContactOperatorParameters> params )
         : ContactOperator( params ), d_ContactIsFrictionless( false )
     {
         size_t rank          = d_GlobalComm.getRank();
@@ -38,7 +37,7 @@ public:
     /**
       Destructor
       */
-    virtual ~NodeToGeomType::FaceContactOperator() { d_fout.close(); }
+    virtual ~FaceContactOperator() { d_fout.close(); }
 
     /**
      * This function is useful for re-initializing/updating an operator
@@ -164,29 +163,26 @@ private:
     std::fstream d_fout;
 };
 
+
+namespace AMP::Operator {
 struct ProjectionData {
     AMP::Mesh::MeshElementID d_MasterVolumeGlobalID;
     size_t d_MasterFaceLocalIndex;
     double d_SlaveGeomType::VertexLocalCoordOnMasterFace[2];
 };
-
 struct StressStateData {
     double d_SlaveGeomType::VertexNormalVector[3];
     double d_SlaveGeomType::VertexSurfaceTraction[3];
 };
-
 struct AnotherDataWithNoName {
     double d_NormalVector[3];
     double d_Displacement[3];
 };
-
-struct GeomType::FaceData {
-    AMP::Mesh::MeshElementID d_GeomType::FaceVerticesGlobalIDs[4];
-};
+}
 
 
-} // namespace AMP::Operator
+namespace AMP::Operator::GeomType {
+structFaceData { AMP::Mesh::MeshElementID d_GeomType::FaceVerticesGlobalIDs[4]; };
+}
 
 #endif
-
-// \endcond
