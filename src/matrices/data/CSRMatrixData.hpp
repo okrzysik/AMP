@@ -371,18 +371,18 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
         cloneData->d_cols_loc    = sharedArrayBuilder( d_nnz, lidxAllocator );
         cloneData->d_coeffs      = sharedArrayBuilder( d_nnz, scalarAllocator );
 
-        AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
-                    "Cloning not supported for pure device CSRMatrixData" );
-        std::copy(
-            d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, cloneData->d_nnz_per_row.get() );
-        std::copy( d_row_starts.get(),
-                   d_row_starts.get() + d_num_rows + 1,
-                   cloneData->d_row_starts.get() );
-        std::copy( d_cols.get(), d_cols.get() + d_nnz, cloneData->d_cols.get() );
-        std::copy( d_cols_loc.get(), d_cols_loc.get() + d_nnz, cloneData->d_cols_loc.get() );
-        // need to zero out coeffs so that padded region has valid data
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+            std::copy( d_nnz_per_row.get(),
+                       d_nnz_per_row.get() + d_num_rows,
+                       cloneData->d_nnz_per_row.get() );
+            std::copy( d_row_starts.get(),
+                       d_row_starts.get() + d_num_rows + 1,
+                       cloneData->d_row_starts.get() );
+            std::copy( d_cols.get(), d_cols.get() + d_nnz, cloneData->d_cols.get() );
+            std::copy( d_cols_loc.get(), d_cols_loc.get() + d_nnz, cloneData->d_cols_loc.get() );
+            // need to zero out coeffs so that padded region has valid data
 #warning May remove fill here when padding is removed
-            std::fill( d_coeffs, d_coeffs + d_nnz, 0.0 );
+            std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, 0.0 );
         } else {
 #ifdef USE_DEVICE
             AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::copy_n(
