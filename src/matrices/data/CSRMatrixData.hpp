@@ -9,13 +9,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
 
-#ifdef USE_DEVICE
-    #include <thrust/device_vector.h>
-    #include <thrust/execution_policy.h>
-    #include <thrust/for_each.h>
-    #include <thrust/inner_product.h>
-#endif
-
 #include <algorithm>
 #include <iterator>
 #include <memory>

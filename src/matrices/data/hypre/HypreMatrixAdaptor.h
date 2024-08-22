@@ -29,21 +29,8 @@ public:
 
 private:
     //! Main internal routine for initializing the matrix
-    void initializeHypreMatrix( AMP::Utilities::MemoryType,
-                                HYPRE_BigInt first_row,
-                                HYPRE_BigInt last_row,
-                                HYPRE_BigInt nnz_total_d,
-                                HYPRE_Int *csr_ia_d,
-                                HYPRE_BigInt *csr_bja_d,
-                                HYPRE_Int *csr_lja_d,
-                                HYPRE_Real *csr_aa_d,
-                                HYPRE_BigInt nnz_total_od,
-                                HYPRE_Int *csr_ia_od,
-                                HYPRE_BigInt *csr_bja_od,
-                                HYPRE_Int *csr_lja_od,
-                                HYPRE_Real *csr_aa_od,
-                                HYPRE_BigInt csr_col_map_size,
-                                HYPRE_BigInt *csr_col_map );
+    template<class pCSR>
+    void initializeHypreMatrix( pCSR );
 
     //! hypre IJ matrix that this class wraps
     HYPRE_IJMatrix d_matrix;
