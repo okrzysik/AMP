@@ -320,8 +320,6 @@ private:
         scalarAllocator_t scalarAllocator;
 
         std::shared_ptr<MatrixParametersBase> d_pParameters;
-
-        bool d_own_data = true;
     };
 
 protected:

@@ -41,6 +41,12 @@ std::shared_ptr<typename data_allocator::value_type[]> sharedArrayBuilder( size_
         alloc.allocate( N ), [N, &alloc]( auto p ) -> void { alloc.deallocate( p, N ); } );
 }
 
+template<typename data_type>
+std::shared_ptr<data_type[]> sharedArrayWrapper( data_type *raw_array )
+{
+    return std::shared_ptr<data_type[]>( raw_array, []( auto p ) -> void { (void) p; } );
+}
+
 /********************************************************
  * Constructors/Destructor                              *
  ********************************************************/
@@ -158,23 +164,19 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
     if ( csrParams ) {
         // Pull out block specific parameters
         auto &blParams = d_is_diag ? csrParams->d_diag : csrParams->d_off_diag;
-
-        // memory not managed here regardless of block type (except row starts)
-        d_own_data = false;
-
-        // copy in data pointers
-        AMP_ERROR( "Construction from csrParams instead of matParams disabled for now" );
-        // d_nnz_per_row = blParams.d_nnz_per_row;
-        // d_row_starts = blParams.d_row_starts;
-        // d_cols       = blParams.d_cols;
-        // d_cols_loc   = blParams.d_cols_loc;
-        // d_coeffs     = blParams.d_coeffs;
-        d_nnz_pad = d_is_diag ? 0 : csrParams->d_nnz_pad;
+        d_nnz_pad      = d_is_diag ? 0 : csrParams->d_nnz_pad;
 
         // count nnz and decide if block is empty
-        d_nnz      = std::accumulate( d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, 0 );
+        d_nnz = std::accumulate( blParams.d_nnz_per_row, blParams.d_nnz_per_row + d_num_rows, 0 );
         d_is_empty = ( d_nnz == 0 );
 
+        // Wrap raw pointers from blParams to match internal
+        // shared_ptr<T[]> type
+        d_nnz_per_row = sharedArrayWrapper( blParams.d_nnz_per_row );
+        d_row_starts  = sharedArrayWrapper( blParams.d_row_starts );
+        d_cols        = sharedArrayWrapper( blParams.d_cols );
+        d_cols_loc    = sharedArrayWrapper( blParams.d_cols_loc );
+        d_coeffs      = sharedArrayWrapper( blParams.d_coeffs );
     } else if ( matParams ) {
 
         // for now all matrix parameter data is assumed to be on host
@@ -227,13 +229,10 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         // may happen in off-diagonal blocks
         if ( d_nnz == 0 ) {
             d_is_empty = true;
-            d_own_data = false;
             return;
         }
 
         // allocate internal arrays
-        // d_nnz_per_row = sharedArrayBuilder<decltype( d_num_rows ), decltype( lidxAllocator )>(
-        //     d_num_rows, lidxAllocator );
         d_nnz_per_row = sharedArrayBuilder( d_num_rows, lidxAllocator );
         d_row_starts  = sharedArrayBuilder( d_num_rows + 1, lidxAllocator );
         d_cols        = sharedArrayBuilder( d_nnz, gidxAllocator );

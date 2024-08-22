@@ -29,8 +29,8 @@ public:
 
 private:
     //! Main internal routine for initializing the matrix
-    template<class pCSR>
-    void initializeHypreMatrix( pCSR );
+    template<class csr_data_type>
+    void initializeHypreMatrix( std::shared_ptr<csr_data_type> );
 
     //! hypre IJ matrix that this class wraps
     HYPRE_IJMatrix d_matrix;

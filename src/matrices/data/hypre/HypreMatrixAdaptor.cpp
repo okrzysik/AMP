@@ -16,6 +16,21 @@ extern "C" {
 
 namespace AMP::LinearAlgebra {
 
+
+template void HypreMatrixAdaptor::initializeHypreMatrix<
+    CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>> );
+
+#ifdef USE_DEVICE
+template void HypreMatrixAdaptor::initializeHypreMatrix<
+    CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>> );
+
+template void HypreMatrixAdaptor::initializeHypreMatrix<
+    CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>> );
+#endif
+
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 {
     int ierr;
@@ -39,10 +54,11 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     auto csrDataManaged =
         std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
             matrixData );
-    auto csrDataManaged =
-        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
+    auto csrDataDevice =
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
             matrixData );
 #else
+    // Just default out these to nullptrs to make logic below simpler
     decltype( csrDataHost ) csrDataManaged = nullptr;
     decltype( csrDataHost ) csrDataDevice  = nullptr;
 #endif
@@ -92,26 +108,15 @@ HypreMatrixAdaptor::~HypreMatrixAdaptor()
     HYPRE_IJMatrixDestroy( d_matrix );
 }
 
-template<std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>>
-void HypreMatrixAdaptor::initializeHypreMatrix();
-
-#ifdef USE_DEVICE
-template<std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>>
-void HypreMatrixAdaptor::initializeHypreMatrix();
-
-template<std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>>
-void HypreMatrixAdaptor::initializeHypreMatrix();
-#endif
-
-template<class pCSR>
-void HypreMatrixAdaptor::initializeHypreMatrix( pCSR csrData )
+template<class csr_data_type>
+void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData )
 {
     // extract fields from csrData
     HYPRE_BigInt first_row = static_cast<HYPRE_BigInt>( csrData->beginRow() );
     HYPRE_BigInt last_row  = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
     csrData->getOffDiagColumnMap( d_colMap );
-    HYPRE_BigInt nnz_total_d = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosDiag() );
-    HYPRE_BigInt nnz_total_d = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
+    HYPRE_BigInt nnz_total_d  = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosDiag() );
+    HYPRE_BigInt nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
     auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
 
