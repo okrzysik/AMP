@@ -386,16 +386,16 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
         } else {
 #ifdef USE_DEVICE
             AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::copy_n(
-                d_nnz_per_row, d_num_rows, cloneData->d_nnz_per_row );
+                d_nnz_per_row.get(), d_num_rows, cloneData->d_nnz_per_row.get() );
             AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::copy_n(
-                d_num_rows + d_row_starts, 1, cloneData->d_row_starts );
+                d_row_starts.get(), d_num_rows + 1, cloneData->d_row_starts.get() );
             AMP::LinearAlgebra::DeviceDataHelpers<gidx_t>::copy_n(
-                d_cols, d_nnz, cloneData->d_cols );
+                d_cols.get(), d_nnz, cloneData->d_cols.get() );
             AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::copy_n(
-                d_cols_loc, d_nnz, cloneData->d_cols_loc );
+                d_cols_loc.get(), d_nnz, cloneData->d_cols_loc.get() );
                 // need to zero out coeffs so that padded region has valid data
     #warning May remove fill here when padding is removed
-            AMP::LinearAlgebra::DeviceDataHelpers<scalar_t>::fill_n( d_coeffs, d_nnz, 0.0 );
+            AMP::LinearAlgebra::DeviceDataHelpers<scalar_t>::fill_n( d_coeffs.get(), d_nnz, 0.0 );
 #else
             AMP_ERROR( "No device found!" );
 #endif

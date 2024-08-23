@@ -124,8 +124,12 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
 
     if ( csrData->getMemoryLocation() == AMP::Utilities::MemoryType::host ) {
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
-    } else {
+    } else if ( csrData->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
+#ifdef USE_DEVICE
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
+#else
         AMP_ERROR( "Non-host memory not yet supported in HypreMatrixAdaptor" );
+#endif
     }
 
     const auto nrows = last_row - first_row + 1;
