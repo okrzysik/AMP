@@ -50,6 +50,16 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     auto csrDataHost =
         std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
             matrixData );
+
+#ifdef USE_HIP
+    if ( csrDataHost ) {
+        csrDataHost = nullptr;
+        AMP_WARNING( "Shallow wrapping of host-based CSRMatrix in HypreMatrixAdaptor broken when "
+                     "HIP is enabled. Falling back to deep-copy. See: "
+                     "https://github.com/ROCm/clr/blob/rocm-6.1.2/CHANGELOG.md#known-issues-2" );
+    }
+#endif
+
 #ifdef USE_DEVICE
     auto csrDataManaged =
         std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
@@ -65,12 +75,13 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 
     if ( csrDataHost ) {
         initializeHypreMatrix( csrDataHost );
-    } else if ( csrDataManaged ) {
+    } else if ( csrDataManaged && false ) {
         initializeHypreMatrix( csrDataManaged );
-    } else if ( csrDataDevice ) {
+    } else if ( csrDataDevice && false ) {
         initializeHypreMatrix( csrDataDevice );
     } else {
 
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
         HYPRE_IJMatrixInitialize( d_matrix );
 
         // iterate over all rows
@@ -123,10 +134,13 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
 
     if ( csrData->getMemoryLocation() == AMP::Utilities::MemoryType::host ) {
+        AMP::pout << "Running adaptor on host" << std::endl;
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
     } else if ( csrData->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
+        AMP::pout << "Running adaptor on device" << std::endl;
 #ifdef USE_DEVICE
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
+        AMP_ERROR( "Non-host memory not yet supported in HypreMatrixAdaptor" );
 #else
         AMP_ERROR( "Non-host memory not yet supported in HypreMatrixAdaptor" );
 #endif
@@ -168,6 +182,8 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     for ( HYPRE_BigInt n = 0; n < nrows; ++n ) {
         diag->i[n + 1]     = diag->i[n] + nnz_d[n];
         off_diag->i[n + 1] = off_diag->i[n] + nnz_od[n];
+        AMP::pout << "[" << n + 1 << "]: " << diag->i[n + 1] << " | " << off_diag->i[n + 1]
+                  << std::endl;
     }
 
     // This is where we tell hypre to stop owning any data

@@ -84,6 +84,12 @@ CSRMatrixData<Policy, Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameter
 
     d_memory_location = d_pParameters->d_memory_location;
 
+    // This insist can be moved to guard matParams in the future
+    // see csrMat branch in CSRSerialMatrixData constructor
+    AMP_INSIST(
+        d_memory_location != AMP::Utilities::MemoryType::device,
+        "CSRMatrixData and CSRSerialMatrixData do not support pure-device memory locations yet" );
+
     if ( csrParams ) {
 
         // add check for memory location etc and migrate if necessary
@@ -95,32 +101,29 @@ CSRMatrixData<Policy, Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameter
 
         size_t N = d_last_row - d_first_row;
 
-        if ( d_memory_location != AMP::Utilities::MemoryType::device ) {
-            // Construct on/off diag blocks
-            d_diag_matrix     = std::make_shared<CSRSerialMatrixData>( *this, params, true );
-            d_off_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, false );
+        // Construct on/off diag blocks
+        d_diag_matrix     = std::make_shared<CSRSerialMatrixData>( *this, params, true );
+        d_off_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, false );
 
-            // get total nnz count
-            d_nnz = d_diag_matrix->d_nnz + d_off_diag_matrix->d_nnz;
+        // get total nnz count
+        d_nnz = d_diag_matrix->d_nnz + d_off_diag_matrix->d_nnz;
 
-            // collect off-diagonal entries and create right dof manager
-            std::vector<size_t> remote_dofs;
-            for ( lidx_t i = 0; i < d_off_diag_matrix->d_nnz; ++i ) {
-                remote_dofs.push_back( d_off_diag_matrix->d_cols[i] );
-            }
-            AMP::Utilities::unique( remote_dofs );
-            const auto &comm = getComm();
-            d_rightDOFManager =
-                std::make_shared<AMP::Discretization::DOFManager>( N, comm, remote_dofs );
-
-            if ( d_is_square ) {
-                d_leftDOFManager = d_rightDOFManager;
-            } else {
-                AMP_ERROR( "Non-square matrices not handled at present" );
-            }
-        } else {
-            AMP_WARNING( "CSRMatrixData: device memory handling has not been implemented yet" );
+        // collect off-diagonal entries and create right dof manager
+        std::vector<size_t> remote_dofs;
+        for ( lidx_t i = 0; i < d_off_diag_matrix->d_nnz; ++i ) {
+            remote_dofs.push_back( d_off_diag_matrix->d_cols[i] );
         }
+        AMP::Utilities::unique( remote_dofs );
+        const auto &comm = getComm();
+        d_rightDOFManager =
+            std::make_shared<AMP::Discretization::DOFManager>( N, comm, remote_dofs );
+
+        if ( d_is_square ) {
+            d_leftDOFManager = d_rightDOFManager;
+        } else {
+            AMP_ERROR( "Non-square matrices not handled at present" );
+        }
+
     } else if ( matParams ) {
         // for now all matrix parameter data is assumed to be on host
         d_leftDOFManager  = matParams->getLeftDOFManager();
@@ -176,6 +179,8 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         d_nnz_pad      = d_is_diag ? 0 : csrParams->d_nnz_pad;
 
         // count nnz and decide if block is empty
+        // this accumulate is the only thing that makes this require host/managed memory
+        // abstracting this into DeviceDataHelpers would allow device memory support
         d_nnz = std::accumulate( blParams.d_nnz_per_row, blParams.d_nnz_per_row + d_num_rows, 0 );
         d_is_empty = ( d_nnz == 0 );
 
@@ -187,13 +192,14 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         d_cols_loc    = sharedArrayWrapper( blParams.d_cols_loc );
         d_coeffs      = sharedArrayWrapper( blParams.d_coeffs );
     } else if ( matParams ) {
-
         // for now all matrix parameter data is assumed to be on host
-
         auto leftDOFManager  = matParams->getLeftDOFManager();
         auto rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( leftDOFManager && rightDOFManager );
         AMP_ASSERT( matParams->d_CommListLeft && matParams->d_CommListRight );
+
+        // Getting device memory support in this branch will be very challenging
+        AMP_ASSERT( d_memory_location != AMP::Utilities::MemoryType::device );
 
         d_is_empty = false;
 
@@ -381,7 +387,6 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
             std::copy( d_cols.get(), d_cols.get() + d_nnz, cloneData->d_cols.get() );
             std::copy( d_cols_loc.get(), d_cols_loc.get() + d_nnz, cloneData->d_cols_loc.get() );
             // need to zero out coeffs so that padded region has valid data
-#warning May remove fill here when padding is removed
             std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, 0.0 );
         } else {
 #ifdef USE_DEVICE
@@ -393,8 +398,7 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
                 d_cols.get(), d_nnz, cloneData->d_cols.get() );
             AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::copy_n(
                 d_cols_loc.get(), d_nnz, cloneData->d_cols_loc.get() );
-                // need to zero out coeffs so that padded region has valid data
-    #warning May remove fill here when padding is removed
+            // need to zero out coeffs so that padded region has valid data
             AMP::LinearAlgebra::DeviceDataHelpers<scalar_t>::fill_n( d_coeffs.get(), d_nnz, 0.0 );
 #else
             AMP_ERROR( "No device found!" );
@@ -645,7 +649,6 @@ void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::getValuesByGlobalID(
     const auto start      = d_row_starts[local_row];
     auto end              = d_row_starts[local_row + 1];
     if ( local_row == last_row ) {
-#warning This code is jank. Go fix the constructor that needs padding.
         end -= d_nnz_pad;
     }
 
@@ -676,7 +679,6 @@ void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::addValuesByGlobalID(
     const auto start      = d_row_starts[local_row];
     auto end              = d_row_starts[local_row + 1];
     if ( local_row == last_row ) {
-#warning This code is jank. Go fix the constructor that needs padding.
         end -= d_nnz_pad;
     }
 
@@ -711,7 +713,6 @@ void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::setValuesByGlobalID(
     const auto start      = d_row_starts[local_row];
     auto end              = d_row_starts[local_row + 1];
     if ( local_row == last_row ) {
-#warning This code is jank. Go fix the constructor that needs padding.
         end -= d_nnz_pad;
     }
 
@@ -749,7 +750,6 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::getColumnIDs( const size_
         auto n                = d_nnz_per_row[row_offset];
 
         if ( local_row == last_row ) {
-#warning This code is jank. Go fix the constructor that needs padding.
             n -= d_nnz_pad;
         }
 
