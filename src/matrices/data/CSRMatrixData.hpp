@@ -458,6 +458,9 @@ void CSRMatrixData<Policy, Allocator>::getRowByGlobalID( size_t row,
                     row < static_cast<size_t>( d_last_row ),
                 "row must be owned by rank" );
 
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRMatrixData::getRowByGlobalID not implemented for device memory" );
+
     auto local_row = row - d_first_row;
 
     // Get portion of row from diagonal matrix
@@ -479,27 +482,21 @@ void CSRMatrixData<Policy, Allocator>::getValuesByGlobalID( size_t num_rows,
                                                             void *values,
                                                             const typeID &id ) const
 {
-    if ( getTypeID<scalar_t>() == id ) {
-        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+    AMP_INSIST( getTypeID<scalar_t>() == id,
+                "CSRMatrixData::getValuesByGlobalID called with inconsistent typeID" );
 
-            if ( num_rows == 1 && num_cols == 1 ) {
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRMatrixData::getValuesByGlobalID not implemented for device memory" );
 
-                const auto local_row = rows[0] - d_first_row;
-                // Forward to internal matrices, nothing will happen if not found
-                d_diag_matrix->getValuesByGlobalID( local_row, cols[0], values, id );
-                d_off_diag_matrix->getValuesByGlobalID( local_row, cols[0], values, id );
-            } else {
-                AMP_ERROR(
-                    "CSRSerialMatrixData::getValuesByGlobalID not implemented for num_rows>1 || "
-                    "num_cols > 1" );
-            }
+    if ( num_rows == 1 && num_cols == 1 ) {
 
-        } else {
-            AMP_ERROR(
-                "CSRSerialMatrixData::getValuesByGlobalID not implemented for device memory" );
-        }
+        const auto local_row = rows[0] - d_first_row;
+        // Forward to internal matrices, nothing will happen if not found
+        d_diag_matrix->getValuesByGlobalID( local_row, cols[0], values, id );
+        d_off_diag_matrix->getValuesByGlobalID( local_row, cols[0], values, id );
     } else {
-        AMP_ERROR( "Not implemented" );
+        AMP_ERROR( "CSRSerialMatrixData::getValuesByGlobalID not implemented for num_rows > 1 || "
+                   "num_cols > 1" );
     }
 }
 
@@ -510,33 +507,29 @@ template<typename Policy, class Allocator>
 void CSRMatrixData<Policy, Allocator>::addValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
-    if ( getTypeID<scalar_t>() != id ) {
-        AMP_ERROR( "Conversion not implemented" );
-    }
+    AMP_INSIST( getTypeID<scalar_t>() == id,
+                "CSRMatrixData::addValuesByGlobalID called with inconsistent typeID" );
 
-    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
 
-        auto values = reinterpret_cast<const scalar_t *>( vals );
+    auto values = reinterpret_cast<const scalar_t *>( vals );
 
-        for ( size_t i = 0u; i != num_rows; i++ ) {
-            if ( rows[i] >= static_cast<size_t>( d_first_row ) &&
-                 rows[i] < static_cast<size_t>( d_last_row ) ) {
+    for ( size_t i = 0u; i != num_rows; i++ ) {
+        if ( rows[i] >= static_cast<size_t>( d_first_row ) &&
+             rows[i] < static_cast<size_t>( d_last_row ) ) {
 
-                // Forward single row to diag and off diag blocks
-                // auto lcols = &cols[num_cols * i];
-                const auto local_row = rows[i] - d_first_row;
-                auto lvals           = &values[num_cols * i];
-                d_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-                d_off_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-            } else {
-                for ( size_t icol = 0; icol < num_cols; ++icol ) {
-                    d_other_data[rows[i]][cols[icol]] += values[num_cols * i + icol];
-                }
+            // Forward single row to diag and off diag blocks
+            // auto lcols = &cols[num_cols * i];
+            const auto local_row = rows[i] - d_first_row;
+            auto lvals           = &values[num_cols * i];
+            d_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+            d_off_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+        } else {
+            for ( size_t icol = 0; icol < num_cols; ++icol ) {
+                d_other_data[rows[i]][cols[icol]] += values[num_cols * i + icol];
             }
         }
-
-    } else {
-        AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
     }
 }
 
@@ -544,34 +537,30 @@ template<typename Policy, class Allocator>
 void CSRMatrixData<Policy, Allocator>::setValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
-    if ( getTypeID<scalar_t>() != id ) {
-        AMP_ERROR( "Conversion not implemented" );
-    }
+    AMP_INSIST( getTypeID<scalar_t>() == id,
+                "CSRMatrixData::setValuesByGlobalID called with inconsistent typeID" );
 
-    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRMatrixData::setValuesByGlobalID not implemented for device memory" );
 
-        auto values = reinterpret_cast<const scalar_t *>( vals );
+    auto values = reinterpret_cast<const scalar_t *>( vals );
 
-        for ( size_t i = 0u; i != num_rows; i++ ) {
+    for ( size_t i = 0u; i != num_rows; i++ ) {
 
-            if ( rows[i] >= static_cast<size_t>( d_first_row ) &&
-                 rows[i] < static_cast<size_t>( d_last_row ) ) {
+        if ( rows[i] >= static_cast<size_t>( d_first_row ) &&
+             rows[i] < static_cast<size_t>( d_last_row ) ) {
 
-                // Forward single row to diag and off diag blocks
-                // auto lcols = &cols[num_cols * i];
-                const auto local_row = rows[i] - d_first_row;
-                auto lvals           = &values[num_cols * i];
-                d_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-                d_off_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-            } else {
-                for ( size_t icol = 0; icol < num_cols; ++icol ) {
-                    d_ghost_data[rows[i]][cols[icol]] = values[num_cols * i + icol];
-                }
+            // Forward single row to diag and off diag blocks
+            // auto lcols = &cols[num_cols * i];
+            const auto local_row = rows[i] - d_first_row;
+            auto lvals           = &values[num_cols * i];
+            d_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+            d_off_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+        } else {
+            for ( size_t icol = 0; icol < num_cols; ++icol ) {
+                d_ghost_data[rows[i]][cols[icol]] = values[num_cols * i + icol];
             }
         }
-
-    } else {
-        AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
     }
 }
 
@@ -580,8 +569,13 @@ std::vector<size_t> CSRMatrixData<Policy, Allocator>::getColumnIDs( size_t row )
 {
     AMP_INSIST( row >= static_cast<size_t>( d_first_row ) &&
                     row < static_cast<size_t>( d_last_row ),
-                "row must be owned by rank" );
-    AMP_INSIST( d_diag_matrix, "diag matrix must exist" );
+                "CSRMatrixData::getColumnIDs row must be owned by rank" );
+
+    AMP_INSIST( d_diag_matrix, "CSRMatrixData::getColumnIDs diag matrix must exist" );
+
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRMatrixData::getColumnIDs not implemented for device memory" );
+
     auto local_row              = row - d_first_row;
     std::vector<size_t> cols    = d_diag_matrix->getColumnIDs( local_row );
     std::vector<size_t> od_cols = d_off_diag_matrix->getColumnIDs( local_row );
@@ -598,37 +592,36 @@ void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::getRowByGlobalID(
         return;
     }
 
-    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-        const size_t last_row = d_num_rows - 1;
-        const auto row_offset = static_cast<size_t>( local_row );
-        const auto offset     = d_row_starts[local_row];
-        auto n                = d_nnz_per_row[row_offset];
-        if ( local_row == last_row ) {
-            n -= d_nnz_pad;
-        }
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRSerialMatrixData::getRowByGlobalID not implemented for device memory" );
 
-        cols.resize( n );
-        values.resize( n );
+    const size_t last_row = d_num_rows - 1;
+    const auto row_offset = static_cast<size_t>( local_row );
+    const auto offset     = d_row_starts[local_row];
+    auto n                = d_nnz_per_row[row_offset];
+    if ( local_row == last_row ) {
+        n -= d_nnz_pad;
+    }
 
-        if constexpr ( std::is_same_v<size_t, gidx_t> ) {
-            std::copy( &d_cols[offset], &d_cols[offset] + n, cols.begin() );
-        } else {
-            std::transform( &d_cols[offset],
-                            &d_cols[offset] + n,
-                            cols.begin(),
-                            []( size_t col ) -> gidx_t { return col; } );
-        }
+    cols.resize( n );
+    values.resize( n );
 
-        if constexpr ( std::is_same_v<double, scalar_t> ) {
-            std::copy( &d_coeffs[offset], &d_coeffs[offset] + n, values.begin() );
-        } else {
-            std::transform( &d_coeffs[offset],
-                            &d_coeffs[offset] + n,
-                            values.begin(),
-                            []( size_t val ) -> scalar_t { return val; } );
-        }
+    if constexpr ( std::is_same_v<size_t, gidx_t> ) {
+        std::copy( &d_cols[offset], &d_cols[offset] + n, cols.begin() );
     } else {
-        AMP_ERROR( "CSRSerialMatrixData::getRowByGlobalID not implemented for device memory" );
+        std::transform( &d_cols[offset],
+                        &d_cols[offset] + n,
+                        cols.begin(),
+                        []( size_t col ) -> gidx_t { return col; } );
+    }
+
+    if constexpr ( std::is_same_v<double, scalar_t> ) {
+        std::copy( &d_coeffs[offset], &d_coeffs[offset] + n, values.begin() );
+    } else {
+        std::transform( &d_coeffs[offset],
+                        &d_coeffs[offset] + n,
+                        values.begin(),
+                        []( size_t val ) -> scalar_t { return val; } );
     }
 }
 
@@ -641,9 +634,11 @@ void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::getValuesByGlobalID(
         return;
     }
 
-    if ( getTypeID<scalar_t>() != id ) {
-        AMP_ERROR( "Conversion not implemented" );
-    }
+    AMP_INSIST( getTypeID<scalar_t>() == id,
+                "CSRSerialMatrixData::getValuesByGlobalID called with inconsistent typeID" );
+
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRSerialMatrixData::getValuesByGlobalID not implemented for device memory" );
 
     const size_t last_row = d_num_rows - 1;
     const auto start      = d_row_starts[local_row];
@@ -671,9 +666,11 @@ void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::addValuesByGlobalID(
         return;
     }
 
-    if ( getTypeID<scalar_t>() != id ) {
-        AMP_ERROR( "Conversion not implemented" );
-    }
+    AMP_INSIST( getTypeID<scalar_t>() == id,
+                "CSRSerialMatrixData::addValuesByGlobalID called with inconsistent typeID" );
+
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRSerialMatrixData::addValuesByGlobalID not implemented for device memory" );
 
     const size_t last_row = d_num_rows - 1;
     const auto start      = d_row_starts[local_row];
@@ -705,9 +702,11 @@ void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::setValuesByGlobalID(
         return;
     }
 
-    if ( getTypeID<scalar_t>() != id ) {
-        AMP_ERROR( "Conversion not implemented" );
-    }
+    AMP_INSIST( getTypeID<scalar_t>() == id,
+                "CSRSerialMatrixData::setValuesByGlobalID called with inconsistent typeID" );
+
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRSerialMatrixData::setValuesByGlobalID not implemented for device memory" );
 
     const size_t last_row = d_num_rows - 1;
     const auto start      = d_row_starts[local_row];
@@ -739,32 +738,31 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::getColumnIDs( const size_
         return std::vector<size_t>();
     }
 
-    AMP_INSIST( d_cols && d_nnz_per_row, "Must be initialized" );
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRSerialMatrixData::getColumnIDs not implemented for device memory" );
 
-    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+    AMP_INSIST( d_cols && d_nnz_per_row,
+                "CSRSerialMatrixData::getColumnIDs nnz layout must be initialized" );
 
-        std::vector<size_t> cols;
-        const size_t last_row = d_num_rows - 1;
-        const auto row_offset = static_cast<size_t>( local_row );
-        const auto offset     = d_row_starts[local_row];
-        auto n                = d_nnz_per_row[row_offset];
+    std::vector<size_t> cols;
+    const size_t last_row = d_num_rows - 1;
+    const auto row_offset = static_cast<size_t>( local_row );
+    const auto offset     = d_row_starts[local_row];
+    auto n                = d_nnz_per_row[row_offset];
 
-        if ( local_row == last_row ) {
-            n -= d_nnz_pad;
-        }
-
-        if constexpr ( std::is_same_v<size_t, gidx_t> ) {
-            std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );
-        } else {
-            std::transform( &d_cols[offset],
-                            &d_cols[offset] + n,
-                            std::back_inserter( cols ),
-                            []( size_t col ) -> gidx_t { return col; } );
-        }
-        return cols;
-    } else {
-        AMP_ERROR( "CSRSerialMatrixData:getColumnIDs not implemented for device memory" );
+    if ( local_row == last_row ) {
+        n -= d_nnz_pad;
     }
+
+    if constexpr ( std::is_same_v<size_t, gidx_t> ) {
+        std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );
+    } else {
+        std::transform( &d_cols[offset],
+                        &d_cols[offset] + n,
+                        std::back_inserter( cols ),
+                        []( size_t col ) -> gidx_t { return col; } );
+    }
+    return cols;
 }
 
 template<typename Policy, class Allocator>
