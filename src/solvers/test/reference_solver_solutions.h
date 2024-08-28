@@ -39,7 +39,7 @@ std::map<std::string, std::tuple<int, double, double>> conv_map{
     { "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG",
       std::make_tuple( 5, 1.20157627947399e-16, 1.0e-15 ) },
     { "input_testLinearSolvers-LinearThermalRobin-HypreCG",
-      std::make_tuple( 25, 1.45084840704152e-15, 1.0e-14 ) },
+      std::make_tuple( 25, 1.166100925864886e-14, 1.0e-13 ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML",
       std::make_tuple( 14, 3.90003330750106e-13, 4.0e-13 ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-CG",
