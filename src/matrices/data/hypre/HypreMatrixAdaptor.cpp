@@ -125,10 +125,8 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
 
     if ( csrData->getMemoryLocation() == AMP::Utilities::MemoryType::host ) {
-        AMP::pout << "Running adaptor on host" << std::endl;
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
     } else if ( csrData->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
-        AMP::pout << "Running adaptor on device" << std::endl;
 #ifdef USE_DEVICE
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
         AMP_ERROR( "Non-host memory not yet supported in HypreMatrixAdaptor" );
@@ -173,8 +171,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     for ( HYPRE_BigInt n = 0; n < nrows; ++n ) {
         diag->i[n + 1]     = diag->i[n] + nnz_d[n];
         off_diag->i[n + 1] = off_diag->i[n] + nnz_od[n];
-        AMP::pout << "[" << n + 1 << "]: " << diag->i[n + 1] << " | " << off_diag->i[n + 1]
-                  << std::endl;
     }
 
     // This is where we tell hypre to stop owning any data
