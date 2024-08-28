@@ -14,6 +14,13 @@ IF ( USE_PETSC )
     ADD_PACKAGE_SUBDIRECTORY( petsc )
 ENDIF()
 
+IF( USE_CUDA )
+    ADD_PACKAGE_SUBDIRECTORY( data/cuda )
+ENDIF()
+IF( USE_HIP )
+    ADD_PACKAGE_SUBDIRECTORY( data/hip )
+ENDIF()
+
 # Set the default matrix type
 SET( MATRIX_TYPES "ManagedEpetraMatrix" "NativePetscMatrix" "CSRMatrix" "DenseSerialMatrix" "NULL" )
 IF ( NOT DEFINED DEFAULT_MATRIX )

@@ -32,7 +32,8 @@ public:
      */
     explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
                                std::shared_ptr<AMP::Discretization::DOFManager> right,
-                               const AMP_MPI &comm );
+                               const AMP_MPI &comm,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
     //! Deconstructor
     virtual ~MatrixParameters() = default;
@@ -49,45 +50,12 @@ public:
     //! Return the global number of columns
     size_t getGlobalNumberOfColumns() const;
 
-    /** \brief Return the number of entries in each row
-     * \return  An integer array of the number of entries in each
-     * local row
+    /** \brief Get the bound function that generates column IDs for each row
      */
-    const int *entryList() const;
-
-    /** \brief Return the number of entries in each row
-     * \return  An integer array of the number of entries in each
-     * local row
-     */
-    int *entryList();
-
-    /** \brief Set the number of non-zeros in a particular row
-     * \param[in] row  The row number
-     * \param[in] entries  The number of non-zero entries
-     */
-    void setEntriesInRow( int row, int entries );
-
-    /** \brief Return the number of non-zero entries in a local row
-     * \param[in] i The local row id
-     * \return  The number of entries in the row
-     */
-    int &entriesInRow( int i );
-
-    /** \brief Return the number of non-zero entries in a local row
-     * \param[in] i The local row id
-     * \return  The number of entries in the row
-     */
-    int entriesInRow( int i ) const;
-
-    /** \brief Return a vector of all columns with non-zero entries for this process
-     * \return a vector of global column ids
-     */
-    std::vector<size_t> &getColumns() { return d_vColumns; }
-
-    /** \brief  Add columns to a description
-     * \param[in] cols  The column ids
-     */
-    void addColumns( const std::vector<size_t> &cols );
+    const std::function<std::vector<size_t>( size_t )> &getRowFunction() const
+    {
+        return d_getRowFunction;
+    }
 
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
@@ -112,11 +80,8 @@ protected:
     // The DOFManager for the right vector ( may be null )
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
 
-    //!  The number of nonzeros per row of the matrix
-    std::vector<int> d_vEntriesPerRow;
-
-    //!  The set of columns with non-zero entries this processor has
-    std::vector<size_t> d_vColumns;
+    //! Function that generates column ids for each row of the matrix
+    std::function<std::vector<size_t>( size_t )> d_getRowFunction;
 };
 } // namespace AMP::LinearAlgebra
 
