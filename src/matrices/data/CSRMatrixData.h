@@ -2,6 +2,7 @@
 #define included_AMP_CSRMatrixData_h
 
 #include "AMP/matrices/data/MatrixData.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/memory.h"
 
 #include <functional>
@@ -175,23 +176,23 @@ public:
 
     std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getCSRDiagData()
     {
-        return std::make_tuple( d_diag_matrix->d_nnz_per_row,
-                                d_diag_matrix->d_cols,
-                                d_diag_matrix->d_cols_loc,
-                                d_diag_matrix->d_coeffs );
+        return std::make_tuple( d_diag_matrix->d_nnz_per_row.get(),
+                                d_diag_matrix->d_cols.get(),
+                                d_diag_matrix->d_cols_loc.get(),
+                                d_diag_matrix->d_coeffs.get() );
     }
 
     std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getCSROffDiagData()
     {
-        return std::make_tuple( d_off_diag_matrix->d_nnz_per_row,
-                                d_off_diag_matrix->d_cols,
-                                d_off_diag_matrix->d_cols_loc,
-                                d_off_diag_matrix->d_coeffs );
+        return std::make_tuple( d_off_diag_matrix->d_nnz_per_row.get(),
+                                d_off_diag_matrix->d_cols.get(),
+                                d_off_diag_matrix->d_cols_loc.get(),
+                                d_off_diag_matrix->d_coeffs.get() );
     }
 
-    lidx_t *getDiagRowStarts() { return d_diag_matrix->d_row_starts; }
+    lidx_t *getDiagRowStarts() { return d_diag_matrix->d_row_starts.get(); }
 
-    lidx_t *getOffDiagRowStarts() { return d_off_diag_matrix->d_row_starts; }
+    lidx_t *getOffDiagRowStarts() { return d_off_diag_matrix->d_row_starts.get(); }
 
     bool isSquare() const noexcept { return d_is_square; }
 
@@ -231,12 +232,13 @@ public:
             colMap.resize( d_off_diag_matrix->d_ncols_unq );
 
             if constexpr ( std::is_same_v<idx_t, gidx_t> ) {
-                std::copy( d_off_diag_matrix->d_cols_unq,
-                           d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
+                std::copy( d_off_diag_matrix->d_cols_unq.get(),
+                           d_off_diag_matrix->d_cols_unq.get() + d_off_diag_matrix->d_ncols_unq,
                            colMap.begin() );
             } else {
-                std::transform( d_off_diag_matrix->d_cols_unq,
-                                d_off_diag_matrix->d_cols_unq + d_off_diag_matrix->d_ncols_unq,
+                std::transform( d_off_diag_matrix->d_cols_unq.get(),
+                                d_off_diag_matrix->d_cols_unq.get() +
+                                    d_off_diag_matrix->d_ncols_unq,
                                 colMap.begin(),
                                 []( gidx_t c ) -> idx_t { return c; } );
             }
@@ -314,26 +316,24 @@ private:
         bool d_is_diag  = true;
         bool d_is_empty = false;
 
-        lidx_t *d_nnz_per_row = nullptr;
-        lidx_t *d_row_starts  = nullptr;
-        gidx_t *d_cols        = nullptr;
-        gidx_t *d_cols_unq    = nullptr;
-        lidx_t *d_cols_loc    = nullptr;
-        scalar_t *d_coeffs    = nullptr;
+        std::shared_ptr<lidx_t[]> d_nnz_per_row = nullptr;
+        std::shared_ptr<lidx_t[]> d_row_starts  = nullptr;
+        std::shared_ptr<gidx_t[]> d_cols        = nullptr;
+        std::shared_ptr<gidx_t[]> d_cols_unq    = nullptr;
+        std::shared_ptr<lidx_t[]> d_cols_loc    = nullptr;
+        std::shared_ptr<scalar_t[]> d_coeffs    = nullptr;
 
         lidx_t d_num_rows  = 0;
         lidx_t d_nnz       = 0;
         lidx_t d_nnz_pad   = 0;
         lidx_t d_ncols_unq = 0;
 
-        AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+        const AMP::Utilities::MemoryType d_memory_location;
         gidxAllocator_t gidxAllocator;
         lidxAllocator_t lidxAllocator;
         scalarAllocator_t scalarAllocator;
 
         std::shared_ptr<MatrixParametersBase> d_pParameters;
-
-        bool d_own_data = true;
     };
 
 protected:
@@ -344,7 +344,7 @@ protected:
     gidx_t d_last_col  = 0;
     lidx_t d_nnz       = 0;
 
-    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+    const AMP::Utilities::MemoryType d_memory_location;
     gidxAllocator_t gidxAllocator;
     lidxAllocator_t lidxAllocator;
     scalarAllocator_t scalarAllocator;

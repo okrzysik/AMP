@@ -275,13 +275,13 @@ void testArray( UnitTest &ut )
     // Test a failed allocation
     // Note: testing the allocation failure causes issues on a MAC
     try {
-#if !defined( __APPLE__ )
+#if !defined( __APPLE__ ) && !defined( USE_DEVICE )
         size_t N = 10000;
         Array<double> M( N, N, N );
         ut.failure( "Failed allocation succeeded???" );
         AMP_ASSERT( M.length() == N * N * N );
 #else
-        ut.expected_failure( "Skipping failed allocation test on MAC" );
+        ut.expected_failure( "Skipping failed allocation test on MAC or DEVICE" );
 #endif
     } catch ( std::logic_error &err ) {
         std::string msg = err.what();

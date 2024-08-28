@@ -14,8 +14,12 @@ IF ( USE_PETSC )
     ADD_PACKAGE_SUBDIRECTORY( petsc )
 ENDIF()
 
-# Ensure that NVCC is used as needed on Kokkos code
-SET_NVCC( CSRMatrix.cpp )
+IF( USE_CUDA )
+    ADD_PACKAGE_SUBDIRECTORY( data/cuda )
+ENDIF()
+IF( USE_HIP )
+    ADD_PACKAGE_SUBDIRECTORY( data/hip )
+ENDIF()
 
 # Set the default matrix type
 SET( MATRIX_TYPES "ManagedEpetraMatrix" "NativePetscMatrix" "CSRMatrix" "DenseSerialMatrix" "NULL" )
