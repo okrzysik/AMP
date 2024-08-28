@@ -56,11 +56,17 @@ std::shared_ptr<data_type[]> sharedArrayWrapper( data_type *raw_array )
     return std::shared_ptr<data_type[]>( raw_array, []( auto p ) -> void { (void) p; } );
 }
 
+template<class Allocator>
+AMP::Utilities::MemoryType constexpr memLocSelector()
+{
+    return AMP::Utilities::MemoryType::host;
+}
+
 /********************************************************
  * Constructors/Destructor                              *
  ********************************************************/
 template<typename Policy, class Allocator>
-CSRMatrixData<Policy, Allocator>::CSRMatrixData()
+CSRMatrixData<Policy, Allocator>::CSRMatrixData() : d_memory_location( memLocSelector<Allocator>() )
 {
     AMPManager::incrementResource( "CSRMatrixData" );
 }
@@ -68,21 +74,19 @@ CSRMatrixData<Policy, Allocator>::CSRMatrixData()
 template<typename Policy, class Allocator>
 CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
     const CSRMatrixData<Policy, Allocator> &outer )
-    : d_outer( outer )
+    : d_outer( outer ), d_memory_location( memLocSelector<Allocator>() )
 {
     AMPManager::incrementResource( "CSRSerialMatrixData" );
 }
 
 template<typename Policy, class Allocator>
 CSRMatrixData<Policy, Allocator>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params )
-    : MatrixData( params )
+    : MatrixData( params ), d_memory_location( memLocSelector<Allocator>() )
 {
 
     AMPManager::incrementResource( "CSRMatrixData" );
     auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
     auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
-
-    d_memory_location = d_pParameters->d_memory_location;
 
     // This insist can be moved to guard matParams in the future
     // see csrMat branch in CSRSerialMatrixData constructor
@@ -160,15 +164,14 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
     const CSRMatrixData<Policy, Allocator> &outer,
     std::shared_ptr<MatrixParametersBase> params,
     bool is_diag )
-    : d_outer( outer )
+    : d_outer( outer ), d_memory_location( memLocSelector<Allocator>() )
 {
     AMPManager::incrementResource( "CSRSerialMatrixData" );
     d_pParameters  = params;
     auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
     auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
-    d_memory_location = d_pParameters->d_memory_location;
-    d_is_diag         = is_diag;
+    d_is_diag = is_diag;
 
     // Number of rows owned by this rank
     d_num_rows = outer.d_last_row - outer.d_first_row;
@@ -337,7 +340,6 @@ std::shared_ptr<MatrixData> CSRMatrixData<Policy, Allocator>::cloneMatrixData() 
 
     cloneData = std::make_shared<CSRMatrixData<Policy, Allocator>>();
 
-    cloneData->d_memory_location = d_memory_location;
     cloneData->d_is_square       = d_is_square;
     cloneData->d_first_row       = d_first_row;
     cloneData->d_last_row        = d_last_row;
@@ -363,12 +365,11 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
 
     cloneData = std::make_shared<CSRSerialMatrixData>( outer );
 
-    cloneData->d_is_diag         = d_is_diag;
-    cloneData->d_is_empty        = d_is_empty;
-    cloneData->d_num_rows        = d_num_rows;
-    cloneData->d_nnz             = d_nnz;
-    cloneData->d_memory_location = d_memory_location;
-    cloneData->d_pParameters     = d_pParameters;
+    cloneData->d_is_diag     = d_is_diag;
+    cloneData->d_is_empty    = d_is_empty;
+    cloneData->d_num_rows    = d_num_rows;
+    cloneData->d_nnz         = d_nnz;
+    cloneData->d_pParameters = d_pParameters;
 
     if ( !d_is_empty ) {
         cloneData->d_nnz_per_row = sharedArrayBuilder( d_num_rows, lidxAllocator );

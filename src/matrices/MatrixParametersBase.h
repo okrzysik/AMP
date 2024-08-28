@@ -2,7 +2,6 @@
 #define included_AMP_MatrixParametersBase
 
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 
 namespace AMP::LinearAlgebra {
@@ -26,9 +25,6 @@ public:
 
     //!  Get the communicator for the matrix
     AMP::AMP_MPI &getComm() { return d_comm; }
-
-    //! memory space where the matrix should live
-    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
 
     //!  The variable for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left
     //!  vector )

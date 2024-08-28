@@ -51,15 +51,6 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
         std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
             matrixData );
 
-#ifdef USE_HIP
-    if ( csrDataHost ) {
-        csrDataHost = nullptr;
-        AMP_WARNING( "Shallow wrapping of host-based CSRMatrix in HypreMatrixAdaptor broken when "
-                     "HIP is enabled. Falling back to deep-copy. See: "
-                     "https://github.com/ROCm/clr/blob/rocm-6.1.2/CHANGELOG.md#known-issues-2" );
-    }
-#endif
-
 #ifdef USE_DEVICE
     auto csrDataManaged =
         std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(

@@ -2,6 +2,7 @@
 #define included_AMP_CSRMatrixData_h
 
 #include "AMP/matrices/data/MatrixData.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/memory.h"
 
 #include <functional>
@@ -314,7 +315,7 @@ private:
         lidx_t d_nnz_pad   = 0;
         lidx_t d_ncols_unq = 0;
 
-        AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+        const AMP::Utilities::MemoryType d_memory_location;
         gidxAllocator_t gidxAllocator;
         lidxAllocator_t lidxAllocator;
         scalarAllocator_t scalarAllocator;
@@ -330,7 +331,7 @@ protected:
     gidx_t d_last_col  = 0;
     lidx_t d_nnz       = 0;
 
-    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+    const AMP::Utilities::MemoryType d_memory_location;
     gidxAllocator_t gidxAllocator;
     lidxAllocator_t lidxAllocator;
     scalarAllocator_t scalarAllocator;
