@@ -3,7 +3,13 @@
 
 #include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/FunctionTable.h"
+#ifdef USE_DEVICE
+    #include "AMP/utils/device/GPUFunctionTable.h"
+    #include "AMP/vectors/operations/VectorOperationsDevice.h"
+#else
+    #include "AMP/utils/FunctionTable.h"
+#endif
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/memory.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorDataDefault.h"
@@ -41,11 +47,29 @@ class EpetraVectorEngineParameters;
  * \param[in] split         If we are given a multiDOFManager, do we want to split the vector
  *                              based on the individual DOFManagers to create a MultiVector
  */
+template<typename TYPE = double,
+         typename OPS  = VectorOperationsDefault<TYPE>,
+         typename DATA = VectorDataDefault<TYPE>>
 AMP::LinearAlgebra::Vector::shared_ptr
 createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
               std::shared_ptr<AMP::LinearAlgebra::Variable> variable,
               bool split = true );
 
+/**
+ * \brief  This function will create a vector from an arbitrary DOFManager
+ * \details  This function is responsible for creating vectors from a DOFManager and variable.
+ * \param[in] DOFs          DOFManager to use for constucting the vector
+ * \param[in] variable      Variable for the vector
+ * \param[in] split         If we are given a multiDOFManager, do we want to split the vector
+ *                              based on the individual DOFManagers to create a MultiVector
+ * \param[in] memoryType    Memory space in which to create vector
+ */
+template<typename TYPE = double>
+AMP::LinearAlgebra::Vector::shared_ptr
+createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
+              std::shared_ptr<AMP::LinearAlgebra::Variable> variable,
+              bool split,
+              AMP::Utilities::MemoryType memType );
 
 /**
  * \brief  Create a vector from an arbitrary PETSc Vec
@@ -63,9 +87,8 @@ std::shared_ptr<Vector> createVector( Vec v,
 
 /**
  * \brief  Create an epetra vector
- * \param[in] commList      Communication list
- * \param[in] DOFs          DOF manager
- * \param[in] p             Optional vector data
+ * \param[in] params        Epetra vector parameters
+ * \param[in] var           Optional
  */
 std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> commList,
                                             std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
@@ -157,9 +180,7 @@ Vector::shared_ptr createArrayVector( const ArraySize &localSize, std::shared_pt
 /** \brief    Create a ArrayVector
  * \details  This is the factory method for the ArrayVector.
  * \param    localSize  The number of elements in the vector on this processor
- * \param    blockIndex The index of the current block
- * \param    comm       The communicator to use
- * \param    var        The variable associated with the new vector
+ * \param    var The variable associated with the new vector
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<T>>
 Vector::shared_ptr createArrayVector( const ArraySize &localSize,
