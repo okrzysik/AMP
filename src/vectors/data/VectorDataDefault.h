@@ -2,6 +2,7 @@
 #define included_AMP_VectorDataDefault
 
 #include "AMP/utils/UtilityMacros.h"
+#include "AMP/utils/memory.h"
 #include "AMP/vectors/data/VectorData.h"
 
 
@@ -17,7 +18,7 @@ class VectorDataIterator;
  * \details  VectorDataDefault is a default implementation of VectorData that stores
  * the local values as a single block of data on the CPU.
  */
-template<typename TYPE = double, class Allocator = std::allocator<TYPE>>
+template<typename TYPE = double, class Allocator = AMP::HostAllocator<TYPE>>
 class VectorDataDefault final : public VectorData
 {
 public: // Member types
