@@ -11,6 +11,7 @@
 #include <initializer_list>
 #include <vector>
 
+#include "AMP/utils/memory.h"
 
 #if defined( __CUDA_ARCH__ )
     #include <cuda.h>
@@ -63,7 +64,7 @@ namespace AMP {
 
 // Forward declerations
 class FunctionTable;
-template<class TYPE, class FUN = FunctionTable, class Allocator = std::allocator<TYPE>>
+template<class TYPE, class FUN = FunctionTable, class Allocator = AMP::HostAllocator<TYPE>>
 class Array;
 
 
