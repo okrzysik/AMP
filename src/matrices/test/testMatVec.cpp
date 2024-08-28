@@ -71,14 +71,38 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     using scalar_t = typename Policy::scalar_t;
 
     gidx_t firstRow, endRow;
-    std::vector<lidx_t> nnz;
-    std::vector<gidx_t> cols;
-    std::vector<scalar_t> coeffs;
+    lidx_t nnz_pad;
+    std::vector<lidx_t> nnz_d, nnz_od;
+    std::vector<lidx_t> rowstart_d, rowstart_od;
+    std::vector<gidx_t> cols_d, cols_od;
+    std::vector<lidx_t> cols_loc_d, cols_loc_od;
+    std::vector<scalar_t> coeffs_d, coeffs_od;
 
-    AMP::LinearAlgebra::transformDofToCSR<Policy>( matrix, firstRow, endRow, nnz, cols, coeffs );
+    AMP::LinearAlgebra::transformDofToCSR<Policy>( matrix,
+                                                   firstRow,
+                                                   endRow,
+                                                   nnz_d,
+                                                   rowstart_d,
+                                                   cols_d,
+                                                   cols_loc_d,
+                                                   coeffs_d,
+                                                   nnz_od,
+                                                   rowstart_od,
+                                                   cols_od,
+                                                   cols_loc_od,
+                                                   coeffs_od,
+                                                   nnz_pad );
+
+    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_d{
+        nnz_d.data(), rowstart_d.data(), cols_d.data(), cols_loc_d.data(), coeffs_d.data()
+    };
+
+    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_od{
+        nnz_od.data(), rowstart_od.data(), cols_od.data(), cols_loc_od.data(), coeffs_od.data()
+    };
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
-        firstRow, endRow, nnz.data(), cols.data(), coeffs.data(), comm );
+        firstRow, endRow, pars_d, pars_od, nnz_pad, comm );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
     AMP_ASSERT( csrMatrix );
@@ -92,20 +116,23 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
         ut->failure( "Number of local and global rows don't match for default and CSR matrices" );
     }
 
-    auto x  = matrix->getRightVector();
+    auto x1 = matrix->getRightVector();
+    auto x2 = matrix->getRightVector();
     auto y1 = matrix->getRightVector();
     auto y2 = matrix->getRightVector();
 
-    x->setToScalar( 1.0 );
+    x1->setToScalar( 1.0 );
+    x2->setToScalar( 1.0 );
     // this shouldn't be necessary, but evidently is!
-    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    x1->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    x2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     y1->zero();
     y2->zero();
 
-    matrix->mult( x, y1 );
+    matrix->mult( x1, y1 );
 
-    auto y1Norm = static_cast<scalar_t>( y1->L1Norm() );
+    const auto y1Norm = static_cast<scalar_t>( y1->L1Norm() );
 
     if ( y1Norm == static_cast<scalar_t>( matrix->numGlobalRows() ) ) {
         ut->passes( "Passes 1 norm test with pseudo Laplacian with default matvec" );
@@ -115,10 +142,10 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
         ut->failure( "Fails 1 norm test with pseudo Laplacian with default matvec" );
     }
 
-    csrMatrix->mult( x, y2 );
+    csrMatrix->mult( x2, y2 );
     y2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    auto y2Norm = static_cast<scalar_t>( y2->L1Norm() );
+    const auto y2Norm = static_cast<scalar_t>( y2->L1Norm() );
 
     if ( y2Norm == static_cast<scalar_t>( csrMatrix->numGlobalRows() ) ) {
         ut->passes( "Passes 1 norm test with pseudo Laplacian with CSR matvec" );
@@ -146,12 +173,67 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     csrMatrix2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     y1->zero();
     y2->zero();
-    matrix->mult( x, y1 );
-    csrMatrix2->mult( x, y2 );
+    matrix->mult( x1, y1 );
+    csrMatrix2->mult( x2, y2 );
     y1->subtract( *y1, *y2 );
 
     maxNorm = static_cast<scalar_t>( y1->maxNorm() );
     l2Norm  = static_cast<scalar_t>( y1->L2Norm() );
+
+    if ( maxNorm < 1.0e-14 && l2Norm < 1.0e-14 ) {
+        ut->passes( "Matvec with CSR matches default matvec" );
+    } else {
+        AMP::pout << "maxNorm " << maxNorm << ", l2 norm " << l2Norm << std::endl;
+        ut->failure( "Matvec with CSR matches fails to default matvec" );
+    }
+
+    // Now do same four tests using multTranspose noting symmetry
+    y1->setToScalar( 1.0 );
+    y2->setToScalar( 1.0 );
+    y1->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    y2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    x1->zero();
+    x2->zero();
+
+    matrix->multTranspose( y1, x1 );
+    auto x1Norm = static_cast<scalar_t>( x1->L1Norm() );
+    if ( x1Norm == static_cast<scalar_t>( matrix->numGlobalRows() ) ) {
+        ut->passes( "Passes 1 norm test with pseudo Laplacian with default transpose matvec" );
+    } else {
+        AMP::pout << "1 Norm " << y1Norm << ", number of rows " << matrix->numGlobalRows()
+                  << std::endl;
+        ut->failure( "Fails 1 norm test with pseudo Laplacian with default transpose matvec" );
+    }
+
+    csrMatrix->multTranspose( y2, x2 );
+    auto x2Norm = static_cast<scalar_t>( x2->L1Norm() );
+    if ( x2Norm == static_cast<scalar_t>( csrMatrix->numGlobalRows() ) ) {
+        ut->passes( "Passes 1 norm test with pseudo Laplacian with CSR transpose matvec" );
+    } else {
+        AMP::pout << "CSR matvec: 1 Norm " << y2Norm << ", number of rows "
+                  << csrMatrix->numGlobalRows() << std::endl;
+        ut->failure( "Fails 1 norm test with pseudo Laplacian with CSR transpose matvec" );
+    }
+
+    x1->subtract( *x1, *x2 );
+    maxNorm = static_cast<scalar_t>( x1->maxNorm() );
+    l2Norm  = static_cast<scalar_t>( x1->L2Norm() );
+    if ( maxNorm < 1.0e-14 && l2Norm < 1.0e-14 ) {
+        ut->passes( "Transpose Matvec with converted CSR matches default" );
+    } else {
+        AMP::pout << "maxNorm " << maxNorm << ", l2 norm " << l2Norm << std::endl;
+        ut->failure( "Transpose Matvec with converted CSR does not match default" );
+    }
+
+    // reset for csrMatrix2
+    x1->zero();
+    x2->zero();
+    matrix->multTranspose( y1, x1 );
+    csrMatrix2->multTranspose( y2, x2 );
+    x1->subtract( *x1, *x2 );
+
+    maxNorm = static_cast<scalar_t>( x1->maxNorm() );
+    l2Norm  = static_cast<scalar_t>( x1->L2Norm() );
 
     if ( maxNorm < 1.0e-14 && l2Norm < 1.0e-14 ) {
         ut->passes( "Matvec with CSR matches default matvec" );

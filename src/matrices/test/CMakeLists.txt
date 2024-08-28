@@ -29,6 +29,9 @@ ENDIF()
 ADD_AMP_TEST_1_2_4( test_Matrix )
 ADD_AMP_TEST_1_2_4( test_RectangularMatricesMultiplication )
 
+ADD_AMP_TEST_124_MATRIX( testMatVecPerf )
+COPY_TEST_FILE( input_testMatVecPerf-1 )
+
 IF( USE_LIBMESH AND AMP_DATA )
   ADD_AMP_TEST_124_MATRIX( testMatCreate )
   IF ( USE_TRILINOS OR USE_PETSC ) 
