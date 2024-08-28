@@ -303,12 +303,12 @@ private:
         bool d_is_diag  = true;
         bool d_is_empty = false;
 
-        std::shared_ptr<lidx_t[]> d_nnz_per_row = nullptr;
-        std::shared_ptr<lidx_t[]> d_row_starts  = nullptr;
-        std::shared_ptr<gidx_t[]> d_cols        = nullptr;
-        std::shared_ptr<gidx_t[]> d_cols_unq    = nullptr;
-        std::shared_ptr<lidx_t[]> d_cols_loc    = nullptr;
-        std::shared_ptr<scalar_t[]> d_coeffs    = nullptr;
+        std::shared_ptr<lidx_t[]> d_nnz_per_row;
+        std::shared_ptr<lidx_t[]> d_row_starts;
+        std::shared_ptr<gidx_t[]> d_cols;
+        std::shared_ptr<gidx_t[]> d_cols_unq;
+        std::shared_ptr<lidx_t[]> d_cols_loc;
+        std::shared_ptr<scalar_t[]> d_coeffs;
 
         lidx_t d_num_rows  = 0;
         lidx_t d_nnz       = 0;
@@ -337,8 +337,8 @@ protected:
     scalarAllocator_t scalarAllocator;
 
 
-    std::shared_ptr<CSRSerialMatrixData> d_diag_matrix     = nullptr;
-    std::shared_ptr<CSRSerialMatrixData> d_off_diag_matrix = nullptr;
+    std::shared_ptr<CSRSerialMatrixData> d_diag_matrix;
+    std::shared_ptr<CSRSerialMatrixData> d_off_diag_matrix;
 
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
     std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;
