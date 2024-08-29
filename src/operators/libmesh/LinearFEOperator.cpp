@@ -39,17 +39,9 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
     const bool reuse_matrix = params->d_db->getWithDefault<bool>( "reset_reuses_matrix", true );
 
     if ( !d_matrix || !reuse_matrix ) {
-#warning LinearFEOperator hack to get managed memory vectors
-#ifdef USE_DEVICE
-        auto inVec = AMP::LinearAlgebra::createVector(
-            d_inDofMap, getInputVariable(), true, AMP::Utilities::MemoryType::managed );
-        auto outVec = AMP::LinearAlgebra::createVector(
-            d_outDofMap, getOutputVariable(), true, AMP::Utilities::MemoryType::managed );
-#else
         auto inVec  = AMP::LinearAlgebra::createVector( d_inDofMap, getInputVariable(), true );
         auto outVec = AMP::LinearAlgebra::createVector( d_outDofMap, getOutputVariable(), true );
-#endif
-        d_matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec );
+        d_matrix    = AMP::LinearAlgebra::createMatrix( inVec, outVec );
         d_matrix->zero();
         d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     }

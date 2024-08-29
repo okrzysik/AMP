@@ -109,15 +109,6 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
 
-    // set memory type to match allocator
-#ifdef USE_DEVICE
-    if ( std::is_same<Allocator, AMP::ManagedAllocator<int>>::value ) {
-        params->d_memory_location = AMP::Utilities::MemoryType::managed;
-    } else if ( std::is_same<Allocator, AMP::DeviceAllocator<int>>::value ) {
-        params->d_memory_location = AMP::Utilities::MemoryType::device;
-    }
-#endif
-
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( data );
