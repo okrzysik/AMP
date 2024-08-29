@@ -2,11 +2,19 @@
 #define included_CSRMatrixOperationsKokkos_H_
 
 #include "AMP/matrices/operations/MatrixOperations.h"
+#include "AMP/utils/memory.h"
 #include "Kokkos_Core.hpp"
+
+#include <type_traits>
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, typename Allocator, class ExecSpace = Kokkos::DefaultExecutionSpace>
+template<typename Policy,
+         typename Allocator,
+         class ExecSpace =
+             typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<int>>,
+                                       Kokkos::DefaultHostExecutionSpace,
+                                       Kokkos::DefaultExecutionSpace>::type>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
 public:

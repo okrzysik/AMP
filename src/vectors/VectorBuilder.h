@@ -53,8 +53,7 @@ template<typename TYPE = double,
 AMP::LinearAlgebra::Vector::shared_ptr
 createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
               std::shared_ptr<AMP::LinearAlgebra::Variable> variable,
-              bool split                         = true,
-              AMP::Utilities::MemoryType memType = AMP::Utilities::MemoryType::host );
+              bool split = true );
 
 /**
  * \brief  This function will create a vector from an arbitrary DOFManager

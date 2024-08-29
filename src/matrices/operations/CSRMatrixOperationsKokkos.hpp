@@ -304,10 +304,16 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::mult(
                   inDataBlock,
                   outDataBlock );
 
-        Kokkos::TeamPolicy<ExecSpace, Kokkos::Schedule<Kokkos::Dynamic>> team_policy(
-            d_exec_space, num_teams, Kokkos::AUTO, vector_length );
-
-        Kokkos::parallel_for( "CSRMatrixOperationsKokkos::mult (local)", team_policy, ftor );
+        if constexpr ( std::is_same_v<ExecSpace, Kokkos::DefaultExecutionSpace> ) {
+            Kokkos::TeamPolicy<ExecSpace, Kokkos::Schedule<Kokkos::Dynamic>> team_policy(
+                d_exec_space, num_teams, Kokkos::AUTO, vector_length );
+            Kokkos::parallel_for(
+                "CSRMatrixOperationsKokkos::mult (local - team)", team_policy, ftor );
+        } else {
+            Kokkos::parallel_for( "CSRMatrixOperationsKokkos::mult (local - flat)",
+                                  Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, nRows ),
+                                  ftor );
+        }
     }
 
     if ( csrData->hasOffDiag() ) {
@@ -409,11 +415,16 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::multTranspose(
                   inDataBlock,
                   outDataBlock );
 
-        Kokkos::TeamPolicy<ExecSpace, Kokkos::Schedule<Kokkos::Dynamic>> team_policy(
-            d_exec_space, num_teams, Kokkos::AUTO, vector_length );
-
-        Kokkos::parallel_for(
-            "CSRMatrixOperationsKokkos::multTranspose (local)", team_policy, ftor );
+        if constexpr ( std::is_same_v<ExecSpace, Kokkos::DefaultExecutionSpace> ) {
+            Kokkos::TeamPolicy<ExecSpace, Kokkos::Schedule<Kokkos::Dynamic>> team_policy(
+                d_exec_space, num_teams, Kokkos::AUTO, vector_length );
+            Kokkos::parallel_for(
+                "CSRMatrixOperationsKokkos::multTranspose (local - team)", team_policy, ftor );
+        } else {
+            Kokkos::parallel_for( "CSRMatrixOperationsKokkos::multTranspose (local - flat)",
+                                  Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, nRows ),
+                                  ftor );
+        }
     }
 
     if ( csrData->hasOffDiag() ) {
