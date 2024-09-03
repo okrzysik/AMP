@@ -430,7 +430,7 @@ void CSRMatrixData<Policy, Allocator>::extractDiagonal( std::shared_ptr<Vector> 
 
     auto *rawVecData = buf->getRawDataBlock<scalar_t>();
     auto memType     = AMP::Utilities::getMemoryType( rawVecData );
-    if ( memType != d_memory_location ) {
+    if ( memType < AMP::Utilities::MemoryType::device ) {
 
         const size_t N = d_last_row - d_first_row;
         for ( size_t i = 0; i < N; ++i ) {
