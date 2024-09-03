@@ -21,6 +21,12 @@ IF( USE_HIP )
     ADD_PACKAGE_SUBDIRECTORY( data/hip )
 ENDIF()
 
+# Ensure Kokkos code is handled by the correct compiler
+SET_NVCC( CSRMatrix.cpp )
+IF( USE_KOKKOS AND USE_HIP )
+    set_source_files_properties( CSRMatrix.cpp PROPERTIES LANGUAGE HIP )
+ENDIF()
+    
 # Set the default matrix type
 SET( MATRIX_TYPES "ManagedEpetraMatrix" "NativePetscMatrix" "CSRMatrix" "DenseSerialMatrix" "NULL" )
 IF ( NOT DEFINED DEFAULT_MATRIX )
