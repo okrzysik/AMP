@@ -1,6 +1,6 @@
-#include "AMP/matrices/operations/CSRMatrixOperationsKokkos.h"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
+#include "AMP/matrices/operations/CSRMatrixOperationsKokkos.h"
 #include "AMP/utils/Utilities.h"
 
 #include <algorithm>
