@@ -36,6 +36,7 @@
 
 // Number of products to evaluate to average out timings
 #define NUM_PRODUCTS 1000
+#define NUM_PRODUCTS_TRANS 100
 
 size_t matVecTestWithDOFs( AMP::UnitTest *ut,
                            std::string type,
@@ -86,11 +87,9 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
     x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     y->zero();
 
-    AMP::pout << "Starting mult loop" << std::endl;
     for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
         matrix->mult( x, y );
     }
-    AMP::pout << "Stopping mult loop" << std::endl;
 
     auto yNorm = static_cast<scalar_t>( y->L1Norm() );
 
@@ -107,9 +106,9 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
         y->setToScalar( 1.0 );
         y->makeConsistent();
         x->zero();
-        // for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
-        matrix->multTranspose( y, x );
-        // }
+        for ( int nProd = 0; nProd < NUM_PRODUCTS_TRANS; ++nProd ) {
+            matrix->multTranspose( y, x );
+        }
 
         auto xNorm = static_cast<scalar_t>( x->L1Norm() );
 
