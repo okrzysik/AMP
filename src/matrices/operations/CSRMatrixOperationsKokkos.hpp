@@ -13,7 +13,7 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, typename Allocator>
+template<typename Policy, typename Allocator, class ViewSpace>
 auto wrapCSRDiagDataKokkos( CSRMatrixData<Policy, Allocator> *csrData )
 {
     using lidx_t   = typename Policy::lidx_t;
@@ -27,15 +27,14 @@ auto wrapCSRDiagDataKokkos( CSRMatrixData<Policy, Allocator> *csrData )
 
     // coeffs not marked const so that setScalar and similar will work
     return std::make_tuple(
-        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( nnz, nrows ),
-        Kokkos::View<const gidx_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( cols, nnz_tot ),
-        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( cols_loc, nnz_tot ),
-        Kokkos::View<scalar_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( coeffs, nnz_tot ),
-        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( rowstarts,
-                                                                                nrows ) );
+        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, ViewSpace>( nnz, nrows ),
+        Kokkos::View<const gidx_t *, Kokkos::LayoutRight, ViewSpace>( cols, nnz_tot ),
+        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, ViewSpace>( cols_loc, nnz_tot ),
+        Kokkos::View<scalar_t *, Kokkos::LayoutRight, ViewSpace>( coeffs, nnz_tot ),
+        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, ViewSpace>( rowstarts, nrows ) );
 }
 
-template<typename Policy, typename Allocator>
+template<typename Policy, typename Allocator, class ViewSpace>
 auto wrapCSROffDiagDataKokkos( CSRMatrixData<Policy, Allocator> *csrData )
 {
     using lidx_t   = typename Policy::lidx_t;
@@ -48,12 +47,11 @@ auto wrapCSROffDiagDataKokkos( CSRMatrixData<Policy, Allocator> *csrData )
     auto *rowstarts                    = csrData->getOffDiagRowStarts();
 
     return std::make_tuple(
-        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( nnz, nrows ),
-        Kokkos::View<const gidx_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( cols, nnz_tot ),
-        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( cols_loc, nnz_tot ),
-        Kokkos::View<scalar_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( coeffs, nnz_tot ),
-        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, Kokkos::SharedSpace>( rowstarts,
-                                                                                nrows ) );
+        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, ViewSpace>( nnz, nrows ),
+        Kokkos::View<const gidx_t *, Kokkos::LayoutRight, ViewSpace>( cols, nnz_tot ),
+        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, ViewSpace>( cols_loc, nnz_tot ),
+        Kokkos::View<scalar_t *, Kokkos::LayoutRight, ViewSpace>( coeffs, nnz_tot ),
+        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, ViewSpace>( rowstarts, nrows ) );
 }
 
 namespace CSRMatOpsKokkosFunctor {
@@ -227,8 +225,8 @@ struct MultTranspose {
 
 } // namespace CSRMatOpsKokkosFunctor
 
-template<typename Policy, typename Allocator, class ExecSpace>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::mult(
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::mult(
     std::shared_ptr<const Vector> in, MatrixData const &A, std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsKokkos::mult" );
@@ -263,21 +261,21 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::mult(
     // Wrap in/out data into Kokkos Views
     Kokkos::View<const scalar_t *,
                  Kokkos::LayoutRight,
-                 Kokkos::SharedSpace,
+                 ViewSpace,
                  Kokkos::MemoryTraits<Kokkos::RandomAccess>>
         inDataBlock( inData->getRawDataBlock<scalar_t>( 0 ), nCols );
-    Kokkos::View<scalar_t *, Kokkos::LayoutRight, Kokkos::SharedSpace> outDataBlock(
+    Kokkos::View<scalar_t *, Kokkos::LayoutRight, ViewSpace> outDataBlock(
         outData->getRawDataBlock<scalar_t>( 0 ), nRows );
     Kokkos::View<const scalar_t *,
                  Kokkos::LayoutRight,
-                 Kokkos::SharedSpace,
+                 ViewSpace,
                  Kokkos::MemoryTraits<Kokkos::RandomAccess>>
         ghostDataBlock( ghosts.data(), nGhosts );
 
     {
         // lambda capture of structured bindings throws warning on c++17
         // unpack the tuple of views manually
-        auto vtpl        = wrapCSRDiagDataKokkos( csrData );
+        auto vtpl        = wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
         auto nnz_d       = std::get<0>( vtpl );
         auto cols_loc_d  = std::get<2>( vtpl );
         auto coeffs_d    = std::get<3>( vtpl );
@@ -319,7 +317,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::mult(
     if ( csrData->hasOffDiag() ) {
         // lambda capture of structured bindings throws warning on c++17
         // unpack the tuple of views manually
-        auto vtpl         = wrapCSROffDiagDataKokkos( csrData );
+        auto vtpl         = wrapCSROffDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
         auto nnz_od       = std::get<0>( vtpl );
         auto cols_loc_od  = std::get<2>( vtpl );
         auto coeffs_od    = std::get<3>( vtpl );
@@ -350,8 +348,8 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::mult(
     d_exec_space.fence(); // get rid of this eventually
 }
 
-template<typename Policy, typename Allocator, class ExecSpace>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::multTranspose(
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::multTranspose(
     std::shared_ptr<const Vector> in, MatrixData const &A, std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsKokkos::multTranspose" );
@@ -375,24 +373,22 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::multTranspose(
     auto outData     = out->getVectorData();
 
     // Wrap in/out data into Kokkos Views
-    Kokkos::View<const scalar_t *, Kokkos::LayoutRight, Kokkos::SharedSpace> inDataBlock(
+    Kokkos::View<const scalar_t *, Kokkos::LayoutRight, ViewSpace> inDataBlock(
         inData->getRawDataBlock<scalar_t>( 0 ), nRows );
 
     {
         // lambda capture of structured bindings throws warning on c++17
         // unpack the tuple of views manually
-        auto vtpl        = wrapCSRDiagDataKokkos( csrData );
+        auto vtpl        = wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
         auto nnz_d       = std::get<0>( vtpl );
         auto cols_loc_d  = std::get<2>( vtpl );
         auto coeffs_d    = std::get<3>( vtpl );
         auto rowstarts_d = std::get<4>( vtpl );
 
         // Make temporary views for output columns and values
-        auto outDataBlock = Kokkos::View<scalar_t *,
-                                         Kokkos::LayoutRight,
-                                         Kokkos::SharedSpace,
-                                         Kokkos::MemoryTraits<Kokkos::Atomic>>(
-            outData->getRawDataBlock<scalar_t>( 0 ), nCols );
+        auto outDataBlock = Kokkos::
+            View<scalar_t *, Kokkos::LayoutRight, ViewSpace, Kokkos::MemoryTraits<Kokkos::Atomic>>(
+                outData->getRawDataBlock<scalar_t>( 0 ), nCols );
 
         const lidx_t team_rows     = 64;
         const lidx_t vector_length = 8;
@@ -430,7 +426,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::multTranspose(
     if ( csrData->hasOffDiag() ) {
         // lambda capture of structured bindings throws warning on c++17
         // unpack the tuple of views manually
-        auto vtpl         = wrapCSROffDiagDataKokkos( csrData );
+        auto vtpl         = wrapCSROffDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
         auto nnz_od       = std::get<0>( vtpl );
         auto cols_loc_od  = std::get<2>( vtpl );
         auto coeffs_od    = std::get<3>( vtpl );
@@ -443,10 +439,9 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::multTranspose(
         const auto num_unq = rcols.size();
 
         // Make temporary view for output values
-        auto vvals = Kokkos::View<scalar_t *,
-                                  Kokkos::LayoutRight,
-                                  Kokkos::SharedSpace,
-                                  Kokkos::MemoryTraits<Kokkos::Atomic>>( "vvals", num_unq );
+        auto vvals = Kokkos::
+            View<scalar_t *, Kokkos::LayoutRight, ViewSpace, Kokkos::MemoryTraits<Kokkos::Atomic>>(
+                "vvals", num_unq );
         Kokkos::deep_copy( d_exec_space, vvals, 0.0 );
 
         CSRMatOpsKokkosFunctor::MultTranspose<Policy,
@@ -473,9 +468,9 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::multTranspose(
     }
 }
 
-template<typename Policy, typename Allocator, class ExecSpace>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::scale( AMP::Scalar alpha_in,
-                                                                     MatrixData &A )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::scale(
+    AMP::Scalar alpha_in, MatrixData &A )
 {
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -487,7 +482,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::scale( AMP::Scalar
 
     // lambda capture of structured bindings throws warning on c++17
     // unpack the tuple manually
-    auto coeffs_d = std::get<3>( wrapCSRDiagDataKokkos( csrData ) );
+    auto coeffs_d = std::get<3>( wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData ) );
 
     const auto tnnz_d = csrData->numberOfNonZerosDiag();
     auto alpha        = static_cast<scalar_t>( alpha_in );
@@ -498,7 +493,8 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::scale( AMP::Scalar
         KOKKOS_LAMBDA( lidx_t n ) { coeffs_d( n ) *= alpha; } );
 
     if ( csrData->hasOffDiag() ) {
-        auto coeffs_od = std::get<3>( wrapCSROffDiagDataKokkos( csrData ) );
+        auto coeffs_od =
+            std::get<3>( wrapCSROffDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData ) );
 
         const auto tnnz_od = csrData->numberOfNonZerosOffDiag();
 
@@ -511,18 +507,17 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::scale( AMP::Scalar
     d_exec_space.fence();
 }
 
-template<typename Policy, typename Allocator, class ExecSpace>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::matMultiply( MatrixData const &,
-                                                                           MatrixData const &,
-                                                                           MatrixData & )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::matMultiply(
+    MatrixData const &, MatrixData const &, MatrixData & )
 {
     AMP_WARNING( "SpGEMM for CSRMatrixOperationsKokkos not implemented" );
 }
 
-template<typename Policy, typename Allocator, class ExecSpace>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::axpy( AMP::Scalar alpha_in,
-                                                                    const MatrixData &X,
-                                                                    MatrixData &Y )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::axpy( AMP::Scalar alpha_in,
+                                                                               const MatrixData &X,
+                                                                               MatrixData &Y )
 {
     using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -542,8 +537,10 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::axpy( AMP::Scalar 
     {
         // lambda capture of structured bindings throws warning on c++17
         // unpack the tuple of views manually
-        auto coeffsX_d = std::get<3>( wrapCSRDiagDataKokkos( csrDataX ) );
-        auto coeffsY_d = std::get<3>( wrapCSRDiagDataKokkos( csrDataY ) );
+        auto coeffsX_d =
+            std::get<3>( wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrDataX ) );
+        auto coeffsY_d =
+            std::get<3>( wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrDataY ) );
 
         const auto tnnz_d = csrDataX->numberOfNonZerosDiag();
         Kokkos::parallel_for(
@@ -554,8 +551,10 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::axpy( AMP::Scalar 
 
     if ( csrDataX->hasOffDiag() ) {
         const auto tnnz_od = csrDataX->numberOfNonZerosDiag();
-        auto coeffsX_od    = std::get<3>( wrapCSROffDiagDataKokkos( csrDataX ) );
-        auto coeffsY_od    = std::get<3>( wrapCSROffDiagDataKokkos( csrDataY ) );
+        auto coeffsX_od =
+            std::get<3>( wrapCSROffDiagDataKokkos<Policy, Allocator, ViewSpace>( csrDataX ) );
+        auto coeffsY_od =
+            std::get<3>( wrapCSROffDiagDataKokkos<Policy, Allocator, ViewSpace>( csrDataY ) );
 
         Kokkos::parallel_for(
             "CSRMatrixOperationsKokkos::axpy (od)",
@@ -566,9 +565,9 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::axpy( AMP::Scalar 
     d_exec_space.fence();
 }
 
-template<typename Policy, typename Allocator, class ExecSpace>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setScalar( AMP::Scalar alpha_in,
-                                                                         MatrixData &A )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::setScalar(
+    AMP::Scalar alpha_in, MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
 
@@ -581,27 +580,29 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setScalar( AMP::Sc
     {
         // lambda capture of structured bindings throws warning on c++17
         // unpack the tuple manually
-        auto coeffs_d = std::get<3>( wrapCSRDiagDataKokkos( csrData ) );
+        auto coeffs_d =
+            std::get<3>( wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData ) );
         Kokkos::deep_copy( d_exec_space, coeffs_d, alpha );
     }
 
     if ( csrData->hasOffDiag() ) {
-        auto coeffs_od = std::get<3>( wrapCSROffDiagDataKokkos( csrData ) );
+        auto coeffs_od =
+            std::get<3>( wrapCSROffDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData ) );
         Kokkos::deep_copy( d_exec_space, coeffs_od, alpha );
     }
 
     d_exec_space.fence();
 }
 
-template<typename Policy, typename Allocator, class ExecSpace>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::zero( MatrixData &A )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::zero( MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
     setScalar( static_cast<scalar_t>( 0.0 ), A );
 }
 
-template<typename Policy, typename Allocator, class ExecSpace>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setDiagonal(
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::setDiagonal(
     std::shared_ptr<const Vector> in, MatrixData &A )
 {
     using lidx_t   = typename Policy::lidx_t;
@@ -617,7 +618,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setDiagonal(
 
     // lambda capture of structured bindings throws warning on c++17
     // unpack the tuple of views manually
-    auto vtpl        = wrapCSRDiagDataKokkos( csrData );
+    auto vtpl        = wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
     auto nnz_d       = std::get<0>( vtpl );
     auto cols_d      = std::get<1>( vtpl );
     auto coeffs_d    = std::get<3>( vtpl );
@@ -644,8 +645,9 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setDiagonal(
     d_exec_space.fence();
 }
 
-template<typename Policy, typename Allocator, class ExecSpace>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setIdentity( MatrixData &A )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::setIdentity(
+    MatrixData &A )
 {
     using lidx_t   = typename Policy::lidx_t;
     using gidx_t   = typename Policy::gidx_t;
@@ -659,7 +661,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setIdentity( Matri
 
     // lambda capture of structured bindings throws warning on c++17
     // unpack the tuple of views manually
-    auto vtpl        = wrapCSRDiagDataKokkos( csrData );
+    auto vtpl        = wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
     auto nnz_d       = std::get<0>( vtpl );
     auto cols_d      = std::get<1>( vtpl );
     auto coeffs_d    = std::get<3>( vtpl );
@@ -683,11 +685,122 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::setIdentity( Matri
     d_exec_space.fence();
 }
 
-template<typename Policy, typename Allocator, class ExecSpace>
-AMP::Scalar
-CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace>::L1Norm( MatrixData const & ) const
+
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::extractDiagonal(
+    MatrixData const &A, std::shared_ptr<Vector> buf )
 {
-    AMP_ERROR( "Not implemented" );
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData     = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
+    auto beginRow    = csrData->beginRow();
+
+    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsKokkos is not implemented for device memory" );
+
+    // lambda capture of structured bindings throws warning on c++17
+    // unpack the tuple of views manually
+    auto vtpl        = wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
+    auto nnz_d       = std::get<0>( vtpl );
+    auto cols_d      = std::get<1>( vtpl );
+    auto coeffs_d    = std::get<3>( vtpl );
+    auto rowstarts_d = std::get<4>( vtpl );
+
+    Kokkos::View<scalar_t *, Kokkos::LayoutRight> vvals( buf->getRawDataBlock<scalar_t>(), nRows );
+
+    Kokkos::parallel_for(
+        "CSRMatrixOperationsKokkos::extractDiagonal",
+        Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, nRows ),
+        KOKKOS_LAMBDA( lidx_t row ) {
+            const auto nC = nnz_d( row );
+            const auto rs = rowstarts_d( row );
+
+            for ( lidx_t c = 0; c < nC; ++c ) {
+                if ( cols_d( rs + c ) == static_cast<gidx_t>( row + beginRow ) ) {
+                    vvals( row ) = coeffs_d( rs + c );
+                    break;
+                }
+            }
+        } );
+
+    d_exec_space.fence();
+}
+
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+AMP::Scalar CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::LinfNorm(
+    MatrixData const &A ) const
+{
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData     = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
+
+    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsKokkos is not implemented for device memory" );
+
+    scalar_t rmax = 0.0;
+
+    // Easier to write separate kernels for cases with(out) offd block
+    if ( !csrData->hasOffDiag() ) {
+        // lambda capture of structured bindings throws warning on c++17
+        // unpack the tuple of views manually
+        auto vtpl_d      = wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
+        auto nnz_d       = std::get<0>( vtpl_d );
+        auto coeffs_d    = std::get<3>( vtpl_d );
+        auto rowstarts_d = std::get<4>( vtpl_d );
+
+        Kokkos::parallel_reduce(
+            "CSRMatrixOperationsKokkos::LinfNorm",
+            Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, nRows ),
+            KOKKOS_LAMBDA( lidx_t row, scalar_t & lmax ) {
+                scalar_t sum = 0;
+                auto nC      = nnz_d( row );
+                auto rs      = rowstarts_d( row );
+                for ( lidx_t c = 0; c < nC; ++c ) {
+                    sum += Kokkos::fabs( coeffs_d( rs + c ) );
+                }
+                lmax = lmax > sum ? lmax : sum;
+            },
+            Kokkos::Min<scalar_t>( rmax ) );
+    } else {
+        auto vtpl_d      = wrapCSRDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
+        auto nnz_d       = std::get<0>( vtpl_d );
+        auto coeffs_d    = std::get<3>( vtpl_d );
+        auto rowstarts_d = std::get<4>( vtpl_d );
+
+        auto vtpl_od      = wrapCSROffDiagDataKokkos<Policy, Allocator, ViewSpace>( csrData );
+        auto nnz_od       = std::get<0>( vtpl_od );
+        auto coeffs_od    = std::get<3>( vtpl_od );
+        auto rowstarts_od = std::get<4>( vtpl_od );
+
+        Kokkos::parallel_reduce(
+            "CSRMatrixOperationsKokkos::LinfNorm",
+            Kokkos::RangePolicy<ExecSpace>( d_exec_space, 0, nRows ),
+            KOKKOS_LAMBDA( lidx_t row, scalar_t & lmax ) {
+                scalar_t sum = 0;
+                auto nC      = nnz_d( row );
+                auto rs      = rowstarts_d( row );
+                for ( lidx_t c = 0; c < nC; ++c ) {
+                    sum += Kokkos::fabs( coeffs_d( rs + c ) );
+                }
+                nC = nnz_od( row );
+                rs = rowstarts_od( row );
+                for ( lidx_t c = 0; c < nC; ++c ) {
+                    sum += Kokkos::fabs( coeffs_od( rs + c ) );
+                }
+                lmax = lmax > sum ? lmax : sum;
+            },
+            Kokkos::Min<scalar_t>( rmax ) );
+    }
+
+    // Reduce row sums to get global Linf norm
+    AMP_MPI comm = csrData->getComm();
+    return comm.maxReduce<scalar_t>( rmax );
 }
 
 } // namespace AMP::LinearAlgebra

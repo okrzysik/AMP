@@ -14,7 +14,11 @@ template<typename Policy,
          class ExecSpace =
              typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<int>>,
                                        Kokkos::DefaultHostExecutionSpace,
-                                       Kokkos::DefaultExecutionSpace>::type>
+                                       Kokkos::DefaultExecutionSpace>::type,
+         class ViewSpace =
+             typename std::conditional<std::is_same_v<Allocator, AMP::ManagedAllocator<int>>,
+                                       Kokkos::SharedSpace,
+                                       typename ExecSpace::memory_space>::type>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
 public:
@@ -75,10 +79,16 @@ public:
      */
     void setIdentity( MatrixData &A ) override;
 
+    /** \brief Extract the diagonal values into a vector
+     * \param[in] in The values to set the diagonal to
+     * \param[in] A The matrix to set
+     */
+    void extractDiagonal( MatrixData const &A, std::shared_ptr<Vector> buf ) override;
+
     /** \brief Compute the maximum column sum
      * \return  The L1 norm of the matrix
      */
-    AMP::Scalar L1Norm( const MatrixData &X ) const override;
+    AMP::Scalar LinfNorm( const MatrixData &X ) const override;
 
 protected:
     ExecSpace d_exec_space;
