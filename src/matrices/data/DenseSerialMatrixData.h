@@ -44,8 +44,6 @@ public:
 
     std::shared_ptr<MatrixData> transpose() const override;
 
-    void extractDiagonal( std::shared_ptr<Vector> buf ) const override;
-
     /** \brief  Add values to those in the matrix
      * \param[in] num_rows The number of rows represented in values
      * \param[in] num_cols The number of cols represented in values

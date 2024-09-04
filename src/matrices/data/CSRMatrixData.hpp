@@ -423,34 +423,6 @@ std::shared_ptr<MatrixData> CSRMatrixData<Policy, Allocator>::transpose() const
 }
 
 template<typename Policy, class Allocator>
-void CSRMatrixData<Policy, Allocator>::extractDiagonal( std::shared_ptr<Vector> buf ) const
-{
-    AMP_ASSERT( buf && buf->numberOfDataBlocks() == 1 ); // temporary constraint
-    AMP_ASSERT( buf->isType<scalar_t>( 0 ) );
-
-    auto *rawVecData = buf->getRawDataBlock<scalar_t>();
-    auto memType     = AMP::Utilities::getMemoryType( rawVecData );
-    if ( memType < AMP::Utilities::MemoryType::device ) {
-
-        const size_t N = d_last_row - d_first_row;
-        for ( size_t i = 0; i < N; ++i ) {
-            const auto start = d_diag_matrix->d_row_starts[i];
-            const auto end   = d_diag_matrix->d_row_starts[i + 1];
-            // colums are unordered at present
-            for ( lidx_t j = start; j < end; ++j ) {
-                if ( d_diag_matrix->d_cols[j] == static_cast<gidx_t>( d_first_col + i ) ) {
-                    rawVecData[i] = d_diag_matrix->d_coeffs[j];
-                    break;
-                }
-            }
-        }
-    } else {
-        AMP_ERROR(
-            "CSRSerialMatrixData<Policy>::extractDiagonal not implemented for vec and matrix in "
-            "different memory spaces" );
-    }
-}
-template<typename Policy, class Allocator>
 void CSRMatrixData<Policy, Allocator>::getRowByGlobalID( size_t row,
                                                          std::vector<size_t> &cols,
                                                          std::vector<double> &vals ) const

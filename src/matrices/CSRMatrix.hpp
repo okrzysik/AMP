@@ -84,7 +84,7 @@ Vector::shared_ptr CSRMatrix<Policy, Allocator>::extractDiagonal( Vector::shared
     if ( !buf )
         out = this->getRightVector();
 
-    d_matrixData->extractDiagonal( out );
+    d_matrixOps->extractDiagonal( *getMatrixData(), out );
 
     return out;
 }

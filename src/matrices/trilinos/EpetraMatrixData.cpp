@@ -125,13 +125,6 @@ std::shared_ptr<MatrixData> EpetraMatrixData::transpose() const
         new EpetraMatrixData( dynamic_cast<Epetra_CrsMatrix *>( &transposer( matrix ) ), true ) );
 }
 
-void EpetraMatrixData::extractDiagonal( std::shared_ptr<Vector> vec ) const
-{
-    auto view = EpetraVector::view( vec );
-    VerifyEpetraReturn( d_epetraMatrix->ExtractDiagonalCopy( view->getEpetra_Vector() ),
-                        "extractDiagonal" );
-}
-
 void EpetraMatrixData::VerifyEpetraReturn( int err, const char *func ) const
 {
     std::stringstream error;

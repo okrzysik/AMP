@@ -123,8 +123,9 @@ void Matrix::setDiagonal( Vector::const_shared_ptr in )
 {
     d_matrixOps->setDiagonal( in, *getMatrixData() );
 }
+
 void Matrix::setIdentity() { d_matrixOps->setIdentity( *getMatrixData() ); }
 
-AMP::Scalar Matrix::L1Norm() const { return d_matrixOps->L1Norm( *getMatrixData() ); }
+AMP::Scalar Matrix::LinfNorm() const { return d_matrixOps->LinfNorm( *getMatrixData() ); }
 
 } // namespace AMP::LinearAlgebra
