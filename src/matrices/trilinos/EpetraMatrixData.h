@@ -75,8 +75,6 @@ public:
 
     std::shared_ptr<MatrixData> transpose() const override;
 
-    void extractDiagonal( std::shared_ptr<Vector> diag ) const override;
-
     /** \brief Change the EpetraMaps for the matrix
      * \param[in] range  A vector that represents the range: y in y = A*x (row map)
      * \param[in] domain  A vector that represents the domain: x in y = A*x (column map)

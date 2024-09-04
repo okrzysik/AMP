@@ -297,12 +297,6 @@ std::shared_ptr<MatrixData> NativePetscMatrixData::duplicateMat( Mat m )
     return std::make_shared<NativePetscMatrixData>( newMat, true );
 }
 
-void NativePetscMatrixData::extractDiagonal( std::shared_ptr<Vector> v ) const
-{
-    auto data = std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() );
-    MatGetDiagonal( d_Mat, data->getVec() );
-}
-
 /********************************************************
  * Copy                                                  *
  ********************************************************/

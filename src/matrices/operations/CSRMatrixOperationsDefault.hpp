@@ -344,9 +344,8 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::setIdentity( MatrixData &A )
     AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
-
-    auto beginRow = csrData->beginRow();
+    const auto nRows    = static_cast<lidx_t>( csrData->numLocalRows() );
+    const auto beginRow = csrData->beginRow();
 
     auto vals_p = const_cast<scalar_t *>( coeffs_d );
 
@@ -364,38 +363,86 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::setIdentity( MatrixData &A )
 }
 
 template<typename Policy, typename Allocator>
-AMP::Scalar CSRMatrixOperationsDefault<Policy, Allocator>::L1Norm( MatrixData const &A ) const
+void CSRMatrixOperationsDefault<Policy, Allocator>::extractDiagonal( MatrixData const &A,
+                                                                     std::shared_ptr<Vector> buf )
 {
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
+
+    AMP_ASSERT( buf && buf->numberOfDataBlocks() == 1 );
+    AMP_ASSERT( buf->isType<scalar_t>( 0 ) );
+
+    auto *rawVecData = buf->getRawDataBlock<scalar_t>();
+    auto memTypeV    = AMP::Utilities::getMemoryType( rawVecData );
+    auto memTypeM    = AMP::Utilities::getMemoryType( cols_loc_d );
+    if ( memTypeV < AMP::Utilities::MemoryType::device &&
+         memTypeM < AMP::Utilities::MemoryType::device ) {
+
+        const auto nRows    = static_cast<lidx_t>( csrData->numLocalRows() );
+        const auto beginRow = csrData->beginRow();
+
+        lidx_t offset = 0;
+        for ( lidx_t row = 0; row < nRows; ++row ) {
+            const auto ncols = nnz_d[row];
+            for ( lidx_t icol = 0; icol < ncols; ++icol ) {
+                if ( cols_d[offset + icol] == static_cast<gidx_t>( beginRow + row ) ) {
+                    rawVecData[row] = coeffs_d[offset + icol];
+                    break;
+                }
+            }
+            offset += nnz_d[row];
+        }
+    } else {
+        AMP_ERROR(
+            "CSRMatrixOperationsDefault::extractDiagonal not implemented for device memory" );
+    }
+}
+
+template<typename Policy, typename Allocator>
+AMP::Scalar CSRMatrixOperationsDefault<Policy, Allocator>::LinfNorm( MatrixData const &A ) const
+{
+    using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
-    auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
+    auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
+    auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
+    auto rs_d                                      = csrData->getDiagRowStarts();
+    auto rs_od                                     = csrData->getOffDiagRowStarts();
+    bool hasOffd                                   = csrData->hasOffDiag();
 
     auto memType = AMP::Utilities::getMemoryType( cols_loc_d );
     AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    const auto ncols = csrData->numGlobalColumns();
-    std::vector<scalar_t> col_norms( ncols, 0.0 );
+    const auto nRows  = static_cast<lidx_t>( csrData->numLocalRows() );
+    scalar_t max_norm = 0.0;
 
-    const size_t tnnz_d = static_cast<size_t>( csrData->numberOfNonZerosDiag() );
-    for ( size_t i = 0; i < tnnz_d; ++i ) {
-        col_norms[cols_d[i]] += std::abs( coeffs_d[i] );
-    }
-
-    if ( csrData->hasOffDiag() ) {
-        const size_t tnnz_od = static_cast<size_t>( csrData->numberOfNonZerosOffDiag() );
-        auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
-        for ( size_t i = 0; i < tnnz_od; ++i ) {
-            col_norms[cols_od[i]] += std::abs( coeffs_od[i] );
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        scalar_t norm = 0.0;
+        auto nCols    = nnz_d[row];
+        auto start    = rs_d[row];
+        for ( lidx_t j = 0; j < nCols; ++j ) {
+            norm += std::abs( coeffs_d[start + j] );
         }
+        if ( hasOffd ) {
+            nCols = nnz_od[row];
+            start = rs_od[row];
+            for ( lidx_t j = 0; j < nCols; ++j ) {
+                norm += fabs( coeffs_od[start + j] );
+            }
+        }
+        max_norm = std::max( max_norm, norm );
     }
-    // Reduce partial column sums across all ranks to get full column norms
-    AMP_MPI comm = csrData->getComm();
-    comm.sumReduce<scalar_t>( col_norms.data(), ncols );
 
-    return *std::max_element( col_norms.begin(), col_norms.end() );
+    // Reduce row sums to get global Linf norm
+    AMP_MPI comm = csrData->getComm();
+    return comm.maxReduce<scalar_t>( max_norm );
 }
 
 } // namespace AMP::LinearAlgebra

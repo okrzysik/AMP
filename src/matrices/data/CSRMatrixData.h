@@ -50,9 +50,6 @@ public:
     //! Transpose
     std::shared_ptr<MatrixData> transpose() const override;
 
-    //! Extract the diagonal vector
-    void extractDiagonal( std::shared_ptr<Vector> buf ) const override;
-
     //! Return the type of the matrix
     std::string type() const override { return "CSRMatrixData"; }
 
