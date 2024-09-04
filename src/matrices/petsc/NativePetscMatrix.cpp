@@ -60,7 +60,7 @@ Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) co
                    "NativePetscVector" );
     }
 
-    d_matrixData->extractDiagonal( retVal );
+    d_matrixOps->extractDiagonal( *d_matrixData, retVal );
     return retVal;
 }
 
