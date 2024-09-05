@@ -5,11 +5,8 @@
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
+#include "AMP/matrices/operations/kokkos/CSRMatrixOperationsKokkos.h"
 #include "AMP/vectors/VectorBuilder.h"
-
-#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
-    #include "AMP/matrices/operations/CSRMatrixOperationsKokkos.h"
-#endif
 
 #include <cstdio>
 #include <cstring>

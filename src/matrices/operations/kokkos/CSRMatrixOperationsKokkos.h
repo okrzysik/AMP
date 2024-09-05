@@ -3,9 +3,13 @@
 
 #include "AMP/matrices/operations/MatrixOperations.h"
 #include "AMP/utils/memory.h"
-#include "Kokkos_Core.hpp"
 
 #include <type_traits>
+
+
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+
+    #include "Kokkos_Core.hpp"
 
 namespace AMP::LinearAlgebra {
 
@@ -95,4 +99,5 @@ protected:
 
 } // namespace AMP::LinearAlgebra
 
+#endif
 #endif
