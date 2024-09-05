@@ -17,7 +17,7 @@ SET( PROJ AMP )                 # Set the project name for CMake
 SET( AMP_LIB amp )              # Set the final library name
 SET( AMP_INC AMP )              # Set an optional subfolder for includes (e.g. include/name/...)
 SET( AMP_MAJOR_VERSION 3 )      # Set the major version
-SET( AMP_MINOR_VERSION 0 )      # Set the minor version
+SET( AMP_MINOR_VERSION 1 )      # Set the minor version
 IF ( NOT ${PROJ}_INSTALL_DIR )
     SET( ${PROJ}_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}" )
 ENDIF()
