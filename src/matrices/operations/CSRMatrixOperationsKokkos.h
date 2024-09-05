@@ -9,16 +9,15 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace =
-             typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<int>>,
-                                       Kokkos::DefaultHostExecutionSpace,
-                                       Kokkos::DefaultExecutionSpace>::type,
-         class ViewSpace =
-             typename std::conditional<std::is_same_v<Allocator, AMP::ManagedAllocator<int>>,
-                                       Kokkos::SharedSpace,
-                                       typename ExecSpace::memory_space>::type>
+template<
+    typename Policy,
+    typename Allocator,
+    class ExecSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<int>>,
+                                                Kokkos::DefaultHostExecutionSpace,
+                                                Kokkos::DefaultExecutionSpace>::type,
+    class ViewSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<int>>,
+                                                Kokkos::HostSpace,
+                                                Kokkos::SharedSpace>::type>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
 public:
