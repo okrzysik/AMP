@@ -245,7 +245,7 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
     double normlhs, normrhs;
 
     // Verify 0 matrix from factory
-    if ( matrix->L1Norm() == 0.0 )
+    if ( matrix->LinfNorm() == 0.0 )
         utils->passes( "Factory returns 0 matrix" + matrix->type() );
     else
         utils->failure( "Factory returns 0 matrix" + matrix->type() );
@@ -321,7 +321,7 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
         utils->expected_failure( "Mat GEMM not implemented" );
     } else {
         matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
-        if ( matSol->L1Norm() == 0.0 )
+        if ( matSol->LinfNorm() == 0.0 )
             utils->passes( "matMultiply with 0 matrix " + matZero->type() );
         else
             utils->failure( "matMultiply with 0 matrix " + matZero->type() );

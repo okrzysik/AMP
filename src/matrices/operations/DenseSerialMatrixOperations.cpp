@@ -210,7 +210,19 @@ void DenseSerialMatrixOperations::setIdentity( MatrixData &A )
         m1RawData[i + i * nrows] = 1.0;
 }
 
-AMP::Scalar DenseSerialMatrixOperations::L1Norm( MatrixData const &A ) const
+void DenseSerialMatrixOperations::extractDiagonal( MatrixData const &A,
+                                                   std::shared_ptr<Vector> buf )
+{
+    auto m1Data      = getDenseSerialMatrixData( A );
+    const auto nrows = m1Data->d_rows;
+    auto *m1RawData  = m1Data->d_M;
+    auto *rawVecData = buf->getRawDataBlock<double>();
+
+    for ( size_t i = 0; i < nrows; i++ )
+        rawVecData[i] = m1RawData[i + i * nrows];
+}
+
+AMP::Scalar DenseSerialMatrixOperations::LinfNorm( MatrixData const &A ) const
 {
     auto m1Data      = getDenseSerialMatrixData( A );
     const auto nrows = m1Data->d_rows;
@@ -218,10 +230,11 @@ AMP::Scalar DenseSerialMatrixOperations::L1Norm( MatrixData const &A ) const
     auto *m1RawData  = m1Data->d_M;
 
     double norm = 0.0;
-    for ( size_t j = 0; j < ncols; j++ ) {
+    for ( size_t i = 0; i < nrows; i++ ) {
         double sum = 0.0;
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( size_t j = 0; j < ncols; j++ ) {
             sum += fabs( m1RawData[i + j * nrows] );
+        }
         norm = std::max( norm, sum );
     }
     return norm;

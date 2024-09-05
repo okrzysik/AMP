@@ -110,14 +110,14 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     // COMMENT: simple add, subtract routines would be nice for matrices
     ampMat->axpy( -1.0, userMat );
     ampMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
-    const auto matL1Norm = static_cast<double>( ampMat->L1Norm() );
-    auto passed          = ( matL1Norm <= std::numeric_limits<double>::min() );
+    const auto matLinfNorm = static_cast<double>( ampMat->LinfNorm() );
+    auto passed            = ( matLinfNorm <= std::numeric_limits<double>::min() );
 
     if ( passed ) {
         ut->passes( exeName );
     } else {
-        ut->failure( "difference of matrix and copy is not zero (L1Norm of difference): " +
-                     std::to_string( matL1Norm ) );
+        ut->failure( "difference of matrix and copy is not zero (LinfNorm of difference): " +
+                     std::to_string( matLinfNorm ) );
     }
 
     linearOp->apply( u, v );

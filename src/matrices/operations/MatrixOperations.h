@@ -72,14 +72,20 @@ public:
      */
     virtual void setDiagonal( std::shared_ptr<const Vector> in, MatrixData &A ) = 0;
 
+    /** \brief Extract the diagonal values into a vector
+     * \param[in] in The values to set the diagonal to
+     * \param[in] A The matrix to set
+     */
+    virtual void extractDiagonal( MatrixData const &A, std::shared_ptr<Vector> buf ) = 0;
+
     /** \brief  Set the matrix to the identity matrix
      */
     virtual void setIdentity( MatrixData &A ) = 0;
 
-    /** \brief Compute the maximum column sum
-     * \return  The L1 norm of the matrix
+    /** \brief Compute the maximum row sum
+     * \return  The L-infinity norm of the matrix
      */
-    virtual AMP::Scalar L1Norm( const MatrixData &X ) const = 0;
+    virtual AMP::Scalar LinfNorm( const MatrixData &X ) const = 0;
 };
 
 } // namespace AMP::LinearAlgebra

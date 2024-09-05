@@ -46,8 +46,6 @@ public:
 
     std::shared_ptr<MatrixData> transpose() const override;
 
-    void extractDiagonal( std::shared_ptr<Vector> buf ) const override;
-
     void addValuesByGlobalID( size_t, size_t, size_t *, size_t *, void *, const typeID & ) override;
     void setValuesByGlobalID( size_t, size_t, size_t *, size_t *, void *, const typeID & ) override;
     void getValuesByGlobalID(

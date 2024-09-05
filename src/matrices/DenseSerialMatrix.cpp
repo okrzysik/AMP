@@ -75,7 +75,7 @@ Vector::shared_ptr DenseSerialMatrix::extractDiagonal( Vector::shared_ptr buf ) 
     if ( !buf )
         out = this->getRightVector();
 
-    d_matrixData->extractDiagonal( out );
+    d_matrixOps->extractDiagonal( *getMatrixData(), out );
 
     return out;
 }

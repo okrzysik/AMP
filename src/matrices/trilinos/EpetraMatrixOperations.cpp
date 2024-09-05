@@ -110,9 +110,16 @@ void EpetraMatrixOperations::setIdentity( MatrixData &A )
     }
 }
 
-AMP::Scalar EpetraMatrixOperations::L1Norm( MatrixData const &A ) const
+void EpetraMatrixOperations::extractDiagonal( MatrixData const &A, std::shared_ptr<Vector> buf )
 {
-    return getEpetra_CrsMatrix( A ).NormOne();
+    auto view = EpetraVector::view( buf );
+    VerifyEpetraReturn( getEpetra_CrsMatrix( A ).ExtractDiagonalCopy( view->getEpetra_Vector() ),
+                        "extractDiagonal" );
+}
+
+AMP::Scalar EpetraMatrixOperations::LinfNorm( MatrixData const &A ) const
+{
+    return getEpetra_CrsMatrix( A ).NormInf();
 }
 
 void EpetraMatrixOperations::matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C )

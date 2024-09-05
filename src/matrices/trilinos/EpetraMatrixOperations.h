@@ -68,15 +68,21 @@ class EpetraMatrixOperations : public MatrixOperations
      */
     void setDiagonal( std::shared_ptr<const Vector> in, MatrixData &A ) override;
 
+    /** \brief Extract the diagonal values into a vector
+     * \param[in] in The values to set the diagonal to
+     * \param[in] A The matrix to set
+     */
+    void extractDiagonal( MatrixData const &A, std::shared_ptr<Vector> buf ) override;
+
     /** \brief  Set the matrix to the identity matrix
      */
     void setIdentity( MatrixData &A ) override;
 
-    /** \brief Compute the maximum column sum
-     * \return  The L1 norm of the matrix
-     * \param[in] X The input matrix
+    /** \brief Compute the maximum row sum
+     * \return  The L-infinity norm of the matrix
+     * \param[in] X Data for the input matrix
      */
-    AMP::Scalar L1Norm( const MatrixData &X ) const override;
+    AMP::Scalar LinfNorm( const MatrixData &X ) const override;
 };
 
 } // namespace AMP::LinearAlgebra
