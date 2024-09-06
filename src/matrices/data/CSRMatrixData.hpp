@@ -9,15 +9,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
 
-#ifdef AMP_USE_UMPIRE
-    #include "umpire/Allocator.hpp"
-    #include "umpire/ResourceManager.hpp"
-#endif
-
-#ifdef USE_DEVICE
-    #include "AMP/matrices/data/DeviceDataHelpers.h"
-#endif
-
 #include <algorithm>
 #include <iterator>
 #include <memory>

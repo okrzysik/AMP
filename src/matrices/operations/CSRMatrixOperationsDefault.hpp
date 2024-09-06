@@ -1,6 +1,7 @@
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Vector.h"
 
 #include <algorithm>
 

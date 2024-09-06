@@ -1,10 +1,10 @@
-#include "AMP/matrices/CSRMatrix.hpp"
+#include "AMP/matrices/operations/CSRMatrixOperationsDefault.hpp"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/matrices/CSRPolicy.h"
 #include "AMP/utils/memory.h"
 
 #define INSTANTIATE_FULL( policy, allocator ) \
-    template class AMP::LinearAlgebra::CSRMatrix<policy, allocator>;
+    template class AMP::LinearAlgebra::CSRMatrixOperationsDefault<policy, allocator>;
 
 // Check if device based allocators are needed
 #ifdef USE_DEVICE
