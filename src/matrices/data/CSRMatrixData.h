@@ -279,17 +279,22 @@ protected:
 };
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-static CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> const *getCSRMatrixData( MatrixData const &A )
+static CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> const *
+getCSRMatrixData( MatrixData const &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> const *>( &A );
+    auto ptr =
+        dynamic_cast<CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> const *>(
+            &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-static CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> *getCSRMatrixData( MatrixData &A )
+static CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> *
+getCSRMatrixData( MatrixData &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> *>( &A );
+    auto ptr =
+        dynamic_cast<CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
