@@ -20,7 +20,11 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::mult( std::shared_ptr<const 
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -96,7 +100,11 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::multTranspose( std::shared_p
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
 
     AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
@@ -174,7 +182,11 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::scale( AMP::Scalar alpha_in,
 {
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -216,10 +228,17 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::axpy( AMP::Scalar alpha_in,
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    const auto csrDataX = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( X ) );
+    const auto csrDataX =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( X ) );
     const auto [nnz_d_x, cols_d_x, cols_loc_d_x, coeffs_d_x] = csrDataX->getCSRDiagData();
 
-    auto csrDataY                                      = getCSRMatrixData<Policy, Allocator>( Y );
+    auto csrDataY                                      = getCSRMatrixData<Policy,
+                                     Allocator,
+                                     CSRLocalMatrixData<Policy, Allocator>,
+                                     CSRLocalMatrixData<Policy, Allocator>>( Y );
     auto [nnz_d_y, cols_d_y, cols_loc_d_y, coeffs_d_y] = csrDataY->getCSRDiagData();
 
     auto memType_x = AMP::Utilities::getMemoryType( cols_loc_d_x );
@@ -257,7 +276,11 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::setScalar( AMP::Scalar alpha
 {
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -300,7 +323,11 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::setDiagonal( std::shared_ptr
 
     const scalar_t *vvals_p = in->getRawDataBlock<scalar_t>();
 
-    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -336,7 +363,11 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::setIdentity( MatrixData &A )
 
     zero( A );
 
-    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
@@ -370,7 +401,11 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::extractDiagonal( MatrixData 
     using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
 
     AMP_ASSERT( buf && buf->numberOfDataBlocks() == 1 );
@@ -408,7 +443,11 @@ AMP::Scalar CSRMatrixOperationsDefault<Policy, Allocator>::LinfNorm( MatrixData 
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
 
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
     auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();

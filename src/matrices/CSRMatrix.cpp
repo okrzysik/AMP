@@ -1,48 +1,40 @@
 #include "AMP/matrices/CSRMatrix.hpp"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/matrices/CSRPolicy.h"
+#include "AMP/matrices/data/CSRLocalMatrixData.hpp"
 #include "AMP/matrices/data/CSRMatrixData.hpp"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.hpp"
 #include "AMP/utils/memory.h"
 
-namespace AMP::LinearAlgebra {
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>, AMP::HostAllocator<int>>;
-template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::HostAllocator<int>>;
-template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::HostAllocator<int>>;
-} // namespace AMP::LinearAlgebra
+#define INSTANTIATE_FULL( policy, allocator )                                         \
+    template class AMP::LinearAlgebra::CSRMatrixOperationsDefault<policy, allocator>; \
+    template class AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>;         \
+    template class AMP::LinearAlgebra::CSRMatrixData<                                 \
+        policy,                                                                       \
+        allocator,                                                                    \
+        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,                    \
+        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;                   \
+    template class AMP::LinearAlgebra::CSRMatrix<policy, allocator>;
 
-#if ( defined USE_DEVICE )
-namespace AMP::LinearAlgebra {
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>,
-                                          AMP::DeviceAllocator<int>>;
-template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::DeviceAllocator<int>>;
-template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::DeviceAllocator<int>>;
-
-template class CSRMatrixOperationsDefault<CSRPolicy<size_t, int, double>,
-                                          AMP::ManagedAllocator<int>>;
-template class CSRMatrixData<CSRPolicy<size_t, int, double>, AMP::ManagedAllocator<int>>;
-template class CSRMatrix<CSRPolicy<size_t, int, double>, AMP::ManagedAllocator<int>>;
-} // namespace AMP::LinearAlgebra
+// Check if device based allocators are needed
+#ifdef USE_DEVICE
+    #define INSTANTIATE_ALLOCS( policy )                       \
+        INSTANTIATE_FULL( policy, AMP::HostAllocator<int> )    \
+        INSTANTIATE_FULL( policy, AMP::ManagedAllocator<int> ) \
+        INSTANTIATE_FULL( policy, AMP::DeviceAllocator<int> )
+#else
+    #define INSTANTIATE_ALLOCS( policy ) INSTANTIATE_FULL( policy, AMP::HostAllocator<int> )
 #endif
 
+// Check if hypre is present
+using CSRPolicyDouble = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
 #if defined( AMP_USE_HYPRE )
-
     #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-
-namespace AMP::LinearAlgebra {
-template class CSRMatrixOperationsDefault<HypreCSRPolicy, AMP::HostAllocator<int>>;
-template class CSRMatrix<HypreCSRPolicy, AMP::HostAllocator<int>>;
-
-    #if ( defined USE_DEVICE )
-template class CSRMatrixOperationsDefault<HypreCSRPolicy, AMP::DeviceAllocator<int>>;
-template class CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>;
-template class CSRMatrix<HypreCSRPolicy, AMP::DeviceAllocator<int>>;
-
-template class CSRMatrixOperationsDefault<HypreCSRPolicy, AMP::ManagedAllocator<int>>;
-template class CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>;
-template class CSRMatrix<HypreCSRPolicy, AMP::ManagedAllocator<int>>;
-    #endif
-
-} // namespace AMP::LinearAlgebra
-
+    #define INSTANTIATE_POLICIES              \
+        INSTANTIATE_ALLOCS( CSRPolicyDouble ) \
+        INSTANTIATE_ALLOCS( AMP::LinearAlgebra::HypreCSRPolicy )
+#else
+    #define INSTANTIATE_POLICIES INSTANTIATE_ALLOCS( CSRPolicyDouble )
 #endif
+
+INSTANTIATE_POLICIES
