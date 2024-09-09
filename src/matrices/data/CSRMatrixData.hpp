@@ -388,7 +388,7 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
             std::copy( d_cols.get(), d_cols.get() + d_nnz, cloneData->d_cols.get() );
             std::copy( d_cols_loc.get(), d_cols_loc.get() + d_nnz, cloneData->d_cols_loc.get() );
             // need to zero out coeffs so that padded region has valid data
-            std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, 0.0 );
+            std::fill( cloneData->d_coeffs.get(), cloneData->d_coeffs.get() + d_nnz, 0.0 );
         } else {
 #ifdef USE_DEVICE
             AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::copy_n(
@@ -400,7 +400,8 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
             AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::copy_n(
                 d_cols_loc.get(), d_nnz, cloneData->d_cols_loc.get() );
             // need to zero out coeffs so that padded region has valid data
-            AMP::LinearAlgebra::DeviceDataHelpers<scalar_t>::fill_n( d_coeffs.get(), d_nnz, 0.0 );
+            AMP::LinearAlgebra::DeviceDataHelpers<scalar_t>::fill_n(
+                cloneData->d_coeffs.get(), d_nnz, 0.0 );
 #else
             AMP_ERROR( "No device found!" );
 #endif
