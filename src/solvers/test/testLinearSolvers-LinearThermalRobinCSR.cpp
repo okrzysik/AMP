@@ -37,17 +37,9 @@
     #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
 #endif
 
-#ifdef USE_CUDA
-    #include "AMP/utils/cuda/CudaAllocator.h"
-#endif
-
 #include <iomanip>
 #include <memory>
 #include <string>
-
-#ifdef USE_CUDA
-    #include <cuda_runtime_api.h>
-#endif
 
 #include "reference_solver_solutions.h"
 
@@ -57,33 +49,8 @@ std::shared_ptr<AMP::LinearAlgebra::Vector>
 createVectorInSpace( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                      std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
-#ifdef USE_CUDA
-    // We are ready to create a single vector
-    // Create the communication list
-    AMP_MPI comm = DOFs->getComm();
-    AMP_ASSERT( !comm.isNull() );
-    comm.barrier();
-    std::shared_ptr<CommunicationList> comm_list;
-    auto remote_DOFs = DOFs->getRemoteDOFs();
-    bool ghosts      = comm.anyReduce( !remote_DOFs.empty() );
-    if ( !ghosts ) {
-        // No need for a communication list
-        comm_list = std::make_shared<CommunicationList>( DOFs->numLocalDOF(), DOFs->getComm() );
-    } else {
-        // Construct the communication list
-        auto params           = std::make_shared<CommunicationListParameters>();
-        params->d_comm        = comm;
-        params->d_localsize   = DOFs->numLocalDOF();
-        params->d_remote_DOFs = remote_DOFs;
-        comm_list             = std::make_shared<CommunicationList>( params );
-    }
-    comm.barrier();
-
-    return AMP::LinearAlgebra::createSimpleVector<
-        double,
-        AMP::LinearAlgebra::VectorOperationsDefault<double>,
-        AMP::LinearAlgebra::VectorDataDefault<double, AMP::CudaManagedAllocator<double>>>(
-        var, DOFs, comm_list );
+#ifdef USE_DEVICE
+    return AMP::LinearAlgebra::createVector( DOFs, var, true, AMP::Utilities::MemoryType::managed );
 #else
     return AMP::LinearAlgebra::createVector( DOFs, var );
 #endif
@@ -267,12 +234,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     checkConvergence( linearSolver.get(), inputFileName, *ut );
 
     input_db.reset();
-
-#ifdef USE_CUDA
-    cudaFree( nnz_p );
-    cudaFree( cols_p );
-    cudaFree( coeffs_p );
-#endif
 }
 
 
