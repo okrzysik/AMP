@@ -9,6 +9,8 @@ DISABLE_WARNINGS
 #include <EpetraExt_Transpose_RowMatrix.h>
 ENABLE_WARNINGS
 
+#include "ProfilerApp.h"
+
 namespace AMP::LinearAlgebra {
 
 static void VerifyEpetraReturn( int err, const char *func )
@@ -39,6 +41,7 @@ void EpetraMatrixOperations::mult( std::shared_ptr<const Vector> in,
                                    MatrixData const &A,
                                    std::shared_ptr<Vector> out )
 {
+    PROFILE( "EpetraMatrixOperations::mult" );
     AMP_ASSERT( in->getGlobalSize() == A.numGlobalColumns() );
     AMP_ASSERT( out->getGlobalSize() == A.numGlobalRows() );
     auto in_view                = EpetraVector::constView( in );
@@ -53,6 +56,7 @@ void EpetraMatrixOperations::multTranspose( std::shared_ptr<const Vector> in,
                                             MatrixData const &A,
                                             std::shared_ptr<Vector> out )
 {
+    PROFILE( "EpetraMatrixOperations::multTranspose" );
     AMP_ASSERT( in->getGlobalSize() == A.numGlobalColumns() );
     AMP_ASSERT( out->getGlobalSize() == A.numGlobalRows() );
     auto in_view  = EpetraVector::constView( in );
@@ -106,9 +110,16 @@ void EpetraMatrixOperations::setIdentity( MatrixData &A )
     }
 }
 
-AMP::Scalar EpetraMatrixOperations::L1Norm( MatrixData const &A ) const
+void EpetraMatrixOperations::extractDiagonal( MatrixData const &A, std::shared_ptr<Vector> buf )
 {
-    return getEpetra_CrsMatrix( A ).NormOne();
+    auto view = EpetraVector::view( buf );
+    VerifyEpetraReturn( getEpetra_CrsMatrix( A ).ExtractDiagonalCopy( view->getEpetra_Vector() ),
+                        "extractDiagonal" );
+}
+
+AMP::Scalar EpetraMatrixOperations::LinfNorm( MatrixData const &A ) const
+{
+    return getEpetra_CrsMatrix( A ).NormInf();
 }
 
 void EpetraMatrixOperations::matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C )

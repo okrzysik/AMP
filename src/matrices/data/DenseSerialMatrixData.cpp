@@ -74,21 +74,6 @@ std::shared_ptr<MatrixData> DenseSerialMatrixData::transpose() const
     return newMatrixData;
 }
 
-void DenseSerialMatrixData::extractDiagonal( std::shared_ptr<Vector> diag ) const
-{
-    AMP_ASSERT( diag );
-    AMP_ASSERT( diag->getGlobalSize() == d_cols );
-
-    std::vector<double> y( d_cols );
-    std::vector<size_t> cols( d_cols );
-
-    for ( size_t i = 0; i < d_cols; i++ )
-        y[i] = d_M[i + i * d_rows];
-
-    std::iota( cols.begin(), cols.end(), 0 );
-    diag->setValuesByGlobalID( d_cols, cols.data(), y.data() );
-}
-
 /********************************************************
  * Get/Set values                                        *
  ********************************************************/

@@ -96,10 +96,10 @@ public:
      */
     void setIdentity();
 
-    /** \brief Compute the maximum column sum
-     * \return  The L1 norm of the matrix
+    /** \brief Compute the maximum row sum
+     * \return  The L-infinity norm of the matrix
      */
-    AMP::Scalar L1Norm() const;
+    AMP::Scalar LinfNorm() const;
 
     /** \brief  Compute the product of two matrices
      * \param[in] A  A multiplicand

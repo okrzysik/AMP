@@ -9,8 +9,6 @@ namespace AMP::LinearAlgebra {
 
 /** \class NativePetscMatrixData
  * \brief  This is a thin wrapper around PETSc Mat
- * \details  As opposed to ManagedPetscMatrixData, this is a
- *    thin wrapper around a PETSc Mat.
  */
 class NativePetscMatrixData : public MatrixData
 {
@@ -47,8 +45,6 @@ public:
     std::shared_ptr<MatrixData> cloneMatrixData() const override;
 
     std::shared_ptr<MatrixData> transpose() const override;
-
-    void extractDiagonal( std::shared_ptr<Vector> buf ) const override;
 
     void addValuesByGlobalID( size_t, size_t, size_t *, size_t *, void *, const typeID & ) override;
     void setValuesByGlobalID( size_t, size_t, size_t *, size_t *, void *, const typeID & ) override;

@@ -26,8 +26,8 @@ public:
      */
     explicit DenseSerialMatrixData( std::shared_ptr<MatrixParametersBase> params );
 
-    DenseSerialMatrixData()                                           = delete;
-    DenseSerialMatrixData( const DenseSerialMatrixData & )            = delete;
+    DenseSerialMatrixData()                                = delete;
+    DenseSerialMatrixData( const DenseSerialMatrixData & ) = delete;
     DenseSerialMatrixData &operator=( const DenseSerialMatrixData & ) = delete;
 
     /** \brief Destructor
@@ -43,8 +43,6 @@ public:
     std::shared_ptr<MatrixData> cloneMatrixData() const override;
 
     std::shared_ptr<MatrixData> transpose() const override;
-
-    void extractDiagonal( std::shared_ptr<Vector> buf ) const override;
 
     /** \brief  Add values to those in the matrix
      * \param[in] num_rows The number of rows represented in values

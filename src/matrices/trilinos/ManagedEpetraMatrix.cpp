@@ -98,7 +98,7 @@ std::shared_ptr<Vector> ManagedEpetraMatrix::extractDiagonal( std::shared_ptr<Ve
 {
     if ( !vec )
         vec = getRightVector();
-    d_matrixData->extractDiagonal( vec );
+    d_matrixOps->extractDiagonal( *d_matrixData, vec );
     return vec;
 }
 

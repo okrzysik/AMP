@@ -7,6 +7,7 @@
 #include "petscmat.h"
 #include "petscvec.h"
 
+#include "ProfilerApp.h"
 
 namespace AMP::LinearAlgebra {
 
@@ -40,6 +41,7 @@ void NativePetscMatrixOperations::mult( std::shared_ptr<const Vector> in,
                                         MatrixData const &A,
                                         std::shared_ptr<Vector> out )
 {
+    PROFILE( "NativePetscMatrixOperations::mult" );
     MatMult( getMat( A ), *getVec( in ), *getVec( out ) );
 }
 
@@ -47,6 +49,7 @@ void NativePetscMatrixOperations::multTranspose( std::shared_ptr<const Vector> i
                                                  MatrixData const &A,
                                                  std::shared_ptr<Vector> out )
 {
+    PROFILE( "NativePetscMatrixOperations::multTranspose" );
     MatMultTranspose( getMat( A ), *getVec( in ), *getVec( out ) );
 }
 
@@ -99,10 +102,16 @@ void NativePetscMatrixOperations::setIdentity( MatrixData &A )
     MatShift( mat, 1.0 );
 }
 
-AMP::Scalar NativePetscMatrixOperations::L1Norm( MatrixData const &A ) const
+void NativePetscMatrixOperations::extractDiagonal( MatrixData const &A,
+                                                   std::shared_ptr<Vector> buf )
+{
+    MatGetDiagonal( getMat( A ), *getVec( buf ) );
+}
+
+AMP::Scalar NativePetscMatrixOperations::LinfNorm( MatrixData const &A ) const
 {
     double retVal;
-    MatNorm( getMat( A ), NORM_1, &retVal );
+    MatNorm( getMat( A ), NORM_INFINITY, &retVal );
     return retVal;
 }
 
