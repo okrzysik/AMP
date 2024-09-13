@@ -58,13 +58,14 @@ static void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto diffSolVar = diffOp->getInputVariable();
     auto diffRhsVar = diffOp->getOutputVariable();
     auto diffResVar = diffOp->getOutputVariable();
+    auto memLoc     = diffOp->getMemoryLocation();
 
     auto NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
-    auto diffSolVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffSolVar, true );
-    auto diffRhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffRhsVar, true );
-    auto diffResVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffResVar, true );
+    auto diffSolVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffSolVar, true, memLoc );
+    auto diffRhsVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffRhsVar, true, memLoc );
+    auto diffResVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffResVar, true, memLoc );
 
     ut->passes( exeName );
 

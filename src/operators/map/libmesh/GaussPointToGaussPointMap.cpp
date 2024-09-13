@@ -138,7 +138,8 @@ void GaussPointToGaussPointMap::createIdxMap(
     auto dofMap = AMP::Discretization::simpleDOFManager::create(
         submesh, AMP::Mesh::GeomType::Face, 0, dofsPerElem, true );
 
-    auto inVec  = AMP::LinearAlgebra::createVector( dofMap, variable );
+    auto inVec =
+        AMP::LinearAlgebra::createVector( dofMap, variable, true, params->d_memory_location );
     auto outVec = inVec->clone();
 
     std::vector<size_t> localDofs( dofsPerElem );

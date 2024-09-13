@@ -257,6 +257,9 @@ void DiffusionNonlinearFEOperator::init(
 
 void DiffusionNonlinearFEOperator::reset( std::shared_ptr<const OperatorParameters> inParams )
 {
+    AMP_ASSERT( inParams );
+    d_memory_location = inParams->d_memory_location;
+
     auto params =
         std::dynamic_pointer_cast<const DiffusionNonlinearFEOperatorParameters>( inParams );
 

@@ -16,6 +16,7 @@ Operator::Operator()
     d_iObject_id           = Operator::d_iInstance_id;
     d_iDebugPrintInfoLevel = 0;
     Operator::d_iInstance_id++;
+    d_memory_location = AMP::Utilities::MemoryType::host;
 }
 
 
@@ -27,6 +28,7 @@ Operator::Operator( std::shared_ptr<const OperatorParameters> params )
     d_iObject_id           = Operator::d_iInstance_id;
     d_iDebugPrintInfoLevel = 0;
     Operator::d_iInstance_id++;
+    d_memory_location = params->d_memory_location;
 
     // try and keep the next call the last in the function
     // so as not to override any parameters set through it
@@ -38,6 +40,7 @@ Operator::Operator( std::shared_ptr<const OperatorParameters> params )
 void Operator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_INSIST( params, "NULL parameter" );
+    d_memory_location = params->d_memory_location;
 
     // try and keep the next call the last in the function
     // so as not to override any parameters set through it

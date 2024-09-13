@@ -53,6 +53,9 @@ std::shared_ptr<AMP::LinearAlgebra::Variable> FlowFrapconJacobian::getOutputVari
 
 void FlowFrapconJacobian::reset( std::shared_ptr<const OperatorParameters> params )
 {
+    AMP_ASSERT( params );
+    d_memory_location = params->d_memory_location;
+
     auto myparams = std::dynamic_pointer_cast<const FlowFrapconJacobianParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );

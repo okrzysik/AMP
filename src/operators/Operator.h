@@ -5,6 +5,8 @@
 
 #include "AMP/operators/OperatorParameters.h"
 
+#include "AMP/utils/Utilities.h"
+
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 
@@ -83,6 +85,8 @@ public:
     getParameters( const std::string &type,
                    std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
                    std::shared_ptr<OperatorParameters> params = nullptr );
+
+    AMP::Utilities::MemoryType getMemoryLocation() const { return d_memory_location; }
 
     /**
      * Specify level of diagnostic information printed during iterations.
@@ -164,6 +168,8 @@ protected:
     static int d_iInstance_id;
 
     std::shared_ptr<AMP::Mesh::Mesh> d_Mesh;
+
+    AMP::Utilities::MemoryType d_memory_location;
 
 private:
 };

@@ -63,6 +63,9 @@ NeumannVectorCorrection::NeumannVectorCorrection(
 
 void NeumannVectorCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
+    AMP_ASSERT( params );
+    d_memory_location = params->d_memory_location;
+
     auto myparams = std::dynamic_pointer_cast<const NeumannVectorCorrectionParameters>( params );
 
     AMP_INSIST( myparams, "NULL parameters" );

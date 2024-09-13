@@ -33,7 +33,8 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
     d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVarName ) );
 
     if ( d_useUpdatedLagrangian ) {
-        d_refXYZ = AMP::LinearAlgebra::createVector( d_inDofMap, d_inputVariable, true );
+        d_refXYZ = AMP::LinearAlgebra::createVector(
+            d_inDofMap, d_inputVariable, true, inParams->d_memory_location );
         d_refXYZ->zero();
 
         AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
@@ -75,10 +76,10 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
         if ( isNonlinearOperatorInitialized ) {
             reset( params );
         } else {
-            AMP::LinearAlgebra::Vector::shared_ptr tmpInVec =
-                AMP::LinearAlgebra::createVector( d_inDofMap, d_inputVariable, true );
-            AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec =
-                AMP::LinearAlgebra::createVector( d_outDofMap, d_outputVariable, true );
+            AMP::LinearAlgebra::Vector::shared_ptr tmpInVec = AMP::LinearAlgebra::createVector(
+                d_inDofMap, d_inputVariable, true, inParams->d_memory_location );
+            AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec = AMP::LinearAlgebra::createVector(
+                d_outDofMap, d_outputVariable, true, inParams->d_memory_location );
             d_matrix = AMP::LinearAlgebra::createMatrix( tmpInVec, tmpOutVec );
         }
     } else {
