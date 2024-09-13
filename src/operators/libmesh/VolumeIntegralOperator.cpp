@@ -209,8 +209,10 @@ void VolumeIntegralOperator::init( std::shared_ptr<const VolumeIntegralOperatorP
 }
 
 
-void VolumeIntegralOperator::reset( std::shared_ptr<const OperatorParameters> )
+void VolumeIntegralOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
+    AMP_ASSERT( params );
+    d_memory_location = params->d_memory_location;
     d_outVec.reset();
 }
 

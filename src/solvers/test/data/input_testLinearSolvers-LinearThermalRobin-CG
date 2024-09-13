@@ -18,10 +18,12 @@ NeutronicsOperator{
   timeSteps          = 1, 10000.
   useFixedValue      = TRUE
   fixedValues        = 1.0, 2.0
+  MemoryLocation = "managed"
 }
 
 DiffusionBVPOperator {
    name="LinearBVPOperator"
+   MemoryLocation = "managed"
    VolumeOperator = "DiffusionLinearFEOperator1"
    BoundaryOperator = "ColumnBoundaryOperator1"
 }
@@ -107,6 +109,7 @@ VolumeIntegralOperator{
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"
   }
+  MemoryLocation = "managed"
 }
 
 LinearSolver{

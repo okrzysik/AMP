@@ -248,6 +248,11 @@ createPressureBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                 std::shared_ptr<AMP::Database> input_db,
                                 std::shared_ptr<AMP::Operator::ElementPhysicsModel> & );
 
+
+void setNestedOperatorMemoryLocations( std::shared_ptr<AMP::Database> input_db,
+                                       std::string outerOperatorName,
+                                       std::vector<std::string> nestedOperatorNames );
+
 std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::Database> db,
                                              const std::string &key );
 

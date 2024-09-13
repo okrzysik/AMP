@@ -100,6 +100,7 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     AMP_MPI comm = leftDOF->getComm();
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
+
     // Create the matrix parameters
     auto params =
         std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm, getRow );
@@ -125,6 +126,19 @@ createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<int>>(
     AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     const std::function<std::vector<size_t>( size_t )> &getRow );
 
+#ifdef USE_DEVICE
+template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator<int>>(
+    AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+    AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+    const std::function<std::vector<size_t>( size_t )> &getRow );
+
+template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator<int>>(
+    AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+    AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+    const std::function<std::vector<size_t>( size_t )> &getRow );
+#endif
 
 /********************************************************
  * Build a DenseSerialMatrix                             *

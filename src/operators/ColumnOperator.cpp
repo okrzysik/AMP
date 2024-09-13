@@ -97,6 +97,7 @@ ColumnOperator::getParameters( const std::string &type,
  ********************************************************/
 void ColumnOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
+    d_memory_location     = params->d_memory_location;
     auto columnParameters = std::dynamic_pointer_cast<const ColumnOperatorParameters>( params );
     AMP_INSIST( ( columnParameters ), "ColumnOperator::reset parameter object is NULL" );
     AMP_INSIST( ( ( ( columnParameters->d_OperatorParameters ).size() ) == ( d_operators.size() ) ),

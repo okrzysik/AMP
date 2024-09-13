@@ -64,6 +64,9 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
 void NonlinearBVPOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     PROFILE( "reset" );
+    AMP_ASSERT( params );
+    d_memory_location = params->d_memory_location;
+
     auto inParams = std::dynamic_pointer_cast<const BVPOperatorParameters>( params );
 
     AMP_INSIST( ( inParams ), "NonlinearBVPOperator :: reset Null parameter" );

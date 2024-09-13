@@ -76,8 +76,11 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
     auto neutronicsOperator = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
-    auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
-    auto SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
+    auto SpecificPowerVec =
+        AMP::LinearAlgebra::createVector( gaussPointDofMap,
+                                          neutronicsOperator->getOutputVariable(),
+                                          true,
+                                          neutronicsOperator->getMemoryLocation() );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
@@ -89,8 +92,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
             meshAdapter, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
-    auto PowerInWattsVar = sourceOperator->getOutputVariable();
-    auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
+    auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap,
+                                                             sourceOperator->getOutputVariable(),
+                                                             true,
+                                                             sourceOperator->getMemoryLocation() );
     PowerInWattsVec->zero();
 
     // convert the vector of specific power to power for a given basis.
@@ -104,15 +109,26 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );
 
     auto TemperatureInKelvinVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
+        AMP::LinearAlgebra::createVector( nodalDofMap,
+                                          diffusionOperator->getInputVariable(),
+                                          true,
+                                          diffusionOperator->getMemoryLocation() );
     auto RightHandSideVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
-    auto ResidualVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
+        AMP::LinearAlgebra::createVector( nodalDofMap,
+                                          diffusionOperator->getOutputVariable(),
+                                          true,
+                                          diffusionOperator->getMemoryLocation() );
+    auto ResidualVec = AMP::LinearAlgebra::createVector( nodalDofMap,
+                                                         diffusionOperator->getOutputVariable(),
+                                                         true,
+                                                         diffusionOperator->getMemoryLocation() );
 
     // Add the boundary conditions corrections
     auto boundaryOpCorrectionVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
+        AMP::LinearAlgebra::createVector( nodalDofMap,
+                                          diffusionOperator->getOutputVariable(),
+                                          true,
+                                          diffusionOperator->getMemoryLocation() );
 
     auto boundaryOp = diffusionOperator->getBoundaryOperator();
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );

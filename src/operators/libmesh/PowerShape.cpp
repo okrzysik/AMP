@@ -61,7 +61,8 @@ PowerShape::~PowerShape() = default;
 void PowerShape::reset( std::shared_ptr<const OperatorParameters> parameters )
 {
     AMP_ASSERT( parameters );
-    d_db = parameters->d_db;
+    d_memory_location = parameters->d_memory_location;
+    d_db              = parameters->d_db;
 
     if ( d_coordinateSystem == "cartesian" ) {
 
@@ -638,8 +639,8 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
                 d_Mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
             auto nodalVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
-            auto nodalVector =
-                AMP::LinearAlgebra::createVector( nodalDofMap, nodalVariable, split );
+            auto nodalVector   = AMP::LinearAlgebra::createVector(
+                nodalDofMap, nodalVariable, split, d_memory_location );
             auto unodalPower = nodalVector->clone();
             auto rnodalPower = nodalVector->clone();
 

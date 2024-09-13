@@ -41,13 +41,6 @@ public:
     std::string type() const override { return "ConstraintsEliminationOperator"; }
 
     /**
-     * This function is useful for re-initializing/updating an operator
-     * \param params
-     *        parameter object containing parameters to change
-     */
-    void reset( std::shared_ptr<const OperatorParameters> params ) override;
-
-    /**
       Calls first addSlaveToMaster(...) and second setSlaveToZero(...) on the residual vector:
       r^m = r^m + C^T r^s
       r^s = 0

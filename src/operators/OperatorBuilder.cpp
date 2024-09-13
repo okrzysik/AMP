@@ -5,7 +5,6 @@
 #include "AMP/operators/IdentityOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 
@@ -59,6 +58,74 @@ namespace AMP::Operator {
 
 using IdentityOperatorParameters = OperatorParameters;
 
+void OperatorBuilder::setNestedOperatorMemoryLocations(
+    std::shared_ptr<AMP::Database> input_db,
+    std::string outerOperatorName,
+    std::vector<std::string> nestedOperatorNames )
+{
+    auto outer_db = input_db->getDatabase( outerOperatorName );
+    AMP_INSIST( outer_db, "OperatorBuilder: outer DB is null" );
+
+    if ( outer_db->keyExists( "MemoryLocation" ) ) {
+        // if outer operator requests a memory location it takes precedent
+        auto memLoc = outer_db->getScalar<std::string>( "MemoryLocation" );
+        for ( auto &innerName : nestedOperatorNames ) {
+            auto inner_db = input_db->getDatabase( innerName );
+            AMP_INSIST( inner_db, "OperatorBuilder: inner DB is null" );
+            inner_db->putScalar(
+                "MemoryLocation", memLoc, Units(), Database::Check::WarnOverwrite );
+        }
+    } else {
+        // outer db does not specify a memory location, check if any internal one does
+        // if multiple are specified use most restrictive one
+        std::string memLoc{ "device" };
+        auto memRestrict = []( std::string m1, std::string m2 ) -> std::string {
+            int c1 = 3, c2 = 3;
+            if ( m1 == "device" || m1 == "Device" ) {
+                c1 = 2;
+            } else if ( m1 == "managed" || m1 == "Managed" ) {
+                c1 = 1;
+            } else if ( m1 == "host" || m1 == "host" ) {
+                c1 = 0;
+            }
+            if ( m2 == "device" || m2 == "Device" ) {
+                c2 = 2;
+            } else if ( m2 == "managed" || m2 == "Managed" ) {
+                c2 = 1;
+            } else if ( m2 == "host" || m2 == "host" ) {
+                c2 = 0;
+            }
+            if ( c1 == 3 && c2 == 3 ) {
+                // both spaces unrecognized
+                AMP_WARNING( "Unrecognized memory space, returning host" );
+                return "host";
+            } else if ( c1 < c2 ) {
+                return m1;
+            }
+            return m2;
+        };
+        bool found = false;
+        for ( auto &innerName : nestedOperatorNames ) {
+            auto inner_db = input_db->getDatabase( innerName );
+            AMP_INSIST( inner_db, "OperatorBuilder: inner DB is null" );
+            if ( inner_db->keyExists( "MemoryLocation" ) ) {
+                found        = true;
+                auto memLocI = inner_db->getScalar<std::string>( "MemoryLocation" );
+                memLoc       = memRestrict( memLoc, memLocI );
+            }
+        }
+        if ( found ) {
+            outer_db->putScalar(
+                "MemoryLocation", memLoc, Units(), Database::Check::WarnOverwrite );
+            for ( auto &innerName : nestedOperatorNames ) {
+                auto inner_db = input_db->getDatabase( innerName );
+                AMP_INSIST( inner_db, "OperatorBuilder: inner DB is null" );
+                inner_db->putScalar(
+                    "MemoryLocation", memLoc, Units(), Database::Check::WarnOverwrite );
+            }
+        }
+    }
+}
 
 std::vector<std::string>
 OperatorBuilder::getActiveVariables( std::shared_ptr<const AMP::Database> db,
@@ -589,7 +656,8 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     for ( auto name : getActiveVariables( diffusionNLinFEOp_db, "ActiveInputVariables" ) ) {
         auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
-        auto vec = AMP::LinearAlgebra::createVector( NodalScalarDOF, var, true );
+        auto vec = AMP::LinearAlgebra::createVector(
+            NodalScalarDOF, var, true, diffusionNLOpParams->d_memory_location );
         if ( diffusionNLinFEOp_db->getWithDefault<bool>( "Freeze" + name, false ) )
             diffusionNLOpParams->d_FrozenVecs[name] = vec;
     }
@@ -597,7 +665,6 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
     // create the nonlinear diffusion operator
     return std::make_shared<DiffusionNonlinearFEOperator>( diffusionNLOpParams );
 }
-
 
 Operator::shared_ptr OperatorBuilder::createNonlinearFickSoretOperator(
     std::shared_ptr<AMP::Mesh::Mesh> mesh,
@@ -612,12 +679,16 @@ Operator::shared_ptr OperatorBuilder::createNonlinearFickSoretOperator(
     auto operator_db = input_db->getDatabase( operatorName );
     AMP_INSIST( operator_db, "NULL database object passed" );
 
-    std::string fickOperatorName  = operator_db->getString( "FickOperator" );
-    std::string soretOperatorName = operator_db->getString( "SoretOperator" );
+    // operator names
+    auto fickOperatorName  = operator_db->getString( "FickOperator" );
+    auto soretOperatorName = operator_db->getString( "SoretOperator" );
+
+    // Ensure consistency of operator memory locations
+    OperatorBuilder::setNestedOperatorMemoryLocations(
+        input_db, operatorName, { fickOperatorName, soretOperatorName } );
 
     std::shared_ptr<ElementPhysicsModel> fickPhysicsModel;
     std::shared_ptr<ElementPhysicsModel> soretPhysicsModel;
-
 
     auto fickOperator = OperatorBuilder::createOperator(
         mesh, fickOperatorName, input_db, fickPhysicsModel, localModelFactory );
@@ -894,22 +965,25 @@ Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
     auto operator_db = input_db->getDatabase( operatorName );
     AMP_INSIST( operator_db, "NULL database object passed" );
 
-    // create the volume operator
-    auto volumeOperatorName = operator_db->getString( "VolumeOperator" );
+    // names of internal operators
+    auto volumeOperatorName   = operator_db->getString( "VolumeOperator" );
+    auto boundaryOperatorName = operator_db->getString( "BoundaryOperator" );
 
+    // Ensure consistency of operator memory locations
+    OperatorBuilder::setNestedOperatorMemoryLocations(
+        input_db, operatorName, { volumeOperatorName, boundaryOperatorName } );
+
+    // create the volume operator
     auto volumeOperator = OperatorBuilder::createOperator(
         mesh, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
-
     auto volumeLinearOp = std::dynamic_pointer_cast<LinearOperator>( volumeOperator );
     AMP_INSIST(
         volumeLinearOp,
         "Error: unable to create linear operator in OperatorBuilder::createLinearBVPOperator" );
 
     // create the boundary operator
-    std::string boundaryOperatorName = operator_db->getString( "BoundaryOperator" );
-    auto boundaryOperator_db         = input_db->getDatabase( boundaryOperatorName );
+    auto boundaryOperator_db = input_db->getDatabase( boundaryOperatorName );
     AMP_INSIST( boundaryOperator_db, "NULL database object passed for boundary operator" );
-
     boundaryOperator_db->putScalar(
         "isAttachedToVolumeOperator", true, Units(), Database::Check::Overwrite );
 
@@ -949,10 +1023,15 @@ Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
     auto operator_db = input_db->getDatabase( operatorName );
     AMP_INSIST( operator_db, "NULL database object passed" );
 
+    // operator names
+    auto volumeOperatorName   = operator_db->getString( "VolumeOperator" );
+    auto boundaryOperatorName = operator_db->getString( "BoundaryOperator" );
+
+    // Ensure consistency of operator memory locations
+    OperatorBuilder::setNestedOperatorMemoryLocations(
+        input_db, operatorName, { volumeOperatorName, boundaryOperatorName } );
+
     // create the volume operator
-    std::string volumeOperatorName = operator_db->getString( "VolumeOperator" );
-
-
     auto volumeOperator = OperatorBuilder::createOperator(
         mesh, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
     AMP_INSIST( volumeOperator,
@@ -960,8 +1039,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
                 "OperatorBuilder::createNonlinearBVPOperator" );
 
     // create the boundary operator
-    std::string boundaryOperatorName = operator_db->getString( "BoundaryOperator" );
-    auto boundaryOperator_db         = input_db->getDatabase( boundaryOperatorName );
+    auto boundaryOperator_db = input_db->getDatabase( boundaryOperatorName );
     AMP_INSIST( boundaryOperator_db, "NULL database object passed for boundary operator" );
 
     boundaryOperator_db->putScalar(
@@ -1119,6 +1197,10 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createColumnBoundaryOperator(
 
     auto boundaryOps = operator_db->getVector<std::string>( "boundaryOperators" );
     AMP_ASSERT( numberOfBoundaryOperators == (int) boundaryOps.size() );
+
+    // Ensure consistency of operator memory locations
+    OperatorBuilder::setNestedOperatorMemoryLocations(
+        input_db, boundaryOperatorName, boundaryOps );
 
     auto params    = std::make_shared<OperatorParameters>( operator_db );
     params->d_Mesh = mesh;
