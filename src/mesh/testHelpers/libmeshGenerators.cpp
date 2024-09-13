@@ -1,4 +1,8 @@
 #include "AMP/mesh/testHelpers/libmeshGenerators.h"
+#ifdef AMP_USE_LIBMESH
+    #include "AMP/mesh/libmesh/initializeLibMesh.h"
+    #include "AMP/mesh/libmesh/libmeshMesh.h"
+#endif
 
 
 // LibMesh includes
@@ -164,8 +168,13 @@ void libMeshThreeElementGenerator::build_mesh()
     local_mesh->prepare_for_use( false );
     mesh = std::make_shared<AMP::Mesh::libmeshMesh>( local_mesh, "3 Element" );
 #else
-    AMP_ERRROR( "libMeshThreeElementGenerator requires libMesh" );
+    AMP_ERROR( "libMeshThreeElementGenerator requires libMesh" );
 #endif
+}
+libMeshThreeElementGenerator::~libMeshThreeElementGenerator()
+{
+    mesh.reset();
+    libmeshInit.reset();
 }
 
 
