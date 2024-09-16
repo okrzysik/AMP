@@ -54,6 +54,9 @@ SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
 // reset
 void SubchannelFourEqNonlinearOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
+    AMP_ASSERT( params );
+    d_memory_location = params->d_memory_location;
+
     auto myparams = std::dynamic_pointer_cast<const SubchannelOperatorParameters>( params );
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );

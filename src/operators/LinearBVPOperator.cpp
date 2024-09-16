@@ -35,6 +35,7 @@ static void addMatrix( std::shared_ptr<OperatorParameters> p,
 LinearBVPOperator::LinearBVPOperator( std::shared_ptr<const OperatorParameters> inParams )
     : LinearOperator( inParams )
 {
+    AMP_ASSERT( inParams );
     auto params        = std::dynamic_pointer_cast<const BVPOperatorParameters>( inParams );
     d_volumeOperator   = std::dynamic_pointer_cast<LinearOperator>( params->d_volumeOperator );
     d_boundaryOperator = params->d_boundaryOperator;
@@ -53,7 +54,8 @@ LinearBVPOperator::LinearBVPOperator( std::shared_ptr<const OperatorParameters> 
 
 void LinearBVPOperator::reset( std::shared_ptr<const OperatorParameters> inParams )
 {
-    auto params = std::dynamic_pointer_cast<const BVPOperatorParameters>( inParams );
+    d_memory_location = inParams->d_memory_location;
+    auto params       = std::dynamic_pointer_cast<const BVPOperatorParameters>( inParams );
 
     AMP_INSIST( params, "LinearBVPOperator :: reset Null parameter" );
 

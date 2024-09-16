@@ -25,6 +25,13 @@ namespace AMP::LinearAlgebra {
 template<class Allocator>
 AMP::Utilities::MemoryType constexpr memLocSelector()
 {
+#ifdef USE_DEVICE
+    if ( std::is_same_v<Allocator, AMP::ManagedAllocator<int>> ) {
+        return AMP::Utilities::MemoryType::managed;
+    } else if ( std::is_same_v<Allocator, AMP::DeviceAllocator<int>> ) {
+        return AMP::Utilities::MemoryType::device;
+    }
+#endif
     return AMP::Utilities::MemoryType::host;
 }
 
