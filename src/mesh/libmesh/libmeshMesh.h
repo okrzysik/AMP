@@ -6,6 +6,8 @@
 
 // LibMesh include
 DISABLE_WARNINGS
+#include "libmesh/libmesh_config.h"
+#undef LIBMESH_ENABLE_REFERENCE_COUNTING
 #include "libmesh/mesh.h"
 #include "libmesh/node.h"
 //#include "libmesh/mesh_data.h"

@@ -1,4 +1,3 @@
-
 #ifndef included_AMP_NonlinearFEOperator
 #define included_AMP_NonlinearFEOperator
 
@@ -10,6 +9,8 @@
 
 // Libmesh headers
 DISABLE_WARNINGS
+#include "libmesh/libmesh_config.h"
+#undef LIBMESH_ENABLE_REFERENCE_COUNTING
 #include "libmesh/elem.h"
 ENABLE_WARNINGS
 
