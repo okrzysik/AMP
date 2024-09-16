@@ -127,10 +127,10 @@ void NeutronicsRhs::printClassData( std::ostream &os ) const
  */
 void NeutronicsRhs::reset( std::shared_ptr<const OperatorParameters> parameters )
 {
-
     AMP_ASSERT( parameters );
-    d_db        = parameters->d_db;
-    auto params = std::dynamic_pointer_cast<const NeutronicsRhsParameters>( parameters );
+    d_memory_location = parameters->d_memory_location;
+    d_db              = parameters->d_db;
+    auto params       = std::dynamic_pointer_cast<const NeutronicsRhsParameters>( parameters );
     AMP_ASSERT( params );
     AMP_ASSERT( ( ( params->d_db ).get() ) != nullptr );
     getFromInput( params->d_db );

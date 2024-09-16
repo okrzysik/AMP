@@ -104,6 +104,9 @@ void FickSoretNonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shar
 
 void FickSoretNonlinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
+    AMP_ASSERT( params );
+    d_memory_location = params->d_memory_location;
+
     auto fsParams =
         std::dynamic_pointer_cast<const FickSoretNonlinearFEOperatorParameters>( params );
     d_FickOperator->reset( fsParams->d_FickParameters );

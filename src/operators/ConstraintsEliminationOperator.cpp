@@ -6,13 +6,6 @@
 
 namespace AMP::Operator {
 
-void ConstraintsEliminationOperator::reset( std::shared_ptr<const OperatorParameters> params )
-{
-
-    AMP_INSIST( ( params != nullptr ), "NULL parameter" );
-    AMP_INSIST( ( ( params->d_db ) != nullptr ), "NULL database" );
-}
-
 std::shared_ptr<AMP::LinearAlgebra::Variable> ConstraintsEliminationOperator::getInputVariable()
 {
     return d_InputVariable;

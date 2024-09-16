@@ -59,6 +59,13 @@ std::shared_ptr<data_type[]> sharedArrayWrapper( data_type *raw_array )
 template<class Allocator>
 AMP::Utilities::MemoryType constexpr memLocSelector()
 {
+#ifdef USE_DEVICE
+    if ( std::is_same_v<Allocator, AMP::ManagedAllocator<int>> ) {
+        return AMP::Utilities::MemoryType::managed;
+    } else if ( std::is_same_v<Allocator, AMP::DeviceAllocator<int>> ) {
+        return AMP::Utilities::MemoryType::device;
+    }
+#endif
     return AMP::Utilities::MemoryType::host;
 }
 
@@ -388,7 +395,7 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
             std::copy( d_cols.get(), d_cols.get() + d_nnz, cloneData->d_cols.get() );
             std::copy( d_cols_loc.get(), d_cols_loc.get() + d_nnz, cloneData->d_cols_loc.get() );
             // need to zero out coeffs so that padded region has valid data
-            std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, 0.0 );
+            std::fill( cloneData->d_coeffs.get(), cloneData->d_coeffs.get() + d_nnz, 0.0 );
         } else {
 #ifdef USE_DEVICE
             AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::copy_n(
@@ -400,7 +407,8 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::cloneMatrixData(
             AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::copy_n(
                 d_cols_loc.get(), d_nnz, cloneData->d_cols_loc.get() );
             // need to zero out coeffs so that padded region has valid data
-            AMP::LinearAlgebra::DeviceDataHelpers<scalar_t>::fill_n( d_coeffs.get(), d_nnz, 0.0 );
+            AMP::LinearAlgebra::DeviceDataHelpers<scalar_t>::fill_n(
+                cloneData->d_coeffs.get(), d_nnz, 0.0 );
 #else
             AMP_ERROR( "No device found!" );
 #endif

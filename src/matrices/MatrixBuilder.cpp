@@ -140,7 +140,6 @@ createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator<int>>(
     const std::function<std::vector<size_t>( size_t )> &getRow );
 #endif
 
-
 /********************************************************
  * Build a DenseSerialMatrix                             *
  ********************************************************/

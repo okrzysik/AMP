@@ -195,11 +195,6 @@ void NavierStokesLSWFFEOperator::postElementOperation()
     }     // end for r
 }
 
-void NavierStokesLSWFFEOperator::reset( std::shared_ptr<const OperatorParameters> )
-{
-    // DO Nothing
-}
-
 std::shared_ptr<OperatorParameters> NavierStokesLSWFFEOperator::getJacobianParameters(
     AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
