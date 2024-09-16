@@ -18,10 +18,12 @@ NeutronicsOperator{
   timeSteps          = 1, 10000.
   useFixedValue      = TRUE
   fixedValues        = 1.0, 2.0
+  MemoryLocation = "managed"
 }
 
 DiffusionBVPOperator {
    name="LinearBVPOperator"
+   MemoryLocation = "managed"
    print_info_level = 1
    VolumeOperator = "DiffusionLinearFEOperator1"
    BoundaryOperator = "ColumnBoundaryOperator1"
