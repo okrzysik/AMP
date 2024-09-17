@@ -3,6 +3,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/hip/HipAllocator.h"
 #include "AMP/utils/hip/helper_hip.h"
+#include "AMP/utils/memory.h"
 
 #include <iostream>
 #include <memory>

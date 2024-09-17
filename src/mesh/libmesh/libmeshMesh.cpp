@@ -20,6 +20,8 @@
 
 // LibMesh include
 DISABLE_WARNINGS
+#include "libmesh/libmesh_config.h"
+#undef LIBMESH_ENABLE_REFERENCE_COUNTING
 #include "libmesh/boundary_info.h"
 #include "libmesh/elem.h"
 #include "libmesh/exodusII_io_helper.h"
