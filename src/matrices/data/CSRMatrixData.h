@@ -177,21 +177,9 @@ public:
 
     size_t beginCol() const { return d_first_col; }
 
-    std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getCSRDiagData()
-    {
-        return std::make_tuple( d_diag_matrix->d_nnz_per_row.get(),
-                                d_diag_matrix->d_cols.get(),
-                                d_diag_matrix->d_cols_loc.get(),
-                                d_diag_matrix->d_coeffs.get() );
-    }
+    std::shared_ptr<DiagMatrixData> getDiagMatrix() { return d_diag_matrix; }
 
-    std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getCSROffDiagData()
-    {
-        return std::make_tuple( d_offd_matrix->d_nnz_per_row.get(),
-                                d_offd_matrix->d_cols.get(),
-                                d_offd_matrix->d_cols_loc.get(),
-                                d_offd_matrix->d_coeffs.get() );
-    }
+    std::shared_ptr<DiagMatrixData> getOffdMatrix() { return d_offd_matrix; }
 
     lidx_t *getDiagRowStarts() { return d_diag_matrix->d_row_starts.get(); }
 

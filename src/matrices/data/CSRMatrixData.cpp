@@ -4,13 +4,18 @@
 #include "AMP/matrices/data/CSRLocalMatrixData.hpp"
 #include "AMP/utils/memory.h"
 
-#define INSTANTIATE_FULL( policy, allocator )                                 \
-    template class AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>; \
-    template class AMP::LinearAlgebra::CSRMatrixData<                         \
-        policy,                                                               \
-        allocator,                                                            \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,            \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
+// Final step instantiates outer class with args from below
+#define INSTANTIATE_OUTER( policy, allocator, local_diag, local_offd ) \
+    template class AMP::LinearAlgebra::CSRMatrixData<policy, allocator, local_diag, local_offd>;
+
+// Instantiate local data classes and forward allowed combinations to
+// outer instantiator
+#define INSTANTIATE_LOCALS( policy, allocator )                                   \
+    template class AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>;     \
+    INSTANTIATE_OUTER( policy,                                                    \
+                       allocator,                                                 \
+                       AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>, \
+                       AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator> )
 
 // Check if device based allocators are needed
 #ifdef USE_DEVICE

@@ -2,12 +2,23 @@
 #define included_CSRMatrixOperationsDefault_H_
 
 #include "AMP/matrices/operations/MatrixOperations.h"
+#include "AMP/matrices/operations/default/CSRLocalMatrixOperations.h"
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, typename Allocator>
+template<typename Policy,
+         class Allocator,
+         class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>,
+         class OffdMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixOperationsDefault : public MatrixOperations
 {
+    CSRMatrixOperationsDefault()
+        : d_localops_diag( std::make_shared<
+                           CSRLocalMatrixOperationsDefault<Policy, Allocator, DiagMatrixData>>() ),
+          d_localops_offd( std::make_shared<
+                           CSRLocalMatrixOperationsDefault<Policy, Allocator, OffdMatrixData>>() )
+    {
+    }
 
     /** \brief  Matrix-vector multiplication
      * \param[in]  x  The vector to multiply
@@ -85,6 +96,12 @@ class CSRMatrixOperationsDefault : public MatrixOperations
      * \param[in] X Data for the input matrix
      */
     AMP::Scalar LinfNorm( const MatrixData &X ) const override;
+
+protected:
+    std::shared_ptr<CSRLocalMatrixOperationsDefault<Policy, Allocator, DiagMatrixData>>
+        d_localops_diag;
+    std::shared_ptr<CSRLocalMatrixOperationsDefault<Policy, Allocator, OffdMatrixData>>
+        d_localops_offd;
 };
 
 } // namespace AMP::LinearAlgebra

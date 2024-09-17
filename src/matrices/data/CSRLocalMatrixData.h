@@ -53,6 +53,12 @@ public:
     //! Destructor
     virtual ~CSRLocalMatrixData();
 
+    std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getDataFields()
+    {
+        return std::make_tuple(
+            d_nnz_per_row.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
+    }
+
 protected:
     std::shared_ptr<CSRLocalMatrixData> cloneMatrixData();
 

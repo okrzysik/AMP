@@ -1,0 +1,331 @@
+#include "AMP/matrices/data/CSRMatrixData.h"
+#include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Vector.h"
+
+#include <algorithm>
+#include <memory>
+
+#include "ProfilerApp.h"
+
+namespace AMP::LinearAlgebra {
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRLocalMatrixOperationsDefault<Policy, Allocator>::mult( const typename Policy::scalar_t *in,
+                                                               std::shared_ptr<LocalMatrixData> A,
+                                                               typename Policy::scalar_t *out )
+{
+    const auto nRows                   = static_cast<lidx_t>( csrData->numLocalRows() );
+    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+    lidx_t offset                      = 0;
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        const auto nCols = nnz[row];
+        const auto cloc  = &cols_loc[offset];
+        const auto vloc  = &coeffs[offset];
+        for ( lidx_t c = 0; c < nCols; ++c ) {
+            // Note: output is assumed to have useful values already
+            out[row] += vloc[c] * in[cloc[c]];
+        }
+
+        offset += nCols;
+    }
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixOperationsDefault<Policy, Allocator>::multTranspose(
+    std::shared_ptr<const Vector> in,
+    std::shared_ptr<LocalMatrixData> A,
+    std::shared_ptr<Vector> out )
+{
+
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
+
+    {
+        PROFILE( "CSRMatrixOperationsDefault::multTranspose (d)" );
+        auto [nnz, cols, cols_loc, coeffs] = csrData->getCSRDiagData();
+        const auto num_unq                 = csrData->numLocalColumns();
+
+        std::vector<scalar_t> vvals( num_unq, 0.0 );
+        std::vector<size_t> rcols( num_unq );
+
+        lidx_t offset = 0;
+        for ( lidx_t row = 0; row < nRows; ++row ) {
+
+            const auto ncols = nnz[row];
+            const auto cloc  = &cols_loc[offset];
+            const auto vloc  = &coeffs[offset];
+            const auto val   = inDataBlock[row];
+
+            for ( lidx_t j = 0; j < ncols; ++j ) {
+                rcols[cloc[j]] = cols[offset + j];
+                vvals[cloc[j]] += vloc[j] * val;
+            }
+
+            offset += ncols;
+        }
+
+        // Write out data, adding to any already present
+        out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
+    }
+    out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+
+    if ( csrData->hasOffDiag() ) {
+        PROFILE( "CSRMatrixOperationsDefault::multTranspose (od)" );
+        auto [nnz, cols, cols_loc, coeffs] = csrData->getCSROffDiagData();
+
+        std::vector<size_t> rcols;
+        csrData->getOffDiagColumnMap( rcols );
+        const auto num_unq = rcols.size();
+
+        std::vector<scalar_t> vvals( num_unq, 0.0 );
+
+        lidx_t offset = 0;
+        for ( lidx_t row = 0; row < nRows; ++row ) {
+
+            const auto ncols = nnz[row];
+            if ( ncols == 0 ) {
+                continue;
+            }
+
+            const auto cloc = &cols_loc[offset];
+            const auto vloc = &coeffs[offset];
+            const auto val  = inDataBlock[row];
+
+            for ( lidx_t j = 0; j < ncols; ++j ) {
+                vvals[cloc[j]] += vloc[j] * val;
+            }
+
+            offset += ncols;
+        }
+
+        // convert colmap to size_t and write out data
+        out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
+    }
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixOperationsDefault<Policy, Allocator>::scale( typename Policy::scalar_t alpha,
+                                                           std::shared_ptr<LocalMatrixData> A )
+{
+    using scalar_t = typename Policy::scalar_t;
+
+    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+
+    const auto tnnz = A->numberOfNonZeros();
+
+    std::transform( const_cast<scalar_t *>( coeffs ),
+                    const_cast<scalar_t *>( coeffs ) + tnnz,
+                    const_cast<scalar_t *>( coeffs ),
+                    [=]( scalar_t val ) { return alpha * val; } );
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixOperationsDefault<Policy, Allocator>::matMultiply( std::shared_ptr<LocalMatrixData>,
+                                                                 std::shared_ptr<LocalMatrixData>,
+                                                                 std::shared_ptr<LocalMatrixData> )
+{
+    AMP_WARNING( "SpGEMM for CSRMatrixOperationsDefault not implemented" );
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixOperationsDefault<Policy, Allocator>::axpy( typename Policy::scalar_t alpha,
+                                                          std::shared_ptr<LocalMatrixData> X,
+                                                          std::shared_ptr<LocalMatrixData> Y )
+{
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    const auto [nnz_x, cols_x, cols_loc_x, coeffs_x] = X->getDataFields();
+    auto [nnz_y, cols_y, cols_loc_y, coeffs_y]       = Y->getDataFields();
+
+    const auto tnnz = X->numberOfNonZeros();
+    for ( lidx_t i = 0; i < tnnz; ++i ) {
+        coeffs_y[i] += alpha * coeffs_x[i];
+    }
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixOperationsDefault<Policy, Allocator>::setScalar( typename Policy::scalar_t alpha,
+                                                               std::shared_ptr<LocalMatrixData> A )
+{
+    using scalar_t = typename Policy::scalar_t;
+
+    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+
+    const auto tnnz = A->numberOfNonZeros();
+
+    std::fill( coeffs, coeffs + tnnz, alpha );
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixOperationsDefault<Policy, Allocator>::zero( std::shared_ptr<LocalMatrixData> A )
+{
+    using scalar_t = typename Policy::scalar_t;
+    setScalar( static_cast<scalar_t>( 0.0 ), A );
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixOperationsDefault<Policy, Allocator>::setDiagonal(
+    std::shared_ptr<const Vector> in, std::shared_ptr<LocalMatrixData> A )
+{
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    // constrain to one data block for now
+    AMP_DEBUG_ASSERT( in && in->numberOfDataBlocks() == 1 && in->isType<scalar_t>( 0 ) );
+
+    const scalar_t *vvals_p = in->getRawDataBlock<scalar_t>();
+
+    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+
+    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
+
+    auto beginRow = A->beginRow();
+
+    lidx_t offset = 0;
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        const auto ncols = nnz[row];
+        for ( lidx_t icol = 0; icol < ncols; ++icol ) {
+            if ( cols[offset + icol] == static_cast<gidx_t>( beginRow + row ) ) {
+                coeffs[offset + icol] = vvals_p[row];
+                break;
+            }
+        }
+        offset += nnz[row];
+    }
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixOperationsDefault<Policy, Allocator>::setIdentity(
+    std::shared_ptr<LocalMatrixData> A )
+{
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    zero( A );
+
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
+
+    auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
+
+    AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsDefault is not implemented for device memory" );
+
+    const auto nRows    = static_cast<lidx_t>( csrData->numLocalRows() );
+    const auto beginRow = csrData->beginRow();
+
+    auto vals_p = const_cast<scalar_t *>( coeffs_d );
+
+    lidx_t offset = 0;
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        const auto ncols = nnz_d[row];
+        for ( lidx_t icol = 0; icol < ncols; ++icol ) {
+            if ( cols_d[offset + icol] == static_cast<gidx_t>( beginRow + row ) ) {
+                vals_p[offset + icol] = static_cast<scalar_t>( 1.0 );
+                break;
+            }
+        }
+        offset += nnz_d[row];
+    }
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixOperationsDefault<Policy, Allocator>::extractDiagonal(
+    std::shared_ptr<LocalMatrixData> A, std::shared_ptr<Vector> buf )
+{
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
+    auto [nnz_d, cols_d, cols_loc_d, coeffs_d] = csrData->getCSRDiagData();
+
+    AMP_ASSERT( buf && buf->numberOfDataBlocks() == 1 );
+    AMP_ASSERT( buf->isType<scalar_t>( 0 ) );
+
+    auto *rawVecData = buf->getRawDataBlock<scalar_t>();
+    auto memTypeV    = AMP::Utilities::getMemoryType( rawVecData );
+    if ( memTypeV < AMP::Utilities::MemoryType::device &&
+         csrData->d_memory_location < AMP::Utilities::MemoryType::device ) {
+
+        const auto nRows    = static_cast<lidx_t>( csrData->numLocalRows() );
+        const auto beginRow = csrData->beginRow();
+
+        lidx_t offset = 0;
+        for ( lidx_t row = 0; row < nRows; ++row ) {
+            const auto ncols = nnz_d[row];
+            for ( lidx_t icol = 0; icol < ncols; ++icol ) {
+                if ( cols_d[offset + icol] == static_cast<gidx_t>( beginRow + row ) ) {
+                    rawVecData[row] = coeffs_d[offset + icol];
+                    break;
+                }
+            }
+            offset += nnz_d[row];
+        }
+    } else {
+        AMP_ERROR(
+            "CSRMatrixOperationsDefault::extractDiagonal not implemented for device memory" );
+    }
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+AMP::Scalar
+CSRMatrixOperationsDefault<Policy, Allocator>::LinfNorm( std::shared_ptr<LocalMatrixData> A ) const
+{
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData =
+        getCSRMatrixData<Policy,
+                         Allocator,
+                         CSRLocalMatrixData<Policy, Allocator>,
+                         CSRLocalMatrixData<Policy, Allocator>>( const_cast<MatrixData &>( A ) );
+
+    auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
+    auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
+    auto rs_d                                      = csrData->getDiagRowStarts();
+    auto rs_od                                     = csrData->getOffDiagRowStarts();
+    bool hasOffd                                   = csrData->hasOffDiag();
+
+    AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsDefault is not implemented for device memory" );
+
+    const auto nRows  = static_cast<lidx_t>( csrData->numLocalRows() );
+    scalar_t max_norm = 0.0;
+
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        scalar_t norm = 0.0;
+        auto nCols    = nnz_d[row];
+        auto start    = rs_d[row];
+        for ( lidx_t j = 0; j < nCols; ++j ) {
+            norm += std::abs( coeffs_d[start + j] );
+        }
+        if ( hasOffd ) {
+            nCols = nnz_od[row];
+            start = rs_od[row];
+            for ( lidx_t j = 0; j < nCols; ++j ) {
+                norm += fabs( coeffs_od[start + j] );
+            }
+        }
+        max_norm = std::max( max_norm, norm );
+    }
+
+    // Reduce row sums to get global Linf norm
+    AMP_MPI comm = csrData->getComm();
+    return comm.maxReduce<scalar_t>( max_norm );
+}
+
+} // namespace AMP::LinearAlgebra
