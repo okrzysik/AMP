@@ -2,6 +2,8 @@
 #include "AMP/utils/Utilities.hpp"
 
 // libMesh includes
+#include "libmesh/libmesh_config.h"
+#undef LIBMESH_ENABLE_REFERENCE_COUNTING
 #include "libmesh/boundary_info.h"
 #include "libmesh/elem.h"
 
