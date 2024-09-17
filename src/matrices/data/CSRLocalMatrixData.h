@@ -59,6 +59,47 @@ public:
             d_nnz_per_row.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
     }
 
+    lidx_t *getRowStarts() { return d_row_starts.get(); }
+
+    lidx_t numberOfNonZeros() const { return d_nnz; }
+
+    lidx_t numLocalRows() const { return d_last_row - d_first_row; }
+
+    lidx_t numLocalColumns() const { return d_last_col - d_first_col; }
+
+    lidx_t beginRow() const { return d_first_row; }
+
+    lidx_t beginColumn() const { return d_first_col; }
+
+    template<typename idx_t>
+    void getColumnMap( std::vector<idx_t> &colMap )
+    {
+        // Don't do anything if offd and empty
+        if ( !d_is_diag && d_is_empty ) {
+            return;
+        }
+
+        AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                    "Copies from device to host memory not implemented yet" );
+
+        // find map for offd, no-op when on-diag
+        findColumnMap();
+        colMap.resize( d_is_diag ? ( d_last_col - d_first_col ) : d_ncols_unq );
+
+        if ( d_is_diag ) {
+            std::iota( colMap.begin(), colMap.end(), 0 );
+        } else {
+            if constexpr ( std::is_same_v<idx_t, gidx_t> ) {
+                std::copy( d_cols_unq.get(), d_cols_unq.get() + d_ncols_unq, colMap.begin() );
+            } else {
+                std::transform( d_cols_unq.get(),
+                                d_cols_unq.get() + d_ncols_unq,
+                                colMap.begin(),
+                                []( gidx_t c ) -> idx_t { return c; } );
+            }
+        }
+    }
+
 protected:
     std::shared_ptr<CSRLocalMatrixData> cloneMatrixData();
 

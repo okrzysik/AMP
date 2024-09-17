@@ -1,5 +1,5 @@
 #include "AMP/matrices/data/CSRMatrixData.h"
-#include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
+#include "AMP/matrices/operations/default/CSRMatrixOperationsDefault.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 
@@ -10,9 +10,8 @@
 namespace AMP::LinearAlgebra {
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::mult( std::shared_ptr<const Vector> in,
-                                                          MatrixData const &A,
-                                                          std::shared_ptr<Vector> out )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::mult(
+    std::shared_ptr<const Vector> in, MatrixData const &A, std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsDefault::mult" );
     AMP_DEBUG_ASSERT( in && out );
@@ -48,19 +47,18 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::mult( std::shared_ptr<const 
 
     {
         PROFILE( "CSRMatrixOperationsDefault::mult (local)" );
-        d_localops_diag.mult( inDataBlock, csrData->getDiagMatrix(), outDataBlock );
+        d_localops_diag->mult( inDataBlock, csrData->getDiagMatrix(), outDataBlock );
     }
 
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsDefault::mult (ghost)" );
-        d_localops_offd.mult( inDataBlock, csrData->getOffdMatrix(), outDataBlock );
+        d_localops_offd->mult( inDataBlock, csrData->getOffdMatrix(), outDataBlock );
     }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::multTranspose( std::shared_ptr<const Vector> in,
-                                                                   MatrixData const &A,
-                                                                   std::shared_ptr<Vector> out )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::multTranspose(
+    std::shared_ptr<const Vector> in, MatrixData const &A, std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsDefault::multTranspose" );
 
@@ -69,7 +67,6 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::multTranspose( std::shared_p
 
     out->zero();
 
-    using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
@@ -81,31 +78,30 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::multTranspose( std::shared_p
     auto inData                 = in->getVectorData();
     const scalar_t *inDataBlock = inData->getRawDataBlock<scalar_t>( 0 );
 
-    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
-
     {
         PROFILE( "CSRMatrixOperationsDefault::multTranspose (d)" );
 
-        std::vector<scalar_t> vvals( num_unq, 0.0 );
-        std::vector<size_t> rcols( num_unq );
-
-        d_localops_diag.multTranspose( inDataBlock, csrData->getDiagMatrix(), vvals, rcols );
-
-        // Write out data, adding to any already present
-        out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
+        std::vector<scalar_t> vvals;
+        std::vector<size_t> rcols;
+        d_localops_diag->multTranspose( inDataBlock, csrData->getDiagMatrix(), vvals, rcols );
+        out->addValuesByGlobalID( rcols.size(), rcols.data(), vvals.data() );
     }
     out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsDefault::multTranspose (od)" );
-        d_localops_offd.multTranspose( inDataBlock, csrData->getOffdMatrix(), SOMETHING );
-        // write out data
-        out->addValuesByGlobalID( num_unq, rcols.data(), vvals.data() );
+
+        std::vector<scalar_t> vvals;
+        std::vector<size_t> rcols;
+        d_localops_offd->multTranspose( inDataBlock, csrData->getOffdMatrix(), vvals, rcols );
+        // Write out data, adding to any already present
+        out->addValuesByGlobalID( rcols.size(), rcols.data(), vvals.data() );
     }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::scale( AMP::Scalar alpha_in, MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::scale(
+    AMP::Scalar alpha_in, MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
 
@@ -116,26 +112,23 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::scale( AMP::Scalar alpha_in,
                 "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
-    d_localops_diag.scale( alpha, csrData->getDiagMatrix() );
+    d_localops_diag->scale( alpha, csrData->getDiagMatrix() );
     if ( csrData->hasOffDiag() ) {
-        d_localops_offd.scale( alpha, csrData->getOffdMatrix() );
+        d_localops_offd->scale( alpha, csrData->getOffdMatrix() );
     }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::matMultiply( MatrixData const &,
-                                                                 MatrixData const &,
-                                                                 MatrixData & )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::matMultiply(
+    MatrixData const &, MatrixData const &, MatrixData & )
 {
     AMP_WARNING( "SpGEMM for CSRMatrixOperationsDefault not implemented" );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::axpy( AMP::Scalar alpha_in,
-                                                          const MatrixData &X,
-                                                          MatrixData &Y )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::axpy(
+    AMP::Scalar alpha_in, const MatrixData &X, MatrixData &Y )
 {
-    using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     const auto csrDataX = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
@@ -149,14 +142,15 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::axpy( AMP::Scalar alpha_in,
                 "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
-    d_localops_diag.axpy( alpha, csrDataX->getDiagMatrix(), csrDataY->getDiagMatrix() );
+    d_localops_diag->axpy( alpha, csrDataX->getDiagMatrix(), csrDataY->getDiagMatrix() );
     if ( csrDataX->hasOffDiag() ) {
-        d_localops_offd.axpy( alpha, csrDataX->getOffdMatrix(), csrDataY->getOffdMatrix() );
+        d_localops_offd->axpy( alpha, csrDataX->getOffdMatrix(), csrDataY->getOffdMatrix() );
     }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::setScalar( AMP::Scalar alpha_in, MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setScalar(
+    AMP::Scalar alpha_in, MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
 
@@ -167,25 +161,24 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::setScalar( AMP::Scalar alpha
                 "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
-    d_localops_diag.setScalar( alpha, csrData->getDiagMatrix() );
+    d_localops_diag->setScalar( alpha, csrData->getDiagMatrix() );
     if ( csrData->hasOffDiag() ) {
-        d_localops_offd.setScalar( alpha, csrData->getOffdMatrix() );
+        d_localops_offd->setScalar( alpha, csrData->getOffdMatrix() );
     }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::zero( MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::zero(
+    MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
     setScalar( static_cast<scalar_t>( 0.0 ), A );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::setDiagonal( std::shared_ptr<const Vector> in,
-                                                                 MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setDiagonal(
+    std::shared_ptr<const Vector> in, MatrixData &A )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     // constrain to one data block for now
@@ -199,16 +192,13 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::setDiagonal( std::shared_ptr
     AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is not implemented for device memory" );
 
-    d_localops_diag.setDiagonal( vvals_p, csrData->getDiagMatrix() );
+    d_localops_diag->setDiagonal( vvals_p, csrData->getDiagMatrix() );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::setIdentity( MatrixData &A )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setIdentity(
+    MatrixData &A )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
@@ -217,15 +207,13 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::setIdentity( MatrixData &A )
 
     zero( A );
 
-    d_localops_diag.setIdentity( csrData->getDiagMatrix() );
+    d_localops_diag->setIdentity( csrData->getDiagMatrix() );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-void CSRMatrixOperationsDefault<Policy, Allocator>::extractDiagonal( MatrixData const &A,
-                                                                     std::shared_ptr<Vector> buf )
+void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::extractDiagonal(
+    MatrixData const &A, std::shared_ptr<Vector> buf )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
@@ -240,11 +228,12 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::extractDiagonal( MatrixData 
                     csrData->d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault::extractDiagonal not implemented for device memory" );
 
-    d_localops_diag.extractDiagonal( csrData->getDiagMatrix(), rawVecData );
+    d_localops_diag->extractDiagonal( csrData->getDiagMatrix(), rawVecData );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
-AMP::Scalar CSRMatrixOperationsDefault<Policy, Allocator>::LinfNorm( MatrixData const &A ) const
+AMP::Scalar CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>::LinfNorm(
+    MatrixData const &A ) const
 {
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -258,9 +247,9 @@ AMP::Scalar CSRMatrixOperationsDefault<Policy, Allocator>::LinfNorm( MatrixData 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
     std::vector<scalar_t> rowSums( nRows, 0.0 );
 
-    d_localops_diag.LinfNorm( csrData->getDiagMatrix(), rowSums.data() );
+    d_localops_diag->LinfNorm( csrData->getDiagMatrix(), rowSums.data() );
     if ( csrData->hasOffDiag() ) {
-        d_localops_offd.LinfNorm( csrData->getOffdMatrix(), rowSums.data() );
+        d_localops_offd->LinfNorm( csrData->getOffdMatrix(), rowSums.data() );
     }
 
     // Reduce row sums to get global Linf norm

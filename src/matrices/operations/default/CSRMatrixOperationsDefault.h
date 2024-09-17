@@ -1,8 +1,11 @@
 #ifndef included_CSRMatrixOperationsDefault_H_
 #define included_CSRMatrixOperationsDefault_H_
 
+#include "AMP/matrices/data/CSRMatrixData.h"
+#include "AMP/matrices/data/MatrixData.h"
 #include "AMP/matrices/operations/MatrixOperations.h"
-#include "AMP/matrices/operations/default/CSRLocalMatrixOperations.h"
+#include "AMP/matrices/operations/default/CSRLocalMatrixOperationsDefault.h"
+#include "AMP/vectors/Vector.h"
 
 namespace AMP::LinearAlgebra {
 
@@ -12,6 +15,7 @@ template<typename Policy,
          class OffdMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixOperationsDefault : public MatrixOperations
 {
+public:
     CSRMatrixOperationsDefault()
         : d_localops_diag( std::make_shared<
                            CSRLocalMatrixOperationsDefault<Policy, Allocator, DiagMatrixData>>() ),

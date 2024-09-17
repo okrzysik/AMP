@@ -209,32 +209,7 @@ public:
     template<typename idx_t>
     void getOffDiagColumnMap( std::vector<idx_t> &colMap ) const
     {
-        // Don't do anything if empty
-        if ( d_offd_matrix->d_is_empty ) {
-            return;
-        }
-
-        // Column maps formed lazily, ensure it exists
-        d_offd_matrix->findColumnMap();
-
-        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-
-            // Resize and fill colMap
-            colMap.resize( d_offd_matrix->d_ncols_unq );
-
-            if constexpr ( std::is_same_v<idx_t, gidx_t> ) {
-                std::copy( d_offd_matrix->d_cols_unq.get(),
-                           d_offd_matrix->d_cols_unq.get() + d_offd_matrix->d_ncols_unq,
-                           colMap.begin() );
-            } else {
-                std::transform( d_offd_matrix->d_cols_unq.get(),
-                                d_offd_matrix->d_cols_unq.get() + d_offd_matrix->d_ncols_unq,
-                                colMap.begin(),
-                                []( gidx_t c ) -> idx_t { return c; } );
-            }
-        } else {
-            AMP_ERROR( "Copies from device to host memory not implemented yet" );
-        }
+        d_offd_matrix->getColumnMap( colMap );
     }
 
 protected:

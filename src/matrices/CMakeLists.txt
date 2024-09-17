@@ -3,11 +3,6 @@ BEGIN_PACKAGE_CONFIG( matrices )
 # Add the subdirectories
 ADD_PACKAGE_SUBDIRECTORY( testHelpers )
 
-ADD_PACKAGE_SUBDIRECTORY( operations )
-    ADD_PACKAGE_SUBDIRECTORY( operations/default )
-ENDIF()
-
-
 ADD_PACKAGE_SUBDIRECTORY( data )
 IF ( USE_HYPRE )
     ADD_PACKAGE_SUBDIRECTORY( data/hypre )
@@ -25,6 +20,9 @@ ENDIF()
 IF( USE_HIP )
     ADD_PACKAGE_SUBDIRECTORY( data/hip )
 ENDIF()
+
+ADD_PACKAGE_SUBDIRECTORY( operations )
+ADD_PACKAGE_SUBDIRECTORY( operations/default )
 
 # Set the default matrix type
 SET( MATRIX_TYPES "ManagedEpetraMatrix" "NativePetscMatrix" "CSRMatrix" "DenseSerialMatrix" "NULL" )
