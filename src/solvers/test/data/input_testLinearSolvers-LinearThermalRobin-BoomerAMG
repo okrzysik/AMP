@@ -125,6 +125,8 @@ LinearSolver{
   coarsen_type = 10
   interp_type = 17
   relax_order = 0
+  memory_location = "device"
+  exec_policy = "device"
 }
 
 SourcePhysicsModel {
