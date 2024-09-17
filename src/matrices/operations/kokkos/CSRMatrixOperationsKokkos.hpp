@@ -735,7 +735,6 @@ AMP::Scalar CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::
     MatrixData const &A ) const
 {
     using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData     = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
