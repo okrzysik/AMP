@@ -3,6 +3,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/cuda/CudaAllocator.h"
 #include "AMP/utils/cuda/helper_cuda.h"
+#include "AMP/utils/memory.h"
 
 #include <iostream>
 #include <memory>

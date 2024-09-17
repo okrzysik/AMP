@@ -9,7 +9,21 @@
 #ifdef USE_HIP
     #include "AMP/utils/hip/HipAllocator.h"
 #endif
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
+
+
+namespace AMP::Utilities {
+
+//! Enum to store pointer type
+enum class MemoryType : uint8_t { unregistered = 0, host = 1, managed = 2, device = 3 };
+
+//! Return the pointer type
+MemoryType getMemoryType( const void *ptr );
+
+//! Return a string for the memory type
+std::string getString( MemoryType );
+
+} // namespace AMP::Utilities
 
 
 namespace AMP {
@@ -43,6 +57,8 @@ template<typename TYPE>
 using HostAllocator = std::allocator<TYPE>;
 #endif
 
+} // namespace AMP
+
 template<typename ALLOC>
 AMP::Utilities::MemoryType getAllocatorMemoryType()
 {
@@ -66,5 +82,5 @@ AMP::Utilities::MemoryType getAllocatorMemoryType()
     }
 }
 
-} // namespace AMP
+
 #endif
