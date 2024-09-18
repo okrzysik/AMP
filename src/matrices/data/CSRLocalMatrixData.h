@@ -55,9 +55,13 @@ public:
 
     std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getDataFields()
     {
+        AMP_DEBUG_ASSERT( d_nnz_per_row.get() && d_cols.get() && d_cols_loc.get() &&
+                          d_coeffs.get() );
         return std::make_tuple(
             d_nnz_per_row.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
     }
+
+    bool isDiag() const { return d_is_diag; }
 
     lidx_t *getRowStarts() { return d_row_starts.get(); }
 
@@ -87,7 +91,7 @@ public:
         colMap.resize( d_is_diag ? ( d_last_col - d_first_col ) : d_ncols_unq );
 
         if ( d_is_diag ) {
-            std::iota( colMap.begin(), colMap.end(), 0 );
+            std::iota( colMap.begin(), colMap.end(), d_first_col );
         } else {
             if constexpr ( std::is_same_v<idx_t, gidx_t> ) {
                 std::copy( d_cols_unq.get(), d_cols_unq.get() + d_ncols_unq, colMap.begin() );

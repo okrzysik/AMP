@@ -22,6 +22,13 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
+    AMP_DEBUG_ASSERT( csrData );
+
+    auto diagMatrix = csrData->getDiagMatrix();
+    auto offdMatrix = csrData->getOffdMatrix();
+
+    AMP_DEBUG_ASSERT( diagMatrix && offdMatrix );
+
     // this ensures that the separate on/off diag calls operator the same way
     // e.g. by accumulating into output data
     out->zero();
@@ -32,14 +39,14 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto outData                = out->getVectorData();
     scalar_t *outDataBlock      = outData->getRawDataBlock<scalar_t>( 0 );
 
-    AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
 
-    AMP_INSIST(
+    AMP_DEBUG_INSIST(
         1 == inData->numberOfDataBlocks(),
         "CSRMatrixOperationsDefault::mult only implemented for vectors with one data block" );
 
-    AMP_INSIST(
+    AMP_DEBUG_INSIST(
         ghosts.size() == inData->getGhostSize(),
         "CSRMatrixOperationsDefault::mult only implemented for vectors with accessible ghosts" );
 
@@ -47,12 +54,12 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
 
     {
         PROFILE( "CSRMatrixOperationsDefault::mult (local)" );
-        d_localops_diag->mult( inDataBlock, csrData->getDiagMatrix(), outDataBlock );
+        d_localops_diag->mult( inDataBlock, diagMatrix, outDataBlock );
     }
 
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsDefault::mult (ghost)" );
-        d_localops_offd->mult( inDataBlock, csrData->getOffdMatrix(), outDataBlock );
+        d_localops_offd->mult( ghosts.data(), offdMatrix, outDataBlock );
     }
 }
 
@@ -72,8 +79,8 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
-    AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     auto inData                 = in->getVectorData();
     const scalar_t *inDataBlock = inData->getRawDataBlock<scalar_t>( 0 );
@@ -108,8 +115,8 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
-    AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
     d_localops_diag->scale( alpha, csrData->getDiagMatrix() );
@@ -135,11 +142,11 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
         const_cast<MatrixData &>( X ) );
     auto csrDataY = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>( Y );
 
-    AMP_INSIST( csrDataX->d_memory_location != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrDataX->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
 
-    AMP_INSIST( csrDataY->d_memory_location != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrDataY->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
     d_localops_diag->axpy( alpha, csrDataX->getDiagMatrix(), csrDataY->getDiagMatrix() );
@@ -157,8 +164,8 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
-    AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
     d_localops_diag->setScalar( alpha, csrData->getDiagMatrix() );
@@ -189,8 +196,8 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
-    AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     d_localops_diag->setDiagonal( vvals_p, csrData->getDiagMatrix() );
 }
@@ -202,8 +209,8 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
-    AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     zero( A );
 
@@ -224,9 +231,10 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
 
     auto *rawVecData = buf->getRawDataBlock<scalar_t>();
     auto memTypeV    = AMP::Utilities::getMemoryType( rawVecData );
-    AMP_INSIST( memTypeV < AMP::Utilities::MemoryType::device &&
-                    csrData->d_memory_location < AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault::extractDiagonal not implemented for device memory" );
+    AMP_DEBUG_INSIST(
+        memTypeV < AMP::Utilities::MemoryType::device &&
+            csrData->d_memory_location < AMP::Utilities::MemoryType::device,
+        "CSRMatrixOperationsDefault::extractDiagonal not implemented for device memory" );
 
     d_localops_diag->extractDiagonal( csrData->getDiagMatrix(), rawVecData );
 }
@@ -241,8 +249,8 @@ AMP::Scalar CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMa
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
-    AMP_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsDefault is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
     std::vector<scalar_t> rowSums( nRows, 0.0 );

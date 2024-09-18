@@ -20,7 +20,8 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::mult(
 
     const auto nRows                   = static_cast<lidx_t>( A->numLocalRows() );
     auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
-    lidx_t offset                      = 0;
+
+    lidx_t offset = 0;
     for ( lidx_t row = 0; row < nRows; ++row ) {
         const auto nCols = nnz[row];
         const auto cloc  = &cols_loc[offset];
@@ -43,8 +44,8 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::multTr
 {
     using lidx_t = typename Policy::lidx_t;
 
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
-
+    const auto nRows                   = static_cast<lidx_t>( A->numLocalRows() );
+    const bool isDiag                  = A->isDiag();
     auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
     A->getColumnMap( rcols );
     vvals.resize( rcols.size(), 0.0 );
@@ -58,6 +59,9 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::multTr
         const auto val   = in[row];
 
         for ( lidx_t j = 0; j < ncols; ++j ) {
+            if ( isDiag ) {
+                rcols[cloc[j]] = cols[offset + j];
+            }
             vvals[cloc[j]] += vloc[j] * val;
         }
 
