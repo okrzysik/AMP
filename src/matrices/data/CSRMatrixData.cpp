@@ -4,7 +4,7 @@
 #include "AMP/matrices/data/CSRLocalMatrixData.hpp"
 #include "AMP/utils/memory.h"
 
-#define INSTANTIATE_FULL( policy, allocator )         \
+#define INSTANTIATE_FULL( policy, allocator )                                 \
     template class AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>; \
     template class AMP::LinearAlgebra::CSRMatrixData<                         \
         policy,                                                               \
