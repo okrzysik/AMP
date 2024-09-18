@@ -55,8 +55,6 @@ public:
 
     std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getDataFields()
     {
-        AMP_DEBUG_ASSERT( d_nnz_per_row.get() && d_cols.get() && d_cols_loc.get() &&
-                          d_coeffs.get() );
         return std::make_tuple(
             d_nnz_per_row.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
     }
