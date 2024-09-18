@@ -10,3 +10,4 @@ template class AMP::LinearAlgebra::DeviceDataHelpers<double>;
 template class AMP::LinearAlgebra::DeviceDataHelpers<float>;
 template class AMP::LinearAlgebra::DeviceDataHelpers<size_t>;
 template class AMP::LinearAlgebra::DeviceDataHelpers<int32_t>;
+template class AMP::LinearAlgebra::DeviceDataHelpers<long long>;
