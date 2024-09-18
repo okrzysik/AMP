@@ -355,7 +355,7 @@ double AMPManager::start_CudaOrHip()
     if ( !d_properties.initialize_device )
         return 0;
     auto start = std::chrono::steady_clock::now();
-#if defined( USE_CUDA ) || defined( USE_HIP )
+#if defined( USE_DEVICE )
     if ( d_properties.bind_process_to_accelerator ) {
         AMP::Utilities::setenv( "RDMAV_FORK_SAFE", "1" );
         auto nodeComm = comm_world.splitByNode();
