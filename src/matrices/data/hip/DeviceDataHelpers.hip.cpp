@@ -7,3 +7,4 @@ template class AMP::LinearAlgebra::DeviceDataHelpers<int>;
 template class AMP::LinearAlgebra::DeviceDataHelpers<unsigned>;
 template class AMP::LinearAlgebra::DeviceDataHelpers<unsigned long>;
 template class AMP::LinearAlgebra::DeviceDataHelpers<unsigned long long>;
+template class AMP::LinearAlgebra::DeviceDataHelpers<long long>;
