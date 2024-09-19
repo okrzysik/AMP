@@ -107,6 +107,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     auto diffusionOperator =
         std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );
+    AMP_ASSERT( diffusionOperator->getMemoryLocation() == AMP::Utilities::MemoryType::managed );
 
     auto TemperatureInKelvinVec =
         AMP::LinearAlgebra::createVector( nodalDofMap,

@@ -94,6 +94,7 @@ DiffusionTransportModel1 {
 
 VolumeIntegralOperator{
   name="VolumeIntegralOperator"
+  MemoryLocation="managed"
   InputVariableType = "IntegrationPointScalar"
   Number_Active_Variables = 1
   Number_Auxillary_Variables = 0

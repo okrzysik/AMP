@@ -19,6 +19,12 @@
     #include <Epetra_CrsMatrix.h>
 #endif
 
+#ifdef AMP_USE_HYPRE
+    #include "HYPRE.h"
+    #include "HYPRE_IJ_mv.h"
+    #include "HYPRE_utilities.h"
+#endif
+
 #include <functional>
 
 
@@ -118,7 +124,11 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     return newMatrix;
 }
 
+#if defined( AMP_USE_HYPRE )
+using DefaultCSRPolicy = CSRPolicy<HYPRE_BigInt, HYPRE_Int, HYPRE_Real>;
+#else
 using DefaultCSRPolicy = CSRPolicy<size_t, int, double>;
+#endif
 
 template std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<int>>(

@@ -28,7 +28,7 @@ namespace AMP::Solver {
 HypreSolver::HypreSolver() : SolverStrategy() {}
 HypreSolver::HypreSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ),
-#ifdef USE_CUDA
+#ifdef USE_DEVICE
       d_memory_location( HYPRE_MEMORY_DEVICE ),
       d_exec_policy( HYPRE_EXEC_DEVICE )
 #else
@@ -136,7 +136,6 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             vals = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )
                        ->getRawDataBlock<HYPRE_Real>();
         } else {
-
             auto block0 = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )
                               ->getRawDataBlock<HYPRE_Real>();
             auto memType = AMP::Utilities::getMemoryType( block0 );
@@ -151,7 +150,6 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
 
     } else {
-
         auto block0 = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )
                           ->getRawDataBlock<HYPRE_Real>();
         auto memType = AMP::Utilities::getMemoryType( block0 );

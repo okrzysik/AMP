@@ -7,6 +7,8 @@
 #include "AMP/utils/memory.h"
 
 #include <numeric>
+#include <type_traits>
+#include <typeinfo>
 
 #include "HYPRE_utilities.h"
 #include "_hypre_IJ_mv.h"
@@ -64,11 +66,16 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 
     if ( csrDataHost ) {
         initializeHypreMatrix( csrDataHost );
-    } else if ( csrDataManaged && false ) {
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
+    } else if ( csrDataManaged ) {
         initializeHypreMatrix( csrDataManaged );
-    } else if ( csrDataDevice && false ) {
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
+    } else if ( csrDataDevice ) {
         initializeHypreMatrix( csrDataDevice );
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
     } else {
+
+        AMP_ERROR( "Wrong path" );
 
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
         HYPRE_IJMatrixInitialize( d_matrix );
@@ -119,6 +126,7 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     HYPRE_BigInt nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
     auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getCSROffDiagData();
+    bool hasOffd                                   = csrData->hasOffDiag();
 
     AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
 
@@ -127,9 +135,8 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     } else if ( csrData->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
 #ifdef USE_DEVICE
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
-        AMP_ERROR( "Non-host memory not yet supported in HypreMatrixAdaptor" );
 #else
-        AMP_ERROR( "Non-host memory not yet supported in HypreMatrixAdaptor" );
+        AMP_ERROR( "Pure device memory not yet supported in HypreMatrixAdaptor" );
 #endif
     }
 
@@ -147,11 +154,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     hypre_AuxParCSRMatrix *aux_mat = static_cast<hypre_AuxParCSRMatrix *>( d_matrix->translator );
     aux_mat->need_aux              = 0;
 
-    // Verify that Hypre CSRMatrices are on host memory
-    AMP_INSIST( diag->memory_location == HYPRE_MEMORY_HOST &&
-                    off_diag->memory_location == HYPRE_MEMORY_HOST,
-                "Hypre matrices need to be on host memory for adaptor to work" );
-
     // Verify that diag and off_diag are "empty"
     AMP_INSIST( diag->num_nonzeros == 0 && off_diag->num_nonzeros == 0,
                 "Hypre (off)diag matrix has nonzeros but shouldn't" );
@@ -167,8 +169,12 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     diag->i[0]     = 0;
     off_diag->i[0] = 0;
     for ( HYPRE_BigInt n = 0; n < nrows; ++n ) {
-        diag->i[n + 1]     = diag->i[n] + nnz_d[n];
-        off_diag->i[n + 1] = off_diag->i[n] + nnz_od[n];
+        diag->i[n + 1] = diag->i[n] + nnz_d[n];
+        if ( hasOffd ) {
+            off_diag->i[n + 1] = off_diag->i[n] + nnz_od[n];
+        } else {
+            off_diag->i[n + 1] = 0;
+        }
     }
 
     // This is where we tell hypre to stop owning any data
