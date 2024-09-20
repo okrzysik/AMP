@@ -46,16 +46,16 @@ using DeviceAllocator = AMP::HipDevAllocator<TYPE>;
 #endif
 
 // host allocators
-#ifdef USE_CUDA
-template<typename TYPE>
-using HostAllocator = AMP::CudaHostAllocator<TYPE>;
-#elif defined( USE_HIP )
-template<typename TYPE>
-using HostAllocator = AMP::HipHostAllocator<TYPE>;
-#else // no device
+// #ifdef USE_CUDA
+// template<typename TYPE>
+// using HostAllocator = AMP::CudaHostAllocator<TYPE>;
+// #elif defined( USE_HIP )
+// template<typename TYPE>
+// using HostAllocator = AMP::HipHostAllocator<TYPE>;
+// #else // no device
 template<typename TYPE>
 using HostAllocator = std::allocator<TYPE>;
-#endif
+// #endif
 
 } // namespace AMP
 

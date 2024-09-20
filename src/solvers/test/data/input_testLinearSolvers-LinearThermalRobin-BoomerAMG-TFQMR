@@ -12,6 +12,7 @@ Mesh{
 
 NeutronicsOperator{
   name="NeutronicsSourceOperator"
+  MemoryLocation="managed"
   type               = "Power"
   OutputVariable     = "SpecificPowerInWattsPerGram"
   numTimeSteps       = 2
@@ -22,6 +23,7 @@ NeutronicsOperator{
 
 DiffusionBVPOperator {
    name="LinearBVPOperator"
+   MemoryLocation="managed"
    VolumeOperator = "DiffusionLinearFEOperator1"
    BoundaryOperator = "ColumnBoundaryOperator1"
 }
@@ -91,6 +93,7 @@ DiffusionTransportModel1 {
 
 VolumeIntegralOperator{
   name="VolumeIntegralOperator"
+  MemoryLocation="managed"
   InputVariableType = "IntegrationPointScalar"
   Number_Active_Variables = 1
   Number_Auxillary_Variables = 0

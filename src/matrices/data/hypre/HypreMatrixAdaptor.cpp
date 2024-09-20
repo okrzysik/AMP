@@ -75,7 +75,7 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
     } else {
 
-        AMP_ERROR( "Wrong path" );
+        AMP_WARNING( "HypreMatrixAdaptor: Deep copy of input matrix into Hypre matrix" );
 
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
         HYPRE_IJMatrixInitialize( d_matrix );
