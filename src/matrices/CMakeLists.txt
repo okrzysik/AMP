@@ -12,6 +12,11 @@ IF( USE_KOKKOS )
     ENDIF()
 ENDIF()
 
+SET_NVCC( CSRMatrix.cpp )
+IF( USE_HIP )
+    set_source_files_properties( CSRMatrix.cpp PROPERTIES LANGUAGE HIP )
+ENDIF()
+
 ADD_PACKAGE_SUBDIRECTORY( data )
 IF ( USE_HYPRE )
     ADD_PACKAGE_SUBDIRECTORY( data/hypre )
