@@ -197,10 +197,10 @@ static inline std::string operator+( std::string_view x, std::string_view y )
  *      Be sure to follow with ENABLE_WARNINGS
  */
 #ifndef DISABLE_WARNINGS
-    #if defined( USING_MSVC )
+    #if defined( _MSC_VER )
         #define DISABLE_WARNINGS __pragma( warning( push, 0 ) )
         #define ENABLE_WARNINGS __pragma( warning( pop ) )
-    #elif defined( USING_CLANG )
+    #elif defined( __clang__ )
         #define DISABLE_WARNINGS                                                      \
             _Pragma( "clang diagnostic push" )                                        \
             _Pragma( "clang diagnostic ignored \"-Wall\"" )                           \
@@ -211,7 +211,24 @@ static inline std::string operator+( std::string_view x, std::string_view y )
             _Pragma( "clang diagnostic ignored \"-Winconsistent-missing-override\"" ) \
             _Pragma( "clang diagnostic ignored \"-Wimplicit-int-float-conversion\"" )
         #define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
-    #elif defined( USING_GCC )
+    #elif defined( __INTEL_COMPILER )
+        #if defined ( __INTEL_LLVM_COMPILER )
+            // have to figure these warnings out
+            #define DISABLE_WARNINGS                \
+                _Pragma( "warning (push)" )
+            #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
+        #else
+           #define DISABLE_WARNINGS                \
+               _Pragma( "warning (push)" )         \
+               _Pragma( "warning disable 488" )    \
+               _Pragma( "warning disable 1011" )   \
+               _Pragma( "warning disable 61" )     \
+               _Pragma( "warning disable 1478" )   \
+               _Pragma( "warning disable 488" )    \
+               _Pragma( "warning disable 2651" )
+           #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
+        #endif
+    #elif defined( __GNUC__ )
         #define DISABLE_WARNINGS                                                \
             _Pragma( "GCC diagnostic push" )                                    \
             _Pragma( "GCC diagnostic ignored \"-Wpragmas\"" )                   \
@@ -237,23 +254,6 @@ static inline std::string operator+( std::string_view x, std::string_view y )
             _Pragma( "GCC diagnostic ignored \"-Wclass-memaccess\"" )           \
             _Pragma( "GCC diagnostic ignored \"-Waggressive-loop-optimizations\"" )
         #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
-    #elif defined( USING_ICC )
-        #if defined ( __INTEL_LLVM_COMPILER )
-            // have to figure these warnings out
-            #define DISABLE_WARNINGS                \
-                _Pragma( "warning (push)" )
-            #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
-        #else
-           #define DISABLE_WARNINGS                \
-               _Pragma( "warning (push)" )         \
-               _Pragma( "warning disable 488" )    \
-               _Pragma( "warning disable 1011" )   \
-               _Pragma( "warning disable 61" )     \
-               _Pragma( "warning disable 1478" )   \
-               _Pragma( "warning disable 488" )    \
-               _Pragma( "warning disable 2651" )
-           #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
-        #endif
     #else
         #define DISABLE_WARNINGS
         #define ENABLE_WARNINGS

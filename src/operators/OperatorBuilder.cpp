@@ -1003,7 +1003,7 @@ Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
                                                                      boundaryLocalModel,
                                                                      localModelFactory );
 
-    auto bvpOperatorParams                = std::make_shared<BVPOperatorParameters>( input_db );
+    auto bvpOperatorParams                = std::make_shared<BVPOperatorParameters>( operator_db );
     bvpOperatorParams->d_volumeOperator   = volumeOperator;
     bvpOperatorParams->d_boundaryOperator = boundaryOperator;
 
