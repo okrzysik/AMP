@@ -1,11 +1,7 @@
-#ifndef included_AMP_CudaOperationsHelpers_hpp
-#define included_AMP_CudaOperationsHelpers_hpp
+#ifndef included_AMP_DeviceOperationsHelpers_hpp
+#define included_AMP_DeviceOperationsHelpers_hpp
 
-#include <cuda.h>
-#include <thrust/device_vector.h>
-#include <thrust/execution_policy.h>
-#include <thrust/for_each.h>
-#include <thrust/inner_product.h>
+#include "AMP/utils/device/device.h"
 
 namespace AMP {
 namespace LinearAlgebra {

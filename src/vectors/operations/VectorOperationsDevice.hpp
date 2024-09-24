@@ -1,15 +1,12 @@
-#ifndef included_AMP_VectorOperationsCuda_hpp
-#define included_AMP_VectorOperationsCuda_hpp
+#ifndef included_AMP_VectorOperationsDevice_hpp
+#define included_AMP_VectorOperationsDevice_hpp
 
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
+#include "AMP/vectors/operations/DeviceOperationsHelpers.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.hpp"
-#include "AMP/vectors/operations/cuda/CudaOperationsHelpers.h"
-#include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
-
-#include <cuda.h>
-#include <cuda_runtime_api.h>
+#include "AMP/vectors/operations/VectorOperationsDevice.h"
 
 
 namespace AMP {
@@ -38,7 +35,7 @@ VectorOperationsDevice<TYPE>::~VectorOperationsDevice<TYPE>()
 
 
 /****************************************************************
- * Check that all data can be passed to cuda                     *
+ * Check that all data can be passed to device                     *
  ****************************************************************/
 inline bool checkData( const VectorData &x ) { return x.numberOfDataBlocks() == 1; }
 template<class TYPE>
@@ -109,7 +106,7 @@ void VectorOperationsDevice<TYPE>::setToScalar( const Scalar &alpha_in, VectorDa
     x.setUpdateStatus( UpdateState::UNCHANGED );
     // Wait for cuda data to complete
     if ( useGPU )
-        cudaDeviceSynchronize();
+        deviceSynchronize();
 }
 
 template<typename TYPE>
@@ -127,7 +124,7 @@ void VectorOperationsDevice<TYPE>::copy( const VectorData &x, VectorData &y )
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto N     = y.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::copy( N, xdata, ydata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->copy( x, y );
@@ -142,7 +139,7 @@ void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in, VectorData &x 
         size_t N   = x.sizeOfDataBlock( 0 );
         TYPE alpha = alpha_in.get<TYPE>();
         DeviceOperationsHelpers<TYPE>::scale( alpha, N, data );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->scale( alpha_in, x );
@@ -160,7 +157,7 @@ void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in,
         auto N     = y.sizeOfDataBlock( 0 );
         auto alpha = alpha_in.get<TYPE>();
         DeviceOperationsHelpers<TYPE>::scale( alpha, N, xdata, ydata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->scale( alpha_in, x, y );
@@ -176,7 +173,7 @@ void VectorOperationsDevice<TYPE>::add( const VectorData &x, const VectorData &y
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         auto N     = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::add( N, xdata, ydata, zdata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->add( x, y, z );
@@ -194,7 +191,7 @@ void VectorOperationsDevice<TYPE>::subtract( const VectorData &x,
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::subtract( N, xdata, ydata, zdata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->subtract( x, y, z );
@@ -212,7 +209,7 @@ void VectorOperationsDevice<TYPE>::multiply( const VectorData &x,
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::multiply( N, xdata, ydata, zdata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->multiply( x, y, z );
@@ -228,7 +225,7 @@ void VectorOperationsDevice<TYPE>::divide( const VectorData &x, const VectorData
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::divide( N, xdata, ydata, zdata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->divide( x, y, z );
@@ -244,7 +241,7 @@ void VectorOperationsDevice<TYPE>::reciprocal( const VectorData &x, VectorData &
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::reciprocal( N, xdata, ydata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->reciprocal( x, y );
@@ -267,7 +264,7 @@ void VectorOperationsDevice<TYPE>::linearSum( const Scalar &alpha_in,
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
         size_t N   = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::linearSum( alpha, N, xdata, beta, ydata, zdata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->linearSum( alpha_in, x, beta_in, y, z );
@@ -300,7 +297,7 @@ void VectorOperationsDevice<TYPE>::abs( const VectorData &x, VectorData &y )
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::abs( N, xdata, ydata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->abs( x, y );
@@ -318,7 +315,7 @@ void VectorOperationsDevice<TYPE>::addScalar( const VectorData &x,
         size_t N   = y.sizeOfDataBlock( 0 );
         TYPE alpha = alpha_in.get<TYPE>();
         DeviceOperationsHelpers<TYPE>::addScalar( N, xdata, alpha, ydata );
-        cudaDeviceSynchronize();
+        deviceSynchronize();
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->addScalar( x, alpha_in, y );
