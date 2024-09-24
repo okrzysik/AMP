@@ -11,29 +11,6 @@
 
 namespace AMP{
 
-static void inline setKernelDims(size_t n, dim3& BlockDim, dim3& GridDim)
-{
-    /*
-    First attempt at getting general kernel dimensions
-    Code gotten from:
-    http://stackoverflow.com/questions/5810447/cuda-block-and-grid-size-efficiencies
-    Will adjust as needed
-    also consider cuda runtime API function
-    */ 
-    const int warpSize = 32;
-    const int maxGridSize = 112; //8 blocks per MP of tesla k20x,
-                                // this number might need to be tuned
-                                // consider querying for device info 
-    int warpCount = (n / warpSize) + (((n % warpSize) ==0) ? 0 : 1);
-    int warpPerBlock = max(1, min(4,warpCount));
-    int threadCount = warpSize * warpPerBlock;
-    int blockCount = min(maxGridSize, max(1, warpCount/warpPerBlock));
-    BlockDim = dim3(threadCount,1,1);
-    GridDim = dim3(blockCount,1,1);
-    return;
-
-}
-
 //Kernels
 template <class TYPE, typename LAMBDA>
 __global__ void transform(LAMBDA &fun, TYPE* d_x, TYPE* d_y, size_t n)
