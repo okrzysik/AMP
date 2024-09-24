@@ -1,5 +1,5 @@
-#include "AMP/vectors/operations/cuda/CudaOperationsHelpers.h"
-#include "AMP/vectors/operations/cuda/CudaOperationsHelpers.hpp"
+#include "AMP/vectors/operations/DeviceOperationsHelpers.h"
+#include "AMP/vectors/operations/DeviceOperationsHelpers.hpp"
 
 
 // Explicit instantiations
