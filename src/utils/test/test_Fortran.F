@@ -1,5 +1,5 @@
       program hello_world
-        use AMP
+        use AMP_INTERFACE
 
         ! startup
 
