@@ -401,31 +401,31 @@ void HDF5data::getData<std::string>( AMP::Array<std::string> &data ) const
 template<class TYPE>
 void HDF5data::getData( AMP::Array<TYPE> &data ) const
 {
-    if ( dynamic_cast<const HDF5_primitive<TYPE> *>( this ) != nullptr ) {
+    if ( dynamic_cast<const HDF5_primitive<TYPE> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<TYPE> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<char> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<char> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<char> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<unsigned char> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<unsigned char> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<unsigned char> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<int8_t> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<int8_t> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<int8_t> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<uint8_t> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<uint8_t> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<uint8_t> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<int16_t> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<int16_t> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<int16_t> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<uint16_t> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<uint16_t> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<uint16_t> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<int32_t> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<int32_t> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<int32_t> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<uint32_t> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<uint32_t> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<uint32_t> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<int64_t> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<int64_t> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<int64_t> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<uint64_t> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<uint64_t> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<uint64_t> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<float> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<float> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<float> *>( this )->getData() );
-    } else if ( dynamic_cast<const HDF5_primitive<double> *>( this ) != nullptr ) {
+    } else if ( dynamic_cast<const HDF5_primitive<double> *>( this ) ) {
         data.copy( dynamic_cast<const HDF5_primitive<double> *>( this )->getData() );
     } else {
         AMP_ERROR( "Unable to get data: " + type() );
