@@ -201,8 +201,10 @@ private:
     // Functions to start/shutdown the various packages
     static double start_SAMRAI();
     static double start_PETSc();
+    static double start_HYPRE();
     static double start_CudaOrHip();
     static double stop_SAMRAI();
+    static double stop_HYPRE();
     static double stop_PETSc();
 
     // Functions to set error handlers for specific packages
