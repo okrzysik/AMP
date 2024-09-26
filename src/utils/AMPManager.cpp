@@ -422,3 +422,11 @@ AMPManagerProperties AMPManager::getAMPManagerProperties()
 
 
 } // namespace AMP
+
+/***********************************************************************
+ * C interfaces                                                         *
+ ***********************************************************************/
+extern "C" {
+void amp_startup( int argc, char **argv ) { AMP::AMPManager::startup( argc, argv ); }
+void amp_shutdown( void ) { AMP::AMPManager::shutdown(); }
+}
