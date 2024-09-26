@@ -19,6 +19,12 @@ FUNCTION( SET_NVCC )
 ENDFUNCTION()
 
 
+# Set the fortran module directory
+IF ( CMAKE_Fortran_COMPILER )
+    SET( CMAKE_Fortran_MODULE_DIRECTORY ${${PROJ}_INSTALL_DIR}/include CACHE PATH "Fortran module install folder" )
+ENDIF()
+
+
 # Add the AMP folders and libraries
 ADD_AMP_LIBRARY( applications )
 ADD_AMP_LIBRARY( discretization )
