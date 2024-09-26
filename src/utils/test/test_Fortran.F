@@ -1,7 +1,5 @@
-c Include profiler macros
-
       program hello_world
-        !use AMP
+        use AMP
 
         ! startup
 
