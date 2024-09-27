@@ -20,14 +20,14 @@
         argv(2) = c_loc(args(2))  
 
         ! startup
-        call startup( argc, argv )
+        call amp_startup( argc, argv )
 
         deallocate (argv) ! deallocate the C char** array
         deallocate (args) ! deallocate the args        
         ! test initialized
 
         ! shutdown
-        call shutdown()
+        call amp_shutdown()
         ! Finished
         print *, 'Finished'
       end program

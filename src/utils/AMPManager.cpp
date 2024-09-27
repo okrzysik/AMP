@@ -427,6 +427,6 @@ AMPManagerProperties AMPManager::getAMPManagerProperties()
  * C interfaces                                                         *
  ***********************************************************************/
 extern "C" {
-void amp_startup( int argc, char **argv ) { AMP::AMPManager::startup( argc, argv ); }
-void amp_shutdown( void ) { AMP::AMPManager::shutdown(); }
+void amp_startup_f( int argc, char **argv ) { AMP::AMPManager::startup( argc, argv ); }
+void amp_shutdown_f( void ) { AMP::AMPManager::shutdown(); }
 }
