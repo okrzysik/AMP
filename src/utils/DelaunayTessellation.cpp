@@ -17,7 +17,7 @@
 #include <stdexcept>
 
 
-#if defined( USING_ICC )
+#if defined( __INTEL_COMPILER )
 DISABLE_WARNINGS
 #endif
 
@@ -2434,8 +2434,3 @@ template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<long d
 
 
 } // namespace AMP::DelaunayTessellation
-
-
-#if defined( USING_ICC )
-ENABLE_WARNINGS
-#endif
