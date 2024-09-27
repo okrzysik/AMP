@@ -15,9 +15,7 @@ namespace AMP {
 /********************************************************************
  * Helper functions                                                  *
  ********************************************************************/
-
 DISABLE_WARNINGS
-
 template<class TYPE>
 void Scalar::store( const TYPE &x )
 {
@@ -34,7 +32,6 @@ void Scalar::store( const TYPE &x )
         d_type = 0;
     }
 }
-
 ENABLE_WARNINGS
 
 
