@@ -27,7 +27,7 @@ namespace AMP::Solver {
  ****************************************************************/
 HypreSolver::HypreSolver() : SolverStrategy() {}
 HypreSolver::HypreSolver( std::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters ),
+    : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters );
     HypreSolver::initialize( parameters );
