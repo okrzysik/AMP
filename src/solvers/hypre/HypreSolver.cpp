@@ -28,13 +28,6 @@ namespace AMP::Solver {
 HypreSolver::HypreSolver() : SolverStrategy() {}
 HypreSolver::HypreSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ),
-#ifdef USE_CUDA
-      d_memory_location( HYPRE_MEMORY_DEVICE ),
-      d_exec_policy( HYPRE_EXEC_DEVICE )
-#else
-      d_memory_location( HYPRE_MEMORY_HOST ),
-      d_exec_policy( HYPRE_EXEC_HOST )
-#endif
 {
     AMP_ASSERT( parameters );
     HypreSolver::initialize( parameters );
@@ -66,13 +59,16 @@ void HypreSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
         AMP_INSIST( memory_location == "host" || memory_location == "device",
                     "memory_location must be either device or host" );
         d_memory_location = ( memory_location == "host" ) ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE;
-    }
+    } else
+        d_memory_location = HYPRE_MEMORY_HOST;
+
     if ( db->keyExists( "exec_policy" ) ) {
         auto exec_policy = db->getString( "exec_policy" );
         AMP_INSIST( exec_policy == "host" || exec_policy == "device",
                     "exec_policy must be either device or host" );
         d_exec_policy = ( exec_policy == "host" ) ? HYPRE_EXEC_HOST : HYPRE_EXEC_DEVICE;
-    }
+    } else
+        d_exec_policy = HYPRE_EXEC_HOST;
 }
 
 void HypreSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
