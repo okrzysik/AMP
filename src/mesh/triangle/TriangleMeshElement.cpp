@@ -439,9 +439,9 @@ double TriangleMeshElement<NG, NP, TYPE>::distance( const MeshPoint<double> &pos
 /********************************************************
  *  Explicit instantiations of TriangleMeshElement       *
  ********************************************************/
-#if defined( USING_ICC )
+
 DISABLE_WARNINGS
-#endif
+
 template class TriangleMeshElement<1, 1, 0>;
 template class TriangleMeshElement<1, 1, 1>;
 template class TriangleMeshElement<1, 2, 0>;
@@ -458,9 +458,9 @@ template class TriangleMeshElement<3, 3, 0>;
 template class TriangleMeshElement<3, 3, 1>;
 template class TriangleMeshElement<3, 3, 2>;
 template class TriangleMeshElement<3, 3, 3>;
-#if defined( USING_ICC )
+
 ENABLE_WARNINGS
-#endif
+
 
 
 } // namespace AMP::Mesh
