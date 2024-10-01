@@ -19,9 +19,12 @@ FUNCTION( SET_NVCC )
 ENDFUNCTION()
 
 
-# Set the fortran module directory
+# Set the fortran module directory (and flags)
 IF ( CMAKE_Fortran_COMPILER )
     SET( CMAKE_Fortran_MODULE_DIRECTORY ${${PROJ}_INSTALL_DIR}/include CACHE PATH "Fortran module install folder" )
+    IF ( CMAKE_COMPILER_IS_GNUG77 OR (${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU") )
+        SET(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffixed-line-length-none" )
+    ENDIF()
 ENDIF()
 
 
