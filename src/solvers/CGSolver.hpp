@@ -84,6 +84,9 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
     const auto terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
                                          static_cast<T>( d_dAbsoluteTolerance ) );
+    AMP::pout << "terminate_tol = " << terminate_tol << " = max( "
+              << static_cast<T>( d_dRelativeTolerance * f_norm ) << " , "
+              << static_cast<T>( d_dAbsoluteTolerance ) << " )" << std::endl;
 
     // z will store r when a preconditioner is not present
     // and will store the result of a preconditioner solve
@@ -194,6 +197,40 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "L2Norm of solution: " << u->L2Norm() << std::endl;
+        switch ( d_ConvergenceStatus ) {
+        case SolverStatus::ConvergedOnAbsTol:
+            AMP::pout << "Convergence reason: ConvergedOnAbsTol" << std::endl;
+            break;
+        case SolverStatus::ConvergedOnRelTol:
+            AMP::pout << "Convergence reason: ConvergedOnRelTol" << std::endl;
+            break;
+        case SolverStatus::ConvergedIterations:
+            AMP::pout << "Convergence reason: ConvergedIterations" << std::endl;
+            break;
+        case SolverStatus::ConvergedUserCondition:
+            AMP::pout << "Convergence reason: ConvergedUserCondition" << std::endl;
+            break;
+        case SolverStatus::DivergedMaxIterations:
+            AMP::pout << "Convergence reason: DivergedMaxIterations" << std::endl;
+            break;
+        case SolverStatus::DivergedLineSearch:
+            AMP::pout << "Convergence reason: DivergedLineSearch" << std::endl;
+            break;
+        case SolverStatus::DivergedStepSize:
+            AMP::pout << "Convergence reason: DivergedStepSize" << std::endl;
+            break;
+        case SolverStatus::DivergedFunctionCount:
+            AMP::pout << "Convergence reason: DivergedFunctionCount" << std::endl;
+            break;
+        case SolverStatus::DivergedOnNan:
+            AMP::pout << "Convergence reason: DivergedOnNan" << std::endl;
+            break;
+        case SolverStatus::DivergedNestedSolver:
+            AMP::pout << "Convergence reason: DivergedNestedSolver" << std::endl;
+            break;
+        default:
+            AMP::pout << "Convergence reason: DivergedOther" << std::endl;
+        }
     }
 
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );

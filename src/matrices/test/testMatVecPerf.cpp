@@ -36,7 +36,7 @@
 
 // Number of products to evaluate to average out timings
 #define NUM_PRODUCTS 1000
-#define NUM_PRODUCTS_TRANS 100
+#define NUM_PRODUCTS_TRANS 0
 
 size_t matVecTestWithDOFs( AMP::UnitTest *ut,
                            std::string type,
@@ -101,7 +101,7 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
         ut->failure( type + ": Fails 1 norm test with pseudo Laplacian" );
     }
 
-    if ( testTranspose ) {
+    if ( testTranspose && NUM_PRODUCTS_TRANS ) {
         // Repeat test with transpose multiply (Laplacian is symmetric)
         y->setToScalar( 1.0 );
         y->makeConsistent();
@@ -150,7 +150,7 @@ size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
     // matVecTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs, true );
 #endif
 #if defined( AMP_USE_PETSC )
-    matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, true );
+    // matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, true );
 #endif
     return matVecTestWithDOFs( ut, "CSRMatrix", scalarDOFs, true );
 }

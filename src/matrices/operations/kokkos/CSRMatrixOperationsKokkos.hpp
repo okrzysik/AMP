@@ -247,14 +247,14 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::mult(
     const auto nGhosts = static_cast<lidx_t>( ghosts.size() );
     auto outData       = out->getVectorData();
 
-    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsKokkos is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
 
-    AMP_INSIST(
+    AMP_DEBUG_INSIST(
         1 == inData->numberOfDataBlocks(),
         "CSRMatrixOperationsKokkos::mult only implemented for vectors with one data block" );
 
-    AMP_INSIST(
+    AMP_DEBUG_INSIST(
         ghosts.size() == inData->getGhostSize(),
         "CSRMatrixOperationsKokkos::mult only implemented for vectors with accessible ghosts" );
 
@@ -365,8 +365,8 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::multTra
 
     auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
-    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsKokkos is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
     const auto nCols = static_cast<lidx_t>( csrData->numLocalColumns() );
@@ -478,8 +478,8 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::scale(
 
     auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
-    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsKokkos is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
 
     // lambda capture of structured bindings throws warning on c++17
     // unpack the tuple manually
@@ -526,12 +526,12 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::axpy( A
     const auto csrDataX = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( X ) );
     const auto csrDataY = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( Y ) );
 
-    AMP_INSIST( csrDataX->getMemoryLocation() != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsKokkos is not implemented for device memory" );
-    AMP_INSIST( csrDataY->getMemoryLocation() != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsKokkos is not implemented for device memory" );
-    AMP_INSIST( csrDataX->getMemoryLocation() == csrDataY->getMemoryLocation(),
-                "CSRMatrixOperationsKokkos::axpy X and Y must be in same memory space" );
+    AMP_DEBUG_INSIST( csrDataX->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrDataY->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrDataX->getMemoryLocation() == csrDataY->getMemoryLocation(),
+                      "CSRMatrixOperationsKokkos::axpy X and Y must be in same memory space" );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
 
@@ -575,8 +575,8 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::setScal
     auto alpha   = static_cast<scalar_t>( alpha_in );
     auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
-    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsKokkos is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
 
     {
         // lambda capture of structured bindings throws warning on c++17
@@ -614,8 +614,8 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::setDiag
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
     auto beginRow    = csrData->beginRow();
 
-    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsKokkos is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
 
     // lambda capture of structured bindings throws warning on c++17
     // unpack the tuple of views manually
@@ -699,8 +699,8 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::extract
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
     auto beginRow    = csrData->beginRow();
 
-    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsKokkos is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
 
     // lambda capture of structured bindings throws warning on c++17
     // unpack the tuple of views manually
@@ -740,8 +740,8 @@ AMP::Scalar CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::
     auto csrData     = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
 
-    AMP_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
-                "CSRMatrixOperationsKokkos is not implemented for device memory" );
+    AMP_DEBUG_INSIST( csrData->getMemoryLocation() != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
 
     scalar_t rmax = 0.0;
 

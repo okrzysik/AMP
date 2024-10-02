@@ -64,18 +64,18 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     decltype( csrDataHost ) csrDataDevice  = nullptr;
 #endif
 
-    if ( csrDataHost ) {
+    const bool DEEP_COPY = false;
+
+    if ( csrDataHost && !DEEP_COPY ) {
         initializeHypreMatrix( csrDataHost );
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
-    } else if ( csrDataManaged ) {
+    } else if ( csrDataManaged && !DEEP_COPY ) {
         initializeHypreMatrix( csrDataManaged );
-        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
-    } else if ( csrDataDevice ) {
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
+    } else if ( csrDataDevice && !DEEP_COPY ) {
         initializeHypreMatrix( csrDataDevice );
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
     } else {
-
-        AMP_WARNING( "HypreMatrixAdaptor: Deep copy of input matrix into Hypre matrix" );
 
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
         HYPRE_IJMatrixInitialize( d_matrix );
@@ -151,6 +151,7 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     hypre_CSRMatrix *off_diag      = par_matrix->offd;
 
     // Filling the contents manually should remove any need for aux matrix
+    // NOTE: aux_mat should be NULL
     hypre_AuxParCSRMatrix *aux_mat = static_cast<hypre_AuxParCSRMatrix *>( d_matrix->translator );
     aux_mat->need_aux              = 0;
 
@@ -216,8 +217,9 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
 
     // Set colmap inside ParCSR and flag that assembly is already done
     // See destructor above regarding ownership of this field
-    par_matrix->col_map_offd = d_colMap.data();
-    off_diag->num_cols       = d_colMap.size();
+    par_matrix->col_map_offd        = d_colMap.data();
+    par_matrix->device_col_map_offd = d_colMap.data();
+    off_diag->num_cols              = static_cast<HYPRE_Int>( d_colMap.size() );
 
     // Update ->rownnz fields, note that we don't own these
     hypre_CSRMatrixSetRownnz( diag );

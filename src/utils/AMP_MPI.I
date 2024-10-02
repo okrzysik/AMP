@@ -269,6 +269,8 @@ void MPI_CLASS::sumReduce( const TYPE *send, TYPE *recv, int n ) const
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_CLASS_ASSERT( d_comm != MPI_COMM_NULL );
+    #warning Added barrier here for debugging
+        MPI_Barrier( d_comm );
         MPI_Allreduce( send, recv, n, type, MPI_SUM, d_comm );
     } else {
         throw std::logic_error( "sumReduce is not valid for arbitrary types" );

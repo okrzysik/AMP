@@ -306,6 +306,7 @@ private:
         std::vector<size_t> getColumnIDs( const size_t local_row ) const;
 
         void findColumnMap();
+        void sortColumns();
 
     protected:
         const CSRMatrixData<Policy, Allocator>

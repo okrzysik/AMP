@@ -201,7 +201,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     // specify Gaussian elimination on the coarsest level
-    HYPRE_BoomerAMGSetCycleRelaxType( d_solver, 9, 3 );
+    HYPRE_BoomerAMGSetCycleRelaxType( d_solver, 99, 3 );
 
     if ( db->keyExists( "relax_order" ) ) {
         d_relax_order = db->getScalar<int>( "relax_order" );
@@ -286,6 +286,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
         HYPRE_BoomerAMGSetKeepTranspose( d_solver, d_keep_transpose );
     }
 
+    AMP::pout << "RelTol: " << d_dRelativeTolerance << std::endl;
     HYPRE_BoomerAMGSetTol( d_solver, static_cast<HYPRE_Real>( d_dRelativeTolerance ) );
     HYPRE_BoomerAMGSetMaxIter( d_solver, d_iMaxIterations );
     HYPRE_BoomerAMGSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );
@@ -294,9 +295,11 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE( "solve" );
+    PROFILE( "BoomerAMGSolver::apply" );
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator, "ERROR: BoomerAMGSolver::apply() operator cannot be NULL" );
+
+    AMP::pout << "Calling apply" << std::endl;
 
     HYPRE_SetMemoryLocation( d_memory_location );
     HYPRE_SetExecutionPolicy( d_exec_policy );

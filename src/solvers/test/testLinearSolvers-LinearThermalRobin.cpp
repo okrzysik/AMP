@@ -108,6 +108,44 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto diffusionOperator =
         std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );
 
+    // test that linearOperator is actually self-adjoint
+    {
+        auto opMat = diffusionOperator->getMatrix();
+
+        auto xin = AMP::LinearAlgebra::createVector( nodalDofMap,
+                                                     diffusionOperator->getInputVariable(),
+                                                     true,
+                                                     diffusionOperator->getMemoryLocation() );
+        auto yin = AMP::LinearAlgebra::createVector( nodalDofMap,
+                                                     diffusionOperator->getOutputVariable(),
+                                                     true,
+                                                     diffusionOperator->getMemoryLocation() );
+
+        xin->setToScalar( 1.0 );
+        yin->setToScalar( 2.0 );
+
+        auto Ax  = AMP::LinearAlgebra::createVector( nodalDofMap,
+                                                    diffusionOperator->getOutputVariable(),
+                                                    true,
+                                                    diffusionOperator->getMemoryLocation() );
+        auto Aty = AMP::LinearAlgebra::createVector( nodalDofMap,
+                                                     diffusionOperator->getInputVariable(),
+                                                     true,
+                                                     diffusionOperator->getMemoryLocation() );
+
+        Ax->zero();
+        Aty->zero();
+
+        opMat->mult( xin, Ax );
+        opMat->multTranspose( yin, Aty );
+
+        // should have xin . yout == xout . yin
+        auto xinDyout = xin->dot( *Aty );
+        auto yinDxout = yin->dot( *Ax );
+
+        AMP::pout << "(Ax).y - (Aty).x = " << ( xinDyout - yinDxout ) << std::endl;
+    }
+
     auto TemperatureInKelvinVec =
         AMP::LinearAlgebra::createVector( nodalDofMap,
                                           diffusionOperator->getInputVariable(),
@@ -167,6 +205,8 @@ int main( int argc, char *argv[] )
 
     std::vector<std::string> files;
 
+    PROFILE_ENABLE();
+
     if ( argc > 1 ) {
 
         files.emplace_back( argv[1] );
@@ -222,6 +262,13 @@ int main( int argc, char *argv[] )
         linearThermalTest( &ut, file );
 
     ut.report();
+
+    // build unique profile name to avoid collisions
+    std::ostringstream ss;
+    ss << "testLinSolveRobin_r" << std::setw( 3 ) << std::setfill( '0' )
+       << AMP::AMPManager::getCommWorld().getSize();
+
+    PROFILE_SAVE( ss.str() );
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
