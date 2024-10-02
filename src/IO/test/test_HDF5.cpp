@@ -102,10 +102,16 @@ void checkScalar( const AMP::IO::HDF5data &ptr,
 {
     AMP::Array<TYPE> data;
     auto ptr2 = ptr.getData( 0, name );
+    AMP_ASSERT( *ptr2 == *ptr2 );
     ptr2->getData( data );
     AMP_ASSERT( data.length() == 1 );
-    auto y = data( 0 );
-    record( x == y, "HDF5Class: " + name, ut );
+    auto test = data( 0 ) == x;
+    if ( std::is_arithmetic_v<TYPE> ) {
+        AMP::Array<double> data2;
+        ptr2->getData( data2 );
+        test = test && data( 0 ) == x;
+    }
+    record( test, "HDF5Class: " + name, ut );
 }
 template<class TYPE>
 void checkVector( const AMP::IO::HDF5data &ptr,
