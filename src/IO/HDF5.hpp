@@ -363,11 +363,15 @@ void writeHDF5ArrayDefault( hid_t fid, const std::string &name, const AMP::Array
 
 // Default no-op implementations for use without HDF5
 // clang-format off
-template<class T> void writeHDF5( hid_t, const std::string &, const T & ) {}
-template<class T> void readHDF5( hid_t, const std::string &, T & ) {}
-template<class T> std::unique_ptr<T> readHDF5( hid_t, const std::string &, AMP_MPI ) {}
 template<class T> hid_t getHDF5datatype() { return 0; }
-    // clang-format on
+template<class T> void writeHDF5( hid_t, const std::string &, const T & ) {}
+template<class T> void writeHDF5Array( hid_t, const std::string &, const AMP::Array<T> & ) {}
+template<class T> void writeHDF5Scalar( hid_t, const std::string &, const T & ) {}
+template<class T> void readHDF5( hid_t, const std::string &, T & ) {}
+template<class T> void readHDF5Array( hid_t, const std::string &, AMP::Array<T> & ) {}
+template<class T> void readHDF5Scalar( hid_t, const std::string &, T & ) {}
+template<class T> std::unique_ptr<T> readHDF5( hid_t, const std::string &, AMP_MPI ) {}
+// clang-format on
 
 
 #endif
