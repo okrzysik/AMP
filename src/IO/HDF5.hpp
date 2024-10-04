@@ -371,7 +371,7 @@ template<class T> void readHDF5( hid_t, const std::string &, T & ) {}
 template<class T> void readHDF5Array( hid_t, const std::string &, AMP::Array<T> & ) {}
 template<class T> void readHDF5Scalar( hid_t, const std::string &, T & ) {}
 template<class T> std::unique_ptr<T> readHDF5( hid_t, const std::string &, AMP_MPI ) {}
-// clang-format on
+    // clang-format on
 
 
 #endif
