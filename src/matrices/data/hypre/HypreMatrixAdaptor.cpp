@@ -118,10 +118,11 @@ HypreMatrixAdaptor::~HypreMatrixAdaptor()
 template<class csr_data_type>
 void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData )
 {
+    // Hypre needs columns to be sorted
+    csrData->sortColumns();
     // extract fields from csrData
-    HYPRE_BigInt first_row = static_cast<HYPRE_BigInt>( csrData->beginRow() );
-    HYPRE_BigInt last_row  = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
-    csrData->getOffDiagColumnMap( d_colMap );
+    HYPRE_BigInt first_row    = static_cast<HYPRE_BigInt>( csrData->beginRow() );
+    HYPRE_BigInt last_row     = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
     HYPRE_BigInt nnz_total_d  = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosDiag() );
     HYPRE_BigInt nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getCSRDiagData();
@@ -195,31 +196,14 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     diag->num_nonzeros     = nnz_total_d;
     off_diag->num_nonzeros = nnz_total_od;
 
-    // permute diag->j and ->data so that the diagonal element is first
-    // IJMatrix_parcsr.c in function
-    for ( HYPRE_Int i = 0; i < static_cast<HYPRE_Int>( nrows ); ++i ) {
-        auto j0 = diag->i[i];
-        for ( HYPRE_Int j = j0; j < diag->i[i + 1]; ++j ) {
-            // Hypre does not permute diag->big_j but we need to for consistency
-            if ( diag->j[j] == i ) {
-                auto dTemp      = diag->data[j0];
-                auto bjTmp      = diag->big_j[j0];
-                diag->data[j0]  = diag->data[j];
-                diag->data[j]   = dTemp;
-                diag->big_j[j0] = diag->big_j[j];
-                diag->big_j[j]  = bjTmp;
-                diag->j[j]      = diag->j[j0];
-                diag->j[j0]     = i;
-                break;
-            }
-        }
-    }
-
     // Set colmap inside ParCSR and flag that assembly is already done
     // See destructor above regarding ownership of this field
-    par_matrix->col_map_offd        = d_colMap.data();
-    par_matrix->device_col_map_offd = d_colMap.data();
-    off_diag->num_cols              = static_cast<HYPRE_Int>( d_colMap.size() );
+    csrData->getOffDiagColumnMap( d_colMap );
+    par_matrix->col_map_offd = d_colMap.data();
+    if ( csrData->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
+        // par_matrix->device_col_map_offd = csrData->getOffDiagColumnMap();
+    }
+    off_diag->num_cols = static_cast<HYPRE_Int>( d_colMap.size() );
 
     // Update ->rownnz fields, note that we don't own these
     hypre_CSRMatrixSetRownnz( diag );

@@ -433,11 +433,13 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::multTra
         auto coeffs_od    = std::get<3>( vtpl );
         auto rowstarts_od = std::get<4>( vtpl );
 
-        // get diag map but leave in std::vector
-        // it is not needed inside compute kernel this time
-        std::vector<size_t> rcols;
-        csrData->getOffDiagColumnMap( rcols );
-        const auto num_unq = rcols.size();
+        // get off diag map
+        auto colMap        = csrData->getOffDiagColumnMap();
+        const auto num_unq = csrData->getOffDiagColumnMapSize();
+
+        std::vector<size_t> rcols( num_unq );
+        std::transform(
+            colMap, colMap + num_unq, rcols.begin(), []( size_t col ) -> size_t { return col; } );
 
         // Make temporary view for output values
         auto vvals = Kokkos::

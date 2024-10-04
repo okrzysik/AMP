@@ -3,7 +3,6 @@
 #include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/data/CSRMatrixData.hpp"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.hpp"
-#include "AMP/matrices/operations/kokkos/CSRMatrixOperationsKokkos.h"
 #include "AMP/utils/memory.h"
 
 namespace AMP::LinearAlgebra {

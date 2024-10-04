@@ -90,7 +90,6 @@ template<typename Policy, class Allocator>
 CSRMatrixData<Policy, Allocator>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params )
     : MatrixData( params ), d_memory_location( memLocSelector<Allocator>() )
 {
-
     AMPManager::incrementResource( "CSRMatrixData" );
     auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
     auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
@@ -113,8 +112,7 @@ CSRMatrixData<Policy, Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameter
         size_t N = d_last_row - d_first_row;
 
         // Construct on/off diag blocks
-        d_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, true );
-        d_diag_matrix->sortColumns();
+        d_diag_matrix     = std::make_shared<CSRSerialMatrixData>( *this, params, true );
         d_off_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, false );
 
         // get total nnz count
@@ -149,8 +147,7 @@ CSRMatrixData<Policy, Allocator>::CSRMatrixData( std::shared_ptr<MatrixParameter
         d_last_col  = d_rightDOFManager->endDOF();
 
         // send params forward to the on/off diagonal blocks
-        d_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, true );
-        d_diag_matrix->sortColumns();
+        d_diag_matrix     = std::make_shared<CSRSerialMatrixData>( *this, params, true );
         d_off_diag_matrix = std::make_shared<CSRSerialMatrixData>( *this, params, false );
         d_nnz             = d_diag_matrix->d_nnz + d_off_diag_matrix->d_nnz;
 
@@ -239,16 +236,27 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
 
         // attempt to insert all remote dofs into colSet to see which are un-referenced
         if ( !d_is_diag ) {
+            std::vector<size_t> newRemoteDOFs;
+            size_t nrep     = 0;
             auto remoteDOFs = rightDOFManager->getRemoteDOFs();
             for ( auto &&rdof : remoteDOFs ) {
                 auto cs = colSet.insert( rdof );
-                if ( cs.second ) {
-                    // insertion success means this DOF is un-referenced
-                    // add it to the padding list
-                    colPad.push_back( rdof );
-                    ++d_nnz;
-                    ++d_nnz_pad;
+                if ( !cs.second ) {
+                    // insertion failure means this DOF is referenced
+                    // add it to the corrected set of remote DOFs
+                    newRemoteDOFs.push_back( rdof );
                 }
+            }
+            nrep = remoteDOFs.size() - newRemoteDOFs.size();
+            // replace DOFs in dof manager and commlist
+            // must call this regardless since constructing commlist is collective
+            auto commPars           = std::make_shared<CommunicationListParameters>();
+            commPars->d_comm        = matParams->d_CommListRight->getComm();
+            commPars->d_localsize   = matParams->d_CommListRight->numLocalRows();
+            commPars->d_remote_DOFs = nrep > 0 ? newRemoteDOFs : rightDOFManager->getRemoteDOFs();
+            matParams->d_CommListRight = std::make_shared<CommunicationList>( commPars );
+            if ( nrep > 0 ) {
+                rightDOFManager->replaceRemoteDOFs( newRemoteDOFs );
             }
         }
 
@@ -290,7 +298,7 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
         }
 
         // If off-diag pad in the un-referenced ghosts to the final row
-        if ( !d_is_diag ) {
+        if ( !d_is_diag && false ) {
             d_nnz_per_row[d_num_rows - 1] += d_nnz_pad;
 
             for ( auto col : colPad ) {
@@ -308,6 +316,10 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
             d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, d_row_starts.get(), 0 );
         d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
 
+        // find longest row
+        d_max_row_len =
+            *( std::max_element( d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows ) );
+
         // Ensure that the right number of nnz were actually filled in
         AMP_DEBUG_ASSERT( nnzFilled == d_nnz );
     } else {
@@ -318,44 +330,51 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
 template<typename Policy, class Allocator>
 void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::sortColumns()
 {
-    // wildly inefficient column sorting routine
-#warning Do not keep this column sorter in the codebase
-    const lidx_t ROW_PRINT = 35936;
-    AMP::pout << " =================== " << std::endl;
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRSerialMatrixData::sortColumns not implemented for device memory" );
+
+    // not particularly efficient column sorting routine
+    // only used for Hypre compatibility
+    std::vector<std::tuple<lidx_t, gidx_t, scalar_t>> rTpl( d_max_row_len );
     for ( lidx_t row = 0; row < d_num_rows; ++row ) {
-        std::vector<std::tuple<lidx_t, gidx_t, scalar_t>> rTpl;
-        for ( lidx_t k = d_row_starts[row]; k < d_row_starts[row + 1]; ++k ) {
-            if ( row == ROW_PRINT ) {
-                AMP::pout << d_cols_loc[k] << " | " << d_cols[k] << " | " << d_coeffs[k]
-                          << std::endl;
-            }
-            rTpl.emplace_back( std::make_tuple( d_cols_loc[k], d_cols[k], d_coeffs[k] ) );
+        const auto rs      = d_row_starts[row];
+        const auto row_len = d_row_starts[row + 1] - rs;
+
+        for ( lidx_t k = 0; k < row_len; ++k ) {
+            rTpl[k] = std::make_tuple( d_cols_loc[rs + k], d_cols[rs + k], d_coeffs[rs + k] );
         }
-        std::sort( rTpl.begin(),
-                   rTpl.end(),
-                   []( std::tuple<lidx_t, gidx_t, scalar_t> &a,
-                       std::tuple<lidx_t, gidx_t, scalar_t> &b ) -> bool {
-                       return std::get<0>( a ) < std::get<0>( b );
-                   } );
-        if ( row == ROW_PRINT ) {
-            AMP::pout << " =================== " << std::endl;
+
+        if ( d_is_diag ) {
+            std::sort( rTpl.begin(),
+                       rTpl.begin() + row_len,
+                       [row]( const std::tuple<lidx_t, gidx_t, scalar_t> &a,
+                              const std::tuple<lidx_t, gidx_t, scalar_t> &b ) -> bool {
+                           const lidx_t lca = std::get<0>( a ), lcb = std::get<0>( b );
+                           return row != lcb && ( lca < lcb || lca == row );
+                       } );
+        } else {
+            std::sort( rTpl.begin(),
+                       rTpl.begin() + row_len,
+                       []( const std::tuple<lidx_t, gidx_t, scalar_t> &a,
+                           const std::tuple<lidx_t, gidx_t, scalar_t> &b ) -> bool {
+                           return std::get<0>( a ) < std::get<0>( b );
+                       } );
         }
-        for ( lidx_t k = d_row_starts[row], n = 0; k < d_row_starts[row + 1]; ++k, ++n ) {
-            d_cols_loc[k] = std::get<0>( rTpl[n] );
-            d_cols[k]     = std::get<1>( rTpl[n] );
-            d_coeffs[k]   = std::get<2>( rTpl[n] );
-            if ( row == ROW_PRINT ) {
-                AMP::pout << d_cols_loc[k] << " | " << d_cols[k] << " | " << d_coeffs[k]
-                          << std::endl;
-            }
+
+        for ( lidx_t k = 0; k < row_len; ++k ) {
+            d_cols_loc[rs + k] = std::get<0>( rTpl[k] );
+            d_cols[rs + k]     = std::get<1>( rTpl[k] );
+            d_coeffs[rs + k]   = std::get<2>( rTpl[k] );
         }
     }
-    AMP::pout << " =================== " << std::endl;
 }
 
 template<typename Policy, class Allocator>
 void CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::findColumnMap()
 {
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRSerialMatrixData::findColumnMap not implemented for device memory" );
+
     if ( d_ncols_unq > 0 ) {
         // return if it already known
         return;

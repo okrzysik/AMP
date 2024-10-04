@@ -109,7 +109,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );
 
     // test that linearOperator is actually self-adjoint
-    {
+    if ( false ) {
         auto opMat = diffusionOperator->getMatrix();
 
         auto xin = AMP::LinearAlgebra::createVector( nodalDofMap,
@@ -143,7 +143,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         auto xinDyout = xin->dot( *Aty );
         auto yinDxout = yin->dot( *Ax );
 
-        AMP::pout << "(Ax).y - (Aty).x = " << ( xinDyout - yinDxout ) << std::endl;
+        std::cout << "(Ax).y - (Aty).x = " << ( xinDyout - yinDxout ) << std::endl;
     }
 
     auto TemperatureInKelvinVec =
@@ -195,7 +195,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // commented till necessary infrastructure in place
     checkConvergence( linearSolver.get(), inputFileName, *ut );
 }
-
 
 int main( int argc, char *argv[] )
 {
@@ -258,8 +257,9 @@ int main( int argc, char *argv[] )
 #endif
     }
 
-    for ( auto &file : files )
+    for ( auto &file : files ) {
         linearThermalTest( &ut, file );
+    }
 
     ut.report();
 

@@ -212,6 +212,36 @@ public:
 
     auto getMemoryLocation() const { return d_memory_location; }
 
+    void sortColumns()
+    {
+        d_diag_matrix->sortColumns();
+        if ( !d_off_diag_matrix->d_is_empty ) {
+            d_off_diag_matrix->sortColumns();
+        }
+    }
+
+    gidx_t getOffDiagColumnMapSize() const
+    {
+        if ( d_off_diag_matrix->d_is_empty ) {
+            return 0;
+        }
+
+        return d_off_diag_matrix->d_ncols_unq;
+    }
+
+    gidx_t *getOffDiagColumnMap() const
+    {
+        // Don't do anything if empty
+        if ( d_off_diag_matrix->d_is_empty ) {
+            return nullptr;
+        }
+
+        // Column maps formed lazily, ensure it exists
+        d_off_diag_matrix->findColumnMap();
+
+        return d_off_diag_matrix->d_cols_unq.get();
+    }
+
     template<typename idx_t>
     void getOffDiagColumnMap( std::vector<idx_t> &colMap ) const
     {
@@ -321,10 +351,11 @@ private:
         std::shared_ptr<lidx_t[]> d_cols_loc;
         std::shared_ptr<scalar_t[]> d_coeffs;
 
-        lidx_t d_num_rows  = 0;
-        lidx_t d_nnz       = 0;
-        lidx_t d_nnz_pad   = 0;
-        lidx_t d_ncols_unq = 0;
+        lidx_t d_num_rows    = 0;
+        lidx_t d_nnz         = 0;
+        lidx_t d_nnz_pad     = 0;
+        lidx_t d_ncols_unq   = 0;
+        lidx_t d_max_row_len = 0;
 
         const AMP::Utilities::MemoryType d_memory_location;
         gidxAllocator_t gidxAllocator;

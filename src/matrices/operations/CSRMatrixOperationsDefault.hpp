@@ -139,10 +139,12 @@ void CSRMatrixOperationsDefault<Policy, Allocator>::multTranspose( std::shared_p
         PROFILE( "CSRMatrixOperationsDefault::multTranspose (od)" );
         auto [nnz, cols, cols_loc, coeffs] = csrData->getCSROffDiagData();
 
-        std::vector<size_t> rcols;
-        csrData->getOffDiagColumnMap( rcols );
-        const auto num_unq = rcols.size();
+        auto colMap        = csrData->getOffDiagColumnMap();
+        const auto num_unq = csrData->getOffDiagColumnMapSize();
 
+        std::vector<size_t> rcols( num_unq );
+        std::transform(
+            colMap, colMap + num_unq, rcols.begin(), []( size_t col ) -> size_t { return col; } );
         std::vector<scalar_t> vvals( num_unq, 0.0 );
 
         lidx_t offset = 0;

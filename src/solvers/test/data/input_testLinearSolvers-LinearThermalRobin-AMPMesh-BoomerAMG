@@ -126,7 +126,7 @@ LinearSolver{
     cgc_iterations         = 1
     cycle_type             = 1
     relax_order            = 0
-    relax_type             = 16
+    relax_type             = 6
     relax_weight           = 1.0
     outer_weight           = 1.0
     number_sweeps          = 1
@@ -141,7 +141,7 @@ LinearSolver{
     schwarz_domain_type    = 2
     schwarz_nonsymmetric   = 0
     schwarz_weight         = 1.0
-    chebyshev_order        = 4
+    chebyshev_order        = 2
     chebyshev_fraction     = 0.3
     number_samples         = 0
     debug_flag             = 1
@@ -149,15 +149,15 @@ LinearSolver{
     mult_additive_level    = -1
     simple_level           = -1
     add_P_max_elmts        = 0
-    rap2                   = 1
+    rap2                   = 0
     keep_transpose         = 1
-    strong_threshold       = 0.33
+    strong_threshold       = 0.25
     max_row_sum            = 0.9
     trunc_factor           = 0.0
     agg_interp_type        = 5
     agg_P_max_elements     = 0
-    agg_num_levels         = 1
-    num_paths              = 2
+    agg_num_levels         = 5
+    num_paths              = 1
     agg_trunc_factor       = 0.0
     agg_P12_trunc_factor   = 0.0
     agg_P12_max_elements   = 0

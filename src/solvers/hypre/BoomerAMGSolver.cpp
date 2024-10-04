@@ -10,6 +10,8 @@
 #include <iomanip>
 #include <numeric>
 
+#include <fstream>
+
 DISABLE_WARNINGS
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
@@ -341,6 +343,47 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
     hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
+
+    d_comm.barrier();
+
+    const bool dumpMat = false;
+    if ( dumpMat && 0 == d_comm.getRank() ) {
+        hypre_CSRMatrix *diag = static_cast<hypre_CSRMatrix *>( parcsr_A->diag );
+        hypre_CSRMatrix *offd = static_cast<hypre_CSRMatrix *>( parcsr_A->offd );
+        std::ofstream outDI( "scDI.dat" ), outDJ( "scDJ.dat" );
+
+        std::ofstream outOI( "scOI.dat" ), outOJ( "scOJ.dat" );
+
+        std::ofstream outCM( "scColMap.dat" );
+
+        for ( HYPRE_Int n = 0; n < diag->num_rows; ++n ) {
+            outDI << diag->i[n] << std::endl;
+        }
+
+        for ( HYPRE_Int n = 0; n < diag->num_nonzeros; ++n ) {
+            outDJ << diag->j[n] << std::endl;
+        }
+
+        for ( HYPRE_Int n = 0; n < offd->num_rows; ++n ) {
+            outOI << offd->i[n] << std::endl;
+        }
+
+        HYPRE_Int jmax = 0;
+        if ( offd->j ) {
+            for ( HYPRE_Int n = 0; n < offd->num_nonzeros; ++n ) {
+                jmax = std::max( jmax, offd->j[n] );
+                outOJ << offd->j[n] << std::endl;
+            }
+        }
+
+        if ( parcsr_A->col_map_offd ) {
+            for ( HYPRE_Int n = 0; n < jmax; ++n ) {
+                outCM << parcsr_A->col_map_offd[n] << std::endl;
+            }
+        }
+    }
+
+    // AMP_INSIST( !dumpMat, "Done dumping hypre migrated matrix" );
 
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );

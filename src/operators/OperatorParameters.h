@@ -48,9 +48,7 @@ public:
             return AMP::Utilities::MemoryType::device;
         }
 #endif
-        if ( name != "host" && name != "Host" ) {
-            AMP_WARNING( "Unrecognized memory location, returning host" );
-        }
+        (void) name;
         return AMP::Utilities::MemoryType::host;
     }
 
