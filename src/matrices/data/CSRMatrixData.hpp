@@ -9,38 +9,21 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
 
-#include <algorithm>
-#include <iterator>
-#include <memory>
-#include <numeric>
-#include <set>
+// #include <algorithm>
+// #include <iterator>
+// #include <memory>
+// #include <numeric>
+// #include <set>
 #include <type_traits>
 
 namespace AMP::LinearAlgebra {
-
-/********************************************************
- * Constructor/Destructor helper functions              *
- ********************************************************/
-
-template<class Allocator>
-AMP::Utilities::MemoryType constexpr memLocSelector()
-{
-#ifdef USE_DEVICE
-    if ( std::is_same_v<Allocator, AMP::ManagedAllocator<int>> ) {
-        return AMP::Utilities::MemoryType::managed;
-    } else if ( std::is_same_v<Allocator, AMP::DeviceAllocator<int>> ) {
-        return AMP::Utilities::MemoryType::device;
-    }
-#endif
-    return AMP::Utilities::MemoryType::host;
-}
 
 /********************************************************
  * Constructors/Destructor                              *
  ********************************************************/
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData()
-    : d_memory_location( memLocSelector<Allocator>() )
+    : d_memory_location( getAllocatorMemoryType<Allocator>() )
 {
     AMPManager::incrementResource( "CSRMatrixData" );
 }
@@ -48,15 +31,13 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
     std::shared_ptr<MatrixParametersBase> params )
-    : MatrixData( params ), d_memory_location( memLocSelector<Allocator>() )
+    : MatrixData( params ), d_memory_location( getAllocatorMemoryType<Allocator>() )
 {
 
     AMPManager::incrementResource( "CSRMatrixData" );
     auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
     auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
-    // This insist can be moved to guard matParams in the future
-    // see csrMat branch in CSRSerialMatrixData constructor
     AMP_INSIST(
         d_memory_location != AMP::Utilities::MemoryType::device,
         "CSRMatrixData and CSRSerialMatrixData do not support pure-device memory locations yet" );
@@ -117,7 +98,7 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
 
     } else {
-        AMP_ERROR( "Check supplied MatrixParameter object" );
+        AMP_ERROR( "Check supplied MatrixParameters object" );
     }
 }
 

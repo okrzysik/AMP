@@ -81,9 +81,17 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         d_nnz_pad      = d_is_diag ? 0 : csrParams->d_nnz_pad;
 
         // count nnz and decide if block is empty
-        // this accumulate is the only thing that makes this require host/managed memory
-        // abstracting this into DeviceDataHelpers would allow device memory support
-        d_nnz = std::accumulate( blParams.d_nnz_per_row, blParams.d_nnz_per_row + d_num_rows, 0 );
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+            d_nnz =
+                std::accumulate( blParams.d_nnz_per_row, blParams.d_nnz_per_row + d_num_rows, 0 );
+        } else {
+#ifdef USE_DEVICE
+            d_nnz = AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::accumulate(
+                blParams.d_nnz_per_row, d_num_rows, 0 );
+#else
+            AMP_ERROR( "Invalid memory type" );
+#endif
+        }
         d_is_empty = ( d_nnz == 0 );
 
         // Wrap raw pointers from blParams to match internal
@@ -100,7 +108,7 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         AMP_ASSERT( leftDOFManager && rightDOFManager );
         AMP_ASSERT( matParams->d_CommListLeft && matParams->d_CommListRight );
 
-        // Getting device memory support in this branch will be very challenging
+        // Getting device memory support in this constructor mode will be very challenging
         AMP_ASSERT( d_memory_location != AMP::Utilities::MemoryType::device );
 
         const auto &getRow = matParams->getRowFunction();
@@ -194,8 +202,17 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         }
 
         // scan nnz counts to get starting index of each row
-        std::exclusive_scan(
-            d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, d_row_starts.get(), 0 );
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+            std::exclusive_scan(
+                d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, d_row_starts.get(), 0 );
+        } else {
+#ifdef USE_DEVICE
+            AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::exclusive_scan(
+                d_nnz_per_row.get(), d_num_rows, d_row_starts.get(), 0 );
+#else
+            AMP_ERROR( "Invalid memory type" );
+#endif
+        }
         d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
 
         // Ensure that the right number of nnz were actually filled in
@@ -214,7 +231,16 @@ void CSRLocalMatrixData<Policy, Allocator>::findColumnMap()
 
     // Otherwise allocate and fill the map
     // Number of unique (global) columns is largest value in local cols
-    d_ncols_unq = *( std::max_element( d_cols_loc.get(), d_cols_loc.get() + d_nnz ) );
+    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+        d_ncols_unq = *( std::max_element( d_cols_loc.get(), d_cols_loc.get() + d_nnz ) );
+    } else {
+#ifdef USE_DEVICE
+        d_ncols_unq =
+            AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::max_element( d_cols_loc.get(), d_nnz );
+#else
+        AMP_ERROR( "Invalid memory type" );
+#endif
+    }
     ++d_ncols_unq; // plus one for zero-based indexing
 
     // Map is not allocated by default
