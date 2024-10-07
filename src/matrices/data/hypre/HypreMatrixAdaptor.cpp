@@ -64,15 +64,13 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     decltype( csrDataHost ) csrDataDevice  = nullptr;
 #endif
 
-    const bool DEEP_COPY = false;
-
-    if ( csrDataHost && !DEEP_COPY ) {
+    if ( csrDataHost ) {
         initializeHypreMatrix( csrDataHost );
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
-    } else if ( csrDataManaged && !DEEP_COPY ) {
+    } else if ( csrDataManaged ) {
         initializeHypreMatrix( csrDataManaged );
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
-    } else if ( csrDataDevice && !DEEP_COPY ) {
+    } else if ( csrDataDevice ) {
         initializeHypreMatrix( csrDataDevice );
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
     } else {

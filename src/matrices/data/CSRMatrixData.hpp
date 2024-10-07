@@ -316,15 +316,14 @@ CSRMatrixData<Policy, Allocator>::CSRSerialMatrixData::CSRSerialMatrixData(
             d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, d_row_starts.get(), 0 );
         d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
 
-        // find longest row
-        d_max_row_len =
-            *( std::max_element( d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows ) );
-
         // Ensure that the right number of nnz were actually filled in
         AMP_DEBUG_ASSERT( nnzFilled == d_nnz );
     } else {
         AMP_ERROR( "Check supplied MatrixParameter object" );
     }
+
+    // find longest row
+    d_max_row_len = *( std::max_element( d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows ) );
 }
 
 template<typename Policy, class Allocator>
