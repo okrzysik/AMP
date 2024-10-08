@@ -10,6 +10,8 @@
 #include "AMP/utils/UtilityMacros.h"
 #include "StackTrace/source_location.h"
 
+#define deviceSynchronize() checkHipErrors( hipDeviceSynchronize() )
+
 namespace AMP::Utilities {
 enum class MemoryType : uint8_t;
 }
@@ -29,5 +31,20 @@ void checkHipErrors( T result,
 // Get the last hip error
 void getLastHipError( const char *errorMessage,
                       const StackTrace::source_location &source = SOURCE_LOCATION_CURRENT() );
+
+static void inline setKernelDims( size_t n, dim3 &BlockDim, dim3 &GridDim )
+{
+    // Parameters for an NVIDIA k20x.  Consider using occupancy API
+    const int warpSize    = 32;
+    const int maxGridSize = 112;
+
+    int warpCount    = ( n / warpSize ) + ( ( ( n % warpSize ) == 0 ) ? 0 : 1 );
+    int warpPerBlock = std::max( 1, std::min( 4, warpCount ) );
+    int threadCount  = warpSize * warpPerBlock;
+    int blockCount   = std::min( maxGridSize, std::max( 1, warpCount / warpPerBlock ) );
+    BlockDim         = dim3( threadCount, 1, 1 );
+    GridDim          = dim3( blockCount, 1, 1 );
+    return;
+}
 
 #endif

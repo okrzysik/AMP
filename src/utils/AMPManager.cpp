@@ -163,6 +163,8 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
     start_CudaOrHip();
     // Initialize Kokkos
     AMP::Utilities::initializeKokkos( argc, argv );
+    // Initialize Hypre
+    double hypre_time = start_HYPRE();
     // Initialize PETSc
     double petsc_time = start_PETSc();
     // Initialize SAMRAI
@@ -180,6 +182,8 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
         printf( "startup time = %0.3f s\n", time );
         if ( MPI_time != 0 )
             printf( "  MPI startup time = %0.3f s\n", MPI_time );
+        if ( hypre_time != 0 )
+            printf( "  Hypre startup time = %0.3f s\n", hypre_time );
         if ( petsc_time != 0 )
             printf( "  PETSc startup time = %0.3f s\n", petsc_time );
         if ( SAMRAI_time != 0 )
@@ -216,6 +220,8 @@ void AMPManager::shutdown()
     double SAMRAI_time = stop_SAMRAI();
     // Shudown PETSc
     double petsc_time = stop_PETSc();
+    // Shudown Hypre
+    double hypre_time = stop_HYPRE();
     // shutdown Kokkos
     AMP::Utilities::finalizeKokkos();
     // Shutdown MPI
@@ -249,6 +255,8 @@ void AMPManager::shutdown()
             printf( "  SAMRAI shutdown time = %0.3f s\n", SAMRAI_time );
         if ( petsc_time != 0 )
             printf( "  PETSc shutdown time = %0.3f s\n", petsc_time );
+        if ( hypre_time != 0 )
+            printf( "  Hypre shutdown time = %0.3f s\n", hypre_time );
         if ( MPI_time != 0 )
             printf( "  MPI shutdown time = %0.3f s\n", MPI_time );
         printf( "\n" );
@@ -363,23 +371,23 @@ double AMPManager::start_CudaOrHip()
         int deviceCount;
 
     #if defined( USE_CUDA )
-        cudaGetDeviceCount( &deviceCount ); // How many GPUs?
+        checkCudaErrors( cudaGetDeviceCount( &deviceCount ) ); // How many GPUs?
         int device_id = nodeRank % deviceCount;
-        cudaSetDevice( device_id ); // Map MPI-process to a GPU
+        checkCudaErrors( cudaSetDevice( device_id ) ); // Map MPI-process to a GPU
     #else
-        hipGetDeviceCount( &deviceCount ); // How many GPUs?
+        checkHipErrors( hipGetDeviceCount( &deviceCount ) ); // How many GPUs?
         int device_id = nodeRank % deviceCount;
-        hipSetDevice( device_id ); // Map MPI-process to a GPU
+        checkHipErrors( hipSetDevice( device_id ) ); // Map MPI-process to a GPU
     #endif
     }
 
     void *tmp;
     #if defined( USE_CUDA )
     checkCudaErrors( cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal ) );
-    cudaFree( tmp );
+    checkCudaErrors( cudaFree( tmp ) );
     #else
     checkHipErrors( hipMallocManaged( &tmp, 10, hipMemAttachGlobal ) );
-    hipFree( tmp );
+    checkHipErrors( hipFree( tmp ) );
     #endif
 #endif
     return getDuration( start );
@@ -400,10 +408,12 @@ AMPManagerProperties::AMPManagerProperties() : COMM_WORLD( AMP_COMM_WORLD )
  *  Some simple functions                                                    *
  ****************************************************************************/
 bool AMPManager::isInitialized() { return d_initialized != 0; }
+bool AMPManager::isFinalized() { return d_initialized == -1; }
 std::tuple<int, const char *const *> AMPManager::get_args()
 {
     return std::tuple<int, const char *const *>( d_argc, d_argv );
 }
+
 AMPManagerProperties AMPManager::getAMPManagerProperties()
 {
     AMP_INSIST( d_initialized, "AMP has not been initialized" );
@@ -412,3 +422,13 @@ AMPManagerProperties AMPManager::getAMPManagerProperties()
 
 
 } // namespace AMP
+
+/***********************************************************************
+ * C interfaces                                                         *
+ ***********************************************************************/
+extern "C" {
+void amp_startup_f( int argc, char **argv ) { AMP::AMPManager::startup( argc, argv ); }
+void amp_shutdown_f( void ) { AMP::AMPManager::shutdown(); }
+bool amp_initialized_f( void ) { return AMP::AMPManager::isInitialized(); }
+bool amp_finalized_f( void ) { return AMP::AMPManager::isFinalized(); }
+}
