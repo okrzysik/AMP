@@ -73,8 +73,22 @@ public:
 
     lidx_t beginColumn() const { return d_first_col; }
 
+    void sortColumnsHypre();
+
     template<typename idx_t>
-    void getColumnMap( std::vector<idx_t> &colMap )
+    idx_t *getColumnMap() const
+    {
+        if constexpr ( !std::is_same_v<idx_t, gidx_t> ) {
+            AMP_ERROR( "Can not return column map pointer with different index type" );
+        }
+        if ( d_is_diag ) {
+            AMP_ERROR( "Diagonal block of CSRMatrixData can not shallow copy the column map" );
+        }
+        return d_cols_unq.get();
+    }
+
+    template<typename idx_t>
+    void getColumnMap( std::vector<idx_t> &colMap ) const
     {
         // Don't do anything if offd and empty
         if ( !d_is_diag && d_is_empty ) {
@@ -84,8 +98,6 @@ public:
         AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                     "Copies from device to host memory not implemented yet" );
 
-        // find map for offd, no-op when on-diag
-        findColumnMap();
         colMap.resize( d_is_diag ? ( d_last_col - d_first_col ) : d_ncols_unq );
 
         if ( d_is_diag ) {
@@ -128,8 +140,6 @@ protected:
 
     std::vector<size_t> getColumnIDs( const size_t local_row ) const;
 
-    void findColumnMap();
-
     // Data members passed from outer CSRMatrixData object
     const AMP::Utilities::MemoryType d_memory_location;
     const gidx_t d_first_row;
@@ -147,10 +157,10 @@ protected:
     std::shared_ptr<lidx_t[]> d_cols_loc;
     std::shared_ptr<scalar_t[]> d_coeffs;
 
-    lidx_t d_num_rows  = 0;
-    lidx_t d_nnz       = 0;
-    lidx_t d_nnz_pad   = 0;
-    lidx_t d_ncols_unq = 0;
+    lidx_t d_num_rows    = 0;
+    lidx_t d_nnz         = 0;
+    lidx_t d_ncols_unq   = 0;
+    lidx_t d_max_row_len = 0;
 
     gidxAllocator_t gidxAllocator;
     lidxAllocator_t lidxAllocator;

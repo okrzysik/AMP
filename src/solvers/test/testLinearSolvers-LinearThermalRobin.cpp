@@ -173,6 +173,7 @@ int main( int argc, char *argv[] )
 
     } else {
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-AMPMesh-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
@@ -185,6 +186,8 @@ int main( int argc, char *argv[] )
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-AMPMesh-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-AMPMesh-BoomerAMG-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );

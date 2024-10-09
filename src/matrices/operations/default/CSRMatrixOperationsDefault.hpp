@@ -29,13 +29,13 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
 
     AMP_DEBUG_ASSERT( diagMatrix && offdMatrix );
 
-    // this ensures that the separate on/off diag calls operator the same way
+    // this ensures that the separate on/off diag calls operate the same way
     // e.g. by accumulating into output data
     out->zero();
 
+    // get all local in/out data buffers
     auto inData                 = in->getVectorData();
     const scalar_t *inDataBlock = inData->getRawDataBlock<scalar_t>( 0 );
-    const auto &ghosts          = inData->getGhosts();
     auto outData                = out->getVectorData();
     scalar_t *outDataBlock      = outData->getRawDataBlock<scalar_t>( 0 );
 
@@ -46,10 +46,6 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
         1 == inData->numberOfDataBlocks(),
         "CSRMatrixOperationsDefault::mult only implemented for vectors with one data block" );
 
-    AMP_DEBUG_INSIST(
-        ghosts.size() == inData->getGhostSize(),
-        "CSRMatrixOperationsDefault::mult only implemented for vectors with accessible ghosts" );
-
     AMP_ASSERT( inDataBlock && outDataBlock );
 
     {
@@ -59,6 +55,12 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
 
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsDefault::mult (ghost)" );
+        // have to do deep copy because getGhostValuesByGlobalID
+        // only works with size_t as index type...
+        std::vector<size_t> colMap;
+        offdMatrix->getColumnMap( colMap );
+        std::vector<scalar_t> ghosts( colMap.size() );
+        in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts.data() );
         d_localops_offd->mult( ghosts.data(), offdMatrix, outDataBlock );
     }
 }

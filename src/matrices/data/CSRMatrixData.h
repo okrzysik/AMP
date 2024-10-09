@@ -165,16 +165,19 @@ public:
      */
     size_t numGlobalColumns() const override;
 
-    /** \brief  Get the global id of the beginning row
+    /** \brief  Get the global id of the beginning row (inclusive)
      * \return  beginning global row id
      */
     size_t beginRow() const override;
 
-    /** \brief  Get the global id of the ending row
+    /** \brief  Get the global id of the ending row (exclusive)
      * \return  ending global row id
      */
     size_t endRow() const override;
 
+    /** \brief  Get the global id of the beginning column (inclusive)
+     * \return  beginning global row id
+     */
     size_t beginCol() const { return d_first_col; }
 
     std::shared_ptr<DiagMatrixData> getDiagMatrix() { return d_diag_matrix; }
@@ -205,6 +208,18 @@ public:
     bool hasOffDiag() const { return !d_offd_matrix->d_is_empty; }
 
     auto getMemoryLocation() const { return d_memory_location; }
+
+    void sortColumnsHypre()
+    {
+        d_diag_matrix->sortColumnsHypre();
+        d_offd_matrix->sortColumnsHypre();
+    }
+
+    template<typename idx_t>
+    idx_t *getOffDiagColumnMap() const
+    {
+        return d_offd_matrix->getColumnMap();
+    }
 
     template<typename idx_t>
     void getOffDiagColumnMap( std::vector<idx_t> &colMap ) const

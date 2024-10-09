@@ -158,7 +158,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     using scalar_t = typename Policy::scalar_t;
 
     gidx_t firstRow, endRow;
-    lidx_t nnz_pad;
     std::vector<lidx_t> nnz_d, nnz_od;
     std::vector<lidx_t> rowstart_d, rowstart_od;
     std::vector<gidx_t> cols_d, cols_od;
@@ -177,8 +176,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
                                                    rowstart_od,
                                                    cols_od,
                                                    cols_loc_od,
-                                                   coeffs_od,
-                                                   nnz_pad );
+                                                   coeffs_od );
 
     AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_d{
         nnz_d.data(), rowstart_d.data(), cols_d.data(), cols_loc_d.data(), coeffs_d.data()
@@ -189,7 +187,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     };
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
-        firstRow, endRow, pars_d, pars_od, nnz_pad, meshAdapter->getComm() );
+        firstRow, endRow, pars_d, pars_od, meshAdapter->getComm() );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
     AMP_ASSERT( csrMatrix );
