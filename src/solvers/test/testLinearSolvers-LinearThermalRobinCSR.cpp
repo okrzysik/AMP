@@ -62,7 +62,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+    auto comm      = AMP::AMP_MPI( AMP_COMM_WORLD );
+    mgrParams->setComm( comm );
     auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
@@ -84,23 +85,26 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
     auto neutronicsOperator = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
-    auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
-    auto SpecificPowerVec = AMP::LinearAlgebra::createVector(
-        gaussPointDofMap, SpecificPowerVar, true, neutronicsOperator->getMemoryLocation() );
+    auto SpecificPowerVec =
+        AMP::LinearAlgebra::createVector( gaussPointDofMap,
+                                          neutronicsOperator->getOutputVariable(),
+                                          true,
+                                          neutronicsOperator->getMemoryLocation() );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    // Integrate Nuclear Source over Desnity * Volume
+    // Integrate Nuclear Source over Density * Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
-    auto PowerInWattsVar = sourceOperator->getOutputVariable();
-    auto PowerInWattsVec = AMP::LinearAlgebra::createVector(
-        nodalDofMap, PowerInWattsVar, true, sourceOperator->getMemoryLocation() );
+    auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap,
+                                                             sourceOperator->getOutputVariable(),
+                                                             true,
+                                                             sourceOperator->getMemoryLocation() );
     PowerInWattsVec->zero();
 
     // convert the vector of specific power to power for a given basis.
@@ -128,8 +132,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
                                                          true,
                                                          diffusionOperator->getMemoryLocation() );
 
-    RightHandSideVec->setToScalar( 0.0 );
-
     // Add the boundary conditions corrections
     auto boundaryOpCorrectionVec =
         AMP::LinearAlgebra::createVector( nodalDofMap,
@@ -141,7 +143,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
-    RightHandSideVec->makeConsistent();
 
 #if defined( AMP_USE_HYPRE )
     using Policy = AMP::LinearAlgebra::HypreCSRPolicy;
@@ -179,7 +180,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     };
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
-        startRow, endRow, startCol, endCol, pars_d, pars_od, meshAdapter->getComm() );
+        startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
     AMP_ASSERT( csrMatrix );
@@ -190,38 +191,25 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     csrOperator->setVariables( linearOperator->getInputVariable(),
                                linearOperator->getOutputVariable() );
 
-    // make sure the database on theinput file exists for the linear solver
-    AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
-    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     auto linearSolver =
-        AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, csrOperator );
+        AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, linearOperator );
 
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );
-    TemperatureInKelvinVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Check the initial L2 norm of the solution
     double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
-    std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
+    AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    AMP::pout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
+    AMP::pout << "System size: " << RightHandSideVec->getGlobalSize() << std::endl;
 
     // Use a random initial guess?
     linearSolver->setZeroInitialGuess( false );
 
-    auto b     = RightHandSideVec;
-    auto bView = AMP::LinearAlgebra::createVectorAdaptor(
-        b->getName(), b->getDOFManager(), b->getRawDataBlock<double>() );
-    auto x     = TemperatureInKelvinVec;
-    auto xView = AMP::LinearAlgebra::createVectorAdaptor(
-        x->getName(), x->getDOFManager(), x->getRawDataBlock<double>() );
-
     // Solve the problem.
-    linearSolver->apply( bView, xView );
+    linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    // commented till necessary infrastructure in place
     checkConvergence( linearSolver.get(), inputFileName, *ut );
-
-    input_db.reset();
 }
 
 

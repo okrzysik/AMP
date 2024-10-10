@@ -79,6 +79,11 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         // Pull out block specific parameters
         auto &blParams = d_is_diag ? csrParams->d_diag : csrParams->d_off_diag;
 
+        if ( blParams.d_nnz_per_row == nullptr ) {
+            d_is_empty = true;
+            return;
+        }
+
         // count nnz and decide if block is empty
         if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
             d_nnz =
@@ -91,6 +96,7 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
             AMP_ERROR( "Invalid memory type" );
 #endif
         }
+
         if ( d_nnz == 0 ) {
             d_is_empty = true;
             return;
@@ -206,7 +212,6 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
 
         // offd column map also always owned internally
         d_cols_unq = sharedArrayBuilder( d_ncols_unq, gidxAllocator );
-
         for ( auto it = colMap.begin(); it != colMap.end(); ++it ) {
             d_cols_unq[it->second] = it->first;
         }

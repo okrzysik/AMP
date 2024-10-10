@@ -55,9 +55,6 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         d_offd_matrix = std::make_shared<OffdMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
 
-        // get total nnz count
-        d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
-
         // Make DOF managers
         std::vector<size_t> remoteDOFsRight;
         d_offd_matrix->getColumnMap( remoteDOFsRight );
@@ -88,6 +85,9 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
     } else {
         AMP_ERROR( "Check supplied MatrixParameters object" );
     }
+
+    // get total nnz count
+    d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
 
     d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
 }
