@@ -100,11 +100,8 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         // Wrap raw pointers from blParams to match internal
         // shared_ptr<T[]> type
         d_nnz_per_row = sharedArrayWrapper( blParams.d_nnz_per_row );
-        d_row_starts  = sharedArrayWrapper( blParams.d_row_starts );
         d_cols        = sharedArrayWrapper( blParams.d_cols );
-        d_cols_loc    = sharedArrayWrapper( blParams.d_cols_loc );
         d_coeffs      = sharedArrayWrapper( blParams.d_coeffs );
-        AMP_ERROR( "Don't forget to add d_cols_unq here too" );
     } else if ( matParams ) {
         // Getting device memory support in this constructor mode will be very challenging
         AMP_ASSERT( d_memory_location != AMP::Utilities::MemoryType::device );
@@ -114,21 +111,12 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
                     "Explicitly defined getRow function must be present in MatrixParameters"
                     " to construct CSRMatrixData and CSRLocalMatrixData" );
 
-        // Count number of nonzeros depending on block type
-        std::unordered_map<gidx_t, lidx_t> colMap;
-        d_nnz       = 0;
-        d_ncols_unq = 0;
+        // Count number of nonzeros
+        d_nnz = 0;
         for ( gidx_t i = d_first_row; i < d_last_row; ++i ) {
             for ( auto &&col : getRow( i ) ) {
                 if ( isColValid<Policy>( col, d_is_diag, d_first_col, d_last_col ) ) {
                     ++d_nnz;
-                    // if offd then count unique columns and form map to local indices
-                    if ( !d_is_diag ) {
-                        const bool inserted = colMap.insert( { col, d_ncols_unq } ).second;
-                        if ( inserted ) {
-                            ++d_ncols_unq;
-                        }
-                    }
                 }
             }
         }
@@ -139,64 +127,89 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
             d_is_empty = true;
             return;
         }
-
-        // Otherwise nonempty. Continue on.
         d_is_empty = false;
 
         // Allocate internal arrays
         d_nnz_per_row = sharedArrayBuilder( d_num_rows, lidxAllocator );
-        d_row_starts  = sharedArrayBuilder( d_num_rows + 1, lidxAllocator );
         d_cols        = sharedArrayBuilder( d_nnz, gidxAllocator );
-        d_cols_loc    = sharedArrayBuilder( d_nnz, lidxAllocator );
         d_coeffs      = sharedArrayBuilder( d_nnz, scalarAllocator );
-        if ( !d_is_diag ) {
-            d_cols_unq = sharedArrayBuilder( d_ncols_unq, gidxAllocator );
-        }
 
         // Fill cols and nnz based on local row extents and on/off diag status
-        lidx_t cli       = 0; // index into local array of columns as it is filled in
         lidx_t nnzFilled = 0;
-        d_max_row_len    = 0;
         for ( lidx_t i = 0; i < d_num_rows; ++i ) {
             d_nnz_per_row[i] = 0;
             auto cols        = getRow( d_first_row + i );
             for ( auto &&col : cols ) {
                 if ( isColValid<Policy>( col, d_is_diag, d_first_col, d_last_col ) ) {
                     d_nnz_per_row[i]++;
-                    d_cols[cli] = col;
-                    if ( d_is_diag ) {
-                        d_cols_loc[cli] = static_cast<lidx_t>( col - d_first_col );
-                    } else {
-                        lidx_t cl       = colMap[col];
-                        d_cols_loc[cli] = cl;
-                        d_cols_unq[cl]  = col;
-                    }
-                    d_coeffs[cli] = 0.0;
-                    ++cli;
+                    d_cols[nnzFilled]   = col;
+                    d_coeffs[nnzFilled] = 0.0;
                     ++nnzFilled;
                 }
             }
-            d_max_row_len = std::max( d_max_row_len, d_nnz_per_row[i] );
         }
-
-        // scan nnz counts to get starting index of each row
-        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-            std::exclusive_scan(
-                d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, d_row_starts.get(), 0 );
-        } else {
-#ifdef USE_DEVICE
-            AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::exclusive_scan(
-                d_nnz_per_row.get(), d_num_rows, d_row_starts.get(), 0 );
-#else
-            AMP_ERROR( "Invalid memory type" );
-#endif
-        }
-        d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
 
         // Ensure that the right number of nnz were actually filled in
         AMP_DEBUG_ASSERT( nnzFilled == d_nnz );
     } else {
         AMP_ERROR( "Check supplied MatrixParameter object" );
+    }
+
+    // now do setup that is independent of MatrixParameter datatype
+    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+        d_max_row_len = *std::max_element( d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows );
+    } else {
+#ifdef USE_DEVICE
+        d_max_row_len = AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::max_element(
+            d_nnz_per_row.get(), d_num_rows );
+#else
+        AMP_ERROR( "Invalid memory type" );
+#endif
+    }
+
+    // row starts and local columns always owned internally
+    d_row_starts = sharedArrayBuilder( d_num_rows + 1, lidxAllocator );
+    d_cols_loc   = sharedArrayBuilder( d_nnz, lidxAllocator );
+
+    // scan nnz counts to get starting index of each row
+    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+        std::exclusive_scan(
+            d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, d_row_starts.get(), 0 );
+        d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
+    } else {
+#ifdef USE_DEVICE
+        AMP::LinearAlgebra::DeviceDataHelpers<lidx_t>::exclusive_scan(
+            d_nnz_per_row.get(), d_num_rows, d_row_starts.get(), 0 );
+        // decide how to fill last entry and account for colMap below...
+        AMP_ERROR( "Pure device builds not supported yet" );
+#else
+        AMP_ERROR( "Invalid memory type" );
+#endif
+    }
+
+    // fill in local column indices
+    if ( d_is_diag ) {
+        for ( lidx_t n = 0; n < d_nnz; ++n ) {
+            d_cols_loc[n] = static_cast<lidx_t>( d_cols[n] - d_first_col );
+        }
+    } else {
+        // for offd setup column map as part of the process
+        std::unordered_map<gidx_t, lidx_t> colMap;
+        d_ncols_unq = 0;
+        for ( lidx_t n = 0; n < d_nnz; ++n ) {
+            const auto inserted = colMap.insert( { d_cols[n], d_ncols_unq } );
+            if ( inserted.second ) {
+                ++d_ncols_unq;
+            }
+            d_cols_loc[n] = inserted.first->second;
+        }
+
+        // offd column map also always owned internally
+        d_cols_unq = sharedArrayBuilder( d_ncols_unq, gidxAllocator );
+
+        for ( auto it = colMap.begin(); it != colMap.end(); ++it ) {
+            d_cols_unq[it->second] = it->first;
+        }
     }
 }
 
@@ -205,6 +218,10 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumnsHypre()
 {
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRSerialMatrixData::sortColumns not implemented for device memory" );
+
+    if ( d_is_empty ) {
+        return;
+    }
 
     // only used for Hypre compatibility
     std::vector<std::tuple<lidx_t, gidx_t, scalar_t>> rTpl( d_max_row_len );

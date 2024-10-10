@@ -24,9 +24,7 @@ public:
         CSRSerialMatrixParameters() = delete;
 
         lidx_t *d_nnz_per_row;
-        lidx_t *d_row_starts;
         gidx_t *d_cols;
-        lidx_t *d_cols_loc;
         scalar_t *d_coeffs;
     };
 
@@ -42,30 +40,12 @@ public:
      */
     explicit CSRMatrixParameters( gidx_t first_row,
                                   gidx_t last_row,
-                                  const CSRSerialMatrixParameters &diag,
-                                  const CSRSerialMatrixParameters &off_diag,
-                                  const AMP_MPI &comm )
-        : MatrixParametersBase( comm ),
-          d_is_square( true ),
-          d_first_row( first_row ),
-          d_last_row( last_row ),
-          d_first_col( first_row ),
-          d_last_col( last_row ),
-          d_diag( diag ),
-          d_off_diag( off_diag )
-    {
-    }
-
-    explicit CSRMatrixParameters( bool is_square,
-                                  gidx_t first_row,
-                                  gidx_t last_row,
                                   gidx_t first_col,
                                   gidx_t last_col,
                                   const CSRSerialMatrixParameters &diag,
                                   const CSRSerialMatrixParameters &off_diag,
                                   const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
-          d_is_square( is_square ),
           d_first_row( first_row ),
           d_last_row( last_row ),
           d_first_col( first_col ),
@@ -79,7 +59,6 @@ public:
     virtual ~CSRMatrixParameters() = default;
 
     // Bulk information
-    bool d_is_square;
     gidx_t d_first_row;
     gidx_t d_last_row;
     gidx_t d_first_col;

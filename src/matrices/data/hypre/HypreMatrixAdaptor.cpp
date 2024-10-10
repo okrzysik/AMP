@@ -120,6 +120,7 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     HYPRE_BigInt nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getDiagMatrix()->getDataFields();
     auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getOffdMatrix()->getDataFields();
+    const bool haveOffd                            = csrData->hasOffDiag();
 
     AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
 
@@ -168,8 +169,12 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     diag->i[0]     = 0;
     off_diag->i[0] = 0;
     for ( HYPRE_BigInt n = 0; n < nrows; ++n ) {
-        diag->i[n + 1]     = diag->i[n] + nnz_d[n];
-        off_diag->i[n + 1] = off_diag->i[n] + nnz_od[n];
+        diag->i[n + 1] = diag->i[n] + nnz_d[n];
+        if ( haveOffd ) {
+            off_diag->i[n + 1] = off_diag->i[n] + nnz_od[n];
+        } else {
+            off_diag->i[n + 1] = 0;
+        }
     }
 
     // This is where we tell hypre to stop owning any data

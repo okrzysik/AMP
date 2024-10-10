@@ -44,14 +44,10 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
 
     if ( csrParams ) {
 
-        // add check for memory location etc and migrate if necessary
-        d_is_square = csrParams->d_is_square;
         d_first_row = csrParams->d_first_row;
         d_last_row  = csrParams->d_last_row;
         d_first_col = csrParams->d_first_col;
         d_last_col  = csrParams->d_last_col;
-
-        size_t N = d_last_row - d_first_row;
 
         // Construct on/off diag blocks
         d_diag_matrix = std::make_shared<DiagMatrixData>(
@@ -62,29 +58,21 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         // get total nnz count
         d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
 
-        // collect off-diagonal entries and create right dof manager
-        std::vector<size_t> remote_dofs;
-        for ( lidx_t i = 0; i < d_offd_matrix->d_nnz; ++i ) {
-            remote_dofs.push_back( d_offd_matrix->d_cols[i] );
-        }
-        AMP::Utilities::unique( remote_dofs );
-        const auto &comm = getComm();
-        d_rightDOFManager =
-            std::make_shared<AMP::Discretization::DOFManager>( N, comm, remote_dofs );
-
-        if ( d_is_square ) {
-            d_leftDOFManager = d_rightDOFManager;
-        } else {
-            AMP_ERROR( "Non-square matrices not handled at present" );
-        }
+        // Make DOF managers
+        std::vector<size_t> remoteDOFsRight;
+        d_offd_matrix->getColumnMap( remoteDOFsRight );
+        d_rightDOFManager = std::make_shared<Discretization::DOFManager>(
+            d_last_row - d_first_row, getComm(), remoteDOFsRight );
+        // Finding ghosts for leftDM hard to do and not currently needed
+        // should think about how to approach it though
+        d_leftDOFManager =
+            std::make_shared<Discretization::DOFManager>( d_last_col - d_first_col, getComm() );
 
     } else if ( matParams ) {
-        // for now all matrix parameter data is assumed to be on host
+
         d_leftDOFManager  = matParams->getLeftDOFManager();
         d_rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
-
-        d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
         d_first_row = d_leftDOFManager->beginDOF();
         d_last_row  = d_leftDOFManager->endDOF();
         d_first_col = d_rightDOFManager->beginDOF();
@@ -100,6 +88,8 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
     } else {
         AMP_ERROR( "Check supplied MatrixParameters object" );
     }
+
+    d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
