@@ -1890,9 +1890,17 @@ void BDFIntegrator::registerVectorsForMemoryManagement( void )
 *
 *************************************************************************
 */
-void BDFIntegrator::reset( std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> )
+void BDFIntegrator::reset(
+    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> params )
 {
     PROFILE( "BDFIntegrator::reset" );
+
+    if ( params ) {
+        d_pParameters =
+            std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( params );
+        AMP_ASSERT( params->d_db );
+        getFromInput( params->d_db, false );
+    }
 
     registerVectorsForMemoryManagement();
 
@@ -1932,40 +1940,41 @@ void BDFIntegrator::reset( std::shared_ptr<const AMP::TimeIntegrator::TimeIntegr
         d_timederivative_vector->getVectorData()->reset();
     }
 
-    std::shared_ptr<AMP::Operator::OperatorParameters> opParams;
-    d_operator->reset( opParams );
-    d_operator->reInitializeVector( d_solution_vector );
-    // experimental, should all previous vectors be also cleaned up??
-    for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
-        d_operator->reInitializeVector( d_prev_solutions[i] );
-    }
-
-    // we re-evaluate the rhs using the current variables (not the new)
-    // so as to restore information lost ie f(u_n) which will be needed
-    // at the next step
-    if ( d_use_predictor && ( !d_reset_after_restart ) ) {
-
-        if ( d_predictor_type == "ab2" ) {
-            // right now I am going to leave this as is
-            // but probably the right approach would be to interpolate
-            // the time derivative if we are following the Gresho/Sani approach
-            // evaluate f(u_{n-1})
-            d_scratch_vector->copyVector( d_prev_solutions[1] );
-            auto timeOperator =
-                std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
-            if ( timeOperator ) {
-                timeOperator->applyRhs( d_scratch_vector, d_old_td_vector );
-            } else {
-                d_operator->apply( d_scratch_vector, d_old_td_vector );
-            }
+    if ( d_operator ) {
+        std::shared_ptr<AMP::Operator::OperatorParameters> opParams;
+        d_operator->reset( opParams );
+        d_operator->reInitializeVector( d_solution_vector );
+        // experimental, should all previous vectors be also cleaned up??
+        for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
+            d_operator->reInitializeVector( d_prev_solutions[i] );
         }
 
-        // re-evaluates the AB2 or Leapfrog predictor
-        // it is important to re-evaluate because the truncation error estimate will
-        // be calculated off of the predicted values
-        evaluatePredictor();
-    }
+        // we re-evaluate the rhs using the current variables (not the new)
+        // so as to restore information lost ie f(u_n) which will be needed
+        // at the next step
+        if ( d_use_predictor && ( !d_reset_after_restart ) ) {
 
+            if ( d_predictor_type == "ab2" ) {
+                // right now I am going to leave this as is
+                // but probably the right approach would be to interpolate
+                // the time derivative if we are following the Gresho/Sani approach
+                // evaluate f(u_{n-1})
+                d_scratch_vector->copyVector( d_prev_solutions[1] );
+                auto timeOperator =
+                    std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
+                if ( timeOperator ) {
+                    timeOperator->applyRhs( d_scratch_vector, d_old_td_vector );
+                } else {
+                    d_operator->apply( d_scratch_vector, d_old_td_vector );
+                }
+            }
+
+            // re-evaluates the AB2 or Leapfrog predictor
+            // it is important to re-evaluate because the truncation error estimate will
+            // be calculated off of the predicted values
+            evaluatePredictor();
+        }
+    }
     d_reset_after_restart = false;
 }
 
