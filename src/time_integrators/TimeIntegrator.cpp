@@ -66,12 +66,10 @@ uint64_t TimeIntegrator::getID() const
 
 void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    // for now the solution is set to the initial conditions by Jungho
     d_ic_vector = parameters->d_ic_vector;
     AMP_ASSERT( d_ic_vector );
 
     // for now the solution is set to the initial conditions
-    //    d_solution_vector = d_ic_vector->clone( "current solution" );
     d_solution_vector = d_ic_vector->clone();
     d_solution_vector->copyVector( d_ic_vector );
 
