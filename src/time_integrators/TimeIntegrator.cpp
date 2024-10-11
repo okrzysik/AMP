@@ -157,6 +157,8 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
         AMP_ERROR( d_object_name + " -- Key data `max_integrator_steps' missing in input" );
     }
 
+    d_integrator_step = db->getWithDefault<int>( "integrator_step", 0 );
+
     d_max_dt = db->getWithDefault<double>( "max_dt", std::numeric_limits<double>::max() );
 
     if ( d_max_dt < 0.0 ) {
@@ -231,6 +233,7 @@ void TimeIntegrator::writeRestart( int64_t fid ) const
 {
     d_pParameters->d_db->putScalar<double>( "initial_time", d_current_time );
     d_pParameters->d_db->putScalar<double>( "initial_dt", d_current_dt );
+    d_pParameters->d_db->putScalar<double>( "integrator_step", d_integrator_step );
     IO::writeHDF5( fid, "ti_db", *( d_pParameters->d_db ) );
     IO::writeHDF5( fid, "ic_vec", d_solution_vector->getID() );
     IO::writeHDF5( fid, "global_db", *( d_pParameters->d_global_db ) );
