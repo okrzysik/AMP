@@ -264,6 +264,8 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
             d_DtCutLowerBound =
                 db->getWithDefault<double>( "dt_cut_lower_bound", 0.9 ); // to match old for now
             d_DtGrowthUpperBound = db->getWithDefault<double>( "dt_growth_upper_bound", 1.702 );
+            d_final_constant_timestep_current_step =
+                db->getWithDefault<int>( "final_constant_timestep_current_step", 1 );
         }
 
         if ( !d_calculateTimeTruncError ) {
@@ -705,15 +707,16 @@ double BDFIntegrator::getNextDtPredefined( const bool good_solution, const int s
 
 double BDFIntegrator::getNextDtFinalConstant( const bool, const int )
 {
-    static int i = 1;
-    if ( i <= d_number_initial_fixed_steps ) {
+    if ( d_final_constant_timestep_current_step <= d_number_initial_fixed_steps ) {
         d_current_dt = d_initial_dt;
-        ++i;
-    } else if ( i < d_number_of_time_intervals + d_number_initial_fixed_steps ) {
-        d_current_dt = d_initial_dt + ( (double) i - d_number_initial_fixed_steps ) /
-                                          ( (double) d_number_of_time_intervals ) *
-                                          ( d_max_dt - d_initial_dt );
-        ++i;
+        ++d_final_constant_timestep_current_step;
+    } else if ( d_final_constant_timestep_current_step <
+                d_number_of_time_intervals + d_number_initial_fixed_steps ) {
+        d_current_dt =
+            d_initial_dt +
+            ( (double) d_final_constant_timestep_current_step - d_number_initial_fixed_steps ) /
+                ( (double) d_number_of_time_intervals ) * ( d_max_dt - d_initial_dt );
+        ++d_final_constant_timestep_current_step;
     } else {
         d_current_dt = d_max_dt;
     }
@@ -2028,7 +2031,12 @@ void BDFIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) con
     ImplicitIntegrator::registerChildObjects( manager );
 }
 
-void BDFIntegrator::writeRestart( int64_t fid ) const { ImplicitIntegrator::writeRestart( fid ); }
+void BDFIntegrator::writeRestart( int64_t fid ) const
+{
+    d_pParameters->d_db->putScalar<int>( "final_constant_timestep_current_step",
+                                         d_final_constant_timestep_current_step );
+    ImplicitIntegrator::writeRestart( fid );
+}
 
 BDFIntegrator::BDFIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : ImplicitIntegrator( fid, manager )

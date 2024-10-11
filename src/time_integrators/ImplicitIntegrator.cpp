@@ -21,8 +21,6 @@ ImplicitIntegrator::ImplicitIntegrator(
     : AMP::TimeIntegrator::TimeIntegrator( params )
 {
     registerOperator( d_operator );
-    if ( d_operator )
-        createSolver();
 }
 
 ImplicitIntegrator::~ImplicitIntegrator() = default;
@@ -99,8 +97,6 @@ void ImplicitIntegrator::registerOperator( std::shared_ptr<AMP::Operator::Operat
 
     if ( !d_solver )
         createSolver();
-
-    d_solver->registerOperator( d_operator );
 }
 
 /*

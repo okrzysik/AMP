@@ -430,6 +430,10 @@ protected:
     //! initial steps to take with d_initial_dt
     int d_number_initial_fixed_steps = 0;
 
+    //! used only with the final constant timestep scheme, counter
+    //! to keep track of current step
+    int d_final_constant_timestep_current_step = 1;
+
     //! whether to log statistics about time integrator
     bool d_log_statistics = true;
 
