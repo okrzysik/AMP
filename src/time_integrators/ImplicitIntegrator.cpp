@@ -286,8 +286,12 @@ void ImplicitIntegrator::integratorSpecificUpdateSolution( double )
 void ImplicitIntegrator::reset(
     std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters != nullptr );
-    abort();
+    if ( parameters ) {
+        d_pParameters =
+            std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( parameters );
+        AMP_ASSERT( parameters->d_db );
+        TimeIntegrator::getFromInput( parameters->d_db, true );
+    }
 }
 
 void ImplicitIntegrator::reset()
