@@ -263,7 +263,6 @@ bool ImplicitIntegrator::integratorSpecificCheckNewSolution( const int )
 void ImplicitIntegrator::updateSolution()
 {
     d_current_time += d_current_dt;
-    d_integrator_step++;
 
     integratorSpecificUpdateSolution( d_current_time );
 
@@ -273,6 +272,8 @@ void ImplicitIntegrator::updateSolution()
         AMP::pout << "Simulation time is " << d_current_time << std::endl;
         AMP::pout << "++++++++++++++++++++++++++++++++++++++++++++++++\n" << std::endl;
     }
+
+    d_integrator_step++;
 }
 
 // provide a default implementation
