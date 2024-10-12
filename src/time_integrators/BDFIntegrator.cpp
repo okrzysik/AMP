@@ -1897,13 +1897,9 @@ void BDFIntegrator::reset(
     std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> params )
 {
     PROFILE( "BDFIntegrator::reset" );
+    ImplicitIntegrator::reset( params );
 
-    if ( params ) {
-        d_pParameters =
-            std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( params );
-        AMP_ASSERT( params->d_db );
-        getFromInput( params->d_db, false );
-    }
+    BDFIntegrator::getFromInput( params->d_db, true );
 
     registerVectorsForMemoryManagement();
 

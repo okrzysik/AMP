@@ -121,7 +121,7 @@ double TimeIntegrator::getNextDt( const bool )
 *************************************************************************
 */
 
-void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
+void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db, bool from_reset )
 {
     AMP_ASSERT( db );
 
@@ -131,10 +131,15 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
         AMP_ERROR( " -- Key data `name' missing in input." );
     }
 
-    if ( db->keyExists( "initial_time" ) ) {
-        d_initial_time = db->getScalar<double>( "initial_time" );
-    } else {
-        AMP_ERROR( d_object_name + " -- Key data `initial_time' missing in input" );
+    if ( !from_reset ) {
+        if ( db->keyExists( "initial_time" ) ) {
+            d_initial_time = db->getScalar<double>( "initial_time" );
+        } else {
+            AMP_ERROR( d_object_name + " -- Key data `initial_time' missing in input" );
+        }
+
+        d_integrator_step = db->getWithDefault<int>( "integrator_step", 0 );
+        d_initial_dt      = db->getWithDefault<double>( "initial_dt", 0.0 );
     }
 
     if ( db->keyExists( "final_time" ) ) {
@@ -155,8 +160,6 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
         AMP_ERROR( d_object_name + " -- Key data `max_integrator_steps' missing in input" );
     }
 
-    d_integrator_step = db->getWithDefault<int>( "integrator_step", 0 );
-
     d_max_dt = db->getWithDefault<double>( "max_dt", std::numeric_limits<double>::max() );
 
     if ( d_max_dt < 0.0 ) {
@@ -168,8 +171,6 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
     if ( d_min_dt < 0.0 ) {
         AMP_ERROR( d_object_name + " -- Error in input data min_dt < 0." );
     }
-
-    d_initial_dt = db->getWithDefault<double>( "initial_dt", 0.0 );
 
     d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
 
