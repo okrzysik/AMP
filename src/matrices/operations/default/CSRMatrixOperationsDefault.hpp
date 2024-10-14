@@ -233,10 +233,9 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
 
     auto *rawVecData = buf->getRawDataBlock<scalar_t>();
     auto memTypeV    = AMP::Utilities::getMemoryType( rawVecData );
-    AMP_DEBUG_INSIST(
-        memTypeV < AMP::Utilities::MemoryType::device &&
-            csrData->d_memory_location < AMP::Utilities::MemoryType::device,
-        "CSRMatrixOperationsDefault::extractDiagonal not implemented for device memory" );
+    AMP_INSIST( memTypeV < AMP::Utilities::MemoryType::device &&
+                    csrData->d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsDefault::extractDiagonal not implemented for device memory" );
 
     d_localops_diag->extractDiagonal( csrData->getDiagMatrix(), rawVecData );
 }

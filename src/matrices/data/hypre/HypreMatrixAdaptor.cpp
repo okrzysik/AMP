@@ -62,7 +62,7 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     decltype( csrDataHost ) csrDataDevice  = nullptr;
 #endif
 
-    if ( csrDataHost ) {
+    if ( csrDataHost && false ) {
         initializeHypreMatrix( csrDataHost );
     } else if ( csrDataManaged && false ) {
         initializeHypreMatrix( csrDataManaged );
@@ -112,7 +112,7 @@ template<class csr_data_type>
 void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData )
 {
     // ensure that columns are sorted for hypre compatibility
-    csrData->sortColumnsHypre();
+    csrData->sortColumns( AMP::LinearAlgebra::MatrixSortScheme::hypre );
     // extract fields from csrData
     HYPRE_BigInt first_row    = static_cast<HYPRE_BigInt>( csrData->beginRow() );
     HYPRE_BigInt last_row     = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );

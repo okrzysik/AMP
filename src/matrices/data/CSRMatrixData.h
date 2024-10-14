@@ -209,10 +209,10 @@ public:
 
     auto getMemoryLocation() const { return d_memory_location; }
 
-    void sortColumnsHypre()
+    void sortColumns( MatrixSortScheme sort_type )
     {
-        d_diag_matrix->sortColumnsHypre();
-        d_offd_matrix->sortColumnsHypre();
+        d_diag_matrix->sortColumns( sort_type );
+        d_offd_matrix->sortColumns( sort_type );
     }
 
     template<typename idx_t>
@@ -235,9 +235,9 @@ protected:
     gidx_t d_last_col  = 0;
     lidx_t d_nnz       = 0;
 
-    gidxAllocator_t gidxAllocator;
-    lidxAllocator_t lidxAllocator;
-    scalarAllocator_t scalarAllocator;
+    gidxAllocator_t d_gidxAllocator;
+    lidxAllocator_t d_lidxAllocator;
+    scalarAllocator_t d_scalarAllocator;
 
     std::shared_ptr<DiagMatrixData> d_diag_matrix;
     std::shared_ptr<OffdMatrixData> d_offd_matrix;

@@ -73,7 +73,7 @@ public:
 
     lidx_t beginColumn() const { return d_first_col; }
 
-    void sortColumnsHypre();
+    void sortColumns( MatrixSortScheme sort_type );
 
     template<typename idx_t>
     idx_t *getColumnMap() const
@@ -162,9 +162,9 @@ protected:
     lidx_t d_ncols_unq   = 0;
     lidx_t d_max_row_len = 0;
 
-    gidxAllocator_t gidxAllocator;
-    lidxAllocator_t lidxAllocator;
-    scalarAllocator_t scalarAllocator;
+    gidxAllocator_t d_gidxAllocator;
+    lidxAllocator_t d_lidxAllocator;
+    scalarAllocator_t d_scalarAllocator;
 
     std::shared_ptr<MatrixParametersBase> d_pParameters;
 };

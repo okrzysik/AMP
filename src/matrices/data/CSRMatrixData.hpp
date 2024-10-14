@@ -9,11 +9,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
 
-// #include <algorithm>
-// #include <iterator>
-// #include <memory>
-// #include <numeric>
-// #include <set>
 #include <type_traits>
 
 namespace AMP::LinearAlgebra {
