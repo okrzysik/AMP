@@ -2,6 +2,8 @@
 #define included_AMP_Algorithms_hpp
 
 #include "AMP/utils/Algorithms.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/memory.h"
 
 #ifdef USE_DEVICE
     #include <thrust/device_vector.h>
@@ -19,12 +21,9 @@ namespace AMP {
 namespace Utilities {
 
 template<typename TYPE>
-void Algorithms<TYPE>::fill_n( const MemoryType mem_type,
-                               TYPE *x,
-                               const size_t N,
-                               const TYPE alpha )
+void Algorithms<TYPE>::fill_n( TYPE *x, const size_t N, const TYPE alpha )
 {
-    if ( mem_type < MemoryType::device ) {
+    if ( getMemoryType( x ) < MemoryType::device ) {
         std::fill( x, x + N, alpha );
     } else {
 #ifdef USE_DEVICE
@@ -36,9 +35,9 @@ void Algorithms<TYPE>::fill_n( const MemoryType mem_type,
 }
 
 template<typename TYPE>
-void Algorithms<TYPE>::copy_n( const MemoryType mem_type, TYPE *x, const size_t N, TYPE *y )
+void Algorithms<TYPE>::copy_n( TYPE *x, const size_t N, TYPE *y )
 {
-    if ( mem_type < MemoryType::device ) {
+    if ( getMemoryType( x ) < MemoryType::device ) {
         std::copy( x, x + N, y );
     } else {
 #ifdef USE_DEVICE
@@ -50,9 +49,9 @@ void Algorithms<TYPE>::copy_n( const MemoryType mem_type, TYPE *x, const size_t 
 }
 
 template<typename TYPE>
-void Algorithms<TYPE>::inclusive_scan( const MemoryType mem_type, TYPE *x, const size_t N, TYPE *y )
+void Algorithms<TYPE>::inclusive_scan( TYPE *x, const size_t N, TYPE *y )
 {
-    if ( mem_type < MemoryType::device ) {
+    if ( getMemoryType( x ) < MemoryType::device ) {
         std::inclusive_scan( x, x + N, y );
     } else {
 #ifdef USE_DEVICE
@@ -64,10 +63,9 @@ void Algorithms<TYPE>::inclusive_scan( const MemoryType mem_type, TYPE *x, const
 }
 
 template<typename TYPE>
-void Algorithms<TYPE>::exclusive_scan(
-    const MemoryType mem_type, TYPE *x, const size_t N, TYPE *y, TYPE alpha )
+void Algorithms<TYPE>::exclusive_scan( TYPE *x, const size_t N, TYPE *y, TYPE alpha )
 {
-    if ( mem_type < MemoryType::device ) {
+    if ( getMemoryType( x ) < MemoryType::device ) {
         std::exclusive_scan( x, x + N, y, alpha );
     } else {
 #ifdef USE_DEVICE
@@ -79,9 +77,9 @@ void Algorithms<TYPE>::exclusive_scan(
 }
 
 template<typename TYPE>
-TYPE Algorithms<TYPE>::max_element( const MemoryType mem_type, TYPE *x, const size_t N )
+TYPE Algorithms<TYPE>::max_element( TYPE *x, const size_t N )
 {
-    if ( mem_type < MemoryType::device ) {
+    if ( getMemoryType( x ) < MemoryType::device ) {
         return *std::max_element( x, x + N );
     } else {
 #ifdef USE_DEVICE
@@ -90,12 +88,13 @@ TYPE Algorithms<TYPE>::max_element( const MemoryType mem_type, TYPE *x, const si
         AMP_ERROR( "Invalid memory type" );
 #endif
     }
+    return TYPE{ 0 };
 }
 
 template<typename TYPE>
-TYPE Algorithms<TYPE>::accumulate( const MemoryType mem_type, TYPE *x, const size_t N, TYPE alpha )
+TYPE Algorithms<TYPE>::accumulate( TYPE *x, const size_t N, TYPE alpha )
 {
-    if ( mem_type < MemoryType::device ) {
+    if ( getMemoryType( x ) < MemoryType::device ) {
         return std::accumulate( x, x + N, alpha );
     } else {
 #ifdef USE_DEVICE
@@ -104,6 +103,7 @@ TYPE Algorithms<TYPE>::accumulate( const MemoryType mem_type, TYPE *x, const siz
         AMP_ERROR( "Invalid memory type" );
 #endif
     }
+    return TYPE{ 0 };
 }
 
 } // namespace Utilities
