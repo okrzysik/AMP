@@ -62,7 +62,7 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     decltype( csrDataHost ) csrDataDevice  = nullptr;
 #endif
 
-    if ( csrDataHost && false ) {
+    if ( csrDataHost ) {
         initializeHypreMatrix( csrDataHost );
     } else if ( csrDataManaged && false ) {
         initializeHypreMatrix( csrDataManaged );
