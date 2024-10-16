@@ -63,10 +63,14 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 #endif
 
     if ( csrDataHost ) {
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
         initializeHypreMatrix( csrDataHost );
-    } else if ( csrDataManaged && false ) {
+    } else if ( csrDataManaged ) {
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
         initializeHypreMatrix( csrDataManaged );
-    } else if ( csrDataDevice && false ) {
+    } else if ( csrDataDevice ) {
+        AMP_ERROR( "Pure device memory not yet supported in HypreMatrixAdaptor" );
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
         initializeHypreMatrix( csrDataDevice );
     } else {
 
@@ -123,17 +127,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     const bool haveOffd                            = csrData->hasOffDiag();
 
     AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
-
-    if ( csrData->getMemoryLocation() == AMP::Utilities::MemoryType::host ) {
-        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
-    } else if ( csrData->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
-#ifdef USE_DEVICE
-        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
-        AMP_ERROR( "Non-host memory not yet supported in HypreMatrixAdaptor" );
-#else
-        AMP_ERROR( "Non-host memory not yet supported in HypreMatrixAdaptor" );
-#endif
-    }
 
     const auto nrows = last_row - first_row + 1;
 
