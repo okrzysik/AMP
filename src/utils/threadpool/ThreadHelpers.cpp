@@ -79,7 +79,7 @@ std::thread::native_handle_type getCurrentThread()
 #if defined( USE_LINUX ) || defined( USE_MAC )
     return pthread_self();
 #elif defined( USE_WINDOWS )
-    return AMP::Thread::getThreadAffinity( GetCurrentThread() );
+    return GetCurrentThread();
 #else
     #error Unknown OS
 #endif
