@@ -54,7 +54,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+    auto comm      = AMP::AMP_MPI( AMP_COMM_WORLD );
+    mgrParams->setComm( comm );
     auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
@@ -173,7 +174,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
-    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     auto linearSolver =
         AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, linearOperator );
 
@@ -192,7 +192,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Solve the problem.
     linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    // commented till necessary infrastructure in place
     checkConvergence( linearSolver.get(), inputFileName, *ut );
 }
 
@@ -212,6 +211,7 @@ int main( int argc, char *argv[] )
 
     } else {
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
@@ -224,11 +224,12 @@ int main( int argc, char *argv[] )
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
-        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR"
-        //        );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );

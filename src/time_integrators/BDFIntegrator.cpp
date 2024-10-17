@@ -264,6 +264,8 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
             d_DtCutLowerBound =
                 db->getWithDefault<double>( "dt_cut_lower_bound", 0.9 ); // to match old for now
             d_DtGrowthUpperBound = db->getWithDefault<double>( "dt_growth_upper_bound", 1.702 );
+            d_final_constant_timestep_current_step =
+                db->getWithDefault<int>( "final_constant_timestep_current_step", 1 );
         }
 
         if ( !d_calculateTimeTruncError ) {
@@ -705,15 +707,16 @@ double BDFIntegrator::getNextDtPredefined( const bool good_solution, const int s
 
 double BDFIntegrator::getNextDtFinalConstant( const bool, const int )
 {
-    static int i = 1;
-    if ( i <= d_number_initial_fixed_steps ) {
+    if ( d_final_constant_timestep_current_step <= d_number_initial_fixed_steps ) {
         d_current_dt = d_initial_dt;
-        ++i;
-    } else if ( i < d_number_of_time_intervals + d_number_initial_fixed_steps ) {
-        d_current_dt = d_initial_dt + ( (double) i - d_number_initial_fixed_steps ) /
-                                          ( (double) d_number_of_time_intervals ) *
-                                          ( d_max_dt - d_initial_dt );
-        ++i;
+        ++d_final_constant_timestep_current_step;
+    } else if ( d_final_constant_timestep_current_step <
+                d_number_of_time_intervals + d_number_initial_fixed_steps ) {
+        d_current_dt =
+            d_initial_dt +
+            ( (double) d_final_constant_timestep_current_step - d_number_initial_fixed_steps ) /
+                ( (double) d_number_of_time_intervals ) * ( d_max_dt - d_initial_dt );
+        ++d_final_constant_timestep_current_step;
     } else {
         d_current_dt = d_max_dt;
     }
@@ -1890,9 +1893,13 @@ void BDFIntegrator::registerVectorsForMemoryManagement( void )
 *
 *************************************************************************
 */
-void BDFIntegrator::reset( std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> )
+void BDFIntegrator::reset(
+    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> params )
 {
     PROFILE( "BDFIntegrator::reset" );
+    ImplicitIntegrator::reset( params );
+
+    BDFIntegrator::getFromInput( params->d_db, true );
 
     registerVectorsForMemoryManagement();
 
@@ -1932,40 +1939,41 @@ void BDFIntegrator::reset( std::shared_ptr<const AMP::TimeIntegrator::TimeIntegr
         d_timederivative_vector->getVectorData()->reset();
     }
 
-    std::shared_ptr<AMP::Operator::OperatorParameters> opParams;
-    d_operator->reset( opParams );
-    d_operator->reInitializeVector( d_solution_vector );
-    // experimental, should all previous vectors be also cleaned up??
-    for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
-        d_operator->reInitializeVector( d_prev_solutions[i] );
-    }
-
-    // we re-evaluate the rhs using the current variables (not the new)
-    // so as to restore information lost ie f(u_n) which will be needed
-    // at the next step
-    if ( d_use_predictor && ( !d_reset_after_restart ) ) {
-
-        if ( d_predictor_type == "ab2" ) {
-            // right now I am going to leave this as is
-            // but probably the right approach would be to interpolate
-            // the time derivative if we are following the Gresho/Sani approach
-            // evaluate f(u_{n-1})
-            d_scratch_vector->copyVector( d_prev_solutions[1] );
-            auto timeOperator =
-                std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
-            if ( timeOperator ) {
-                timeOperator->applyRhs( d_scratch_vector, d_old_td_vector );
-            } else {
-                d_operator->apply( d_scratch_vector, d_old_td_vector );
-            }
+    if ( d_operator ) {
+        std::shared_ptr<AMP::Operator::OperatorParameters> opParams;
+        d_operator->reset( opParams );
+        d_operator->reInitializeVector( d_solution_vector );
+        // experimental, should all previous vectors be also cleaned up??
+        for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
+            d_operator->reInitializeVector( d_prev_solutions[i] );
         }
 
-        // re-evaluates the AB2 or Leapfrog predictor
-        // it is important to re-evaluate because the truncation error estimate will
-        // be calculated off of the predicted values
-        evaluatePredictor();
-    }
+        // we re-evaluate the rhs using the current variables (not the new)
+        // so as to restore information lost ie f(u_n) which will be needed
+        // at the next step
+        if ( d_use_predictor && ( !d_reset_after_restart ) ) {
 
+            if ( d_predictor_type == "ab2" ) {
+                // right now I am going to leave this as is
+                // but probably the right approach would be to interpolate
+                // the time derivative if we are following the Gresho/Sani approach
+                // evaluate f(u_{n-1})
+                d_scratch_vector->copyVector( d_prev_solutions[1] );
+                auto timeOperator =
+                    std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
+                if ( timeOperator ) {
+                    timeOperator->applyRhs( d_scratch_vector, d_old_td_vector );
+                } else {
+                    d_operator->apply( d_scratch_vector, d_old_td_vector );
+                }
+            }
+
+            // re-evaluates the AB2 or Leapfrog predictor
+            // it is important to re-evaluate because the truncation error estimate will
+            // be calculated off of the predicted values
+            evaluatePredictor();
+        }
+    }
     d_reset_after_restart = false;
 }
 
@@ -2019,7 +2027,12 @@ void BDFIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) con
     ImplicitIntegrator::registerChildObjects( manager );
 }
 
-void BDFIntegrator::writeRestart( int64_t fid ) const { ImplicitIntegrator::writeRestart( fid ); }
+void BDFIntegrator::writeRestart( int64_t fid ) const
+{
+    d_pParameters->d_db->putScalar<int>( "final_constant_timestep_current_step",
+                                         d_final_constant_timestep_current_step );
+    ImplicitIntegrator::writeRestart( fid );
+}
 
 BDFIntegrator::BDFIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : ImplicitIntegrator( fid, manager )

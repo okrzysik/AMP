@@ -64,14 +64,18 @@ AMP::Utilities::MemoryType getAllocatorMemoryType()
 {
     using intAllocator = typename std::allocator_traits<ALLOC>::template rebind_alloc<int>;
     if ( std::is_same<intAllocator, std::allocator<int>>::value ) {
-        return AMP::Utilities::MemoryType::unregistered;
+        return AMP::Utilities::MemoryType::host;
 #ifdef USE_CUDA
+    } else if ( std::is_same<intAllocator, AMP::CudaHostAllocator<int>>::value ) {
+        return AMP::Utilities::MemoryType::host;
     } else if ( std::is_same<intAllocator, AMP::CudaManagedAllocator<int>>::value ) {
         return AMP::Utilities::MemoryType::managed;
     } else if ( std::is_same<intAllocator, AMP::CudaDevAllocator<int>>::value ) {
         return AMP::Utilities::MemoryType::device;
 #endif
 #ifdef USE_HIP
+    } else if ( std::is_same<intAllocator, AMP::HipHostAllocator<int>>::value ) {
+        return AMP::Utilities::MemoryType::host;
     } else if ( std::is_same<intAllocator, AMP::HipManagedAllocator<int>>::value ) {
         return AMP::Utilities::MemoryType::managed;
     } else if ( std::is_same<intAllocator, AMP::HipDevAllocator<int>>::value ) {
