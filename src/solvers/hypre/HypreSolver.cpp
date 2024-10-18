@@ -52,8 +52,6 @@ void HypreSolver::initialize( std::shared_ptr<const SolverStrategyParameters> pa
     setParameters();
 }
 
-void HypreSolver::getFromInput( std::shared_ptr<const AMP::Database> db ) {}
-
 void HypreSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 {
     d_HypreMatrixAdaptor =

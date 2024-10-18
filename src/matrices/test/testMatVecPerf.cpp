@@ -36,7 +36,7 @@
 
 // Number of products to evaluate to average out timings
 #define NUM_PRODUCTS 1000
-#define NUM_PRODUCTS_TRANS 0
+#define NUM_PRODUCTS_TRANS 100
 
 size_t matVecTestWithDOFs( AMP::UnitTest *ut,
                            std::string type,

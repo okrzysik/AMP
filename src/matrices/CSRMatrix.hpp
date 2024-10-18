@@ -4,6 +4,7 @@
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
+#include "AMP/matrices/operations/default/CSRMatrixOperationsDefault.h"
 #if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     #include "AMP/matrices/operations/kokkos/CSRMatrixOperationsKokkos.h"
 #endif

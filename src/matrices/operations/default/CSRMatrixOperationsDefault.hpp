@@ -81,6 +81,13 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
+    AMP_DEBUG_ASSERT( csrData );
+
+    auto diagMatrix = csrData->getDiagMatrix();
+    auto offdMatrix = csrData->getOffdMatrix();
+
+    AMP_DEBUG_ASSERT( diagMatrix && offdMatrix );
+
     AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
                       "CSRMatrixOperationsDefault is not implemented for device memory" );
 
@@ -92,7 +99,7 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
 
         std::vector<scalar_t> vvals;
         std::vector<size_t> rcols;
-        d_localops_diag->multTranspose( inDataBlock, csrData->getDiagMatrix(), vvals, rcols );
+        d_localops_diag->multTranspose( inDataBlock, diagMatrix, vvals, rcols );
         out->addValuesByGlobalID( rcols.size(), rcols.data(), vvals.data() );
     }
     out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -102,7 +109,7 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
 
         std::vector<scalar_t> vvals;
         std::vector<size_t> rcols;
-        d_localops_offd->multTranspose( inDataBlock, csrData->getOffdMatrix(), vvals, rcols );
+        d_localops_offd->multTranspose( inDataBlock, offdMatrix, vvals, rcols );
         // Write out data, adding to any already present
         out->addValuesByGlobalID( rcols.size(), rcols.data(), vvals.data() );
     }
@@ -117,13 +124,20 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
+    AMP_DEBUG_ASSERT( csrData );
+
+    auto diagMatrix = csrData->getDiagMatrix();
+    auto offdMatrix = csrData->getOffdMatrix();
+
+    AMP_DEBUG_ASSERT( diagMatrix && offdMatrix );
+
     AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
                       "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
-    d_localops_diag->scale( alpha, csrData->getDiagMatrix() );
+    d_localops_diag->scale( alpha, diagMatrix );
     if ( csrData->hasOffDiag() ) {
-        d_localops_offd->scale( alpha, csrData->getOffdMatrix() );
+        d_localops_offd->scale( alpha, offdMatrix );
     }
 }
 
@@ -150,10 +164,19 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     AMP_DEBUG_INSIST( csrDataY->d_memory_location != AMP::Utilities::MemoryType::device,
                       "CSRMatrixOperationsDefault is not implemented for device memory" );
 
+    auto diagMatrixX = csrDataX->getDiagMatrix();
+    auto offdMatrixX = csrDataX->getOffdMatrix();
+
+    auto diagMatrixY = csrDataY->getDiagMatrix();
+    auto offdMatrixY = csrDataY->getOffdMatrix();
+
+    AMP_DEBUG_ASSERT( diagMatrixX && offdMatrixX );
+    AMP_DEBUG_ASSERT( diagMatrixY && offdMatrixY );
+
     auto alpha = static_cast<scalar_t>( alpha_in );
-    d_localops_diag->axpy( alpha, csrDataX->getDiagMatrix(), csrDataY->getDiagMatrix() );
+    d_localops_diag->axpy( alpha, diagMatrixX, diagMatrixY );
     if ( csrDataX->hasOffDiag() ) {
-        d_localops_offd->axpy( alpha, csrDataX->getOffdMatrix(), csrDataY->getOffdMatrix() );
+        d_localops_offd->axpy( alpha, offdMatrixX, offdMatrixY );
     }
 }
 
@@ -198,10 +221,16 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
 
+    AMP_DEBUG_ASSERT( csrData );
+
+    auto diagMatrix = csrData->getDiagMatrix();
+
+    AMP_DEBUG_ASSERT( diagMatrix );
+
     AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
                       "CSRMatrixOperationsDefault is not implemented for device memory" );
 
-    d_localops_diag->setDiagonal( vvals_p, csrData->getDiagMatrix() );
+    d_localops_diag->setDiagonal( vvals_p, diagMatrix );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>

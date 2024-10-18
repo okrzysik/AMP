@@ -166,6 +166,8 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         for ( lidx_t n = 0; n < d_nnz; ++n ) {
             d_cols_loc[n] = static_cast<lidx_t>( d_cols[n] - d_first_col );
         }
+        // diag matrix block is assumed to cover all local cols
+        d_ncols_unq = d_last_col - d_first_col;
     } else {
         // for offd setup column map as part of the process
         std::unordered_map<gidx_t, lidx_t> colMap;

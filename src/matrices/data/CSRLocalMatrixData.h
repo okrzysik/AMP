@@ -69,6 +69,8 @@ public:
 
     lidx_t numLocalColumns() const { return d_last_col - d_first_col; }
 
+    lidx_t numUniqueColumns() const { return d_ncols_unq; }
+
     lidx_t beginRow() const { return d_first_row; }
 
     lidx_t beginColumn() const { return d_first_col; }

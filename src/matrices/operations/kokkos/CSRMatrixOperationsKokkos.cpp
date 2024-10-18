@@ -1,6 +1,8 @@
 #include "AMP/matrices/operations/kokkos/CSRMatrixOperationsKokkos.hpp"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/matrices/CSRPolicy.h"
+#include "AMP/matrices/data/CSRLocalMatrixData.h"
+#include "AMP/matrices/operations/kokkos/CSRLocalMatrixOperationsKokkos.hpp"
 #include "AMP/utils/memory.h"
 
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
@@ -9,9 +11,20 @@
 
     // Full instantiator macro is final one in the chain
     // this gives all template arguments
-    #define INSTANTIATE_FULL( policy, allocator, execspace, viewspace ) \
-        template class AMP::LinearAlgebra::                             \
-            CSRMatrixOperationsKokkos<policy, allocator, execspace, viewspace>;
+    #define INSTANTIATE_FULL( policy, allocator, execspace, viewspace )    \
+        template class AMP::LinearAlgebra::CSRLocalMatrixOperationsKokkos< \
+            policy,                                                        \
+            allocator,                                                     \
+            execspace,                                                     \
+            viewspace,                                                     \
+            AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;    \
+        template class AMP::LinearAlgebra::CSRMatrixOperationsKokkos<      \
+            policy,                                                        \
+            allocator,                                                     \
+            execspace,                                                     \
+            viewspace,                                                     \
+            AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,     \
+            AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
 
     // Execution spaces and view spaces are instatiated together and anchor
     // the chain. Valid space combinations are applied to the given
@@ -56,7 +69,6 @@ using CSRPolicyDouble = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
         #define INSTANTIATE_POLICIES INSTANTIATE_ALLOCS( CSRPolicyDouble )
     #endif
 
-// call INSTANTIATE_POLICIES to start off the chain
 INSTANTIATE_POLICIES
 
 #endif

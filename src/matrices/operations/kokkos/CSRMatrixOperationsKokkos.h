@@ -1,11 +1,13 @@
 #ifndef included_CSRMatrixOperationsKokkos_H_
 #define included_CSRMatrixOperationsKokkos_H_
 
+#include "AMP/matrices/data/CSRMatrixData.h"
+#include "AMP/matrices/data/MatrixData.h"
 #include "AMP/matrices/operations/MatrixOperations.h"
-#include "AMP/utils/memory.h"
+#include "AMP/matrices/operations/kokkos/CSRLocalMatrixOperationsKokkos.h"
+#include "AMP/vectors/Vector.h"
 
 #include <type_traits>
-
 
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
 
@@ -21,10 +23,29 @@ template<
                                                 Kokkos::DefaultExecutionSpace>::type,
     class ViewSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<int>>,
                                                 Kokkos::HostSpace,
-                                                Kokkos::SharedSpace>::type>
+                                                Kokkos::SharedSpace>::type,
+    class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>,
+    class OffdMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
 public:
+    CSRMatrixOperationsKokkos()
+        : d_exec_space(),
+          d_localops_diag(
+              std::make_shared<CSRLocalMatrixOperationsKokkos<Policy,
+                                                              Allocator,
+                                                              ExecSpace,
+                                                              ViewSpace,
+                                                              DiagMatrixData>>( d_exec_space ) ),
+          d_localops_offd(
+              std::make_shared<CSRLocalMatrixOperationsKokkos<Policy,
+                                                              Allocator,
+                                                              ExecSpace,
+                                                              ViewSpace,
+                                                              OffdMatrixData>>( d_exec_space ) )
+    {
+    }
+
     /** \brief  Matrix-vector multiplication
      * \param[in]  in  The vector to multiply
      * \param[out] out The resulting vectory
@@ -95,6 +116,12 @@ public:
 
 protected:
     ExecSpace d_exec_space;
+    std::shared_ptr<
+        CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, DiagMatrixData>>
+        d_localops_diag;
+    std::shared_ptr<
+        CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, OffdMatrixData>>
+        d_localops_offd;
 };
 
 } // namespace AMP::LinearAlgebra
