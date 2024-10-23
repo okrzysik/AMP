@@ -30,6 +30,7 @@ The websites associated with the AMP package includes:
 * Richard Berger (LANL)
 * Brian Romero (LANL)
 * Ian May (LANL)
+* Charles Ferenbaugh (LANL)
 
 # Alumni #
 
