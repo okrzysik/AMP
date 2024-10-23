@@ -209,8 +209,8 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
     using scalar_t = typename Policy::scalar_t;
     using lidx_t   = typename Policy::lidx_t;
 
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
-    const auto nCols = static_cast<lidx_t>( A->numUniqueColumns() );
+    const auto nRows = A->numLocalRows();
+    const auto nCols = A->numUniqueColumns();
 
     // Wrap in/out data into Kokkos Views
     Kokkos::View<const scalar_t *,
@@ -255,7 +255,6 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
 {
     using scalar_t = typename Policy::scalar_t;
     using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
 
     const auto [nnz, cols, cols_loc, coeffs, rowstarts] =
         wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( A );
@@ -304,8 +303,7 @@ template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, cla
 void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
     scale( typename Policy::scalar_t alpha, std::shared_ptr<LocalMatrixData> A )
 {
-    using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
+    using lidx_t = typename Policy::lidx_t;
 
     // const auto [nnz, cols, cols_loc, coeffs, rowstarts] =
     //     wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( A );
@@ -335,9 +333,7 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
     std::shared_ptr<LocalMatrixData> X,
     std::shared_ptr<LocalMatrixData> Y )
 {
-    using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
+    using gidx_t = typename Policy::gidx_t;
 
     // const auto [nnzX, colsX, cols_locX, coeffsX, rowstartsX] =
     //     wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( X );
@@ -361,10 +357,6 @@ template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, cla
 void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
     setScalar( typename Policy::scalar_t alpha, std::shared_ptr<LocalMatrixData> A )
 {
-    using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-
     const auto [nnz, cols, cols_loc, coeffs, rowstarts] =
         wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( A );
     // const auto vTpl = wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( A );
@@ -376,20 +368,18 @@ template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, cla
 void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::zero(
     std::shared_ptr<LocalMatrixData> A )
 {
-    using scalar_t = typename Policy::scalar_t;
-    setScalar( static_cast<scalar_t>( 0.0 ), A );
+    setScalar( 0.0, A );
 }
 
 template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, class LocalMatrixData>
 void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
     setDiagonal( const typename Policy::scalar_t *in, std::shared_ptr<LocalMatrixData> A )
 {
-    using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t = typename Policy::lidx_t;
+    using gidx_t = typename Policy::gidx_t;
 
     const auto beginRow = A->beginRow();
-    const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
+    const auto nRows    = A->numLocalRows();
 
     // const auto [nnz, cols, cols_loc, coeffs, rowstarts] =
     //     wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( A );
@@ -421,12 +411,11 @@ template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, cla
 void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
     setIdentity( std::shared_ptr<LocalMatrixData> A )
 {
-    using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t = typename Policy::lidx_t;
+    using gidx_t = typename Policy::gidx_t;
 
     const auto beginRow = A->beginRow();
-    const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
+    const auto nRows    = A->numLocalRows();
 
     // const auto [nnz, cols, cols_loc, coeffs, rowstarts] =
     //     wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( A );
@@ -456,9 +445,8 @@ template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, cla
 void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
     extractDiagonal( std::shared_ptr<LocalMatrixData> A, typename Policy::scalar_t *buf )
 {
-    using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t = typename Policy::lidx_t;
+    using gidx_t = typename Policy::gidx_t;
 
     const auto beginRow = A->beginRow();
     const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
@@ -495,12 +483,9 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
 {
     using scalar_t = typename Policy::scalar_t;
     using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
 
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
+    const auto nRows = A->numLocalRows();
 
-    // const auto [nnz, cols, cols_loc, coeffs, rowstarts] =
-    //     wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( A );
     const auto vTpl = wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( A );
     auto nnz        = std::get<0>( vTpl );
     auto coeffs     = std::get<3>( vTpl );

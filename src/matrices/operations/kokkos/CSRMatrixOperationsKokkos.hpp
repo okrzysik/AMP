@@ -110,7 +110,6 @@ void CSRMatrixOperationsKokkos<Policy,
     out->zero();
 
     using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
@@ -173,7 +172,6 @@ void CSRMatrixOperationsKokkos<Policy,
                                OffdMatrixData>::scale( AMP::Scalar alpha_in, MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
@@ -232,7 +230,6 @@ void CSRMatrixOperationsKokkos<Policy,
                                                       MatrixData &Y )
 {
     using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
 
     auto csrDataX = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( X ) );
@@ -281,7 +278,6 @@ void CSRMatrixOperationsKokkos<Policy,
                                OffdMatrixData>::setScalar( AMP::Scalar alpha_in, MatrixData &A )
 {
     using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
@@ -319,8 +315,7 @@ void CSRMatrixOperationsKokkos<Policy,
                                DiagMatrixData,
                                OffdMatrixData>::zero( MatrixData &A )
 {
-    using scalar_t = typename Policy::scalar_t;
-    setScalar( static_cast<scalar_t>( 0.0 ), A );
+    setScalar( 0.0, A );
 }
 
 template<typename Policy,
@@ -374,10 +369,6 @@ void CSRMatrixOperationsKokkos<Policy,
                                DiagMatrixData,
                                OffdMatrixData>::setIdentity( MatrixData &A )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     zero( A );
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
@@ -412,8 +403,6 @@ void CSRMatrixOperationsKokkos<Policy,
                                OffdMatrixData>::extractDiagonal( MatrixData const &A,
                                                                  std::shared_ptr<Vector> buf )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
@@ -444,7 +433,6 @@ AMP::Scalar
 CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, DiagMatrixData, OffdMatrixData>::
     LinfNorm( MatrixData const &A ) const
 {
-    using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
@@ -460,7 +448,7 @@ CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, DiagMatrixDat
     AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
                       "CSRMatrixOperationsKokkos is not implemented for device memory" );
 
-    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
+    const auto nRows = csrData->numLocalRows();
     std::vector<scalar_t> rowSums( nRows, 0.0 );
 
     d_localops_diag->LinfNorm( diagMatrix, rowSums.data() );
