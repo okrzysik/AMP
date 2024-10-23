@@ -439,7 +439,7 @@ static inline uint64_t hashComm( MPI_Comm comm )
         throw std::logic_error( "Not finished" );
     }
     uint64_t hash = h ^ x;
-#if USE_MPI
+#ifdef USE_MPI
     MPI_Bcast( &hash, 1, MPI_UINT64_T, 0, comm );
 #endif
     return hash;
