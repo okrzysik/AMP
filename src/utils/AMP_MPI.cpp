@@ -1,9 +1,11 @@
 // This file implements a wrapper class for MPI functions
 
 // Include AMP headers
-#include "AMP/utils/AMP_MPI.h"
+#include "AMP/AMP_TPLs.h"
+
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/threadpool/ThreadHelpers.h"
 
