@@ -61,6 +61,7 @@ typedef void *MPI_Errhandler;
     #define MPI_COMM_SELF ( (MPI_Comm) 0xF4000011 )
 #endif
 
+
 namespace std {
 template<class TYPE>
 static inline bool operator<( const std::complex<TYPE> &a, const std::complex<TYPE> &b )
