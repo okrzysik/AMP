@@ -95,7 +95,6 @@ bool SolverStrategy::checkConvergence( std::shared_ptr<const AMP::LinearAlgebra:
     return converged;
 }
 
-
 /****************************************************************
  * residual                                                         *
  ****************************************************************/

@@ -33,10 +33,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#ifdef AMP_USE_HYPRE
-    #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-#endif
-
 #include <iomanip>
 #include <memory>
 #include <string>
@@ -144,11 +140,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
-#if defined( AMP_USE_HYPRE )
-    using Policy = AMP::LinearAlgebra::HypreCSRPolicy;
-#else
-    using Policy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
-#endif
+    using Policy   = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -236,23 +228,6 @@ int main( int argc, char *argv[] )
 
 #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
-#endif
-
-#ifdef AMP_USE_HYPRE
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG-CG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
-    #ifdef AMP_USE_PETSC
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
-    #endif
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML
