@@ -1,9 +1,11 @@
 // This file implements a wrapper class for MPI functions
 
 // Include AMP headers
-#include "AMP/utils/AMP_MPI.h"
+#include "AMP/AMP_TPLs.h"
+
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/threadpool/ThreadHelpers.h"
 
@@ -437,7 +439,7 @@ static inline uint64_t hashComm( MPI_Comm comm )
         throw std::logic_error( "Not finished" );
     }
     uint64_t hash = h ^ x;
-#if USE_MPI
+#ifdef USE_MPI
     MPI_Bcast( &hash, 1, MPI_UINT64_T, 0, comm );
 #endif
     return hash;
