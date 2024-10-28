@@ -450,6 +450,8 @@ template class TriangleMeshElement<1, 2, 2>;
 template class TriangleMeshElement<1, 2, 3>;
 template class TriangleMeshElement<1, 3, 0>;
 template class TriangleMeshElement<1, 3, 1>;
+template class TriangleMeshElement<1, 3, 2>;
+template class TriangleMeshElement<1, 3, 3>;
 template class TriangleMeshElement<2, 2, 0>;
 template class TriangleMeshElement<2, 2, 1>;
 template class TriangleMeshElement<2, 2, 2>;
