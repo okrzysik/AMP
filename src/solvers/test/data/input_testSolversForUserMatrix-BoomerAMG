@@ -71,16 +71,17 @@ DiffusionTransportModel1 {
 
 LinearSolver{
   name = "BoomerAMGSolver"
-  max_iterations = 10
-  max_error = 1e-10
-  problem_symmetric =TRUE
-  smoother_pre_or_post = "both"
-  smoother_params{
-    relaxation_type = "Gauss-Seidel"
-    relaxation_sweeps = 2
-  }
-  coarse_max_size = 100
-  
+  max_iterations = 25
+  relative_tolerance = 1.0e-12
+  absolute_tolerance = 1.0e-12
+  print_info_level = 2
+  min_coarse_size = 10
+  strong_threshold = 0.5
+  cycle_type = 1
+  relax_type = 16
+  coarsen_type = 10
+  interp_type = 17
+  relax_order = 0
 }
 
 VolumeIntegralOperator{
