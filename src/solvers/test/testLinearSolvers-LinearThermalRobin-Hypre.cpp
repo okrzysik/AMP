@@ -2,10 +2,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/matrices/CSRMatrix.h"
-#include "AMP/matrices/CSRMatrixParameters.h"
-#include "AMP/matrices/CSRPolicy.h"
-#include "AMP/matrices/testHelpers/MatrixDataTransforms.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
@@ -29,16 +25,15 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include <iomanip>
 #include <memory>
 #include <string>
 
-#include "reference_solver_solutions.h"
+#include "reference_solver_solutions_hypre.h"
+
 
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
@@ -140,56 +135,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
-    RightHandSideVec->makeConsistent();
-
-    using Policy   = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
-    gidx_t startRow, endRow;
-    gidx_t startCol, endCol;
-    std::vector<lidx_t> nnz_d, nnz_od;
-    std::vector<gidx_t> cols_d, cols_od;
-    std::vector<scalar_t> coeffs_d, coeffs_od;
-
-    AMP::LinearAlgebra::transformDofToCSR<Policy>( diffusionOperator->getMatrix(),
-                                                   startRow,
-                                                   endRow,
-                                                   startCol,
-                                                   endCol,
-                                                   nnz_d,
-                                                   cols_d,
-                                                   coeffs_d,
-                                                   nnz_od,
-                                                   cols_od,
-                                                   coeffs_od );
-
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_d{
-        nnz_d.data(), cols_d.data(), coeffs_d.data()
-    };
-
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_od{
-        nnz_od.data(), cols_od.data(), coeffs_od.data()
-    };
-
-    auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
-        startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
-
-#ifdef USE_DEVICE
-    using Alloc = AMP::ManagedAllocator<int>;
-#else
-    using Alloc  = AMP::HostAllocator<int>;
-#endif
-
-    auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Alloc>>( csrParams );
-    AMP_ASSERT( csrMatrix );
-
-    auto csrOpParams = std::make_shared<AMP::Operator::OperatorParameters>( input_db );
-    auto csrOperator = std::make_shared<AMP::Operator::LinearOperator>( csrOpParams );
-    csrOperator->setMatrix( csrMatrix );
-    csrOperator->setVariables( linearOperator->getInputVariable(),
-                               linearOperator->getOutputVariable() );
 
     auto linearSolver =
         AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, linearOperator );
@@ -209,7 +154,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Solve the problem.
     linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    checkConvergence( linearSolver.get(), inputFileName, *ut );
+    // Comparison to reference solutions sets the expected number of iterations
+    // to depend on number of ranks
+    const int comm_size = comm.getSize();
+    checkConvergence( linearSolver.get(), inputFileName, comm_size, *ut );
 }
 
 
@@ -220,7 +168,6 @@ int main( int argc, char *argv[] )
     AMP::Solver::registerSolverFactories();
 
     std::vector<std::string> files;
-    PROFILE_ENABLE();
 
     if ( argc > 1 ) {
 
@@ -228,34 +175,21 @@ int main( int argc, char *argv[] )
 
     } else {
 
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-CG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
-
-#ifdef AMP_USE_PETSC
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
-#endif
-
-#ifdef AMP_USE_TRILINOS_ML
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-CG" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
-    // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+#ifdef AMP_USE_HYPRE
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
     #ifdef AMP_USE_PETSC
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
     #endif
-#endif
-
-#ifdef AMP_USE_TRILINOS_MUELU
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
 #endif
     }
 
@@ -263,12 +197,6 @@ int main( int argc, char *argv[] )
         linearThermalTest( &ut, file );
 
     ut.report();
-
-    // build unique profile name to avoid collisions
-    std::ostringstream ss;
-    ss << "testLinearSolvers-LinearThermalRobinCSR_r" << std::setw( 3 ) << std::setfill( '0' )
-       << AMP::AMPManager::getCommWorld().getSize();
-    PROFILE_SAVE( ss.str() );
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();

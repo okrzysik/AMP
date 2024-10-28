@@ -282,13 +282,15 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
     try {
         bool pass = true;
         for ( const auto &element : iterator ) {
-            auto centroid = element.centroid();
-            pass          = pass && element.nearest( centroid ) == centroid;
+            auto x = element.centroid();
+            auto y = element.nearest( x );
+            auto d = ( x - y ).norm();
+            pass   = pass && d < 1e-12;
         }
         if ( pass )
             ut.passes( name + "-elements nearest passed" );
         else
-            ut.passes( name + "-elements nearest failed" );
+            ut.failure( name + "-elements nearest failed" );
     } catch ( const StackTrace::abort_error &e ) {
         std::string msg = e.message;
         auto pos        = msg.find( "nearest is not implemented" );

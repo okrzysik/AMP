@@ -211,9 +211,11 @@ void FunctionTable::multiply( const Array<TYPE, FUN> &a,
         throw std::logic_error( "Inner dimensions must match" );
     if ( a.ndim() == 2 && b.ndim() == 1 ) {
         c.resize( a.size( 0 ) );
+        c.fill( 0 );
         call_gemv<TYPE>( a.size( 0 ), a.size( 1 ), 1, 0, a.data(), b.data(), c.data() );
     } else if ( a.ndim() <= 2 && b.ndim() <= 2 ) {
         c.resize( a.size( 0 ), b.size( 1 ) );
+        c.fill( 0 );
         call_gemm<TYPE>(
             a.size( 0 ), a.size( 1 ), b.size( 1 ), 1, 0, a.data(), b.data(), c.data() );
     } else {

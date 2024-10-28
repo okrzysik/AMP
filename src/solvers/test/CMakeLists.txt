@@ -106,6 +106,14 @@ IF ( USE_LIBMESH )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR PROCS 1 )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR PROCS 2 )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR PROCS 4 )
+    
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin-Hypre PROCS 1 )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin-Hypre PROCS 2 )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin-Hypre PROCS 4 )
+
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR-Hypre PROCS 1 )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR-Hypre PROCS 2 )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobinCSR-Hypre PROCS 4 )
 
     ADD_AMP_TEST( testSolversForUserMatrix PROCS 1 )
     ADD_AMP_TEST( testSolversForUserMatrix PROCS 2 )
