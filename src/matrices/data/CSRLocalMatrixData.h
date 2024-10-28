@@ -77,12 +77,8 @@ public:
 
     void sortColumns( MatrixSortScheme sort_type );
 
-    template<typename idx_t>
-    idx_t *getColumnMap() const
+    gidx_t *getColumnMap() const
     {
-        if constexpr ( !std::is_same_v<idx_t, gidx_t> ) {
-            AMP_ERROR( "Can not return column map pointer with different index type" );
-        }
         if ( d_is_diag ) {
             AMP_ERROR( "Diagonal block of CSRMatrixData can not shallow copy the column map" );
         }

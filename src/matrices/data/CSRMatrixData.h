@@ -215,18 +215,6 @@ public:
         d_offd_matrix->sortColumns( sort_type );
     }
 
-    template<typename idx_t>
-    idx_t *getOffDiagColumnMap() const
-    {
-        return d_offd_matrix->getColumnMap();
-    }
-
-    template<typename idx_t>
-    void getOffDiagColumnMap( std::vector<idx_t> &colMap ) const
-    {
-        d_offd_matrix->getColumnMap( colMap );
-    }
-
 protected:
     bool d_is_square   = true;
     gidx_t d_first_row = 0;

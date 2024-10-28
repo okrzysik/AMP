@@ -30,7 +30,7 @@ public:
 private:
     //! Main internal routine for initializing the matrix
     template<class csr_data_type>
-    void initializeHypreMatrix( std::shared_ptr<csr_data_type> );
+    void initializeHypreMatrix( std::shared_ptr<csr_data_type>, const bool is_device );
 
     //! hypre IJ matrix that this class wraps
     HYPRE_IJMatrix d_matrix;

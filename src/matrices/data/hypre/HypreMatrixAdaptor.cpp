@@ -7,8 +7,6 @@
 #include "AMP/utils/memory.h"
 
 #include <numeric>
-#include <type_traits>
-#include <typeinfo>
 
 #include "HYPRE_utilities.h"
 #include "_hypre_IJ_mv.h"
@@ -17,18 +15,18 @@
 namespace AMP::LinearAlgebra {
 
 
-template void HypreMatrixAdaptor::initializeHypreMatrix<
-    CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>> );
+template void
+HypreMatrixAdaptor::initializeHypreMatrix<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>, const bool );
 
 #ifdef USE_DEVICE
 template void HypreMatrixAdaptor::initializeHypreMatrix<
     CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>> );
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>, const bool );
 
-template void HypreMatrixAdaptor::initializeHypreMatrix<
-    CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>> );
+template void
+HypreMatrixAdaptor::initializeHypreMatrix<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>, const bool );
 #endif
 
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
@@ -39,6 +37,7 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     HYPRE_BigInt firstRow = static_cast<HYPRE_BigInt>( matrixData->beginRow() );
     HYPRE_BigInt lastRow  = static_cast<HYPRE_BigInt>( matrixData->endRow() - 1 );
     auto comm             = matrixData->getComm().getCommunicator();
+
 
     HYPRE_IJMatrixCreate( comm, firstRow, lastRow, firstRow, lastRow, &d_matrix );
     HYPRE_IJMatrixSetObjectType( d_matrix, HYPRE_PARCSR );
@@ -65,15 +64,14 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 #endif
 
     if ( csrDataHost ) {
-        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
-        initializeHypreMatrix( csrDataHost );
+        initializeHypreMatrix( csrDataHost, false );
     } else if ( csrDataManaged ) {
+        initializeHypreMatrix( csrDataManaged, true );
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
-        initializeHypreMatrix( csrDataManaged );
     } else if ( csrDataDevice ) {
         AMP_ERROR( "Pure device memory not yet supported in HypreMatrixAdaptor" );
+        initializeHypreMatrix( csrDataDevice, true );
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
-        initializeHypreMatrix( csrDataDevice );
     } else {
 
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
@@ -109,14 +107,21 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 HypreMatrixAdaptor::~HypreMatrixAdaptor()
 {
     hypre_ParCSRMatrix *par_matrix = static_cast<hypre_ParCSRMatrix *>( d_matrix->object );
-    par_matrix->col_map_offd       = nullptr;
+    par_matrix->col_map_offd       = NULL;
     // Now the standard IJMatrixDestroy can be called
     HYPRE_IJMatrixDestroy( d_matrix );
 }
 
 template<class csr_data_type>
-void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData )
+void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData,
+                                                const bool is_device )
 {
+    if ( !is_device ) {
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
+    } else {
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
+    }
+
     // ensure that columns are sorted for hypre compatibility
     csrData->sortColumns( AMP::LinearAlgebra::MatrixSortScheme::hypre );
     // extract fields from csrData
@@ -141,7 +146,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     hypre_CSRMatrix *off_diag      = par_matrix->offd;
 
     // Filling the contents manually should remove any need for aux matrix
-    // NOTE: aux_mat should be NULL
     hypre_AuxParCSRMatrix *aux_mat = static_cast<hypre_AuxParCSRMatrix *>( d_matrix->translator );
     aux_mat->need_aux              = 0;
 
@@ -187,12 +191,9 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
 
     // Set colmap inside ParCSR and flag that assembly is already done
     // See destructor above regarding ownership of this field
-    csrData->getOffDiagColumnMap( d_colMap );
+    csrData->getOffdMatrix()->getColumnMap( d_colMap );
     par_matrix->col_map_offd = d_colMap.data();
-    if ( csrData->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
-        // par_matrix->device_col_map_offd = csrData->getOffDiagColumnMap();
-    }
-    off_diag->num_cols = static_cast<HYPRE_Int>( d_colMap.size() );
+    off_diag->num_cols       = d_colMap.size();
 
     // Update ->rownnz fields, note that we don't own these
     hypre_CSRMatrixSetRownnz( diag );
