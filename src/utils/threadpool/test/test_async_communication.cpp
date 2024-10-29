@@ -33,7 +33,7 @@ void run_thread( size_t message_size,
 }
 
 
-//  This will test the behavior of asyncronous communication under different behaviors
+//  This will test the behavior of asynchronous communication under different behaviors
 void run_test( size_t message_size, int N_messages, double sleep_duration, ThreadPool *tpool )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
