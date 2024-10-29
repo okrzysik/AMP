@@ -40,7 +40,7 @@ static inline Point3D normalize( const Point3D &x )
 }
 static inline Point2D convert2( const Point &x ) { return { x.x(), x.y() }; }
 
-// Test the mapping to/from a logical circle
+// Test distance to line
 void test_dist_line( int N, AMP::UnitTest &ut )
 {
     std::random_device rd;
