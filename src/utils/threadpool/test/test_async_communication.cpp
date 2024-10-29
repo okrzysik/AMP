@@ -2,6 +2,7 @@
 #include <complex>
 #include <iomanip>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <unistd.h>
@@ -79,13 +80,13 @@ void run_test( size_t message_size, int N_messages, double sleep_duration, Threa
         requests.push_back( globalComm.Isend( data_src, message_size, send_proc, i ) );
         requests.push_back( globalComm.Irecv( data_dst[i], message_size, recv_proc, i ) );
     }
-    std::vector<int> completed;
+    std::set<int> completed;
     while ( requests.size() > completed.size() ) {
-        std::vector<int> index = globalComm.waitSome( requests.size(), &requests[0] );
+        auto index = globalComm.waitSome( requests.size(), &requests[0] );
         for ( int i : index ) {
             if ( i % 2 == 1 )
                 AMP::Utilities::sleep_ms( ms_sleep_duration ); // Mimic work
-            completed.push_back( i );
+            completed.insert( i );
         }
     }
     end = globalComm.time();
