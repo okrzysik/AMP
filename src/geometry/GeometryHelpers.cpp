@@ -380,7 +380,7 @@ distanceToLine( const Point2D &pos, const Point2D &ang, const Point2D &p1, const
         return std::numeric_limits<double>::infinity();
     double t1 = cross( v2, v1 ) / d23;
     double t2 = dot( v1, v3 ) / d23;
-    if ( t1 >= 0.0 && t2 >= -1e-10 && t2 <= 1.0 + 1e-10 )
+    if ( t1 >= -1e-12 && t2 >= -1e-10 && t2 <= 1.0 + 1e-10 )
         return t1;
     return std::numeric_limits<double>::infinity();
 }
