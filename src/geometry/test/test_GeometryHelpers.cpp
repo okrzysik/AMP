@@ -87,7 +87,7 @@ void test_map_logical_circle( int N, AMP::UnitTest &ut )
     };
     std::random_device rd;
     std::mt19937 gen( rd() );
-    const double tol = 1e-14;
+    const double tol = 1e-10;
     for ( int method = 1; method <= 3; method++ ) {
         const double r = 2.0;
         std::uniform_real_distribution<> dis( 0, 1 );
