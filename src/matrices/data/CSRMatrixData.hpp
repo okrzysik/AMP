@@ -18,7 +18,7 @@ namespace AMP::LinearAlgebra {
  ********************************************************/
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData()
-    : d_memory_location( getAllocatorMemoryType<Allocator>() )
+    : d_memory_location( AMP::Utilities::getAllocatorMemoryType<Allocator>() )
 {
     AMPManager::incrementResource( "CSRMatrixData" );
 }
@@ -26,7 +26,7 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
     std::shared_ptr<MatrixParametersBase> params )
-    : MatrixData( params ), d_memory_location( getAllocatorMemoryType<Allocator>() )
+    : MatrixData( params ), d_memory_location( AMP::Utilities::getAllocatorMemoryType<Allocator>() )
 {
     AMPManager::incrementResource( "CSRMatrixData" );
     auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );

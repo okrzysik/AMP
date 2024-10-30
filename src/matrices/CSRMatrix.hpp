@@ -8,6 +8,7 @@
 #if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     #include "AMP/matrices/operations/kokkos/CSRMatrixOperationsKokkos.h"
 #endif
+#include "AMP/utils/memory.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <cstdio>
@@ -122,14 +123,16 @@ Vector::shared_ptr CSRMatrix<Policy, Allocator>::getRightVector() const
 {
     auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
                    ->getRightVariable();
-    return createVector( getRightDOFManager(), var );
+    const auto memloc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
+    return createVector( getRightDOFManager(), var, true, memloc );
 }
 template<typename Policy, typename Allocator>
 Vector::shared_ptr CSRMatrix<Policy, Allocator>::getLeftVector() const
 {
     auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
                    ->getLeftVariable();
-    return createVector( getLeftDOFManager(), var );
+    const auto memloc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
+    return createVector( getLeftDOFManager(), var, true, memloc );
 }
 
 

@@ -2,6 +2,7 @@
 #define included_AMP_VectorDataDefault_hpp
 
 #include "AMP/IO/RestartManager.h"
+#include "AMP/utils/memory.h"
 #include "AMP/vectors/data/VectorDataDefault.h"
 
 #include <cstring>
@@ -22,7 +23,22 @@ template<typename TYPE, class Allocator>
 std::string VectorDataDefault<TYPE, Allocator>::VectorDataName() const
 {
     constexpr typeID id = getTypeID<TYPE>();
-    return "VectorDataDefault<" + std::string( id.name ) + ">";
+    constexpr AMP::Utilities::MemoryType allocMemType =
+        AMP::Utilities::getAllocatorMemoryType<Allocator>();
+
+    if constexpr ( allocMemType == AMP::Utilities::MemoryType::host ) {
+        return "VectorDataDefault<" + std::string( id.name ) + ",AMP::HostAllocator>";
+    }
+
+    if constexpr ( allocMemType == AMP::Utilities::MemoryType::managed ) {
+        return "VectorDataDefault<" + std::string( id.name ) + ",AMP::ManagedAllocator>";
+    }
+
+    if constexpr ( allocMemType == AMP::Utilities::MemoryType::device ) {
+        return "VectorDataDefault<" + std::string( id.name ) + ",AMP::DeviceAllocator>";
+    }
+
+    return "VectorDataDefault<" + std::string( id.name ) + ",UnknownAllocator>";
 }
 
 
@@ -121,6 +137,8 @@ inline void *VectorDataDefault<TYPE, Allocator>::getRawDataBlockAsVoid( size_t i
     if ( i != 0 ) {
         return 0;
     }
+    AMP_DEBUG_ASSERT( AMP::Utilities::getAllocatorMemoryType<Allocator>() ==
+                      AMP::Utilities::getMemoryType( d_data ) );
     return d_data;
 }
 template<typename TYPE, class Allocator>
@@ -129,6 +147,8 @@ inline const void *VectorDataDefault<TYPE, Allocator>::getRawDataBlockAsVoid( si
     if ( i != 0 ) {
         return 0;
     }
+    AMP_DEBUG_ASSERT( AMP::Utilities::getAllocatorMemoryType<Allocator>() ==
+                      AMP::Utilities::getMemoryType( d_data ) );
     return d_data;
 }
 

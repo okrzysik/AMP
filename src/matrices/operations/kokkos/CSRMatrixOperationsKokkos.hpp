@@ -56,6 +56,12 @@ void CSRMatrixOperationsKokkos<Policy,
     AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
                       "CSRMatrixOperationsKokkos is not implemented for device memory" );
 
+    AMP_DEBUG_INSIST( csrData->d_memory_location == AMP::Utilities::getMemoryType( inDataBlock ),
+                      "Input vector from wrong memory space" );
+
+    AMP_DEBUG_INSIST( csrData->d_memory_location == AMP::Utilities::getMemoryType( outDataBlock ),
+                      "Output vector from wrong memory space" );
+
     AMP_DEBUG_INSIST(
         1 == inData->numberOfDataBlocks(),
         "CSRMatrixOperationsKokkos::mult only implemented for vectors with one data block" );
