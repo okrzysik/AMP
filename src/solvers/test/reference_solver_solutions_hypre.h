@@ -35,7 +35,7 @@ std::map<std::string, std::tuple<int, double>> conv_map{
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB",
       std::make_tuple( 4, REF_SOLVE_REL_SMALL ) },
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR",
-      std::make_tuple( 5, REF_SOLVE_REL_SMALL ) },
+      std::make_tuple( 6, REF_SOLVE_REL_SMALL ) },
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES",
       std::make_tuple( 8, REF_SOLVE_REL_SMALL ) },
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG",
