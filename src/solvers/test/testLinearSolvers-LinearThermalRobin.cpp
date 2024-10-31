@@ -154,6 +154,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Solve the problem.
     linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
+    auto convReason = linearSolver->getConvergenceStatus();
+    AMP_ASSERT( convReason == AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnRelTol ||
+                convReason == AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnAbsTol );
+
     // commented till necessary infrastructure in place
     checkConvergence( linearSolver.get(), inputFileName, *ut );
 }

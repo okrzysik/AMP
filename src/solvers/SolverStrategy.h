@@ -174,23 +174,14 @@ public:
      */
     virtual std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_pOperator; }
 
-    /*!
-     *  Get absolute tolerance for solver.
-     */
     AMP::Scalar getAbsoluteTolerance() const { return ( d_dAbsoluteTolerance ); }
 
-    /*!
-     *  Set absolute tolerance for nonlinear solver.
-     */
     virtual void setAbsoluteTolerance( AMP::Scalar abs_tol ) { d_dAbsoluteTolerance = abs_tol; }
 
     AMP::Scalar getRelativeTolerance() const { return ( d_dRelativeTolerance ); }
 
     virtual void setRelativeTolerance( AMP::Scalar rel_tol ) { d_dRelativeTolerance = rel_tol; }
 
-    /**
-     * Set the maximum number of iterations for the solver
-     */
     virtual void setMaxIterations( const int max_iterations ) { d_iMaxIterations = max_iterations; }
 
     int getMaxIterations( void ) const { return d_iMaxIterations; }
@@ -200,22 +191,16 @@ public:
         os << "Not implemented for this solver!" << std::endl;
     }
 
-    int getConvergenceStatus( void ) const
-    {
-        return d_ConvergenceStatus <= SolverStatus::ConvergedUserCondition ? 1 : 0;
-    }
+    SolverStatus getConvergenceStatus( void ) const { return d_ConvergenceStatus; }
 
     virtual void print( std::ostream &os ) { NULL_USE( os ); }
 
-    /**
-     * Return the residual norm.
-     */
     virtual AMP::Scalar getResidualNorm( void ) const { return d_dResidualNorm; }
 
-    /**
-     * returns whether the solver has converged or not
-     */
-    virtual bool checkConvergence( std::shared_ptr<const AMP::LinearAlgebra::Vector> residual );
+    int checkConvergence( void ) const
+    {
+        return d_ConvergenceStatus <= SolverStatus::ConvergedUserCondition ? 1 : 0;
+    }
 
     virtual const std::vector<int> &getIterationHistory( void ) { return d_iterationHistory; }
 
@@ -232,6 +217,7 @@ public:
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
+    virtual bool checkStoppingCriteria( AMP::Scalar res_norm );
 
     SolverStatus d_ConvergenceStatus = SolverStatus::DivergedOther;
 

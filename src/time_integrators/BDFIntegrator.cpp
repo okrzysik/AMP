@@ -2008,7 +2008,7 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     }
 
     d_solver->apply( rhs, d_solution_vector );
-    d_solver_retcode = d_solver->getConvergenceStatus();
+    d_solver_retcode = d_solver->checkConvergence();
 
     if ( d_solution_scaling ) {
         d_solution_vector->multiply( *d_solution_vector, *d_solution_scaling );
