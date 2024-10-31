@@ -60,21 +60,15 @@ static bool known_solution( const std::string &input )
 
 static void checkConvergence( AMP::Solver::SolverStrategy *solver,
                               const std::string &inputFile,
-                              const int comm_size,
                               AMP::UnitTest &ut )
 {
-    // allowed comm sizes are 1, 2, and 4.
-    // Other sizes not covered by the test suite directly
-    const bool allowed_size = comm_size == 1 || comm_size == 2 || comm_size == 4;
-    const int size_idx      = comm_size == 4 ? 2 : ( comm_size == 2 ? 1 : 0 );
-
     const auto residualNorm = static_cast<double>( solver->getResidualNorm() );
 
     // Change this to check convergence status is on abstol or reltol.
     // Need to update solvers to set those flags first
     auto tolerance = static_cast<double>( solver->getAbsoluteTolerance() );
 
-    if ( allowed_size && known_solution( inputFile ) ) {
+    if ( known_solution( inputFile ) ) {
         auto solution       = get_regression_solution( inputFile );
         const auto ref_iter = std::get<0>( solution );
         tolerance           = std::get<1>( solution );
