@@ -1,6 +1,6 @@
 #include "AMP/geometry/GeometryHelpers.h"
-#include "AMP/mesh/MeshPoint.h"
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/MeshPoint.h"
 #include "AMP/utils/UnitTest.h"
 
 #include <algorithm>

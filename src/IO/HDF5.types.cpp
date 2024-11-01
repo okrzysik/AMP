@@ -1,8 +1,8 @@
 #include "AMP/IO/HDF5.h"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/IO/HDF5.hpp"
-#include "AMP/mesh/MeshPoint.h"
 #include "AMP/utils/Array.hpp"
+#include "AMP/utils/MeshPoint.h"
 #include "AMP/utils/Utilities.h"
 
 #include <array>
