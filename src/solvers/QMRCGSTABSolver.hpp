@@ -297,8 +297,8 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     // should this always be true since QMRCGSTAB only gives a bound on the
     // residual?
     if ( d_bComputeResidual ) {
-        d_pOperator->residual( f, x, res );
-        res_norm = static_cast<T>( res->L2Norm() );
+        d_pOperator->residual( f, x, r0 );
+        res_norm = static_cast<T>( r0->L2Norm() );
         // final check updates flags if needed
         checkStoppingCriteria( res_norm );
     }
