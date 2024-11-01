@@ -1,9 +1,9 @@
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <iostream>
 #include <random>
-
 
 /****************************************************************
  * Map the logical coordinates to a circle                       *
