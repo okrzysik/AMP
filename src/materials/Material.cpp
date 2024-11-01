@@ -1,6 +1,7 @@
 #include "AMP/materials/Material.h"
 #include "AMP/materials/MaterialList.h"
 #include "AMP/materials/ScalarProperty.h"
+#include "AMP/utils/FactoryStrategy.hpp"
 
 
 namespace AMP::Materials {
@@ -112,15 +113,42 @@ DatabaseMaterial::DatabaseMaterial( std::string_view name, std::shared_ptr<Datab
 std::vector<std::string> getMaterialList() { return AMP::FactoryStrategy<Material>::getKeys(); }
 std::unique_ptr<Material> getMaterial( const std::string &name )
 {
+    if ( AMP::FactoryStrategy<Material>::empty() )
+        registerMaterialFactories();
     return AMP::FactoryStrategy<Material>::create( name );
 }
 void registerMaterial( const std::string &name, std::function<std::unique_ptr<Material>()> fun )
 {
+    if ( AMP::FactoryStrategy<Material>::empty() )
+        registerMaterialFactories();
     AMP::FactoryStrategy<Material>::registerFactory( name, fun );
 }
 bool isMaterial( const std::string &name )
 {
+    if ( AMP::FactoryStrategy<Material>::empty() )
+        registerMaterialFactories();
     return AMP::FactoryStrategy<Material>::exists( name );
 }
+
+
+/********************************************************************
+ * Register materials                                                *
+ ********************************************************************/
+#define REGISTER_MATERIAL( NAME )                           \
+    AMP::FactoryStrategy<Material>::registerFactory( #NAME, \
+                                                     []() { return std::make_unique<NAME>(); } )
+void registerMaterialFactories()
+{
+    REGISTER_MATERIAL( CylindricallySymmetric );
+    REGISTER_MATERIAL( Dr_nonlinear );
+    REGISTER_MATERIAL( FixedClad );
+    REGISTER_MATERIAL( FixedFuel );
+    REGISTER_MATERIAL( Independent );
+    REGISTER_MATERIAL( Ox_MSRZC_09 );
+    REGISTER_MATERIAL( Steel316_MSRZC_09 );
+    REGISTER_MATERIAL( UO2_MSRZC_09 );
+    REGISTER_MATERIAL( WaterLibrary );
+}
+
 
 } // namespace AMP::Materials
