@@ -94,13 +94,12 @@ void GMRESSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
 
 /****************************************************************
  *  Solve                                                        *
- * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
 template<typename T>
 void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                             std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE( "solve" );
+    PROFILE( "GMRESSolver<T>::apply" );
 
     // Check input vector states
     AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||

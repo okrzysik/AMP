@@ -78,7 +78,7 @@ int SolverStrategy::getTotalNumberOfIterations( void )
     return std::accumulate( d_iterationHistory.begin(), d_iterationHistory.end(), 0 );
 }
 
-bool SolverStrategy::checkStoppingCriteria( AMP::Scalar res_norm )
+bool SolverStrategy::checkStoppingCriteria( AMP::Scalar res_norm, bool check_iters )
 {
     // default to diverged other, which is held during the solve
     d_ConvergenceStatus   = SolverStatus::DivergedOther;
@@ -95,7 +95,9 @@ bool SolverStrategy::checkStoppingCriteria( AMP::Scalar res_norm )
     } else if ( d_dResidualNorm < d_dRelativeTolerance * d_dInitialResidual ) {
         d_ConvergenceStatus = SolverStatus::ConvergedOnRelTol;
         return true;
-    } else if ( d_iNumberIterations == d_iMaxIterations ) {
+    } else if ( check_iters && d_iNumberIterations == d_iMaxIterations ) {
+        // allow this check to be ignored if used early in an update step
+        // to avoid breaking before a full iteration has been performed
         d_ConvergenceStatus = SolverStatus::DivergedMaxIterations;
         return true;
     } else if ( std::isnan( res_norm_d ) ) {
