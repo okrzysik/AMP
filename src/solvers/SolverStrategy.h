@@ -212,6 +212,8 @@ public:
      */
     virtual AMP::Scalar getResidualNorm( void ) const { return d_dResidualNorm; }
 
+    virtual AMP::Scalar getInitialResidual( void ) const { return d_dInitialResidual; }
+
     /**
      * returns whether the solver has converged or not
      */

@@ -4,7 +4,7 @@
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
-#include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
+#include "AMP/matrices/operations/default/CSRMatrixOperationsDefault.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include <cstdio>
 #include <cstring>

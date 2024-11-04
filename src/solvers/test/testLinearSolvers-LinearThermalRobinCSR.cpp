@@ -33,10 +33,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#ifdef AMP_USE_HYPRE
-    #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-#endif
-
 #include <iomanip>
 #include <memory>
 #include <string>
@@ -62,7 +58,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+    auto comm      = AMP::AMP_MPI( AMP_COMM_WORLD );
+    mgrParams->setComm( comm );
     auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
@@ -84,23 +81,26 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
     auto neutronicsOperator = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
-    auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
-    auto SpecificPowerVec = AMP::LinearAlgebra::createVector(
-        gaussPointDofMap, SpecificPowerVar, true, neutronicsOperator->getMemoryLocation() );
+    auto SpecificPowerVec =
+        AMP::LinearAlgebra::createVector( gaussPointDofMap,
+                                          neutronicsOperator->getOutputVariable(),
+                                          true,
+                                          neutronicsOperator->getMemoryLocation() );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    // Integrate Nuclear Source over Desnity * Volume
+    // Integrate Nuclear Source over Density * Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
-    auto PowerInWattsVar = sourceOperator->getOutputVariable();
-    auto PowerInWattsVec = AMP::LinearAlgebra::createVector(
-        nodalDofMap, PowerInWattsVar, true, sourceOperator->getMemoryLocation() );
+    auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap,
+                                                             sourceOperator->getOutputVariable(),
+                                                             true,
+                                                             sourceOperator->getMemoryLocation() );
     PowerInWattsVec->zero();
 
     // convert the vector of specific power to power for a given basis.
@@ -128,8 +128,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
                                                          true,
                                                          diffusionOperator->getMemoryLocation() );
 
-    RightHandSideVec->setToScalar( 0.0 );
-
     // Add the boundary conditions corrections
     auto boundaryOpCorrectionVec =
         AMP::LinearAlgebra::createVector( nodalDofMap,
@@ -141,55 +139,40 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
-    RightHandSideVec->makeConsistent();
 
-    // std::cout << "RHS Norm after BC Correction " << RightHandSideVec->L2Norm() << std::endl;
-    // std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;
-    // std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;
-    // std::cout << "RHS Norm 3: " << boundaryOpCorrectionVec->L2Norm() << std::endl;
-
-#if defined( AMP_USE_HYPRE )
-    using Policy = AMP::LinearAlgebra::HypreCSRPolicy;
-#else
-    using Policy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
-#endif
+    using Policy   = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    gidx_t firstRow, endRow;
-    lidx_t nnz_pad;
+    gidx_t startRow, endRow;
+    gidx_t startCol, endCol;
     std::vector<lidx_t> nnz_d, nnz_od;
-    std::vector<lidx_t> rowstart_d, rowstart_od;
     std::vector<gidx_t> cols_d, cols_od;
-    std::vector<lidx_t> cols_loc_d, cols_loc_od;
     std::vector<scalar_t> coeffs_d, coeffs_od;
 
     AMP::LinearAlgebra::transformDofToCSR<Policy>( diffusionOperator->getMatrix(),
-                                                   firstRow,
+                                                   startRow,
                                                    endRow,
+                                                   startCol,
+                                                   endCol,
                                                    nnz_d,
-                                                   rowstart_d,
                                                    cols_d,
-                                                   cols_loc_d,
                                                    coeffs_d,
                                                    nnz_od,
-                                                   rowstart_od,
                                                    cols_od,
-                                                   cols_loc_od,
-                                                   coeffs_od,
-                                                   nnz_pad );
+                                                   coeffs_od );
 
     AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_d{
-        nnz_d.data(), rowstart_d.data(), cols_d.data(), cols_loc_d.data(), coeffs_d.data()
+        nnz_d.data(), cols_d.data(), coeffs_d.data()
     };
 
     AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_od{
-        nnz_od.data(), rowstart_od.data(), cols_od.data(), cols_loc_od.data(), coeffs_od.data()
+        nnz_od.data(), cols_od.data(), coeffs_od.data()
     };
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
-        firstRow, endRow, pars_d, pars_od, nnz_pad, meshAdapter->getComm() );
+        startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
     AMP_ASSERT( csrMatrix );
@@ -200,38 +183,25 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     csrOperator->setVariables( linearOperator->getInputVariable(),
                                linearOperator->getOutputVariable() );
 
-    // make sure the database on theinput file exists for the linear solver
-    AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
-    auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     auto linearSolver =
-        AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, csrOperator );
+        AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, linearOperator );
 
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );
-    TemperatureInKelvinVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Check the initial L2 norm of the solution
     double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
-    std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
+    AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    AMP::pout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
+    AMP::pout << "System size: " << RightHandSideVec->getGlobalSize() << std::endl;
 
     // Use a random initial guess?
     linearSolver->setZeroInitialGuess( false );
 
-    auto b     = RightHandSideVec;
-    auto bView = AMP::LinearAlgebra::createVectorAdaptor(
-        b->getName(), b->getDOFManager(), b->getRawDataBlock<double>() );
-    auto x     = TemperatureInKelvinVec;
-    auto xView = AMP::LinearAlgebra::createVectorAdaptor(
-        x->getName(), x->getDOFManager(), x->getRawDataBlock<double>() );
-
     // Solve the problem.
-    linearSolver->apply( bView, xView );
+    linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    // commented till necessary infrastructure in place
     checkConvergence( linearSolver.get(), inputFileName, *ut );
-
-    input_db.reset();
 }
 
 
@@ -250,6 +220,7 @@ int main( int argc, char *argv[] )
     } else {
 
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
@@ -257,21 +228,6 @@ int main( int argc, char *argv[] )
 
 #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
-#endif
-
-#ifdef AMP_USE_HYPRE
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
-    #ifdef AMP_USE_PETSC
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
-    #endif
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML
