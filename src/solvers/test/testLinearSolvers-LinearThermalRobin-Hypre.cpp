@@ -32,7 +32,7 @@
 #include <memory>
 #include <string>
 
-#include "reference_solver_solutions.h"
+#include "reference_solver_solutions_hypre.h"
 
 
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
@@ -154,10 +154,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Solve the problem.
     linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    auto convReason = linearSolver->getConvergenceStatus();
-    AMP_ASSERT( convReason == AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnRelTol ||
-                convReason == AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnAbsTol );
-
     checkConvergence( linearSolver.get(), inputFileName, *ut );
 }
 
@@ -175,34 +171,22 @@ int main( int argc, char *argv[] )
         files.emplace_back( argv[1] );
 
     } else {
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-CG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
 
-#ifdef AMP_USE_PETSC
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
-#endif
-
-#ifdef AMP_USE_TRILINOS_ML
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-CG" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
-        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+#ifdef AMP_USE_HYPRE
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
     #ifdef AMP_USE_PETSC
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
     #endif
-#endif
-
-#ifdef AMP_USE_TRILINOS_MUELU
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
 #endif
     }
 

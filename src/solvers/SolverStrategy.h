@@ -197,10 +197,9 @@ public:
 
     virtual AMP::Scalar getResidualNorm( void ) const { return d_dResidualNorm; }
 
-    int checkConvergence( void ) const
-    {
-        return d_ConvergenceStatus <= SolverStatus::ConvergedUserCondition ? 1 : 0;
-    }
+    virtual AMP::Scalar getInitialResidual( void ) const { return d_dInitialResidual; }
+
+    virtual bool checkConvergence( std::shared_ptr<const AMP::LinearAlgebra::Vector> residual );
 
     virtual const std::vector<int> &getIterationHistory( void ) { return d_iterationHistory; }
 

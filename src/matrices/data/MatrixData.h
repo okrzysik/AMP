@@ -17,6 +17,8 @@ namespace AMP::LinearAlgebra {
 
 class Vector;
 
+enum class MatrixSortScheme : uint8_t { unsorted = 0, ascending = 1, hypre = 2 };
+
 class MatrixData : public AMP::enable_shared_from_this<MatrixData>
 {
 public:
