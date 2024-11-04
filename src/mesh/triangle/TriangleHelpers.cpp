@@ -8,7 +8,7 @@
 #include "AMP/mesh/MeshUtilities.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/triangle/TriangleMesh.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/DelaunayTessellation.h"

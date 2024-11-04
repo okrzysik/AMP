@@ -188,10 +188,22 @@ protected: // Protected structures
                 return ownerRank < rhs.ownerRank;
             return objID < rhs.objID;
         }
+        bool operator<=( const GlobalID &rhs ) const
+        {
+            if ( objID == rhs.objID )
+                return ownerRank <= rhs.ownerRank;
+            return objID < rhs.objID;
+        }
         bool operator>( const GlobalID &rhs ) const
         {
             if ( objID == rhs.objID )
                 return ownerRank > rhs.ownerRank;
+            return objID > rhs.objID;
+        }
+        bool operator>=( const GlobalID &rhs ) const
+        {
+            if ( objID == rhs.objID )
+                return ownerRank >= rhs.ownerRank;
             return objID > rhs.objID;
         }
     };

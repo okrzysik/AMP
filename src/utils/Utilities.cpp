@@ -4,11 +4,11 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Database.h"
 
 #include "StackTrace/StackTrace.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <csignal>
 #include <cstdio>
@@ -422,49 +422,37 @@ std::string demangle( const std::string &name )
 }
 
 
-// Print a database to an output stream
-template<class TYPE>
-static void printVar( const std::string &name,
-                      const std::vector<TYPE> &data,
-                      std::ostream &os,
-                      const std::string &indent )
-{
-    os << indent << name << " = ";
-    if ( !data.empty() ) {
-        os << data[0];
-        for ( size_t i = 1; i < data.size(); i++ )
-            os << ", " << data[i];
-    }
-    os << std::endl;
-}
-void printDatabase( const Database &db, std::ostream &os, const std::string &indent )
-{
-    db.print( os, indent );
-}
-
-
 } // namespace AMP::Utilities
 
 
 /************************************************************************
  * Explicit instantiations                                               *
  ************************************************************************/
-#define INSTANTIATE( TYPE )                                                            \
-    template std::string AMP::Utilities::to_string<TYPE>( std::vector<TYPE> const & ); \
-    template void AMP::Utilities::quicksort<TYPE>( size_t, TYPE * );                   \
-    template void AMP::Utilities::quicksort<TYPE, TYPE>( size_t, TYPE *, TYPE * );     \
-    template void AMP::Utilities::unique<TYPE>( std::vector<TYPE> & );                 \
-    template void AMP::Utilities::unique<TYPE>(                                        \
-        std::vector<TYPE> &, std::vector<size_t> &, std::vector<size_t> & );           \
-    template size_t AMP::Utilities::findfirst<TYPE>( size_t, const TYPE *, const TYPE & )
-INSTANTIATE( int8_t );
-INSTANTIATE( int16_t );
-INSTANTIATE( int32_t );
-INSTANTIATE( int64_t );
-INSTANTIATE( uint8_t );
-INSTANTIATE( uint16_t );
-INSTANTIATE( uint32_t );
-INSTANTIATE( uint64_t );
-INSTANTIATE( float );
-INSTANTIATE( double );
-INSTANTIATE( long double );
+using Point1D = std::array<double, 1>;
+using Point2D = std::array<double, 2>;
+using Point3D = std::array<double, 3>;
+AMP_INSTANTIATE_SORT( int8_t );
+AMP_INSTANTIATE_SORT( int16_t );
+AMP_INSTANTIATE_SORT( int32_t );
+AMP_INSTANTIATE_SORT( int64_t );
+AMP_INSTANTIATE_SORT( uint8_t );
+AMP_INSTANTIATE_SORT( uint16_t );
+AMP_INSTANTIATE_SORT( uint32_t );
+AMP_INSTANTIATE_SORT( uint64_t );
+AMP_INSTANTIATE_SORT( float );
+AMP_INSTANTIATE_SORT( double );
+AMP_INSTANTIATE_SORT( long double );
+AMP_INSTANTIATE_SORT( Point1D );
+AMP_INSTANTIATE_SORT( Point2D );
+AMP_INSTANTIATE_SORT( Point3D );
+template std::string AMP::Utilities::to_string<int8_t>( std::vector<int8_t> const & );
+template std::string AMP::Utilities::to_string<int16_t>( std::vector<int16_t> const & );
+template std::string AMP::Utilities::to_string<int32_t>( std::vector<int32_t> const & );
+template std::string AMP::Utilities::to_string<int64_t>( std::vector<int64_t> const & );
+template std::string AMP::Utilities::to_string<uint8_t>( std::vector<uint8_t> const & );
+template std::string AMP::Utilities::to_string<uint16_t>( std::vector<uint16_t> const & );
+template std::string AMP::Utilities::to_string<uint32_t>( std::vector<uint32_t> const & );
+template std::string AMP::Utilities::to_string<uint64_t>( std::vector<uint64_t> const & );
+template std::string AMP::Utilities::to_string<float>( std::vector<float> const & );
+template std::string AMP::Utilities::to_string<double>( std::vector<double> const & );
+template std::string AMP::Utilities::to_string<long double>( std::vector<long double> const & );

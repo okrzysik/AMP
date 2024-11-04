@@ -1,7 +1,7 @@
 #include "AMP/IO/HDF5.h"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/IO/HDF5.hpp"
-#include "AMP/utils/Array.hpp"
+#include "AMP/utils/Array.h"
 #include "AMP/utils/MeshPoint.h"
 #include "AMP/utils/Utilities.h"
 
@@ -454,6 +454,7 @@ void writeHDF5Array<AMP::typeID>( hid_t fid, const std::string &name, const AMP:
 } // namespace AMP::IO
 
 
+#include "AMP/utils/Array.hpp"
 instantiateArrayConstructors( AMP::Mesh::Point );
 
 

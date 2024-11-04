@@ -1,6 +1,6 @@
 #include "AMP/discretization/boxMeshDOFManager.h"
 #include "AMP/mesh/structured/BoxMesh.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include <set>
 #include <vector>

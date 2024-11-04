@@ -7,7 +7,7 @@
 #include "AMP/mesh/MultiIterator.h"
 #include "AMP/mesh/SubsetMesh.h"
 #include "AMP/mesh/loadBalance/loadBalanceSimulator.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
