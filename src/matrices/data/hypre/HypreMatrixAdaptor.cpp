@@ -34,9 +34,9 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     int ierr;
     char hypre_mesg[100];
 
-    HYPRE_BigInt firstRow = static_cast<HYPRE_BigInt>( matrixData->beginRow() );
-    HYPRE_BigInt lastRow  = static_cast<HYPRE_BigInt>( matrixData->endRow() - 1 );
-    auto comm             = matrixData->getComm().getCommunicator();
+    auto firstRow = static_cast<HYPRE_BigInt>( matrixData->beginRow() );
+    auto lastRow  = static_cast<HYPRE_BigInt>( matrixData->endRow() - 1 );
+    auto comm     = matrixData->getComm().getCommunicator();
 
     HYPRE_IJMatrixCreate( comm, firstRow, lastRow, firstRow, lastRow, &d_matrix );
     HYPRE_IJMatrixSetObjectType( d_matrix, HYPRE_PARCSR );
@@ -118,10 +118,10 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     // ensure that columns are sorted for hypre compatibility
     csrData->sortColumns( AMP::LinearAlgebra::MatrixSortScheme::hypre );
     // extract fields from csrData
-    HYPRE_BigInt first_row    = static_cast<HYPRE_BigInt>( csrData->beginRow() );
-    HYPRE_BigInt last_row     = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
-    HYPRE_BigInt nnz_total_d  = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosDiag() );
-    HYPRE_BigInt nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
+    const auto first_row    = static_cast<HYPRE_BigInt>( csrData->beginRow() );
+    const auto last_row     = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
+    const auto nnz_total_d  = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosDiag() );
+    const auto nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getDiagMatrix()->getDataFields();
     auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getOffdMatrix()->getDataFields();
     const bool haveOffd                            = csrData->hasOffDiag();
