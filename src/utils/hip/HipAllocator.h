@@ -56,31 +56,6 @@ public:
     }
 };
 
-/**
- * \class  HipHostAllocator
- * @brief  Allocator based on hipMallocHost
- */
-template<typename T>
-class HipHostAllocator
-{
-public:
-    using value_type = T;
-
-    T *allocate( size_t n )
-    {
-        T *ptr;
-        auto err = hipHostMalloc( &ptr, n * sizeof( T ) );
-        checkHipErrors( err );
-        return ptr;
-    }
-
-    void deallocate( T *p, size_t )
-    {
-        auto err = hipHostFree( p );
-        checkHipErrors( err );
-    }
-};
-
 } // namespace AMP
 
 #endif

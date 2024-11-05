@@ -180,13 +180,13 @@ int main( int argc, char **argv )
 #endif
 
 #ifdef USE_DEVICE
-        using ALLOC = AMP::ManagedAllocator<double>;
+        using ALLOC = AMP::ManagedAllocator<void>;
         using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
         using OPS   = AMP::LinearAlgebra::VectorOperationsDevice<double>;
         vec = AMP::LinearAlgebra::createSimpleVector<double, OPS, DATA>( N, var, globalComm );
         auto time_cuda = testPerformance( vec );
         if ( rank == 0 ) {
-            AMP::pout << "SimpleVector<CUDA>:" << std::endl;
+            AMP::pout << "SimpleVector<Managed>:" << std::endl;
             time_cuda.print();
             time_cuda.print_speedup( time0 );
             AMP::pout << std::endl;

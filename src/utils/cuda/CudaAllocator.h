@@ -61,32 +61,6 @@ public:
     }
 };
 
-
-/**
- * \class  CudaHostAllocator
- * @brief  Allocator based on cudaMallocHost
- */
-template<typename T>
-class CudaHostAllocator
-{
-public:
-    using value_type = T;
-
-    T *allocate( size_t n )
-    {
-        T *ptr;
-        auto err = cudaMallocHost( &ptr, n * sizeof( T ) );
-        checkCudaErrors( err );
-        return ptr;
-    }
-
-    void deallocate( T *p, size_t )
-    {
-        auto err = cudaFreeHost( p );
-        checkCudaErrors( err );
-    }
-};
-
 } // namespace AMP
 
 
