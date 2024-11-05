@@ -2,7 +2,7 @@
 #define included_AMP_MeshElement
 
 #include "AMP/mesh/MeshID.h"
-#include "AMP/mesh/MeshPoint.h"
+#include "AMP/utils/MeshPoint.h"
 #include "AMP/utils/typeid.h"
 
 #include <memory>

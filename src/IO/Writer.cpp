@@ -7,9 +7,7 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MultiMesh.h"
-#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Utilities.hpp"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorSelector.h"
 
@@ -655,8 +653,11 @@ void Writer::getNodeElemList( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
 
 
 /****************************************************************************
- * Explicit instantiation                                                    *
+ * Explicit instantiations                                                   *
  ****************************************************************************/
+#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/Utilities.hpp"
+AMP_INSTANTIATE_SORT( AMP::IO::Writer::GlobalID );
 INSTANTIATE_MPI_BCAST( AMP::IO::Writer::GlobalID );
 INSTANTIATE_MPI_GATHER( AMP::IO::Writer::GlobalID );
 INSTANTIATE_MPI_SENDRECV( AMP::IO::Writer::GlobalID );

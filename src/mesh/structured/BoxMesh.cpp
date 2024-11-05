@@ -8,7 +8,7 @@
 #include "AMP/mesh/structured/StructuredGeometryMesh.h"
 #include "AMP/mesh/structured/structuredMeshElement.h"
 #include "AMP/mesh/structured/structuredMeshIterator.h"
-#include "AMP/utils/Utilities.hpp"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -1005,3 +1005,15 @@ std::string BoxMesh::MeshElementIndex::print() const
 
 
 } // namespace AMP::Mesh
+
+
+/********************************************************
+ * Explicit instantiations                               *
+ ********************************************************/
+#include "AMP/utils/Utilities.hpp"
+AMP_INSTANTIATE_SORT( AMP::Mesh::BoxMesh::MeshElementIndex );
+template void
+AMP::Utilities::quicksort<int, AMP::Mesh::MeshElementID>( std::vector<int> &,
+                                                          std::vector<AMP::Mesh::MeshElementID> & );
+template void AMP::Utilities::quicksort<AMP::Mesh::MeshElementID, unsigned long>(
+    std::vector<AMP::Mesh::MeshElementID> &, std::vector<unsigned long> & );

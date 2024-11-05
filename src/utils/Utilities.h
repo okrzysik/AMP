@@ -154,10 +154,7 @@ void quicksort( size_t N, T *x );
  * \param x      vector to sort
  */
 template<class T>
-inline void quicksort( std::vector<T> &x )
-{
-    quicksort( x.size(), x.data() );
-}
+void quicksort( std::vector<T> &x );
 
 /*!
  * Quicksort a std::vector
@@ -174,12 +171,7 @@ void quicksort( size_t N, T1 *x, T2 *y );
  * \param y      Extra values to be sorted with X
  */
 template<class T1, class T2>
-inline void quicksort( std::vector<T1> &x, std::vector<T2> &y )
-{
-    if ( x.size() != y.size() )
-        AMP_ERROR( "x and y must be the same size" );
-    quicksort( x.size(), x.data(), y.data() );
-}
+void quicksort( std::vector<T1> &x, std::vector<T2> &y );
 
 
 /*!
@@ -220,10 +212,7 @@ size_t findfirst( size_t N, const T *x, const T &value );
  * \param value  Value to search for
  */
 template<class T>
-inline size_t findfirst( const std::vector<T> &x, const T &value )
-{
-    return findfirst( x.size(), x.data(), value );
-}
+size_t findfirst( const std::vector<T> &x, const T &value );
 
 
 /*!

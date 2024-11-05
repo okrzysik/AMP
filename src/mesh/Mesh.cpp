@@ -8,7 +8,7 @@
 #include "AMP/mesh/MeshUtilities.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/SubsetMesh.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree.h"
 #include "AMP/vectors/Variable.h"
@@ -601,6 +601,7 @@ GeomType operator-( int x, GeomType y ) noexcept
 /********************************************************
  * Instantiate communication of MeshElementID            *
  ********************************************************/
+#include "AMP/utils/AMP_MPI.I"
 INSTANTIATE_MPI_BCAST( AMP::Mesh::MeshElementID );
 INSTANTIATE_MPI_SENDRECV( AMP::Mesh::MeshElementID );
 INSTANTIATE_MPI_GATHER( AMP::Mesh::MeshElementID );

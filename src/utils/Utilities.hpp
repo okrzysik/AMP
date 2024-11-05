@@ -8,6 +8,18 @@
 namespace AMP::Utilities {
 
 
+#define AMP_INSTANTIATE_SORT( T )                                                        \
+    template void AMP::Utilities::quicksort<T>( size_t, T * );                           \
+    template void AMP::Utilities::quicksort<T, T>( size_t, T *, T * );                   \
+    template void AMP::Utilities::quicksort<T>( std::vector<T> & );                      \
+    template void AMP::Utilities::quicksort<T, T>( std::vector<T> &, std::vector<T> & ); \
+    template void AMP::Utilities::unique<T>( std::vector<T> & );                         \
+    template void AMP::Utilities::unique<T>(                                             \
+        std::vector<T> &, std::vector<size_t> &, std::vector<size_t> & );                \
+    template size_t AMP::Utilities::findfirst<T>( size_t, const T *, const T & );        \
+    template size_t AMP::Utilities::findfirst<T>( const std::vector<T> &, const T & )
+
+
 /************************************************************************
  * templated quicksort routines                                          *
  ************************************************************************/
@@ -213,6 +225,18 @@ void quicksort( size_t n, T1 *x, T2 *y )
         }
     }
 }
+template<class T>
+void quicksort( std::vector<T> &x )
+{
+    quicksort( x.size(), x.data() );
+}
+template<class T1, class T2>
+void quicksort( std::vector<T1> &x, std::vector<T2> &y )
+{
+    if ( x.size() != y.size() )
+        AMP_ERROR( "x and y must be the same size" );
+    quicksort( x.size(), x.data(), y.data() );
+}
 
 
 /************************************************************************
@@ -389,6 +413,11 @@ size_t findfirst( size_t n, const T *x, const T &value )
     }
     index = upper;
     return index;
+}
+template<class T>
+size_t findfirst( const std::vector<T> &x, const T &value )
+{
+    return findfirst( x.size(), x.data(), value );
 }
 
 
