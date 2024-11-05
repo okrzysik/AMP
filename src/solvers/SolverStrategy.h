@@ -199,8 +199,6 @@ public:
 
     virtual AMP::Scalar getInitialResidual( void ) const { return d_dInitialResidual; }
 
-    virtual bool checkConvergence( std::shared_ptr<const AMP::LinearAlgebra::Vector> residual );
-
     virtual const std::vector<int> &getIterationHistory( void ) { return d_iterationHistory; }
 
     int getTotalNumberOfIterations( void );
