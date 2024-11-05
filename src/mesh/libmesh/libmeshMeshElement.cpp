@@ -1,5 +1,5 @@
 #include "AMP/mesh/libmesh/libmeshMeshElement.h"
-#include "AMP/utils/Utilities.hpp"
+#include "AMP/utils/Utilities.h"
 
 // libMesh includes
 #include "libmesh/libmesh_config.h"
@@ -412,3 +412,12 @@ unsigned int generate_id( const std::vector<unsigned int> &ids )
 
 
 } // namespace AMP::Mesh
+
+
+/********************************************************
+ * Explicit instantiations                               *
+ ********************************************************/
+#include "AMP/utils/Utilities.hpp"
+template void
+AMP::Utilities::quicksort<unsigned int, libMesh::Node *>( std::vector<unsigned int> &,
+                                                          std::vector<libMesh::Node *> & );

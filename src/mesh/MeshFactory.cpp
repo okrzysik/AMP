@@ -3,13 +3,13 @@
 #include "AMP/IO/RestartManager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
-#include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/mesh/structured/MovableBoxMesh.h"
 #include "AMP/mesh/structured/PureLogicalMesh.h"
 #include "AMP/mesh/structured/StructuredGeometryMesh.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
+#include "AMP/utils/MeshPoint.h"
 
 #ifdef AMP_USE_TRILINOS_STKCLASSIC
 //#include "AMP/mesh/STKmesh/STKMesh.h"

@@ -492,6 +492,27 @@ bool Database::is_integral() const
 REGISTER_KEYDATA( Database, Database );
 
 
+// Print a database to an output stream
+template<class TYPE>
+static void printVar( const std::string &name,
+                      const std::vector<TYPE> &data,
+                      std::ostream &os,
+                      const std::string &indent )
+{
+    os << indent << name << " = ";
+    if ( !data.empty() ) {
+        os << data[0];
+        for ( size_t i = 1; i < data.size(); i++ )
+            os << ", " << data[i];
+    }
+    os << std::endl;
+}
+void Utilities::printDatabase( const Database &db, std::ostream &os, const std::string &indent )
+{
+    db.print( os, indent );
+}
+
+
 } // namespace AMP
 
 /********************************************************

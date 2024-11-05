@@ -2,8 +2,8 @@
 #define included_AMP_Geometry
 
 #include "AMP/mesh/MeshID.h"
-#include "AMP/mesh/MeshPoint.h"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/MeshPoint.h"
 
 #include <memory>
 #include <vector>
@@ -190,9 +190,9 @@ protected:
     Geometry( int ndim ) : d_physicalDim( ndim ) {}
 
     // Delete copy constructors
-    Geometry( Geometry && )      = delete;
-    Geometry( const Geometry & ) = default;
-    Geometry &operator=( Geometry && ) = delete;
+    Geometry( Geometry && )                 = delete;
+    Geometry( const Geometry & )            = default;
+    Geometry &operator=( Geometry && )      = delete;
     Geometry &operator=( const Geometry & ) = delete;
 
 

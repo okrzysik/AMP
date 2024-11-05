@@ -3,7 +3,7 @@
 #include "AMP/IO/HDF5.hpp"
 #include "AMP/mesh/MeshIterator.h"
 #include "AMP/utils/Array.hpp"
-#include "AMP/utils/Utilities.hpp"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree2.hpp"
 
 
@@ -205,25 +205,21 @@ INSTANTIATE_HDF5( AMP::Mesh::MeshIterator::Type );
 /********************************************************
  * Explicit instantiations                               *
  ********************************************************/
-#define INSTANTIATE_SORT( TYPE )                                                   \
-    template void AMP::Utilities::quicksort<TYPE>( size_t, TYPE * );               \
-    template void AMP::Utilities::quicksort<TYPE, TYPE>( size_t, TYPE *, TYPE * ); \
-    template void AMP::Utilities::unique<TYPE>( std::vector<TYPE> & );             \
-    template void AMP::Utilities::unique<TYPE>(                                    \
-        std::vector<TYPE> &, std::vector<size_t> &, std::vector<size_t> & );       \
-    template size_t AMP::Utilities::findfirst<TYPE>( size_t, const TYPE *, const TYPE & )
+#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/Utilities.hpp"
+INSTANTIATE_MPI_GATHER( AMP::Mesh::MeshID );
 using ElementArray1 = std::array<AMP::Mesh::ElementID, 1>;
 using ElementArray2 = std::array<AMP::Mesh::ElementID, 2>;
 using ElementArray3 = std::array<AMP::Mesh::ElementID, 3>;
 using ElementArray4 = std::array<AMP::Mesh::ElementID, 4>;
-INSTANTIATE_SORT( AMP::Mesh::GeomType );
-INSTANTIATE_SORT( AMP::Mesh::MeshID );
-INSTANTIATE_SORT( AMP::Mesh::ElementID );
-INSTANTIATE_SORT( AMP::Mesh::MeshElementID );
-INSTANTIATE_SORT( ElementArray1 );
-INSTANTIATE_SORT( ElementArray2 );
-INSTANTIATE_SORT( ElementArray3 );
-INSTANTIATE_SORT( ElementArray4 );
+AMP_INSTANTIATE_SORT( AMP::Mesh::GeomType );
+AMP_INSTANTIATE_SORT( AMP::Mesh::MeshID );
+AMP_INSTANTIATE_SORT( AMP::Mesh::ElementID );
+AMP_INSTANTIATE_SORT( AMP::Mesh::MeshElementID );
+AMP_INSTANTIATE_SORT( ElementArray1 );
+AMP_INSTANTIATE_SORT( ElementArray2 );
+AMP_INSTANTIATE_SORT( ElementArray3 );
+AMP_INSTANTIATE_SORT( ElementArray4 );
 INSTANTIATE_HDF5( AMP::Mesh::GeomType );
 INSTANTIATE_HDF5( AMP::Mesh::MeshID );
 instantiateArrayConstructors( AMP::Mesh::MeshID );
