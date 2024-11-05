@@ -16,6 +16,8 @@ namespace AMP::LinearAlgebra {
 template<typename Policy, typename Allocator = AMP::HostAllocator<void>>
 class CSRMatrix : public Matrix
 {
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
 public:
     CSRMatrix() = delete;
 
