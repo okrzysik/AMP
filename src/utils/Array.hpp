@@ -393,6 +393,21 @@ copyValues( const ArraySize &N1, const ArraySize &N2, const TYPE *data1, TYPE *d
  *  Resize the array                                     *
  ********************************************************/
 template<class TYPE, class FUN, class Allocator>
+void Array<TYPE, FUN, Allocator>::resize( size_t N )
+{
+    resize( ArraySize( N ) );
+}
+template<class TYPE, class FUN, class Allocator>
+void Array<TYPE, FUN, Allocator>::resize( size_t N_row, size_t N_col )
+{
+    resize( ArraySize( N_row, N_col ) );
+}
+template<class TYPE, class FUN, class Allocator>
+void Array<TYPE, FUN, Allocator>::resize( size_t N1, size_t N2, size_t N3 )
+{
+    resize( ArraySize( N1, N2, N3 ) );
+}
+template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::resize( const ArraySize &N )
 {
     // Check if the array actually changed size

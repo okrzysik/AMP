@@ -21,15 +21,6 @@ namespace AMP {
 
 
 /********************************************************************
- * KeyData factory functions                                         *
- ********************************************************************/
-void registerMaterial( const std::string &name, std::function<std::unique_ptr<KeyData>()> fun )
-{
-    AMP::FactoryStrategy<KeyData>::registerFactory( name, fun );
-}
-
-
-/********************************************************************
  * Scale data                                                        *
  ********************************************************************/
 template<class TYPE>

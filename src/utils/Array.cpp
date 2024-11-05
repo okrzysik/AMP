@@ -94,3 +94,10 @@ PACK_UNPACK_ARRAY2( std::complex<double> );
 
 
 } // namespace AMP
+
+
+/********************************************************
+ *  MPI routines                                         *
+ ********************************************************/
+#include "AMP/utils/AMP_MPI.I"
+template AMP::Array<int> AMP::AMP_MPI::bcast<AMP::Array<int>>( AMP::Array<int> const &, int ) const;

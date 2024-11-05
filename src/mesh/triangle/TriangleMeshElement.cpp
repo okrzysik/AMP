@@ -1,9 +1,9 @@
 #include "AMP/mesh/triangle/TriangleMeshElement.h"
 #include "AMP/geometry/GeometryHelpers.h"
-#include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/triangle/TriangleMesh.h"
 #include "AMP/mesh/triangle/TriangleMeshIterator.h"
 #include "AMP/utils/DelaunayHelpers.h"
+#include "AMP/utils/MeshPoint.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/UtilityMacros.h"
 

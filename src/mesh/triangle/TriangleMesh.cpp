@@ -4,8 +4,8 @@
 #include "AMP/mesh/MultiIterator.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
 #include "AMP/mesh/triangle/TriangleMeshIterator.h"
-#include "AMP/utils/AMP_MPI.I"
-#include "AMP/utils/Utilities.hpp"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -1406,15 +1406,20 @@ void TriangleMesh<NG, NP>::writeRestart( int64_t ) const
 }
 
 
-/********************************************************
- *  Explicit instantiations of TriangleMesh              *
- ********************************************************/
-template class TriangleMesh<1, 1>;
-template class TriangleMesh<1, 2>;
-template class TriangleMesh<1, 3>;
-template class TriangleMesh<2, 2>;
-template class TriangleMesh<2, 3>;
-template class TriangleMesh<3, 3>;
-
-
 } // namespace AMP::Mesh
+
+
+/********************************************************
+ *  Explicit instantiations                              *
+ ********************************************************/
+#include "AMP/utils/AMP_MPI.I"
+template class AMP::Mesh::TriangleMesh<1, 1>;
+template class AMP::Mesh::TriangleMesh<1, 2>;
+template class AMP::Mesh::TriangleMesh<1, 3>;
+template class AMP::Mesh::TriangleMesh<2, 2>;
+template class AMP::Mesh::TriangleMesh<2, 3>;
+template class AMP::Mesh::TriangleMesh<3, 3>;
+template AMP::AMP_MPI::Request AMP::AMP_MPI::Isend<std::array<double, 1ul>>(
+    std::array<double, 1ul> const *, int, int, int ) const;
+template void AMP::AMP_MPI::recv<std::array<double, 1ul>>(
+    std::array<double, 1ul> *, int &, int, bool, int ) const;

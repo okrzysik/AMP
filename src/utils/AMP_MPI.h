@@ -293,7 +293,7 @@ public: // Member functions
     /**
      * Check if the current communicator is NULL
      */
-    inline bool isNull() const { return d_isNull; }
+    bool isNull() const;
 
 
     /**
@@ -312,7 +312,7 @@ public: // Member functions
      *           Two objects that have the same ranks but different MPI_Comm objects
      *              will have different hash values.
      */
-    inline uint64_t hash() const { return d_hash; }
+    uint64_t hash() const;
 
 
     /**
@@ -332,7 +332,7 @@ public: // Member functions
      *  user is responsible for checking if the communicator is valid, or keeping a
      *  copy of the communicator that provided the MPI_Communicator.
      */
-    inline const Comm &getCommunicator() const { return d_comm; }
+    const Comm &getCommunicator() const;
 
 
     /**
@@ -423,19 +423,19 @@ public: // Member functions
      * Return the processor rank (identifier) from 0 through the number of
      * processors minus one.
      */
-    inline int getRank() const { return d_rank; }
+    int getRank() const;
 
 
     /**
      * Return the number of processors.
      */
-    inline int getSize() const { return d_size; }
+    int getSize() const;
 
 
     /**
      * Return the maximum tag
      */
-    inline int maxTag() const { return d_maxTag; }
+    int maxTag() const;
 
 
     /**
@@ -1387,10 +1387,10 @@ public: // Member functions
 
 
     //! Return the total number of MPI_Comm objects that have been created
-    static inline size_t MPI_Comm_created() { return N_MPI_Comm_created.load(); }
+    static size_t MPI_Comm_created();
 
     //! Return the total number of MPI_Comm objects that have been destroyed
-    static inline size_t MPI_Comm_destroyed() { return N_MPI_Comm_destroyed.load(); }
+    static size_t MPI_Comm_destroyed();
 
     //! Return details about MPI
     static std::string info();

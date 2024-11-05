@@ -3,7 +3,7 @@
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
