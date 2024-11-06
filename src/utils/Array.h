@@ -27,6 +27,9 @@ public: // Typedefs
     typedef TYPE value_type;
     typedef FUN function_table;
     static_assert( !std::is_same_v<TYPE, std::_Bit_reference> );
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+    using scalarAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<TYPE>;
 
 public: // Constructors / assignment operators
     /*!
@@ -379,7 +382,7 @@ public: // Views/copies/subset
      * Resize the Array
      * @param N             Number of elements
      */
-    inline void resize( size_t N ) { resize( ArraySize( N ) ); }
+    void resize( size_t N );
 
 
     /*!
@@ -387,7 +390,7 @@ public: // Views/copies/subset
      * @param N_row         Number of rows
      * @param N_col         Number of columns
      */
-    inline void resize( size_t N_row, size_t N_col ) { resize( ArraySize( N_row, N_col ) ); }
+    void resize( size_t N_row, size_t N_col );
 
     /*!
      * Resize the Array
@@ -395,7 +398,7 @@ public: // Views/copies/subset
      * @param N2            Number of columns
      * @param N3            Number of elements in the third dimension
      */
-    inline void resize( size_t N1, size_t N2, size_t N3 ) { resize( ArraySize( N1, N2, N3 ) ); }
+    void resize( size_t N1, size_t N2, size_t N3 );
 
     /*!
      * Resize the Array
@@ -783,7 +786,7 @@ public:
     size_t unpack( const std::byte * );
 
 private:
-    Allocator d_alloc;
+    scalarAllocator_t d_alloc;
     bool d_isCopyable;           // Can the array be copied
     bool d_isFixedSize;          // Can the array be resized
     ArraySize d_size;            // Size of each dimension
@@ -804,7 +807,7 @@ private:
     class Deleter
     {
     public:
-        Deleter( const Allocator &alloc, size_t N ) : d_alloc( alloc ), d_N( N ) {}
+        Deleter( const scalarAllocator_t &alloc, size_t N ) : d_alloc( alloc ), d_N( N ) {}
         void operator()( TYPE *p )
         {
             if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
@@ -815,7 +818,7 @@ private:
         }
 
     private:
-        Allocator d_alloc;
+        scalarAllocator_t d_alloc;
         size_t d_N;
     };
 };

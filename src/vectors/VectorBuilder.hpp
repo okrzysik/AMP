@@ -122,7 +122,7 @@ createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
 #ifdef USE_DEVICE
         return createVector<TYPE,
                             VectorOperationsDevice<TYPE>,
-                            VectorDataDefault<TYPE, AMP::ManagedAllocator<TYPE>>>(
+                            VectorDataDefault<TYPE, AMP::ManagedAllocator<void>>>(
             DOFs, variable, split );
 #else
         AMP_ERROR( "Creating Vector in managed memory requires HIP or CUDA support" );
@@ -131,7 +131,7 @@ createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
 #ifdef USE_DEVICE
         return createVector<TYPE,
                             VectorOperationsDevice<TYPE>,
-                            VectorDataDefault<TYPE, AMP::DeviceAllocator<TYPE>>>(
+                            VectorDataDefault<TYPE, AMP::DeviceAllocator<void>>>(
             DOFs, variable, split );
 #else
         AMP_ERROR( "Creating Vector in device memory requires HIP or CUDA support" );
@@ -235,13 +235,13 @@ Vector::shared_ptr createVectorAdaptor( const std::string &name,
     } else if ( memType == AMP::Utilities::MemoryType::managed ) {
 #ifdef USE_DEVICE
         vecOps  = std::make_shared<VectorOperationsDevice<T>>();
-        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::ManagedAllocator<T>>::create(
+        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::ManagedAllocator<void>>::create(
             DOFs->numLocalDOF(), commList, data );
 #endif
     } else if ( memType == AMP::Utilities::MemoryType::device ) {
 #ifdef USE_DEVICE
         vecOps  = std::make_shared<VectorOperationsDevice<T>>();
-        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::DeviceAllocator<T>>::create(
+        vecData = ArrayVectorData<T, AMP::GPUFunctionTable, AMP::DeviceAllocator<void>>::create(
             DOFs->numLocalDOF(), commList, data );
 #endif
     } else {

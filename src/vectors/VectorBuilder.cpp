@@ -43,26 +43,26 @@ INSTANTIATE_VECTOR( float )
         template Vector::shared_ptr                                                              \
             createSimpleVector<TYPE,                                                             \
                                VectorOperationsDevice<TYPE>,                                     \
-                               VectorDataDefault<TYPE, AMP::ManagedAllocator<TYPE>>>(            \
+                               VectorDataDefault<TYPE, AMP::ManagedAllocator<void>>>(            \
                 std::shared_ptr<Variable>,                                                       \
                 std::shared_ptr<AMP::Discretization::DOFManager>,                                \
                 std::shared_ptr<CommunicationList> );                                            \
         template Vector::shared_ptr                                                              \
             createSimpleVector<TYPE,                                                             \
                                VectorOperationsDevice<TYPE>,                                     \
-                               VectorDataDefault<TYPE, AMP::DeviceAllocator<TYPE>>>(             \
+                               VectorDataDefault<TYPE, AMP::DeviceAllocator<void>>>(             \
                 std::shared_ptr<Variable>,                                                       \
                 std::shared_ptr<AMP::Discretization::DOFManager>,                                \
                 std::shared_ptr<CommunicationList> );                                            \
         template Vector::shared_ptr                                                              \
         createVector<TYPE,                                                                       \
                      VectorOperationsDevice<TYPE>,                                               \
-                     VectorDataDefault<TYPE, AMP::ManagedAllocator<TYPE>>>(                      \
+                     VectorDataDefault<TYPE, AMP::ManagedAllocator<void>>>(                      \
             std::shared_ptr<AMP::Discretization::DOFManager>, std::shared_ptr<Variable>, bool ); \
         template Vector::shared_ptr                                                              \
         createVector<TYPE,                                                                       \
                      VectorOperationsDevice<TYPE>,                                               \
-                     VectorDataDefault<TYPE, AMP::DeviceAllocator<TYPE>>>(                       \
+                     VectorDataDefault<TYPE, AMP::DeviceAllocator<void>>>(                       \
             std::shared_ptr<AMP::Discretization::DOFManager>, std::shared_ptr<Variable>, bool );
 INSTANTIATE_VECTOR_DEVICE( float )
 INSTANTIATE_VECTOR_DEVICE( double )

@@ -1,6 +1,7 @@
 #ifndef AMP_FactoryStrategy_HPP_
 #define AMP_FactoryStrategy_HPP_
 
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
 
@@ -63,10 +64,15 @@ public:
         return factories.find( name ) != factories.end();
     }
 
+    static bool empty()
+    {
+        auto &factory = getFactory();
+        return factory.d_factories.empty();
+    }
 
 protected:
     //! Private constructor
-    FactoryStrategy() = default;
+    FactoryStrategy() { AMP::AMPManager::registerShutdown( FactoryStrategy::clear ); }
 
 
 protected:

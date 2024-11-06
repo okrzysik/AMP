@@ -184,6 +184,8 @@ public:
     //! Set the global comm
     static void setCommWorld( const AMP::AMP_MPI & );
 
+    //! Register a function to perform cleanup at AMP::AMPManager::shutdown
+    static void registerShutdown( std::function<void()> );
 
 private:
     // Private constructor (we do not actually want to create an object)
@@ -194,6 +196,7 @@ private:
     static int d_argc;
     static const char *const *d_argv;
     static AMPManagerProperties d_properties;
+    static std::vector<std::function<void()>> d_atShutdown;
 
     // Function to control exit behavior
     static void exitFun();

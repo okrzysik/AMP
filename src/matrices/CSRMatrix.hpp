@@ -126,6 +126,7 @@ Vector::shared_ptr CSRMatrix<Policy, Allocator>::getRightVector() const
     const auto memloc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
     return createVector( getRightDOFManager(), var, true, memloc );
 }
+
 template<typename Policy, typename Allocator>
 Vector::shared_ptr CSRMatrix<Policy, Allocator>::getLeftVector() const
 {

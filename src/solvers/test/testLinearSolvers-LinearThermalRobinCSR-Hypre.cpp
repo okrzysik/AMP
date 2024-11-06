@@ -209,10 +209,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Solve the problem.
     linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    // Comparison to reference solutions sets the expected number of iterations
-    // to depend on number of ranks
-    const int comm_size = comm.getSize();
-    checkConvergence( linearSolver.get(), inputFileName, comm_size, *ut );
+    checkConvergence( linearSolver.get(), inputFileName, *ut );
 }
 
 

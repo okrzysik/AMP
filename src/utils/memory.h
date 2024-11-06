@@ -45,17 +45,9 @@ template<typename TYPE>
 using DeviceAllocator = AMP::HipDevAllocator<TYPE>;
 #endif
 
-// host allocators
-// #ifdef USE_CUDA
-// template<typename TYPE>
-// using HostAllocator = AMP::CudaHostAllocator<TYPE>;
-// #elif defined( USE_HIP )
-// template<typename TYPE>
-// using HostAllocator = AMP::HipHostAllocator<TYPE>;
-// #else // no device
+// host allocator
 template<typename TYPE>
 using HostAllocator = std::allocator<TYPE>;
-// #endif
 
 } // namespace AMP
 
@@ -65,22 +57,18 @@ template<typename ALLOC>
 constexpr AMP::Utilities::MemoryType getAllocatorMemoryType()
 {
     using intAllocator = typename std::allocator_traits<ALLOC>::template rebind_alloc<int>;
-    if constexpr ( std::is_same<intAllocator, std::allocator<int>>::value ) {
+    if ( std::is_same_v<intAllocator, std::allocator<int>> ) {
         return AMP::Utilities::MemoryType::host;
 #ifdef USE_CUDA
-    } else if constexpr ( std::is_same<intAllocator, AMP::CudaHostAllocator<int>>::value ) {
-        return AMP::Utilities::MemoryType::host;
-    } else if constexpr ( std::is_same<intAllocator, AMP::CudaManagedAllocator<int>>::value ) {
+    } else if ( std::is_same_v<intAllocator, AMP::CudaManagedAllocator<int>> ) {
         return AMP::Utilities::MemoryType::managed;
-    } else if constexpr ( std::is_same<intAllocator, AMP::CudaDevAllocator<int>>::value ) {
+    } else if ( std::is_same_v<intAllocator, AMP::CudaDevAllocator<int>> ) {
         return AMP::Utilities::MemoryType::device;
 #endif
 #ifdef USE_HIP
-    } else if constexpr ( std::is_same<intAllocator, AMP::HipHostAllocator<int>>::value ) {
-        return AMP::Utilities::MemoryType::host;
-    } else if constexpr ( std::is_same<intAllocator, AMP::HipManagedAllocator<int>>::value ) {
+    } else if ( std::is_same_v<intAllocator, AMP::HipManagedAllocator<int>> ) {
         return AMP::Utilities::MemoryType::managed;
-    } else if constexpr ( std::is_same<intAllocator, AMP::HipDevAllocator<int>>::value ) {
+    } else if ( std::is_same_v<intAllocator, AMP::HipDevAllocator<int>> ) {
         return AMP::Utilities::MemoryType::device;
 #endif
     } else {

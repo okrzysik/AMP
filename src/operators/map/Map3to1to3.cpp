@@ -1,6 +1,6 @@
 #include "AMP/operators/map/Map3to1to3.h"
 #include "AMP/operators/map/Map3to1to3Parameters.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -326,3 +326,13 @@ void Map3to1to3::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr,
     AMP_ERROR( "buildReturn should never be called for the BaseClass" );
 }
 } // namespace AMP::Operator
+
+
+/********************************************************
+ * Explicit instantiations                               *
+ ********************************************************/
+#include "AMP/utils/AMP_MPI.I"
+template void AMP::AMP_MPI::recv<AMP::Operator::Map3to1to3::comm_data>(
+    AMP::Operator::Map3to1to3::comm_data *, int &, int, bool, int ) const;
+template AMP::AMP_MPI::Request AMP::AMP_MPI::Isend<AMP::Operator::Map3to1to3::comm_data>(
+    AMP::Operator::Map3to1to3::comm_data const *, int, int, int ) const;

@@ -8,7 +8,6 @@
 #include "AMP/mesh/MeshIterator.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/ArrayVectorData.h"
@@ -24,7 +23,8 @@ namespace AMP::IO {
 /************************************************************
  * Helper functions                                          *
  ************************************************************/
-AMP::Array<double> getArrayData( std::shared_ptr<const AMP::LinearAlgebra::Vector> vec )
+[[maybe_unused]] static AMP::Array<double>
+getArrayData( std::shared_ptr<const AMP::LinearAlgebra::Vector> vec )
 {
     auto multivec = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( vec );
     if ( multivec ) {
@@ -269,10 +269,10 @@ Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
     }
     return XdmfData;
 }
-Array<double> getBoxMeshVar( const AMP::Mesh::BoxMesh &mesh,
-                             const AMP::LinearAlgebra::Vector &vec,
-                             AMP::Mesh::GeomType type,
-                             int numDOFs )
+static Array<double> getBoxMeshVar( const AMP::Mesh::BoxMesh &mesh,
+                                    const AMP::LinearAlgebra::Vector &vec,
+                                    AMP::Mesh::GeomType type,
+                                    int numDOFs )
 {
     AMP::Array<double> data;
     auto DOFs = vec.getDOFManager();

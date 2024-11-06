@@ -5,18 +5,11 @@
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/AMP_MPI.I"
-#include "AMP/utils/Utilities.hpp"
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 
 #include <set>
 #include <vector>
-
-
-// instantiate quicksort overloads for element IDs
-template void AMP::Utilities::quicksort<AMP::Mesh::MeshElementID>( size_t,
-                                                                   AMP::Mesh::MeshElementID * );
-template void AMP::Utilities::quicksort<AMP::Mesh::MeshElementID, unsigned long>(
-    size_t, AMP::Mesh::MeshElementID *, unsigned long * );
 
 
 namespace AMP::Discretization {

@@ -1,6 +1,6 @@
 #include "AMP/mesh/MeshUtilities.h"
 #include "AMP/geometry/GeometryHelpers.h"
-#include "AMP/mesh/MeshPoint.h"
+#include "AMP/utils/MeshPoint.h"
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/kdtree.h"
 

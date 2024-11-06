@@ -1,11 +1,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/IO/PIO.h"
-#include "AMP/operators/OperatorFactory.h"
-#include "AMP/solvers/SolverFactory.h"
-#include "AMP/time_integrators/TimeIntegratorFactory.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/FactoryStrategy.hpp"
 #include "AMP/utils/KokkosManager.h"
 #include "AMP/utils/Utilities.h"
 
@@ -58,10 +54,6 @@
 namespace AMP {
 class KeyData;
 }
-namespace AMP::Materials {
-class Material;
-}
-
 
 namespace AMP {
 
@@ -80,6 +72,7 @@ int AMPManager::d_initialized                 = 0;
 int AMPManager::d_argc                        = 0;
 const char *const *AMPManager::d_argv         = nullptr;
 AMPManagerProperties AMPManager::d_properties = AMPManagerProperties();
+std::vector<std::function<void()>> AMPManager::d_atShutdown;
 
 
 /****************************************************************************
@@ -156,13 +149,7 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
     AMP_MPI::start_MPI( argc, argv, d_properties.profile_MPI_level );
     auto MPI_time = getDuration( MPI_start );
     // Initialize AMP's MPI
-#if 1
     AMP_INSIST( d_properties.COMM_WORLD != AMP_COMM_NULL, "AMP comm world cannot be null" );
-#else
-    AMP_INSIST( d_properties.COMM_WORLD != AMP_COMM_NULL &&
-                    d_properties.COMM_WORLD != MPI_COMM_NULL,
-                "AMP comm world cannot be null" );
-#endif
     comm_world = d_properties.COMM_WORLD;
     // Initialize cuda/hip
     start_CudaOrHip();
@@ -246,12 +233,9 @@ void AMPManager::shutdown()
     delete[] d_argv;
     d_argc = 0;
     d_argv = nullptr;
-    // Clear the factories
-    AMP::FactoryStrategy<AMP::KeyData>::clear();
-    AMP::FactoryStrategy<AMP::Materials::Material>::clear();
-    AMP::Operator::OperatorFactory::clear();
-    AMP::Solver::SolverFactory::clear();
-    AMP::TimeIntegrator::TimeIntegratorFactory::clear();
+    // Call the shutdown routines in reverse order
+    for ( int i = d_atShutdown.size() - 1; i >= 0; i-- )
+        d_atShutdown[i]();
     // List shutdown times
     double shutdown_time = getDuration( start_time );
     if ( d_properties.print_times && rank == 0 ) {
@@ -304,6 +288,12 @@ void AMPManager::restart()
     SAMRAI::tbox::SAMRAIManager::startup();
 #endif
 }
+
+
+/****************************************************************************
+ * Register shutdown routine                                                 *
+ ****************************************************************************/
+void AMPManager::registerShutdown( std::function<void()> fun ) { d_atShutdown.push_back( fun ); }
 
 
 /****************************************************************************

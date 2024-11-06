@@ -2,7 +2,7 @@
 
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/mesh/MeshElement.h"
-#include "AMP/utils/Utilities.hpp"
+#include "AMP/utils/Utilities.h"
 
 
 namespace AMP::Mesh {

@@ -170,7 +170,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         current_res = static_cast<T>( r->L2Norm() );
         if ( d_iDebugPrintInfoLevel > 0 ) {
             AMP::pout << "CG: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
-                      << current_res << ", solution norm " << u->L2Norm() << std::endl;
+                      << current_res << std::endl;
         }
         // check if converged
         if ( current_res < terminate_tol ) {

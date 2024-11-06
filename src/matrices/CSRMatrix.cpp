@@ -8,12 +8,12 @@
 
 // Check if device based allocators are needed
 #ifdef USE_DEVICE
-    #define INSTANTIATE_ALLOCS( policy )                       \
-        INSTANTIATE_FULL( policy, AMP::HostAllocator<int> )    \
-        INSTANTIATE_FULL( policy, AMP::ManagedAllocator<int> ) \
-        INSTANTIATE_FULL( policy, AMP::DeviceAllocator<int> )
+    #define INSTANTIATE_ALLOCS( policy )                        \
+        INSTANTIATE_FULL( policy, AMP::HostAllocator<void> )    \
+        INSTANTIATE_FULL( policy, AMP::ManagedAllocator<void> ) \
+        INSTANTIATE_FULL( policy, AMP::DeviceAllocator<void> )
 #else
-    #define INSTANTIATE_ALLOCS( policy ) INSTANTIATE_FULL( policy, AMP::HostAllocator<int> )
+    #define INSTANTIATE_ALLOCS( policy ) INSTANTIATE_FULL( policy, AMP::HostAllocator<void> )
 #endif
 
 // Check if hypre is present

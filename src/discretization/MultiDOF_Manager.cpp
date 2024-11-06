@@ -1,6 +1,6 @@
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -321,3 +321,17 @@ std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterat
     return std::make_shared<multiDOFManager>( comm, sub_managers );
 }
 } // namespace AMP::Discretization
+
+
+/********************************************************
+ *  Explicit instantiations                              *
+ ********************************************************/
+#include "AMP/utils/AMP_MPI.I"
+template std::vector<AMP::Discretization::multiDOFManager::DOFMapStruct>
+AMP::AMP_MPI::allGather<AMP::Discretization::multiDOFManager::DOFMapStruct>(
+    std::vector<AMP::Discretization::multiDOFManager::DOFMapStruct> const & ) const;
+template std::vector<int> AMP::AMP_MPI::bcast<std::vector<int>>( std::vector<int> const &,
+                                                                 int ) const;
+template std::vector<std::array<double, 3ul>>
+AMP::AMP_MPI::bcast<std::vector<std::array<double, 3ul>>>(
+    std::vector<std::array<double, 3ul>> const &, int ) const;

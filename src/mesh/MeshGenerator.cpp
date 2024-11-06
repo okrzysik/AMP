@@ -2,10 +2,10 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/IO/FileSystem.h"
 #include "AMP/mesh/Mesh.h"
-#include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
+#include "AMP/utils/MeshPoint.h"
 
 #ifdef AMP_USE_TRILINOS_STKCLASSIC
 //#include "AMP/mesh/STKmesh/STKMesh.h"

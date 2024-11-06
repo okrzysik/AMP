@@ -91,50 +91,49 @@ extern template class Array<float>;
  ********************************************************/
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array()
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false ), d_data( nullptr )
+    : d_isCopyable( true ), d_isFixedSize( false ), d_data( nullptr )
 {
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( const ArraySize &N, const TYPE *data )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+    : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( N );
     if ( data )
         copy( data );
 }
 template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator>::Array( size_t N )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+Array<TYPE, FUN, Allocator>::Array( size_t N ) : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( ArraySize( N ) );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( size_t N_rows, size_t N_cols )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+    : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( ArraySize( N_rows, N_cols ) );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( size_t N1, size_t N2, size_t N3 )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+    : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( ArraySize( N1, N2, N3 ) );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( size_t N1, size_t N2, size_t N3, size_t N4 )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+    : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( ArraySize( N1, N2, N3, N4 ) );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( size_t N1, size_t N2, size_t N3, size_t N4, size_t N5 )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+    : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( ArraySize( N1, N2, N3, N4, N5 ) );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( const Range<TYPE> &range )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+    : d_isCopyable( true ), d_isFixedSize( false )
 {
     size_t N = range.size();
     allocate( { N } );
@@ -142,8 +141,7 @@ Array<TYPE, FUN, Allocator>::Array( const Range<TYPE> &range )
         d_data[i] = range.get( i );
 }
 template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator>::Array( std::string str )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+Array<TYPE, FUN, Allocator>::Array( std::string str ) : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( 0 );
     if ( (int) std::count( str.begin(), str.end(), ' ' ) == (int) str.length() ) {
@@ -227,7 +225,7 @@ Array<TYPE, FUN, Allocator>::Array( std::string str )
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( std::initializer_list<TYPE> x )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+    : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( { x.size() } );
     auto it = x.begin();
@@ -236,7 +234,7 @@ Array<TYPE, FUN, Allocator>::Array( std::initializer_list<TYPE> x )
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( std::initializer_list<std::initializer_list<TYPE>> x )
-    : d_alloc( Allocator() ), d_isCopyable( true ), d_isFixedSize( false )
+    : d_isCopyable( true ), d_isFixedSize( false )
 {
     size_t Nx = x.size();
     size_t Ny = 0;
@@ -326,7 +324,6 @@ Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( Array &&rhs
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( const std::vector<TYPE> &rhs )
 {
-    d_alloc = Allocator();
     allocate( ArraySize( rhs.size() ) );
     if constexpr ( std::is_same_v<TYPE, bool> ) {
         for ( size_t i = 0; i < rhs.size(); i++ )
@@ -392,6 +389,21 @@ copyValues( const ArraySize &N1, const ArraySize &N2, const TYPE *data1, TYPE *d
 /********************************************************
  *  Resize the array                                     *
  ********************************************************/
+template<class TYPE, class FUN, class Allocator>
+void Array<TYPE, FUN, Allocator>::resize( size_t N )
+{
+    resize( ArraySize( N ) );
+}
+template<class TYPE, class FUN, class Allocator>
+void Array<TYPE, FUN, Allocator>::resize( size_t N_row, size_t N_col )
+{
+    resize( ArraySize( N_row, N_col ) );
+}
+template<class TYPE, class FUN, class Allocator>
+void Array<TYPE, FUN, Allocator>::resize( size_t N1, size_t N2, size_t N3 )
+{
+    resize( ArraySize( N1, N2, N3 ) );
+}
 template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::resize( const ArraySize &N )
 {

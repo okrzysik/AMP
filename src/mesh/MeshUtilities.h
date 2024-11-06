@@ -5,8 +5,8 @@
 #include "AMP/geometry/Geometry.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
-#include "AMP/mesh/MeshPoint.h"
 #include "AMP/utils/Array.h"
+#include "AMP/utils/MeshPoint.h"
 #include "AMP/utils/kdtree2.h"
 
 

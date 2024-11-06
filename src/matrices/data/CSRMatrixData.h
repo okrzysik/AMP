@@ -17,7 +17,7 @@ class DOFManager;
 namespace AMP::LinearAlgebra {
 
 template<typename Policy,
-         class Allocator      = AMP::HostAllocator<int>,
+         class Allocator      = AMP::HostAllocator<void>,
          class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>,
          class OffdMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixData : public MatrixData
@@ -26,6 +26,7 @@ public:
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
     using gidxAllocator_t =
         typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
     using lidxAllocator_t =

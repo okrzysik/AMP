@@ -15,18 +15,18 @@
 namespace AMP::LinearAlgebra {
 
 
-template void
-HypreMatrixAdaptor::initializeHypreMatrix<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>, const bool );
+template void HypreMatrixAdaptor::initializeHypreMatrix<
+    CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>> );
 
 #ifdef USE_DEVICE
 template void HypreMatrixAdaptor::initializeHypreMatrix<
-    CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>, const bool );
+    CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>> );
 
-template void
-HypreMatrixAdaptor::initializeHypreMatrix<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>, const bool );
+template void HypreMatrixAdaptor::initializeHypreMatrix<
+    CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>> );
 #endif
 
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
@@ -34,9 +34,9 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     int ierr;
     char hypre_mesg[100];
 
-    HYPRE_BigInt firstRow = static_cast<HYPRE_BigInt>( matrixData->beginRow() );
-    HYPRE_BigInt lastRow  = static_cast<HYPRE_BigInt>( matrixData->endRow() - 1 );
-    auto comm             = matrixData->getComm().getCommunicator();
+    auto firstRow = static_cast<HYPRE_BigInt>( matrixData->beginRow() );
+    auto lastRow  = static_cast<HYPRE_BigInt>( matrixData->endRow() - 1 );
+    auto comm     = matrixData->getComm().getCommunicator();
 
 
     HYPRE_IJMatrixCreate( comm, firstRow, lastRow, firstRow, lastRow, &d_matrix );
@@ -47,15 +47,15 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     // Policy must match HypreCSRPolicy
     // need to match supported allocators depending on device support
     auto csrDataHost =
-        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>(
             matrixData );
 
 #ifdef USE_DEVICE
     auto csrDataManaged =
-        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>>(
             matrixData );
     auto csrDataDevice =
-        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>>(
             matrixData );
 #else
     // Just default out these to nullptrs to make logic below simpler
@@ -125,10 +125,10 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     // ensure that columns are sorted for hypre compatibility
     csrData->sortColumns( AMP::LinearAlgebra::MatrixSortScheme::hypre );
     // extract fields from csrData
-    HYPRE_BigInt first_row    = static_cast<HYPRE_BigInt>( csrData->beginRow() );
-    HYPRE_BigInt last_row     = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
-    HYPRE_BigInt nnz_total_d  = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosDiag() );
-    HYPRE_BigInt nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
+    const auto first_row    = static_cast<HYPRE_BigInt>( csrData->beginRow() );
+    const auto last_row     = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
+    const auto nnz_total_d  = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosDiag() );
+    const auto nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
     auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getDiagMatrix()->getDataFields();
     auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getOffdMatrix()->getDataFields();
     const bool haveOffd                            = csrData->hasOffDiag();
