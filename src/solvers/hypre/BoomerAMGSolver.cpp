@@ -296,15 +296,14 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 {
     PROFILE( "BoomerAMGSolver::apply" );
 
+    // Always zero before checking stopping criteria for any reason
+    d_iNumberIterations = 0;
+
     AMP_INSIST( d_pOperator, "BoomerAMGSolver::apply() operator cannot be NULL" );
 
     HYPRE_SetMemoryLocation( d_memory_location );
     HYPRE_SetExecutionPolicy( d_exec_policy );
     d_bCreationPhase = false;
-
-    // Need to start this at zero so that this will run
-    // if called repeatedly (e.g. as precond inside other solver)
-    d_iNumberIterations = 0;
 
     const auto f_norm = static_cast<HYPRE_Real>( f->L2Norm() );
 
@@ -365,7 +364,6 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );
 
-    // add in code for solve here
     HYPRE_BoomerAMGSetup( d_solver, parcsr_A, par_b, par_x );
     HYPRE_BoomerAMGSolve( d_solver, parcsr_A, par_b, par_x );
 
@@ -394,7 +392,6 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, r );
         current_res = static_cast<HYPRE_Real>( r->L2Norm() );
-        checkStoppingCriteria( d_dResidualNorm );
     } else {
         HYPRE_BoomerAMGGetFinalRelativeResidualNorm( d_solver, &current_res );
     }
@@ -402,6 +399,13 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // Store final residual norm and update convergence flags
     d_dResidualNorm = current_res;
     checkStoppingCriteria( current_res );
+
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        AMP::pout << "BoomerAMGSolver::apply: final L2Norm of solution: " << u->L2Norm()
+                  << std::endl;
+        AMP::pout << "BoomerAMGSolver::apply: final L2Norm of residual: " << current_res
+                  << std::endl;
+    }
 }
 
 } // namespace AMP::Solver
