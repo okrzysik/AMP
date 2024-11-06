@@ -54,22 +54,18 @@ int main( int argc, char *argv[] )
     // Memory pointer type
     AMP::CudaDevAllocator<double> devAllocator;
     AMP::CudaManagedAllocator<double> managedAllocator;
-    AMP::CudaHostAllocator<double> hostAllocator;
-    std::allocator<double> stdAllocator;
+    AMP::HostAllocator<double> hostAllocator;
     size_t N     = 100;
     auto device  = devAllocator.allocate( N );
     auto managed = managedAllocator.allocate( N );
     auto host    = hostAllocator.allocate( N );
-    auto std     = stdAllocator.allocate( N );
     std::cout << std::endl;
     std::cout << "Device: " << getMemorySpace( device ) << std::endl;
     std::cout << "Managed: " << getMemorySpace( managed ) << std::endl;
     std::cout << "Host: " << getMemorySpace( host ) << std::endl;
-    std::cout << "std: " << getMemorySpace( std ) << std::endl;
     devAllocator.deallocate( device, N );
     managedAllocator.deallocate( managed, N );
     hostAllocator.deallocate( host, N );
-    stdAllocator.deallocate( std, N );
 
     // Check Kokkos memory pointers
 #ifdef USE_KOKKOS

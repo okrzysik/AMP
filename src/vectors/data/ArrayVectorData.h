@@ -15,7 +15,7 @@ namespace AMP::LinearAlgebra {
 /** \brief A core-local vector
  * \details This is a Vector that implements the Vector interface for a std::vector<double>.
  */
-template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<T>>
+template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<void>>
 class ArrayVectorData : public VectorData
 {
 private:
