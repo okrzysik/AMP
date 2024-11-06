@@ -56,8 +56,8 @@ static void checkConvergence( AMP::Solver::SolverStrategy *solver,
             AMP::pout << "  Iterations: " << iter << ", max allowed: " << refIter << std::endl;
             AMP::pout << "  Residual norm: " << residualNorm << ", max allowed: " << stopTol
                       << std::endl;
-            AMP::pout << "  Solver finished with status: "
-                      << AMP::Solver::SolverStrategy::statusToString( convReason ) << std::endl;
+            AMP::pout << "  Solver finished with status: " << solver->getConvergenceStatusString()
+                      << std::endl;
             ut.failure( "FAILED: convergence rate test" );
         } else {
             ut.passes( "Passes convergence rate test" );
@@ -67,6 +67,8 @@ static void checkConvergence( AMP::Solver::SolverStrategy *solver,
     } else {
         AMP::pout << "Solver has NOT converged." << std::endl;
         AMP::pout << "Residual norm: " << residualNorm << ", max allowed: " << stopTol << std::endl;
+        AMP::pout << "  Solver finished with status: " << solver->getConvergenceStatusString()
+                  << std::endl;
         ut.failure( "Solver has NOT converged." );
     }
 }

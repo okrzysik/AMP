@@ -118,18 +118,10 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
         d_dResidualNorm     = 0.0;
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "GMRESSolver<T>::solve: solution is zero" << std::endl;
+            AMP::pout << "GMRESSolver<T>::apply: solution is zero" << std::endl;
         }
         return;
     }
-
-    ///// Ian: What does this mean? zero rhs gives zero solution...
-    /////      Are we applying this to singular systems in some weird way?
-    // if the rhs is zero we try to converge to the relative convergence
-    // NOTE:: update this test for a better 'almost equal'
-    // if ( f_norm < std::numeric_limits<T>::epsilon() ) {
-    //     f_norm = static_cast<T>( 1.0 );
-    // }
 
     if ( d_pOperator ) {
         registerOperator( d_pOperator );
@@ -157,17 +149,17 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto beta          = static_cast<T>( res->L2Norm() );
     d_dInitialResidual = beta;
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        AMP::pout << "GMRESSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
-        AMP::pout << "GMRESSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
-        AMP::pout << "GMRESSolver<T>::solve: initial L2Norm of residual: " << beta << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of rhs vector: " << f_norm << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of residual: " << beta << std::endl;
     }
 
     // return if the residual is already low enough
     if ( checkStoppingCriteria( beta ) ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "GMRESSolver<T>::solve: initial residual below tolerance" << std::endl;
+            AMP::pout << "GMRESSolver<T>::apply: initial residual below tolerance" << std::endl;
         }
         return;
     }
@@ -273,7 +265,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // this is the norm of the residual thanks to the Givens rotations
         v_norm = std::fabs( d_dw[k + 1] );
 
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "GMRES: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
                       << v_norm << std::endl;
         }
@@ -305,7 +297,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             } else {
                 // set diverged reason
                 d_ConvergenceStatus = SolverStatus::DivergedOther;
-                AMP_WARNING( "GMRESSolver<T>::solve: Maximum Krylov dimension hit with restarts "
+                AMP_WARNING( "GMRESSolver<T>::apply: Maximum Krylov dimension hit with restarts "
                              "disabled" );
                 break;
             }
@@ -332,10 +324,13 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // Store final residual should it be queried elsewhere
     d_dResidualNorm = v_norm;
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        AMP::pout << "GMRESSolver<T>::solve: final L2Norm of solution: " << u->L2Norm()
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        AMP::pout << "GMRESSolver<T>::apply: final L2Norm of solution: " << u->L2Norm()
                   << std::endl;
-        AMP::pout << "GMRESSolver<T>::solve: final L2Norm of residual: " << v_norm << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: final L2Norm of residual: " << v_norm << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: convergence reason: "
+                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
 }
 

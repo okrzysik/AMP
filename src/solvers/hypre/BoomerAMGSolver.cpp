@@ -400,11 +400,14 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     d_dResidualNorm = current_res;
     checkStoppingCriteria( current_res );
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
+    if ( d_iDebugPrintInfoLevel > 0 ) {
         AMP::pout << "BoomerAMGSolver::apply: final L2Norm of solution: " << u->L2Norm()
                   << std::endl;
         AMP::pout << "BoomerAMGSolver::apply: final L2Norm of residual: " << current_res
                   << std::endl;
+        AMP::pout << "BoomerAMG::apply: iterations: " << d_iNumberIterations << std::endl;
+        AMP::pout << "BoomerAMG::apply: convergence reason: "
+                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
 }
 

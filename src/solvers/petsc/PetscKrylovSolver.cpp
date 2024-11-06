@@ -316,11 +316,14 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     d_dResidualNorm = current_res;
     checkStoppingCriteria( current_res );
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
+    if ( d_iDebugPrintInfoLevel > 0 ) {
         AMP::pout << "PetscKrylovSolver::apply: final L2Norm of solution: " << u->L2Norm()
                   << std::endl;
         AMP::pout << "PetscKrylovSolver::apply: final L2Norm of residual: " << current_res
                   << std::endl;
+        AMP::pout << "PetscKrylovSolver::apply: iterations: " << d_iNumberIterations << std::endl;
+        AMP::pout << "PetscKrylovSolver::apply: convergence reason: "
+                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
 
     // Reset the solvers

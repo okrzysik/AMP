@@ -99,11 +99,6 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         return;
     }
 
-    // if the rhs is zero we try to converge to the relative convergence
-    // if ( f_norm == static_cast<T>( 0.0 ) ) {
-    //     f_norm = static_cast<T>( 1.0 );
-    // }
-
     if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
@@ -123,7 +118,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     auto r_tilde_norm  = res_norm;
     d_dInitialResidual = res_norm;
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
+    if ( d_iDebugPrintInfoLevel > 1 ) {
         AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
         AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm
@@ -257,7 +252,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         // compute the current residual norm
         res_norm = static_cast<T>( res->L2Norm() );
 
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "BiCGSTAB: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
                       << res_norm << std::endl;
         }
@@ -288,11 +283,14 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // Store final residual should it be queried elsewhere
     d_dResidualNorm = res_norm;
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        AMP::pout << "BiCGSTABSolver<T>::solve: final L2Norm of solution: " << u->L2Norm()
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        AMP::pout << "BiCGSTABSolver<T>::apply: final L2Norm of solution: " << u->L2Norm()
                   << std::endl;
-        AMP::pout << "BiCGSTABSolver<T>::solve: final L2Norm of residual: " << res_norm
+        AMP::pout << "BiCGSTABSolver<T>::apply: final L2Norm of residual: " << res_norm
                   << std::endl;
+        AMP::pout << "BiCGSTABSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
+        AMP::pout << "BiCGSTABSolver<T>::apply: convergence reason: "
+                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
 }
 

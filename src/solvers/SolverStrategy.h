@@ -226,6 +226,11 @@ public:
 
     SolverStatus getConvergenceStatus( void ) const { return d_ConvergenceStatus; }
 
+    std::string getConvergenceStatusString( void ) const
+    {
+        return statusToString( d_ConvergenceStatus );
+    }
+
     virtual void print( std::ostream &os ) { NULL_USE( os ); }
 
     virtual AMP::Scalar getResidualNorm( void ) const { return d_dResidualNorm; }

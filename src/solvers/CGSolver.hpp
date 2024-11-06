@@ -81,7 +81,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         u->zero();
         d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
         d_dResidualNorm     = 0.0;
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "CGSolver<T>::apply: solution is zero" << std::endl;
         }
         return;
@@ -167,7 +167,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         // compute the current residual norm
         current_res = static_cast<T>( r->L2Norm() );
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "CG: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
                       << current_res << std::endl;
         }
@@ -203,9 +203,12 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // Store final residual should it be queried elsewhere
     d_dResidualNorm = current_res;
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
+    if ( d_iDebugPrintInfoLevel > 0 ) {
         AMP::pout << "CGSolver<T>::apply: final L2Norm of solution: " << u->L2Norm() << std::endl;
         AMP::pout << "CGSolver<T>::apply: final L2Norm of residual: " << current_res << std::endl;
+        AMP::pout << "CGSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
+        AMP::pout << "CGSolver<T>::apply: convergence reason: "
+                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
 }
 

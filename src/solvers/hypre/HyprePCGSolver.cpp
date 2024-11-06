@@ -233,6 +233,9 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                   << std::endl;
         AMP::pout << "HyprePCGSolver::apply: final L2Norm of residual: " << current_res
                   << std::endl;
+        AMP::pout << "HyprePCGSolver::apply: iterations: " << d_iNumberIterations << std::endl;
+        AMP::pout << "HyprePCGSolver::apply: convergence reason: "
+                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
 }
 
