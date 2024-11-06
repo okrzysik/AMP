@@ -13,10 +13,10 @@ namespace AMP {
 /********************************************************
  *  Explicit instantiations of Array                     *
  ********************************************************/
-template class Array<double, AMP::GPUFunctionTable, CudaDevAllocator<double>>;
-template class Array<double, AMP::GPUFunctionTable, CudaManagedAllocator<double>>;
-template class Array<float, AMP::GPUFunctionTable, CudaDevAllocator<float>>;
-template class Array<float, AMP::GPUFunctionTable, CudaManagedAllocator<float>>;
+template class Array<double, AMP::GPUFunctionTable, CudaDevAllocator<void>>;
+template class Array<double, AMP::GPUFunctionTable, CudaManagedAllocator<void>>;
+template class Array<float, AMP::GPUFunctionTable, CudaDevAllocator<void>>;
+template class Array<float, AMP::GPUFunctionTable, CudaManagedAllocator<void>>;
 
 
 } // namespace AMP

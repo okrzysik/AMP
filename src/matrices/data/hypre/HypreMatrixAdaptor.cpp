@@ -16,17 +16,17 @@ namespace AMP::LinearAlgebra {
 
 
 template void HypreMatrixAdaptor::initializeHypreMatrix<
-    CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>> );
+    CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>> );
 
 #ifdef USE_DEVICE
 template void HypreMatrixAdaptor::initializeHypreMatrix<
-    CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>> );
+    CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>> );
 
 template void HypreMatrixAdaptor::initializeHypreMatrix<
-    CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>> );
+    CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>> );
 #endif
 
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
@@ -46,15 +46,15 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     // Policy must match HypreCSRPolicy
     // need to match supported allocators depending on device support
     auto csrDataHost =
-        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<int>>>(
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>(
             matrixData );
 
 #ifdef USE_DEVICE
     auto csrDataManaged =
-        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<int>>>(
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>>(
             matrixData );
     auto csrDataDevice =
-        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<int>>>(
+        std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>>(
             matrixData );
 #else
     // Just default out these to nullptrs to make logic below simpler

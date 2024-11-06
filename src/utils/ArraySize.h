@@ -64,7 +64,7 @@ namespace AMP {
 
 // Forward declerations
 class FunctionTable;
-template<class TYPE, class FUN = FunctionTable, class Allocator = AMP::HostAllocator<TYPE>>
+template<class TYPE, class FUN = FunctionTable, class Allocator = AMP::HostAllocator<void>>
 class Array;
 
 

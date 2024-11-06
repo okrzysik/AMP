@@ -12,11 +12,11 @@ template class AMP::LinearAlgebra::ArrayVectorData<float>;
 
 #ifdef USE_DEVICE
 template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::DeviceAllocator<double>>;
+    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::DeviceAllocator<void>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::DeviceAllocator<float>>;
+    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::DeviceAllocator<void>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::ManagedAllocator<double>>;
+    ArrayVectorData<double, AMP::GPUFunctionTable, AMP::ManagedAllocator<void>>;
 template class AMP::LinearAlgebra::
-    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::ManagedAllocator<float>>;
+    ArrayVectorData<float, AMP::GPUFunctionTable, AMP::ManagedAllocator<void>>;
 #endif

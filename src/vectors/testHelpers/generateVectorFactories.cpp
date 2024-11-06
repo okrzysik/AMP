@@ -151,7 +151,7 @@ generateSimpleVectorFactory( const std::string &name, int N, bool global, const 
         factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
     } else if ( data == "gpu" ) {
 #ifdef USE_DEVICE
-        using ALLOC = ManagedAllocator<TYPE>;
+        using ALLOC = ManagedAllocator<void>;
         using DATA  = AMP::LinearAlgebra::VectorDataDefault<TYPE, ALLOC>;
         factory.reset( new SimpleVectorFactory<TYPE, VecOps, DATA>( N, global, name ) );
 #endif

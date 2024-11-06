@@ -13,9 +13,6 @@ void TestFunctionTable( AMP::UnitTest *ut,
                         AMP::Array<TYPE, FUN, ALLOC> &A,
                         AMP::Array<TYPE, FUN, ALLOC> &B )
 {
-    //    AMP::Array<TYPE, FUN, ALLOC> A;
-    //    AMP::Array<TYPE, FUN, ALLOC> B;
-
     bool pass     = true;
     double thresh = 1e-6;
     double val;
@@ -201,8 +198,8 @@ int main( int argc, char *argv[] )
     TestFunctionTable( &ut, A, B );
 
 #if USE_CUDA
-    AMP::Array<double, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<double>> C;
-    AMP::Array<double, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<double>> D;
+    AMP::Array<double, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<void>> C;
+    AMP::Array<double, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<void>> D;
     TestFunctionTable( &ut, C, D );
 #endif
 

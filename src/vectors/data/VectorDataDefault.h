@@ -18,18 +18,16 @@ class VectorDataIterator;
  * \details  VectorDataDefault is a default implementation of VectorData that stores
  * the local values as a single block of data on the CPU.
  */
-template<typename TYPE = double, class Allocator = AMP::HostAllocator<TYPE>>
+template<typename TYPE = double, class Allocator = AMP::HostAllocator<void>>
 class VectorDataDefault final : public VectorData
 {
 public: // Member types
-    using value_type     = TYPE;
-    using allocator_type = Allocator;
+    using value_type = TYPE;
+    using scalarAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<TYPE>;
 
 public: // Constructors
-    VectorDataDefault( size_t start,
-                       size_t localSize,
-                       size_t globalSize,
-                       const Allocator &alloc = Allocator() );
+    VectorDataDefault( size_t start, size_t localSize, size_t globalSize );
 
     VectorDataDefault( const VectorDataDefault & ) = delete;
 
@@ -176,14 +174,9 @@ public: // Write/read restart data
     void writeRestart( int64_t ) const override;
     VectorDataDefault( int64_t, AMP::IO::RestartManager * );
 
-
-protected:
-    VectorDataDefault( const Allocator &alloc = Allocator() ) : d_alloc( alloc ) {}
-
-
 private:
     TYPE *d_data = nullptr;
-    Allocator d_alloc;
+    scalarAllocator_t d_alloc;
 };
 
 
