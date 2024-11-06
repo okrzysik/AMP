@@ -294,42 +294,66 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE( "solve" );
-    // in this case we make the assumption we can access a EpetraMat for now
-    AMP_INSIST( d_pOperator, "ERROR: BoomerAMGSolver::apply() operator cannot be NULL" );
+    PROFILE( "BoomerAMGSolver::apply" );
+
+    AMP_INSIST( d_pOperator, "BoomerAMGSolver::apply() operator cannot be NULL" );
 
     HYPRE_SetMemoryLocation( d_memory_location );
     HYPRE_SetExecutionPolicy( d_exec_policy );
+    d_bCreationPhase = false;
 
-    if ( d_bUseZeroInitialGuess ) {
+    // Need to start this at zero so that this will run
+    // if called repeatedly (e.g. as precond inside other solver)
+    d_iNumberIterations = 0;
+
+    const auto f_norm = static_cast<HYPRE_Real>( f->L2Norm() );
+
+    // Zero rhs implies zero solution, bail out early
+    if ( f_norm == static_cast<HYPRE_Real>( 0.0 ) ) {
         u->zero();
+        d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
+        d_dResidualNorm     = 0.0;
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            AMP::pout << "BoomerAMGSolver::apply: solution is zero" << std::endl;
+        }
+        return;
     }
 
-    if ( d_bCreationPhase ) {
-        d_bCreationPhase = false;
+    // Compute initial residual, used mostly for reporting in this case
+    // since Hypre tracks this internally
+    // Can we get that value from Hypre and remove one global reduce?
+    std::shared_ptr<AMP::LinearAlgebra::Vector> r;
+    HYPRE_Real current_res;
+    if ( d_bUseZeroInitialGuess ) {
+        u->zero();
+        current_res = f_norm;
+    } else {
+        r = f->clone();
+        d_pOperator->residual( f, u, r );
+        current_res = static_cast<HYPRE_Real>( r->L2Norm() );
+    }
+    d_dInitialResidual = current_res;
+
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "BoomerAMGSolver::apply: initial L2Norm of solution vector: " << u->L2Norm()
+                  << std::endl;
+        AMP::pout << "BoomerAMGSolver::apply: initial L2Norm of rhs vector: " << f_norm
+                  << std::endl;
+        AMP::pout << "BoomerAMGSolver::apply: initial L2Norm of residual: " << current_res
+                  << std::endl;
+    }
+
+    // return if the residual is already low enough
+    // checkStoppingCriteria responsible for setting flags on convergence reason
+    if ( checkStoppingCriteria( current_res ) ) {
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            AMP::pout << "BoomerAMGSolver::apply: initial residual below tolerance" << std::endl;
+        }
+        return;
     }
 
     copyToHypre( u, d_hypre_sol );
     copyToHypre( f, d_hypre_rhs );
-
-    std::shared_ptr<AMP::LinearAlgebra::Vector> r;
-
-    if ( d_bComputeResidual ) {
-        r = f->clone();
-        d_pOperator->residual( f, u, r );
-        const auto initialResNorm = r->L2Norm();
-
-        if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "BoomerAMGSolver::apply(), L2 norm of residual before solve "
-                      << std::setprecision( 15 ) << initialResNorm << std::endl;
-        }
-    }
-
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        HYPRE_Real solution_norm( u->L2Norm() );
-        AMP::pout << "BoomerAMGSolver : before solve solution norm: " << std::setprecision( 15 )
-                  << solution_norm << std::endl;
-    }
 
     HYPRE_ParCSRMatrix parcsr_A;
     HYPRE_ParVector par_b;
@@ -348,8 +372,14 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     copyFromHypre( d_hypre_sol, u );
 
     // Check for NaNs in the solution (no communication necessary)
-    auto localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData() ).get<HYPRE_Real>();
-    AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
+    // is this needed? won't hypre_norm below be nan?
+    // auto localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData()
+    // ).get<HYPRE_Real>(); if ( localNorm != localNorm ) {
+    //     d_ConvergenceStatus = SolverStatus::DivergedOnNan;
+    // 	// Is communication to figure out if any ranks have NaNs
+    // 	// better than throwing an error?
+    // 	AMP_ERROR("NaN solution in BoomerAMGSolver");
+    // }
 
     // we are forced to update the state of u here
     // as Hypre is not going to change the state of a managed vector
@@ -357,27 +387,21 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // vector is a petsc managed vector being passed back to PETSc
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
+    // Query iteration count and store on AMP side
     HYPRE_BoomerAMGGetNumIterations( d_solver, &d_iNumberIterations );
-    HYPRE_Real hypre_norm;
-    HYPRE_BoomerAMGGetFinalRelativeResidualNorm( d_solver, &hypre_norm );
-    d_dResidualNorm = hypre_norm;
 
-    if ( d_dResidualNorm < d_dRelativeTolerance ) {
-        d_ConvergenceStatus = SolverStatus::ConvergedOnRelTol;
-    }
-
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        AMP::pout << "BoomerAMGSolver : after solve solution norm: " << std::setprecision( 15 )
-                  << u->L2Norm() << std::endl;
-    }
-
+    // Re-compute or query final residual
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, r );
-        if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "BoomerAMGSolver::apply(), L2 norm of residual after solve "
-                      << std::setprecision( 15 ) << r->L2Norm() << std::endl;
-        }
+        current_res = static_cast<HYPRE_Real>( r->L2Norm() );
+        checkStoppingCriteria( d_dResidualNorm );
+    } else {
+        HYPRE_BoomerAMGGetFinalRelativeResidualNorm( d_solver, &current_res );
     }
+
+    // Store final residual norm and update convergence flags
+    d_dResidualNorm = current_res;
+    checkStoppingCriteria( current_res );
 }
 
 } // namespace AMP::Solver

@@ -71,6 +71,34 @@ public:
         DivergedOther
     };
 
+    static std::string statusToString( SolverStatus status )
+    {
+        switch ( status ) {
+        case SolverStatus::ConvergedOnAbsTol:
+            return "ConvergedOnAbsTol";
+        case SolverStatus::ConvergedOnRelTol:
+            return "ConvergedOnRelTol";
+        case SolverStatus::ConvergedIterations:
+            return "ConvergedIterations";
+        case SolverStatus::ConvergedUserCondition:
+            return "ConvergedUserCondition";
+        case SolverStatus::DivergedMaxIterations:
+            return "DivergedMaxIterations";
+        case SolverStatus::DivergedLineSearch:
+            return "DivergedLineSearch";
+        case SolverStatus::DivergedStepSize:
+            return "DivergedStepSize";
+        case SolverStatus::DivergedFunctionCount:
+            return "DivergedFunctionCount";
+        case SolverStatus::DivergedOnNan:
+            return "DivergedOnNan";
+        case SolverStatus::DivergedNestedSolver:
+            return "DivergedNestedSolver";
+        default:
+            return "DivergedOther";
+        }
+    }
+
     /**
      * Solve the system \f$A(u) = f\f$.  This is a pure virtual function that the derived classes
      * need to provide an implementation of.
@@ -189,6 +217,11 @@ public:
     virtual void printStatistics( std::ostream &os = AMP::pout )
     {
         os << "Not implemented for this solver!" << std::endl;
+    }
+
+    bool getConverged( void ) const
+    {
+        return d_ConvergenceStatus <= SolverStatus::ConvergedUserCondition ? 1 : 0;
     }
 
     SolverStatus getConvergenceStatus( void ) const { return d_ConvergenceStatus; }

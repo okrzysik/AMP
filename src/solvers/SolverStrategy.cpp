@@ -84,7 +84,6 @@ bool SolverStrategy::checkStoppingCriteria( AMP::Scalar res_norm, bool check_ite
     d_ConvergenceStatus   = SolverStatus::DivergedOther;
     d_dResidualNorm       = res_norm;
     const auto res_norm_d = static_cast<double>( res_norm );
-    AMP_ASSERT( res_norm == res_norm_d );
 
     // check stopping criteria and ensure more restrictive categories
     // are tested first (e.g. don't set diverged max iters if solver
