@@ -48,12 +48,12 @@
     // Allocator instatiator is responsible for adding all supported
     // allocator types for a given policy and forwarding along
     #ifdef USE_DEVICE
-        #define INSTANTIATE_ALLOCS( policy )                         \
-            INSTANTIATE_SPACES( policy, AMP::HostAllocator<int> )    \
-            INSTANTIATE_SPACES( policy, AMP::ManagedAllocator<int> ) \
-            INSTANTIATE_SPACES( policy, AMP::DeviceAllocator<int> )
+        #define INSTANTIATE_ALLOCS( policy )                          \
+            INSTANTIATE_SPACES( policy, AMP::HostAllocator<void> )    \
+            INSTANTIATE_SPACES( policy, AMP::ManagedAllocator<void> ) \
+            INSTANTIATE_SPACES( policy, AMP::DeviceAllocator<void> )
     #else
-        #define INSTANTIATE_ALLOCS( policy ) INSTANTIATE_SPACES( policy, AMP::HostAllocator<int> )
+        #define INSTANTIATE_ALLOCS( policy ) INSTANTIATE_SPACES( policy, AMP::HostAllocator<void> )
     #endif
 
 // Policy instantiator starts the chain and forwards

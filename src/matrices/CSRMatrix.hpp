@@ -26,7 +26,7 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
     : Matrix( params )
 {
 #if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
-    if ( std::is_same<Allocator, AMP::HostAllocator<int>>::value ) {
+    if ( std::is_same<Allocator, AMP::HostAllocator<void>>::value ) {
         AMP::pout << "Using default operations" << std::endl;
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     } else {
@@ -44,7 +44,7 @@ template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
 #if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
-    if ( std::is_same<Allocator, AMP::HostAllocator<int>>::value ) {
+    if ( std::is_same<Allocator, AMP::HostAllocator<void>>::value ) {
         AMP::pout << "Using default operations" << std::endl;
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     } else {

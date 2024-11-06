@@ -15,18 +15,18 @@
 namespace AMP::LinearAlgebra {
 
 
-template void HypreMatrixAdaptor::initializeHypreMatrix<
-    CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>> );
+template void
+HypreMatrixAdaptor::initializeHypreMatrix<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>, const bool );
 
 #ifdef USE_DEVICE
 template void HypreMatrixAdaptor::initializeHypreMatrix<
     CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>> );
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>>, const bool );
 
 template void HypreMatrixAdaptor::initializeHypreMatrix<
     CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>> );
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>>, const bool );
 #endif
 
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )

@@ -177,9 +177,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
 
 #ifdef USE_DEVICE
-    using Alloc = AMP::ManagedAllocator<int>;
+    using Alloc = AMP::ManagedAllocator<void>;
 #else
-    using Alloc  = AMP::HostAllocator<int>;
+    using Alloc = AMP::HostAllocator<void>;
 #endif
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Alloc>>( csrParams );

@@ -23,6 +23,7 @@ MemoryType getMemoryType( const void *ptr )
 #endif
     return type;
 }
+
 std::string getString( MemoryType type )
 {
     if ( type == MemoryType::unregistered )
