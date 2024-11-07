@@ -74,7 +74,7 @@ class Range final
 {
 public:
     //! Empty constructor
-    CONSTEXPR Range() : i( 0 ), j( -1 ), k( 1 ) {}
+    CONSTEXPR Range() : i( 0 ), j( 0 ), k( 1 ) {}
 
     /*!
      * Create a range i:k:j (or i:j)

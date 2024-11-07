@@ -1,10 +1,6 @@
-#include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
-#include "AMP/utils/FunctionTable.h"
-#include "AMP/utils/FunctionTable.hpp"
 #include "AMP/utils/cuda/CudaAllocator.h"
 #include "AMP/utils/cuda/GPUFunctionTable.h"
-#include "AMP/utils/cuda/GPUFunctionTable.hpp"
 
 
 namespace AMP {

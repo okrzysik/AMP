@@ -1,9 +1,5 @@
-#include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
-#include "AMP/utils/FunctionTable.h"
-#include "AMP/utils/FunctionTable.hpp"
 #include "AMP/utils/hip/GPUFunctionTable.h"
-#include "AMP/utils/hip/GPUFunctionTable.hpp"
 #include "AMP/utils/hip/HipAllocator.h"
 
 namespace AMP {
