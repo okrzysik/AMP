@@ -61,6 +61,10 @@ void TFQMRSolver<T>::getFromInput( std::shared_ptr<const AMP::Database> db )
     if ( d_bUsesPreconditioner ) {
         d_preconditioner_side = db->getWithDefault<std::string>( "preconditioner_side", "right" );
     }
+
+    // TFQMR only has bounds on residual norm naturally
+    // Default to manually computing residual at the end
+    d_bComputeResidual = db->getWithDefault<bool>( "compute_residual", true );
 }
 
 /****************************************************************
@@ -293,7 +297,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // Store final residual should it be queried elsewhere
     d_dResidualNorm = res_norm;
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
+    if ( d_iDebugPrintInfoLevel > 0 ) {
         AMP::pout << "TFQMRSolver<T>::apply: final L2Norm of solution: " << x->L2Norm()
                   << std::endl;
         AMP::pout << "TFQMRSolver<T>::apply: final L2Norm of residual: " << res_norm << std::endl;
