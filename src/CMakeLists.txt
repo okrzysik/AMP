@@ -1,23 +1,30 @@
-# Helper function to set source file properties to use nvcc wrapper when necessary
-FUNCTION( SET_NVCC )
-    IF ( USE_CUDA AND USE_KOKKOS )
+# Helper function to set source file properties to use device compiler when necessary
+FUNCTION( SET_DEVICE_COMPILER )
+    IF ( USE_DEVICE )
+        IF ( USE_CUDA )
+            set(DEVICE_LANG CUDA)
+        ENDIF()
+    
+        IF ( USE_HIP )
+            set(DEVICE_LANG HIP)
+        ENDIF()
+          
         FOREACH( tmp ${ARGV} )
             IF ( IS_DIRECTORY "${tmp}" )
                 FILE( GLOB TMP "${tmp}/*.cc" "${tmp}/*.cpp" "${tmp}/*.cxx" "${tmp}/*.C" )
-                SET_SOURCE_FILES_PROPERTIES( ${TMP} PROPERTIES LANGUAGE CUDA )
+                SET_SOURCE_FILES_PROPERTIES( ${TMP} PROPERTIES LANGUAGE ${DEVICE_LANG} )
             ELSEIF ( IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${tmp}" )
                 FILE( GLOB TMP "${CMAKE_CURRENT_SOURCE_DIR}/${tmp}/*.cc"
                                "${CMAKE_CURRENT_SOURCE_DIR}/${tmp}/*.cpp"
                                "${CMAKE_CURRENT_SOURCE_DIR}/${tmp}/*.cxx"
                                "${CMAKE_CURRENT_SOURCE_DIR}/${tmp}/*.C" )
-                SET_SOURCE_FILES_PROPERTIES( ${TMP} PROPERTIES LANGUAGE CUDA )
+                SET_SOURCE_FILES_PROPERTIES( ${TMP} PROPERTIES LANGUAGE ${DEVICE_LANG} )
             ELSE()
-                SET_SOURCE_FILES_PROPERTIES( ${tmp} PROPERTIES LANGUAGE CUDA )
+                SET_SOURCE_FILES_PROPERTIES( ${tmp} PROPERTIES LANGUAGE ${DEVICE_LANG} )
             ENDIF()
         ENDFOREACH()
     ENDIF()
 ENDFUNCTION()
-
 
 # Set the fortran module directory (and flags)
 IF ( CMAKE_Fortran_COMPILER )

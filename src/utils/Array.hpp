@@ -667,18 +667,6 @@ void Array<TYPE, FUN, Allocator>::view2( const ArraySize &N, std::shared_ptr<TYP
     d_ptr  = data;
     d_data = d_ptr.get();
 }
-template<class TYPE, class FUN, class Allocator>
-void Array<TYPE, FUN, Allocator>::viewRaw( const ArraySize &N,
-                                           TYPE *data,
-                                           bool isCopyable,
-                                           bool isFixedSize )
-{
-    d_isCopyable  = isCopyable;
-    d_isFixedSize = isFixedSize;
-    d_ptr.reset();
-    d_size = N;
-    d_data = data;
-}
 
 
 /********************************************************

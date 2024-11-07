@@ -199,7 +199,7 @@ public: // Views/copies/subset
      * @param isCopyable    Once the view is created, can the array be copied
      * @param isFixedSize   Once the view is created, is the array size fixed
      */
-    ARRAY_INLINE void viewRaw(
+    void viewRaw(
         int ndim, const size_t *dims, TYPE *data, bool isCopyable = true, bool isFixedSize = true )
     {
         viewRaw( ArraySize( ndim, dims ), data, isCopyable, isFixedSize );
@@ -217,7 +217,14 @@ public: // Views/copies/subset
      * @param isCopyable    Once the view is created, can the array be copied
      * @param isFixedSize   Once the view is created, is the array size fixed
      */
-    void viewRaw( const ArraySize &N, TYPE *data, bool isCopyable = true, bool isFixedSize = true );
+    void viewRaw( const ArraySize &N, TYPE *data, bool isCopyable = true, bool isFixedSize = true )
+    {
+        d_isCopyable  = isCopyable;
+        d_isFixedSize = isFixedSize;
+        d_ptr.reset();
+        d_size = N;
+        d_data = data;
+    }
 
     /*!
      * Create an array view of the given data (expert use only).
@@ -229,7 +236,7 @@ public: // Views/copies/subset
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    static ARRAY_INLINE Array staticView( const ArraySize &N, TYPE *data )
+    static Array staticView( const ArraySize &N, TYPE *data )
     {
         Array x;
         x.viewRaw( N, data, true, true );
@@ -605,10 +612,10 @@ public: // Accessors
     ARRAY_INLINE const TYPE *end() const { return d_data + d_size.length(); }
 
     //! Return the pointer to the raw data
-    ARRAY_INLINE std::shared_ptr<TYPE> getPtr() { return d_ptr; }
+    std::shared_ptr<TYPE> getPtr() { return d_ptr; }
 
     //! Return the pointer to the raw data
-    ARRAY_INLINE std::shared_ptr<const TYPE> getPtr() const { return d_ptr; }
+    std::shared_ptr<const TYPE> getPtr() const { return d_ptr; }
 
     //! Return the pointer to the raw data
     ARRAY_INLINE TYPE *data() { return d_data; }
@@ -623,7 +630,7 @@ public: // Operator overloading
     bool operator==( const Array &rhs ) const;
 
     //! Check if two matrices are not equal
-    ARRAY_INLINE bool operator!=( const Array &rhs ) const { return !this->operator==( rhs ); }
+    bool operator!=( const Array &rhs ) const { return !this->operator==( rhs ); }
 
     //! Add another array
     Array &operator+=( const Array &rhs );
