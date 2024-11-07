@@ -54,26 +54,13 @@ void ArrayTestWithAllocators( AMP::UnitTest &ut )
     }
 }
 
-template<typename T>
-using ReboundManagedAllocator =
-    typename std::allocator_traits<AMP::CudaManagedAllocator<double>>::template rebind_alloc<T>;
-
-template<typename T>
-using ReboundDevAllocator =
-    typename std::allocator_traits<AMP::CudaDevAllocator<double>>::template rebind_alloc<T>;
-
-
 int main( int argc, char *argv[] )
 {
     // Declare Arrays and utils
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    ArrayTestWithAllocators<double,
-                            AMP::CudaManagedAllocator<double>,
-                            AMP::CudaDevAllocator<double>>( ut );
-
-    ArrayTestWithAllocators<float, ReboundManagedAllocator<float>, ReboundDevAllocator<float>>(
+    ArrayTestWithAllocators<double, AMP::CudaManagedAllocator<void>, AMP::CudaDevAllocator<void>>(
         ut );
 
     ut.report();

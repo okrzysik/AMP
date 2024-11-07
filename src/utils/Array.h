@@ -27,6 +27,9 @@ public: // Typedefs
     typedef TYPE value_type;
     typedef FUN function_table;
     static_assert( !std::is_same_v<TYPE, std::_Bit_reference> );
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+    using scalarAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<TYPE>;
 
 public: // Constructors / assignment operators
     /*!
@@ -196,7 +199,7 @@ public: // Views/copies/subset
      * @param isCopyable    Once the view is created, can the array be copied
      * @param isFixedSize   Once the view is created, is the array size fixed
      */
-    ARRAY_INLINE void viewRaw(
+    void viewRaw(
         int ndim, const size_t *dims, TYPE *data, bool isCopyable = true, bool isFixedSize = true )
     {
         viewRaw( ArraySize( ndim, dims ), data, isCopyable, isFixedSize );
@@ -214,7 +217,14 @@ public: // Views/copies/subset
      * @param isCopyable    Once the view is created, can the array be copied
      * @param isFixedSize   Once the view is created, is the array size fixed
      */
-    void viewRaw( const ArraySize &N, TYPE *data, bool isCopyable = true, bool isFixedSize = true );
+    void viewRaw( const ArraySize &N, TYPE *data, bool isCopyable = true, bool isFixedSize = true )
+    {
+        d_isCopyable  = isCopyable;
+        d_isFixedSize = isFixedSize;
+        d_ptr.reset();
+        d_size = N;
+        d_data = data;
+    }
 
     /*!
      * Create an array view of the given data (expert use only).
@@ -226,7 +236,7 @@ public: // Views/copies/subset
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    static ARRAY_INLINE Array staticView( const ArraySize &N, TYPE *data )
+    static Array staticView( const ArraySize &N, TYPE *data )
     {
         Array x;
         x.viewRaw( N, data, true, true );
@@ -602,10 +612,10 @@ public: // Accessors
     ARRAY_INLINE const TYPE *end() const { return d_data + d_size.length(); }
 
     //! Return the pointer to the raw data
-    ARRAY_INLINE std::shared_ptr<TYPE> getPtr() { return d_ptr; }
+    std::shared_ptr<TYPE> getPtr() { return d_ptr; }
 
     //! Return the pointer to the raw data
-    ARRAY_INLINE std::shared_ptr<const TYPE> getPtr() const { return d_ptr; }
+    std::shared_ptr<const TYPE> getPtr() const { return d_ptr; }
 
     //! Return the pointer to the raw data
     ARRAY_INLINE TYPE *data() { return d_data; }
@@ -620,7 +630,7 @@ public: // Operator overloading
     bool operator==( const Array &rhs ) const;
 
     //! Check if two matrices are not equal
-    ARRAY_INLINE bool operator!=( const Array &rhs ) const { return !this->operator==( rhs ); }
+    bool operator!=( const Array &rhs ) const { return !this->operator==( rhs ); }
 
     //! Add another array
     Array &operator+=( const Array &rhs );
@@ -783,7 +793,7 @@ public:
     size_t unpack( const std::byte * );
 
 private:
-    Allocator d_alloc;
+    scalarAllocator_t d_alloc;
     bool d_isCopyable;           // Can the array be copied
     bool d_isFixedSize;          // Can the array be resized
     ArraySize d_size;            // Size of each dimension
@@ -804,7 +814,7 @@ private:
     class Deleter
     {
     public:
-        Deleter( const Allocator &alloc, size_t N ) : d_alloc( alloc ), d_N( N ) {}
+        Deleter( const scalarAllocator_t &alloc, size_t N ) : d_alloc( alloc ), d_N( N ) {}
         void operator()( TYPE *p )
         {
             if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
@@ -815,7 +825,7 @@ private:
         }
 
     private:
-        Allocator d_alloc;
+        scalarAllocator_t d_alloc;
         size_t d_N;
     };
 };

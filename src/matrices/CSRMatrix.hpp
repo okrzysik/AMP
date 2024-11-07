@@ -99,6 +99,7 @@ Vector::shared_ptr CSRMatrix<Policy, Allocator>::getRightVector() const
                    ->getRightVariable();
     return createVector( getRightDOFManager(), var );
 }
+
 template<typename Policy, typename Allocator>
 Vector::shared_ptr CSRMatrix<Policy, Allocator>::getLeftVector() const
 {

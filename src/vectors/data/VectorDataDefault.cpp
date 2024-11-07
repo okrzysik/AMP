@@ -8,8 +8,8 @@ template class AMP::LinearAlgebra::VectorDataDefault<double>;
 template class AMP::LinearAlgebra::VectorDataDefault<float>;
 
 #ifdef USE_DEVICE
-template class AMP::LinearAlgebra::VectorDataDefault<double, AMP::DeviceAllocator<double>>;
-template class AMP::LinearAlgebra::VectorDataDefault<float, AMP::DeviceAllocator<float>>;
-template class AMP::LinearAlgebra::VectorDataDefault<double, AMP::ManagedAllocator<double>>;
-template class AMP::LinearAlgebra::VectorDataDefault<float, AMP::ManagedAllocator<float>>;
+template class AMP::LinearAlgebra::VectorDataDefault<double, AMP::DeviceAllocator<void>>;
+template class AMP::LinearAlgebra::VectorDataDefault<float, AMP::DeviceAllocator<void>>;
+template class AMP::LinearAlgebra::VectorDataDefault<double, AMP::ManagedAllocator<void>>;
+template class AMP::LinearAlgebra::VectorDataDefault<float, AMP::ManagedAllocator<void>>;
 #endif

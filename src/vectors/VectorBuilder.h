@@ -164,7 +164,7 @@ Vector::shared_ptr createSimpleVector( std::shared_ptr<Variable> var,
  * \param    localSize  The number of elements in the vector on this processor
  * \param    var The variable name for the new vector
  */
-template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<T>>
+template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<void>>
 Vector::shared_ptr createArrayVector( const ArraySize &localSize, const std::string &var );
 
 /** \brief    Cre
@@ -173,7 +173,7 @@ ate a ArrayVector
  * \param    localSize  The number of elements in the vector on this processor
  * \param    var The variable associated with the new vector
  */
-template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<T>>
+template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<void>>
 Vector::shared_ptr createArrayVector( const ArraySize &localSize, std::shared_ptr<Variable> var );
 
 
@@ -182,7 +182,7 @@ Vector::shared_ptr createArrayVector( const ArraySize &localSize, std::shared_pt
  * \param    localSize  The number of elements in the vector on this processor
  * \param    var The variable associated with the new vector
  */
-template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<T>>
+template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<void>>
 Vector::shared_ptr createArrayVector( const ArraySize &localSize,
                                       const ArraySize &blockIndex,
                                       const AMP_MPI &comm,

@@ -198,8 +198,8 @@ int main( int argc, char *argv[] )
     TestFunctionTable( &ut, A, B );
 
 #if USE_HIP
-    AMP::Array<double, AMP::GPUFunctionTable, AMP::HipManagedAllocator<double>> C;
-    AMP::Array<double, AMP::GPUFunctionTable, AMP::HipManagedAllocator<double>> D;
+    AMP::Array<double, AMP::GPUFunctionTable, AMP::HipManagedAllocator<void>> C;
+    AMP::Array<double, AMP::GPUFunctionTable, AMP::HipManagedAllocator<void>> D;
     TestFunctionTable( &ut, C, D );
 #endif
 

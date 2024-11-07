@@ -13,9 +13,11 @@ namespace AMP::LinearAlgebra {
  * \details  This is a concrete class that stores a dense local matrix.
  *    This is not a distributed matrix and requires that the comm is AMP_COMM_SELF.
  */
-template<typename Policy, typename Allocator = AMP::HostAllocator<int>>
+template<typename Policy, typename Allocator = AMP::HostAllocator<void>>
 class CSRMatrix : public Matrix
 {
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
 public:
     CSRMatrix() = delete;
 
