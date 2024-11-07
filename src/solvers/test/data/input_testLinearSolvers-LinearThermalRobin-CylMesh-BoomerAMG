@@ -137,7 +137,7 @@ LinearSolver{
   chebyshev_fraction     = 0.3
   keep_transpose         = 1
   strong_threshold       = 0.5
-  print_info_level       = 1
+  print_info_level       = 2
 }
 
 

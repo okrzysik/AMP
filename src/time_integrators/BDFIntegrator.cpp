@@ -2008,7 +2008,9 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     }
 
     d_solver->apply( rhs, d_solution_vector );
-    d_solver_retcode = d_solver->getConvergenceStatus();
+    const auto convStatus = d_solver->getConvergenceStatus();
+    d_solver_retcode =
+        convStatus <= AMP::Solver::SolverStrategy::SolverStatus::ConvergedUserCondition ? 1 : 0;
 
     if ( d_solution_scaling ) {
         d_solution_vector->multiply( *d_solution_vector, *d_solution_scaling );

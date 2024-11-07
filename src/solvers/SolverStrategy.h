@@ -71,6 +71,34 @@ public:
         DivergedOther
     };
 
+    static std::string statusToString( SolverStatus status )
+    {
+        switch ( status ) {
+        case SolverStatus::ConvergedOnAbsTol:
+            return "ConvergedOnAbsTol";
+        case SolverStatus::ConvergedOnRelTol:
+            return "ConvergedOnRelTol";
+        case SolverStatus::ConvergedIterations:
+            return "ConvergedIterations";
+        case SolverStatus::ConvergedUserCondition:
+            return "ConvergedUserCondition";
+        case SolverStatus::DivergedMaxIterations:
+            return "DivergedMaxIterations";
+        case SolverStatus::DivergedLineSearch:
+            return "DivergedLineSearch";
+        case SolverStatus::DivergedStepSize:
+            return "DivergedStepSize";
+        case SolverStatus::DivergedFunctionCount:
+            return "DivergedFunctionCount";
+        case SolverStatus::DivergedOnNan:
+            return "DivergedOnNan";
+        case SolverStatus::DivergedNestedSolver:
+            return "DivergedNestedSolver";
+        default:
+            return "DivergedOther";
+        }
+    }
+
     /**
      * Solve the system \f$A(u) = f\f$.  This is a pure virtual function that the derived classes
      * need to provide an implementation of.
@@ -174,23 +202,14 @@ public:
      */
     virtual std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_pOperator; }
 
-    /*!
-     *  Get absolute tolerance for solver.
-     */
     AMP::Scalar getAbsoluteTolerance() const { return ( d_dAbsoluteTolerance ); }
 
-    /*!
-     *  Set absolute tolerance for nonlinear solver.
-     */
     virtual void setAbsoluteTolerance( AMP::Scalar abs_tol ) { d_dAbsoluteTolerance = abs_tol; }
 
     AMP::Scalar getRelativeTolerance() const { return ( d_dRelativeTolerance ); }
 
     virtual void setRelativeTolerance( AMP::Scalar rel_tol ) { d_dRelativeTolerance = rel_tol; }
 
-    /**
-     * Set the maximum number of iterations for the solver
-     */
     virtual void setMaxIterations( const int max_iterations ) { d_iMaxIterations = max_iterations; }
 
     int getMaxIterations( void ) const { return d_iMaxIterations; }
@@ -200,24 +219,23 @@ public:
         os << "Not implemented for this solver!" << std::endl;
     }
 
-    int getConvergenceStatus( void ) const
+    bool getConverged( void ) const
     {
         return d_ConvergenceStatus <= SolverStatus::ConvergedUserCondition ? 1 : 0;
     }
 
+    SolverStatus getConvergenceStatus( void ) const { return d_ConvergenceStatus; }
+
+    std::string getConvergenceStatusString( void ) const
+    {
+        return statusToString( d_ConvergenceStatus );
+    }
+
     virtual void print( std::ostream &os ) { NULL_USE( os ); }
 
-    /**
-     * Return the residual norm.
-     */
     virtual AMP::Scalar getResidualNorm( void ) const { return d_dResidualNorm; }
 
     virtual AMP::Scalar getInitialResidual( void ) const { return d_dInitialResidual; }
-
-    /**
-     * returns whether the solver has converged or not
-     */
-    virtual bool checkConvergence( std::shared_ptr<const AMP::LinearAlgebra::Vector> residual );
 
     virtual const std::vector<int> &getIterationHistory( void ) { return d_iterationHistory; }
 
@@ -234,6 +252,7 @@ public:
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
+    virtual bool checkStoppingCriteria( AMP::Scalar res_norm, bool check_iters = true );
 
     SolverStatus d_ConvergenceStatus = SolverStatus::DivergedOther;
 

@@ -334,7 +334,7 @@ template<typename T>
 void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                            std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE( "solve" );
+    PROFILE( "NonlinearKrylovAccelerator<T>::apply" );
     d_ConvergenceStatus = AMP::Solver::SolverStrategy::SolverStatus::DivergedOther;
     AMP_ASSERT( u.get() != nullptr );
     AMP_ASSERT( d_pOperator != nullptr );

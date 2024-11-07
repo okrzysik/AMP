@@ -94,13 +94,15 @@ void GMRESSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
 
 /****************************************************************
  *  Solve                                                        *
- * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
 template<typename T>
 void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                             std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE( "solve" );
+    PROFILE( "GMRESSolver<T>::apply" );
+
+    // Always zero before checking stopping criteria for any reason
+    d_iNumberIterations = 0;
 
     // Check input vector states
     AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
@@ -108,23 +110,17 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
-    // compute the norm of the rhs in order to compute
-    // the termination criterion
-    auto f_norm = static_cast<T>( f->L2Norm() );
+    const auto f_norm = static_cast<T>( f->L2Norm() );
 
-    // if the rhs is zero we try to converge to the relative convergence
-    // NOTE:: update this test for a better 'almost equal'
-    if ( f_norm < std::numeric_limits<T>::epsilon() ) {
-        f_norm = static_cast<T>( 1.0 );
-    }
-
-    const T terminate_tol = std::max( static_cast<T>( d_dRelativeTolerance * f_norm ),
-                                      static_cast<T>( d_dAbsoluteTolerance ) );
-
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        AMP::pout << "GMRESSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
-                  << std::endl;
-        AMP::pout << "GMRESSolver<T>::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
+    // Zero rhs implies zero solution, bail out early
+    if ( f_norm == static_cast<T>( 0.0 ) ) {
+        u->zero();
+        d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
+        d_dResidualNorm     = 0.0;
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            AMP::pout << "GMRESSolver<T>::apply: solution is zero" << std::endl;
+        }
+        return;
     }
 
     if ( d_pOperator ) {
@@ -149,21 +145,22 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // compute the initial residual
     computeInitialResidual( d_bUseZeroInitialGuess, f, u, z, res );
 
-    // compute the current residual norm
-    const auto beta = static_cast<T>( res->L2Norm() );
+    // compute residual norm
+    auto beta          = static_cast<T>( res->L2Norm() );
+    d_dInitialResidual = beta;
 
-    if ( d_iDebugPrintInfoLevel > 0 ) {
-        AMP::pout << "GMRES: initial residual " << beta << std::endl;
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of solution vector: " << u->L2Norm()
+                  << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of rhs vector: " << f_norm << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of residual: " << beta << std::endl;
     }
 
     // return if the residual is already low enough
-    if ( beta < terminate_tol ) {
+    if ( checkStoppingCriteria( beta ) ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "GMRESSolver<T>::solve: initial residual norm " << beta
-                      << " is below convergence tolerance: " << terminate_tol << std::endl;
+            AMP::pout << "GMRESSolver<T>::apply: initial residual below tolerance" << std::endl;
         }
-
-        // provide history (iterations, conv history etc)
         return;
     }
 
@@ -179,9 +176,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto v_norm = beta;
 
     int k = 0;
-    for ( d_iNumberIterations = 0;
-          ( d_iNumberIterations < d_iMaxIterations ) && ( v_norm > terminate_tol );
-          ++d_iNumberIterations ) {
+    for ( d_iNumberIterations = 0; d_iNumberIterations < d_iMaxIterations; ++d_iNumberIterations ) {
 
         AMP::LinearAlgebra::Vector::shared_ptr v;
         AMP::LinearAlgebra::Vector::shared_ptr zb;
@@ -270,13 +265,17 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // this is the norm of the residual thanks to the Givens rotations
         v_norm = std::fabs( d_dw[k + 1] );
 
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "GMRES: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
                       << v_norm << std::endl;
         }
 
+        if ( checkStoppingCriteria( v_norm ) ) {
+            break;
+        }
+
         ++k;
-        if ( ( k == d_iMaxKrylovDimension ) && ( d_iNumberIterations != d_iMaxIterations - 1 ) ) {
+        if ( k == d_iMaxKrylovDimension ) {
             if ( d_bRestart ) {
                 // with restarts, you start over with the last solution as new initial guess to
                 // compute the residal: r^new = Ax^old - b
@@ -295,8 +294,13 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 d_dw[0] = v_norm;
                 ++d_restarts;
                 k = 0;
-            } else
+            } else {
+                // set diverged reason
+                d_ConvergenceStatus = SolverStatus::DivergedOther;
+                AMP_WARNING( "GMRESSolver<T>::apply: Maximum Krylov dimension hit with restarts "
+                             "disabled" );
                 break;
+            }
         }
     }
 
@@ -310,15 +314,23 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    if ( d_bComputeResidual || ( d_iDebugPrintInfoLevel > 2 ) ) {
+    if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, res );
-        d_dResidualNorm = static_cast<T>( res->L2Norm() );
-    } else
-        d_dResidualNorm = v_norm;
+        v_norm = static_cast<T>( res->L2Norm() );
+        // final check updates flags if needed
+        checkStoppingCriteria( v_norm );
+    }
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        AMP::pout << "GMRES: Final residual: " << d_dResidualNorm << std::endl;
-        AMP::pout << "L2Norm of solution: " << u->L2Norm() << std::endl;
+    // Store final residual should it be queried elsewhere
+    d_dResidualNorm = v_norm;
+
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        AMP::pout << "GMRESSolver<T>::apply: final L2Norm of solution: " << u->L2Norm()
+                  << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: final L2Norm of residual: " << v_norm << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: convergence reason: "
+                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
 }
 
@@ -443,7 +455,7 @@ void GMRESSolver<T>::computeInitialResidual( bool use_zero_guess,
         } else {
             res->copyVector( f );
         }
-        u->setToScalar( static_cast<T>( 0.0 ) );
+        u->zero();
     } else {
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
             d_pOperator->residual( f, u, tmp );
