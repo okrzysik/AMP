@@ -194,7 +194,6 @@ int testPetscSNESSolver_NonlinearThermal_1( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
 
     std::vector<std::string> exeNames;
     // exeNames.push_back("testPetscSNESSolver-NonlinearThermal-cylinder_kIsOne");

@@ -238,7 +238,6 @@ int testPetscSNESSolver_NonlinearFickSoret_2( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
 
     std::vector<double> results;
     fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-1", results );

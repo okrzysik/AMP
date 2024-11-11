@@ -488,10 +488,6 @@ bool Database::is_integral() const
 }
 
 
-// Register Database
-REGISTER_KEYDATA( Database, Database );
-
-
 // Print a database to an output stream
 template<class TYPE>
 static void printVar( const std::string &name,

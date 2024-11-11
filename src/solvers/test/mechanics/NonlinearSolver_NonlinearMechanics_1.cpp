@@ -124,7 +124,6 @@ int NonlinearSolver_NonlinearMechanics_1( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
     std::vector<std::string> inputNames;
 #ifdef AMP_USE_TRILINOS_ML
     #ifdef AMP_USE_PETSC

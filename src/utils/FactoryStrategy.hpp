@@ -48,7 +48,7 @@ public:
     }
 
     //! Clear factory data and all registered functions
-    static void clear() { getFactory().d_factories.clear(); }
+    static void clear() { getFactory().d_factories = std::map<std::string, FunctionPtr>(); }
 
     static std::vector<std::string> getKeys()
     {
@@ -72,8 +72,13 @@ public:
 
 protected:
     //! Private constructor
-    FactoryStrategy() { AMP::AMPManager::registerShutdown( FactoryStrategy::clear ); }
-
+    FactoryStrategy()
+    {
+        registerDefault();
+        AMP::AMPManager::registerShutdown( FactoryStrategy::clear );
+    }
+    //! Register default factories (new factories must instantiate this function, maybe be empty)
+    void registerDefault();
 
 protected:
     std::map<std::string, FunctionPtr> d_factories; //! maps from names to factories
