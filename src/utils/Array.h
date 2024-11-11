@@ -27,7 +27,8 @@ public: // Typedefs
     typedef TYPE value_type;
     typedef FUN function_table;
     static_assert( !std::is_same_v<TYPE, std::_Bit_reference> );
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+    static_assert( std::is_same_v<typename Allocator::value_type, void> ||
+                   std::is_same_v<typename Allocator::value_type, TYPE> );
     using scalarAllocator_t =
         typename std::allocator_traits<Allocator>::template rebind_alloc<TYPE>;
 
