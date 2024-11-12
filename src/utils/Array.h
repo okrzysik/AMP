@@ -302,9 +302,9 @@ public: // Views/copies/subset
      * Copy and convert data from this array to a new array
      */
     template<class TYPE2>
-    Array<TYPE2, FUN, AMP::HostAllocator<TYPE2>> inline cloneTo() const
+    Array<TYPE2, FUN, AMP::HostAllocator<void>> inline cloneTo() const
     {
-        Array<TYPE2, FUN, AMP::HostAllocator<TYPE2>> dst( this->size() );
+        Array<TYPE2, FUN, AMP::HostAllocator<void>> dst( this->size() );
         copyTo( dst.data() );
         return dst;
     }
@@ -314,7 +314,7 @@ public: // Views/copies/subset
      * Reinterpret the array as a new type (use with caution)
      */
     template<class TYPE2>
-    Array<TYPE2, FUN, AMP::HostAllocator<TYPE2>> inline reinterpretArray() const
+    Array<TYPE2, FUN, AMP::HostAllocator<void>> inline reinterpretArray() const
     {
         static_assert( sizeof( TYPE ) == sizeof( TYPE2 ) );
         auto ptr = std::reinterpret_pointer_cast<TYPE2>( std::const_pointer_cast<TYPE>( d_ptr ) );
