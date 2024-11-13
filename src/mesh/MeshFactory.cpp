@@ -147,3 +147,17 @@ std::shared_ptr<AMP::Mesh::Mesh> AMP::Mesh::MeshFactory::create( int64_t fid,
     }
     return mesh;
 }
+
+
+/********************************************************
+ *  Default factory functions                            *
+ ********************************************************/
+template<>
+void AMP::FactoryStrategy<AMP::Mesh::Mesh,
+                          std::shared_ptr<AMP::Mesh::MeshParameters>>::registerDefault()
+{
+}
+template<>
+void AMP::FactoryStrategy<AMP::Mesh::Mesh, int64_t, AMP::IO::RestartManager *>::registerDefault()
+{
+}

@@ -164,7 +164,6 @@ int testElasticThermalPatch( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
 
     std::vector<std::string> mesh_files;
     mesh_files.emplace_back( "testElasticThermalPatch-1" );

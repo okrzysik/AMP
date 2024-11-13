@@ -4,7 +4,6 @@
 #include "AMP/IO/HDF5.h"
 #include "AMP/utils/AMP_MPI_pack.hpp"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/FactoryStrategy.hpp"
 #include "AMP/utils/UtilityMacros.h"
 
 #include <cstddef>
@@ -50,20 +49,6 @@
 
 
 namespace AMP {
-
-
-/********************************************************************
- * Macro to register KeyData with the factory                        *
- ********************************************************************/
-#define REGISTER_KEYDATA( TYPE, CLASS_NAME )                                  \
-    static struct CLASS_NAME##_INIT {                                         \
-        CLASS_NAME##_INIT()                                                   \
-        {                                                                     \
-            auto fun            = []() { return std::make_unique<TYPE>(); };  \
-            constexpr auto type = AMP::getTypeID<TYPE>();                     \
-            AMP::FactoryStrategy<KeyData>::registerFactory( type.name, fun ); \
-        }                                                                     \
-    } CLASS_NAME##_init
 
 
 /********************************************************************

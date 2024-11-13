@@ -812,7 +812,6 @@ int testSubchannelSolve( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
     PROFILE_ENABLE( 0 );
 
     std::string exeName = "testSubchannelSolve-1";

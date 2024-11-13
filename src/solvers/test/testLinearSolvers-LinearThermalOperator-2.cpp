@@ -257,7 +257,6 @@ int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
 
     std::vector<std::string> inputFiles;
 

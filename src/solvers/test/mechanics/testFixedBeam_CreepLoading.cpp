@@ -227,7 +227,6 @@ int testFixedBeam_CreepLoading( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
 
     std::vector<std::string> exeNames;
     exeNames.emplace_back( "testFixedBeam-CreepLoading-1" );

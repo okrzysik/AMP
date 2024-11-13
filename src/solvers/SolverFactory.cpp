@@ -64,61 +64,59 @@ SolverFactory::create( std::shared_ptr<SolverStrategyParameters> parameters )
 }
 
 
-// register all known solver factories
-void registerSolverFactories()
-{
-    auto &solverFactory = SolverFactory::getFactory();
+} // namespace AMP::Solver
 
+
+// register all known solver factories
+template<>
+void AMP::FactoryStrategy<AMP::Solver::SolverStrategy,
+                          std::shared_ptr<AMP::Solver::SolverStrategyParameters>>::registerDefault()
+{
+    using namespace AMP::Solver;
 #ifdef AMP_USE_TRILINOS_MUELU
-    solverFactory.registerFactory( "TrilinosMueLuSolver", TrilinosMueLuSolver::createSolver );
+    d_factories["TrilinosMueLuSolver"] = TrilinosMueLuSolver::createSolver;
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML
-    solverFactory.registerFactory( "TrilinosMLSolver", TrilinosMLSolver::createSolver );
+    d_factories["TrilinosMLSolver"] = TrilinosMLSolver::createSolver;
 #endif
 
 #ifdef AMP_USE_HYPRE
-    solverFactory.registerFactory( "BoomerAMGSolver", BoomerAMGSolver::createSolver );
-    solverFactory.registerFactory( "HyprePCGSolver", HyprePCGSolver::createSolver );
+    d_factories["BoomerAMGSolver"] = BoomerAMGSolver::createSolver;
+    d_factories["HyprePCGSolver"]  = HyprePCGSolver::createSolver;
 #endif
 
 #ifdef AMP_USE_PETSC
-    solverFactory.registerFactory( "SNESSolver", PetscSNESSolver::createSolver );
-    solverFactory.registerFactory( "PetscSNESSolver", PetscSNESSolver::createSolver );
-    solverFactory.registerFactory( "PetscKrylovSolver", PetscKrylovSolver::createSolver );
+    d_factories["SNESSolver"]        = PetscSNESSolver::createSolver;
+    d_factories["PetscSNESSolver"]   = PetscSNESSolver::createSolver;
+    d_factories["PetscKrylovSolver"] = PetscKrylovSolver::createSolver;
 #endif
 
-    solverFactory.registerFactory( "CGSolver", CGSolver<double>::createSolver );
-    solverFactory.registerFactory( "GMRESSolver", GMRESSolver<double>::createSolver );
-    solverFactory.registerFactory( "BiCGSTABSolver", BiCGSTABSolver<double>::createSolver );
-    solverFactory.registerFactory( "TFQMRSolver", TFQMRSolver<double>::createSolver );
-    solverFactory.registerFactory( "QMRCGSTABSolver", QMRCGSTABSolver<double>::createSolver );
+    d_factories["CGSolver"]        = CGSolver<double>::createSolver;
+    d_factories["GMRESSolver"]     = GMRESSolver<double>::createSolver;
+    d_factories["BiCGSTABSolver"]  = BiCGSTABSolver<double>::createSolver;
+    d_factories["TFQMRSolver"]     = TFQMRSolver<double>::createSolver;
+    d_factories["QMRCGSTABSolver"] = QMRCGSTABSolver<double>::createSolver;
 
-    solverFactory.registerFactory( "NKASolver", NonlinearKrylovAccelerator<double>::createSolver );
+    d_factories["NKASolver"] = NonlinearKrylovAccelerator<double>::createSolver;
 
-    solverFactory.registerFactory( "CGSolver<double>", CGSolver<double>::createSolver );
-    solverFactory.registerFactory( "GMRESSolver<double>", GMRESSolver<double>::createSolver );
-    solverFactory.registerFactory( "BiCGSTABSolver<double>", BiCGSTABSolver<double>::createSolver );
-    solverFactory.registerFactory( "TFQMRSolver<double>", TFQMRSolver<double>::createSolver );
-    solverFactory.registerFactory( "QMRCGSTABSolver<double>",
-                                   QMRCGSTABSolver<double>::createSolver );
+    d_factories["CGSolver<double>"]        = CGSolver<double>::createSolver;
+    d_factories["GMRESSolver<double>"]     = GMRESSolver<double>::createSolver;
+    d_factories["BiCGSTABSolver<double>"]  = BiCGSTABSolver<double>::createSolver;
+    d_factories["TFQMRSolver<double>"]     = TFQMRSolver<double>::createSolver;
+    d_factories["QMRCGSTABSolver<double>"] = QMRCGSTABSolver<double>::createSolver;
 
-    solverFactory.registerFactory( "NKASolver<double>",
-                                   NonlinearKrylovAccelerator<double>::createSolver );
+    d_factories["NKASolver<double>"] = NonlinearKrylovAccelerator<double>::createSolver;
 
-    solverFactory.registerFactory( "CGSolver<float>", CGSolver<float>::createSolver );
-    solverFactory.registerFactory( "GMRESSolver<float>", GMRESSolver<float>::createSolver );
-    solverFactory.registerFactory( "BiCGSTABSolver<float>", BiCGSTABSolver<float>::createSolver );
-    solverFactory.registerFactory( "TFQMRSolver<float>", TFQMRSolver<float>::createSolver );
-    solverFactory.registerFactory( "QMRCGSTABSolver<float>", QMRCGSTABSolver<float>::createSolver );
+    d_factories["CGSolver<float>"]        = CGSolver<float>::createSolver;
+    d_factories["GMRESSolver<float>"]     = GMRESSolver<float>::createSolver;
+    d_factories["BiCGSTABSolver<float>"]  = BiCGSTABSolver<float>::createSolver;
+    d_factories["TFQMRSolver<float>"]     = TFQMRSolver<float>::createSolver;
+    d_factories["QMRCGSTABSolver<float>"] = QMRCGSTABSolver<float>::createSolver;
 
-    solverFactory.registerFactory( "NKASolver<float>",
-                                   NonlinearKrylovAccelerator<float>::createSolver );
+    d_factories["NKASolver<float>"] = NonlinearKrylovAccelerator<float>::createSolver;
 
-    solverFactory.registerFactory( "BandedSolver", BandedSolver::createSolver );
+    d_factories["BandedSolver"] = BandedSolver::createSolver;
 
-    solverFactory.registerFactory( "ColumnSolver", ColumnSolver::createSolver );
+    d_factories["ColumnSolver"] = ColumnSolver::createSolver;
 }
-
-
-} // namespace AMP::Solver

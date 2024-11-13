@@ -24,16 +24,10 @@ namespace AMP::Operator {
 
 
 // Macro to register an operator
-#define REGISTER_OPERATOR( NAME )                                         \
-    static struct NAME##_INIT {                                           \
-        NAME##_INIT()                                                     \
-        {                                                                 \
-            auto fun = []( std::shared_ptr<OperatorParameters> params ) { \
-                return std::make_unique<NAME>( params );                  \
-            };                                                            \
-            OperatorFactory::registerFactory( #NAME, fun );               \
-        }                                                                 \
-    } NAME##_INIT
+#define REGISTER_OPERATOR( NAME )                                           \
+    d_factories[#NAME] = []( std::shared_ptr<OperatorParameters> params ) { \
+        return std::make_unique<NAME>( params );                            \
+    }
 
 
 // Create the operator
@@ -47,22 +41,29 @@ std::unique_ptr<Operator> OperatorFactory::create( std::shared_ptr<OperatorParam
 }
 
 
-// Register operators
-REGISTER_OPERATOR( CoupledOperator );
-REGISTER_OPERATOR( ColumnOperator );
-REGISTER_OPERATOR( LinearBVPOperator );
-REGISTER_OPERATOR( ColumnBoundaryOperator );
-REGISTER_OPERATOR( DirichletMatrixCorrection );
-REGISTER_OPERATOR( DirichletVectorCorrection );
-#ifdef AMP_USE_LIBMESH
-REGISTER_OPERATOR( DiffusionLinearFEOperator );
-REGISTER_OPERATOR( MechanicsLinearFEOperator );
-REGISTER_OPERATOR( RobinMatrixCorrection );
-REGISTER_OPERATOR( RobinVectorCorrection );
-REGISTER_OPERATOR( FlowFrapconJacobian );
-REGISTER_OPERATOR( FlowFrapconOperator );
-REGISTER_OPERATOR( SubchannelTwoEqLinearOperator );
-REGISTER_OPERATOR( SubchannelFourEqLinearOperator );
-#endif
-
 } // namespace AMP::Operator
+
+
+// Register operators
+template<>
+void AMP::FactoryStrategy<AMP::Operator::Operator,
+                          std::shared_ptr<AMP::Operator::OperatorParameters>>::registerDefault()
+{
+    using namespace AMP::Operator;
+    REGISTER_OPERATOR( CoupledOperator );
+    REGISTER_OPERATOR( ColumnOperator );
+    REGISTER_OPERATOR( LinearBVPOperator );
+    REGISTER_OPERATOR( ColumnBoundaryOperator );
+    REGISTER_OPERATOR( DirichletMatrixCorrection );
+    REGISTER_OPERATOR( DirichletVectorCorrection );
+#ifdef AMP_USE_LIBMESH
+    REGISTER_OPERATOR( DiffusionLinearFEOperator );
+    REGISTER_OPERATOR( MechanicsLinearFEOperator );
+    REGISTER_OPERATOR( RobinMatrixCorrection );
+    REGISTER_OPERATOR( RobinVectorCorrection );
+    REGISTER_OPERATOR( FlowFrapconJacobian );
+    REGISTER_OPERATOR( FlowFrapconOperator );
+    REGISTER_OPERATOR( SubchannelTwoEqLinearOperator );
+    REGISTER_OPERATOR( SubchannelFourEqLinearOperator );
+#endif
+}

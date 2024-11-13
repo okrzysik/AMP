@@ -110,45 +110,37 @@ DatabaseMaterial::DatabaseMaterial( std::string_view name, std::shared_ptr<Datab
 /********************************************************************
  * Material factory functions                                        *
  ********************************************************************/
-std::vector<std::string> getMaterialList() { return AMP::FactoryStrategy<Material>::getKeys(); }
+using MaterialFactory = AMP::FactoryStrategy<Material>;
+std::vector<std::string> getMaterialList() { return MaterialFactory::getKeys(); }
 std::unique_ptr<Material> getMaterial( const std::string &name )
 {
-    if ( AMP::FactoryStrategy<Material>::empty() )
-        registerMaterialFactories();
-    return AMP::FactoryStrategy<Material>::create( name );
+    return MaterialFactory::create( name );
 }
 void registerMaterial( const std::string &name, std::function<std::unique_ptr<Material>()> fun )
 {
-    if ( AMP::FactoryStrategy<Material>::empty() )
-        registerMaterialFactories();
-    AMP::FactoryStrategy<Material>::registerFactory( name, fun );
+    MaterialFactory::registerFactory( name, fun );
 }
-bool isMaterial( const std::string &name )
-{
-    if ( AMP::FactoryStrategy<Material>::empty() )
-        registerMaterialFactories();
-    return AMP::FactoryStrategy<Material>::exists( name );
-}
+bool isMaterial( const std::string &name ) { return MaterialFactory::exists( name ); }
+
+
+} // namespace AMP::Materials
 
 
 /********************************************************************
- * Register materials                                                *
+ * Register default materials                                        *
  ********************************************************************/
-#define REGISTER_MATERIAL( NAME )                           \
-    AMP::FactoryStrategy<Material>::registerFactory( #NAME, \
-                                                     []() { return std::make_unique<NAME>(); } )
-void registerMaterialFactories()
+#define REGISTER_MATERIAL( NAME ) d_factories[#NAME] = []() { return std::make_unique<NAME>(); };
+template<>
+void AMP::FactoryStrategy<AMP::Materials::Material>::registerDefault()
 {
+    using namespace AMP::Materials;
     REGISTER_MATERIAL( CylindricallySymmetric );
     REGISTER_MATERIAL( Dr_nonlinear );
     REGISTER_MATERIAL( FixedClad );
     REGISTER_MATERIAL( FixedFuel );
     REGISTER_MATERIAL( Independent );
-    REGISTER_MATERIAL( Ox_MSRZC_09 );
-    REGISTER_MATERIAL( Steel316_MSRZC_09 );
-    REGISTER_MATERIAL( UO2_MSRZC_09 );
     REGISTER_MATERIAL( WaterLibrary );
+    REGISTER_MATERIAL( Steel316_MSRZC_09 );
+    REGISTER_MATERIAL( Ox_MSRZC_09 );
+    REGISTER_MATERIAL( UO2_MSRZC_09 );
 }
-
-
-} // namespace AMP::Materials

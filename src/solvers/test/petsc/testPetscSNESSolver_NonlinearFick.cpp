@@ -145,7 +145,6 @@ int testPetscSNESSolver_NonlinearFick( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
 
     std::vector<std::string> exeNames;
     exeNames.emplace_back( "testPetscSNESSolver-NonlinearFick-cylinder-1a" );

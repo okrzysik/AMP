@@ -1,5 +1,6 @@
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Database.hpp"
+#include "AMP/utils/FactoryStrategy.hpp"
 
 #include <cstddef>
 
