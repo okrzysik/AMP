@@ -84,12 +84,9 @@ std::mutex print_processor_mutex;
 
 void print_processor( ThreadPool *tpool )
 {
-    AMP::AMP_MPI comm( AMP_COMM_WORLD );
-    int rank      = comm.getRank();
     int thread    = tpool->getThreadNumber();
     int processor = ThreadPool::getCurrentProcessor();
-    auto tmp      = stringf( "%i:  Thread,proc = %i,%i\n", rank, thread, processor );
-    sleep_ms( 10 * rank );
+    auto tmp      = stringf( "  Thread,proc = %i,%i\n", thread, processor );
     print_processor_mutex.lock();
     pout << tmp;
     print_processor_mutex.unlock();
@@ -313,17 +310,6 @@ void test_work_parallel( UnitTest &ut, ThreadPool &tpool )
     int N_procs      = ThreadPool::getNumberOfProcessors();
     int N_procs_used = std::min<int>( N_procs, N_threads );
     if ( N_procs_used > 1 ) {
-        AMP::AMP_MPI comm( AMP_COMM_WORLD );
-        // Use a non-blocking serialization of the MPI processes
-        // if we do not have a sufficient number of processors
-        int rank           = comm.getRank();
-        int size           = comm.getSize();
-        bool serialize_mpi = N_procs < N_threads * size;
-        if ( serialize_mpi && rank > 0 ) {
-            int buf;
-            auto request = comm.Irecv( &buf, 1, rank - 1, 0 );
-            comm.wait( request );
-        }
         int N = 20000000; // Enough work to keep the processor busy for ~ 1 s
         // Run in serial
         auto start = std::chrono::high_resolution_clock::now();
@@ -340,18 +326,6 @@ void test_work_parallel( UnitTest &ut, ThreadPool &tpool )
             ut.passes( "Passed speedup test" );
         } else {
             ut.expected_failure( "Times do not indicate tests are running in parallel (gcov)" );
-        }
-        if ( serialize_mpi ) {
-            if ( rank < size - 1 )
-                comm.send( &N, 1, rank + 1, 0 );
-            if ( rank == size - 1 ) {
-                for ( int i = 0; i < size - 1; i++ )
-                    comm.send( &N, 1, i, 1 );
-            } else {
-                int buf;
-                auto request = comm.Irecv( &buf, 1, size - 1, 1 );
-                comm.wait( request );
-            }
         }
     } else {
         ut.expected_failure( "Testing thread performance with less than 1 processor" );
@@ -425,41 +399,33 @@ void test_work_dependency( UnitTest &ut, ThreadPool &tpool )
  ******************************************************************/
 void test_FIFO( UnitTest &ut, ThreadPool &tpool )
 {
-    AMP::AMP_MPI comm( AMP_COMM_WORLD );
-    int rank    = comm.getRank();
-    int size    = comm.getSize();
     const int N = 4000;
-    for ( int r = 0; r < size; r++ ) {
-        comm.barrier();
-        if ( r != rank )
-            continue;
-        std::vector<ThreadPoolID> ids;
-        ids.reserve( N );
-        for ( size_t i = 0; i < N; i++ )
-            ids.emplace_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.001 ) ) );
-        bool pass = true;
-        while ( tpool.N_queued() > 0 ) {
-            int i1 = -1, i2 = ids.size();
-            for ( int i = N - 1; i >= 0; i-- ) {
-                bool started = ids[i].started();
-                if ( started )
-                    i1 = std::max<int>( i1, i ); // Last index to processing item
-                else
-                    i2 = std::min<int>( i2, i ); // First index to queued item
-            }
-            int diff = i1 == -1 ? 0 : ( i2 - i1 - 1 );
-            if ( abs( diff ) > 4 ) {
-                printf( "%i %i %i\n", i1, i2, diff );
-                pass = pass && abs( i2 - i1 - 1 ) <= 2;
-            }
+    std::vector<ThreadPoolID> ids;
+    ids.reserve( N );
+    for ( size_t i = 0; i < N; i++ )
+        ids.emplace_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.001 ) ) );
+    bool pass = true;
+    while ( tpool.N_queued() > 0 ) {
+        int i1 = -1, i2 = ids.size();
+        for ( int i = N - 1; i >= 0; i-- ) {
+            bool started = ids[i].started();
+            if ( started )
+                i1 = std::max<int>( i1, i ); // Last index to processing item
+            else
+                i2 = std::min<int>( i2, i ); // First index to queued item
         }
-        ids.clear();
-        tpool.wait_pool_finished();
-        if ( pass )
-            ut.passes( "Thread pool behaves as FIFO" );
-        else
-            ut.failure( "Thread pool does not behave as FIFO" );
+        int diff = i1 == -1 ? 0 : ( i2 - i1 - 1 );
+        if ( abs( diff ) > 4 ) {
+            printf( "%i %i %i\n", i1, i2, diff );
+            pass = pass && abs( i2 - i1 - 1 ) <= 2;
+        }
     }
+    ids.clear();
+    tpool.wait_pool_finished();
+    if ( pass )
+        ut.passes( "Thread pool behaves as FIFO" );
+    else
+        ut.failure( "Thread pool does not behave as FIFO" );
 }
 
 
@@ -545,13 +511,10 @@ void testProcessAffinity( UnitTest &ut )
  ******************************************************************/
 void testThreadAffinity( ThreadPool &tpool, UnitTest &ut )
 {
-    AMP::AMP_MPI comm( AMP_COMM_WORLD );
     int N_threads = tpool.getNumThreads();
     auto cpus     = ThreadPool::getProcessAffinity();
-    int rank      = comm.getRank();
 
     // Test setting the thread affinities
-    comm.barrier();
     if ( cpus.size() > 1 ) {
         printp( "Testing thread affinities\n" );
         sleep_ms( 50 );
@@ -569,7 +532,7 @@ void testThreadAffinity( ThreadPool &tpool, UnitTest &ut )
         for ( int i = 0; i < N_threads; i++ ) {
             auto procs_thread = tpool.getThreadAffinity( i );
             if ( procs_thread != procs ) {
-                printp( "%i: Initial thread affinity: ", rank );
+                printp( " Initial thread affinity: " );
                 for ( int p : procs_thread )
                     printp( "%i ", p );
                 printp( "\n" );
@@ -592,7 +555,7 @@ void testThreadAffinity( ThreadPool &tpool, UnitTest &ut )
                 sleep_ms( 10 ); // Give time for OS to update thread affinities
                 auto procs_thread2 = tpool.getThreadAffinity( i );
                 if ( procs_thread2 != procs_thread ) {
-                    printp( "%i: Final thread affinity: ", rank );
+                    printp( " Final thread affinity: " );
                     for ( int p : procs_thread )
                         printp( "%i ", p );
                     printp( "\n" );
@@ -749,11 +712,16 @@ void run_tests( UnitTest &ut )
 {
     constexpr int N_threads = 4; // Number of threads
 
-    // Disable OS specific warnings for all non-root ranks
-    AMP::AMP_MPI comm( AMP_COMM_WORLD );
-    int rank = comm.getRank();
-    if ( rank > 0 )
-        ThreadPool::set_OS_warnings( 1 );
+    // test_thread_pool is now a single rank test
+    //   Running multiple ranks wasn't really testing anything useful
+    int size = AMP::AMP_MPI( AMP_COMM_WORLD ).getSize();
+    int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
+    if ( size > 1 ) {
+        if ( rank == 0 )
+            std::cerr << "test_thread_pool is now a single rank test\n\n";
+        else
+            return;
+    }
 
     // Test the atomics
     if ( test_atomics() )
@@ -765,14 +733,12 @@ void run_tests( UnitTest &ut )
     printp( "Size of ThreadPool = %i\n", (int) sizeof( ThreadPool ) );
 
     // Test process affinities
-    comm.barrier();
     testProcessAffinity( ut );
     int N_procs      = ThreadPool::getNumberOfProcessors();
     int N_procs_used = std::min<int>( N_procs, N_threads );
     printp( "%i processors used\n", N_procs_used );
 
     // Create the thread pool
-    comm.barrier();
     printp( "Creating thread pool\n" );
     ThreadPool tpool;
     {
@@ -791,7 +757,6 @@ void run_tests( UnitTest &ut )
     testThreadAffinity( tpool, ut );
 
     // Print the current processors by thread id
-    comm.barrier();
     ThreadPool::set_OS_warnings( 1 );
     print_processor( &tpool );
     launchAndTime( tpool, N_threads, print_processor, &tpool );
@@ -800,30 +765,24 @@ void run_tests( UnitTest &ut )
     test_move_thread_id( ut, tpool );
 
     // Test calling functions with different number of arguments
-    comm.barrier();
     test_function_arguments( &tpool, ut );
 
     // Check that threads sleep in parallel (does not depend on the number of processors)
-    comm.barrier();
     test_sleep_parallel( ut, tpool );
 
     // Check that the threads are actually working in parallel
-    comm.barrier();
     test_work_parallel( ut, tpool );
 
     // Test first-in-first-out scheduler (also ensures priorities)
     test_FIFO( ut, tpool );
 
     // Test adding a work item with a dependency
-    comm.barrier();
     test_work_dependency( ut, tpool );
 
     // Run some performance tests
-    if ( rank == 0 ) {
-        ThreadPool tpool0;
-        testThreadPoolPerformance( tpool0 );
-        testThreadPoolPerformance( tpool );
-    }
+    ThreadPool tpool0;
+    testThreadPoolPerformance( tpool0 );
+    testThreadPoolPerformance( tpool );
 
     // Run a dependency test that tests a simple case that should keep the thread pool busy
     // Note: Checking the results requires looking at the trace data
@@ -849,11 +808,11 @@ void run_tests( UnitTest &ut )
     tpool.setNumThreads( 0 );
 
     // Save the profiling results
-    PROFILE_SAVE( "test_thread_pool" );
+    if ( size == 1 )
+        PROFILE_SAVE( "test_thread_pool" );
     PROFILE_DISABLE();
 
     // Test creating/destroying a thread pool using new
-    comm.barrier();
     auto pass = !ThreadPool::is_valid( nullptr );
     try {
         auto tpool2 = new ThreadPool( ThreadPool::MAX_THREADS - 1 );
@@ -881,15 +840,12 @@ int main( int argc, char *argv[] )
 
     // Run the tests
     run_tests( ut );
+    AMP::AMP_MPI( AMP_COMM_WORLD ).sleepBarrier();
 
     // Shutdown
     ut.report();
     int N_errors = ut.NumFailGlobal();
     ut.reset();
-    int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
-    if ( rank == 0 )
-        std::cout << std::endl;
     AMP::AMPManager::shutdown();
-    printf( "%i: shutdown complete\n", rank );
     return N_errors;
 }
