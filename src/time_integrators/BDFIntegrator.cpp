@@ -2133,7 +2133,9 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
         }
         AMP::pout << std::endl;
     }
-    d_solver_retcode = d_solver->getConvergenceStatus();
+    const auto convStatus = d_solver->getConvergenceStatus();
+    d_solver_retcode =
+        convStatus <= AMP::Solver::SolverStrategy::SolverStatus::ConvergedUserCondition ? 1 : 0;
 
     if ( d_solution_scaling ) {
         d_solution_vector->multiply( *d_scratch_vector, *d_solution_scaling );

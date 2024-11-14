@@ -111,7 +111,7 @@ VolumeIntegralOperator{
 
 LinearSolver{
   name = "PetscKrylovSolver"
-  print_info_level = 0
+  print_info_level = 2
   max_iterations = 25
   max_error = 1e-10
   ksp_type = "fgmres"
