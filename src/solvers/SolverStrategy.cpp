@@ -1,5 +1,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/utils/Utilities.h"
+
+#include <cmath>
 #include <numeric>
 
 namespace AMP::Solver {
@@ -76,23 +78,33 @@ int SolverStrategy::getTotalNumberOfIterations( void )
     return std::accumulate( d_iterationHistory.begin(), d_iterationHistory.end(), 0 );
 }
 
-bool SolverStrategy::checkConvergence( std::shared_ptr<const AMP::LinearAlgebra::Vector> residual )
+bool SolverStrategy::checkStoppingCriteria( AMP::Scalar res_norm, bool check_iters )
 {
+    // default to diverged other, which is held during the solve
+    d_ConvergenceStatus   = SolverStatus::DivergedOther;
+    d_dResidualNorm       = res_norm;
+    const auto res_norm_d = static_cast<double>( res_norm );
 
-    d_ConvergenceStatus = SolverStatus::DivergedOther;
-    d_dResidualNorm     = static_cast<double>( residual->L2Norm() );
-
-    bool converged = d_dResidualNorm < d_dAbsoluteTolerance;
-
-    if ( converged ) {
+    // check stopping criteria and ensure more restrictive categories
+    // are tested first (e.g. don't set diverged max iters if solver
+    // hit rel tol on final step)
+    if ( d_dResidualNorm < d_dAbsoluteTolerance ) {
         d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
-    } else {
-        converged = d_dResidualNorm < d_dRelativeTolerance * d_dInitialResidual;
-        if ( converged )
-            d_ConvergenceStatus = SolverStatus::ConvergedOnRelTol;
+        return true;
+    } else if ( d_dResidualNorm < d_dRelativeTolerance * d_dInitialResidual ) {
+        d_ConvergenceStatus = SolverStatus::ConvergedOnRelTol;
+        return true;
+    } else if ( check_iters && d_iNumberIterations == d_iMaxIterations ) {
+        // allow this check to be ignored if used early in an update step
+        // to avoid breaking before a full iteration has been performed
+        d_ConvergenceStatus = SolverStatus::DivergedMaxIterations;
+        return true;
+    } else if ( std::isnan( res_norm_d ) ) {
+        d_ConvergenceStatus = SolverStatus::DivergedOnNan;
+        return true;
     }
 
-    return converged;
+    return false;
 }
 
 /****************************************************************

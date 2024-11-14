@@ -230,43 +230,102 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE( "apply" );
+    PROFILE( "PetscKrylovSolver::apply" );
 
-    // Get petsc views of the vectors
-    auto fVecView = AMP::LinearAlgebra::PetscVector::constView( f );
-    auto uVecView = AMP::LinearAlgebra::PetscVector::view( u );
+    // Always zero before checking stopping criteria for any reason
+    d_iNumberIterations = 0;
 
     // Check input vector states
     AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-
-    AMP::pout << "Beginning PetscKrylovSolver::apply" << std::endl;
-    if ( d_iDebugPrintInfoLevel > 1 ) {
-        AMP::pout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
-                  << std::endl;
-        AMP::pout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
-                  << std::endl;
-    }
 
     if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 
-    // This will replace any PETSc references to pointers we also track
-    // After this, we are free to delet f_thisGetsAroundPETScSharedPtrIssue without memory leak.
-    Vec fVec = fVecView->getVec();
-    Vec uVec = uVecView->getVec();
-    KSPSolve( d_KrylovSolver, fVec, uVec );
-    u->makeConsistent();
+    const auto f_norm = static_cast<double>( f->L2Norm() );
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        AMP::pout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
+    // Zero rhs implies zero solution, bail out early
+    if ( f_norm == static_cast<double>( 0.0 ) ) {
+        u->zero();
+        d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
+        d_dResidualNorm     = 0.0;
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            AMP::pout << "PetscKrylovSolverSolver::apply: solution is zero" << std::endl;
+        }
+        return;
     }
 
-    PetscReal ksp_norm;
-    KSPGetResidualNorm( d_KrylovSolver, &ksp_norm );
-    d_dResidualNorm = ksp_norm;
+    // Compute initial residual, used mostly for reporting in this case
+    // since Petsc tracks this internally
+    // Can we get that value from Petsc and remove one global reduce?
+    std::shared_ptr<AMP::LinearAlgebra::Vector> r;
+    double current_res;
+    if ( d_bUseZeroInitialGuess ) {
+        u->zero();
+        current_res = f_norm;
+    } else {
+        r = f->clone();
+        d_pOperator->residual( f, u, r );
+        current_res = static_cast<double>( r->L2Norm() );
+    }
+    d_dInitialResidual = current_res;
 
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "PetscKrylovSolverSolver::apply: initial L2Norm of solution vector: "
+                  << u->L2Norm() << std::endl;
+        AMP::pout << "PetscKrylovSolverSolver::apply: initial L2Norm of rhs vector: " << f_norm
+                  << std::endl;
+        AMP::pout << "PetscKrylovSolverSolver::apply: initial L2Norm of residual: " << current_res
+                  << std::endl;
+    }
+
+    // return if the residual is already low enough
+    // checkStoppingCriteria responsible for setting flags on convergence reason
+    if ( checkStoppingCriteria( current_res ) ) {
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            AMP::pout << "PetscKrylovSolverSolver::apply: initial residual below tolerance"
+                      << std::endl;
+        }
+        return;
+    }
+
+    // Get petsc views of the vectors
+    // This will replace any PETSc references to pointers we also track
+    // After this, we are free to delet f_thisGetsAroundPETScSharedPtrIssue without memory leak.
+    auto fVecView = AMP::LinearAlgebra::PetscVector::constView( f );
+    auto uVecView = AMP::LinearAlgebra::PetscVector::view( u );
+    Vec fVec      = fVecView->getVec();
+    Vec uVec      = uVecView->getVec();
+    KSPSolve( d_KrylovSolver, fVec, uVec );
+
+    // Manually update state, needed for mixing different (tpl) solvers
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    // Query iteration count and store on AMP side
     KSPGetIterationNumber( d_KrylovSolver, &d_iNumberIterations );
+
+    // Re-compute or query final residual
+    if ( d_bComputeResidual ) {
+        d_pOperator->residual( f, u, r );
+        current_res = static_cast<double>( r->L2Norm() );
+    } else {
+        KSPGetResidualNorm( d_KrylovSolver, &current_res );
+    }
+
+    // Store final residual norm and update convergence flags
+    d_dResidualNorm = current_res;
+    checkStoppingCriteria( current_res );
+
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        AMP::pout << "PetscKrylovSolver::apply: final L2Norm of solution: " << u->L2Norm()
+                  << std::endl;
+        AMP::pout << "PetscKrylovSolver::apply: final L2Norm of residual: " << current_res
+                  << std::endl;
+        AMP::pout << "PetscKrylovSolver::apply: iterations: " << d_iNumberIterations << std::endl;
+        AMP::pout << "PetscKrylovSolver::apply: convergence reason: "
+                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
+    }
+
     // Reset the solvers
     KSPReset( d_KrylovSolver );
     AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );

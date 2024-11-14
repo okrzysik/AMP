@@ -171,7 +171,9 @@ int ImplicitIntegrator::integratorSpecificAdvanceSolution(
     // set a NULL rhs
     std::shared_ptr<AMP::LinearAlgebra::Vector> rhs = nullptr;
     d_solver->apply( rhs, d_solution_vector );
-    d_solver_retcode = d_solver->getConvergenceStatus();
+    const auto convStatus = d_solver->getConvergenceStatus();
+    d_solver_retcode =
+        convStatus <= AMP::Solver::SolverStrategy::SolverStatus::ConvergedUserCondition ? 1 : 0;
 
     out->copyVector( d_solution_vector );
 

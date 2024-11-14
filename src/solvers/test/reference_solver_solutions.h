@@ -13,13 +13,13 @@ std::map<std::string, std::tuple<int, double, double>> conv_map{
     { "input_testLinearSolvers-LinearThermalRobin-CylMesh-CG",
       std::make_tuple( 87, 2.4806061595639e-09, 3.0e-10 ) },
     { "input_testLinearSolvers-LinearThermalRobin-GMRES",
-      std::make_tuple( 25, 3.04412e-12, 4.0e-12 ) },
+      std::make_tuple( 24, 3.04412e-12, 4.0e-12 ) },
     { "input_testLinearSolvers-LinearThermalRobin-FGMRES",
-      std::make_tuple( 25, 3.04412e-12, 4.0e-12 ) },
+      std::make_tuple( 24, 3.04412e-12, 4.0e-12 ) },
     { "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB",
       std::make_tuple( 18, 3.686753e-09, 1.0e-09 ) },
     { "input_testLinearSolvers-LinearThermalRobin-TFQMR",
-      std::make_tuple( 20, 1.25249453025521e-09, 2.0e-9 ) },
+      std::make_tuple( 20, 1.51873e-09, 2.0e-09 ) },
     { "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES",
       std::make_tuple( 25, 6.62678786883557e-12, 6.0e-12 ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML",
@@ -56,7 +56,12 @@ static void checkConvergence( AMP::Solver::SolverStrategy *solver,
                               AMP::UnitTest &ut )
 {
     const auto residualNorm = solver->getResidualNorm();
-    const auto tolerance    = solver->getAbsoluteTolerance();
+
+    // Accept solution only if converged on absolute or relative tolerance
+    const auto convReason = solver->getConvergenceStatus();
+    const bool accept =
+        convReason == AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnRelTol ||
+        convReason == AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnAbsTol;
 
     if ( known_solution( inputFile ) ) {
         // Check the convergence rate to see if it changed
@@ -67,7 +72,7 @@ static void checkConvergence( AMP::Solver::SolverStrategy *solver,
         if ( ref_iter > 0 ) {
             int iter = solver->getIterations();
             if ( iter != ref_iter ||
-                 fabs( static_cast<double>( residualNorm - ref_norm ) ) > ref_tol ) {
+                 fabs( static_cast<double>( residualNorm - ref_norm ) ) > ref_tol || !accept ) {
                 AMP::pout << "FAILED: test_CellPreconditioner " << inputFile << std::endl;
                 AMP::pout << "Iterations: " << iter
                           << ", residual norm: " << std::setprecision( 15 ) << residualNorm
@@ -78,18 +83,20 @@ static void checkConvergence( AMP::Solver::SolverStrategy *solver,
                 AMP::pout << "Difference ( computed - reference ), iterations: "
                           << ( iter - ref_iter ) << ", L2 norms: " << ( residualNorm - ref_norm )
                           << ", tolerance: " << ref_tol << std::endl;
+                AMP::pout << "  Solver finished with status: "
+                          << solver->getConvergenceStatusString() << std::endl;
                 ut.failure( "FAILED: convergence rate test" );
             } else {
                 ut.passes( "Passes convergence rate test" );
             }
         }
     } else {
-        if ( residualNorm < tolerance ) {
+        if ( accept ) {
             ut.passes( "Solver has converged." );
         } else {
             AMP::pout << "Solver has NOT converged." << std::endl;
-            AMP::pout << "Residual norm: " << residualNorm << " is not smaller than tolerance "
-                      << tolerance << "." << std::endl;
+            AMP::pout << "  Solver finished with status: " << solver->getConvergenceStatusString()
+                      << std::endl;
             ut.failure( "Solver has NOT converged." );
         }
     }
