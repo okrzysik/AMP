@@ -232,6 +232,19 @@ public:
     {
     }
 
+    //! for multiphysics problems it may be necessary to scale the solution
+    // and nonlinear function for correct solution.
+    // The first vector is for solution scaling, the second for function
+    void setComponentScalings( std::shared_ptr<AMP::LinearAlgebra::Vector> s,
+                               std::shared_ptr<AMP::LinearAlgebra::Vector> f )
+    {
+        d_pSolutionScaling = s;
+        d_pFunctionScaling = f;
+    }
+
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getSolutionScaling() { return d_pSolutionScaling; }
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getFunctionScaling() { return d_pFunctionScaling; }
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
@@ -270,6 +283,9 @@ protected:
      *  database for the construction of nested solvers
      */
     std::shared_ptr<AMP::Database> d_global_db = nullptr;
+
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionScaling;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pFunctionScaling;
 
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 

@@ -370,7 +370,7 @@ void PetscSNESSolver::preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     auto pcSolver  = d_pKrylovSolver->getNestedSolver();
     Mat PCJacobian = d_Jacobian;
     std::shared_ptr<AMP::LinearAlgebra::PetscMatrix> view2;
-    if ( pcSolver ) {
+    if ( pcSolver && d_bUsesJacobian ) {
         auto linearOp =
             std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( pcSolver->getOperator() );
         if ( linearOp ) {
@@ -1028,7 +1028,14 @@ PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
     AMP_ASSERT( xout );
     auto rhs  = PETSC::getAMP( xin );
     auto soln = PETSC::getAMP( xout );
-
+#if 1
+    auto solnScaling = snesSolver->getSolutionScaling();
+    auto funcScaling = snesSolver->getFunctionScaling();
+    if ( solnScaling )
+        soln->multiply( *soln, *solnScaling );
+    if ( funcScaling )
+        rhs->multiply( *rhs, *funcScaling );
+#endif
     // Make sure the vectors are in a consistent state
     rhs->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     soln->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
@@ -1047,6 +1054,12 @@ PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
     // BP: 04/05/2022, the SAMRSolvers version copies input to output (identity pc)
     // if the preconditioner is null. For now we don't
     preconditioner->apply( rhs, soln );
+#if 1
+    if ( solnScaling )
+        soln->divide( *soln, *solnScaling );
+    if ( funcScaling )
+        rhs->divide( *rhs, *funcScaling );
+#endif
 
     // Check for nans (no communication necessary)
     double localNorm =

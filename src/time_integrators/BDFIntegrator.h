@@ -255,6 +255,11 @@ protected:
 
     void setTimeHistoryScalings() override;
 
+    /**
+     * Set solution and function scalings for multi-physics scalings automatically
+     */
+    void setMultiPhysicsScalings( void );
+
     DataManagerCallBack d_registerVectorForManagement;
 
 #ifdef ENABLE_RESTART
@@ -429,6 +434,9 @@ protected:
     //! used only with the final constant timestep scheme, number of
     //! initial steps to take with d_initial_dt
     int d_number_initial_fixed_steps = 0;
+
+    //! enable auto scaling if true
+    bool d_auto_component_scaling = false;
 
     //! used only with the final constant timestep scheme, counter
     //! to keep track of current step
