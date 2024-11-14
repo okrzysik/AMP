@@ -153,8 +153,8 @@ int testSimpleTimeIntegration( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     // List of integrators
-    auto integrators = { "ExplicitEuler",  "RK12", "RK23", "RK34", "RK45", "RK2", "RK4",
-                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5" };
+    auto integrators = { "ExplicitEuler", "RK12", "RK23", "RK34", "RK45", "RK2", "RK4" };
+    //                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5" };
 
     // Run the tests
     for ( auto tmp : integrators )

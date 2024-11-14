@@ -235,17 +235,7 @@ public:
     // and nonlinear function for correct solution of the implicit problem
     // each timestep. The first vector is for solution scaling, the second for function
     void setComponentScalings( std::shared_ptr<AMP::LinearAlgebra::Vector> s,
-                               std::shared_ptr<AMP::LinearAlgebra::Vector> f )
-    {
-        d_solution_scaling = s;
-        d_function_scaling = f;
-        AMP_INSIST( d_operator,
-                    "Operator must be registered prior to calling setComponentScalings" );
-        auto timeOperator =
-            std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
-        AMP_INSIST( timeOperator, "setComponentScalings only works with TimeOperator" );
-        timeOperator->setComponentScalings( s, f );
-    }
+                               std::shared_ptr<AMP::LinearAlgebra::Vector> f );
 
     void setTimeScalingFunction( std::function<void( AMP::Scalar )> fnPtr )
     {

@@ -66,6 +66,7 @@ void TimeOperator::applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x
 {
     AMP_INSIST( d_pRhsOperator, "RHS Operator is NULL" );
     d_pRhsOperator->apply( x, f );
+
     // this is already in the time integrator
     //    if ( d_pSourceTerm ) {
     //        f->add( *d_pSourceTerm, *f );
@@ -125,6 +126,11 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
 
         // f =  M x^{n+1} - \gamma*fRhs(x^{n+1})
         r->axpy( -d_dGamma, *r, *d_pScratchVector );
+    }
+
+    // add in source terms coming from time history variables
+    if ( d_pIntegratorSourceTerm ) {
+        r->add( *r, *d_pIntegratorSourceTerm );
     }
 
     if ( d_iDebugPrintInfoLevel > 5 ) {

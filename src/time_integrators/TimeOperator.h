@@ -193,6 +193,11 @@ public:
         return d_pRhsOperator->isValidVector( u );
     }
 
+    void registerIntegratorSourceTerms( std::shared_ptr<AMP::LinearAlgebra::Vector> s )
+    {
+        d_pIntegratorSourceTerm = s;
+    }
+
 protected:
     TimeOperator();
 
@@ -235,9 +240,14 @@ protected:
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
 
     /**
-     * vector containing source terms if any
+     * vector containing time independent source terms if any (for now)
      */
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+
+    /**
+     * vector containing time dependent source terms
+     */
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pIntegratorSourceTerm;
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionScaling;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pFunctionScaling;
