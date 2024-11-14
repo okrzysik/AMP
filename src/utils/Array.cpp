@@ -3,6 +3,7 @@
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/typeid.h"
 
+#include <bitset>
 #include <complex>
 #include <cstddef>
 

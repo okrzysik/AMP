@@ -398,8 +398,8 @@ instantiate( instantiatePutArray );       // Database::putArray
 instantiate( instantiateGetWithDefault ); // Database::getWithDefault
 template void
 Database::putScalar<const char *>( std::string_view, const char *, Units, Check, source_location );
-template void Database::putScalar<std::_Bit_reference>(
-    std::string_view key, std::_Bit_reference, Units, Check, source_location );
+template void Database::putScalar<std::vector<bool>::reference>(
+    std::string_view key, std::vector<bool>::reference, Units, Check, source_location );
 
 
 } // namespace AMP

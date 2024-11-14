@@ -342,6 +342,7 @@ Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
         return writeDefaultMesh( fid, mesh, name, path ); // We have issues with surface meshes
     auto size2      = size + (size_t) 1;
     auto isPeriodic = mesh2->periodic();
+    isPeriodic.resize( 3, 1 );
     AMP::Array<double> x( size2 ), y( size2 ), z( size2 );
     for ( size_t k = 0; k < size2[2]; k++ ) {
         size_t k2 = isPeriodic[2] ? k % size[2] : k;
