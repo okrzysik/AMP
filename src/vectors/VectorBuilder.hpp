@@ -12,6 +12,7 @@
 #include "AMP/utils/memory.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 #include "math.h"
 
@@ -255,5 +256,44 @@ Vector::shared_ptr createVectorAdaptor( const std::string &name,
 
 
 } // namespace AMP::LinearAlgebra
+
+
+/********************************************************
+ *  Macros to instantiate vectors                        *
+ ********************************************************/
+#define INSTANTIATE_SIMPLE_VECTOR( TYPE, OP, DATA )                                          \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector>                                     \
+    AMP::LinearAlgebra::createVector<TYPE, OP, DATA>(                                        \
+        std::shared_ptr<AMP::Discretization::DOFManager>, std::shared_ptr<Variable>, bool ); \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector>                                     \
+    AMP::LinearAlgebra::createSimpleVector<TYPE, OP, DATA>( size_t, const std::string & );   \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector>                                     \
+        AMP::LinearAlgebra::createSimpleVector<TYPE, OP, DATA>( size_t,                      \
+                                                                std::shared_ptr<Variable> ); \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector>                                     \
+        AMP::LinearAlgebra::createSimpleVector<TYPE, OP, DATA>(                              \
+            size_t, std::shared_ptr<Variable>, AMP_MPI );                                    \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector>                                     \
+    AMP::LinearAlgebra::createSimpleVector<TYPE, OP, DATA>(                                  \
+        std::shared_ptr<Variable>,                                                           \
+        std::shared_ptr<AMP::Discretization::DOFManager>,                                    \
+        std::shared_ptr<CommunicationList> )
+#define INSTANTIATE_ARRAY_VECTOR( TYPE )                                                         \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector>                                         \
+    AMP::LinearAlgebra::createArrayVector<TYPE>( const ArraySize &, const std::string & );       \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector>                                         \
+    AMP::LinearAlgebra::createArrayVector<TYPE>( const ArraySize &, std::shared_ptr<Variable> ); \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector>                                         \
+    AMP::LinearAlgebra::createArrayVector<TYPE>(                                                 \
+        const ArraySize &, const ArraySize &, const AMP_MPI &, std::shared_ptr<Variable> );      \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector>                                         \
+    AMP::LinearAlgebra::createVectorAdaptor<TYPE>(                                               \
+        const std::string &, std::shared_ptr<AMP::Discretization::DOFManager>, TYPE * );         \
+    template std::shared_ptr<AMP::LinearAlgebra::Vector> AMP::LinearAlgebra::createVector<TYPE>( \
+        std::shared_ptr<AMP::Discretization::DOFManager> DOFs,                                   \
+        std::shared_ptr<AMP::LinearAlgebra::Variable> variable,                                  \
+        bool split,                                                                              \
+        AMP::Utilities::MemoryType memType )
+
 
 #endif

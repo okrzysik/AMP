@@ -138,7 +138,7 @@ void readHDF5( hid_t fid, const std::string &name, TYPE &x )
     } else if constexpr ( AMP::is_vector_v<TYPE> ) {
         // We are dealing with a std::vector
         typedef typename AMP::remove_cvref_t<decltype( *x.begin() )> TYPE2;
-        if constexpr ( std::is_same_v<TYPE2, std::_Bit_reference> ) {
+        if constexpr ( std::is_same_v<TYPE2, std::vector<bool>::reference> ) {
             AMP::Array<bool> y;
             readHDF5Array( fid, name, y );
             x.resize( y.length() );
