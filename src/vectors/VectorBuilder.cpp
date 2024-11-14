@@ -17,12 +17,12 @@ INSTANTIATE_SIMPLE_VECTOR( float, VectorOperationsDefault<float>, VectorDataDefa
 INSTANTIATE_SIMPLE_VECTOR( double, VectorOperationsDefault<double>, VectorDataDefault<double> );
 
 #ifdef USE_DEVICE
-INSTANTIATE_SIMPLE_VECTOR( float,
-                           VectorOperationsDevice<float>,
-                           VectorDataDefault<float, AMP::ManagedAllocator<void>> );
-INSTANTIATE_SIMPLE_VECTOR( double,
-                           VectorOperationsDevice<double>,
-                           VectorDataDefault<double, AMP::ManagedAllocator<void>> );
+using float_op  = VectorOperationsDevice<float>;
+using double_op = VectorOperationsDevice<double>;
+using float_data  = VectorDataDefault<float, AMP::ManagedAllocator<void>>;
+using double_data = VectorDataDefault<double, AMP::ManagedAllocator<void>>;
+INSTANTIATE_SIMPLE_VECTOR( float, float_op, float_data );
+INSTANTIATE_SIMPLE_VECTOR( double, double_op, double_data );
 #endif
 
 } // namespace AMP::LinearAlgebra
