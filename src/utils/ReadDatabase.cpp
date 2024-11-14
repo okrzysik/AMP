@@ -826,7 +826,6 @@ static std::string generateMsg( const std::string &errMsgPrefix,
 static std::tuple<size_t, std::set<std::string>>
 loadDatabase( const std::string &errMsgPrefix,
               std::string_view buffer,
-              size_t N,
               Database &db,
               std::map<std::string, const KeyData *> databaseKeys = {},
               int line0                                           = 0 )
@@ -839,7 +838,7 @@ loadDatabase( const std::string &errMsgPrefix,
                 usedKeys.insert( key );
         }
     };
-    while ( pos < N ) {
+    while ( pos < buffer.size() ) {
         size_t i;
         token_type type;
         std::tie( i, type ) = find_next_token( &buffer[pos] );
@@ -899,7 +898,7 @@ loadDatabase( const std::string &errMsgPrefix,
             pos += i;
             auto database = std::make_unique<Database>();
             auto tmp =
-                loadDatabase( errMsgPrefix, &buffer[pos], N - pos, *database, databaseKeys, line );
+                loadDatabase( errMsgPrefix, buffer.substr( pos ), *database, databaseKeys, line );
             pos += std::get<0>( tmp );
             updateUsedKeys( std::get<1>( tmp ) );
             database->setName( std::string( key ) );
@@ -1059,15 +1058,12 @@ void Database::readDatabase( const std::string &filename, source_location src )
     // Read the input file into memory
     auto buffer = readFile( filename, src );
     // Create the database entries
-    loadDatabase( "Error loading database from file \"" + filename + "\"\n",
-                  buffer.data(),
-                  buffer.size(),
-                  *this );
+    loadDatabase( "Error loading database from file \"" + filename + "\"\n", buffer.data(), *this );
 }
 std::unique_ptr<Database> Database::createFromString( std::string_view data )
 {
     auto db = std::make_unique<Database>();
-    loadDatabase( "Error creating database from file\n", data.data(), data.size(), *db );
+    loadDatabase( "Error creating database from file\n", data, *db );
     return db;
 }
 

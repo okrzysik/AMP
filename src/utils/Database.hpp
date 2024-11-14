@@ -212,7 +212,7 @@ public:
     explicit KeyDataScalar( TYPE data, const Units &unit = Units() )
         : KeyData( unit ), d_data( std::move( data ) )
     {
-        static_assert( !std::is_same_v<TYPE, std::_Bit_reference> );
+        static_assert( !std::is_same_v<TYPE, std::vector<bool>::reference> );
     }
     virtual ~KeyDataScalar() {}
     typeID getClassType() const override { return getTypeID<KeyDataScalar>(); }
@@ -317,7 +317,7 @@ public:
     explicit KeyDataArray( Array<TYPE> data, const Units &unit = Units() )
         : KeyData( unit ), d_data( std::move( data ) )
     {
-        static_assert( !std::is_same_v<TYPE, std::_Bit_reference> );
+        static_assert( !std::is_same_v<TYPE, std::vector<bool>::reference> );
         data.clear(); // Suppress cppclean warning
     }
     virtual ~KeyDataArray() {}
@@ -709,7 +709,7 @@ template<class TYPE>
 void Database::putScalar(
     std::string_view key, TYPE value, Units unit, Check check, source_location src )
 {
-    if constexpr ( std::is_same_v<TYPE, std::_Bit_reference> ) {
+    if constexpr ( std::is_same_v<TYPE, std::vector<bool>::reference> ) {
         // Guard against storing a bit reference (store a bool instead)
         putScalar<bool>( key, value, unit, check, src );
     } else if constexpr ( std::is_same_v<TYPE, char *> || std::is_same_v<TYPE, const char *> ||
@@ -751,7 +751,7 @@ bool Database::isType( std::string_view key, source_location src ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
-    if constexpr ( std::is_same_v<TYPE, std::_Bit_reference> ) {
+    if constexpr ( std::is_same_v<TYPE, std::vector<bool>::reference> ) {
         // Guard against checking a bit reference (use a bool instead)
         return data->isType<bool>();
     } else {
