@@ -95,10 +95,6 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         return;
     }
 
-    if ( d_pOperator ) {
-        registerOperator( d_pOperator );
-    }
-
     // residual vector
     auto r0 = f->clone();
 

@@ -101,7 +101,6 @@ int testPetscSNESSolver( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
 
     myTest( &ut, "testPetscSNESSolver" );
 

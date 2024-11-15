@@ -197,16 +197,6 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     copyFromHypre( d_hypre_sol, u );
 
-    // Check for NaNs in the solution (no communication necessary)
-    // is this needed? won't hypre_norm below be nan?
-    // auto localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData()
-    // ).get<HYPRE_Real>(); if ( localNorm != localNorm ) {
-    //     d_ConvergenceStatus = SolverStatus::DivergedOnNan;
-    // 	// Is communication to figure out if any ranks have NaNs
-    // 	// better than throwing an error?
-    // 	AMP_ERROR("NaN solution in BoomerAMGSolver");
-    // }
-
     // we are forced to update the state of u here
     // as Hypre is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
@@ -215,13 +205,21 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // Query iteration count and store on AMP side
     HYPRE_PCGGetNumIterations( d_solver, &d_iNumberIterations );
+    HYPRE_Real hypre_res;
+    HYPRE_PCGGetFinalRelativeResidualNorm( d_solver, &hypre_res );
+
+    // Check for NaNs
+    if ( std::isnan( hypre_res ) ) {
+        d_ConvergenceStatus = SolverStatus::DivergedOther;
+        AMP_WARNING( "HyprePCGSolver::apply: Residual norm is NaN" );
+    }
 
     // Re-compute or query final residual
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, r );
         current_res = static_cast<HYPRE_Real>( r->L2Norm() );
     } else {
-        HYPRE_PCGGetFinalRelativeResidualNorm( d_solver, &current_res );
+        current_res = hypre_res;
     }
 
     // Store final residual norm and update convergence flags

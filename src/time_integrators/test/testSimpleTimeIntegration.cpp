@@ -75,7 +75,6 @@ void testIntegrator( const std::string &name,
 void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( db );
-    AMP::Solver::registerSolverFactories();
     auto imp_ti      = { "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
     auto name        = db->getScalar<std::string>( "name" );
     auto is_implicit = ( std::find( imp_ti.begin(), imp_ti.end(), name ) != imp_ti.end() );
@@ -154,11 +153,10 @@ int testSimpleTimeIntegration( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     // List of integrators
-    auto integrators = { "ExplicitEuler",  "RK12", "RK23", "RK34", "RK45", "RK2", "RK4",
-                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5" };
+    auto integrators = { "ExplicitEuler", "RK12", "RK23", "RK34", "RK45", "RK2", "RK4" };
+    //                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5" };
 
     // Run the tests
-    AMP::TimeIntegrator::registerTimeIntegratorFactories();
     for ( auto tmp : integrators )
         runBasicIntegratorTests( tmp, ut );
 

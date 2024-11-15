@@ -239,8 +239,8 @@ void Database::erase( std::string_view key, bool check )
             AMP_ERROR( std::string( key ) + " does not exist in database" );
         return;
     }
-    std::vector<bool>::swap( d_used[index], d_used.back() );
-    std::swap( d_hash[index], d_hash.back() );
+    d_used[index] = d_used.back();
+    d_hash[index] = d_hash.back();
     std::swap( d_keys[index], d_keys.back() );
     std::swap( d_data[index], d_data.back() );
     d_used.pop_back();
@@ -486,10 +486,6 @@ bool Database::is_integral() const
 {
     throw std::logic_error( "convertData on a database is not valid" );
 }
-
-
-// Register Database
-REGISTER_KEYDATA( Database, Database );
 
 
 // Print a database to an output stream

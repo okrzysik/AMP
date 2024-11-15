@@ -396,8 +396,22 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
             }
 
             AMP_ASSERT( d_preconditioner->getOperator() );
+
+            auto solnScaling = this->getSolutionScaling();
+            auto funcScaling = this->getFunctionScaling();
+            if ( solnScaling )
+                d_correction_vector->multiply( *d_correction_vector, *solnScaling );
+            if ( funcScaling )
+                d_residual_vector->multiply( *d_residual_vector, *funcScaling );
+
             // apply the preconditioner
             d_preconditioner->apply( d_residual_vector, d_correction_vector );
+
+            if ( solnScaling )
+                d_correction_vector->divide( *d_correction_vector, *solnScaling );
+            if ( funcScaling )
+                d_residual_vector->divide( *d_residual_vector, *funcScaling );
+
             d_preconditioner_apply_count++;
 
         } else {

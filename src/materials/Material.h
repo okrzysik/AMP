@@ -123,9 +123,6 @@ private:
 };
 
 
-//! Register materials known by AMP
-void registerMaterialFactories();
-
 //! Register a material with the factory
 void registerMaterial( const std::string &name, std::function<std::unique_ptr<Material>()> fun );
 

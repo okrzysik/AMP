@@ -57,11 +57,26 @@
 // clang-format on
 
 
+// Declare StackTrace functions that may not exist (version dependent)
+namespace StackTrace::Utilities {
+bool running_valgrind() __attribute__( ( weak ) );
+}
+
+
 namespace AMP::Utilities {
 
 
 // Mutex for Utility functions
 static std::mutex Utilities_mutex;
+
+
+// Check if valgrind is running
+bool running_valgrind()
+{
+    if ( StackTrace::Utilities::running_valgrind() )
+        return StackTrace::Utilities::running_valgrind();
+    return false;
+}
 
 
 /****************************************************************************

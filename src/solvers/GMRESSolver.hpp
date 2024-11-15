@@ -110,23 +110,6 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
-    const auto f_norm = static_cast<T>( f->L2Norm() );
-
-    // Zero rhs implies zero solution, bail out early
-    if ( f_norm == static_cast<T>( 0.0 ) ) {
-        u->zero();
-        d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
-        d_dResidualNorm     = 0.0;
-        if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "GMRESSolver<T>::apply: solution is zero" << std::endl;
-        }
-        return;
-    }
-
-    if ( d_pOperator ) {
-        registerOperator( d_pOperator );
-    }
-
     // residual vector
     AMP::LinearAlgebra::Vector::shared_ptr res = f->clone();
 
@@ -146,13 +129,16 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     computeInitialResidual( d_bUseZeroInitialGuess, f, u, z, res );
 
     // compute residual norm
-    auto beta          = static_cast<T>( res->L2Norm() );
-    d_dInitialResidual = beta;
+    auto beta = static_cast<T>( res->L2Norm() );
+    // Override zero initial residual to force relative tolerance convergence
+    // here to potentially handle singular systems
+    d_dInitialResidual = beta > std::numeric_limits<T>::epsilon() ? beta : 1.0;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
-        AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of rhs vector: " << f_norm << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of rhs vector: " << f->L2Norm()
+                  << std::endl;
         AMP::pout << "GMRESSolver<T>::apply: initial L2Norm of residual: " << beta << std::endl;
     }
 

@@ -112,8 +112,6 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    AMP::TimeIntegrator::registerTimeIntegratorFactories();
-
     if ( argc != 2 )
         std::cerr << "test_RestartManager <input>\n";
     testRestartManager( ut, argv[1] );

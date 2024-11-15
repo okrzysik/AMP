@@ -6,6 +6,7 @@
 #include "AMP/time_integrators/TimeOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
+#include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 
 #include <algorithm>
@@ -218,6 +219,8 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
 
     d_time_rtol = db->getWithDefault<double>( "truncation_error_rtol", 1e-09 );
     d_time_atol = db->getWithDefault<double>( "truncation_error_atol", 1e-15 );
+
+    d_auto_component_scaling = db->getWithDefault<bool>( "auto_component_scaling", true );
 
     if ( d_timestep_strategy != "constant" ) {
 
@@ -545,6 +548,10 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
             f->axpy( -d_gamma, *d_pSourceTerm, *f );
         }
     }
+
+    auto timeOperator = std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
+    AMP_INSIST( timeOperator, "TimeOperator is NULL" );
+    timeOperator->registerIntegratorSourceTerms( f );
 }
 
 void BDFIntegrator::printVectorComponentNorms(
@@ -1977,6 +1984,87 @@ void BDFIntegrator::reset(
     d_reset_after_restart = false;
 }
 
+void BDFIntegrator::setMultiPhysicsScalings( void )
+{
+    if ( d_auto_component_scaling ) {
+        if ( !d_solution_scaling )
+            d_solution_scaling = d_solution_vector->clone();
+        if ( !d_function_scaling )
+            d_function_scaling = d_solution_vector->clone();
+        d_solution_scaling->zero();
+        d_function_scaling->zero();
+
+        if ( !d_scratch_function_vector )
+            d_scratch_function_vector = d_function_scaling->clone();
+        d_scratch_function_vector->zero();
+
+        auto op = std::dynamic_pointer_cast<TimeOperator>( d_operator );
+        AMP_ASSERT( op );
+
+        auto mv = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_solution_vector );
+        if ( d_iDebugPrintInfoLevel >= 2 ) {
+            if ( mv ) {
+                const auto n = mv->getNumberOfSubvectors();
+                for ( size_t i = 0u; i < n; ++i ) {
+                    const auto s    = mv->getVector( i );
+                    const auto name = s->getVariable()->getName();
+                    auto snorm      = static_cast<double>( s->L2Norm() );
+                    AMP::pout << "BDFIntegrator::setMultiPhysicsScalings() Input solution vector "
+                                 "component: "
+                              << name << "  " << snorm << std::endl;
+                }
+            }
+        }
+        // this should be only called after a call to setInitialGuess for a timestep
+        op->applyRhs( d_solution_vector, d_function_scaling );
+        d_function_scaling->axpy( -d_gamma, *d_function_scaling, *d_solution_vector );
+        d_function_scaling->add( *d_function_scaling, *d_integrator_source_vector );
+
+        auto mf = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_function_scaling );
+        auto ms = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_solution_scaling );
+
+        if ( mf && ms && mv ) {
+            const auto n = mf->getNumberOfSubvectors();
+            std::vector<double> rnorms( n );
+            std::vector<double> snorms( n );
+            for ( size_t i = 0u; i < n; ++i ) {
+                // residual scaling
+                const auto r     = mf->getVector( i );
+                const auto s     = ms->getVector( i );
+                const auto sol   = mv->getVector( i );
+                const auto rnorm = static_cast<double>( r->L2Norm() );
+                const auto snorm = static_cast<double>( sol->L2Norm() );
+                rnorms[i]        = ( rnorm == 0.0 ) ? 1.0 : rnorm;
+                snorms[i]        = ( snorm == 0.0 ) ? 1.0 : snorm;
+            }
+            double resNorm{ 0.0 }, solNorm{ 0.0 };
+            for ( size_t i = 0u; i < n; ++i ) {
+                resNorm += rnorms[i] * rnorms[i];
+                solNorm += snorms[i] * snorms[i];
+            }
+            const auto &vnorm = ( resNorm > solNorm ) ? rnorms : snorms;
+            // for now both are set to the same
+            for ( size_t i = 0u; i < n; ++i ) {
+                const auto r = mf->getVector( i );
+                const auto s = ms->getVector( i );
+                r->setToScalar( vnorm[i] );
+                s->setToScalar( vnorm[i] );
+            }
+        } else {
+            // residual scaling
+            auto fnorm = static_cast<double>( d_function_scaling->L2Norm() );
+            fnorm      = ( fnorm == 0.0 ) ? 1.0 : fnorm;
+            auto snorm = static_cast<double>( d_solution_vector->L2Norm() );
+            snorm      = ( snorm == 0.0 ) ? 1.0 : snorm;
+            auto norm  = ( fnorm > snorm ) ? fnorm : snorm;
+            // for now both are set to the same
+            d_function_scaling->setToScalar( norm );
+            d_solution_scaling->setToScalar( norm );
+        }
+        setComponentScalings( d_solution_scaling, d_function_scaling );
+    }
+}
+
 // provide a default implementation
 int BDFIntegrator::integratorSpecificAdvanceSolution(
     const double dt,
@@ -1998,22 +2086,61 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     if ( !d_scratch_function_vector )
         d_scratch_function_vector = in->clone();
     auto rhs = d_scratch_function_vector;
-    rhs->scale( -1.0, *d_integrator_source_vector );
+    rhs->zero();
+    setMultiPhysicsScalings();
+
+    if ( !d_scratch_vector )
+        d_scratch_vector = in->clone();
 
     if ( d_solution_scaling ) {
-        // ensure both scalings are available
-        AMP_ASSERT( d_function_scaling );
-        d_solution_vector->divide( *d_solution_vector, *d_solution_scaling );
-        rhs->divide( *rhs, *d_function_scaling );
+        d_scratch_vector->divide( *d_solution_vector, *d_solution_scaling );
+    } else {
+        d_scratch_vector->copyVector( d_solution_vector );
     }
 
-    d_solver->apply( rhs, d_solution_vector );
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        AMP::pout << "Scaled incoming TI solution component norms: ";
+        auto mv = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_scratch_vector );
+        if ( mv ) {
+            const auto n = mv->getNumberOfSubvectors();
+            for ( size_t i = 0u; i < n; ++i ) {
+                const auto v    = mv->getVector( i );
+                const auto name = v->getVariable()->getName();
+                AMP::pout << name << " " << static_cast<double>( v->L2Norm() ) << " ";
+            }
+        } else {
+            const auto name = d_scratch_vector->getVariable()->getName();
+            AMP::pout << name << " " << static_cast<double>( d_scratch_vector->L2Norm() ) << " ";
+        }
+        AMP::pout << std::endl;
+    }
+
+    d_solver->apply( rhs, d_scratch_vector );
+
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        AMP::pout << "Scaled outgoing TI solution component norms: ";
+        auto mv = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_scratch_vector );
+        if ( mv ) {
+            const auto n = mv->getNumberOfSubvectors();
+            for ( size_t i = 0u; i < n; ++i ) {
+                const auto v    = mv->getVector( i );
+                const auto name = v->getVariable()->getName();
+                AMP::pout << name << " " << static_cast<double>( v->L2Norm() ) << " ";
+            }
+        } else {
+            const auto name = d_scratch_vector->getVariable()->getName();
+            AMP::pout << name << " " << static_cast<double>( d_scratch_vector->L2Norm() ) << " ";
+        }
+        AMP::pout << std::endl;
+    }
     const auto convStatus = d_solver->getConvergenceStatus();
     d_solver_retcode =
         convStatus <= AMP::Solver::SolverStrategy::SolverStatus::ConvergedUserCondition ? 1 : 0;
 
     if ( d_solution_scaling ) {
-        d_solution_vector->multiply( *d_solution_vector, *d_solution_scaling );
+        d_solution_vector->multiply( *d_scratch_vector, *d_solution_scaling );
+    } else {
+        d_solution_vector->copyVector( d_scratch_vector );
     }
 
     out->copyVector( d_solution_vector );

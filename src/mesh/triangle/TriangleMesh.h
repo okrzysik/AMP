@@ -52,7 +52,7 @@ public:
     {
         if ( i >= d_size.size() )
             return nullptr;
-        return &d_data[d_offset[i] + d_size[i]];
+        return &d_data[d_offset[i]] + d_size[i];
     }
 
 private:
@@ -165,9 +165,9 @@ public:
 
     // Copy/move constructors
     TriangleMesh( const TriangleMesh & );
-    TriangleMesh( TriangleMesh && ) = default;
+    TriangleMesh( TriangleMesh && )                 = default;
     TriangleMesh &operator=( const TriangleMesh & ) = delete;
-    TriangleMesh &operator=( TriangleMesh && ) = default;
+    TriangleMesh &operator=( TriangleMesh && )      = default;
 
     //! Deconstructor
     virtual ~TriangleMesh();

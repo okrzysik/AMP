@@ -74,19 +74,6 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
-    const auto f_norm = static_cast<T>( f->L2Norm() );
-
-    // Zero rhs implies zero solution, bail out early
-    if ( f_norm == static_cast<T>( 0.0 ) ) {
-        u->zero();
-        d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
-        d_dResidualNorm     = 0.0;
-        if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "CGSolver<T>::apply: solution is zero" << std::endl;
-        }
-        return;
-    }
-
     // z will store r when a preconditioner is not present
     // and will store the result of a preconditioner solve
     // when a preconditioner is present
@@ -104,13 +91,16 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // Store initial residual
-    auto current_res   = static_cast<T>( r->L2Norm() );
-    d_dInitialResidual = current_res;
+    auto current_res = static_cast<T>( r->L2Norm() );
+    // Override zero initial residual to force relative tolerance convergence
+    // here to potentially handle singular systems
+    d_dInitialResidual = current_res > std::numeric_limits<T>::epsilon() ? current_res : 1.0;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         AMP::pout << "CGSolver<T>::apply: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
-        AMP::pout << "CGSolver<T>::apply: initial L2Norm of rhs vector: " << f_norm << std::endl;
+        AMP::pout << "CGSolver<T>::apply: initial L2Norm of rhs vector: " << f->L2Norm()
+                  << std::endl;
         AMP::pout << "CGSolver<T>::apply: initial L2Norm of residual: " << current_res << std::endl;
     }
 

@@ -4,7 +4,9 @@
 #include "AMP/vectors/operations/MultiVectorOperations.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 
+
 namespace AMP::LinearAlgebra {
+
 
 std::shared_ptr<VectorOperations>
 VectorOperationsFactory::create( int64_t fid, AMP::IO::RestartManager *manager )
@@ -26,4 +28,14 @@ VectorOperationsFactory::create( int64_t fid, AMP::IO::RestartManager *manager )
     }
     return operations;
 }
+
+
 } // namespace AMP::LinearAlgebra
+
+
+template<>
+void AMP::FactoryStrategy<AMP::LinearAlgebra::VectorOperations,
+                          int64_t,
+                          AMP::IO::RestartManager *>::registerDefault()
+{
+}

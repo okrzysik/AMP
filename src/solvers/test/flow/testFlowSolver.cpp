@@ -189,7 +189,6 @@ int testFlowSolver( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Solver::registerSolverFactories();
 
     flowTest( &ut, "testFlowSolver" );
 
