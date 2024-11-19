@@ -75,7 +75,7 @@ public:
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override;
 
-    bool isValidInput( std::shared_ptr<const AMP::LinearAlgebra::Vector> u ) override;
+    bool isValidVector( std::shared_ptr<const AMP::LinearAlgebra::Vector> u ) override;
 
     size_t getNumberOfOperators() { return d_operators.size(); }
 

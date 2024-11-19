@@ -237,12 +237,12 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         std::cout.flush();
     }
 
-    // Test isValidInput function
+    // Test isValidVector function
     {
         auto testVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffSolVar );
 
         testVec->setToScalar( -1000. );
-        if ( !diffOp->isValidInput( testVec ) )
+        if ( !diffOp->isValidVector( testVec ) )
             ut->passes( exeName + ": validInput-1" );
         else {
             if ( ( diffOp->getPrincipalVariable() == "temperature" ) &&
@@ -254,7 +254,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
             }
         }
         testVec->setToScalar( 1.e99 );
-        if ( !diffOp->isValidInput( testVec ) )
+        if ( !diffOp->isValidVector( testVec ) )
             ut->passes( exeName + ": validInput-2" );
         else {
             if ( ( diffOp->getPrincipalVariable() == "temperature" ) &&

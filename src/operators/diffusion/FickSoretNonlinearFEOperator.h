@@ -47,10 +47,10 @@ public:
     }
 
     //! checks input to apply operator for satisfaction of range conditions
-    bool isValidInput( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override
+    bool isValidVector( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override
     {
         bool result;
-        result = d_FickOperator->isValidInput( u ) and d_SoretOperator->isValidInput( u );
+        result = d_FickOperator->isValidVector( u ) and d_SoretOperator->isValidVector( u );
         return result;
     }
 

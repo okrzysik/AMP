@@ -79,9 +79,9 @@ public:
         return d_volumeOperator->getOutputVariable();
     }
 
-    bool isValidInput( AMP::LinearAlgebra::Vector::const_shared_ptr sol ) override
+    bool isValidVector( AMP::LinearAlgebra::Vector::const_shared_ptr sol ) override
     {
-        return d_volumeOperator->isValidInput( sol );
+        return d_volumeOperator->isValidVector( sol );
     }
 
     std::shared_ptr<OperatorParameters>
