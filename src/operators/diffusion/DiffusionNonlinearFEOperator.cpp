@@ -350,7 +350,7 @@ void DiffusionNonlinearFEOperator::resetFrozen(
 }
 
 
-bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::const_shared_ptr u )
+bool DiffusionNonlinearFEOperator::isValidVector( AMP::LinearAlgebra::Vector::const_shared_ptr u )
 {
     auto property = d_transportModel->getProperty();
     auto names    = property->get_arguments();

@@ -126,7 +126,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     inTempVec->setToScalar( defaults[0] );
     rhsVec->setToScalar( 0. );
 
-    AMP_INSIST( nlinOp->isValidInput( solVec ), "input variable not set up correctly" );
+    AMP_INSIST( nlinOp->isValidVector( solVec ), "input variable not set up correctly" );
 
     // Test apply
     std::string msgPrefix = exeName + ": apply";

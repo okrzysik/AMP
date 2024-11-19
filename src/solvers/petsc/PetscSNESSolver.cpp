@@ -433,7 +433,7 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     if ( db->keyExists( "step_tolerance" ) )
         d_dStepTolerance = db->getScalar<double>( "step_tolerance" );
 
-    d_bEnableLineSearchPreCheck = db->getWithDefault<bool>( "enableLineSearchPreCheckg", false );
+    d_bEnableLineSearchPreCheck = db->getWithDefault<bool>( "enableLineSearchPreCheck", false );
 
     if ( d_bEnableLineSearchPreCheck )
         d_iNumberOfLineSearchPreCheckAttempts =
@@ -629,27 +629,30 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
     auto pScratchVector = getScratchVector();
 
     pScratchVector->add( *x, *y );
+    auto solnScaling = this->getSolutionScaling();
+    if ( solnScaling )
+        pScratchVector->multiply( *pScratchVector, *solnScaling );
 
     if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
         changed_y = PETSC_FALSE;
         ierr      = 0;
     } else {
-        int N_line = getNumberOfLineSearchPreCheckAttempts();
-        auto pColumnOperator =
-            std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( d_pOperator );
-        if ( pColumnOperator ) {
-            for ( int i = 0; i < N_line; i++ ) {
+
+        int N_line          = getNumberOfLineSearchPreCheckAttempts();
+        const double lambda = 0.5;
+        for ( int i = 0; i < N_line; i++ ) {
+            if ( d_iDebugPrintInfoLevel > 1 ) {
                 AMP::pout << "Attempting to scale search, attempt number " << i << std::endl;
-                double lambda = 0.5;
-                y->scale( lambda, *y );
-                pScratchVector->add( *x, *y );
-                if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
-                    ierr      = 0;
-                    changed_y = PETSC_TRUE;
-                    break;
-                } else {
-                    lambda = lambda / 2.0;
-                }
+            }
+            y->scale( lambda, *y );
+            pScratchVector->add( *x, *y );
+            if ( solnScaling )
+                pScratchVector->multiply( *pScratchVector, *solnScaling );
+
+            if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
+                ierr      = 0;
+                changed_y = PETSC_TRUE;
+                break;
             }
         }
     }
@@ -785,9 +788,10 @@ bool PetscSNESSolver::isVectorValid( std::shared_ptr<AMP::Operator::Operator> &o
                                      const AMP_MPI &comm )
 {
     bool retVal = false;
-    int msg     = op->isValidInput( v ) ? 1 : 0;
-    int result  = comm.minReduce( msg );
-    retVal      = ( result == 1 );
+    int msg     = op->isValidVector( v ) ? 1 : 0;
+
+    int result = comm.minReduce( msg );
+    retVal     = ( result == 1 );
     return retVal;
 }
 
@@ -1026,16 +1030,14 @@ PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
 
     AMP_ASSERT( xin );
     AMP_ASSERT( xout );
-    auto rhs  = PETSC::getAMP( xin );
-    auto soln = PETSC::getAMP( xout );
-#if 1
+    auto rhs         = PETSC::getAMP( xin );
+    auto soln        = PETSC::getAMP( xout );
     auto solnScaling = snesSolver->getSolutionScaling();
     auto funcScaling = snesSolver->getFunctionScaling();
     if ( solnScaling )
         soln->multiply( *soln, *solnScaling );
     if ( funcScaling )
         rhs->multiply( *rhs, *funcScaling );
-#endif
     // Make sure the vectors are in a consistent state
     rhs->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     soln->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
@@ -1054,12 +1056,10 @@ PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
     // BP: 04/05/2022, the SAMRSolvers version copies input to output (identity pc)
     // if the preconditioner is null. For now we don't
     preconditioner->apply( rhs, soln );
-#if 1
     if ( solnScaling )
         soln->divide( *soln, *solnScaling );
     if ( funcScaling )
         rhs->divide( *rhs, *funcScaling );
-#endif
 
     // Check for nans (no communication necessary)
     double localNorm =
