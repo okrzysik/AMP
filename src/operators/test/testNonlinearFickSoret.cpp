@@ -167,7 +167,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( defaults.size() > 2 )
         inBurnVec->setToScalar( defaults[2] );
 
-    AMP_INSIST( fsOp->isValidInput( solVec ), "input variable not set up correctly" );
+    AMP_INSIST( fsOp->isValidVector( solVec ), "input variable not set up correctly" );
 
     // test apply
     applyTests( ut, msgPrefix, nonlinearOperator, rhsVec, solVec, resVec, adjustment );

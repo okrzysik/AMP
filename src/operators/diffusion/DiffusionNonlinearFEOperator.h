@@ -58,7 +58,7 @@ public:
     /**
      * checks input to apply operator for satisfaction of range conditions
      */
-    bool isValidInput( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
+    bool isValidVector( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
 protected:
     std::shared_ptr<OperatorParameters>

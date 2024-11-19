@@ -150,11 +150,11 @@ std::shared_ptr<AMP::LinearAlgebra::Variable> ColumnOperator::getOutputVariable(
 /********************************************************
  * Check the input                                       *
  ********************************************************/
-bool ColumnOperator::isValidInput( std::shared_ptr<const AMP::LinearAlgebra::Vector> u )
+bool ColumnOperator::isValidVector( std::shared_ptr<const AMP::LinearAlgebra::Vector> u )
 {
     bool bRetVal = true;
     for ( auto &elem : d_operators ) {
-        bRetVal = bRetVal && elem->isValidInput( u );
+        bRetVal = bRetVal && elem->isValidVector( u );
     }
     return bRetVal;
 }
