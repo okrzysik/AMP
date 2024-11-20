@@ -17,8 +17,8 @@ INSTANTIATE_SIMPLE_VECTOR( float, VectorOperationsDefault<float>, VectorDataDefa
 INSTANTIATE_SIMPLE_VECTOR( double, VectorOperationsDefault<double>, VectorDataDefault<double> );
 
 #ifdef USE_DEVICE
-using float_op  = VectorOperationsDevice<float>;
-using double_op = VectorOperationsDevice<double>;
+using float_op    = VectorOperationsDevice<float>;
+using double_op   = VectorOperationsDevice<double>;
 using float_data  = VectorDataDefault<float, AMP::ManagedAllocator<void>>;
 using double_data = VectorDataDefault<double, AMP::ManagedAllocator<void>>;
 INSTANTIATE_SIMPLE_VECTOR( float, float_op, float_data );

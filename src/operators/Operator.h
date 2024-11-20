@@ -118,7 +118,9 @@ public:
     virtual std::shared_ptr<const AMP::LinearAlgebra::Vector>
     subsetInputVector( std::shared_ptr<const AMP::LinearAlgebra::Vector> vec );
 
-    virtual bool isValidInput( std::shared_ptr<const AMP::LinearAlgebra::Vector> ) { return true; }
+    //! given a vector return whether it is valid or not
+    // default behavior is to return true;
+    virtual bool isValidVector( std::shared_ptr<const AMP::LinearAlgebra::Vector> ) { return true; }
 
     //! Return the mesh
     std::shared_ptr<AMP::Mesh::Mesh> getMesh() { return d_Mesh; }
@@ -140,10 +142,6 @@ public:
     //! overshoots or undershoots have happened due to interpolation for example
     //! The default is a null op
     virtual void reInitializeVector( std::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
-
-    //! given a vector return whether it is valid or not
-    // default behavior is to return true;
-    virtual bool isValidVector( std::shared_ptr<AMP::LinearAlgebra::Vector> ) { return true; }
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
