@@ -203,7 +203,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     // specify Gaussian elimination on the coarsest level
-    HYPRE_BoomerAMGSetCycleRelaxType( d_solver, 99, 3 );
+    HYPRE_BoomerAMGSetCycleRelaxType( d_solver, 9, 3 );
 
     if ( db->keyExists( "relax_order" ) ) {
         d_relax_order = db->getScalar<int>( "relax_order" );

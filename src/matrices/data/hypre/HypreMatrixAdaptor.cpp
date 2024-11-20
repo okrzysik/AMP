@@ -67,11 +67,9 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
         initializeHypreMatrix( csrDataHost, false );
     } else if ( csrDataManaged ) {
         initializeHypreMatrix( csrDataManaged, true );
-        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
     } else if ( csrDataDevice ) {
         AMP_ERROR( "Pure device memory not yet supported in HypreMatrixAdaptor" );
         initializeHypreMatrix( csrDataDevice, true );
-        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
     } else {
 
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
@@ -117,8 +115,10 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
                                                 const bool is_device )
 {
     if ( !is_device ) {
+        AMP::pout << "Init hypre host matrix" << std::endl;
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
     } else {
+        AMP::pout << "Init hypre device matrix" << std::endl;
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
     }
 
