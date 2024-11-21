@@ -132,6 +132,13 @@ void VectorOperationsDevice<TYPE>::copy( const VectorData &x, VectorData &y )
 }
 
 template<typename TYPE>
+void VectorOperationsDevice<TYPE>::copyCast( const VectorData &x, VectorData &y )
+{
+    // Default copyCast already supports device
+    getDefaultOps()->copyCast( x, y );
+}
+
+template<typename TYPE>
 void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in, VectorData &x )
 {
     if ( checkData( x ) ) {

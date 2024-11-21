@@ -153,6 +153,11 @@ public: // Advanced virtual functions
      */
     std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
 
+    /** \brief Copy cast
+     */
+    template<typename TYPE2>
+    std::shared_ptr<VectorData> copyCastData( const std::string &name = "" );
+
 
 public: // Non-virtual functions
     /** \brief Access the raw element

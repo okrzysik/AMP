@@ -1,6 +1,7 @@
 #ifndef included_AMP_VectorOperationsDefault_hpp
 #define included_AMP_VectorOperationsDefault_hpp
 
+#include "AMP/utils/CopyCast.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
@@ -111,6 +112,30 @@ void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &y )
 {
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
     std::copy( x.begin<TYPE>(), x.end<TYPE>(), y.begin<TYPE>() );
+    y.copyGhostValues( x );
+}
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::copyCast( const VectorData &x, VectorData &y )
+{
+    if ( x.numberOfDataBlocks() == y.numberOfDataBlocks() ) {
+        for ( size_t block_id = 0; block_id < y.numberOfDataBlocks(); block_id++ ) {
+            auto ydata = y.getRawDataBlock<TYPE>( block_id );
+            auto N     = y.sizeOfDataBlock( block_id );
+            AMP_ASSERT( N == x.sizeOfDataBlock( block_id ) );
+            if ( x.getType( 0 ) == getTypeID<float>() ) {
+                auto xdata = x.getRawDataBlock<float>( block_id );
+                AMP::Utilities::copyCast<float, TYPE>( N, xdata, ydata );
+            } else if ( x.getType( 0 ) == getTypeID<double>() ) {
+                auto xdata = x.getRawDataBlock<double>( block_id );
+                AMP::Utilities::copyCast<double, TYPE>( N, xdata, ydata );
+            } else {
+                AMP_ERROR( "CopyCast only implemented for float or doubles." );
+            }
+        }
+    } else {
+        AMP_ERROR( "Different number of blocks; CopyCast not implemented for non-matching "
+                   "multiblock data." );
+    }
     y.copyGhostValues( x );
 }
 

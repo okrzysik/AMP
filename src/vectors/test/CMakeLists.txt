@@ -8,6 +8,7 @@ COPY_TEST_FILE( input_testMultiVector )
 
 ADD_AMP_TEST_1_2_4( test_Vector GPU )
 ADD_AMP_TEST_1_2_4( testMultiVector GPU )
+ADD_AMP_TEST( test_VectorCopyCast )
 ADD_AMP_TEST( test_VectorPerformance GPU )
 ADD_AMP_TEST( test_Scalar )
 
