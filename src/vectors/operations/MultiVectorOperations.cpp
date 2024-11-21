@@ -112,6 +112,10 @@ void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
         AMP_ERROR( "Unable to discern data types" );
     }
 }
+void MultiVectorOperations::copyCast( const VectorData &, VectorData & )
+{
+    AMP_ERROR( "Not implemented!" );
+}
 
 void MultiVectorOperations::scale( const Scalar &alpha, VectorData &x )
 {

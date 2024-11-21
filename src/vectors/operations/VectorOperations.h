@@ -45,6 +45,14 @@ public:
     virtual void copy( const VectorData &x, VectorData &z ) = 0;
 
     /**
+     * \brief  Set vector equal to x (with different precision)
+     *      For Vectors, \f$z_i = x_i\f$.
+     * \param[in] x         a vector
+     * \param[out] z        a vector
+     */
+    virtual void copyCast( const VectorData &x, VectorData &z ) = 0;
+
+    /**
      *\brief Set vector entries (including ghosts) to zero
      *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a
      *     makeConsistent(SET)

@@ -30,6 +30,7 @@ public:
     //  function that operate on VectorData
     std::string VectorOpName() const override;
     void copy( const VectorData &x, VectorData &z ) override;
+    void copyCast( const VectorData &x, VectorData &z ) override;
     void zero( VectorData &z ) override;
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;
