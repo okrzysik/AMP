@@ -373,6 +373,16 @@ public: // Clone vectors
     std::shared_ptr<Vector> clone( const std::shared_ptr<Variable> name ) const;
 
 
+public: // Up/down-cast vectors
+    /** \brief Copy tup/down-casting  <i>this</i>
+     * \details  This will allocate new space with the same layout as <i>this</i>.
+     *    It will have the same number of blocks, each with the same engines and same number
+     *    of entries.  The vector will be associated with the same Variable, and will contain
+     *    a copy of the data after up/down-casting it.
+     * \return  A Vector shared pointer
+     */
+    void copyCast( std::shared_ptr<const Vector> x );
+
 public: // Get/Set data/variables/operations
     //! Get the units for this Vector
     inline auto getUnits() const { return d_units; }

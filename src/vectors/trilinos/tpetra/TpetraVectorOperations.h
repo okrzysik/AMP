@@ -37,6 +37,7 @@ public:
     void zero( VectorData &x ) override { setToScalar( static_cast<ST>( 0.0 ), x ); }
     void setRandomValues( VectorData &x ) override;
     void copy( const VectorData &x, VectorData &z ) override;
+    void copyCast( const VectorData &, VectorData & ) override { AMP_ERROR( "Not implemented!" ); }
     void scale( const Scalar &alpha, const VectorData &x, VectorData &y ) override;
     void scale( const Scalar &alpha, VectorData &x ) override;
     void add( const VectorData &x, const VectorData &y, VectorData &z ) override;

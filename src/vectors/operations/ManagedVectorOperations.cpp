@@ -50,6 +50,10 @@ void ManagedVectorOperations::copy( const VectorData &src, VectorData &dst )
     dst_managed->dataChanged();
     dst_managed->makeConsistent( ScatterType::CONSISTENT_SET );
 }
+void ManagedVectorOperations::copyCast( const VectorData &, VectorData & )
+{
+    AMP_ERROR( "Not implemented!" );
+}
 
 void ManagedVectorOperations::setToScalar( const Scalar &alpha, VectorData &x )
 {

@@ -174,7 +174,7 @@ Vector::const_shared_ptr Vector::subsetVectorForComponent( size_t index ) const
 
 
 /****************************************************************
- * clone, swap                                                   *
+ * clone, swap                                                  *
  ****************************************************************/
 std::shared_ptr<Vector> Vector::clone() const { return clone( getVariable()->clone() ); }
 std::shared_ptr<Vector> Vector::clone( const std::string &name ) const
@@ -211,6 +211,14 @@ void Vector::swapVectors( Vector &other )
     std::swap( d_units, other.d_units );
 }
 
+
+/****************************************************************
+ * up-down cloneCast & copyCast                                 *
+ ****************************************************************/
+void Vector::copyCast( std::shared_ptr<const Vector> x )
+{
+    d_VectorOps->copyCast( *x->getVectorData(), *getVectorData() );
+}
 
 /****************************************************************
  * Math API for Vector                                          *
