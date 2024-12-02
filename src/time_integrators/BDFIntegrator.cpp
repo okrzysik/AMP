@@ -851,8 +851,8 @@ void BDFIntegrator::evaluatePredictor()
     if ( !d_operator->isValidVector( d_predictor_vector ) ) {
         // do a constant extrapolation in time for the
         // predictor
-        evaluateForwardEulerPredictor();
-        //        d_predictor_vector->copyVector( d_prev_solutions[0] );
+        //        evaluateForwardEulerPredictor();
+        d_predictor_vector->copyVector( d_prev_solutions[0] );
     }
 }
 

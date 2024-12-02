@@ -54,6 +54,9 @@ public:
     void abs( const VectorData &x, VectorData &z ) override;
     void addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y ) override;
 
+    void setMax( const Scalar &val, VectorData &x ) override;
+    void setMin( const Scalar &val, VectorData &x ) override;
+
     Scalar localMin( const VectorData & ) const override;
     Scalar localMax( const VectorData & ) const override;
     Scalar localSum( const VectorData & ) const override;
