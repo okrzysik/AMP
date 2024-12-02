@@ -137,16 +137,15 @@ Preconditioner{
   min_coarse_size        = 16
   max_iterations         = 1
   measure_type           = 1
-  coarsen_type           = 10
-  interp_type            = 17
+  coarsen_type           = 8
+  interp_type            = 6
   relax_order            = 0
   relax_type             = 16
-  smooth_type            = 6
+  smooth_type            = 16
   chebyshev_order        = 2
   chebyshev_fraction     = 0.3
   keep_transpose         = 1
   strong_threshold       = 0.5
-  print_info_level       = 0
 }
 
 
