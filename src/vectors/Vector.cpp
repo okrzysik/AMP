@@ -174,7 +174,7 @@ Vector::const_shared_ptr Vector::subsetVectorForComponent( size_t index ) const
 
 
 /****************************************************************
- * clone, swap                                                   *
+ * clone, swap                                                  *
  ****************************************************************/
 std::shared_ptr<Vector> Vector::clone() const { return clone( getVariable()->clone() ); }
 std::shared_ptr<Vector> Vector::clone( const std::string &name ) const
@@ -211,6 +211,14 @@ void Vector::swapVectors( Vector &other )
     std::swap( d_units, other.d_units );
 }
 
+
+/****************************************************************
+ * up-down cloneCast & copyCast                                 *
+ ****************************************************************/
+void Vector::copyCast( std::shared_ptr<const Vector> x )
+{
+    d_VectorOps->copyCast( *x->getVectorData(), *getVectorData() );
+}
 
 /****************************************************************
  * Math API for Vector                                          *
@@ -263,6 +271,8 @@ void Vector::addScalar( const Vector &x, const Scalar &alpha_in )
 {
     d_VectorOps->addScalar( *x.getVectorData(), alpha_in, *getVectorData() );
 }
+void Vector::setMax( const Scalar &val ) { d_VectorOps->setMax( val, *getVectorData() ); }
+void Vector::setMin( const Scalar &val ) { d_VectorOps->setMin( val, *getVectorData() ); }
 Scalar Vector::min() const { return d_VectorOps->min( *getVectorData() ); }
 Scalar Vector::max() const { return d_VectorOps->max( *getVectorData() ); }
 Scalar Vector::sum() const { return d_VectorOps->sum( *getVectorData() ); }

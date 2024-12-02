@@ -1,6 +1,7 @@
 #ifndef included_AMP_VectorOperationsOpenMP_hpp
 #define included_AMP_VectorOperationsOpenMP_hpp
 
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
@@ -103,6 +104,31 @@ void VectorOperationsOpenMP<TYPE>::copy( const VectorData &x, VectorData &y )
 {
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
     std::copy( x.begin<TYPE>(), x.end<TYPE>(), y.begin<TYPE>() );
+    y.copyGhostValues( x );
+}
+
+template<typename TYPE>
+void VectorOperationsOpenMP<TYPE>::copyCast( const VectorData &x, VectorData &y )
+{
+    if ( x.numberOfDataBlocks() == y.numberOfDataBlocks() ) {
+        for ( size_t block_id = 0; block_id < y.numberOfDataBlocks(); block_id++ ) {
+            auto ydata = y.getRawDataBlock<TYPE>( block_id );
+            auto N     = y.sizeOfDataBlock( block_id );
+            AMP_ASSERT( N == x.sizeOfDataBlock( block_id ) );
+            if ( x.getType( 0 ) == getTypeID<float>() ) {
+                auto xdata = x.getRawDataBlock<float>( block_id );
+                AMP::Utilities::copyCast<float, TYPE>( N, xdata, ydata );
+            } else if ( x.getType( 0 ) == getTypeID<double>() ) {
+                auto xdata = x.getRawDataBlock<double>( block_id );
+                AMP::Utilities::copyCast<double, TYPE>( N, xdata, ydata );
+            } else {
+                AMP_ERROR( "CopyCast only implemented for float or doubles." );
+            }
+        }
+    } else {
+        AMP_ERROR( "Different number of blocks; CopyCast not implemented for non-matching "
+                   "multiblock data." );
+    }
     y.copyGhostValues( x );
 }
 
@@ -315,6 +341,30 @@ void VectorOperationsOpenMP<TYPE>::addScalar( const VectorData &x,
     while ( curMe != last ) {
         *curMe = *curXRhs + alpha;
         ++curXRhs;
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsOpenMP<TYPE>::setMax( const Scalar &val, VectorData &x )
+{
+    auto alpha = val.get<TYPE>();
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        *curMe = std::min( alpha, *curMe );
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsOpenMP<TYPE>::setMin( const Scalar &val_in, VectorData &x )
+{
+    auto alpha = val.get<TYPE>();
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        *curMe = std::max( alpha, *curMe );
         ++curMe;
     }
 }

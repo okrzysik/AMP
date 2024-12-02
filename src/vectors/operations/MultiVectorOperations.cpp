@@ -112,6 +112,23 @@ void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
         AMP_ERROR( "Unable to discern data types" );
     }
 }
+void MultiVectorOperations::copyCast( const VectorData &x, VectorData &y )
+{
+    if ( d_operations.empty() ) {
+        return;
+    }
+    auto x2 = getMultiVectorData( x );
+    auto y2 = getMultiVectorData( y );
+    if ( x2 && y2 ) {
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        for ( size_t i = 0; i != d_operations.size(); i++ )
+            d_operations[i]->copyCast( *getVectorDataComponent( x, i ),
+                                       *getVectorDataComponent( y, i ) );
+
+    } else {
+        AMP_ERROR( "MultiVectorOperations::copyCast requires both x and y to be MultiVectorData" );
+    }
+}
 
 void MultiVectorOperations::scale( const Scalar &alpha, VectorData &x )
 {
@@ -353,6 +370,36 @@ void MultiVectorOperations::addScalar( const VectorData &x, const Scalar &alpha_
                 *getVectorDataComponent( x, i ), alpha_in, *getVectorDataComponent( y, i ) );
     } else {
         AMP_ERROR( "MultiVectorOperations::addScalar requires x, y to be MultiVectorData" );
+    }
+}
+
+void MultiVectorOperations::setMax( const Scalar &alpha_in, VectorData &x )
+{
+    if ( d_operations.empty() ) {
+        return;
+    }
+    auto x2 = getMultiVectorData( x );
+    if ( x2 ) {
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        for ( size_t i = 0; i != d_operations.size(); i++ )
+            d_operations[i]->setMax( alpha_in, *getVectorDataComponent( x, i ) );
+    } else {
+        AMP_ERROR( "MultiVectorOperations::setMax requires x to be MultiVectorData" );
+    }
+}
+
+void MultiVectorOperations::setMin( const Scalar &alpha_in, VectorData &x )
+{
+    if ( d_operations.empty() ) {
+        return;
+    }
+    auto x2 = getMultiVectorData( x );
+    if ( x2 ) {
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        for ( size_t i = 0; i != d_operations.size(); i++ )
+            d_operations[i]->setMin( alpha_in, *getVectorDataComponent( x, i ) );
+    } else {
+        AMP_ERROR( "MultiVectorOperations::setMax requires x to be MultiVectorData" );
     }
 }
 

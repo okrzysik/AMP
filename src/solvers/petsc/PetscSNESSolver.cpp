@@ -440,9 +440,9 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
             db->getWithDefault<int>( "numberOfLineSearchPreCheckAttempts", 5 );
 
     d_bEnableMFFDBoundsCheck = db->getWithDefault<bool>( "enableMFFDBoundsCheck", false );
-    if ( d_bEnableMFFDBoundsCheck )
-        d_operatorComponentToEnableBoundsCheck =
-            db->getScalar<int>( "operatorComponentToEnableBoundsCheck" );
+    //    if ( d_bEnableMFFDBoundsCheck )
+    //        d_operatorComponentToEnableBoundsCheck =
+    //            db->getScalar<int>( "operatorComponentToEnableBoundsCheck" );
 
     d_sForcingTermStrategy = db->getWithDefault<std::string>( "forcing_term_strategy", "CONSTANT" );
     if ( d_sForcingTermStrategy == "EWCHOICE1" ) {
@@ -628,12 +628,14 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
     int ierr            = 1;
     auto pScratchVector = getScratchVector();
 
-    pScratchVector->add( *x, *y );
+    //    pScratchVector->add( *x, *y );
+    pScratchVector->subtract( *x, *y );
     auto solnScaling = this->getSolutionScaling();
     if ( solnScaling )
         pScratchVector->multiply( *pScratchVector, *solnScaling );
 
-    if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
+    bool valid_v = isVectorValid( d_pOperator, pScratchVector, x->getComm() );
+    if ( valid_v ) {
         changed_y = PETSC_FALSE;
         ierr      = 0;
     } else {
@@ -645,15 +647,23 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
                 AMP::pout << "Attempting to scale search, attempt number " << i << std::endl;
             }
             y->scale( lambda, *y );
-            pScratchVector->add( *x, *y );
+            //            pScratchVector->add( *x, *y );
+            pScratchVector->subtract( *x, *y );
             if ( solnScaling )
                 pScratchVector->multiply( *pScratchVector, *solnScaling );
-
-            if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
+            valid_v = isVectorValid( d_pOperator, pScratchVector, x->getComm() );
+            if ( valid_v ) {
                 ierr      = 0;
                 changed_y = PETSC_TRUE;
                 break;
             }
+        }
+
+        // if all else fails truncate to zero
+        if ( !valid_v ) {
+            ierr      = 0;
+            changed_y = PETSC_TRUE;
+            y->setMin( 0.0 );
         }
     }
     return ierr;
@@ -955,10 +965,17 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
     auto av    = sp_a->subsetVectorForVariable( opVar );
 
     scv->axpy( *h, *av, *uv );
-
+#if 1
+    //    AMP_ASSERT( isVectorValid( pOperator, uv, sp_u->getComm() ) );
+    while ( !isVectorValid( pOperator, scv, sp_u->getComm() ) ) {
+        AMP::pout << "Scaling h back from  " << ( *h ) << " to " << 0.75 * ( *h ) << std::endl;
+        *h = 0.75 * ( *h );
+        scv->axpy( *h, *av, *uv );
+    }
+#else
     // the code below is only valid for ensuring positivity
     // will do for now
-    if ( isVectorValid( pOperator, scv, sp_u->getComm() ) ) {
+    if ( !isVectorValid( pOperator, scv, sp_u->getComm() ) ) {
         double minVal = PetscAbsScalar( ( *h ) * 1.01 );
         scv->divide( *uv, *av );
         scv->abs( *scv );
@@ -971,7 +988,7 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
                 *h = -0.99 * minVal;
         }
     }
-
+#endif
     return ( 0 );
 }
 

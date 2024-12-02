@@ -92,6 +92,20 @@ void DeviceOperationsHelpers<TYPE>::addScalar( size_t N, const TYPE *x, TYPE alp
 }
 
 template<typename TYPE>
+void DeviceOperationsHelpers<TYPE>::setMin( size_t N, TYPE alpha, TYPE *x )
+{
+    auto lambda = [alpha] __host__ __device__( TYPE x ) { return x < alpha ? alpha : x; };
+    thrust::transform( thrust::device, x, x + N, x, lambda );
+}
+
+template<typename TYPE>
+void DeviceOperationsHelpers<TYPE>::setMax( size_t N, TYPE alpha, TYPE *x )
+{
+    auto lambda = [alpha] __host__ __device__( TYPE x ) { return x > alpha ? alpha : x; };
+    thrust::transform( thrust::device, x, x + N, x, lambda );
+}
+
+template<typename TYPE>
 TYPE DeviceOperationsHelpers<TYPE>::localMin( size_t N, const TYPE *x )
 {
     return thrust::reduce(

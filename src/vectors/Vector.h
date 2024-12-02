@@ -266,6 +266,16 @@ public: // the next set of functions defines the public math. interface for vect
     void addScalar( const Vector &x, const Scalar &alpha );
 
     /**
+     * \brief modify vector to have max value 'val' specified
+     */
+    void setMax( const Scalar &val );
+
+    /**
+     * \brief modify vector to have min value 'val' specified
+     */
+    void setMin( const Scalar &val );
+
+    /**
      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
     Scalar min() const;
@@ -372,6 +382,16 @@ public: // Clone vectors
      */
     std::shared_ptr<Vector> clone( const std::shared_ptr<Variable> name ) const;
 
+
+public: // Up/down-cast vectors
+    /** \brief Copy tup/down-casting  <i>this</i>
+     * \details  This will allocate new space with the same layout as <i>this</i>.
+     *    It will have the same number of blocks, each with the same engines and same number
+     *    of entries.  The vector will be associated with the same Variable, and will contain
+     *    a copy of the data after up/down-casting it.
+     * \return  A Vector shared pointer
+     */
+    void copyCast( std::shared_ptr<const Vector> x );
 
 public: // Get/Set data/variables/operations
     //! Get the units for this Vector

@@ -30,6 +30,7 @@ public:
     //  function that operate on VectorData
     std::string VectorOpName() const override;
     void copy( const VectorData &x, VectorData &z ) override;
+    void copyCast( const VectorData &x, VectorData &z ) override;
     void zero( VectorData &z ) override;
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;
@@ -51,6 +52,9 @@ public:
     axpby( const Scalar &alpha, const Scalar &beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
     void addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y ) override;
+
+    void setMax( const Scalar &val, VectorData &x ) override;
+    void setMin( const Scalar &val, VectorData &x ) override;
 
     Scalar localMin( const VectorData &x ) const override;
     Scalar localMax( const VectorData &x ) const override;
@@ -90,6 +94,8 @@ public: // Pull VectorOperations into the current scope
     using VectorOperations::multiply;
     using VectorOperations::reciprocal;
     using VectorOperations::scale;
+    using VectorOperations::setMax;
+    using VectorOperations::setMin;
     using VectorOperations::setRandomValues;
     using VectorOperations::subtract;
     using VectorOperations::wrmsNorm;

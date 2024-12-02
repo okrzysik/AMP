@@ -34,6 +34,7 @@ public:
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;
     void copy( const VectorData &x, VectorData &z ) override;
+    void copyCast( const VectorData &x, VectorData &z ) override;
     void scale( const Scalar &alpha, const VectorData &x, VectorData &y ) override;
     void scale( const Scalar &alpha, VectorData &x ) override;
     void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
@@ -52,6 +53,9 @@ public:
     axpby( const Scalar &alpha, const Scalar &beta, const VectorData &x, VectorData &y ) override;
     void abs( const VectorData &x, VectorData &z ) override;
     void addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y ) override;
+
+    void setMax( const Scalar &val, VectorData &x ) override;
+    void setMin( const Scalar &val, VectorData &x ) override;
 
     Scalar localMin( const VectorData & ) const override;
     Scalar localMax( const VectorData & ) const override;

@@ -132,6 +132,13 @@ void VectorOperationsDevice<TYPE>::copy( const VectorData &x, VectorData &y )
 }
 
 template<typename TYPE>
+void VectorOperationsDevice<TYPE>::copyCast( const VectorData &x, VectorData &y )
+{
+    // Default copyCast already supports device
+    getDefaultOps()->copyCast( x, y );
+}
+
+template<typename TYPE>
 void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in, VectorData &x )
 {
     if ( checkData( x ) ) {
@@ -319,6 +326,36 @@ void VectorOperationsDevice<TYPE>::addScalar( const VectorData &x,
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->addScalar( x, alpha_in, y );
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDevice<TYPE>::setMin( const Scalar &alpha_in, VectorData &y )
+{
+    if ( checkData( y ) ) {
+        auto ydata = y.getRawDataBlock<TYPE>( 0 );
+        size_t N   = y.sizeOfDataBlock( 0 );
+        TYPE alpha = alpha_in.get<TYPE>();
+        DeviceOperationsHelpers<TYPE>::setMin( N, alpha, ydata );
+        deviceSynchronize();
+    } else {
+        // Default to VectorOperationsDefault (on cpu)
+        getDefaultOps()->setMin( alpha_in, y );
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDevice<TYPE>::setMax( const Scalar &alpha_in, VectorData &y )
+{
+    if ( checkData( y ) ) {
+        auto ydata = y.getRawDataBlock<TYPE>( 0 );
+        size_t N   = y.sizeOfDataBlock( 0 );
+        TYPE alpha = alpha_in.get<TYPE>();
+        DeviceOperationsHelpers<TYPE>::setMax( N, alpha, ydata );
+        deviceSynchronize();
+    } else {
+        // Default to VectorOperationsDefault (on cpu)
+        getDefaultOps()->setMax( alpha_in, y );
     }
 }
 

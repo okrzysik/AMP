@@ -48,12 +48,10 @@ int run( int N_procs, const std::string &filename, double ratio )
         N_errors++;
         std::cout << "load balance failed with empty rank" << std::endl;
     }
-#ifndef USE_GCOV
     if ( t1 - t0 > 15 || t2 - t1 > 15 ) {
         N_errors++;
         std::cout << "load balance failed run time limits" << std::endl;
     }
-#endif
     return N_errors;
 }
 

@@ -2,9 +2,8 @@
 #define included_AMP_VectorDataDefault_hpp
 
 #include "AMP/IO/RestartManager.h"
-#include "AMP/utils/memory.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/data/VectorDataDefault.h"
-
 #include <cstring>
 
 
@@ -91,7 +90,6 @@ VectorDataDefault<TYPE, Allocator>::cloneData( const std::string & ) const
 
     return retVal;
 }
-
 
 /****************************************************************
  * Return basic properties                                       *
