@@ -346,6 +346,30 @@ void VectorOperationsOpenMP<TYPE>::addScalar( const VectorData &x,
 }
 
 template<typename TYPE>
+void VectorOperationsOpenMP<TYPE>::setMax( const Scalar &val, VectorData &x )
+{
+    auto alpha = val.get<TYPE>();
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        *curMe = std::min( alpha, *curMe );
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsOpenMP<TYPE>::setMin( const Scalar &val_in, VectorData &x )
+{
+    auto alpha = val.get<TYPE>();
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        *curMe = std::max( alpha, *curMe );
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
 Scalar VectorOperationsOpenMP<TYPE>::localMin( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();

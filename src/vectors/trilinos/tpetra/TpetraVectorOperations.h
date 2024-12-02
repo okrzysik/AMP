@@ -33,6 +33,8 @@ public:
     }
     //  function that operate on VectorData
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
+    void setMin( const Scalar &alpha, VectorData &z ) override;
+    void setMax( const Scalar &alpha, VectorData &z ) override;
     void addScalar( const VectorData &, const Scalar &, VectorData & ) override;
     void zero( VectorData &x ) override { setToScalar( static_cast<ST>( 0.0 ), x ); }
     void setRandomValues( VectorData &x ) override;

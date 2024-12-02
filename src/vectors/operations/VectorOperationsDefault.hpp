@@ -353,6 +353,30 @@ void VectorOperationsDefault<TYPE>::addScalar( const VectorData &x,
 }
 
 template<typename TYPE>
+void VectorOperationsDefault<TYPE>::setMax( const Scalar &val, VectorData &x )
+{
+    auto alpha = val.get<TYPE>();
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        *curMe = std::min( alpha, *curMe );
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::setMin( const Scalar &val, VectorData &x )
+{
+    auto alpha = val.get<TYPE>();
+    auto curMe = x.begin<TYPE>();
+    auto last  = x.end<TYPE>();
+    while ( curMe != last ) {
+        *curMe = std::max( alpha, *curMe );
+        ++curMe;
+    }
+}
+
+template<typename TYPE>
 Scalar VectorOperationsDefault<TYPE>::localMin( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();
