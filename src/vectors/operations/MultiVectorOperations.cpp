@@ -373,6 +373,36 @@ void MultiVectorOperations::addScalar( const VectorData &x, const Scalar &alpha_
     }
 }
 
+void MultiVectorOperations::setMax( const Scalar &alpha_in, VectorData &x )
+{
+    if ( d_operations.empty() ) {
+        return;
+    }
+    auto x2 = getMultiVectorData( x );
+    if ( x2 ) {
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        for ( size_t i = 0; i != d_operations.size(); i++ )
+            d_operations[i]->setMax( alpha_in, *getVectorDataComponent( x, i ) );
+    } else {
+        AMP_ERROR( "MultiVectorOperations::setMax requires x to be MultiVectorData" );
+    }
+}
+
+void MultiVectorOperations::setMin( const Scalar &alpha_in, VectorData &x )
+{
+    if ( d_operations.empty() ) {
+        return;
+    }
+    auto x2 = getMultiVectorData( x );
+    if ( x2 ) {
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        for ( size_t i = 0; i != d_operations.size(); i++ )
+            d_operations[i]->setMin( alpha_in, *getVectorDataComponent( x, i ) );
+    } else {
+        AMP_ERROR( "MultiVectorOperations::setMax requires x to be MultiVectorData" );
+    }
+}
+
 Scalar MultiVectorOperations::localMin( const VectorData &x ) const
 {
     AMP_ASSERT( getMultiVectorData( x ) );

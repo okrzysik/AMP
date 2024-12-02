@@ -271,6 +271,8 @@ void Vector::addScalar( const Vector &x, const Scalar &alpha_in )
 {
     d_VectorOps->addScalar( *x.getVectorData(), alpha_in, *getVectorData() );
 }
+void Vector::setMax( const Scalar &val ) { d_VectorOps->setMax( val, *getVectorData() ); }
+void Vector::setMin( const Scalar &val ) { d_VectorOps->setMin( val, *getVectorData() ); }
 Scalar Vector::min() const { return d_VectorOps->min( *getVectorData() ); }
 Scalar Vector::max() const { return d_VectorOps->max( *getVectorData() ); }
 Scalar Vector::sum() const { return d_VectorOps->sum( *getVectorData() ); }

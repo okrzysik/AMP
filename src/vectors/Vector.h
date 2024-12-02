@@ -266,6 +266,16 @@ public: // the next set of functions defines the public math. interface for vect
     void addScalar( const Vector &x, const Scalar &alpha );
 
     /**
+     * \brief modify vector to have max value 'val' specified
+     */
+    void setMax( const Scalar &val );
+
+    /**
+     * \brief modify vector to have min value 'val' specified
+     */
+    void setMin( const Scalar &val );
+
+    /**
      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
     Scalar min() const;

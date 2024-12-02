@@ -28,6 +28,8 @@ public:
     static void linearSum( TYPE alpha, size_t N, const TYPE *x, TYPE beta, const TYPE *y, TYPE *z );
     static void abs( size_t N, const TYPE *x, TYPE *z );
     static void addScalar( size_t N, const TYPE *x, TYPE alpha_in, TYPE *y );
+    static void setMax( size_t N, TYPE val, TYPE *x );
+    static void setMin( size_t N, TYPE val, TYPE *x );
     static TYPE localMin( size_t N, const TYPE *x );
     static TYPE localMax( size_t N, const TYPE *x );
     static TYPE localSum( size_t N, const TYPE *x );
