@@ -112,9 +112,22 @@ void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
         AMP_ERROR( "Unable to discern data types" );
     }
 }
-void MultiVectorOperations::copyCast( const VectorData &, VectorData & )
+void MultiVectorOperations::copyCast( const VectorData &x, VectorData &y )
 {
-    AMP_ERROR( "Not implemented!" );
+    if ( d_operations.empty() ) {
+        return;
+    }
+    auto x2 = getMultiVectorData( x );
+    auto y2 = getMultiVectorData( y );
+    if ( x2 && y2 ) {
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        for ( size_t i = 0; i != d_operations.size(); i++ )
+            d_operations[i]->copyCast( *getVectorDataComponent( x, i ),
+                                       *getVectorDataComponent( y, i ) );
+
+    } else {
+        AMP_ERROR( "MultiVectorOperations::copyCast requires both x and y to be MultiVectorData" );
+    }
 }
 
 void MultiVectorOperations::scale( const Scalar &alpha, VectorData &x )
