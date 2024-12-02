@@ -1,5 +1,7 @@
+#include "AMP/utils/memory.h"
+
 #include "CopyCast.h"
-#include "AMP/utils/kokkos/CopyCast.hpp"
+#include "CopyCast.hpp"
 
 namespace AMP::Utilities {
 

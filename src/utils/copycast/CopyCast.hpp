@@ -3,17 +3,21 @@
 
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/memory.h"
+#include "AMP/utils/Utilities.h"
 
 
 #if defined( USE_DEVICE )
-    #include "AMP/utils/device/DevCopyCast.h"
-    #include "AMP/utils/device/DevCopyCast.hpp"
+    #include "AMP/utils/copycast/device/DevCopyCast.h"
+    #include "AMP/utils/copycast/device/DevCopyCast.hpp"
 #elif defined( AMP_USE_KOKKOS )
-    #include "AMP/utils/kokkos/CopyCast.h"
-    #include "AMP/utils/kokkos/CopyCast.hpp"
+    #include "AMP/utils/copycast/kokkos/CopyCast.h"
+    #include "AMP/utils/copycast/kokkos/CopyCast.hpp"
+#elif defined( USE_OPENMP )
+    #include "AMP/utils/copycast/openmp/CopyCast.h"
+    #include "AMP/utils/copycast/openmp/CopyCast.hpp"
 #else
-    #include "AMP/utils/openmp/CopyCast.h"
-    #include "AMP/utils/openmp/CopyCast.hpp"
+    #include "AMP/utils/copycast/serial/CopyCast.h"
+    #include "AMP/utils/copycast/serial/CopyCast.hpp"
 #endif
 
 #include <iostream>

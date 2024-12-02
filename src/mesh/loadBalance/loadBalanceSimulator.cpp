@@ -447,6 +447,12 @@ void loadBalanceSimulator::addRank()
     else
         d_maxCostRank = max( getRankCost() );
 }
+void loadBalanceSimulator::addRanks( int N )
+{
+    AMP_ASSERT( N >= 0 );
+    for ( int i = 0; i < N; i++ )
+        addRank();
+}
 void loadBalanceSimulator::setRanks( int begin, int end )
 {
     // Set the processors for this mesh
@@ -470,11 +476,20 @@ void loadBalanceSimulator::setRanks( int begin, int end )
                 d_submeshes[i].setRanks( d_begin + j );
             }
         } else {
-            std::vector<int> ranks2;
+            int N0     = N_proc / N_mesh;
+            auto mesh1 = d_submeshes[0];
+            auto mesh2 = d_submeshes[0];
+            mesh1.setRanks( 0, N0 );
+            mesh2.setRanks( 0, N0 + 1 );
             for ( int i = 0, k = d_begin, Np = N_proc; i < N_mesh; i++ ) {
                 int Ng = N_mesh - i;
-                int N  = Np / Ng;
-                d_submeshes[i].setRanks( k, k + N );
+                int N  = ( Np / Ng );
+                if ( N == N0 )
+                    d_submeshes[i].copyRanks( mesh1, k );
+                else if ( N == N0 + 1 )
+                    d_submeshes[i].copyRanks( mesh2, k );
+                else
+                    AMP_ERROR( "Internal error" );
                 Np -= N;
                 k += N;
             }
@@ -545,6 +560,23 @@ void loadBalanceSimulator::setRanks( int begin, int end )
         d_maxCostRank = d_cost / N_proc;
     else
         d_maxCostRank = max( getRankCost() );
+}
+
+
+/************************************************************
+ * Copy the processor ranks adjusting the offsets            *
+ ************************************************************/
+void loadBalanceSimulator::copyRanks( const loadBalanceSimulator &x, int offset )
+{
+    AMP_ASSERT( d_method == x.d_method && d_allEqual == x.d_allEqual &&
+                d_submeshes.size() == x.d_submeshes.size() );
+    d_cost        = x.d_cost;
+    d_maxCostRank = x.d_maxCostRank;
+    d_max_procs   = x.d_max_procs;
+    d_begin       = x.d_begin + offset;
+    d_end         = x.d_end + offset;
+    for ( size_t i = 0; i < d_submeshes.size(); i++ )
+        d_submeshes[i].copyRanks( x.d_submeshes[i], offset );
 }
 
 
