@@ -1,4 +1,3 @@
-#include "CopyCast.h"
 #include "CopyCast.hpp"
 
 namespace AMP::Utilities {

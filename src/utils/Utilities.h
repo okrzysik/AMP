@@ -142,6 +142,17 @@ inline bool approx_equal_abs( const T &v1, const T &v2, const T tol = type_defau
 
 
 /*!
+ * Helper function to copy and cast (single<->double precision) values between two arrays
+ * @param[in]    len      Length of above vectors
+ * @param[in]    vec_in   The incoming vector to get the values from
+ * @param[inout] vec_out  The outgoing vector to with the up/down-casted values from vec_in
+ *                        It is assumed that vec_out is properly allocated
+ */
+template<typename T1, typename T2>
+void copyCast( size_t len, const T1 *vec_in, T2 *vec_out );
+
+
+/*!
  * Quicksort a std::vector
  * \param N      Number of entries to sort
  * \param x      vector to sort
