@@ -9,7 +9,7 @@
 #include <memory>
 
 namespace AMP::Utilities {
-#ifdef USE_OPENMP
+#ifdef KOKKOS_ENABLE_OPENMP
 typedef Kokkos::OpenMP HostExecSpace;
 #else
 typedef Kokkos::Serial HostExecSpace;

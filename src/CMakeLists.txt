@@ -4,11 +4,9 @@ FUNCTION( SET_DEVICE_COMPILER )
         IF ( USE_CUDA )
             set(DEVICE_LANG CUDA)
         ENDIF()
-    
         IF ( USE_HIP )
             set(DEVICE_LANG HIP)
         ENDIF()
-          
         FOREACH( tmp ${ARGV} )
             IF ( IS_DIRECTORY "${tmp}" )
                 FILE( GLOB TMP "${tmp}/*.cc" "${tmp}/*.cpp" "${tmp}/*.cxx" "${tmp}/*.C" )
@@ -50,9 +48,5 @@ ADD_AMP_LIBRARY( time_integrators )
 ADD_AMP_LIBRARY( utils )
 ADD_AMP_LIBRARY( vectors )
 INSTALL_PROJ_LIB()
-
-
-
-
 
 

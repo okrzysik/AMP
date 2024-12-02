@@ -43,13 +43,13 @@ void TpetraVectorOperations<ST, LO, GO, NT>::addScalar( const VectorData &,
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-void TpetraVectorOperations<ST, LO, GO, NT>::setMin( const AMP::Scalar &alpha, VectorData &x )
+void TpetraVectorOperations<ST, LO, GO, NT>::setMin( const AMP::Scalar &, VectorData & )
 {
     AMP_ERROR( "TpetraVectorOperations::setMin not implemented" );
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-void TpetraVectorOperations<ST, LO, GO, NT>::setMax( const AMP::Scalar &alpha, VectorData &x )
+void TpetraVectorOperations<ST, LO, GO, NT>::setMax( const AMP::Scalar &, VectorData & )
 {
     AMP_ERROR( "TpetraVectorOperations::setMax not implemented" );
 }

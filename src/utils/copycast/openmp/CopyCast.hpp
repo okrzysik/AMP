@@ -3,7 +3,10 @@
 
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/memory.h"
+
+#include <limits>
 #include <memory>
+
 
 namespace AMP::Utilities {
 
