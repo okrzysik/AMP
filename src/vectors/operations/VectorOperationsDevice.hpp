@@ -330,6 +330,36 @@ void VectorOperationsDevice<TYPE>::addScalar( const VectorData &x,
 }
 
 template<typename TYPE>
+void VectorOperationsDevice<TYPE>::setMin( const Scalar &alpha_in, VectorData &y )
+{
+    if ( checkData( y ) ) {
+        auto ydata = y.getRawDataBlock<TYPE>( 0 );
+        size_t N   = y.sizeOfDataBlock( 0 );
+        TYPE alpha = alpha_in.get<TYPE>();
+        DeviceOperationsHelpers<TYPE>::setMin( N, alpha, ydata );
+        deviceSynchronize();
+    } else {
+        // Default to VectorOperationsDefault (on cpu)
+        getDefaultOps()->setMin( alpha_in, y );
+    }
+}
+
+template<typename TYPE>
+void VectorOperationsDevice<TYPE>::setMax( const Scalar &alpha_in, VectorData &y )
+{
+    if ( checkData( y ) ) {
+        auto ydata = y.getRawDataBlock<TYPE>( 0 );
+        size_t N   = y.sizeOfDataBlock( 0 );
+        TYPE alpha = alpha_in.get<TYPE>();
+        DeviceOperationsHelpers<TYPE>::setMax( N, alpha, ydata );
+        deviceSynchronize();
+    } else {
+        // Default to VectorOperationsDefault (on cpu)
+        getDefaultOps()->setMax( alpha_in, y );
+    }
+}
+
+template<typename TYPE>
 Scalar VectorOperationsDevice<TYPE>::localMin( const VectorData &x ) const
 {
     if ( checkData( x ) ) {

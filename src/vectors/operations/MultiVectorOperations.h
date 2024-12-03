@@ -57,6 +57,9 @@ public:
     void abs( const VectorData &, VectorData & ) override;
     void addScalar( const VectorData &, const Scalar &, VectorData & ) override;
 
+    void setMax( const Scalar &val, VectorData &x ) override;
+    void setMin( const Scalar &val, VectorData &x ) override;
+
     Scalar localMin( const VectorData & ) const override;
     Scalar localMax( const VectorData & ) const override;
     Scalar localSum( const VectorData & ) const override;
@@ -97,6 +100,8 @@ public: // Pull VectorOperations into the current scope
     using VectorOperations::multiply;
     using VectorOperations::reciprocal;
     using VectorOperations::scale;
+    using VectorOperations::setMax;
+    using VectorOperations::setMin;
     using VectorOperations::setRandomValues;
     using VectorOperations::subtract;
     using VectorOperations::wrmsNorm;
