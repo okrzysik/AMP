@@ -58,6 +58,10 @@ using StackTrace::Utilities::tick;
 using StackTrace::Utilities::time;
 
 
+//! Check if valgrind is running
+bool running_valgrind();
+
+
 /*!
  * Set an environmental variable
  * @param name              The name of the environmental variable

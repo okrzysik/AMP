@@ -102,6 +102,8 @@ void runMatTest( const int64_t *M0,
 {
     std::string name = "<" + className<TYPE>() + "," + std::to_string( NDIM ) + ">";
     auto tol         = static_cast<double>( std::numeric_limits<TYPE>::epsilon() );
+    if ( std::is_same_v<TYPE, long double> && AMP::Utilities::running_valgrind() )
+        tol = std::numeric_limits<double>::epsilon();
     TYPE M[NDIM * NDIM], b[NDIM];
     for ( size_t i = 0; i < NDIM * NDIM; i++ )
         M[i] = TYPE( M0[i] );

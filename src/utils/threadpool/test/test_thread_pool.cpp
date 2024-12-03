@@ -309,7 +309,11 @@ void test_work_parallel( UnitTest &ut, ThreadPool &tpool )
     int N_threads    = tpool.getNumThreads();
     int N_procs      = ThreadPool::getNumberOfProcessors();
     int N_procs_used = std::min<int>( N_procs, N_threads );
-    if ( N_procs_used > 1 ) {
+    if ( AMP::Utilities::running_valgrind() ) {
+        ut.expected_failure( "Testing thread performance with valgrind" );
+    } else if ( N_procs_used == 1 ) {
+        ut.expected_failure( "Testing thread performance with less than 1 processor" );
+    } else {
         int N = 20000000; // Enough work to keep the processor busy for ~ 1 s
         // Run in serial
         auto start = std::chrono::high_resolution_clock::now();
@@ -327,8 +331,6 @@ void test_work_parallel( UnitTest &ut, ThreadPool &tpool )
         } else {
             ut.expected_failure( "Times do not indicate tests are running in parallel (gcov)" );
         }
-    } else {
-        ut.expected_failure( "Testing thread performance with less than 1 processor" );
     }
 }
 
