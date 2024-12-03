@@ -19,7 +19,7 @@ namespace AMP::Utilities {
  */
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::host> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
 #pragma omp parallel for shared( vec_out, vec_in )
         for ( size_t i = 0; i < len; i++ ) {
@@ -31,7 +31,7 @@ struct copyCast_<T1, T2, AMP::Utilities::MemoryType::host> {
 
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::unregistered> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
 #pragma omp parallel for shared( vec_out, vec_in )
         for ( size_t i = 0; i < len; i++ ) {
