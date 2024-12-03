@@ -358,7 +358,7 @@ void VectorOperationsOpenMP<TYPE>::setMax( const Scalar &val, VectorData &x )
 }
 
 template<typename TYPE>
-void VectorOperationsOpenMP<TYPE>::setMin( const Scalar &val_in, VectorData &x )
+void VectorOperationsOpenMP<TYPE>::setMin( const Scalar &val, VectorData &x )
 {
     auto alpha = val.get<TYPE>();
     auto curMe = x.begin<TYPE>();
