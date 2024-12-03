@@ -4,7 +4,6 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/memory.h"
-#include "AMP/utils/Utilities.h"
 
 
 #if defined( USE_DEVICE )
