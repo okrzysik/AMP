@@ -19,7 +19,7 @@ namespace AMP::Utilities {
  */
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::host> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
         for ( size_t i = 0; i < len; i++ ) {
             AMP_ASSERT( std::abs( vec_in[i] ) <= std::numeric_limits<T2>::max() );
@@ -30,7 +30,7 @@ struct copyCast_<T1, T2, AMP::Utilities::MemoryType::host> {
 
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::unregistered> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
         for ( size_t i = 0; i < len; i++ ) {
             AMP_ASSERT( std::abs( vec_in[i] ) <= std::numeric_limits<T2>::max() );

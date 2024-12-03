@@ -25,25 +25,37 @@ typedef Kokkos::RangePolicy<HostExecSpace> host_range_policy;
  */
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::host> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
-        Kokkos::parallel_for(
-            "Copy cast", host_range_policy( 0, len ), KOKKOS_LAMBDA( const size_t i ) {
-                AMP_ASSERT( std::abs( vec_in[i] ) <= std::numeric_limits<T2>::max() );
+        int err = 0;
+        Kokkos::parallel_reduce(
+            "Copy cast",
+            host_range_policy( 0, len ),
+            KOKKOS_LAMBDA( const int &i, int &lerr ) {
+                if ( std::abs( vec_in[i] ) > std::numeric_limits<T2>::max() )
+                    lerr = 1;
                 vec_out[i] = static_cast<T2>( vec_in[i] );
-            } );
+            },
+            Kokkos::Max<int>( err ) );
+        AMP_ASSERT( err < 1 );
     }
 };
 
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::unregistered> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
-        Kokkos::parallel_for(
-            "Copy cast", host_range_policy( 0, len ), KOKKOS_LAMBDA( const size_t i ) {
-                AMP_ASSERT( std::abs( vec_in[i] ) <= std::numeric_limits<T2>::max() );
+        int err = 0;
+        Kokkos::parallel_reduce(
+            "Copy cast",
+            host_range_policy( 0, len ),
+            KOKKOS_LAMBDA( const int &i, int &lerr ) {
+                if ( std::abs( vec_in[i] ) > std::numeric_limits<T2>::max() )
+                    lerr = 1;
                 vec_out[i] = static_cast<T2>( vec_in[i] );
-            } );
+            },
+            Kokkos::Max<int>( err ) );
+        AMP_ASSERT( err < 1 );
     }
 };
 

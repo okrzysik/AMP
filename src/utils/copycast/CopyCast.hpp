@@ -4,6 +4,7 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/memory.h"
+#include "AMP/utils/Utilities.h"
 
 
 #if defined( USE_DEVICE )
@@ -39,19 +40,15 @@ void copyCast( size_t len, const T1 *vec_in, T2 *vec_out )
     auto memtype_out = getMemoryType( vec_out );
     AMP_ASSERT( memtype_in == memtype_out );
     if ( memtype_in == AMP::Utilities::MemoryType::host ) {
-        copyCast_<T1, T2, AMP::Utilities::MemoryType::host> apply;
-        apply( len, vec_in, vec_out );
+        copyCast_<T1, T2, AMP::Utilities::MemoryType::host>::apply( len, vec_in, vec_out );
 #ifdef USE_DEVICE
     } else if ( memtype_in == AMP::Utilities::MemoryType::managed ) {
-        copyCast_<T1, T2, AMP::Utilities::MemoryType::managed> apply;
-        apply( len, vec_in, vec_out );
+        copyCast_<T1, T2, AMP::Utilities::MemoryType::managed>::apply( len, vec_in, vec_out );
     } else if ( memtype_in == AMP::Utilities::MemoryType::device ) {
-        copyCast_<T1, T2, AMP::Utilities::MemoryType::device> apply;
-        apply( len, vec_in, vec_out );
+        copyCast_<T1, T2, AMP::Utilities::MemoryType::device>::apply( len, vec_in, vec_out );
 #endif
     } else { // unregistered
-        copyCast_<T1, T2, AMP::Utilities::MemoryType::unregistered> apply;
-        apply( len, vec_in, vec_out );
+        copyCast_<T1, T2, AMP::Utilities::MemoryType::unregistered>::apply( len, vec_in, vec_out );
     }
 }
 
