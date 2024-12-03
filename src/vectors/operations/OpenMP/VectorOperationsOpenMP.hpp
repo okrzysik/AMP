@@ -110,6 +110,7 @@ void VectorOperationsOpenMP<TYPE>::copy( const VectorData &x, VectorData &y )
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::copyCast( const VectorData &x, VectorData &y )
 {
+    // VectorOperationsDefault::copyCast( x, y );
     if ( x.numberOfDataBlocks() == y.numberOfDataBlocks() ) {
         for ( size_t block_id = 0; block_id < y.numberOfDataBlocks(); block_id++ ) {
             auto ydata = y.getRawDataBlock<TYPE>( block_id );
@@ -358,7 +359,7 @@ void VectorOperationsOpenMP<TYPE>::setMax( const Scalar &val, VectorData &x )
 }
 
 template<typename TYPE>
-void VectorOperationsOpenMP<TYPE>::setMin( const Scalar &val_in, VectorData &x )
+void VectorOperationsOpenMP<TYPE>::setMin( const Scalar &val, VectorData &x )
 {
     auto alpha = val.get<TYPE>();
     auto curMe = x.begin<TYPE>();
