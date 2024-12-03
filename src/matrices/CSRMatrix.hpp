@@ -27,14 +27,11 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
 {
 #if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     if ( std::is_same<Allocator, AMP::HostAllocator<void>>::value ) {
-        AMP::pout << "Using default operations" << std::endl;
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     } else {
-        AMP::pout << "Using Kokkos operations" << std::endl;
         d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
     }
 #else
-    AMP::pout << "Using default operations" << std::endl;
     d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
 #endif
     d_matrixData = std::make_shared<CSRMatrixData<Policy, Allocator>>( params );
@@ -45,14 +42,11 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Ma
 {
 #if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     if ( std::is_same<Allocator, AMP::HostAllocator<void>>::value ) {
-        AMP::pout << "Using default operations" << std::endl;
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     } else {
-        AMP::pout << "Using Kokkos operations" << std::endl;
         d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
     }
 #else
-    AMP::pout << "Using default operations" << std::endl;
     d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
 #endif
 }

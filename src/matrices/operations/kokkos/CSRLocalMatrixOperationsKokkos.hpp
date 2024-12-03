@@ -223,6 +223,8 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
     const auto [nnz, cols, cols_loc, coeffs, rowstarts] =
         wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( A );
 
+    // rows per team and vector length influenced by KokkosKernels
+    // should tune to architecture (AMD vs. NVidia) and "typical" problems
     const lidx_t team_rows     = 64;
     const lidx_t vector_length = 8;
     const lidx_t num_teams     = ( nRows + team_rows - 1 ) / team_rows;
@@ -274,6 +276,8 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
     Kokkos::View<scalar_t *, Kokkos::LayoutRight, ViewSpace, Kokkos::MemoryTraits<Kokkos::Atomic>>
         outView( out, nColsUnq );
 
+    // rows per team and vector length influenced by KokkosKernels
+    // should tune to architecture (AMD vs. NVidia) and "typical" problems
     const lidx_t team_rows     = 64;
     const lidx_t vector_length = 8;
     const lidx_t num_teams     = ( nRows + team_rows - 1 ) / team_rows;

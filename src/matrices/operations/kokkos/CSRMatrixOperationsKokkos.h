@@ -18,10 +18,10 @@ namespace AMP::LinearAlgebra {
 template<
     typename Policy,
     typename Allocator,
-    class ExecSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<int>>,
+    class ExecSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<void>>,
                                                 Kokkos::DefaultHostExecutionSpace,
                                                 Kokkos::DefaultExecutionSpace>::type,
-    class ViewSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<int>>,
+    class ViewSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<void>>,
                                                 Kokkos::HostSpace,
                                                 Kokkos::SharedSpace>::type,
     class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>,

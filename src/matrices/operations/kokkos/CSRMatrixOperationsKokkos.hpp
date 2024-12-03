@@ -76,6 +76,8 @@ void CSRMatrixOperationsKokkos<Policy,
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsKokkos::mult(ghost)" );
 
+        // Possible mismatch between Policy::gidx_t and size_t forces a deep copy
+        // of the colMap from inside offdMatrix
         std::vector<size_t> colMap;
         offdMatrix->getColumnMap( colMap );
         std::vector<scalar_t> ghosts( colMap.size() );
@@ -144,6 +146,8 @@ void CSRMatrixOperationsKokkos<Policy,
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsKokkos::multTranspose (ghost)" );
 
+        // Possible mismatch between Policy::gidx_t and size_t forces a deep copy
+        // of the colMap from inside offdMatrix
         std::vector<size_t> rcols;
         offdMatrix->getColumnMap( rcols );
 

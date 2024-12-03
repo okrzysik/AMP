@@ -10,8 +10,6 @@
 #include <iomanip>
 #include <numeric>
 
-#include <fstream>
-
 DISABLE_WARNINGS
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
@@ -288,7 +286,6 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
         HYPRE_BoomerAMGSetKeepTranspose( d_solver, d_keep_transpose );
     }
 
-    AMP::pout << "RelTol: " << d_dRelativeTolerance << std::endl;
     HYPRE_BoomerAMGSetTol( d_solver, static_cast<HYPRE_Real>( d_dRelativeTolerance ) );
     HYPRE_BoomerAMGSetMaxIter( d_solver, d_iMaxIterations );
     HYPRE_BoomerAMGSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );

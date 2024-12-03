@@ -15,18 +15,18 @@
 namespace AMP::LinearAlgebra {
 
 
-template void
-HypreMatrixAdaptor::initializeHypreMatrix<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>, const bool );
+template void HypreMatrixAdaptor::initializeHypreMatrix<
+    CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>>(
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::HostAllocator<void>>> );
 
 #ifdef USE_DEVICE
 template void HypreMatrixAdaptor::initializeHypreMatrix<
     CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>>, const bool );
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::ManagedAllocator<void>>> );
 
 template void HypreMatrixAdaptor::initializeHypreMatrix<
     CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>>(
-    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>>, const bool );
+    std::shared_ptr<CSRMatrixData<HypreCSRPolicy, AMP::DeviceAllocator<void>>> );
 #endif
 
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
@@ -64,12 +64,15 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 #endif
 
     if ( csrDataHost ) {
-        initializeHypreMatrix( csrDataHost, false );
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
+        initializeHypreMatrix( csrDataHost );
     } else if ( csrDataManaged ) {
-        initializeHypreMatrix( csrDataManaged, true );
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
+        initializeHypreMatrix( csrDataManaged );
     } else if ( csrDataDevice ) {
+        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
         AMP_ERROR( "Pure device memory not yet supported in HypreMatrixAdaptor" );
-        initializeHypreMatrix( csrDataDevice, true );
+        initializeHypreMatrix( csrDataDevice );
     } else {
 
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
@@ -111,17 +114,8 @@ HypreMatrixAdaptor::~HypreMatrixAdaptor()
 }
 
 template<class csr_data_type>
-void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData,
-                                                const bool is_device )
+void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData )
 {
-    if ( !is_device ) {
-        AMP::pout << "Init hypre host matrix" << std::endl;
-        HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
-    } else {
-        AMP::pout << "Init hypre device matrix" << std::endl;
-        HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
-    }
-
     // ensure that columns are sorted for hypre compatibility
     csrData->sortColumns( AMP::LinearAlgebra::MatrixSortScheme::hypre );
     // extract fields from csrData
@@ -150,8 +144,8 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     aux_mat->need_aux              = 0;
 
     // Verify that diag and off_diag are "empty"
-    AMP_INSIST( diag->num_nonzeros == 0 && off_diag->num_nonzeros == 0,
-                "Hypre (off)diag matrix has nonzeros but shouldn't" );
+    AMP_DEBUG_INSIST( diag->num_nonzeros == 0 && off_diag->num_nonzeros == 0,
+                      "Hypre (off)diag matrix has nonzeros but shouldn't" );
 
     // Hypre always frees the hypre_CSRMatrix->i and hypre_CSRMatrix->rownnz
     // fields regardless of ->owns_data. Calling matrix initialize will let
