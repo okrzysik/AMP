@@ -16,7 +16,7 @@ namespace AMP::Utilities {
 
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::host> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
         auto lambda = [] __host__ __device__( T1 x ) { return static_cast<T2>( x ); };
         thrust::transform( thrust::host, vec_in, vec_in + len, vec_out, lambda );
@@ -25,7 +25,7 @@ struct copyCast_<T1, T2, AMP::Utilities::MemoryType::host> {
 
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::unregistered> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
         auto lambda = [] __host__ __device__( T1 x ) { return static_cast<T2>( x ); };
         thrust::transform( thrust::host, vec_in, vec_in + len, vec_out, lambda );
@@ -34,7 +34,7 @@ struct copyCast_<T1, T2, AMP::Utilities::MemoryType::unregistered> {
 
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::managed> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
         auto lambda = [] __host__ __device__( T1 x ) { return static_cast<T2>( x ); };
         thrust::transform( thrust::device, vec_in, vec_in + len, vec_out, lambda );
@@ -43,7 +43,7 @@ struct copyCast_<T1, T2, AMP::Utilities::MemoryType::managed> {
 
 template<typename T1, typename T2>
 struct copyCast_<T1, T2, AMP::Utilities::MemoryType::device> {
-    void operator()( size_t len, const T1 *vec_in, T2 *vec_out )
+    void static apply( size_t len, const T1 *vec_in, T2 *vec_out )
     {
         auto lambda = [] __host__ __device__( T1 x ) { return static_cast<T2>( x ); };
         thrust::transform( thrust::device, vec_in, vec_in + len, vec_out, lambda );
