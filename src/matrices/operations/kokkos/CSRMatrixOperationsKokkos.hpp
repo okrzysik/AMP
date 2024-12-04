@@ -35,6 +35,7 @@ void CSRMatrixOperationsKokkos<Policy,
     AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     using scalar_t = typename Policy::scalar_t;
+    using lidx_t   = typename Policy::lidx_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
@@ -83,7 +84,7 @@ void CSRMatrixOperationsKokkos<Policy,
         std::vector<scalar_t> ghosts( colMap.size() );
         in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts.data() );
 
-        AMP_DEBUG_ASSERT( ghosts.size() == offdMatrix->numUniqueColumns() );
+        AMP_DEBUG_ASSERT( static_cast<lidx_t>( ghosts.size() ) == offdMatrix->numUniqueColumns() );
 
         Kokkos::View<scalar_t *, Kokkos::LayoutRight, Kokkos::HostSpace> ghostView_h(
             ghosts.data(), ghosts.size() );
