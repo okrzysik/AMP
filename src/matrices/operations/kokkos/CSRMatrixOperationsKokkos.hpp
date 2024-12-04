@@ -83,7 +83,8 @@ void CSRMatrixOperationsKokkos<Policy,
         std::vector<scalar_t> ghosts( colMap.size() );
         in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts.data() );
 
-        AMP_DEBUG_ASSERT( ghosts.size() == offdMatrix->numUniqueColumns() );
+        AMP_DEBUG_ASSERT( static_cast<typename Policy::lidx_t>( ghosts.size() ) ==
+                          offdMatrix->numUniqueColumns() );
 
         Kokkos::View<scalar_t *, Kokkos::LayoutRight, Kokkos::HostSpace> ghostView_h(
             ghosts.data(), ghosts.size() );
