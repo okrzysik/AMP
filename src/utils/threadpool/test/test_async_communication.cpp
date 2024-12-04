@@ -66,7 +66,7 @@ void run_test( size_t message_size, int N_messages, double sleep_duration, Threa
         requests.clear();
         requests.push_back( globalComm.Isend( data_src, message_size, send_proc, i ) );
         requests.push_back( globalComm.Irecv( data_dst[i], message_size, recv_proc, i ) );
-        globalComm.waitAll( requests.size(), &requests[0] );
+        globalComm.waitAll( requests.size(), requests.data() );
         AMP::Utilities::sleep_ms( ms_sleep_duration ); // Mimic work
     }
     double end = globalComm.time();
@@ -77,12 +77,12 @@ void run_test( size_t message_size, int N_messages, double sleep_duration, Threa
     start = globalComm.time();
     requests.clear();
     for ( int i = 0; i < N_messages; i++ ) {
-        requests.push_back( globalComm.Isend( data_src, message_size, send_proc, i ) );
-        requests.push_back( globalComm.Irecv( data_dst[i], message_size, recv_proc, i ) );
+        requests[2 * i]     = globalComm.Isend( data_src, message_size, send_proc, i );
+        requests[2 * i + 1] = globalComm.Irecv( data_dst[i], message_size, recv_proc, i );
     }
     std::set<int> completed;
     while ( requests.size() > completed.size() ) {
-        auto index = globalComm.waitSome( requests.size(), &requests[0] );
+        auto index = globalComm.waitSome( requests.size(), requests.data() );
         for ( int i : index ) {
             if ( i % 2 == 1 )
                 AMP::Utilities::sleep_ms( ms_sleep_duration ); // Mimic work
