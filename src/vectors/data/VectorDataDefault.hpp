@@ -26,7 +26,7 @@ std::string VectorDataDefault<TYPE, Allocator>::VectorDataName() const
         AMP::Utilities::getAllocatorMemoryType<Allocator>();
 
     if constexpr ( allocMemType == AMP::Utilities::MemoryType::host ) {
-        return "VectorDataDefault<" + std::string( id.name ) + ",AMP::HostAllocator>";
+        return "VectorDataDefault<" + std::string( id.name ) + ">";
     }
 
     if constexpr ( allocMemType == AMP::Utilities::MemoryType::managed ) {
