@@ -360,7 +360,6 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
     hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
-
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );
 

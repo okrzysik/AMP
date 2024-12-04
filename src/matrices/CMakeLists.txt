@@ -25,6 +25,12 @@ ENDIF()
 
 ADD_PACKAGE_SUBDIRECTORY( operations )
 ADD_PACKAGE_SUBDIRECTORY( operations/default )
+IF( USE_KOKKOS )
+    ADD_PACKAGE_SUBDIRECTORY( operations/kokkos )
+    SET_DEVICE_COMPILER( operations/kokkos/CSRMatrixOperationsKokkos.cpp )
+ENDIF()
+
+SET_DEVICE_COMPILER( CSRMatrix.cpp )
 
 # Set the default matrix type
 SET( MATRIX_TYPES "ManagedEpetraMatrix" "NativePetscMatrix" "CSRMatrix" "DenseSerialMatrix" "NULL" )

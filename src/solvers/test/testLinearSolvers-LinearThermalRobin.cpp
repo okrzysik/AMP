@@ -157,13 +157,14 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     checkConvergence( linearSolver.get(), inputFileName, *ut );
 }
 
-
 int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
     std::vector<std::string> files;
+
+    PROFILE_ENABLE();
 
     if ( argc > 1 ) {
 
@@ -201,10 +202,18 @@ int main( int argc, char *argv[] )
 #endif
     }
 
-    for ( auto &file : files )
+    for ( auto &file : files ) {
         linearThermalTest( &ut, file );
+    }
 
     ut.report();
+
+    // build unique profile name to avoid collisions
+    std::ostringstream ss;
+    ss << "testLinSolveRobin_r" << std::setw( 3 ) << std::setfill( '0' )
+       << AMP::AMPManager::getCommWorld().getSize();
+
+    PROFILE_SAVE( ss.str() );
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();

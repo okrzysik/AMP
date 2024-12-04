@@ -5,10 +5,14 @@
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/operations/default/CSRMatrixOperationsDefault.h"
+#if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+    #include "AMP/matrices/operations/kokkos/CSRMatrixOperationsKokkos.h"
+#endif
+#include "AMP/utils/memory.h"
 #include "AMP/vectors/VectorBuilder.h"
+
 #include <cstdio>
 #include <cstring>
-
 #include <numeric>
 
 namespace AMP::LinearAlgebra {
@@ -21,14 +25,30 @@ template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params )
     : Matrix( params )
 {
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+#if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+    if ( std::is_same<Allocator, AMP::HostAllocator<void>>::value ) {
+        d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+    } else {
+        d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
+    }
+#else
+    d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+#endif
     d_matrixData = std::make_shared<CSRMatrixData<Policy, Allocator>>( params );
 }
 
 template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
+#if defined( USE_DEVICE ) && ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+    if ( std::is_same<Allocator, AMP::HostAllocator<void>>::value ) {
+        d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+    } else {
+        d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
+    }
+#else
     d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+#endif
 }
 
 template<typename Policy, typename Allocator>
@@ -97,7 +117,8 @@ Vector::shared_ptr CSRMatrix<Policy, Allocator>::getRightVector() const
 {
     auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
                    ->getRightVariable();
-    return createVector( getRightDOFManager(), var );
+    const auto memloc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
+    return createVector( getRightDOFManager(), var, true, memloc );
 }
 
 template<typename Policy, typename Allocator>
@@ -105,7 +126,8 @@ Vector::shared_ptr CSRMatrix<Policy, Allocator>::getLeftVector() const
 {
     auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
                    ->getLeftVariable();
-    return createVector( getLeftDOFManager(), var );
+    const auto memloc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
+    return createVector( getLeftDOFManager(), var, true, memloc );
 }
 
 

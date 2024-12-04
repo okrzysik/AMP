@@ -89,7 +89,7 @@ public:
      */
     void reset( std::shared_ptr<SolverStrategyParameters> params ) override;
 
-    void getFromInput( std::shared_ptr<const AMP::Database> db );
+    void getFromInput( std::shared_ptr<const AMP::Database> ) {}
 
     /**
      * Set the desired HYPRE memory location for HYPRE objects
