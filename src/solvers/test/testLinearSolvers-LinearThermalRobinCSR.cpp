@@ -29,6 +29,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -139,6 +140,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
+    RightHandSideVec->makeConsistent();
 
     using Policy   = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
     using gidx_t   = typename Policy::gidx_t;
@@ -174,7 +176,13 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
         startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
 
-    auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
+#ifdef USE_DEVICE
+    using Alloc = AMP::ManagedAllocator<void>;
+#else
+    using Alloc = AMP::HostAllocator<void>;
+#endif
+
+    auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Alloc>>( csrParams );
     AMP_ASSERT( csrMatrix );
 
     auto csrOpParams = std::make_shared<AMP::Operator::OperatorParameters>( input_db );
@@ -211,6 +219,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> files;
+    PROFILE_ENABLE();
 
     if ( argc > 1 ) {
 
@@ -253,6 +262,12 @@ int main( int argc, char *argv[] )
         linearThermalTest( &ut, file );
 
     ut.report();
+
+    // build unique profile name to avoid collisions
+    std::ostringstream ss;
+    ss << "testLinearSolvers-LinearThermalRobinCSR_r" << std::setw( 3 ) << std::setfill( '0' )
+       << AMP::AMPManager::getCommWorld().getSize();
+    PROFILE_SAVE( ss.str() );
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();

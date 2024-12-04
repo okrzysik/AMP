@@ -38,6 +38,7 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     auto lastRow  = static_cast<HYPRE_BigInt>( matrixData->endRow() - 1 );
     auto comm     = matrixData->getComm().getCommunicator();
 
+
     HYPRE_IJMatrixCreate( comm, firstRow, lastRow, firstRow, lastRow, &d_matrix );
     HYPRE_IJMatrixSetObjectType( d_matrix, HYPRE_PARCSR );
     HYPRE_IJMatrixSetMaxOffProcElmts( d_matrix, 0 );
@@ -69,8 +70,8 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
         initializeHypreMatrix( csrDataManaged );
     } else if ( csrDataDevice ) {
-        AMP_ERROR( "Pure device memory not yet supported in HypreMatrixAdaptor" );
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_DEVICE );
+        AMP_ERROR( "Pure device memory not yet supported in HypreMatrixAdaptor" );
         initializeHypreMatrix( csrDataDevice );
     } else {
 
@@ -142,14 +143,9 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     hypre_AuxParCSRMatrix *aux_mat = static_cast<hypre_AuxParCSRMatrix *>( d_matrix->translator );
     aux_mat->need_aux              = 0;
 
-    // Verify that Hypre CSRMatrices are on host memory
-    AMP_INSIST( diag->memory_location == HYPRE_MEMORY_HOST &&
-                    off_diag->memory_location == HYPRE_MEMORY_HOST,
-                "Hypre matrices need to be on host memory for adaptor to work" );
-
     // Verify that diag and off_diag are "empty"
-    AMP_INSIST( diag->num_nonzeros == 0 && off_diag->num_nonzeros == 0,
-                "Hypre (off)diag matrix has nonzeros but shouldn't" );
+    AMP_DEBUG_INSIST( diag->num_nonzeros == 0 && off_diag->num_nonzeros == 0,
+                      "Hypre (off)diag matrix has nonzeros but shouldn't" );
 
     // Hypre always frees the hypre_CSRMatrix->i and hypre_CSRMatrix->rownnz
     // fields regardless of ->owns_data. Calling matrix initialize will let
@@ -189,7 +185,7 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
 
     // Set colmap inside ParCSR and flag that assembly is already done
     // See destructor above regarding ownership of this field
-    csrData->getOffDiagColumnMap( d_colMap );
+    csrData->getOffdMatrix()->getColumnMap( d_colMap );
     par_matrix->col_map_offd = d_colMap.data();
     off_diag->num_cols       = d_colMap.size();
 

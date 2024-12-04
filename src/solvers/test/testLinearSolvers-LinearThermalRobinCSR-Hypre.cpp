@@ -182,7 +182,13 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
         startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
 
-    auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
+#ifdef USE_DEVICE
+    using Alloc = AMP::ManagedAllocator<void>;
+#else
+    using Alloc  = AMP::HostAllocator<void>;
+#endif
+
+    auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Alloc>>( csrParams );
     AMP_ASSERT( csrMatrix );
 
     auto csrOpParams = std::make_shared<AMP::Operator::OperatorParameters>( input_db );
