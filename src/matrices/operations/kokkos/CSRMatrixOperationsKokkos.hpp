@@ -35,7 +35,6 @@ void CSRMatrixOperationsKokkos<Policy,
     AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
         const_cast<MatrixData &>( A ) );
