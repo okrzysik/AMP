@@ -18,7 +18,7 @@ namespace AMP::LinearAlgebra {
  ********************************************************/
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData()
-    : d_memory_location( getAllocatorMemoryType<Allocator>() )
+    : d_memory_location( AMP::Utilities::getAllocatorMemoryType<Allocator>() )
 {
     AMPManager::incrementResource( "CSRMatrixData" );
 }
@@ -26,9 +26,8 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
     std::shared_ptr<MatrixParametersBase> params )
-    : MatrixData( params ), d_memory_location( getAllocatorMemoryType<Allocator>() )
+    : MatrixData( params ), d_memory_location( AMP::Utilities::getAllocatorMemoryType<Allocator>() )
 {
-
     AMPManager::incrementResource( "CSRMatrixData" );
     auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
     auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
@@ -129,12 +128,12 @@ template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatri
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getRowByGlobalID(
     size_t row, std::vector<size_t> &cols, std::vector<double> &vals ) const
 {
-    AMP_INSIST( row >= static_cast<size_t>( d_first_row ) &&
-                    row < static_cast<size_t>( d_last_row ),
-                "row must be owned by rank" );
+    AMP_DEBUG_INSIST( row >= static_cast<size_t>( d_first_row ) &&
+                          row < static_cast<size_t>( d_last_row ),
+                      "row must be owned by rank" );
 
-    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
-                "CSRMatrixData::getRowByGlobalID not implemented for device memory" );
+    AMP_DEBUG_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                      "CSRMatrixData::getRowByGlobalID not implemented for device memory" );
 
     auto local_row = row - d_first_row;
 
@@ -154,11 +153,11 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getValues
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
     const
 {
-    AMP_INSIST( getTypeID<scalar_t>() == id,
-                "CSRMatrixData::getValuesByGlobalID called with inconsistent typeID" );
+    AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
+                      "CSRMatrixData::getValuesByGlobalID called with inconsistent typeID" );
 
-    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
-                "CSRMatrixData::getValuesByGlobalID not implemented for device memory" );
+    AMP_DEBUG_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                      "CSRMatrixData::getValuesByGlobalID not implemented for device memory" );
 
     if ( num_rows == 1 && num_cols == 1 ) {
 
@@ -179,11 +178,11 @@ template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatri
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::addValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
-    AMP_INSIST( getTypeID<scalar_t>() == id,
-                "CSRMatrixData::addValuesByGlobalID called with inconsistent typeID" );
+    AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
+                      "CSRMatrixData::addValuesByGlobalID called with inconsistent typeID" );
 
-    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
-                "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
+    AMP_DEBUG_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                      "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
 
     auto values = reinterpret_cast<const scalar_t *>( vals );
 
@@ -209,11 +208,11 @@ template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatri
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
-    AMP_INSIST( getTypeID<scalar_t>() == id,
-                "CSRMatrixData::setValuesByGlobalID called with inconsistent typeID" );
+    AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
+                      "CSRMatrixData::setValuesByGlobalID called with inconsistent typeID" );
 
-    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
-                "CSRMatrixData::setValuesByGlobalID not implemented for device memory" );
+    AMP_DEBUG_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                      "CSRMatrixData::setValuesByGlobalID not implemented for device memory" );
 
     auto values = reinterpret_cast<const scalar_t *>( vals );
 
@@ -240,14 +239,14 @@ template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatri
 std::vector<size_t>
 CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getColumnIDs( size_t row ) const
 {
-    AMP_INSIST( row >= static_cast<size_t>( d_first_row ) &&
-                    row < static_cast<size_t>( d_last_row ),
-                "CSRMatrixData::getColumnIDs row must be owned by rank" );
+    AMP_DEBUG_INSIST( row >= static_cast<size_t>( d_first_row ) &&
+                          row < static_cast<size_t>( d_last_row ),
+                      "CSRMatrixData::getColumnIDs row must be owned by rank" );
 
-    AMP_INSIST( d_diag_matrix, "CSRMatrixData::getColumnIDs diag matrix must exist" );
+    AMP_DEBUG_INSIST( d_diag_matrix, "CSRMatrixData::getColumnIDs diag matrix must exist" );
 
-    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
-                "CSRMatrixData::getColumnIDs not implemented for device memory" );
+    AMP_DEBUG_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                      "CSRMatrixData::getColumnIDs not implemented for device memory" );
 
     auto local_row              = row - d_first_row;
     std::vector<size_t> cols    = d_diag_matrix->getColumnIDs( local_row );

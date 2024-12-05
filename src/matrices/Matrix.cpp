@@ -105,7 +105,7 @@ void Matrix::multTranspose( AMP::LinearAlgebra::Vector::const_shared_ptr in,
 {
     AMP_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     d_matrixOps->multTranspose( in, *getMatrixData(), out );
-    out->makeConsistent();
+    out->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 void Matrix::scale( AMP::Scalar alpha ) { d_matrixOps->scale( alpha, *getMatrixData() ); }

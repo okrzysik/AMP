@@ -132,6 +132,8 @@ public:
     //! Get the remote DOFs for a vector
     virtual std::vector<size_t> getRemoteDOFs() const;
 
+    virtual void replaceRemoteDOFs( std::vector<size_t> &newRemote ) { d_remoteDOFs = newRemote; }
+
 
     //! Get the row DOFs given a mesh element
     virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;

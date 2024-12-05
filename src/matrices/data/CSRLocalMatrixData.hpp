@@ -166,6 +166,8 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         for ( lidx_t n = 0; n < d_nnz; ++n ) {
             d_cols_loc[n] = static_cast<lidx_t>( d_cols[n] - d_first_col );
         }
+        // diag matrix block is assumed to cover all local cols
+        d_ncols_unq = d_last_col - d_first_col;
     } else {
         // for offd setup column map as part of the process
         std::unordered_map<gidx_t, lidx_t> colMap;
@@ -221,10 +223,10 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns( MatrixSortScheme sort_t
             std::sort( rTpl.begin(),
                        rTpl.begin() + row_len,
                        []( const tuple_t &a, const tuple_t &b ) -> bool {
-                           return std::get<0>( a ) < std::get<0>( b );
+                           // note that this sorts on global index, not local
+                           return std::get<1>( a ) < std::get<1>( b );
                        } );
         }
-
 
         for ( lidx_t k = 0; k < row_len; ++k ) {
             d_cols_loc[rs + k] = std::get<0>( rTpl[k] );
@@ -234,9 +236,18 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns( MatrixSortScheme sort_t
     }
 
     // re-write column map to match now permuted columns
-    if ( !d_is_diag ) {
+    if ( !d_is_diag && sort_type != MatrixSortScheme::hypre ) {
         for ( lidx_t n = 0; n < d_nnz; ++n ) {
             d_cols_unq[d_cols_loc[n]] = d_cols[n];
+        }
+    } else if ( !d_is_diag ) {
+        // hypre requires sorted column map, so sort it and
+        // instead change local indices to match
+        std::sort( d_cols_unq.get(), d_cols_unq.get() + d_ncols_unq );
+        for ( lidx_t n = 0; n < d_nnz; ++n ) {
+            auto it =
+                std::lower_bound( d_cols_unq.get(), d_cols_unq.get() + d_ncols_unq, d_cols[n] );
+            d_cols_loc[n] = static_cast<lidx_t>( std::distance( d_cols_unq.get(), it ) );
         }
     }
 }

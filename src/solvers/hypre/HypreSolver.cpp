@@ -52,25 +52,6 @@ void HypreSolver::initialize( std::shared_ptr<const SolverStrategyParameters> pa
     setParameters();
 }
 
-void HypreSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
-{
-    if ( db->keyExists( "memory_location" ) ) {
-        auto memory_location = db->getString( "memory_location" );
-        AMP_INSIST( memory_location == "host" || memory_location == "device",
-                    "memory_location must be either device or host" );
-        d_memory_location = ( memory_location == "host" ) ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE;
-    } else
-        d_memory_location = HYPRE_MEMORY_HOST;
-
-    if ( db->keyExists( "exec_policy" ) ) {
-        auto exec_policy = db->getString( "exec_policy" );
-        AMP_INSIST( exec_policy == "host" || exec_policy == "device",
-                    "exec_policy must be either device or host" );
-        d_exec_policy = ( exec_policy == "host" ) ? HYPRE_EXEC_HOST : HYPRE_EXEC_DEVICE;
-    } else
-        d_exec_policy = HYPRE_EXEC_HOST;
-}
-
 void HypreSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 {
     d_HypreMatrixAdaptor =
@@ -132,7 +113,6 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             vals = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )
                        ->getRawDataBlock<HYPRE_Real>();
         } else {
-
             auto block0 = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )
                               ->getRawDataBlock<HYPRE_Real>();
             auto memType = AMP::Utilities::getMemoryType( block0 );
@@ -147,7 +127,6 @@ void HypreSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
 
     } else {
-
         auto block0 = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )
                           ->getRawDataBlock<HYPRE_Real>();
         auto memType = AMP::Utilities::getMemoryType( block0 );
@@ -250,9 +229,17 @@ void HypreSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op 
     AMP_INSIST( matrix, "matrix cannot be NULL" );
 
     // set the comm for this solver based on the comm for the matrix
-    // being lazy??
     const auto &dofManager = matrix->getLeftDOFManager();
     d_comm                 = dofManager->getComm();
+
+    // set the hypre memory and execution spaces from the operator
+    if ( linearOperator->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
+        d_memory_location = HYPRE_MEMORY_DEVICE;
+        d_exec_policy     = HYPRE_EXEC_DEVICE;
+    } else {
+        d_memory_location = HYPRE_MEMORY_HOST;
+        d_exec_policy     = HYPRE_EXEC_HOST;
+    }
 
     createHYPREMatrix( matrix );
     createHYPREVectors();

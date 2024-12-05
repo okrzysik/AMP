@@ -51,8 +51,10 @@ using HostAllocator = std::allocator<TYPE>;
 
 } // namespace AMP
 
+
+namespace AMP::Utilities {
 template<typename ALLOC>
-AMP::Utilities::MemoryType getAllocatorMemoryType()
+constexpr AMP::Utilities::MemoryType getAllocatorMemoryType()
 {
     using intAllocator = typename std::allocator_traits<ALLOC>::template rebind_alloc<int>;
     if ( std::is_same_v<intAllocator, std::allocator<int>> ) {
@@ -74,5 +76,6 @@ AMP::Utilities::MemoryType getAllocatorMemoryType()
     }
 }
 
+} // namespace AMP::Utilities
 
 #endif
