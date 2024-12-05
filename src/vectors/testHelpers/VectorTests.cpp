@@ -801,7 +801,9 @@ void VectorTests::CopyVector( AMP::UnitTest *ut )
                 vectorc->getVectorData()->isType<float>() ) {
         auto c_maxNorm = vectorc->maxNorm().get<float>();
         auto b_maxNorm = vectorb->maxNorm().get<float>();
-        PASS_FAIL( fabs( c_maxNorm - 99 * b_maxNorm ) < 1e-5 * b_maxNorm, "copy vector 2" );
+        //        PASS_FAIL( fabs( c_maxNorm - 99 * b_maxNorm ) < 1e-5 * b_maxNorm, "copy vector 2"
+        //        );
+        PASS_FAIL( AMP::Utilities::approx_equal( c_maxNorm, 99 * b_maxNorm ), "copy vector 2" );
     } else {
         AMP_ERROR( "CopyVector tests not implemented for provided scalar TYPE" );
     }
