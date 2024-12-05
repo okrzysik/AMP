@@ -6,6 +6,7 @@
 #include "AMP/utils/AMP_MPI.h"
 
 #include "StackTrace/StackTrace.h"
+#include "StackTrace_Version.h"
 
 #include <algorithm>
 #include <array>
@@ -57,12 +58,6 @@
 // clang-format on
 
 
-// Declare StackTrace functions that may not exist (version dependent)
-namespace StackTrace::Utilities {
-bool running_valgrind() __attribute__( ( weak ) );
-}
-
-
 namespace AMP::Utilities {
 
 
@@ -73,9 +68,10 @@ static std::mutex Utilities_mutex;
 // Check if valgrind is running
 bool running_valgrind()
 {
-    if ( StackTrace::Utilities::running_valgrind() )
+    if ( StackTrace::Version::build >= 125 )
         return StackTrace::Utilities::running_valgrind();
-    return false;
+    auto x = getenv( "LD_PRELOAD" );
+    return std::min( x.find("/valgrind/"), x.find("/vgpreload") ) != std::string::npos;
 }
 
 
