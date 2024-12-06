@@ -68,8 +68,8 @@ static std::mutex Utilities_mutex;
 // Check if valgrind is running
 bool running_valgrind()
 {
-    if ( StackTrace::Version::build >= 125 )
-        return StackTrace::Utilities::running_valgrind();
+    //if ( StackTrace::Version::build >= 125 )
+    //    return StackTrace::Utilities::running_valgrind();
     auto x = getenv( "LD_PRELOAD" );
     return std::min( x.find( "/valgrind/" ), x.find( "/vgpreload" ) ) != std::string::npos;
 }
