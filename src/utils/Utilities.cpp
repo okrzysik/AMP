@@ -65,13 +65,22 @@ namespace AMP::Utilities {
 static std::mutex Utilities_mutex;
 
 
-// Check if valgrind is running
+/****************************************************************************
+ * Check if valgrind is running                                              *
+ * We will eveuntually remove this function once everyone has had time to    *
+ * update to a more recent version of StackTrace                             *
+ ****************************************************************************/
+#ifndef StackTrace_BUILD_VERSION
+    #define StackTrace_BUILD_VERSION 0
+#endif
 bool running_valgrind()
 {
-    //if ( StackTrace::Version::build >= 125 )
-    //    return StackTrace::Utilities::running_valgrind();
+#if StackTrace_BUILD_VERSION >= 125
+    return StackTrace::Utilities::running_valgrind();
+#else
     auto x = getenv( "LD_PRELOAD" );
     return std::min( x.find( "/valgrind/" ), x.find( "/vgpreload" ) ) != std::string::npos;
+#endif
 }
 
 
