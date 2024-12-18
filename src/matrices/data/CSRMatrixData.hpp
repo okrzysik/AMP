@@ -301,12 +301,19 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setOtherD
     if ( t == AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD ) {
         for ( int i = 0; i != totDataLen; i++ ) {
             if ( ( aggregateRows[i] >= d_first_row ) && ( aggregateRows[i] < d_last_row ) ) {
-                addValuesByGlobalID( 1u,
-                                     1u,
-                                     (size_t *) &aggregateRows[i],
-                                     (size_t *) &aggregateCols[i],
-                                     &aggregateData[i],
-                                     getTypeID<scalar_t>() );
+                if constexpr ( std::is_same_v<gidx_t, size_t> ) {
+                    addValuesByGlobalID( 1u,
+                                         1u,
+                                         &aggregateRows[i],
+                                         &aggregateCols[i],
+                                         &aggregateData[i],
+                                         getTypeID<scalar_t>() );
+                } else {
+                    size_t row = static_cast<size_t>( aggregateRows[i] );
+                    size_t col = static_cast<size_t>( aggregateCols[i] );
+                    addValuesByGlobalID(
+                        1u, 1u, &row, &col, &aggregateData[i], getTypeID<scalar_t>() );
+                }
             }
         }
     } else {
@@ -314,12 +321,19 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setOtherD
         if ( t == AMP::LinearAlgebra::ScatterType::CONSISTENT_SET ) {
             for ( int i = 0; i != totDataLen; i++ ) {
                 if ( ( aggregateRows[i] >= d_first_row ) && ( aggregateRows[i] < d_last_row ) ) {
-                    setValuesByGlobalID( 1u,
-                                         1u,
-                                         (size_t *) &aggregateRows[i],
-                                         (size_t *) &aggregateCols[i],
-                                         &aggregateData[i],
-                                         getTypeID<scalar_t>() );
+                    if constexpr ( std::is_same_v<gidx_t, size_t> ) {
+                        setValuesByGlobalID( 1u,
+                                             1u,
+                                             &aggregateRows[i],
+                                             &aggregateCols[i],
+                                             &aggregateData[i],
+                                             getTypeID<scalar_t>() );
+                    } else {
+                        size_t row = static_cast<size_t>( aggregateRows[i] );
+                        size_t col = static_cast<size_t>( aggregateCols[i] );
+                        setValuesByGlobalID(
+                            1u, 1u, &row, &col, &aggregateData[i], getTypeID<scalar_t>() );
+                    }
                 }
             }
         }
