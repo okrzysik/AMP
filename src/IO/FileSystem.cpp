@@ -1,6 +1,6 @@
 #include "AMP/IO/FileSystem.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/UtilityMacros.h"
+#include "AMP/utils/Utilities.h"
 
 #include <algorithm>
 #include <fstream>
@@ -88,8 +88,14 @@ void AMP::IO::recursiveMkdir( const std::string &path, mode_t mode, bool only_no
     auto create = [check, mode]( const std::string &path ) {
         if ( check( path ) )
             return;
-        if ( mkdir( path.c_str(), mode ) != 0 )
-            AMP_ERROR( "Cannot create directory " + path );
+        if ( mkdir( path.c_str(), mode ) != 0 ) {
+            if ( errno == EEXIST && check( path ) ) {
+                // Another rank probably created the directory first
+                return;
+            }
+            AMP_ERROR( "Cannot create directory " + path + " (" +
+                       AMP::Utilities::getLastErrnoString() + ")" );
+        }
     };
     // Create the parent directories (if they exist)
     bool createPath = comm.getRank() == 0 || !only_node_zero_creates;

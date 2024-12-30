@@ -58,6 +58,10 @@ using StackTrace::Utilities::tick;
 using StackTrace::Utilities::time;
 
 
+//! Return the string description for the last value in errno
+std::string_view getLastErrnoString();
+
+
 //! Check if valgrind is running
 bool running_valgrind();
 
