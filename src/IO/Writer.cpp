@@ -162,7 +162,7 @@ void Writer::createDirectories( const std::string &filename )
 {
     size_t i = filename.rfind( '/' );
     if ( i != std::string::npos && d_comm.getRank() == 0 )
-        recursiveMkdir( filename.substr( 0, i ), ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
+        recursiveMkdir( filename.substr( 0, i ) );
     d_comm.barrier();
 }
 

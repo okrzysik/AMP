@@ -1,8 +1,8 @@
 # ctest script for building, running, and submitting the test results 
 # Usage:  ctest -S script,build
-#   build = debug / optimized / valgrind
+#   build = debug / optimized / valgrind / continuous
 # Note: this test will use use the number of processors defined in the variable N_PROCS,
-#   the enviornmental variable N_PROCS, or the number of processors availible (if not specified)
+#   the environmental variable N_PROCS, or the number of processors available (if not specified)
 
 
 # Set the Project variables
@@ -11,7 +11,7 @@ SET( PROJ AMP )
 
 # Set platform specific variables
 SITE_NAME( HOSTNAME )
-STRING( REGEX REPLACE  "-(ext|login)(..|.)"  ""  HOSTNAME  "${HOSTNAME}" )
+STRING( REGEX REPLACE "-(ext|login)(..|.)" "" HOSTNAME "${HOSTNAME}" )
 SET( MPIEXEC             $ENV{MPIEXEC}            )
 SET( TPL_DIRECTORY      "$ENV{TPL_DIRECTORY}"     )
 SET( AMP_DATA            $ENV{AMP_DATA}           )
@@ -42,39 +42,39 @@ IF ( NOT CMAKE_MAKE_PROGRAM )
 ENDIF()
 
 
+# Set default options
+SET( CTEST_BUILD_NAME "${PROJ}" )
+SET( CMAKE_BUILD_TYPE "Release" )
+SET( CTEST_COVERAGE_COMMAND )
+SET( ENABLE_GCOV "false" )
+SET( USE_VALGRIND FALSE )
+SET( USE_VALGRIND_MATLAB FALSE )
+SET( CTEST_DASHBOARD "Nightly" )
+
+
 # Check that we specified the build type to run
 IF( NOT CTEST_SCRIPT_ARG )
-    MESSAGE(FATAL_ERROR "No build specified: ctest -S /path/to/script,build (debug/optimized/valgrind")
+    MESSAGE(FATAL_ERROR "No build specified: ctest -S /path/to/script,build (debug/optimized/valgrind/continuous")
+ELSEIF( ${CTEST_SCRIPT_ARG} STREQUAL "continuous" )
+    SET( CTEST_DASHBOARD "Continuous" )
 ELSEIF( ${CTEST_SCRIPT_ARG} STREQUAL "debug" )
     SET( CTEST_BUILD_NAME "${PROJ}-debug" )
     SET( CMAKE_BUILD_TYPE "Debug" )
     SET( CTEST_COVERAGE_COMMAND ${COVERAGE_COMMAND} )
     SET( ENABLE_GCOV "true" )
-    SET( USE_VALGRIND FALSE )
 ELSEIF( (${CTEST_SCRIPT_ARG} STREQUAL "optimized") OR (${CTEST_SCRIPT_ARG} STREQUAL "opt") )
     SET( CTEST_BUILD_NAME "${PROJ}-opt" )
-    SET( CMAKE_BUILD_TYPE "Release" )
-    SET( CTEST_COVERAGE_COMMAND )
-    SET( ENABLE_GCOV "false" )
-    SET( USE_VALGRIND FALSE )
 ELSEIF( (${CTEST_SCRIPT_ARG} STREQUAL "weekly") )
     SET( CTEST_BUILD_NAME "AMP-Weekly" )
-    SET( CMAKE_BUILD_TYPE "Release" )
-    SET( CTEST_COVERAGE_COMMAND )
-    SET( ENABLE_GCOV "false" )
-    SET( USE_VALGRIND FALSE )
 ELSEIF( ${CTEST_SCRIPT_ARG} STREQUAL "valgrind" )
     SET( CTEST_BUILD_NAME "${PROJ}-valgrind" )
     SET( CMAKE_BUILD_TYPE "Debug" )
-    SET( CTEST_COVERAGE_COMMAND )
-    SET( ENABLE_GCOV "false" )
     SET( USE_VALGRIND TRUE )
 ELSEIF( ${CTEST_SCRIPT_ARG} STREQUAL "doc" )
     SET( CTEST_BUILD_NAME "${PROJ}-doc" )
-    SET( CMAKE_BUILD_TYPE "Release" )
     SET( BUILD_ONLY_DOCS "true" )
 ELSE()
-    MESSAGE(FATAL_ERROR "Invalid build (${CTEST_SCRIPT_ARG}): ctest -S /path/to/script,build (debug/opt/valgrind")
+    MESSAGE(FATAL_ERROR "Invalid build (${CTEST_SCRIPT_ARG}): ctest -S /path/to/script,build (debug/opt/valgrind/continuous")
 ENDIF()
 IF ( BUILDNAME_POSTFIX )
     SET( CTEST_BUILD_NAME "${CTEST_BUILD_NAME}-${BUILDNAME_POSTFIX}" )
@@ -120,7 +120,6 @@ SET( CTEST_NIGHTLY_START_TIME ${NIGHTLY_START_TIME} )
 SET( CTEST_PROJECT_NAME "${PROJ}" )
 SET( CTEST_SOURCE_DIRECTORY "${${PROJ}_SOURCE_DIR}" )
 SET( CTEST_BINARY_DIRECTORY "." )
-SET( CTEST_DASHBOARD "Nightly" )
 SET( CTEST_CUSTOM_MAXIMUM_NUMBER_OF_ERRORS 500 )
 SET( CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS 500 )
 SET( CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE 10000 )
@@ -147,8 +146,8 @@ ENDIF()
 
 
 # Set valgrind options
-#SET (VALGRIND_COMMAND_OPTIONS "--tool=memcheck --leak-check=yes --track-fds=yes --num-callers=50 --show-reachable=yes --track-origins=yes --malloc-fill=0xff --free-fill=0xfe --suppressions=${AMP_SOURCE_DIR}/ValgrindSuppresionFile" )
-SET( VALGRIND_COMMAND_OPTIONS  "--tool=memcheck --leak-check=yes --track-fds=yes --num-callers=50 --show-reachable=yes --suppressions=${AMP_SOURCE_DIR}/ValgrindSuppresionFile" )
+#SET (VALGRIND_COMMAND_OPTIONS "--tool=memcheck --leak-check=yes --track-fds=yes --num-callers=50 --show-reachable=yes --track-origins=yes --malloc-fill=0xff --free-fill=0xfe --suppressions=${${PROJ}_SOURCE_DIR}/ValgrindSuppresionFile" )
+SET( VALGRIND_COMMAND_OPTIONS  "--tool=memcheck --leak-check=yes --track-fds=yes --num-callers=50 --show-reachable=yes --suppressions=${${PROJ}_SOURCE_DIR}/ValgrindSuppresionFile" )
 IF ( USE_VALGRIND )
     SET( MEMORYCHECK_COMMAND ${VALGRIND_COMMAND} )
     SET( MEMORYCHECKCOMMAND ${VALGRIND_COMMAND} )
@@ -207,6 +206,20 @@ ELSE()
     STRING( REPLACE "PROJECT" "AMP" CTEST_URL "${CTEST_URL}" )
     SET( CTEST_SUBMIT_URL "${CTEST_URL}" )
 ENDIF()
+
+
+# Configure update
+IF ( NOT CTEST_GIT_COMMAND )
+    SET( CTEST_GIT_COMMAND "$ENV{CTEST_GIT_COMMAND}" )
+ENDIF()
+IF ( NOT CTEST_GIT_COMMAND )
+    FIND_PROGRAM( CTEST_GIT_COMMAND "git" )
+ENDIF()
+IF ( NOT CTEST_GIT_COMMAND )
+    SET( CTEST_GIT_COMMAND git )
+ENDIF()
+SET( CTEST_UPDATE_COMMAND ${CTEST_GIT_COMMAND} )
+SET( CTEST_UPDATE_OPTIONS )
 
 
 # Configure and run the tests

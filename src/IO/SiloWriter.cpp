@@ -110,9 +110,9 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
             d_comm.barrier();
         }
     } else if ( d_decomposition == 2 ) {
-        // Every rank will write a seperate file
+        // Every rank will write a separate file
         if ( d_comm.getRank() == 0 )
-            recursiveMkdir( fname_in + "_silo", ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
+            recursiveMkdir( fname_in + "_silo" );
         d_comm.barrier();
         auto fname_rank = fname_in + "_silo/" + std::to_string( cycle ) + "." +
                           std::to_string( d_comm.getRank() + 1 ) + "." + getExtension();
