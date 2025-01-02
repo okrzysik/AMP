@@ -1,9 +1,11 @@
 #include "AMP/IO/FileSystem.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/UtilityMacros.h"
+#include "AMP/utils/Utilities.h"
 
 #include <algorithm>
+#include <chrono>
 #include <fstream>
+#include <thread>
 
 
 /****************************************************************************
@@ -68,10 +70,12 @@ std::string AMP::IO::getSuffix( const std::string &filename )
         c = std::tolower( c );
     return suffix;
 }
-
-void AMP::IO::recursiveMkdir( const std::string &path, mode_t mode, bool only_node_zero_creates )
+void AMP::IO::recursiveMkdir( const std::string &path, mode_t mode, bool )
 {
-    AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
+    recursiveMkdir( path, mode );
+}
+void AMP::IO::recursiveMkdir( const std::string &path, mode_t mode )
+{
     // Create/check a directory
     auto check = []( const std::string &path ) {
         struct stat status;
@@ -88,21 +92,25 @@ void AMP::IO::recursiveMkdir( const std::string &path, mode_t mode, bool only_no
     auto create = [check, mode]( const std::string &path ) {
         if ( check( path ) )
             return;
-        if ( mkdir( path.c_str(), mode ) != 0 )
-            AMP_ERROR( "Cannot create directory " + path );
+        if ( mkdir( path.c_str(), mode ) != 0 ) {
+            if ( errno == EEXIST && check( path ) ) {
+                // Another rank probably created the directory first
+                return;
+            }
+            AMP_ERROR( "Cannot create directory " + path + " (" +
+                       AMP::Utilities::getLastErrnoString() + ")" );
+        }
     };
     // Create the parent directories (if they exist)
-    bool createPath = comm.getRank() == 0 || !only_node_zero_creates;
-    if ( !path.empty() && createPath ) {
-        std::string split = "\\/";
-        size_t pos        = path.find_first_of( split, 0 );
-        while ( pos != std::string::npos ) {
-            create( path.substr( 0, pos ) );
-            pos = path.find_first_of( split, pos + 1 );
-        }
-        create( path );
+    if ( path.empty() )
+        return;
+    if ( AMP_MPI( AMP_COMM_WORLD ).getRank() != 0 )
+        std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
+    std::string split = "\\/";
+    size_t pos        = path.find_first_of( split, 0 );
+    while ( pos != std::string::npos ) {
+        create( path.substr( 0, pos ) );
+        pos = path.find_first_of( split, pos + 1 );
     }
-    // Make sure all processors wait until node zero creates the directory structure.
-    if ( only_node_zero_creates )
-        comm.barrier();
+    create( path );
 }

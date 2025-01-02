@@ -36,7 +36,7 @@ hid_t openHDF5( const std::string &filename, const char *mode, Compression compr
         fid = H5Fopen( filename.data(), H5F_ACC_RDONLY, pid );
     } else if ( strcmp( mode, "w" ) == 0 ) {
         auto pwd = IO::path( filename );
-        IO::recursiveMkdir( pwd, ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
+        IO::recursiveMkdir( pwd );
         fid = H5Fcreate( filename.data(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
     } else if ( strcmp( mode, "rw" ) == 0 ) {
         fid = H5Fopen( filename.data(), H5F_ACC_RDWR, H5P_DEFAULT );
