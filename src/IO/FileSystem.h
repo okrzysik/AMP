@@ -27,13 +27,11 @@ namespace AMP::IO {
 /*
  * Create the directory specified by the path string.  Permissions are set
  * by default to rwx by user.  The intermediate directories in the
- * path are created if they do not already exist.  When
- * only_node_zero_creates is true, only node zero creates the
- * directories.  Otherwise, all nodes create the directories.
+ * path are created if they do not already exist.
  */
-void recursiveMkdir( const std::string &path,
-                     mode_t mode                 = ( S_IRUSR | S_IWUSR | S_IXUSR ),
-                     bool only_node_zero_creates = true );
+void recursiveMkdir( const std::string &path, mode_t mode = ( S_IRUSR | S_IWUSR | S_IXUSR ) );
+[[deprecated( "No need to specify only_node_zero_creates, use recursiveMkdir(path,mode)" )]] void
+recursiveMkdir( const std::string &, mode_t, bool );
 
 
 //! Return the path to the file
