@@ -252,6 +252,7 @@ static inline std::string operator+( std::string_view x, std::string_view y )
             _Pragma( "GCC diagnostic ignored \"-Wmaybe-uninitialized\"" )       \
             _Pragma( "GCC diagnostic ignored \"-Winaccessible-base\"" )         \
             _Pragma( "GCC diagnostic ignored \"-Wclass-memaccess\"" )           \
+            _Pragma( "GCC diagnostic ignored \"-Wcast-function-type\"" )        \
             _Pragma( "GCC diagnostic ignored \"-Waggressive-loop-optimizations\"" )
         #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
     #else
