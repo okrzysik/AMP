@@ -76,6 +76,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
 void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                           AMP::LinearAlgebra::Vector::shared_ptr r )
 {
+    PROFILE( "preAssembly", 1 );
     AMP_INSIST( ( u != nullptr ), "NULL Input Vector" );
 
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
@@ -192,6 +193,7 @@ void VolumeIntegralOperator::postElementOperation()
 
 void VolumeIntegralOperator::postAssembly()
 {
+    PROFILE( "postAssembly", 1 );
     d_outVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 

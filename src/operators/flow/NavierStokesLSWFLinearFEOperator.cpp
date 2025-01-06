@@ -120,7 +120,7 @@ void NavierStokesLSWFLinearFEOperator::preElementOperation( const AMP::Mesh::Mes
                 elementInputVectors[( 10 * r ) + d] = 0.0;
             }
         } // end d
-    }     // end r
+    } // end r
 
     /*
           std::vector<std::vector<double> >
@@ -164,7 +164,7 @@ void NavierStokesLSWFLinearFEOperator::preElementOperation( const AMP::Mesh::Mes
 
 void NavierStokesLSWFLinearFEOperator::postElementOperation()
 {
-
+    PROFILE( "postElementOperation", 5 );
     for ( unsigned int r = 0; r < d_type0DofIndices.size(); r++ ) {
         for ( unsigned int dr = 0; dr < 10; dr++ ) {
             for ( unsigned int c = 0; c < d_type0DofIndices.size(); c++ ) {
