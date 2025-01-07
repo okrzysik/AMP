@@ -168,8 +168,8 @@ std::array<double, NDIM + 1> computeBarycentric( const std::array<TYPE, NDIM> *x
     for ( int i = 0; i < NDIM; i++ )
         L2[NDIM] -= L2[i];
     // Perform the normalization (will require inexact math)
-    double scale = 1.0 / static_cast<double>( det );
-    std::array<double, NDIM + 1> L;
+    double scale                   = 1.0 / static_cast<double>( det );
+    std::array<double, NDIM + 1> L = { 0 };
     for ( int i = 0; i < NDIM + 1; i++ )
         L[i] = static_cast<double>( L2[i] ) * scale;
     return L;

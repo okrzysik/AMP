@@ -100,7 +100,7 @@ constexpr std::array<double, N> operator-( const std::array<double, N> &a )
     } else if constexpr ( N == 3 ) {
         return { -a[0], -a[1], -a[2] };
     } else {
-        std::array<double, N> c;
+        std::array<double, N> c = { 0 };
         for ( size_t i = 0; i < N; i++ )
             c[i] = -a[i];
         return c;
