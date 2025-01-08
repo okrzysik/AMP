@@ -173,6 +173,11 @@ public: // Views/copies/subset
     static std::unique_ptr<const Array> constView( const ArraySize &N,
                                                    const std::shared_ptr<const TYPE> &data );
 
+    /*!
+     * Create an Array view to this array
+     */
+    Array<TYPE, FUN, Allocator> view();
+
 
     /*!
      * Make this object a view of the src
