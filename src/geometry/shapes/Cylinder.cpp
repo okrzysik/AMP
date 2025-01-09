@@ -4,6 +4,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
 
+#include <algorithm>
 
 namespace AMP::Geometry {
 
