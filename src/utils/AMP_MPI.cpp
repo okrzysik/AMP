@@ -1675,7 +1675,6 @@ void AMP_MPI::stop_MPI()
     if ( called_MPI_Init && !finalized ) {
         MPI_Barrier( MPI_COMM_WORLD );
         MPI_Finalize();
-        called_MPI_Init = true;
     }
 #endif
 }

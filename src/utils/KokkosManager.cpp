@@ -12,6 +12,7 @@ namespace AMP::Utilities {
 
 
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+static bool AMP_CalledKokkosInit = false;
 void initializeKokkos( int &argc_in, char *argv_in[] )
 {
     if ( !Kokkos::is_initialized() ) {
@@ -40,11 +41,14 @@ void initializeKokkos( int &argc_in, char *argv_in[] )
             argv[argc++] = defaultThreads;
         // Initialize kokkos
         Kokkos::initialize( argc, argv );
+        AMP_CalledKokkosInit = true;
+    } else {
+        AMP_CalledKokkosInit = false;
     }
 }
 void finalizeKokkos()
 {
-    if ( !Kokkos::is_finalized() )
+    if ( AMP_CalledKokkosInit && !Kokkos::is_finalized() )
         Kokkos::finalize();
 }
 #else
