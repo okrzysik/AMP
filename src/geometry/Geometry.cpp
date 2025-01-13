@@ -20,6 +20,7 @@
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/utils/Database.h"
 
+#include <algorithm>
 
 namespace AMP::Geometry {
 
