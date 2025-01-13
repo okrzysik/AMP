@@ -20,41 +20,44 @@
  *  Macros to help instantiate functions                 *
  ********************************************************/
 // clang-format off
-#define instantiateArrayConstructors( TYPE )                                       \
-    template AMP::Array<TYPE>::Array();                                            \
-    template AMP::Array<TYPE>::~Array<TYPE>();                                     \
-    template AMP::Array<TYPE>::Array( const AMP::ArraySize&, TYPE const* );        \
-    template AMP::Array<TYPE>::Array( size_t );                                    \
-    template AMP::Array<TYPE>::Array( size_t, size_t );                            \
-    template AMP::Array<TYPE>::Array( size_t, size_t, size_t );                    \
-    template AMP::Array<TYPE>::Array( size_t, size_t, size_t, size_t );            \
-    template AMP::Array<TYPE>::Array( size_t, size_t, size_t, size_t, size_t );    \
-    template AMP::Array<TYPE>::Array( std::initializer_list<TYPE> );               \
-    template AMP::Array<TYPE>::Array( std::initializer_list<std::initializer_list<TYPE>> ); \
-    template AMP::Array<TYPE>::Array( const AMP::Array<TYPE>& );                   \
-    template AMP::Array<TYPE>::Array( AMP::Array<TYPE>&& );                        \
-    template void AMP::Array<TYPE>::allocate( const AMP::ArraySize& );             \
-    template void AMP::Array<TYPE>::reshape( const AMP::ArraySize& );              \
-    template std::unique_ptr<const AMP::Array<TYPE>>                               \
-        AMP::Array<TYPE>::constView( const AMP::ArraySize&, const std::shared_ptr<TYPE const>& ); \
-    template void AMP::Array<TYPE>::viewRaw( const AMP::ArraySize&, TYPE*, bool, bool ); \
-    template void AMP::Array<TYPE>::view2( const AMP::ArraySize&, std::shared_ptr<TYPE> ); \
-    template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( const AMP::Array<TYPE>& ); \
-    template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( AMP::Array<TYPE>&& );  \
-    template TYPE* AMP::Array<TYPE>::data();                                       \
-    template TYPE const* AMP::Array<TYPE>::data() const;                           \
-    template void AMP::Array<TYPE>::resize( size_t );                              \
-    template void AMP::Array<TYPE>::resize( size_t, size_t );                      \
-    template void AMP::Array<TYPE>::resize( size_t, size_t, size_t );              \
-    template void AMP::Array<TYPE>::resize( AMP::ArraySize const& );               \
-    template void AMP::Array<TYPE>::clear();                                       \
-    template int AMP::Array<TYPE>::ndim() const;                                   \
-    template const AMP::ArraySize& AMP::Array<TYPE>::size() const;                 \
-    template size_t AMP::Array<TYPE>::size( int ) const;                           \
-    template size_t AMP::Array<TYPE>::length() const;                              \
-    template bool AMP::Array<TYPE>::empty() const;                                 \
-    template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( const std::vector<TYPE>& ); \
-    template bool AMP::Array<TYPE>::operator==( const AMP::Array<TYPE>& ) const
+#define instantiateArrayConstructors2( TYPE, FUN, A )                                    \
+    template AMP::Array<TYPE,FUN,A>::Array();                                            \
+    template AMP::Array<TYPE,FUN,A>::~Array<TYPE,FUN,A>();                               \
+    template AMP::Array<TYPE,FUN,A>::Array( const AMP::ArraySize&, TYPE const* );        \
+    template AMP::Array<TYPE,FUN,A>::Array( size_t );                                    \
+    template AMP::Array<TYPE,FUN,A>::Array( size_t, size_t );                            \
+    template AMP::Array<TYPE,FUN,A>::Array( size_t, size_t, size_t );                    \
+    template AMP::Array<TYPE,FUN,A>::Array( size_t, size_t, size_t, size_t );            \
+    template AMP::Array<TYPE,FUN,A>::Array( size_t, size_t, size_t, size_t, size_t );    \
+    template AMP::Array<TYPE,FUN,A>::Array( std::initializer_list<TYPE> );               \
+    template AMP::Array<TYPE,FUN,A>::Array( std::initializer_list<std::initializer_list<TYPE>> ); \
+    template AMP::Array<TYPE,FUN,A>::Array( const AMP::Array<TYPE,FUN,A>& );             \
+    template AMP::Array<TYPE,FUN,A>::Array( AMP::Array<TYPE,FUN,A>&& );                  \
+    template AMP::Array<TYPE,FUN,A> AMP::Array<TYPE,FUN,A>::view();                      \
+    template void AMP::Array<TYPE,FUN,A>::allocate( const AMP::ArraySize& );             \
+    template void AMP::Array<TYPE,FUN,A>::reshape( const AMP::ArraySize& );              \
+    template std::unique_ptr<const AMP::Array<TYPE,FUN,A>>                               \
+        AMP::Array<TYPE,FUN,A>::constView( const AMP::ArraySize&, const std::shared_ptr<TYPE const>& ); \
+    template void AMP::Array<TYPE,FUN,A>::viewRaw( const AMP::ArraySize&, TYPE*, bool, bool ); \
+    template void AMP::Array<TYPE,FUN,A>::view2( const AMP::ArraySize&, std::shared_ptr<TYPE> ); \
+    template AMP::Array<TYPE,FUN,A>& AMP::Array<TYPE,FUN,A>::operator=( const AMP::Array<TYPE,FUN,A>& ); \
+    template AMP::Array<TYPE,FUN,A>& AMP::Array<TYPE,FUN,A>::operator=( AMP::Array<TYPE,FUN,A>&& ); \
+    template TYPE* AMP::Array<TYPE,FUN,A>::data();                                       \
+    template TYPE const* AMP::Array<TYPE,FUN,A>::data() const;                           \
+    template void AMP::Array<TYPE,FUN,A>::resize( size_t );                              \
+    template void AMP::Array<TYPE,FUN,A>::resize( size_t, size_t );                      \
+    template void AMP::Array<TYPE,FUN,A>::resize( size_t, size_t, size_t );              \
+    template void AMP::Array<TYPE,FUN,A>::resize( AMP::ArraySize const& );               \
+    template void AMP::Array<TYPE,FUN,A>::clear();                                       \
+    template int AMP::Array<TYPE,FUN,A>::ndim() const;                                   \
+    template const AMP::ArraySize& AMP::Array<TYPE,FUN,A>::size() const;                 \
+    template size_t AMP::Array<TYPE,FUN,A>::size( int ) const;                           \
+    template size_t AMP::Array<TYPE,FUN,A>::length() const;                              \
+    template bool AMP::Array<TYPE,FUN,A>::empty() const;                                 \
+    template AMP::Array<TYPE,FUN,A>& AMP::Array<TYPE,FUN,A>::operator=( const std::vector<TYPE>& ); \
+    template bool AMP::Array<TYPE,FUN,A>::operator==( const AMP::Array<TYPE,FUN,A>& ) const
+#define instantiateArrayConstructors( TYPE )                              \
+    instantiateArrayConstructors2( TYPE, AMP::FunctionTable, std::allocator<void> )
 #define PACK_UNPACK_ARRAY( TYPE )                                         \
     template size_t AMP::packSize( const AMP::Array<TYPE> & );            \
     template size_t AMP::pack( const AMP::Array<TYPE> &, std::byte * );   \
@@ -653,6 +656,18 @@ Array<TYPE, FUN, Allocator>::constView( const ArraySize &N,
     array->d_ptr  = std::const_pointer_cast<TYPE>( data );
     array->d_data = array->d_ptr.get();
     return array;
+}
+template<class TYPE, class FUN, class Allocator>
+Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::view()
+{
+    Array<TYPE, FUN, Allocator> x;
+    x.d_alloc       = d_alloc;
+    x.d_isCopyable  = d_isCopyable;
+    x.d_isFixedSize = d_isFixedSize;
+    x.d_size        = d_size;
+    x.d_data        = d_data;
+    x.d_ptr         = d_ptr;
+    return x;
 }
 template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::view2( Array<TYPE, FUN, Allocator> &src )
@@ -1368,7 +1383,7 @@ Array<TYPE, FUN, Allocator>::transform( std::function<TYPE( const TYPE &, const 
     return z;
 }
 template<class TYPE, class FUN, class Allocator>
-bool Array<TYPE, FUN, Allocator>::equals( const Array &rhs, TYPE tol ) const
+bool Array<TYPE, FUN, Allocator>::equals( const Array &rhs, const TYPE &tol ) const
 {
     return FUN::equals( *this, rhs, tol );
 }

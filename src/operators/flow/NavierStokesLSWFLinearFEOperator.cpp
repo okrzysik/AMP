@@ -164,7 +164,7 @@ void NavierStokesLSWFLinearFEOperator::preElementOperation( const AMP::Mesh::Mes
 
 void NavierStokesLSWFLinearFEOperator::postElementOperation()
 {
-
+    PROFILE( "postElementOperation", 5 );
     for ( unsigned int r = 0; r < d_type0DofIndices.size(); r++ ) {
         for ( unsigned int dr = 0; dr < 10; dr++ ) {
             for ( unsigned int c = 0; c < d_type0DofIndices.size(); c++ ) {

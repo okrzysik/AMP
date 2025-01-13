@@ -27,10 +27,14 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include "ProfilerApp.h"
+
 #include <memory>
 
 void myTest( AMP::UnitTest *ut, const std::string &inputName )
 {
+    PROFILE2( inputName );
+
     std::string input_file = inputName;
 
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -141,6 +145,7 @@ int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    PROFILE_ENABLE( 8 );
 
     std::vector<std::string> inputNames;
 
@@ -172,6 +177,8 @@ int main( int argc, char *argv[] )
         myTest( &ut, inputName );
 
     ut.report();
+
+    PROFILE_SAVE( "testNonlinearSolvers-NonlinearThermal-1" );
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();

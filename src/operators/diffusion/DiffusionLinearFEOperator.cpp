@@ -34,6 +34,8 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(
 
 void DiffusionLinearFEOperator::preAssembly( std::shared_ptr<const OperatorParameters> oparams )
 {
+    PROFILE( "preAssembly", 1 );
+
     auto params = std::dynamic_pointer_cast<const DiffusionLinearFEOperatorParameters>( oparams );
 
     if ( d_iDebugPrintInfoLevel > 7 ) {
@@ -59,6 +61,7 @@ void DiffusionLinearFEOperator::preAssembly( std::shared_ptr<const OperatorParam
 
 void DiffusionLinearFEOperator::postAssembly()
 {
+    PROFILE( "postAssembly", 1 );
 
     if ( d_iDebugPrintInfoLevel > 7 ) {
         AMP::pout << "DiffusionLinearFEOperator::postAssembly, entering" << std::endl;
@@ -127,6 +130,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
 
 void DiffusionLinearFEOperator::postElementOperation()
 {
+    PROFILE( "postElementOperation", 5 );
 
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionLinearFEOperator::postElementOperation, entering" << std::endl;

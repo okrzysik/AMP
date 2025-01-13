@@ -157,6 +157,7 @@ void MechanicsLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
 
 void MechanicsLinearFEOperator::postElementOperation()
 {
+    PROFILE( "postElementOperation", 5 );
     size_t numNodesInCurrElem = d_dofIndices.size();
     for ( size_t r = 0; r < numNodesInCurrElem; r++ ) {
         for ( size_t dr = 0; dr < 3; dr++ ) {

@@ -18,8 +18,11 @@
 #include "AMP/AMP_TPLs.h"
 
 // Include MPI if we are building with MPI
+#include "AMP/utils/UtilityMacros.h"
 #ifdef AMP_USE_MPI
+DISABLE_WARNINGS
     #include "mpi.h"
+ENABLE_WARNINGS
 #endif
 
 // Define extra comm_world, comm_self, and comm_null ids

@@ -281,6 +281,7 @@ void MechanicsNonlinearFEOperator::preElementOperation( const AMP::Mesh::MeshEle
 
 void MechanicsNonlinearFEOperator::postElementOperation()
 {
+    PROFILE( "postElementOperation", 5 );
     AMP_ASSERT( d_dofIndices.size() == 8 );
     for ( unsigned int r = 0; r < d_dofIndices.size(); r++ ) {
         AMP_ASSERT( d_dofIndices[r].size() == 3 );

@@ -160,6 +160,7 @@ void NavierStokesLSWFFEOperator::preElementOperation( const AMP::Mesh::MeshEleme
 
 void NavierStokesLSWFFEOperator::postElementOperation()
 {
+    PROFILE( "postElementOperation", 5 );
 
     /*
     auto velocityVar = d_outVariables->getVariable(NavierStokes::VELOCITY);

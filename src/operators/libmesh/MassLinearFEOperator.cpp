@@ -139,6 +139,8 @@ void MassLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElement &el
 
 void MassLinearFEOperator::postElementOperation()
 {
+    PROFILE( "postElementOperation", 5 );
+
     std::vector<size_t> d_dofIndices( d_currNodes.size() ), dofs( 1 );
     for ( size_t i = 0; i < d_currNodes.size(); i++ ) {
         d_inDofMap->getDOFs( d_currNodes[i].globalID(), dofs );

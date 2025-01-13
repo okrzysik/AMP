@@ -132,6 +132,8 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
 void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                 AMP::LinearAlgebra::Vector::shared_ptr r )
 {
+    PROFILE( "preAssembly", 1 );
+
     AMP_INSIST( u, "NULL Input Vector!" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
     auto u_meshVec = u->select( meshSelector, "u_mesh" );
@@ -166,6 +168,8 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
 
 void DiffusionNonlinearFEOperator::postAssembly()
 {
+    PROFILE( "postAssembly", 1 );
+
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::postAssembly, entering" << std::endl;
 

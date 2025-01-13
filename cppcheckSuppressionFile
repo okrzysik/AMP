@@ -17,6 +17,7 @@ preprocessorErrorDirective:* // Suppress #error messages (may be valid and will 
 virtualCallInConstructor:*  // False errors
 nullPointerRedundantCheck:*
 internalAstError:*
+class_X_Y:*
 
 
 //***********************************************************
@@ -65,6 +66,7 @@ noExplicitConstructor:*/AMP/vectors/testHelpers/petsc/PetscVectorFactory.h
 nullPointer:*/AMP/materials/Property.h
 nullPointer:*/AMP/utils/Array.hpp
 nullPointer:*/AMP/utils/ArraySize.h
+returnByReference:*/AMP/utils/threadpool/ThreadPool.h
 operatorEqVarError:*/AMP/utils/threadpool/ThreadPoolId.hpp
 operatorEqRetRefThis:*/AMP/utils/threadpool/ThreadPoolId.hpp
 passedByValue:*/AMP/utils/Database.h
@@ -75,6 +77,7 @@ syntaxError:*/AMP/mesh/*Iterator.h
 templateRecursion:*/AMP/utils/AMP_MPI.I
 unusedPrivateFunction:*/AMP/materials/Property.h
 invalidPointerCast:*/AMP/vectors/data/VectorDataIterator.hpp
+uninitMemberVar:*/AMP/utils/Units.hpp
 
 
 //***********************************************************
@@ -123,6 +126,7 @@ operatorEqVarError:*/src/utils/threadpool/ThreadPoolId.hpp
 negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
 noOperatorEq:*/src/utils/Utilities.cpp
 noExplicitConstructor:*/src/graphics/getLines/mainwindow.cpp
+unknownMacro:*/src/graphics/getLines/ThreadedSlotsClass.h
 objectIndex:*/src/mesh/libmesh/initializeLibMesh.cpp
 oppositeInnerCondition:*/src/mesh/MultiMesh.cpp
 oppositeInnerCondition:*/src/mesh/loadBalance/loadBalanceSimulator.cpp
