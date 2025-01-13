@@ -5,6 +5,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/memory.h"
 
+#include <algorithm>
 #include <functional>
 #include <map>
 #include <tuple>
