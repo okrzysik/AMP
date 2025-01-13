@@ -289,7 +289,7 @@ void MechanicsNonlinearFEOperator::postElementOperation()
             d_outVec->addValuesByGlobalID(
                 1, &d_dofIndices[r][d], &d_elementOutputVector[( 3 * r ) + d] );
         } // end for d
-    } // end for r
+    }     // end for r
 }
 
 void MechanicsNonlinearFEOperator::init()
