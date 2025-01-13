@@ -100,7 +100,7 @@ void DiffusionLinearElement::apply()
                     elementStiffnessMatrix[n][k] +=
                         ( JxW[qp] * conductivity[qp] * ( dphi[n][qp] * dphi[k][qp] ) );
                 } // end for k
-            } // end for n
+            }     // end for n
         } else {
             for ( unsigned int n = 0; n < N_dofs; n++ ) {
                 for ( unsigned int k = 0; k < N_dofs; k++ ) {
@@ -111,7 +111,7 @@ void DiffusionLinearElement::apply()
                                   ( dphi[n][qp]( i ) * dphi[k][qp]( j ) ) );
                         }
                 } // end for k
-            } // end for n
+            }     // end for n
         }
 
         d_transportModel->postLinearGaussPointOperation();

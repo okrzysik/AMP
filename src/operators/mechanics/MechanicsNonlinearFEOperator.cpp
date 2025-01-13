@@ -348,7 +348,7 @@ void MechanicsNonlinearFEOperator::init()
                     d_refXYZ->setValuesByGlobalID(
                         1, &d_dofIndices[j][i], &elementRefXYZ[( 3 * j ) + i] );
                 } // end for i
-            } // end for j
+            }     // end for j
         }
 
     } // end for el
@@ -665,7 +665,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain(
                     }
                 }
             } // end for i
-        } // end for r
+        }     // end for r
 
         d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                        d_materialModel );
@@ -742,7 +742,7 @@ void MechanicsNonlinearFEOperator::updateMaterialForElementCommonFunction(
                 }
             }
         } // end for i
-    } // end for r
+    }     // end for r
 
     if ( d_useUpdatedLagrangian ) {
         d_mechNULElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
