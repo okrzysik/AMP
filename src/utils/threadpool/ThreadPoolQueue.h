@@ -52,7 +52,7 @@ public:
     }
 
     //! Change the prioirties of items in the queue
-    inline void changePriorities( std::vector<std::pair<uint64_t, int8_t>> list )
+    inline void changePriorities( const std::vector<std::pair<uint64_t, int8_t>> &list )
     {
         auto compare = []( const ThreadPoolID &a, const uint64_t &b ) {
             return a.getLocalID() == b;
@@ -142,7 +142,7 @@ public:
     }
 
     //! Change the prioirties of items in the queue
-    inline void changePriorities( std::vector<std::pair<uint64_t, int8_t>> list )
+    inline void changePriorities( const std::vector<std::pair<uint64_t, int8_t>> &list )
     {
         if ( list.empty() )
             return;

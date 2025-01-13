@@ -148,9 +148,9 @@ void testPrefixUnits( AMP::UnitTest &ut )
     auto units    = Units::getAllUnits();
     auto prefixes = Units::getAllPrefixes();
     bool pass     = true;
-    for ( auto u : units ) {
+    for ( const auto &u : units ) {
         Units u1( u );
-        for ( auto p : prefixes ) {
+        for ( const auto &p : prefixes ) {
             double s = Units::convert( Units::getUnitPrefix( p ) );
             Units u2( p + u );
             double s2 = 0.0;
