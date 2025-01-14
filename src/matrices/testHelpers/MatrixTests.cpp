@@ -286,83 +286,148 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
         utils->failure( "mult by other matrix " + matrix->type() );
 }
 
+void MatrixTests::VerifyMatMultMatrix_IA( AMP::UnitTest *utils )
+{
+    PROFILE( "VerifyMatMultMatrix" );
+
+    auto matLap = d_factory->getMatrix();
+    fillWithPseudoLaplacian( matLap, d_factory );
+
+    auto x = matLap->getRightVector();
+    auto y = matLap->getLeftVector();
+
+    x->setToScalar( 1.0 );
+    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    const auto l1x = static_cast<double>( x->L1Norm() );
+    AMP_ASSERT( l1x > 0.0 );
+
+    auto matId = d_factory->getMatrix();
+    matId->zero();
+    matId->setDiagonal( x );
+
+    matLap->mult( x, y );
+    const auto l1y = static_cast<double>( y->L1Norm() );
+
+    auto matProd = AMP::LinearAlgebra::Matrix::matMultiply( matId, matLap );
+    auto xp      = matProd->getRightVector();
+    auto yp      = matProd->getLeftVector();
+    xp->setToScalar( 1.0 );
+    matProd->mult( xp, yp );
+    auto l1yp = static_cast<double>( yp->L1Norm() );
+
+    if ( AMP::Utilities::approx_equal( l1y, l1yp ) ) {
+        utils->passes( "matMultiply I*A " + matProd->type() );
+    } else {
+        AMP::pout << "matMultiply I*A(" << matProd->type() << "), || A * x || = " << l1y
+                  << ", || (I * A) * x || = " << l1yp << ", || x || = " << l1x << std::endl;
+        utils->failure( "matMultiply I*A  " + matProd->type() );
+    }
+}
+
+void MatrixTests::VerifyMatMultMatrix_AI( AMP::UnitTest *utils )
+{
+    PROFILE( "VerifyMatMultMatrix" );
+
+    auto matLap = d_factory->getMatrix();
+    fillWithPseudoLaplacian( matLap, d_factory );
+
+    auto x = matLap->getRightVector();
+    auto y = matLap->getLeftVector();
+
+    x->setToScalar( 1.0 );
+    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    const auto l1x = static_cast<double>( x->L1Norm() );
+    AMP_ASSERT( l1x > 0.0 );
+
+    auto matId = d_factory->getMatrix();
+    matId->zero();
+    matId->setDiagonal( x );
+
+    matLap->mult( x, y );
+    const auto l1y = static_cast<double>( y->L1Norm() );
+
+    auto matProd = AMP::LinearAlgebra::Matrix::matMultiply( matLap, matId );
+    auto xp      = matProd->getRightVector();
+    auto yp      = matProd->getLeftVector();
+    xp->setToScalar( 1.0 );
+    matProd->mult( xp, yp );
+    auto l1yp = static_cast<double>( yp->L1Norm() );
+
+    if ( AMP::Utilities::approx_equal( l1y, l1yp ) ) {
+        utils->passes( "matMultiply A*I " + matProd->type() );
+    } else {
+        AMP::pout << "matMultiply A*I(" << matProd->type() << "), || A * x || = " << l1y
+                  << ", || (A * I) * x || = " << l1yp << ", || x || = " << l1x << std::endl;
+        utils->failure( "matMultiply A*I  " + matProd->type() );
+    }
+}
+
+void MatrixTests::VerifyMatMultMatrix_AA( AMP::UnitTest *utils )
+{
+    PROFILE( "VerifyMatMultMatrix" );
+
+    auto matLap = d_factory->getMatrix();
+    fillWithPseudoLaplacian( matLap, d_factory );
+
+    auto x = matLap->getRightVector();
+    auto y = matLap->getLeftVector();
+
+    x->setToScalar( 1.0 );
+    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    const auto l1x = static_cast<double>( x->L1Norm() );
+    AMP_ASSERT( l1x > 0.0 );
+
+    matLap->mult( x, y );
+    const auto l1y = static_cast<double>( y->L1Norm() );
+
+    auto matProd = AMP::LinearAlgebra::Matrix::matMultiply( matLap, matLap );
+    auto xp      = matProd->getRightVector();
+    auto yp      = matProd->getLeftVector();
+    xp->setToScalar( 1.0 );
+    matProd->mult( xp, yp );
+    auto l1yp = static_cast<double>( yp->L1Norm() );
+
+    if ( AMP::Utilities::approx_equal( l1y, l1yp ) ) {
+        utils->passes( "matMultiply A*A " + matProd->type() );
+    } else {
+        AMP::pout << "matMultiply(" << matProd->type() << ") A*A, || A * ( A * x ) || = " << l1y
+                  << ", || ( A * A ) * x || = " << l1yp << ", || x || = " << l1x << std::endl;
+        utils->failure( "matMultiply A*A  " + matProd->type() );
+    }
+}
+
 
 // Test matrix-matrix multiplication (this tests takes a long time for large matrices)
 void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
 {
     PROFILE( "VerifyMatMultMatrix" );
     auto matZero   = d_factory->getMatrix();
-    auto matIdent  = d_factory->getMatrix();
     auto matLaplac = d_factory->getMatrix();
-    auto vector1   = matZero->getRightVector();
-    auto vector2   = matZero->getRightVector();
-    auto vector3   = matZero->getRightVector();
 
-    if ( vector1->getGlobalSize() > 1000 ) {
+    if ( matLaplac->numGlobalRows() > 1000 && matZero->type() == "DenseSerialMatrix" ) {
         // Matrix-matrix multiplies take a long time (skip it)
         return;
     }
 
-    // Create the matrices and vectors of interest
     matZero->zero();
-    matIdent->zero();
-    vector2->setToScalar( 1.0 );
-    matIdent->setDiagonal( vector2 );
     fillWithPseudoLaplacian( matLaplac, d_factory );
-    vector1->setRandomValues();
-    vector1->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    vector2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    AMP_ASSERT( static_cast<double>( vector1->L2Norm() ) > 0.0 );
-
-    std::shared_ptr<AMP::LinearAlgebra::Matrix> matSol;
 
     // Verify matMultiply with 0 matrix
-    if ( matZero->type() == "CSRMatrix" || matLaplac->type() == "CSRMatrix" ) {
-        utils->expected_failure( "Mat GEMM not implemented" );
+    auto matProd = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
+    if ( matProd->LinfNorm() == 0.0 ) {
+        utils->passes( "matMultiply 0*A " + matZero->type() );
     } else {
-        matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
-        if ( matSol->LinfNorm() == 0.0 )
-            utils->passes( "matMultiply with 0 matrix " + matZero->type() );
-        else
-            utils->failure( "matMultiply with 0 matrix " + matZero->type() );
+        utils->failure( "matMultiply 0*A " + matZero->type() );
     }
 
-    // Verify mult with identity
-    if ( matIdent->type() == "CSRMatrix" || matLaplac->type() == "CSRMatrix" ) {
-        utils->expected_failure( "Mat GEMM not implemented" );
-    } else {
-        matLaplac->mult( vector1, vector2 );
-        if ( vector2->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED )
-            utils->failure( "matMultiply leaves vector in an inconsistent state" );
-        auto ans1 = static_cast<double>( vector2->L2Norm() );
-        matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matIdent, matLaplac );
-        matSol->mult( vector1, vector2 );
-        auto ans2 = static_cast<double>( vector2->L2Norm() );
-        matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matIdent );
-        matSol->mult( vector1, vector2 );
-        auto ans3 = static_cast<double>( vector2->L2Norm() );
-        if ( AMP::Utilities::approx_equal( ans1, ans2 ) &&
-             AMP::Utilities::approx_equal( ans1, ans3 ) && ans1 != 0.0 )
-            utils->passes( "matMultiply with identity matrix " + matSol->type() );
-        else
-            utils->failure( "matMultiply with identity matrix " + matSol->type() );
-    }
+    // Verify mult with identity on left
+    VerifyMatMultMatrix_IA( utils );
 
-    // Verify mult with two trivial matrices
-    if ( matLaplac->type() == "CSRMatrix" ) {
-        utils->expected_failure( "Mat GEMM not implemented" );
-    } else {
-        matLaplac->mult( vector1, vector2 );
-        matLaplac->mult( vector2, vector3 );
-        auto ans1 = static_cast<double>( vector3->L2Norm() );
-        matSol    = AMP::LinearAlgebra::Matrix::matMultiply( matLaplac, matLaplac );
-        matSol->mult( vector1, vector2 );
-        auto ans2 = static_cast<double>( vector2->L2Norm() );
-        if ( AMP::Utilities::approx_equal( ans1, ans2 ) && ans1 != 0.0 )
-            utils->passes( "matMultiply with trivial matrix " + matSol->type() );
-        else
-            utils->failure( "matMultiply with trivial matrix " + matSol->type() );
-    }
+    // Verify mult with identity on right
+    VerifyMatMultMatrix_AI( utils );
+
+    // Verify mult with two pseudo-Laplacian matrices
+    VerifyMatMultMatrix_AA( utils );
 }
 
 

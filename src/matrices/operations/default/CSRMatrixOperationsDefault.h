@@ -5,7 +5,10 @@
 #include "AMP/matrices/data/MatrixData.h"
 #include "AMP/matrices/operations/MatrixOperations.h"
 #include "AMP/matrices/operations/default/CSRLocalMatrixOperationsDefault.h"
+#include "AMP/matrices/operations/default/spgemm/CSRMatrixSpGEMMDefault.h"
 #include "AMP/vectors/Vector.h"
+
+#include <map>
 
 namespace AMP::LinearAlgebra {
 
@@ -106,6 +109,10 @@ protected:
         d_localops_diag;
     std::shared_ptr<CSRLocalMatrixOperationsDefault<Policy, Allocator, OffdMatrixData>>
         d_localops_offd;
+    std::map<std::pair<CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> *,
+                       CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> *>,
+             CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixData>>
+        d_SpGEMMHelpers;
 };
 
 } // namespace AMP::LinearAlgebra

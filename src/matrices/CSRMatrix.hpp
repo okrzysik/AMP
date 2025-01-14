@@ -81,9 +81,27 @@ template<typename Policy, typename Allocator>
 void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
                                              std::shared_ptr<Matrix> &result )
 {
-    // Create the matrix
-    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        getLeftDOFManager(), other_op->getRightDOFManager(), getComm() );
+    // Build matrix parameters object for result from this op and the other op
+    auto leftDOFs                = getLeftDOFManager();
+    auto rightDOFs               = other_op->getRightDOFManager();
+    auto leftClParams            = std::make_shared<CommunicationListParameters>();
+    auto rightClParams           = std::make_shared<CommunicationListParameters>();
+    leftClParams->d_comm         = getComm();
+    rightClParams->d_comm        = getComm();
+    leftClParams->d_localsize    = leftDOFs->numLocalDOF();
+    rightClParams->d_localsize   = rightDOFs->numLocalDOF();
+    leftClParams->d_remote_DOFs  = leftDOFs->getRemoteDOFs();
+    rightClParams->d_remote_DOFs = rightDOFs->getRemoteDOFs();
+
+    // Create the result matrix
+    auto params =
+        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOFs, rightDOFs, getComm() );
+    params->d_VariableLeft =
+        std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
+            ->getLeftVariable();
+    params->d_VariableRight =
+        std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
+            ->getRightVariable();
 
     // Create the matrix
     auto newData = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );

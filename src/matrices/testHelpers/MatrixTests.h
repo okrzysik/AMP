@@ -57,6 +57,9 @@ public:
     void VerifyExtractDiagonal( AMP::UnitTest *ut );
     void VerifyMultMatrix( AMP::UnitTest *ut );
     void VerifyMatMultMatrix( AMP::UnitTest *ut );
+    void VerifyMatMultMatrix_IA( AMP::UnitTest *ut );
+    void VerifyMatMultMatrix_AI( AMP::UnitTest *ut );
+    void VerifyMatMultMatrix_AA( AMP::UnitTest *ut );
     void VerifyAddElementNode( AMP::UnitTest *ut );
 
 private:

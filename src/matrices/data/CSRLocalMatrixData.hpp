@@ -96,9 +96,15 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         AMP_ASSERT( d_memory_location != AMP::Utilities::MemoryType::device );
 
         const auto &getRow = matParams->getRowFunction();
-        AMP_INSIST( getRow,
-                    "Explicitly defined getRow function must be present in MatrixParameters"
-                    " to construct CSRMatrixData and CSRLocalMatrixData" );
+
+        if ( !getRow ) {
+            // Without a getRow function there is no way to set the nnz structure
+            // This route will just create an empty matrix
+            // This can happen e.g. when constructing the output matrix of SpGEMM
+            d_nnz      = 0;
+            d_is_empty = true;
+            return;
+        }
 
         // Count number of nonzeros
         d_nnz = 0;
@@ -141,7 +147,13 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         // Ensure that the right number of nnz were actually filled in
         AMP_DEBUG_ASSERT( nnzFilled == d_nnz );
     } else {
-        AMP_ERROR( "Check supplied MatrixParameter object" );
+        // The parameters object is allowed to be null
+        // In this case matrices will stay purely local (e.g. not parts of
+        // an encasing CSRMatrixData object). This is used for remote blocks
+        // in SpGEMM
+        d_nnz      = 0;
+        d_is_empty = true;
+        return;
     }
 
     // now do setup that is independent of MatrixParameter datatype
@@ -162,30 +174,7 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
     }
 
     // fill in local column indices
-    if ( d_is_diag ) {
-        for ( lidx_t n = 0; n < d_nnz; ++n ) {
-            d_cols_loc[n] = static_cast<lidx_t>( d_cols[n] - d_first_col );
-        }
-        // diag matrix block is assumed to cover all local cols
-        d_ncols_unq = d_last_col - d_first_col;
-    } else {
-        // for offd setup column map as part of the process
-        std::unordered_map<gidx_t, lidx_t> colMap;
-        d_ncols_unq = 0;
-        for ( lidx_t n = 0; n < d_nnz; ++n ) {
-            const auto inserted = colMap.insert( { d_cols[n], d_ncols_unq } );
-            if ( inserted.second ) {
-                ++d_ncols_unq;
-            }
-            d_cols_loc[n] = inserted.first->second;
-        }
-
-        // offd column map also always owned internally
-        d_cols_unq = sharedArrayBuilder( d_ncols_unq, d_gidxAllocator );
-        for ( auto it = colMap.begin(); it != colMap.end(); ++it ) {
-            d_cols_unq[it->second] = it->first;
-        }
-    }
+    globalToLocalColumns();
 }
 
 template<typename Policy, class Allocator>
@@ -301,6 +290,71 @@ CSRLocalMatrixData<Policy, Allocator>::cloneMatrixData()
 
     return cloneData;
 }
+
+template<typename Policy, class Allocator>
+void CSRLocalMatrixData<Policy, Allocator>::setNNZ( lidx_t total_nnz,
+                                                    const std::vector<lidx_t> &nnz )
+{
+    if ( total_nnz == 0 ) {
+        // nothing to do, block stays empty
+        return;
+    }
+
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRLocalMatrixData::setNNZ not implemented on device yet" );
+
+    // allocate space for all arrays
+    d_is_empty    = false;
+    d_nnz         = total_nnz;
+    d_nnz_per_row = sharedArrayBuilder( d_num_rows, d_lidxAllocator );
+    d_row_starts  = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
+    d_cols        = sharedArrayBuilder( d_nnz, d_gidxAllocator );
+    d_cols_loc    = sharedArrayBuilder( d_nnz, d_lidxAllocator );
+    d_coeffs      = sharedArrayBuilder( d_nnz, d_scalarAllocator );
+
+    std::copy( nnz.begin(), nnz.end(), d_nnz_per_row.get() );
+    std::fill( d_cols.get(), d_cols.get() + d_nnz, 0 );
+    std::fill( d_cols_loc.get(), d_cols_loc.get() + d_nnz, 0 );
+    std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, 0.0 );
+    std::exclusive_scan(
+        d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, d_row_starts.get(), 0 );
+    d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
+}
+
+template<typename Policy, class Allocator>
+void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
+{
+    if ( d_is_empty ) {
+        return;
+    }
+
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRLocalMatrixData::globalToLocalColumns not implemented on device yet" );
+
+    if ( d_is_diag ) {
+        for ( lidx_t n = 0; n < d_nnz; ++n ) {
+            d_cols_loc[n] = static_cast<lidx_t>( d_cols[n] - d_first_col );
+        }
+    } else {
+        // for offd setup column map as part of the process
+        std::unordered_map<gidx_t, lidx_t> colMap;
+        d_ncols_unq = 0;
+        for ( lidx_t n = 0; n < d_nnz; ++n ) {
+            const auto inserted = colMap.insert( { d_cols[n], d_ncols_unq } );
+            if ( inserted.second ) {
+                ++d_ncols_unq;
+            }
+            d_cols_loc[n] = inserted.first->second;
+        }
+
+        // offd column map also always owned internally
+        d_cols_unq = sharedArrayBuilder( d_ncols_unq, d_gidxAllocator );
+        for ( auto it = colMap.begin(); it != colMap.end(); ++it ) {
+            d_cols_unq[it->second] = it->first;
+        }
+    }
+}
+
 
 template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::getRowByGlobalID( const size_t local_row,

@@ -86,15 +86,6 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::scale(
 }
 
 template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::matMultiply(
-    std::shared_ptr<LocalMatrixData>,
-    std::shared_ptr<LocalMatrixData>,
-    std::shared_ptr<LocalMatrixData> )
-{
-    AMP_WARNING( "SpGEMM for CSRLocalMatrixOperationsDefault not implemented" );
-}
-
-template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::axpy(
     typename Policy::scalar_t alpha,
     std::shared_ptr<LocalMatrixData> X,
@@ -103,11 +94,22 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::axpy(
     using lidx_t = typename Policy::lidx_t;
 
     const auto [nnz_x, cols_x, cols_loc_x, coeffs_x] = X->getDataFields();
+    const auto rs_x                                  = X->getRowStarts();
     auto [nnz_y, cols_y, cols_loc_y, coeffs_y]       = Y->getDataFields();
+    const auto rs_y                                  = Y->getRowStarts();
 
-    const auto tnnz = X->numberOfNonZeros();
-    for ( lidx_t i = 0; i < tnnz; ++i ) {
-        coeffs_y[i] += alpha * coeffs_x[i];
+    const auto nrows = static_cast<lidx_t>( X->numLocalRows() );
+
+    for ( lidx_t row = 0; row < nrows; ++row ) {
+        for ( lidx_t iy = rs_y[row]; iy < rs_y[row + 1]; ++iy ) {
+            const auto yc = cols_y[iy];
+            for ( lidx_t ix = rs_x[row]; ix < rs_x[row + 1]; ++ix ) {
+                if ( yc == cols_x[ix] ) {
+                    coeffs_y[iy] += alpha * coeffs_x[ix];
+                    break;
+                }
+            }
+        }
     }
 }
 
