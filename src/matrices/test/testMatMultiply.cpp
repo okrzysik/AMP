@@ -57,10 +57,7 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
 
     // Create the matrix
     auto mat1 = AMP::LinearAlgebra::createMatrix( vec1, vec1 );
-    if ( mat1->type() == "CSRMatrix" ) {
-        ut->expected_failure( "testMatMultiply" );
-    } else {
-
+    {
         mat1->zero();
         mat1->setDiagonal( vec1 );
         auto mat2 = mat1->clone();

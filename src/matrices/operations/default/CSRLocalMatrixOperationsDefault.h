@@ -41,15 +41,6 @@ public:
      */
     void scale( scalar_t alpha, std::shared_ptr<LocalMatrixData> A );
 
-    /** \brief  Compute the product of two matrices
-     * \param[in] A  A multiplicand
-     * \param[in] B  A multiplicand
-     * \param[in] C  The product \f$\mathbf{AB}\f$.
-     */
-    void matMultiply( std::shared_ptr<LocalMatrixData>,
-                      std::shared_ptr<LocalMatrixData>,
-                      std::shared_ptr<LocalMatrixData> );
-
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar
      * \param[in] X matrix

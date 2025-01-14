@@ -7,6 +7,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
+#include "AMP/vectors/CommunicationList.h"
 #include "AMP/vectors/Variable.h"
 
 namespace AMP::Discretization {
@@ -171,6 +172,26 @@ public:
      * \return  The DOFManager associated with a left vector
      */
     virtual std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const = 0;
+
+    /** \brief Get the variable associated with a right vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$
+     * is a right vector )
+     * \return  The variable associated with a right vector
+     */
+    virtual std::shared_ptr<Variable> getRightVariable() const
+    {
+        return d_pParameters->d_VariableRight;
+    }
+
+    /** \brief Get the variable associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$\mathbf{y}\f$ is
+     * a left vector )
+     * \return  The variable associated with a left vector
+     */
+    virtual std::shared_ptr<Variable> getLeftVariable() const
+    {
+        return d_pParameters->d_VariableLeft;
+    }
 
     /** \brief  Get the number of local rows in the matrix
      * \return  The number of local rows

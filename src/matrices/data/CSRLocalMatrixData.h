@@ -74,7 +74,11 @@ public:
 
     lidx_t beginRow() const { return d_first_row; }
 
-    lidx_t beginColumn() const { return d_first_col; }
+    lidx_t endRow() const { return d_last_row; }
+
+    lidx_t beginCol() const { return d_first_col; }
+
+    lidx_t endCol() const { return d_last_col; }
 
     void sortColumns( MatrixSortScheme sort_type );
 
@@ -111,6 +115,38 @@ public:
                                 []( gidx_t c ) -> idx_t { return c; } );
             }
         }
+    }
+
+    void setNNZ( lidx_t total_nnz, const std::vector<lidx_t> &nnz );
+
+    void globalToLocalColumns();
+
+    void printStats( bool show_zeros ) const
+    {
+        std::cout << ( d_is_diag ? "  diag block:" : "  offd block:" ) << std::endl;
+        if ( d_is_empty ) {
+            std::cout << "    EMPTY" << std::endl;
+            return;
+        }
+        std::cout << "    first | last row: " << d_first_row << " | " << d_last_row << std::endl;
+        std::cout << "    first | last col: " << d_first_col << " | " << d_last_col << std::endl;
+        auto tot_nnz     = d_row_starts[d_num_rows];
+        scalar_t avg_nnz = static_cast<scalar_t>( tot_nnz ) / static_cast<scalar_t>( d_num_rows );
+        std::cout << "    avg nnz per row: " << avg_nnz << std::endl;
+        std::cout << "    tot nnz: " << tot_nnz << std::endl;
+        std::cout << "    row 0: ";
+        for ( auto n = d_row_starts[0]; n < d_row_starts[1]; ++n ) {
+            if ( d_coeffs[n] != 0 || show_zeros ) {
+                std::cout << "(" << d_cols[n] << "," << d_coeffs[n] << "), ";
+            }
+        }
+        std::cout << "    row last: ";
+        for ( auto n = d_row_starts[d_num_rows - 1]; n < d_row_starts[d_num_rows]; ++n ) {
+            if ( d_coeffs[n] != 0 || show_zeros ) {
+                std::cout << "(" << d_cols[n] << "," << d_coeffs[n] << "), ";
+            }
+        }
+        std::cout << std::endl << std::endl;
     }
 
 protected:

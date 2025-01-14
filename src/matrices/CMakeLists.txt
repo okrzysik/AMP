@@ -2,7 +2,6 @@ BEGIN_PACKAGE_CONFIG( matrices )
 
 # Add the subdirectories
 ADD_PACKAGE_SUBDIRECTORY( testHelpers )
-
 ADD_PACKAGE_SUBDIRECTORY( data )
 IF ( USE_HYPRE )
     ADD_PACKAGE_SUBDIRECTORY( data/hypre )
@@ -25,6 +24,7 @@ ENDIF()
 
 ADD_PACKAGE_SUBDIRECTORY( operations )
 ADD_PACKAGE_SUBDIRECTORY( operations/default )
+ADD_PACKAGE_SUBDIRECTORY( operations/default/spgemm )
 IF( USE_KOKKOS )
     ADD_PACKAGE_SUBDIRECTORY( operations/kokkos )
     SET_DEVICE_COMPILER( operations/kokkos/CSRMatrixOperationsKokkos.cpp )

@@ -151,13 +151,8 @@ public:
      */
     size_t numGlobalColumns() const override { return d_cols; }
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getLeftVariable() { return d_VariableLeft; }
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getRightVariable() { return d_VariableRight; }
-
 protected:
     // AMP variables and DOFManagers for the left and right vectors
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableLeft;
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableRight;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerLeft;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
 
