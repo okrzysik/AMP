@@ -205,9 +205,8 @@ public:
      *  of vectors, but no vector may be owned by multiple solvers.
      * \param vec   The vector to append
      */
-    virtual void appendSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
+    virtual void appendSolutionVector( [[maybe_unused]] AMP::LinearAlgebra::Vector::shared_ptr vec )
     {
-        NULL_USE( vec );
     }
 
     /**
@@ -217,7 +216,7 @@ public:
      *  of vectors, but no vector may be owned by multiple solvers.
      * \param vec   The vector to append
      */
-    virtual void appendRhsVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) { NULL_USE( vec ); }
+    virtual void appendRhsVector( [[maybe_unused]] AMP::LinearAlgebra::Vector::shared_ptr vec ) {}
 
     /**
      * \brief  Registers a writer with the solver
@@ -392,7 +391,7 @@ public: // Write/read restart data
 private:
     // The following are not implemented:
     explicit TimeIntegrator( const TimeIntegrator & ) = delete;
-    void operator=( const TimeIntegrator & ) = delete;
+    void operator=( const TimeIntegrator & )          = delete;
 };
 
 } // namespace AMP::TimeIntegrator

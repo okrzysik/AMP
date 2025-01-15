@@ -22,7 +22,7 @@
 // clang-format off
 #define instantiateArrayConstructors2( TYPE, FUN, A )                                    \
     template AMP::Array<TYPE,FUN,A>::Array();                                            \
-    template AMP::Array<TYPE,FUN,A>::~Array<TYPE,FUN,A>();                               \
+    template AMP::Array<TYPE,FUN,A>::~Array();                                           \
     template AMP::Array<TYPE,FUN,A>::Array( const AMP::ArraySize&, TYPE const* );        \
     template AMP::Array<TYPE,FUN,A>::Array( size_t );                                    \
     template AMP::Array<TYPE,FUN,A>::Array( size_t, size_t );                            \

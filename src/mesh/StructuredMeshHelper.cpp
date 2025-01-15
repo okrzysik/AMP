@@ -193,7 +193,6 @@ AMP::Mesh::MeshIterator StructuredMeshHelper::getFaceIterator(
         *elements     = face_list;
         return AMP::Mesh::MultiVectorIterator( elements );
     }
-    return AMP::Mesh::MeshIterator();
 }
 
 

@@ -416,7 +416,7 @@ double trilinear( const std::vector<double> &x,
 /****************************************************************************
  *  Dummy function to prevent compiler from optimizing away variable         *
  ****************************************************************************/
-void nullUse( void *data ) { NULL_USE( data ); }
+void nullUse( const void * ) {}
 
 
 /****************************************************************************

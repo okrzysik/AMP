@@ -288,7 +288,7 @@ public:
             AMP::IO::writeHDF5<TYPE2>( fid, name, d_data );
         }
     }
-    void readHDF5( int64_t fid, const std::string &name ) override
+    void readHDF5( [[maybe_unused]] int64_t fid, [[maybe_unused]] const std::string &name ) override
     {
         if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
             typedef typename TYPE::element_type TYPE2;
@@ -297,8 +297,6 @@ public:
             else
                 AMP::IO::readHDF5( fid, name, *d_data );
         } else if constexpr ( std::is_const_v<TYPE> ) {
-            NULL_USE( fid );
-            NULL_USE( name );
             AMP_ERROR( "Unable to read into const object" );
         } else {
             typedef typename std::remove_reference_t<TYPE> TYPE2;

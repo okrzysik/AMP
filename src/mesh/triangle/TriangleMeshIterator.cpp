@@ -21,7 +21,7 @@ TriangleMeshIterator<NG, NP, TYPE>::TriangleMeshIterator()
     d_typeHash = MeshIteratorType;
     d_iterator = nullptr;
     d_size     = 0;
-    d_pos      = -1;
+    d_pos      = static_cast<size_t>( -1 );
     d_element  = &d_cur_element;
     d_mesh     = nullptr;
 }

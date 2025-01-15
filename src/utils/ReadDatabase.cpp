@@ -200,6 +200,10 @@ static inline std::tuple<size_t, token_type> find_next_token( const char *buffer
                 return std::make_tuple( i + 2, token_type::block_stop );
         }
         i++;
+        if ( i >= 10000000 ) {
+            AMP_WARNING( "Token not found" );
+            break;
+        }
     }
     return std::make_tuple<size_t, token_type>( 0, token_type::end );
 }

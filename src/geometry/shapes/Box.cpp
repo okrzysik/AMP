@@ -84,6 +84,7 @@ std::string Box<NDIM>::getName() const
         return "Box<2>";
     else if constexpr ( NDIM == 3 )
         return "Box<3>";
+    AMP_ERROR( "Invalid dimension" );
 }
 template<std::size_t NDIM>
 std::string Grid<NDIM>::getName() const
@@ -94,6 +95,7 @@ std::string Grid<NDIM>::getName() const
         return "Grid<2>";
     else if constexpr ( NDIM == 3 )
         return "Grid<3>";
+    AMP_ERROR( "Invalid dimension" );
 }
 
 

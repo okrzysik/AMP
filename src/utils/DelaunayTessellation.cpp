@@ -1087,6 +1087,7 @@ constexpr double getFlipTOL()
         return 1e-12;
     } else {
         static_assert( !std::is_same_v<TYPE, TYPE>, "Not programmed" );
+        return 0;
     }
 }
 template<int NDIM, class TYPE, class ETYPE>
