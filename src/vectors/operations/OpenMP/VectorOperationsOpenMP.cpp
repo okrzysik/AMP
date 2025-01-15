@@ -3,16 +3,14 @@
 #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.hpp"
 
 
-namespace AMP::LinearAlgebra {
-
-
 /********************************************************
  *  Explicit instantiations                              *
  ********************************************************/
-template class VectorOperationsOpenMP<double>;
-template class VectorOperationsOpenMP<float>;
-INSTANTIATE_SIMPLE_VECTOR( float, VectorOperationsOpenMP<float>, VectorDataDefault<double> );
-INSTANTIATE_SIMPLE_VECTOR( double, VectorOperationsOpenMP<double>, VectorDataDefault<double> );
-
-
-} // namespace AMP::LinearAlgebra
+template class AMP::LinearAlgebra::VectorOperationsOpenMP<double>;
+template class AMP::LinearAlgebra::VectorOperationsOpenMP<float>;
+INSTANTIATE_SIMPLE_VECTOR( float,
+                           AMP::LinearAlgebra::VectorOperationsOpenMP<float>,
+                           AMP::LinearAlgebra::VectorDataDefault<double> );
+INSTANTIATE_SIMPLE_VECTOR( double,
+                           AMP::LinearAlgebra::VectorOperationsOpenMP<double>,
+                           AMP::LinearAlgebra::VectorDataDefault<double> );

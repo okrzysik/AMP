@@ -7,9 +7,8 @@ namespace AMP::Utilities {
 /****************************************************************************
  *  Get pointer location                                                     *
  ****************************************************************************/
-MemoryType getMemoryType( const void *ptr )
+MemoryType getMemoryType( [[maybe_unused]] const void *ptr )
 {
-    NULL_USE( ptr );
     auto type = MemoryType::host;
 #if defined( AMP_USE_CUDA ) || defined( USE_CUDA )
     type = getCudaMemoryType( ptr );

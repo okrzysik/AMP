@@ -74,7 +74,6 @@ void readHDF5Scalar( hid_t, const std::string &, T & );
 template<class TYPE>
 void writeHDF5( hid_t fid, const std::string &name, const TYPE &x )
 {
-    NULL_USE( fid );
     if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
         // We are dealing with a std::shared_ptr
         writeHDF5( fid, name, *x );
@@ -131,7 +130,6 @@ void writeHDF5( hid_t fid, const std::string &name, const TYPE &x )
 template<class TYPE>
 void readHDF5( hid_t fid, const std::string &name, TYPE &x )
 {
-    NULL_USE( fid );
     if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
         // We are dealing with a std::shared_ptr
         readHDF5( fid, name, *x );
@@ -189,6 +187,7 @@ void readHDF5( hid_t fid, const std::string &name, TYPE &x )
     } else if constexpr ( std::is_same_v<TYPE, std::string_view> || std::is_same_v<TYPE, char *> ||
                           std::is_same_v<TYPE, const char *> ) {
         // We are dealing with a string or char array
+        NULL_USE( fid );
         throw std::logic_error(
             "Reading data into a string_view, char*, const char* is not supported" );
     } else if constexpr ( AMP::is_container_v<TYPE> ) {

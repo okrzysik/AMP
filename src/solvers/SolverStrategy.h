@@ -231,7 +231,7 @@ public:
         return statusToString( d_ConvergenceStatus );
     }
 
-    virtual void print( std::ostream &os ) { NULL_USE( os ); }
+    virtual void print( std::ostream & ) {}
 
     virtual AMP::Scalar getResidualNorm( void ) const { return d_dResidualNorm; }
 

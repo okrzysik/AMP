@@ -119,11 +119,10 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     }
 
     // parameters in BiCGSTAB
-    T alpha = static_cast<T>( 1.0 );
-    T beta  = static_cast<T>( 0.0 );
-    T omega = static_cast<T>( 1.0 );
-    std::vector<T> rho( 2, static_cast<T>( 1.0 ) );
-    NULL_USE( beta );
+    [[maybe_unused]] T alpha = static_cast<T>( 1.0 );
+    [[maybe_unused]] T beta  = static_cast<T>( 0.0 );
+    [[maybe_unused]] T omega = static_cast<T>( 1.0 );
+    [[maybe_unused]] std::vector<T> rho( 2, static_cast<T>( 1.0 ) );
 
     // r_tilde is a non-zero initial direction chosen to be r
     std::shared_ptr<AMP::LinearAlgebra::Vector> r_tilde;
@@ -154,7 +153,6 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             p->copyVector( res );
             res_norm = static_cast<T>( res->L2Norm() );
             rho[1] = r_tilde_norm = res_norm;
-            NULL_USE( rho[1] );
             d_restarts++;
             continue;
         }

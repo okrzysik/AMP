@@ -764,7 +764,6 @@ inline MeshIterator BoxMesh::createIterator( const ElementBlocks &list ) const
         }
         return MultiIterator( iterator_list, 0 );
     }
-    return MeshIterator();
 }
 MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 {
