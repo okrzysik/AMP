@@ -117,7 +117,7 @@ createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
               AMP::Utilities::MemoryType memType )
 {
     if ( memType <= AMP::Utilities::MemoryType::host ) {
-        return createVector<double>( DOFs, variable, split );
+        return createVector<TYPE>( DOFs, variable, split );
     } else if ( memType == AMP::Utilities::MemoryType::managed ) {
 #ifdef USE_DEVICE
         return createVector<TYPE,

@@ -43,7 +43,7 @@ void MassLinearElement::apply()
                 concentration[qp] += d_LocalConcentration[j] * phi[j][qp];
                 burnup[qp] += d_LocalBurnup[j] * phi[j][qp];
             } // end for j
-        } // end for qp
+        }     // end for qp
 
         switch ( d_equation ) {
         case MassDensityModel::MassEquation::Mechanics:
@@ -94,7 +94,7 @@ void MassLinearElement::apply()
             for ( unsigned int j = 0; j < num_local_dofs; j++ ) {
                 density[qp] += nodalDensity[j] * phi[j][qp];
             } // end for j
-        } // end for qp
+        }     // end for qp
     }
 
     for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
@@ -105,7 +105,7 @@ void MassLinearElement::apply()
             for ( unsigned int k = 0; k < num_local_dofs; k++ ) {
                 elementMassMatrix[j][k] += ( density[qp] * JxW[qp] * ( phi[j][qp] * phi[k][qp] ) );
             } // end for k
-        } // end for j
+        }     // end for j
 
         d_densityModel->postLinearGaussPointOperation();
 

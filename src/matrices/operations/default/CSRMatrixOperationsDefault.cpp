@@ -3,6 +3,7 @@
 #include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/data/CSRLocalMatrixData.h"
 #include "AMP/matrices/operations/default/CSRLocalMatrixOperationsDefault.hpp"
+#include "AMP/matrices/operations/default/spgemm/CSRMatrixSpGEMMDefault.hpp"
 #include "AMP/utils/memory.h"
 
 #define INSTANTIATE_FULL( policy, allocator )                           \
@@ -11,6 +12,11 @@
         allocator,                                                      \
         AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;     \
     template class AMP::LinearAlgebra::CSRMatrixOperationsDefault<      \
+        policy,                                                         \
+        allocator,                                                      \
+        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,      \
+        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;     \
+    template class AMP::LinearAlgebra::CSRMatrixSpGEMMHelperDefault<    \
         policy,                                                         \
         allocator,                                                      \
         AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,      \

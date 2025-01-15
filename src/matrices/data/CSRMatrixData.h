@@ -177,9 +177,14 @@ public:
     size_t endRow() const override;
 
     /** \brief  Get the global id of the beginning column (inclusive)
-     * \return  beginning global row id
+     * \return  beginning global column id
      */
     size_t beginCol() const { return d_first_col; }
+
+    /** \brief  Get the global id of the ending column (exclusive)
+     * \return  end global column id
+     */
+    size_t endCol() const { return d_last_col; }
 
     std::shared_ptr<DiagMatrixData> getDiagMatrix() { return d_diag_matrix; }
 
@@ -190,15 +195,6 @@ public:
     lidx_t *getOffDiagRowStarts() { return d_offd_matrix->d_row_starts.get(); }
 
     bool isSquare() const noexcept { return d_is_square; }
-
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getLeftVariable()
-    {
-        return d_pParameters->d_VariableLeft;
-    }
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getRightVariable()
-    {
-        return d_pParameters->d_VariableRight;
-    }
 
     auto numberOfNonZeros() const { return d_nnz; }
 
@@ -214,6 +210,22 @@ public:
     {
         d_diag_matrix->sortColumns( sort_type );
         d_offd_matrix->sortColumns( sort_type );
+    }
+
+    void setNNZ( lidx_t total_nnz_diag,
+                 const std::vector<lidx_t> &nnz_diag,
+                 lidx_t total_nnz_offd,
+                 const std::vector<lidx_t> &nnz_offd );
+
+    void globalToLocalColumns();
+
+    void resetDOFManagers();
+
+    void printStats( bool show_zeros ) const
+    {
+        AMP::pout << "CSRMatrixData stats:" << std::endl;
+        d_diag_matrix->printStats( show_zeros );
+        d_offd_matrix->printStats( show_zeros );
     }
 
 protected:

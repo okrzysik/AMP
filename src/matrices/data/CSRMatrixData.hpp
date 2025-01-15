@@ -49,15 +49,8 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         d_offd_matrix = std::make_shared<OffdMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
 
-        // Make DOF managers
-        std::vector<size_t> remoteDOFsRight;
-        d_offd_matrix->getColumnMap( remoteDOFsRight );
-        d_rightDOFManager = std::make_shared<Discretization::DOFManager>(
-            d_last_row - d_first_row, getComm(), remoteDOFsRight );
-        // Finding ghosts for leftDM hard to do and not currently needed
-        // should think about how to approach it though
-        d_leftDOFManager =
-            std::make_shared<Discretization::DOFManager>( d_last_col - d_first_col, getComm() );
+        // (Re)make DOF managers
+        resetDOFManagers();
 
     } else if ( matParams ) {
 
@@ -115,6 +108,42 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::cloneMatrixDat
     cloneData->d_offd_matrix = d_offd_matrix->cloneMatrixData();
 
     return cloneData;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
+void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setNNZ(
+    lidx_t total_nnz_diag,
+    const std::vector<lidx_t> &nnz_diag,
+    lidx_t total_nnz_offd,
+    const std::vector<lidx_t> &nnz_offd )
+{
+    // forward to internal blocks to get the internals allocated
+    d_diag_matrix->setNNZ( total_nnz_diag, nnz_diag );
+    d_offd_matrix->setNNZ( total_nnz_offd, nnz_offd );
+    d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
+void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::globalToLocalColumns()
+{
+    d_diag_matrix->globalToLocalColumns();
+    d_offd_matrix->globalToLocalColumns();
+    resetDOFManagers();
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
+void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::resetDOFManagers()
+{
+    std::vector<size_t> remoteDOFsRight;
+    d_offd_matrix->getColumnMap( remoteDOFsRight );
+    d_rightDOFManager = std::make_shared<Discretization::DOFManager>(
+        d_last_col - d_first_col, getComm(), remoteDOFsRight );
+    // Finding ghosts for leftDM hard to do and not currently needed
+    // should think about how to approach it though
+    if ( !d_leftDOFManager ) {
+        d_leftDOFManager =
+            std::make_shared<Discretization::DOFManager>( d_last_row - d_first_row, getComm() );
+    }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
@@ -301,12 +330,19 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setOtherD
     if ( t == AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD ) {
         for ( int i = 0; i != totDataLen; i++ ) {
             if ( ( aggregateRows[i] >= d_first_row ) && ( aggregateRows[i] < d_last_row ) ) {
-                addValuesByGlobalID( 1u,
-                                     1u,
-                                     (size_t *) &aggregateRows[i],
-                                     (size_t *) &aggregateCols[i],
-                                     &aggregateData[i],
-                                     getTypeID<scalar_t>() );
+                if constexpr ( std::is_same_v<gidx_t, size_t> ) {
+                    addValuesByGlobalID( 1u,
+                                         1u,
+                                         &aggregateRows[i],
+                                         &aggregateCols[i],
+                                         &aggregateData[i],
+                                         getTypeID<scalar_t>() );
+                } else {
+                    size_t row = static_cast<size_t>( aggregateRows[i] );
+                    size_t col = static_cast<size_t>( aggregateCols[i] );
+                    addValuesByGlobalID(
+                        1u, 1u, &row, &col, &aggregateData[i], getTypeID<scalar_t>() );
+                }
             }
         }
     } else {
@@ -314,12 +350,19 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setOtherD
         if ( t == AMP::LinearAlgebra::ScatterType::CONSISTENT_SET ) {
             for ( int i = 0; i != totDataLen; i++ ) {
                 if ( ( aggregateRows[i] >= d_first_row ) && ( aggregateRows[i] < d_last_row ) ) {
-                    setValuesByGlobalID( 1u,
-                                         1u,
-                                         (size_t *) &aggregateRows[i],
-                                         (size_t *) &aggregateCols[i],
-                                         &aggregateData[i],
-                                         getTypeID<scalar_t>() );
+                    if constexpr ( std::is_same_v<gidx_t, size_t> ) {
+                        setValuesByGlobalID( 1u,
+                                             1u,
+                                             &aggregateRows[i],
+                                             &aggregateCols[i],
+                                             &aggregateData[i],
+                                             getTypeID<scalar_t>() );
+                    } else {
+                        size_t row = static_cast<size_t>( aggregateRows[i] );
+                        size_t col = static_cast<size_t>( aggregateCols[i] );
+                        setValuesByGlobalID(
+                            1u, 1u, &row, &col, &aggregateData[i], getTypeID<scalar_t>() );
+                    }
                 }
             }
         }

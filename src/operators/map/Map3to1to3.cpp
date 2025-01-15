@@ -68,14 +68,14 @@ Map3to1to3::~Map3to1to3() { waitForAllRequests(); }
  ********************************************************/
 void Map3to1to3::addTo1DMap( std::multimap<double, double> &map, double z, double val )
 {
-    map.insert( std::make_pair( z, val ) );
+    map.insert( { z, val } );
 }
 void Map3to1to3::addTo1DMap( std::multimap<double, double> &map,
                              const std::vector<double> &z,
                              const std::vector<double> &val )
 {
     for ( size_t i = 0; i < z.size(); i++ )
-        map.insert( std::make_pair( z[i], val[i] ) );
+        map.insert( { z[i], val[i] } );
 }
 
 
@@ -241,12 +241,12 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     for ( const auto &tmp : map1 ) {
         double sum = tmp.second.second;
         double N   = tmp.second.first;
-        final_map1.insert( std::make_pair( tmp.first, sum / N ) );
+        final_map1.insert( { tmp.first, sum / N } );
     }
     for ( const auto &tmp : map2 ) {
         double sum = tmp.second.second;
         double N   = tmp.second.first;
-        final_map2.insert( std::make_pair( tmp.first, sum / N ) );
+        final_map2.insert( { tmp.first, sum / N } );
     }
 
     // Build the return vector

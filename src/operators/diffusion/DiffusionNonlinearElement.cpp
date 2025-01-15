@@ -184,7 +184,7 @@ void DiffusionNonlinearElement::applyTensor()
                             ( *nodalTransportCoeffTensor( i, j ) )[n] * phi[n][qp];
                     }
             } // end for j
-        } // end for qp
+        }     // end for qp
     }
 
     auto &primaryInputVec = d_elementInputVectors[d_PrincipalVariable];
