@@ -68,7 +68,7 @@ Map3to1to3::~Map3to1to3() { waitForAllRequests(); }
  ********************************************************/
 void Map3to1to3::addTo1DMap( std::multimap<double, double> &map, double z, double val )
 {
-    map.insert( std::make_pair( z, val ) );
+    map.insert( { z, val } );
 }
 void Map3to1to3::addTo1DMap( std::multimap<double, double> &map,
                              const std::vector<double> &z,
