@@ -59,13 +59,13 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
     }
 
     // Give C the nnz counts so that it can allocate space internally
-    C->setNNZ( total_nnz_diag, nnz_diag, total_nnz_offd, nnz_offd );
+    C->setNNZ( nnz_diag, nnz_offd );
 
     // Finally, populate structure of C and find local column indices
-    auto C_diag                                            = C->getDiagMatrix();
-    auto [C_nnz_d, C_cols_d, C_cols_loc_d, C_coeffs_d]     = C_diag->getDataFields();
-    auto C_offd                                            = C->getOffdMatrix();
-    auto [C_nnz_od, C_cols_od, C_cols_loc_od, C_coeffs_od] = C_offd->getDataFields();
+    auto C_diag                                           = C->getDiagMatrix();
+    auto [C_rs_d, C_cols_d, C_cols_loc_d, C_coeffs_d]     = C_diag->getDataFields();
+    auto C_offd                                           = C->getOffdMatrix();
+    auto [C_rs_od, C_cols_od, C_cols_loc_od, C_coeffs_od] = C_offd->getDataFields();
 
     lidx_t rp_d = 0, rp_od = 0;
     for ( lidx_t row = 0; row < nRows; ++row ) {
@@ -104,17 +104,15 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
 
     const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
 
-    auto [A_nnz, A_cols, A_cols_loc, A_coeffs] = A_data->getDataFields();
-    auto A_rs                                  = A_data->getRowStarts();
-    auto [B_nnz, B_cols, B_cols_loc, B_coeffs] = B_data->getDataFields();
-    auto B_rs                                  = B_data->getRowStarts();
+    auto [A_rs, A_cols, A_cols_loc, A_coeffs] = A_data->getDataFields();
+    auto [B_rs, B_cols, B_cols_loc, B_coeffs] = B_data->getDataFields();
 
     // for each row in A block
     for ( lidx_t row = 0; row < nRows; ++row ) {
         // get rows in B block from the A column indices
         for ( lidx_t j = A_rs[row]; j < A_rs[row + 1]; ++j ) {
             auto Acl = A_cols_loc[j];
-            // then row of C is union of those B row nnz patterns
+            // then row of C is union of those B row nz patterns
             for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
                 const auto bc = B_cols[k];
                 if ( idx_test( bc ) ) {
@@ -156,15 +154,15 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
     using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto B_diag                                        = B->getDiagMatrix();
-    auto [B_nnz_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
+    auto B_diag                                       = B->getDiagMatrix();
+    auto [B_rs_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
 
-    lidx_t *B_nnz_od = nullptr, *B_cols_loc_od = nullptr;
+    lidx_t *B_rs_od = nullptr, *B_cols_loc_od = nullptr;
     gidx_t *B_cols_od     = nullptr;
     scalar_t *B_coeffs_od = nullptr;
     if ( B->hasOffDiag() ) {
-        auto B_offd                                                 = B->getOffdMatrix();
-        std::tie( B_nnz_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
+        auto B_offd                                                = B->getOffdMatrix();
+        std::tie( B_rs_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
     }
 
     auto comm_size = comm.getSize();
@@ -257,7 +255,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
     for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
         for ( auto &row : it->second.rowids ) {
             row -= B_first_row;
-            lidx_t rnnz = B_nnz_od != nullptr ? B_nnz_d[row] + B_nnz_od[row] : B_nnz_d[row];
+            const auto nnzd = B_rs_d[row + 1] - B_rs_d[row];
+            lidx_t rnnz     = B_rs_od != nullptr ? nnzd + B_rs_od[row + 1] - B_rs_od[row] : nnzd;
             it->second.rownnz.push_back( rnnz );
         }
     }
@@ -292,17 +291,15 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
     using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto B_diag                                        = B->getDiagMatrix();
-    auto [B_nnz_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
-    auto B_rs_d                                        = B_diag->getRowStarts();
+    auto B_diag                                       = B->getDiagMatrix();
+    auto [B_rs_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
 
-    lidx_t *B_nnz_od = nullptr, *B_cols_loc_od = nullptr, *B_rs_od = nullptr;
+    lidx_t *B_rs_od = nullptr, *B_cols_loc_od = nullptr;
     gidx_t *B_cols_od     = nullptr;
     scalar_t *B_coeffs_od = nullptr;
     if ( B->hasOffDiag() ) {
-        auto B_offd                                                 = B->getOffdMatrix();
-        std::tie( B_nnz_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
-        B_rs_od                                                     = B_offd->getRowStarts();
+        auto B_offd                                                = B->getOffdMatrix();
+        std::tie( B_rs_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
     }
 
     // First set up all of the comm information
@@ -317,22 +314,19 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
         }
 
         // count total non-zeros and record nnz per row
-        lidx_t BR_totnnz = 0;
         std::vector<lidx_t> BR_nnz( BR_nrows, 0 );
         for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
             for ( lidx_t r = 0; r < it->second.numrow; ++r ) {
                 BR_nnz[it->second.brow[r]] = it->second.rownnz[r];
-                BR_totnnz += it->second.rownnz[r];
             }
         }
 
         BRemote = std::make_shared<DiagMatrixData>(
             nullptr, B->d_memory_location, 0, BR_nrows, 0, B->numGlobalColumns(), true );
-        BRemote->setNNZ( BR_totnnz, BR_nnz );
+        BRemote->setNNZ( BR_nnz );
     }
 
-    auto [BR_nnz, BR_cols, BR_cols_loc, BR_coeffs] = BRemote->getDataFields();
-    auto BR_rs                                     = BRemote->getRowStarts();
+    auto [BR_rs, BR_cols, BR_cols_loc, BR_coeffs] = BRemote->getDataFields();
 
     // setup non-zero structure
     {
@@ -378,21 +372,18 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
     using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto B_diag                                        = B->getDiagMatrix();
-    auto [B_nnz_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
-    auto B_rs_d                                        = B_diag->getRowStarts();
+    auto B_diag                                       = B->getDiagMatrix();
+    auto [B_rs_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
 
-    lidx_t *B_nnz_od = nullptr, *B_cols_loc_od = nullptr, *B_rs_od = nullptr;
+    lidx_t *B_rs_od = nullptr, *B_cols_loc_od = nullptr;
     gidx_t *B_cols_od     = nullptr;
     scalar_t *B_coeffs_od = nullptr;
     if ( B->hasOffDiag() ) {
-        auto B_offd                                                 = B->getOffdMatrix();
-        std::tie( B_nnz_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
-        B_rs_od                                                     = B_offd->getRowStarts();
+        auto B_offd                                                = B->getOffdMatrix();
+        std::tie( B_rs_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
     }
 
-    auto [BR_nnz, BR_cols, BR_cols_loc, BR_coeffs] = BRemote->getDataFields();
-    auto BR_rs                                     = BRemote->getRowStarts();
+    auto [BR_rs, BR_cols, BR_cols_loc, BR_coeffs] = BRemote->getDataFields();
 
     // setup non-zero structure
     {
@@ -480,12 +471,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
 
     const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
 
-    auto [A_nnz, A_cols, A_cols_loc, A_coeffs] = A_data->getDataFields();
-    auto A_rs                                  = A_data->getRowStarts();
-    auto [B_nnz, B_cols, B_cols_loc, B_coeffs] = B_data->getDataFields();
-    auto B_rs                                  = B_data->getRowStarts();
-    auto [C_nnz, C_cols, C_cols_loc, C_coeffs] = C_data->getDataFields();
-    auto C_rs                                  = C_data->getRowStarts();
+    auto [A_rs, A_cols, A_cols_loc, A_coeffs] = A_data->getDataFields();
+    auto [B_rs, B_cols, B_cols_loc, B_coeffs] = B_data->getDataFields();
+    auto [C_rs, C_cols, C_cols_loc, C_coeffs] = C_data->getDataFields();
 
     // for each row in A block
     std::map<gidx_t, scalar_t> C_colval;

@@ -52,8 +52,7 @@ void findAggregates( std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<Poli
     std::vector<lidx_t> agg_size( A_nrows, 0 );
 
     // unpack members of A_diag
-    auto [A_nnz, A_cols, A_cols_loc, A_coeffs] = A->getDataFields();
-    const auto A_rs                            = A->getRowStarts();
+    auto [A_rs, A_cols, A_cols_loc, A_coeffs] = A->getDataFields();
 
     // first pass initilizes aggregates from nodes that have no
     // neighbors that are already associated
@@ -61,14 +60,12 @@ void findAggregates( std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<Poli
     for ( lidx_t row = 0; row < A_nrows; ++row ) {
         // check if any members of this row are already associated
         bool have_assn = false;
-        const auto rs  = A_rs[row];
-        const auto re  = A_rs[row + 1];
-        for ( lidx_t c = rs; c < re; ++c ) {
+        for ( lidx_t c = A_rs[row]; c < A_rs[row + 1]; ++c ) {
             have_assn = have_assn || ( agg_id[A_cols_loc[c]] >= 0 );
         }
         // if no associations create new aggregate from row
         if ( !have_assn ) {
-            for ( lidx_t c = rs; c < re; ++c ) {
+            for ( lidx_t c = A_rs[row]; c < A_rs[row + 1]; ++c ) {
                 agg_id[A_cols_loc[c]] = num_agg;
                 agg_size[num_agg]++;
             }
@@ -86,10 +83,8 @@ void findAggregates( std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<Poli
             continue;
         }
         // find smallest neighboring aggregate
-        const auto rs       = A_rs[row];
-        const auto re       = A_rs[row + 1];
         lidx_t small_agg_id = -1, small_agg_size = A_nrows + 1;
-        for ( lidx_t c = rs; c < re; ++c ) {
+        for ( lidx_t c = A_rs[row]; c < A_rs[row + 1]; ++c ) {
             const auto id = agg_id[A_cols_loc[c]];
             if ( id >= 0 && ( agg_size[id] < small_agg_size ) ) {
                 small_agg_size = agg_size[id];
@@ -135,17 +130,14 @@ createAggregateMatrix( std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, All
     auto P_data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
 
     // non-zeros only in diag block and only one per row
-    P_data->setNNZ( static_cast<lidx_t>( agg_id.size() ),
-                    std::vector<lidx_t>( agg_id.size(), 1 ),
-                    0,
+    P_data->setNNZ( std::vector<lidx_t>( agg_id.size(), 1 ),
                     std::vector<lidx_t>( agg_id.size(), 0 ) );
 
     // fill in data (diag block only) using aggregates from above
-    auto P_diag                                = P_data->getDiagMatrix();
-    auto [P_nnz, P_cols, P_cols_loc, P_coeffs] = P_diag->getDataFields();
-    const auto P_rs                            = P_diag->getRowStarts();
-    const auto begin_col                       = rightDOFs->beginDOF();
-    const auto num_row                         = static_cast<lidx_t>( leftDOFs->numLocalDOF() );
+    auto P_diag                               = P_data->getDiagMatrix();
+    auto [P_rs, P_cols, P_cols_loc, P_coeffs] = P_diag->getDataFields();
+    const auto begin_col                      = rightDOFs->beginDOF();
+    const auto num_row                        = static_cast<lidx_t>( leftDOFs->numLocalDOF() );
     for ( lidx_t row = 0; row < num_row; ++row ) {
         const auto agg = agg_id[row];
         const auto rs  = P_rs[row];

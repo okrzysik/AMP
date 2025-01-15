@@ -72,7 +72,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 
     gidx_t startRow, endRow;
     gidx_t startCol, endCol;
-    std::vector<lidx_t> nnz_d, nnz_od;
+    std::vector<lidx_t> rs_d, rs_od;
     std::vector<gidx_t> cols_d, cols_od;
     std::vector<scalar_t> coeffs_d, coeffs_od;
 
@@ -81,19 +81,19 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
                                                    endRow,
                                                    startCol,
                                                    endCol,
-                                                   nnz_d,
+                                                   rs_d,
                                                    cols_d,
                                                    coeffs_d,
-                                                   nnz_od,
+                                                   rs_od,
                                                    cols_od,
                                                    coeffs_od );
 
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_d{
-        nnz_d.data(), cols_d.data(), coeffs_d.data()
+    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRLocalMatrixParameters pars_d{
+        rs_d.data(), cols_d.data(), coeffs_d.data()
     };
 
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRSerialMatrixParameters pars_od{
-        nnz_od.data(), cols_od.data(), coeffs_od.data()
+    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRLocalMatrixParameters pars_od{
+        rs_od.data(), cols_od.data(), coeffs_od.data()
     };
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(

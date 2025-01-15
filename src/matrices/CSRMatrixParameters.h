@@ -19,11 +19,11 @@ public:
 
     // The diagonal and off-diagonal blocks need all the same parameters
     // Like in CSRMatrixData use a nested class to pack all this away
-    struct CSRSerialMatrixParameters {
+    struct CSRLocalMatrixParameters {
         // No bare constructor, only initializer lists and default copy/moves
-        CSRSerialMatrixParameters() = delete;
+        CSRLocalMatrixParameters() = delete;
 
-        lidx_t *d_nnz_per_row;
+        lidx_t *d_row_starts;
         gidx_t *d_cols;
         scalar_t *d_coeffs;
     };
@@ -33,17 +33,18 @@ public:
     /** \brief Constructor
      * \param[in] first_row     Index for first row
      * \param[in] last_row      Index for last row
-     * \param[in] nnz_per_row   Number of non-zero entries per row
-     * \param[in] cols          Column indicies
-     * \param[in] coeffs        Values
+     * \param[in] first_col     Index for first col
+     * \param[in] last_col      Index for last col
+     * \param[in] diag          Parameters for diag block
+     * \param[in] off_diag      Parameters for offd block
      * \param[in] comm          Communicator for the matrix
      */
     explicit CSRMatrixParameters( gidx_t first_row,
                                   gidx_t last_row,
                                   gidx_t first_col,
                                   gidx_t last_col,
-                                  const CSRSerialMatrixParameters &diag,
-                                  const CSRSerialMatrixParameters &off_diag,
+                                  const CSRLocalMatrixParameters &diag,
+                                  const CSRLocalMatrixParameters &off_diag,
                                   const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
           d_first_row( first_row ),
@@ -64,7 +65,7 @@ public:
     gidx_t d_first_col;
     gidx_t d_last_col;
     // Blockwise information
-    CSRSerialMatrixParameters d_diag, d_off_diag;
+    CSRLocalMatrixParameters d_diag, d_off_diag;
 };
 } // namespace AMP::LinearAlgebra
 

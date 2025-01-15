@@ -34,6 +34,7 @@ void CSRMatrixOperationsKokkos<Policy,
     AMP_DEBUG_ASSERT( in && out );
     AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
+    using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
@@ -75,16 +76,18 @@ void CSRMatrixOperationsKokkos<Policy,
 
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsKokkos::mult(ghost)" );
-
-        // Possible mismatch between Policy::gidx_t and size_t forces a deep copy
-        // of the colMap from inside offdMatrix
-        std::vector<size_t> colMap;
-        offdMatrix->getColumnMap( colMap );
-        std::vector<scalar_t> ghosts( colMap.size() );
-        in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts.data() );
-
-        AMP_DEBUG_ASSERT( static_cast<typename Policy::lidx_t>( ghosts.size() ) ==
-                          offdMatrix->numUniqueColumns() );
+        const auto nGhosts = offdMatrix->numUniqueColumns();
+        std::vector<scalar_t> ghosts( nGhosts );
+        if constexpr ( std::is_same_v<size_t, gidx_t> ) {
+            // column map can be passed to get ghosts function directly
+            size_t *colMap = offdMatrix->getColumnMap();
+            in->getGhostValuesByGlobalID( nGhosts, colMap, ghosts.data() );
+        } else {
+            // type mismatch, need to copy/cast into temporary vector
+            std::vector<size_t> colMap;
+            offdMatrix->getColumnMap( colMap );
+            in->getGhostValuesByGlobalID( nGhosts, colMap.data(), ghosts.data() );
+        }
 
         Kokkos::View<scalar_t *, Kokkos::LayoutRight, Kokkos::HostSpace> ghostView_h(
             ghosts.data(), ghosts.size() );

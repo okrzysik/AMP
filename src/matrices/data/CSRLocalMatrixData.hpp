@@ -10,10 +10,6 @@
 #include "AMP/utils/Algorithms.h"
 #include "AMP/utils/Utilities.h"
 
-// #include <algorithm>
-// #include <iterator>
-// #include <memory>
-// #include <numeric>
 #include <set>
 #include <type_traits>
 
@@ -71,14 +67,13 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         // Pull out block specific parameters
         auto &blParams = d_is_diag ? csrParams->d_diag : csrParams->d_off_diag;
 
-        if ( blParams.d_nnz_per_row == nullptr ) {
+        if ( blParams.d_row_starts == nullptr ) {
             d_is_empty = true;
             return;
         }
 
         // count nnz and decide if block is empty
-        d_nnz =
-            AMP::Utilities::Algorithms<lidx_t>::accumulate( blParams.d_nnz_per_row, d_num_rows, 0 );
+        d_nnz = blParams.d_row_starts[d_num_rows];
 
         if ( d_nnz == 0 ) {
             d_is_empty = true;
@@ -88,9 +83,9 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
 
         // Wrap raw pointers from blParams to match internal
         // shared_ptr<T[]> type
-        d_nnz_per_row = sharedArrayWrapper( blParams.d_nnz_per_row );
-        d_cols        = sharedArrayWrapper( blParams.d_cols );
-        d_coeffs      = sharedArrayWrapper( blParams.d_coeffs );
+        d_row_starts = sharedArrayWrapper( blParams.d_row_starts );
+        d_cols       = sharedArrayWrapper( blParams.d_cols );
+        d_coeffs     = sharedArrayWrapper( blParams.d_coeffs );
     } else if ( matParams ) {
         // Getting device memory support in this constructor mode will be very challenging
         AMP_ASSERT( d_memory_location != AMP::Utilities::MemoryType::device );
@@ -125,18 +120,20 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         d_is_empty = false;
 
         // Allocate internal arrays
-        d_nnz_per_row = sharedArrayBuilder( d_num_rows, d_lidxAllocator );
-        d_cols        = sharedArrayBuilder( d_nnz, d_gidxAllocator );
-        d_coeffs      = sharedArrayBuilder( d_nnz, d_scalarAllocator );
+        d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
+        d_cols       = sharedArrayBuilder( d_nnz, d_gidxAllocator );
+        d_coeffs     = sharedArrayBuilder( d_nnz, d_scalarAllocator );
 
         // Fill cols and nnz based on local row extents and on/off diag status
         lidx_t nnzFilled = 0;
-        for ( lidx_t i = 0; i < d_num_rows; ++i ) {
-            d_nnz_per_row[i] = 0;
-            auto cols        = getRow( d_first_row + i );
+        d_row_starts[0]  = 0;
+        for ( lidx_t row = 0; row < d_num_rows; ++row ) {
+            auto cols = getRow( d_first_row + row );
+            // initialize next rs to this one and push forward as nz's added to this row
+            d_row_starts[row + 1] = d_row_starts[row];
             for ( auto &&col : cols ) {
                 if ( isColValid<Policy>( col, d_is_diag, d_first_col, d_last_col ) ) {
-                    d_nnz_per_row[i]++;
+                    d_row_starts[row + 1]++;
                     d_cols[nnzFilled]   = col;
                     d_coeffs[nnzFilled] = 0.0;
                     ++nnzFilled;
@@ -157,21 +154,14 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
     }
 
     // now do setup that is independent of MatrixParameter datatype
-    d_max_row_len =
-        AMP::Utilities::Algorithms<lidx_t>::max_element( d_nnz_per_row.get(), d_num_rows );
-
-    // row starts and local columns always owned internally
-    d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
-    d_cols_loc   = sharedArrayBuilder( d_nnz, d_lidxAllocator );
-
-    // scan nnz counts to get starting index of each row
-    AMP::Utilities::Algorithms<lidx_t>::inclusive_scan(
-        d_nnz_per_row.get(), d_num_rows, &d_row_starts[1] );
-    if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-        d_row_starts[0] = 0;
-    } else {
-        AMP_ERROR( "Pure device memory not supported in CSRLocalMatrixData" );
+    d_max_row_len = 0;
+    for ( lidx_t row = 0; row < d_num_rows; ++row ) {
+        const auto ncols = d_row_starts[row + 1] - d_row_starts[row];
+        d_max_row_len    = d_max_row_len < ncols ? ncols : d_max_row_len;
     }
+
+    // local columns always owned internally
+    d_cols_loc = sharedArrayBuilder( d_nnz, d_lidxAllocator );
 
     // fill in local column indices
     globalToLocalColumns();
@@ -265,14 +255,11 @@ CSRLocalMatrixData<Policy, Allocator>::cloneMatrixData()
     cloneData->d_nnz      = d_nnz;
 
     if ( !d_is_empty ) {
-        cloneData->d_nnz_per_row = sharedArrayBuilder( d_num_rows, d_lidxAllocator );
-        cloneData->d_row_starts  = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
-        cloneData->d_cols        = sharedArrayBuilder( d_nnz, d_gidxAllocator );
-        cloneData->d_cols_loc    = sharedArrayBuilder( d_nnz, d_lidxAllocator );
-        cloneData->d_coeffs      = sharedArrayBuilder( d_nnz, d_scalarAllocator );
+        cloneData->d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
+        cloneData->d_cols       = sharedArrayBuilder( d_nnz, d_gidxAllocator );
+        cloneData->d_cols_loc   = sharedArrayBuilder( d_nnz, d_lidxAllocator );
+        cloneData->d_coeffs     = sharedArrayBuilder( d_nnz, d_scalarAllocator );
 
-        AMP::Utilities::Algorithms<lidx_t>::copy_n(
-            d_nnz_per_row.get(), d_num_rows, cloneData->d_nnz_per_row.get() );
         AMP::Utilities::Algorithms<lidx_t>::copy_n(
             d_row_starts.get(), d_num_rows + 1, cloneData->d_row_starts.get() );
         AMP::Utilities::Algorithms<gidx_t>::copy_n( d_cols.get(), d_nnz, cloneData->d_cols.get() );
@@ -281,44 +268,44 @@ CSRLocalMatrixData<Policy, Allocator>::cloneMatrixData()
         AMP::Utilities::Algorithms<scalar_t>::fill_n( cloneData->d_coeffs.get(), d_nnz, 0.0 );
 
     } else {
-        cloneData->d_nnz_per_row = nullptr;
-        cloneData->d_row_starts  = nullptr;
-        cloneData->d_cols        = nullptr;
-        cloneData->d_cols_loc    = nullptr;
-        cloneData->d_coeffs      = nullptr;
+        cloneData->d_row_starts = nullptr;
+        cloneData->d_cols       = nullptr;
+        cloneData->d_cols_loc   = nullptr;
+        cloneData->d_coeffs     = nullptr;
     }
 
     return cloneData;
 }
 
 template<typename Policy, class Allocator>
-void CSRLocalMatrixData<Policy, Allocator>::setNNZ( lidx_t total_nnz,
-                                                    const std::vector<lidx_t> &nnz )
+void CSRLocalMatrixData<Policy, Allocator>::setNNZ( const std::vector<lidx_t> &nnz )
 {
-    if ( total_nnz == 0 ) {
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRLocalMatrixData::setNNZ not implemented on device yet" );
+
+    // allocate and fill rowstarts from scan of passed nnz vector
+    d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
+    std::exclusive_scan( nnz.begin(), nnz.end(), d_row_starts.get(), 0 );
+    d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + nnz[d_num_rows - 1];
+
+    // total nnz in all rows of block is last entry
+    d_nnz = d_row_starts[d_num_rows];
+
+    if ( d_nnz == 0 ) {
+        d_is_empty = true;
         // nothing to do, block stays empty
         return;
     }
 
-    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
-                "CSRLocalMatrixData::setNNZ not implemented on device yet" );
+    // allocate and fill remaining arrays
+    d_is_empty = false;
+    d_cols     = sharedArrayBuilder( d_nnz, d_gidxAllocator );
+    d_cols_loc = sharedArrayBuilder( d_nnz, d_lidxAllocator );
+    d_coeffs   = sharedArrayBuilder( d_nnz, d_scalarAllocator );
 
-    // allocate space for all arrays
-    d_is_empty    = false;
-    d_nnz         = total_nnz;
-    d_nnz_per_row = sharedArrayBuilder( d_num_rows, d_lidxAllocator );
-    d_row_starts  = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
-    d_cols        = sharedArrayBuilder( d_nnz, d_gidxAllocator );
-    d_cols_loc    = sharedArrayBuilder( d_nnz, d_lidxAllocator );
-    d_coeffs      = sharedArrayBuilder( d_nnz, d_scalarAllocator );
-
-    std::copy( nnz.begin(), nnz.end(), d_nnz_per_row.get() );
     std::fill( d_cols.get(), d_cols.get() + d_nnz, 0 );
     std::fill( d_cols_loc.get(), d_cols_loc.get() + d_nnz, 0 );
     std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, 0.0 );
-    std::exclusive_scan(
-        d_nnz_per_row.get(), d_nnz_per_row.get() + d_num_rows, d_row_starts.get(), 0 );
-    d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + d_nnz_per_row[d_num_rows - 1];
 }
 
 template<typename Policy, class Allocator>
@@ -369,9 +356,8 @@ void CSRLocalMatrixData<Policy, Allocator>::getRowByGlobalID( const size_t local
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::getRowByGlobalID not implemented for device memory" );
 
-    const auto row_offset = static_cast<size_t>( local_row );
-    const auto offset     = d_row_starts[local_row];
-    auto n                = d_nnz_per_row[row_offset];
+    const auto offset = d_row_starts[local_row];
+    auto n            = d_row_starts[local_row + 1] - d_row_starts[local_row];
 
     cols.resize( n );
     values.resize( n );
@@ -496,13 +482,12 @@ CSRLocalMatrixData<Policy, Allocator>::getColumnIDs( const size_t local_row ) co
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::getColumnIDs not implemented for device memory" );
 
-    AMP_INSIST( d_cols && d_nnz_per_row,
+    AMP_INSIST( d_cols && d_row_starts,
                 "CSRLocalMatrixData::getColumnIDs nnz layout must be initialized" );
 
     std::vector<size_t> cols;
-    const auto row_offset = static_cast<size_t>( local_row );
-    const auto offset     = d_row_starts[local_row];
-    auto n                = d_nnz_per_row[row_offset];
+    const auto offset = d_row_starts[local_row];
+    auto n            = d_row_starts[local_row + 1] - d_row_starts[local_row];
 
     if constexpr ( std::is_same_v<size_t, gidx_t> ) {
         std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );

@@ -49,11 +49,22 @@ size_t MatrixData::beginRow() const
     auto DOF = getLeftDOFManager();
     return DOF->beginDOF();
 }
+
 size_t MatrixData::endRow() const
 {
     auto DOF = getLeftDOFManager();
     return DOF->endDOF();
 }
 
+size_t MatrixData::beginCol() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->beginDOF();
+}
+size_t MatrixData::endCol() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->endDOF();
+}
 
 } // namespace AMP::LinearAlgebra

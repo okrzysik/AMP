@@ -14,10 +14,10 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
                         typename Policy::gidx_t &endRow,
                         typename Policy::gidx_t &startCol,
                         typename Policy::gidx_t &endCol,
-                        std::vector<typename Policy::lidx_t> &nnz_d,
+                        std::vector<typename Policy::lidx_t> &rs_d,
                         std::vector<typename Policy::gidx_t> &cols_d,
                         std::vector<typename Policy::scalar_t> &coeffs_d,
-                        std::vector<typename Policy::lidx_t> &nnz_od,
+                        std::vector<typename Policy::lidx_t> &rs_od,
                         std::vector<typename Policy::gidx_t> &cols_od,
                         std::vector<typename Policy::scalar_t> &coeffs_od )
 {
@@ -34,6 +34,10 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
     endRow   = static_cast<gidx_t>( rDOF->endDOF() );
     startCol = static_cast<gidx_t>( lDOF->beginDOF() );
     endCol   = static_cast<gidx_t>( lDOF->endDOF() );
+
+    // prime rowstart vectors with first zero entry
+    rs_d.push_back( 0 );
+    rs_od.push_back( 0 );
 
     // loop over rows and examine structure
     for ( auto row = startRow; row < endRow; ++row ) {
@@ -57,8 +61,10 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
                 coeffs_od.push_back( static_cast<scalar_t>( rvals[i] ) );
             }
         }
-        nnz_d.push_back( nnzd );
-        nnz_od.push_back( nnzod );
+        const lidx_t prev_rs_d  = rs_d.back();
+        const lidx_t prev_rs_od = rs_od.back();
+        rs_d.push_back( prev_rs_d + nnzd );
+        rs_od.push_back( prev_rs_od + nnzod );
     }
 }
 } // namespace AMP::LinearAlgebra

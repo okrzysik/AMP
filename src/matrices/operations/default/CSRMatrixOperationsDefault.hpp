@@ -17,6 +17,7 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
     AMP_DEBUG_ASSERT( in && out );
     AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
+    using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
     auto csrData = getCSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>(
@@ -55,12 +56,18 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData, OffdMatrixDat
 
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsDefault::mult (ghost)" );
-        // have to do deep copy because getGhostValuesByGlobalID
-        // only works with size_t as index type...
-        std::vector<size_t> colMap;
-        offdMatrix->getColumnMap( colMap );
-        std::vector<scalar_t> ghosts( colMap.size() );
-        in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts.data() );
+        const auto nGhosts = offdMatrix->numUniqueColumns();
+        std::vector<scalar_t> ghosts( nGhosts );
+        if constexpr ( std::is_same_v<size_t, gidx_t> ) {
+            // column map can be passed to get ghosts function directly
+            size_t *colMap = offdMatrix->getColumnMap();
+            in->getGhostValuesByGlobalID( nGhosts, colMap, ghosts.data() );
+        } else {
+            // type mismatch, need to copy/cast into temporary vector
+            std::vector<size_t> colMap;
+            offdMatrix->getColumnMap( colMap );
+            in->getGhostValuesByGlobalID( nGhosts, colMap.data(), ghosts.data() );
+        }
         d_localops_offd->mult( ghosts.data(), offdMatrix, outDataBlock );
     }
 }

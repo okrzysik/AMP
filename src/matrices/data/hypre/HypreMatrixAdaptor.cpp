@@ -123,11 +123,11 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     const auto last_row     = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
     const auto nnz_total_d  = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosDiag() );
     const auto nnz_total_od = static_cast<HYPRE_BigInt>( csrData->numberOfNonZerosOffDiag() );
-    auto [nnz_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getDiagMatrix()->getDataFields();
-    auto [nnz_od, cols_od, cols_loc_od, coeffs_od] = csrData->getOffdMatrix()->getDataFields();
-    const bool haveOffd                            = csrData->hasOffDiag();
+    auto [rs_d, cols_d, cols_loc_d, coeffs_d]     = csrData->getDiagMatrix()->getDataFields();
+    auto [rs_od, cols_od, cols_loc_od, coeffs_od] = csrData->getOffdMatrix()->getDataFields();
+    const bool haveOffd                           = csrData->hasOffDiag();
 
-    AMP_INSIST( nnz_d && cols_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
+    AMP_INSIST( rs_d && cols_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
 
     const auto nrows = last_row - first_row + 1;
 
@@ -158,9 +158,9 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     diag->i[0]     = 0;
     off_diag->i[0] = 0;
     for ( HYPRE_BigInt n = 0; n < nrows; ++n ) {
-        diag->i[n + 1] = diag->i[n] + nnz_d[n];
+        diag->i[n + 1] = diag->i[n] + ( rs_d[n + 1] - rs_d[n] );
         if ( haveOffd ) {
-            off_diag->i[n + 1] = off_diag->i[n] + nnz_od[n];
+            off_diag->i[n + 1] = off_diag->i[n] + ( rs_od[n + 1] - rs_od[n] );
         } else {
             off_diag->i[n + 1] = 0;
         }
