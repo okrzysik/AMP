@@ -18,20 +18,14 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::mult(
 {
     using lidx_t = typename Policy::lidx_t;
 
-    const auto nRows                   = static_cast<lidx_t>( A->numLocalRows() );
-    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
 
-    lidx_t offset = 0;
     for ( lidx_t row = 0; row < nRows; ++row ) {
-        const auto nCols = nnz[row];
-        const auto cloc  = &cols_loc[offset];
-        const auto vloc  = &coeffs[offset];
-        for ( lidx_t c = 0; c < nCols; ++c ) {
+        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
             // Note: output is assumed to have useful values already
-            out[row] += vloc[c] * in[cloc[c]];
+            out[row] += coeffs[c] * in[cols_loc[c]];
         }
-
-        offset += nCols;
     }
 }
 
@@ -44,28 +38,20 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::multTr
 {
     using lidx_t = typename Policy::lidx_t;
 
-    const auto nRows                   = static_cast<lidx_t>( A->numLocalRows() );
-    const bool isDiag                  = A->isDiag();
-    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
+    const bool isDiag                 = A->isDiag();
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
     A->getColumnMap( rcols );
     vvals.resize( rcols.size(), 0.0 );
 
-    lidx_t offset = 0;
     for ( lidx_t row = 0; row < nRows; ++row ) {
-
-        const auto ncols = nnz[row];
-        const auto cloc  = &cols_loc[offset];
-        const auto vloc  = &coeffs[offset];
-        const auto val   = in[row];
-
-        for ( lidx_t j = 0; j < ncols; ++j ) {
+        const auto val = in[row];
+        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
             if ( isDiag ) {
-                rcols[cloc[j]] = cols[offset + j];
+                rcols[cols_loc[c]] = cols[c];
             }
-            vvals[cloc[j]] += vloc[j] * val;
+            vvals[cols_loc[c]] += coeffs[c] * val;
         }
-
-        offset += ncols;
     }
 }
 
@@ -75,7 +61,7 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::scale(
 {
     using scalar_t = typename Policy::scalar_t;
 
-    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
 
     const auto tnnz = A->numberOfNonZeros();
 
@@ -93,10 +79,8 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::axpy(
 {
     using lidx_t = typename Policy::lidx_t;
 
-    const auto [nnz_x, cols_x, cols_loc_x, coeffs_x] = X->getDataFields();
-    const auto rs_x                                  = X->getRowStarts();
-    auto [nnz_y, cols_y, cols_loc_y, coeffs_y]       = Y->getDataFields();
-    const auto rs_y                                  = Y->getRowStarts();
+    const auto [rs_x, cols_x, cols_loc_x, coeffs_x] = X->getDataFields();
+    auto [rs_y, cols_y, cols_loc_y, coeffs_y]       = Y->getDataFields();
 
     const auto nrows = static_cast<lidx_t>( X->numLocalRows() );
 
@@ -117,8 +101,8 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::setScalar(
     typename Policy::scalar_t alpha, std::shared_ptr<LocalMatrixData> A )
 {
-    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
-    const auto tnnz                    = A->numberOfNonZeros();
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
+    const auto tnnz                   = A->numberOfNonZeros();
     std::fill( coeffs, coeffs + tnnz, alpha );
 }
 
@@ -140,18 +124,15 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::setDia
     const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
     const auto beginRow = A->beginRow();
 
-    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
 
-    lidx_t offset = 0;
     for ( lidx_t row = 0; row < nRows; ++row ) {
-        const auto ncols = nnz[row];
-        for ( lidx_t icol = 0; icol < ncols; ++icol ) {
-            if ( cols[offset + icol] == static_cast<gidx_t>( beginRow + row ) ) {
-                coeffs[offset + icol] = in[row];
+        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
+            if ( cols[c] == static_cast<gidx_t>( beginRow + row ) ) {
+                coeffs[c] = in[row];
                 break;
             }
         }
-        offset += nnz[row];
     }
 }
 
@@ -163,21 +144,18 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::setIde
     using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
 
     const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
     const auto beginRow = A->beginRow();
 
-    lidx_t offset = 0;
     for ( lidx_t row = 0; row < nRows; ++row ) {
-        const auto ncols = nnz[row];
-        for ( lidx_t icol = 0; icol < ncols; ++icol ) {
-            if ( cols[offset + icol] == static_cast<gidx_t>( beginRow + row ) ) {
-                coeffs[offset + icol] = static_cast<scalar_t>( 1.0 );
+        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
+            if ( cols[c] == static_cast<gidx_t>( beginRow + row ) ) {
+                coeffs[c] = static_cast<scalar_t>( 1.0 );
                 break;
             }
         }
-        offset += nnz[row];
     }
 }
 
@@ -188,21 +166,18 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::extrac
     using lidx_t = typename Policy::lidx_t;
     using gidx_t = typename Policy::gidx_t;
 
-    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
 
     const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
     const auto beginRow = A->beginRow();
 
-    lidx_t offset = 0;
     for ( lidx_t row = 0; row < nRows; ++row ) {
-        const auto ncols = nnz[row];
-        for ( lidx_t icol = 0; icol < ncols; ++icol ) {
-            if ( cols[offset + icol] == static_cast<gidx_t>( beginRow + row ) ) {
-                buf[row] = coeffs[offset + icol];
+        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
+            if ( cols[c] == static_cast<gidx_t>( beginRow + row ) ) {
+                buf[row] = coeffs[c];
                 break;
             }
         }
-        offset += nnz[row];
     }
 }
 
@@ -212,16 +187,13 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::LinfNo
 {
     using lidx_t = typename Policy::lidx_t;
 
-    auto [nnz, cols, cols_loc, coeffs] = A->getDataFields();
-    auto rs                            = A->getRowStarts();
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
 
     const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
 
     for ( lidx_t row = 0; row < nRows; ++row ) {
-        auto nCols = nnz[row];
-        auto start = rs[row];
-        for ( lidx_t j = 0; j < nCols; ++j ) {
-            rowSums[row] += std::abs( coeffs[start + j] );
+        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
+            rowSums[row] += std::abs( coeffs[c] );
         }
     }
 }

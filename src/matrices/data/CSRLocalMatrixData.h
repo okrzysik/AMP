@@ -57,12 +57,10 @@ public:
     std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getDataFields()
     {
         return std::make_tuple(
-            d_nnz_per_row.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
+            d_row_starts.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
     }
 
     bool isDiag() const { return d_is_diag; }
-
-    lidx_t *getRowStarts() { return d_row_starts.get(); }
 
     lidx_t numberOfNonZeros() const { return d_nnz; }
 
@@ -117,7 +115,7 @@ public:
         }
     }
 
-    void setNNZ( lidx_t total_nnz, const std::vector<lidx_t> &nnz );
+    void setNNZ( const std::vector<lidx_t> &nnz );
 
     void globalToLocalColumns();
 
@@ -185,7 +183,6 @@ protected:
     const bool d_is_diag;
     bool d_is_empty = true;
 
-    std::shared_ptr<lidx_t[]> d_nnz_per_row;
     std::shared_ptr<lidx_t[]> d_row_starts;
     std::shared_ptr<gidx_t[]> d_cols;
     std::shared_ptr<gidx_t[]> d_cols_unq;

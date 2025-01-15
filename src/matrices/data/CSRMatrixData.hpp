@@ -112,14 +112,11 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::cloneMatrixDat
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setNNZ(
-    lidx_t total_nnz_diag,
-    const std::vector<lidx_t> &nnz_diag,
-    lidx_t total_nnz_offd,
-    const std::vector<lidx_t> &nnz_offd )
+    const std::vector<lidx_t> &nnz_diag, const std::vector<lidx_t> &nnz_offd )
 {
     // forward to internal blocks to get the internals allocated
-    d_diag_matrix->setNNZ( total_nnz_diag, nnz_diag );
-    d_offd_matrix->setNNZ( total_nnz_offd, nnz_offd );
+    d_diag_matrix->setNNZ( nnz_diag );
+    d_offd_matrix->setNNZ( nnz_offd );
     d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
 }
 
@@ -437,6 +434,18 @@ template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatri
 size_t CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::endRow() const
 {
     return static_cast<size_t>( d_last_row );
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
+size_t CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::beginCol() const
+{
+    return static_cast<size_t>( d_first_col );
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
+size_t CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::endCol() const
+{
+    return static_cast<size_t>( d_last_col );
 }
 
 } // namespace AMP::LinearAlgebra

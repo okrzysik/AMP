@@ -179,12 +179,12 @@ public:
     /** \brief  Get the global id of the beginning column (inclusive)
      * \return  beginning global column id
      */
-    size_t beginCol() const { return d_first_col; }
+    size_t beginCol() const override;
 
     /** \brief  Get the global id of the ending column (exclusive)
      * \return  end global column id
      */
-    size_t endCol() const { return d_last_col; }
+    size_t endCol() const override;
 
     std::shared_ptr<DiagMatrixData> getDiagMatrix() { return d_diag_matrix; }
 
@@ -212,10 +212,7 @@ public:
         d_offd_matrix->sortColumns( sort_type );
     }
 
-    void setNNZ( lidx_t total_nnz_diag,
-                 const std::vector<lidx_t> &nnz_diag,
-                 lidx_t total_nnz_offd,
-                 const std::vector<lidx_t> &nnz_offd );
+    void setNNZ( const std::vector<lidx_t> &nnz_diag, const std::vector<lidx_t> &nnz_offd );
 
     void globalToLocalColumns();
 

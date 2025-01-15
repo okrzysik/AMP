@@ -223,6 +223,16 @@ public:
      */
     virtual size_t endRow() const;
 
+    /** \brief  Get the global id of first column in diagonal block
+     * \return  beginning global column id
+     */
+    virtual size_t beginCol() const;
+
+    /** \brief  Get the global id of last column in diagonal block
+     * \return  ending global column id
+     */
+    virtual size_t endCol() const;
+
     //! Get the comm
     inline virtual AMP_MPI getComm() const
     {
