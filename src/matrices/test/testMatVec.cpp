@@ -97,7 +97,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     };
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
-        startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
+        startRow, endRow, startCol, endCol, pars_d, pars_od, comm, inVar, outVar );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
     AMP_ASSERT( csrMatrix );

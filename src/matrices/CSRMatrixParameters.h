@@ -56,6 +56,36 @@ public:
     {
     }
 
+    /** \brief Constructor
+     * \param[in] first_row     Index for first row
+     * \param[in] last_row      Index for last row
+     * \param[in] first_col     Index for first col
+     * \param[in] last_col      Index for last col
+     * \param[in] diag          Parameters for diag block
+     * \param[in] off_diag      Parameters for offd block
+     * \param[in] comm          Communicator for the matrix
+     * \param[in] var_left      Variable for left vector
+     * \param[in] var_right     Variable for right vector
+     */
+    explicit CSRMatrixParameters( gidx_t first_row,
+                                  gidx_t last_row,
+                                  gidx_t first_col,
+                                  gidx_t last_col,
+                                  const CSRLocalMatrixParameters &diag,
+                                  const CSRLocalMatrixParameters &off_diag,
+                                  const AMP_MPI &comm,
+                                  std::shared_ptr<Variable> var_left,
+                                  std::shared_ptr<Variable> var_right )
+        : MatrixParametersBase( comm, var_left, var_right ),
+          d_first_row( first_row ),
+          d_last_row( last_row ),
+          d_first_col( first_col ),
+          d_last_col( last_col ),
+          d_diag( diag ),
+          d_off_diag( off_diag )
+    {
+    }
+
     //! Destructor
     virtual ~CSRMatrixParameters() = default;
 

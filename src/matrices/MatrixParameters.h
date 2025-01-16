@@ -30,9 +30,59 @@ public:
      * vector )
      * \param[in] comm     Communicator for the matrix
      */
-    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
-                               std::shared_ptr<AMP::Discretization::DOFManager> right,
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
                                const AMP_MPI &comm,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
+    /** \brief Constructor
+     * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$y\f$ is a left
+     * vector )
+     * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$x\f$ is a right
+     * vector )
+     * \param[in] comm     Communicator for the matrix
+     */
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               std::shared_ptr<Variable> varLeft,
+                               std::shared_ptr<Variable> varRight,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
+    /** \brief Constructor
+     * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$y\f$ is a left
+     * vector )
+     * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$x\f$ is a right
+     * vector )
+     * \param[in] comm     Communicator for the matrix
+     */
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               std::shared_ptr<CommunicationList> commListLeft,
+                               std::shared_ptr<CommunicationList> commListRight,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
+    /** \brief Constructor
+     * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$y\f$ is a left
+     * vector )
+     * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$x\f$ is a right
+     * vector )
+     * \param[in] comm     Communicator for the matrix
+     */
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               std::shared_ptr<Variable> varLeft,
+                               std::shared_ptr<Variable> varRight,
+                               std::shared_ptr<CommunicationList> commListLeft,
+                               std::shared_ptr<CommunicationList> commListRight,
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
     //! Deconstructor
@@ -65,6 +115,16 @@ public:
     //!  right vector )
     std::shared_ptr<AMP::Discretization::DOFManager> getRightDOFManager();
 
+protected:
+    // Generate communication lists internally from the dof managers if not provided
+    void generateCommLists();
+
+    // The DOFManager for the left vector ( may be null )
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerLeft;
+
+    // The DOFManager for the right vector ( may be null )
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
+
     //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
     std::shared_ptr<CommunicationList> d_CommListLeft;
@@ -72,13 +132,6 @@ public:
     //!  The communication list of a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a
     //!  right vector )
     std::shared_ptr<CommunicationList> d_CommListRight;
-
-protected:
-    // The DOFManager for the left vector ( may be null )
-    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerLeft;
-
-    // The DOFManager for the right vector ( may be null )
-    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
 
     //! Function that generates column ids for each row of the matrix
     std::function<std::vector<size_t>( size_t )> d_getRowFunction;
