@@ -296,8 +296,9 @@ std::shared_ptr<Vector> EpetraMatrixData::getRightVector() const
     int globalSize = params->getGlobalNumberOfColumns();
     int localStart = params->getRightDOFManager()->beginDOF();
     auto buffer = std::make_shared<VectorDataDefault<double>>( localStart, localSize, globalSize );
-    auto vec = createEpetraVector( params->d_CommListRight, params->getRightDOFManager(), buffer );
-    vec->setVariable( params->d_VariableRight );
+    auto vec =
+        createEpetraVector( params->getRightCommList(), params->getRightDOFManager(), buffer );
+    vec->setVariable( params->getRightVariable() );
     return vec;
 }
 std::shared_ptr<Vector> EpetraMatrixData::getLeftVector() const
@@ -308,8 +309,8 @@ std::shared_ptr<Vector> EpetraMatrixData::getLeftVector() const
     int globalSize = params->getGlobalNumberOfRows();
     int localStart = params->getRightDOFManager()->beginDOF();
     auto buffer = std::make_shared<VectorDataDefault<double>>( localStart, localSize, globalSize );
-    auto vec    = createEpetraVector( params->d_CommListLeft, params->getLeftDOFManager(), buffer );
-    vec->setVariable( params->d_VariableLeft );
+    auto vec = createEpetraVector( params->getLeftCommList(), params->getLeftDOFManager(), buffer );
+    vec->setVariable( params->getLeftVariable() );
     return vec;
 }
 
