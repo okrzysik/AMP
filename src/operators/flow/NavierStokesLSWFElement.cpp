@@ -21,8 +21,7 @@ void NavierStokesLSWFElement::apply()
 
     d_fmu = d_transportModel->getViscosity();
 
-    double d_Re = d_transportModel->getReynoldsNumber();
-    NULL_USE( d_Re );
+    [[maybe_unused]] double d_Re = d_transportModel->getReynoldsNumber();
 
     const unsigned int num_nodes = d_elem->n_nodes();
 

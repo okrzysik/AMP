@@ -385,7 +385,6 @@ static double evalTemperature( double H, double P )
                     T = T + ct3[i][j] * pow( P, (double) i ) * pow( H, (double) j );
         }
     }
-    NULL_USE( H_crit );
 
     // convert result to SI units
     T = 5. / 9. * ( T - 32. ) + 273.15; // [F] to [K]
@@ -601,7 +600,6 @@ static double evalSpecificVolume( double H, double P )
             }
         }
     }
-    NULL_USE( H_crit );
 
     // convert result to SI units
     V = V * 6.24279605761446e-2; // [ft3/lbm] to [m3/kg]

@@ -235,7 +235,7 @@ void testMoabMesh( AMP::UnitTest &ut )
 }
 
 
-void testInputMesh( AMP::UnitTest &ut, std::string filename )
+void testInputMesh( [[maybe_unused]] AMP::UnitTest &ut, [[maybe_unused]] std::string filename )
 {
 #ifdef USE_AMP_DATA
     PROFILE( "testInputMesh" );
@@ -257,14 +257,11 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, mesh, true );
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh, true );
 #endif
-    NULL_USE( ut );
-    NULL_USE( filename );
 }
 
 
-void testSubsetMesh( AMP::UnitTest &ut )
+void testSubsetMesh( [[maybe_unused]] AMP::UnitTest &ut )
 {
-    NULL_USE( ut );
     PROFILE( "testSubsetMesh" );
 #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
     std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
@@ -289,9 +286,8 @@ void testSubsetMesh( AMP::UnitTest &ut )
 
 
 // Test initializing libMesh
-void testIntializeLibmesh( AMP::UnitTest &ut )
+void testIntializeLibmesh( [[maybe_unused]] AMP::UnitTest &ut )
 {
-    NULL_USE( ut );
 #if defined( AMP_USE_LIBMESH )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     AMP::AMP_MPI splitComm = globalComm.split( globalComm.getRank() % 2 );

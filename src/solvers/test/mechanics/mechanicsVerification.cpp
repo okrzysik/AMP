@@ -180,9 +180,8 @@ computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 }
 
 
-static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, int exampleNum )
+static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, int )
 {
-    NULL_USE( exampleNum );
     std::string inputFile = "input_" + exeName;
     std::string logFile   = "output_" + exeName + ".txt";
 
@@ -194,7 +193,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     inputDatabase->print( AMP::plog );
 
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
-    std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
+    [[maybe_unused]] std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
 
     // Regular grid mesh file
     bool useRegularGridMesh = inputDatabase->getScalar<bool>( "UseRegularGridMesh" );
@@ -220,7 +219,6 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         mgrParams->setComm( AMP_COMM_WORLD );
         mesh = AMP::Mesh::MeshFactory::create( mgrParams );
     }
-    NULL_USE( libmeshInit );
 
     auto scaleMeshFactor = inputDatabase->getWithDefault<double>( "scale_mesh", 1.0 );
     AMP::pout << "Scaling mesh by a factor " << scaleMeshFactor << "\n";

@@ -179,7 +179,7 @@ static DWORD GetThreadAffinityMask( HANDLE thread )
     return 0;
 }
 #endif
-std::vector<int> getThreadAffinity( std::thread::native_handle_type handle )
+std::vector<int> getThreadAffinity( [[maybe_unused]] std::thread::native_handle_type handle )
 {
     std::vector<int> procs;
 #ifdef USE_LINUX
@@ -197,7 +197,6 @@ std::vector<int> getThreadAffinity( std::thread::native_handle_type handle )
     OS_warning( "pthread does not support pthread_getaffinity_np" );
     #endif
 #elif defined( USE_MAC )
-    NULL_USE( handle );
     // MAC does not support getting or setting the affinity
     OS_warning( "MAC does not support getting the thread affinity" );
 #elif defined( USE_WINDOWS )
@@ -217,7 +216,8 @@ std::vector<int> getThreadAffinity( std::thread::native_handle_type handle )
 /******************************************************************
  * Function to set the thread affinity                             *
  ******************************************************************/
-void setThreadAffinity( std::thread::native_handle_type handle, const std::vector<int> &procs )
+void setThreadAffinity( [[maybe_unused]] std::thread::native_handle_type handle,
+                        [[maybe_unused]] const std::vector<int> &procs )
 {
 #ifdef USE_LINUX
     #ifdef __USE_GNU
@@ -234,8 +234,6 @@ void setThreadAffinity( std::thread::native_handle_type handle, const std::vecto
     #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
-    NULL_USE( handle );
-    NULL_USE( procs );
     OS_warning( "MAC does not support getting the process affinity" );
 #elif defined( USE_WINDOWS )
     DWORD mask = 0;

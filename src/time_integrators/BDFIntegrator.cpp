@@ -158,10 +158,8 @@ void BDFIntegrator::integratorSpecificInitialize( void )
     //        d_solver->initialize( params );
 }
 
-void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_from_restart )
+void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool )
 {
-    NULL_USE( is_from_restart );
-
     if ( db->keyExists( "variable_names" ) ) {
         d_var_names = db->getVector<std::string>( "variable_names" );
     } else {
@@ -960,12 +958,9 @@ void BDFIntegrator::evaluateForwardEulerPredictor()
 */
 void BDFIntegrator::setInitialGuess( const bool first_step,
                                      const double current_time,
-                                     const double current_dt,
-                                     const double old_dt )
+                                     const double,
+                                     const double )
 {
-    NULL_USE( current_dt );
-    NULL_USE( old_dt );
-
     PROFILE( "setInitialGuess" );
     (void) current_time;
 

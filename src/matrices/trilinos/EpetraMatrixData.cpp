@@ -27,7 +27,7 @@ static inline auto createEpetraMap( std::shared_ptr<AMP::Discretization::DOFMana
 #ifdef AMP_USE_MPI
     Epetra_MpiComm comm2 = comm.getCommunicator();
 #else
-    NULL_USE( comm );
+    AMP_ASSERT( comm.getSize() == 1 );
     Epetra_SerialComm comm2;
 #endif
     AMP_INSIST( DOFs->numGlobalDOF() < 0x80000000,

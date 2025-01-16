@@ -179,7 +179,6 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName, int type )
     std::cout << std::endl;
 
     const size_t localSize = fusedSolVec->getLocalSize();
-    NULL_USE( localSize );
 
     // Matrix-based
     if ( type == 0 ) {

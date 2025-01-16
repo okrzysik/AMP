@@ -68,9 +68,8 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
 void VectorTests::testManagedVector( AMP::UnitTest * ) {}
 
 
-void VectorTests::testPetsc( AMP::UnitTest *ut )
+void VectorTests::testPetsc( [[maybe_unused]] AMP::UnitTest *ut )
 {
-    NULL_USE( ut );
 #ifdef AMP_USE_PETSC
     auto petscViewFactory  = std::make_shared<PetscViewFactory>( d_factory );
     auto petscCloneFactory = std::make_shared<PetscCloneFactory>( petscViewFactory );
@@ -85,9 +84,8 @@ void VectorTests::testPetsc( AMP::UnitTest *ut )
 #endif
 }
 
-void VectorTests::testEpetra( AMP::UnitTest *ut )
+void VectorTests::testEpetra( [[maybe_unused]] AMP::UnitTest *ut )
 {
-    NULL_USE( ut );
 #ifdef AMP_USE_TRILINOS_EPETRA
     if ( d_factory->getVector()->numberOfDataBlocks() <= 1 ) {
         // Epetra currently only supports one data block
@@ -98,9 +96,8 @@ void VectorTests::testEpetra( AMP::UnitTest *ut )
 }
 
 
-void VectorTests::testSundials( AMP::UnitTest *ut )
+void VectorTests::testSundials( [[maybe_unused]] AMP::UnitTest *ut )
 {
-    NULL_USE( ut );
 #ifdef AMP_USE_SUNDIALS
     auto viewFactory =
         std::make_shared<ViewFactory<AMP::LinearAlgebra::SundialsVector>>( d_factory );

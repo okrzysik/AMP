@@ -22,7 +22,7 @@ namespace AMP::Geometry {
 MeshGeometry::MeshGeometry( std::shared_ptr<AMP::Mesh::Mesh> mesh )
     : Geometry( mesh->getDim() ),
       d_mesh( mesh ),
-      d_pos_hash( -1 ),
+      d_pos_hash( static_cast<size_t>( -1 ) ),
       d_isConvex( false ),
       d_volume( 0 )
 {
@@ -278,7 +278,7 @@ void MeshGeometry::writeRestart( int64_t fid ) const
     AMP_ERROR( "Not finished" );
 }
 MeshGeometry::MeshGeometry( int64_t fid )
-    : Geometry( fid ), d_pos_hash( -1 ), d_isConvex( false ), d_volume( 0 )
+    : Geometry( fid ), d_pos_hash( static_cast<size_t>( -1 ) ), d_isConvex( false ), d_volume( 0 )
 {
     AMP_ERROR( "Not finished" );
 }

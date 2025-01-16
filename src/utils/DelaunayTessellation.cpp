@@ -303,16 +303,15 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
             throw std::logic_error( "Duplicate or nearly duplicate points detected: " +
                                     std::to_string( r_min ) );
     }
-    double TOL_VOL       = 0.0;
-    double TOL_COLLINEAR = 1e-12;
-    double TOL_COPLANAR  = 0.0;
+    [[maybe_unused]] double TOL_VOL       = 0.0;
+    [[maybe_unused]] double TOL_COLLINEAR = 1e-12;
+    [[maybe_unused]] double TOL_COPLANAR  = 0.0;
     if ( !std::numeric_limits<TYPE>::is_integer ) {
         TOL_VOL       = ( NDIM <= 2 ? 1e-6 : 1e-3 ) * pow( r_min, NDIM );
         TOL_VOL       = std::min( TOL_VOL, 0.1 );
         TOL_COLLINEAR = 1e-3;
         TOL_COPLANAR  = 1e-8 * r_min * r_min;
     }
-    NULL_USE( TOL_COPLANAR );
 
     // Next we need to create a list of the order in which we want to insert the values
     auto I = getInsertionOrder<NDIM, TYPE, ETYPE>( index_pair, x );
@@ -805,13 +804,12 @@ constexpr double vol_sphere( int NDIM, double r )
         throw std::logic_error( "vol_sphere is undefined for the NDIM" );
 }
 template<int NDIM, class TYPE, class ETYPE>
-void clean_triangles( const int N,
+void clean_triangles( const int,
                       const std::array<TYPE, NDIM> *x,
                       size_t &N_tri,
                       std::array<int, NDIM + 1> *tri,
                       std::array<int, NDIM + 1> *tri_nab )
 {
-    NULL_USE( N );
     // Get a list of all triangles on the boundary and a figure of merit
     // We will use the ratio of the volume of the circumsphere to the volume of the simplex
     std::vector<std::pair<double, size_t>> index;

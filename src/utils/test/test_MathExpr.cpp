@@ -33,8 +33,7 @@ void test_Performance( AMP::UnitTest &ut )
     auto t1 = std::chrono::steady_clock::now();
     AMP::MathExpr fun( "sin(0.1*x)", { "x" } );
     for ( int i = 1; i < N1; i++ ) {
-        AMP::MathExpr fun2( fun.getExpr(), fun.getVars() );
-        NULL_USE( fun2 );
+        [[maybe_unused]] AMP::MathExpr fun2( fun.getExpr(), fun.getVars() );
     }
     auto t2   = std::chrono::steady_clock::now();
     double s1 = 0;

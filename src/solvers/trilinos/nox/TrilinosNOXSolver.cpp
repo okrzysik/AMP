@@ -215,10 +215,9 @@ void TrilinosNOXSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         AMP::LinearAlgebra::ThyraVector::view( d_initialGuess ) );
     auto U = std::dynamic_pointer_cast<AMP::LinearAlgebra::ThyraVector>(
         AMP::LinearAlgebra::ThyraVector::view( u ) );
-    auto F = std::dynamic_pointer_cast<const AMP::LinearAlgebra::ThyraVector>(
-        AMP::LinearAlgebra::ThyraVector::constView( f ) );
-    NULL_USE( F );
-    // Set the rhs for the thyra model
+    // auto F = std::dynamic_pointer_cast<const AMP::LinearAlgebra::ThyraVector>(
+    //     AMP::LinearAlgebra::ThyraVector::constView( f ) );
+    //  Set the rhs for the thyra model
     d_thyraModel->setRhs( f );
     // Create the JFNK operator
     Teuchos::ParameterList printParams;
