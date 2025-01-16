@@ -1307,10 +1307,8 @@ int SubchannelFourEqLinearOperator::getSubchannelIndex( double x, double y )
 }
 
 std::shared_ptr<OperatorParameters> SubchannelFourEqLinearOperator::getJacobianParameters(
-    AMP::LinearAlgebra::Vector::const_shared_ptr u )
+    AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    NULL_USE( u );
-
     auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
 
     tmp_db->putScalar( "name", "SubchannelFourEqLinearOperator" );

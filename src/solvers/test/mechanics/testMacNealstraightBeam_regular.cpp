@@ -28,9 +28,8 @@
 #include <sys/stat.h>
 
 
-static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, int exampleNum )
+static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, int )
 {
-    NULL_USE( exampleNum );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName + ".txt";
 

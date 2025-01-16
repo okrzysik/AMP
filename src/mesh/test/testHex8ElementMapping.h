@@ -92,9 +92,8 @@ void test_basis_functions_values_on_face( hex8_element_t *volume_element,
 }
 
 void test_mapping_basis_functions_values_to_local_coordinates_on_face(
-    unsigned int n_random_candidate_points = 1000, double tol = 1.0e-16 )
+    unsigned int n_random_candidate_points = 1000, [[maybe_unused]] double tol = 1.0e-16 )
 {
-    NULL_USE( tol );
     double local_coordinates_on_face[2], basis_functions_values_on_face[4],
         computed_local_coordinates_on_face[2];
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {

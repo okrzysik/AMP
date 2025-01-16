@@ -57,7 +57,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db   = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
+    [[maybe_unused]] auto libmeshInit =
+        std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     const unsigned int mesh_dim = 3;
     libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
@@ -153,8 +154,6 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
     } else {
         ut->passes( exeName );
     }
-
-    NULL_USE( libmeshInit );
 }
 
 int testCook( int argc, char *argv[] )

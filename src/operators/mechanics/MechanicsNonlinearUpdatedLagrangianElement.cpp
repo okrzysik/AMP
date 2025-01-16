@@ -338,8 +338,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
     double refX[8], refY[8], refZ[8], dNdX[8], dNdY[8], dNdZ[8], detJ_0[1];
 
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
-        auto p1 = d_elem->point( ijk );
-        NULL_USE( p1 );
+        [[maybe_unused]] auto p1 = d_elem->point( ijk );
         // xyz[ijk] = p1;
         refX[ijk] = xyz[ijk]( 0 ) = d_elementRefXYZ[( 3 * ijk ) + 0];
         refY[ijk] = xyz[ijk]( 1 ) = d_elementRefXYZ[( 3 * ijk ) + 1];
@@ -894,8 +893,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
     double dNdX[8], dNdY[8], dNdZ[8], detJ_0[1];
 
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
-        auto p1 = d_elem->point( ijk );
-        NULL_USE( p1 );
+        [[maybe_unused]] auto p1 = d_elem->point( ijk );
         // xyz[ijk] = p1;
         refX[ijk] = xyz[ijk]( 0 ) = d_elementRefXYZ[( 3 * ijk ) + 0];
         refY[ijk] = xyz[ijk]( 1 ) = d_elementRefXYZ[( 3 * ijk ) + 1];

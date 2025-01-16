@@ -24,8 +24,7 @@ ParameterFactory::createParameter( std::shared_ptr<AMP::Database> input_db,
                                    std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     AMP_ASSERT( input_db );
-    auto name = input_db->getString( "name" );
-    NULL_USE( name );
+    [[maybe_unused]] auto name = input_db->getString( "name" );
     std::shared_ptr<OperatorParameters> retParameters;
 #ifdef AMP_USE_LIBMESH
     resetParameters( DirichletMatrixCorrection );

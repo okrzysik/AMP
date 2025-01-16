@@ -177,8 +177,6 @@ static void createDirectories( DBfile *fid, std::string tmp_path )
 }
 void SiloIO::writeMesh( DBfile *fid, const baseMeshData &data, int cycle, double time )
 {
-    NULL_USE( cycle );
-    NULL_USE( time );
     PROFILE( "writeMesh", 1 );
     auto mesh = data.mesh;
     // Get the zone (element) lists

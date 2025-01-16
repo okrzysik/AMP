@@ -131,10 +131,8 @@ void run_kdtree_test( AMP::UnitTest &ut, int DIM, size_t Nx, size_t Ns )
 
 // Run the kdtree2 specific tests (note: kdtree uses kdtree2 under the hood)
 template<int DIM>
-void run_kdtree2_test( AMP::UnitTest &ut, size_t N )
+void run_kdtree2_test( [[maybe_unused]] AMP::UnitTest &ut, size_t N )
 {
-    NULL_USE( ut );
-
     // Initialize the random number
     static std::random_device rd;
     static std::mt19937 gen( rd() );

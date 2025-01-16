@@ -41,12 +41,10 @@ int time_add()
     std::uniform_int_distribution<int> dist( 0, 1000 );
     auto start = std::chrono::high_resolution_clock::now();
     for ( int j = 0; j < N_it; j++ ) {
-        TYPE y1( dist( gen ) );
-        TYPE y2( dist( gen ) );
+        [[maybe_unused]] TYPE y1( dist( gen ) );
+        [[maybe_unused]] TYPE y2( dist( gen ) );
         for ( int i = 0; i < N; i++ )
             y1 += y2;
-        NULL_USE( j );
-        NULL_USE( y1 );
     }
     auto stop  = std::chrono::high_resolution_clock::now();
     int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( stop - start ).count();
@@ -61,11 +59,10 @@ int time_mult()
     std::uniform_int_distribution<int> dist( 0, 1000 );
     auto start = std::chrono::high_resolution_clock::now();
     for ( int j = 0; j < N_it; j++ ) {
-        TYPE y1( dist( gen ) % 3 + 1 );
-        TYPE y2( dist( gen ) % 3 + 1 );
+        [[maybe_unused]] TYPE y1( dist( gen ) % 3 + 1 );
+        [[maybe_unused]] TYPE y2( dist( gen ) % 3 + 1 );
         for ( int i = 0; i < N; i++ )
             y1 *= y2;
-        NULL_USE( y1 );
     }
     auto stop  = std::chrono::high_resolution_clock::now();
     int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( stop - start ).count();

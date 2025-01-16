@@ -77,9 +77,8 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
 std::shared_ptr<OperatorParameters>
 Operator::getParameters( const std::string &type,
                          std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
-                         std::shared_ptr<OperatorParameters> params )
+                         std::shared_ptr<OperatorParameters> )
 {
-    NULL_USE( params );
     if ( type == "Jacobian" ) {
         return getJacobianParameters( u );
     } else {

@@ -657,7 +657,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                   << globalSolMultiVector->L2Norm() << std::endl;
         nonlinearCoupledOperator->residual(
             globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
-        NULL_USE( globalThermalResVec );
 
         if ( pinMesh )
             tempResNorm = static_cast<double>( globalThermalResVec->L2Norm() );

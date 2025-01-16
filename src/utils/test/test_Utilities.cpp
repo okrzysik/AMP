@@ -362,8 +362,7 @@ int main( int argc, char *argv[] )
         auto t1 = Utilities::time();
         N_it    = 10000;
         for ( size_t i = 0; i < N_it; i++ ) {
-            auto tmp = AMP::Utilities::factor( dist( gen ) );
-            NULL_USE( tmp );
+            [[maybe_unused]] auto tmp = AMP::Utilities::factor( dist( gen ) );
         }
         auto t2 = Utilities::time();
         std::cout << "factor = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
@@ -376,8 +375,7 @@ int main( int argc, char *argv[] )
             ut.failure( "isPrime" );
         t1 = Utilities::time();
         for ( size_t i = 0; i < N_it; i++ ) {
-            auto tmp = AMP::Utilities::factor( dist( gen ) );
-            NULL_USE( tmp );
+            [[maybe_unused]] auto tmp = AMP::Utilities::factor( dist( gen ) );
         }
         t2 = Utilities::time();
         std::cout << "isPrime = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;

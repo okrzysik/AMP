@@ -333,9 +333,8 @@ void VectorTests::ScaleVector( AMP::UnitTest *ut )
 }
 
 
-void VectorTests::Bug_491( AMP::UnitTest *ut )
+void VectorTests::Bug_491( [[maybe_unused]] AMP::UnitTest *ut )
 {
-    NULL_USE( ut );
 #ifdef AMP_USE_PETSC
     auto vector1( d_factory->getVector() );
     if ( vector1->getVectorData()->isType<double>() ) {

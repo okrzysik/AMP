@@ -47,8 +47,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db           = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    int numMeshes    = input_db->getScalar<int>( "NumberOfMeshFiles" );
-    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
+    int numMeshes = input_db->getScalar<int>( "NumberOfMeshFiles" );
+    [[maybe_unused]] auto libmeshInit =
+        std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
 
     auto ml_db   = input_db->getDatabase( "ML_Solver" );
     auto lu_db   = input_db->getDatabase( "LU_Solver" );
@@ -186,8 +187,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     } // end for meshId
 
     ut->passes( exeName );
-
-    NULL_USE( libmeshInit );
 }
 
 int testMechElasticLUvsML( int argc, char *argv[] )

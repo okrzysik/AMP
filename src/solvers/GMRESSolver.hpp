@@ -15,7 +15,6 @@ namespace AMP::Solver {
 template<typename T>
 GMRESSolver<T>::GMRESSolver() : d_restarts( 0 )
 {
-    NULL_USE( d_restarts );
 }
 
 template<typename T>

@@ -182,9 +182,9 @@ std::vector<std::array<std::array<double, 3>, 3>> readSTL( const std::string &fi
     // Get a list of the local triangles based on their coordinates
     std::vector<std::array<std::array<double, 3>, 3>> tri_coord( N );
     for ( size_t i = 0; i < N; i++ ) {
-        uint16_t attrib    = 0;
-        float normal[3]    = { 0, 0, 0 };
-        float vertex[3][3] = { { 0 } };
+        [[maybe_unused]] uint16_t attrib    = 0;
+        [[maybe_unused]] float normal[3]    = { 0, 0, 0 };
+        [[maybe_unused]] float vertex[3][3] = { { 0 } };
         memcpy( normal, &tmp[50 * i], sizeof( normal ) );
         memcpy( vertex, &tmp[50 * i + 12], sizeof( vertex ) );
         memcpy( &attrib, &tmp[50 * i + 48], sizeof( attrib ) );
@@ -197,8 +197,6 @@ std::vector<std::array<std::array<double, 3>, 3>> readSTL( const std::string &fi
         tri_coord[i][2][0] = scale * vertex[2][0];
         tri_coord[i][2][1] = scale * vertex[2][1];
         tri_coord[i][2][2] = scale * vertex[2][2];
-        NULL_USE( attrib );
-        NULL_USE( normal );
     }
     delete[] tmp;
     return tri_coord;
@@ -876,7 +874,6 @@ createTessellation( const Point &lb, const Point &ub, const std::vector<Point> &
             x2( d, i ) = xi;
         }
     }
-    NULL_USE( x2 );
     // Tessellate
     AMP::Array<int> tri, nab;
     try {

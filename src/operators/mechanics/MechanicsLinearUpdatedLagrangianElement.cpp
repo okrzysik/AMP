@@ -497,8 +497,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
     xyz_np1.resize( num_nodes );
 
     for ( unsigned int ijk = 0; ijk < num_nodes; ijk++ ) {
-        auto p1 = d_elem->point( ijk );
-        NULL_USE( p1 );
+        [[maybe_unused]] auto p1 = d_elem->point( ijk );
         // xyz[ijk] = p1;
         xyz[ijk]( 0 ) = d_elementRefXYZ[( 3 * ijk ) + 0];
         xyz[ijk]( 1 ) = d_elementRefXYZ[( 3 * ijk ) + 1];

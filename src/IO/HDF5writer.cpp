@@ -8,6 +8,7 @@
 #include "AMP/mesh/MeshIterator.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/ArrayVectorData.h"
@@ -90,7 +91,9 @@ void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not i
  * it cannot reopen it (or at least doing this on the        *
  * processor that created the file creates problems).        *
  ************************************************************/
-void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double time )
+void HDF5writer::writeFile( [[maybe_unused]] const std::string &fname_in,
+                            [[maybe_unused]] size_t cycle,
+                            [[maybe_unused]] double time )
 {
     PROFILE( "writeFile" );
 #ifdef AMP_USE_HDF5
@@ -109,7 +112,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     for ( const auto &[id, mesh] : d_baseMeshes )
         baseMeshData[id] = writeMesh( gid, mesh, filename2 + ":/meshes" );
     for ( const auto &[id, mesh] : d_multiMeshes ) {
-        NULL_USE( id );
+        AMP::Utilities::nullUse( &id );
         std::vector<Xdmf::MeshData> data;
         for ( const auto &id2 : mesh.meshes ) {
             auto it = baseMeshData.find( id2 );
@@ -121,7 +124,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     closeGroup( gid );
     // Add the vectors
     for ( const auto &[id, data] : d_vectors ) {
-        NULL_USE( id );
+        AMP::Utilities::nullUse( &id );
         auto data2 = getArrayData( data.vec );
         writeHDF5( fid, data.name, data2 );
     }
@@ -149,12 +152,6 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
         fprintf( sid, "%s\n", AMP::IO::filename( fname ).data() );
         fclose( sid );
     }
-
-#else
-    // No HDF5
-    NULL_USE( fname_in );
-    NULL_USE( cycle );
-    NULL_USE( time );
 #endif
 }
 

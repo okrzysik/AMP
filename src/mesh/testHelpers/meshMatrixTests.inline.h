@@ -83,8 +83,7 @@ void meshTests::GhostWriteTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Me
     auto matrix  = AMP::LinearAlgebra::createMatrix( vector1, vector2 );
 
     // For each mesh, get a mapping of it's processor id's to the comm of the mesh
-    auto proc_map = createRankMap( mesh );
-    NULL_USE( proc_map );
+    [[maybe_unused]] auto proc_map = createRankMap( mesh );
 
     // For each processor, make sure it can write to all entries
     auto comm = mesh->getComm();

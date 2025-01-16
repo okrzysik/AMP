@@ -1223,8 +1223,7 @@ static inline double runAndTime( std::function<void( std::shared_ptr<AMP::Mesh::
 }
 static inline void getIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-    auto it = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-    NULL_USE( it );
+    [[maybe_unused]] auto it = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
 }
 static inline void incIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
@@ -1236,14 +1235,14 @@ static inline void incIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 }
 static inline void rangeLoop( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) )
-        NULL_USE( elem );
+    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
+        [[maybe_unused]] auto id = elem.globalID();
+    }
 }
 static inline void globalID( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
-        auto id = elem.globalID();
-        NULL_USE( id );
+        [[maybe_unused]] auto id = elem.globalID();
     }
 }
 static inline void coord1( std::shared_ptr<AMP::Mesh::Mesh> mesh )

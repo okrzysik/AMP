@@ -26,7 +26,7 @@ extern std::ostream plog;
 namespace AMP::Utilities {
 void nullUse( const void * );
 template<class TYPE>
-inline void nullUseTemplate( const TYPE *ptr )
+[[deprecated( "Use maybe_unused" )]] inline void nullUseTemplate( const TYPE *ptr )
 {
     AMP::Utilities::nullUse( reinterpret_cast<const void *>( ptr ) );
 }

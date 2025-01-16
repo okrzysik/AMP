@@ -396,9 +396,8 @@ void ThyraVectorWrapper::applyOpImpl(
     const Teuchos::ArrayView<const Teuchos::Ptr<const Thyra::VectorBase<double>>> &vecs,
     const Teuchos::ArrayView<const Teuchos::Ptr<Thyra::VectorBase<double>>> &targ_vecs,
     const Teuchos::Ptr<RTOpPack::ReductTarget> &reduct_obj,
-    const Teuchos::Ordinal global_offset ) const
+    const Teuchos::Ordinal ) const
 {
-    NULL_USE( global_offset );
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
     for ( size_t i = 0; i < n_blocks; i++ )
@@ -532,14 +531,12 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
 
 void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
     const RTOpPack::RTOpT<double> &primary_op,
-    const RTOpPack::RTOpT<double> &secondary_op,
+    const RTOpPack::RTOpT<double> &,
     const Teuchos::ArrayView<const Teuchos::Ptr<const Thyra::MultiVectorBase<double>>> &multi_vecs,
     const Teuchos::ArrayView<const Teuchos::Ptr<Thyra::MultiVectorBase<double>>> &targ_multi_vecs,
     const Teuchos::Ptr<RTOpPack::ReductTarget> &reduct_obj,
-    const Teuchos::Ordinal primary_global_offset ) const
+    const Teuchos::Ordinal ) const
 {
-    NULL_USE( secondary_op );
-    NULL_USE( primary_global_offset );
     size_t n_blocks = d_vecs[0]->numberOfDataBlocks();
     std::vector<size_t> block_size( n_blocks, 0 );
     for ( size_t i = 0; i < n_blocks; i++ )

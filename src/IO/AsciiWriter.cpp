@@ -55,9 +55,8 @@ std::set<ID> getKeys( const std::map<ID, TYPE> &local_map, const AMP_MPI &comm )
     comm.setGather( ids );
     return ids;
 }
-void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count, double time )
+void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count, double )
 {
-    NULL_USE( time );
     PROFILE( "writeFile" );
     // Open the file for writing
     FILE *fid = nullptr;

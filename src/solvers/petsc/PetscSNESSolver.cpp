@@ -809,10 +809,8 @@ bool PetscSNESSolver::isVectorValid( std::shared_ptr<AMP::Operator::Operator> &o
 // does not at present expose. These are largely copied from the PETSc
 // internal routines with fixes applied for the first routine that decrease
 // the number of linear iterations required
-PetscErrorCode PetscSNESSolver::KSPPreSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes )
+PetscErrorCode PetscSNESSolver::KSPPreSolve_SNESEW( KSP ksp, Vec, Vec, SNES snes )
 {
-    NULL_USE( b );
-    NULL_USE( x );
     PetscErrorCode ierr;
     SNESKSPEW *kctx = (SNESKSPEW *) snes->kspconvctx;
     PetscReal rtol  = PETSC_DEFAULT, stol;
