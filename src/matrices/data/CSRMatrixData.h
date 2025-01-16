@@ -188,7 +188,7 @@ public:
 
     std::shared_ptr<DiagMatrixData> getDiagMatrix() { return d_diag_matrix; }
 
-    std::shared_ptr<DiagMatrixData> getOffdMatrix() { return d_offd_matrix; }
+    std::shared_ptr<OffdMatrixData> getOffdMatrix() { return d_offd_matrix; }
 
     lidx_t *getDiagRowStarts() { return d_diag_matrix->d_row_starts.get(); }
 

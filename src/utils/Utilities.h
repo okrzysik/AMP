@@ -395,6 +395,16 @@ private:
     TYPE d_data[CAPACITY];
 };
 
+//! Enum to store the backend used for gpu acceleration
+enum class Backend : uint8_t {
+    serial   = 0,
+    hip_cuda = 1,
+    kokkos   = 2,
+    openMP   = 3,
+    openACC  = 4,
+    openCL   = 5,
+    RAJA     = 6
+};
 
 } // namespace Utilities
 } // namespace AMP

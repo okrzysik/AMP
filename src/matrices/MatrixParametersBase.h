@@ -2,6 +2,7 @@
 #define included_AMP_MatrixParametersBase
 
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 
 namespace AMP::LinearAlgebra {
@@ -50,6 +51,9 @@ public:
     std::shared_ptr<Variable> getLeftVariable() const { return d_VariableLeft; }
 
     std::shared_ptr<Variable> getRightVariable() const { return d_VariableRight; }
+
+    // The backend used for cpus and/or gpu acceleration
+    AMP::Utilities::Backend d_backend = AMP::Utilities::Backend::serial;
 
 protected:
     // The comm of the matrix

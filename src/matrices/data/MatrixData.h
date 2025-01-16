@@ -5,6 +5,7 @@
 
 #include "AMP/matrices/MatrixParametersBase.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
 #include "AMP/vectors/CommunicationList.h"
@@ -238,6 +239,13 @@ public:
     {
         AMP_ASSERT( d_pParameters );
         return d_pParameters->getComm();
+    }
+
+    //! Get the backend
+    inline virtual AMP::Utilities::Backend getBackend() const
+    {
+        AMP_ASSERT( d_pParameters );
+        return d_pParameters->d_backend;
     }
 
 protected:
