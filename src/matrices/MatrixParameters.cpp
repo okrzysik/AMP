@@ -119,4 +119,8 @@ std::shared_ptr<AMP::Discretization::DOFManager> MatrixParameters::getRightDOFMa
     return d_DOFManagerRight;
 }
 
+std::shared_ptr<CommunicationList> MatrixParameters::getLeftCommList() { return d_CommListLeft; }
+
+std::shared_ptr<CommunicationList> MatrixParameters::getRightCommList() { return d_CommListRight; }
+
 } // namespace AMP::LinearAlgebra

@@ -115,6 +115,12 @@ public:
     //!  right vector )
     std::shared_ptr<AMP::Discretization::DOFManager> getRightDOFManager();
 
+    //!  Get the communication list for the left vector
+    std::shared_ptr<CommunicationList> getLeftCommList();
+
+    //!  Get the communication list for the right vector
+    std::shared_ptr<CommunicationList> getRightCommList();
+
 protected:
     // Generate communication lists internally from the dof managers if not provided
     void generateCommLists();
