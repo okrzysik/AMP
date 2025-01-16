@@ -36,6 +36,8 @@ COPY_TEST_FILE( input_testMatVecPerf-1 )
 COPY_TEST_FILE( input_testMatVecPerf-2 )
 COPY_TEST_FILE( input_testMatVecPerf-3 )
 
+ADD_AMP_TEST_124_MATRIX( testMatOpDev )
+
 IF( USE_LIBMESH AND AMP_DATA )
   ADD_AMP_TEST_124_MATRIX( testMatCreate )
   IF ( USE_TRILINOS OR USE_PETSC ) 

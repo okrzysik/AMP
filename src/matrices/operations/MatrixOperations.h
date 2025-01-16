@@ -73,8 +73,8 @@ public:
     virtual void setDiagonal( std::shared_ptr<const Vector> in, MatrixData &A ) = 0;
 
     /** \brief Extract the diagonal values into a vector
-     * \param[in] in The values to set the diagonal to
-     * \param[in] A The matrix to set
+     * \param[in] A The matrix to get the diagonal from
+     * \param[in] buf Vector to store the diagonal to
      */
     virtual void extractDiagonal( MatrixData const &A, std::shared_ptr<Vector> buf ) = 0;
 
