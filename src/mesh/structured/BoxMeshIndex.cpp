@@ -79,4 +79,4 @@ INSTANTIATE_HDF5( MeshElementIndex );
  * HDF5 operators                                        *
  ********************************************************/
 #include "AMP/utils/Array.hpp"
-instantiateArrayConstructors( MeshElementIndex );
+instantiateArrayConstructors( AMP::Mesh::BoxMesh::MeshElementIndex );
