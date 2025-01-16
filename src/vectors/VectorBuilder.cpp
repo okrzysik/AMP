@@ -22,9 +22,9 @@ INSTANTIATE_SIMPLE_VECTOR( double,
 using float_op  = AMP::LinearAlgebra::VectorOperationsDevice<float>;
 using double_op = AMP::LinearAlgebra::VectorOperationsDevice<double>;
 using float_data =
-    AMP::LinearAlgebra::VectorDataDefault<float, AMP::LinearAlgebra::AMP::ManagedAllocator<void>>;
+    AMP::LinearAlgebra::VectorDataDefault<float, AMP::LinearAlgebra::ManagedAllocator<void>>;
 using double_data =
-    AMP::LinearAlgebra::VectorDataDefault<double, AMP::LinearAlgebra::AMP::ManagedAllocator<void>>;
+    AMP::LinearAlgebra::VectorDataDefault<double, AMP::LinearAlgebra::ManagedAllocator<void>>;
 INSTANTIATE_SIMPLE_VECTOR( float, float_op, float_data );
 INSTANTIATE_SIMPLE_VECTOR( double, double_op, double_data );
 #endif
