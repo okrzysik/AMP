@@ -117,13 +117,16 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, std::shared_ptr<Matrix>
 #endif
     auto leftVec  = this->getLeftVector();
     auto rightVec = other_op->getRightVector();
-    auto memp     = std::make_shared<MatrixParameters>(
-        leftVec->getDOFManager(), rightVec->getDOFManager(), AMP_MPI( epetraComm ) );
-    memp->d_CommListLeft  = leftVec->getCommunicationList();
-    memp->d_CommListRight = rightVec->getCommunicationList();
-    memp->d_VariableLeft  = d_matrixData->getLeftVariable();
-    memp->d_VariableRight = other_op->getMatrixData()->getRightVariable();
-    result                = std::make_shared<ManagedEpetraMatrix>( memp );
+
+    auto memp = std::make_shared<MatrixParameters>( leftVec->getDOFManager(),
+                                                    rightVec->getDOFManager(),
+                                                    AMP_MPI( epetraComm ),
+                                                    d_matrixData->getLeftVariable(),
+                                                    other_op->getMatrixData()->getRightVariable(),
+                                                    leftVec->getCommunicationList(),
+                                                    rightVec->getCommunicationList() );
+
+    result = std::make_shared<ManagedEpetraMatrix>( memp );
     PROFILE( "Epetra::MatrixMultiply" );
     d_matrixOps->matMultiply(
         *d_matrixData, *( other_op->getMatrixData() ), *( result->getMatrixData() ) );

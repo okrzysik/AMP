@@ -180,7 +180,7 @@ public:
      */
     virtual std::shared_ptr<Variable> getRightVariable() const
     {
-        return d_pParameters->d_VariableRight;
+        return d_pParameters->getRightVariable();
     }
 
     /** \brief Get the variable associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
@@ -190,7 +190,7 @@ public:
      */
     virtual std::shared_ptr<Variable> getLeftVariable() const
     {
-        return d_pParameters->d_VariableLeft;
+        return d_pParameters->getLeftVariable();
     }
 
     /** \brief  Get the number of local rows in the matrix
