@@ -637,7 +637,7 @@ inline void MPI_Isend2( const void *buf,
     MPI_Isend( buf, length, type, proc, tag, comm, request );
 #else
     size_t bytes = length * MPI_getTypeSize( type );
-    *request = AMP_MPI( comm ).IsendBytes( buf, bytes, proc, tag );
+    *request     = AMP_MPI( comm ).IsendBytes( buf, bytes, proc, tag );
 #endif
 }
 template<class TYPE>
@@ -739,19 +739,19 @@ AMP_MPI::Request AMP_MPI::Irecv( TYPE &data, int send_proc, int tag ) const
 {
     return Irecv<TYPE>( &data, 1, send_proc, tag );
 }
-inline void MPI_Irecv2( void *buf,
-                        int length,
-                        AMP_MPI::Datatype type,
-                        int proc,
-                        int tag,
-                        AMP_MPI::Comm comm,
-                        AMP_MPI::Request2 *request )
+inline void MPI_Irecv2( [[maybe_unused]] void *buf,
+                        [[maybe_unused]] int length,
+                        [[maybe_unused]] AMP_MPI::Datatype type,
+                        [[maybe_unused]] int proc,
+                        [[maybe_unused]] int tag,
+                        [[maybe_unused]] AMP_MPI::Comm comm,
+                        [[maybe_unused]] AMP_MPI::Request2 *request )
 {
 #ifdef AMP_USE_MPI
     MPI_Irecv( buf, length, type, proc, tag, comm, request );
 #else
     size_t bytes = length * MPI_getTypeSize( type );
-    *request = AMP_MPI( comm ).IrecvBytes( buf, bytes, proc, tag );
+    *request     = AMP_MPI( comm ).IrecvBytes( buf, bytes, proc, tag );
 #endif
 }
 template<class TYPE>
@@ -773,10 +773,6 @@ AMP_MPI::Request AMP_MPI::Irecv( TYPE *buf, int length, int send_proc, int tag )
         buf->reset( new TYPE2() );
         request = Irecv( buf->get(), 1, send_proc, tag );
     } else {
-        NULL_USE( buf );
-        NULL_USE( length );
-        NULL_USE( send_proc );
-        NULL_USE( tag );
         AMP_ERROR( "Arbitrary types are not supported yet" );
     }
     return request;
@@ -888,9 +884,8 @@ void AMP_MPI::gather( const TYPE *sendbuf,
                       TYPE *recvbuf,
                       const int *recv_cnt,
                       const int *recv_disp,
-                      int root ) const
+                      [[maybe_unused]] int root ) const
 {
-    NULL_USE( root );
     if ( d_size == 1 ) {
         AMP_ASSERT( sendcount == recv_cnt[0] );
         for ( int i = 0; i < sendcount; i++ )
@@ -958,10 +953,8 @@ std::vector<TYPE> AMP_MPI::allGather( const std::vector<TYPE> &x ) const
 }
 // Default instantiation of AMP_MPI::allGather
 template<class TYPE>
-void AMP_MPI::allGather( const TYPE &x, TYPE *y ) const
+void AMP_MPI::allGather( [[maybe_unused]] const TYPE &x, [[maybe_unused]] TYPE *y ) const
 {
-    NULL_USE( x );
-    NULL_USE( y );
     if constexpr ( !std::is_copy_assignable_v<TYPE> ) {
         STATIC_ERROR( "allGather is not valid for non-assignable objects" );
     } else {
@@ -998,19 +991,13 @@ void AMP_MPI::allGather( const TYPE &x, TYPE *y ) const
     }
 }
 template<class TYPE>
-int AMP_MPI::allGather( const TYPE *send_data,
-                        int send_cnt,
-                        TYPE *recv_data,
-                        int *recv_cnt0,
-                        int *recv_disp0,
-                        bool known_recv ) const
+int AMP_MPI::allGather( [[maybe_unused]] const TYPE *send_data,
+                        [[maybe_unused]] int send_cnt,
+                        [[maybe_unused]] TYPE *recv_data,
+                        [[maybe_unused]] int *recv_cnt0,
+                        [[maybe_unused]] int *recv_disp0,
+                        [[maybe_unused]] bool known_recv ) const
 {
-    NULL_USE( send_data );
-    NULL_USE( send_cnt );
-    NULL_USE( recv_data );
-    NULL_USE( recv_cnt0 );
-    NULL_USE( recv_disp0 );
-    NULL_USE( known_recv );
     if constexpr ( !std::is_copy_assignable_v<TYPE> ) {
         STATIC_ERROR( "allGather is not valid for non-assignable objects" );
         return 0;

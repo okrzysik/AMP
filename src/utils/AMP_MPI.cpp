@@ -422,7 +422,7 @@ const AMP_MPI::Comm &AMP_MPI::getCommunicator() const { return d_comm; }
  *  Hash an MPI communicator                                             *
  ************************************************************************/
 uint64_t AMP_MPI::hash() const { return d_hash; }
-static inline uint64_t hashComm( MPI_Comm comm )
+static inline uint64_t hashComm( AMP_MPI::Comm comm )
 {
     if ( comm == MPI_COMM_NULL ) {
         return AMP_MPI::hashNull;
@@ -715,7 +715,7 @@ AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 )
 /************************************************************************
  *  Split a comm						                                 *
  ************************************************************************/
-AMP_MPI AMP_MPI::split( int color, int key, bool manage ) const
+AMP_MPI AMP_MPI::split( int color, [[maybe_unused]] int key, bool manage ) const
 {
     if ( d_isNull ) {
         return AMP_MPI( commNull );
@@ -737,7 +737,6 @@ AMP_MPI AMP_MPI::split( int color, int key, bool manage ) const
     AMP_INSIST( error == MPI_SUCCESS, "Error calling MPI routine" );
 #endif
     // Create the new object
-    NULL_USE( key );
     AMP_MPI new_comm( new_MPI_comm, manage );
     new_comm.d_call_abort = d_call_abort;
     return new_comm;
@@ -903,7 +902,7 @@ bool AMP_MPI::operator<=( const AMP_MPI &comm ) const
 /************************************************************************
  *  Overload operator >                                                  *
  ************************************************************************/
-bool AMP_MPI::operator>( const AMP_MPI &comm ) const
+bool AMP_MPI::operator>( [[maybe_unused]] const AMP_MPI &comm ) const
 {
     bool flag = true;
     // First check if either communicator is NULL
@@ -933,8 +932,6 @@ bool AMP_MPI::operator>( const AMP_MPI &comm ) const
     MPI_Group_free( &group1 );
     MPI_Group_free( &group2 );
     MPI_Group_free( &group12 );
-#else
-    NULL_USE( comm );
 #endif
     // Perform a global reduce of the flag (equivalent to all operation)
     return allReduce( flag );
@@ -1010,13 +1007,13 @@ int AMP_MPI::compare( const AMP_MPI &comm ) const
     else if ( result == MPI_UNEQUAL )
         return 0;
     AMP_ERROR( "Unknown results from comm compare" );
+    return 0;
 #else
     if ( comm.d_comm == MPI_COMM_NULL || d_comm == MPI_COMM_NULL )
         return 0;
     else
         return 3;
 #endif
-    return 0;
 }
 
 
@@ -1083,20 +1080,19 @@ int AMP_MPI::newTag()
     uint64_t mask = ( (uint64_t) 0x01 ) << j;
     return ( x[i] & mask ) != 0;
 }
-bool AMP_MPI::allReduce( const bool value ) const
+bool AMP_MPI::allReduce( [[maybe_unused]] const bool value ) const
 {
     bool ret = value;
     if ( d_size > 1 ) {
 #ifdef AMP_USE_MPI
         MPI_Allreduce( (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MIN, d_comm );
 #else
-        NULL_USE( value );
         AMP_ERROR( "This shouldn't be possible" );
 #endif
     }
     return ret;
 }
-void AMP_MPI::allReduce( std::vector<bool> &x ) const
+void AMP_MPI::allReduce( [[maybe_unused]] std::vector<bool> &x ) const
 {
     if ( d_size <= 1 )
         return;
@@ -1116,7 +1112,6 @@ void AMP_MPI::allReduce( std::vector<bool> &x ) const
     delete[] send;
     delete[] recv;
 #else
-    NULL_USE( x );
     AMP_ERROR( "This shouldn't be possible" );
 #endif
 }
@@ -1125,20 +1120,19 @@ void AMP_MPI::allReduce( std::vector<bool> &x ) const
 /************************************************************************
  *  anyReduce                                                            *
  ************************************************************************/
-bool AMP_MPI::anyReduce( const bool value ) const
+bool AMP_MPI::anyReduce( [[maybe_unused]] const bool value ) const
 {
     bool ret = value;
     if ( d_size > 1 ) {
 #ifdef AMP_USE_MPI
         MPI_Allreduce( (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MAX, d_comm );
 #else
-        NULL_USE( value );
         AMP_ERROR( "This shouldn't be possible" );
 #endif
     }
     return ret;
 }
-void AMP_MPI::anyReduce( std::vector<bool> &x ) const
+void AMP_MPI::anyReduce( [[maybe_unused]] std::vector<bool> &x ) const
 {
     if ( d_size <= 1 )
         return;
@@ -1158,7 +1152,6 @@ void AMP_MPI::anyReduce( std::vector<bool> &x ) const
     delete[] send;
     delete[] recv;
 #else
-    NULL_USE( x );
     AMP_ERROR( "This shouldn't be possible" );
 #endif
 }
@@ -1601,7 +1594,7 @@ double AMP_MPI::time()
 }
 double AMP_MPI::tick()
 {
-    auto period = std::chrono::system_clock::period();
+    [[maybe_unused]] auto period = std::chrono::system_clock::period();
     return static_cast<double>( period.num ) / static_cast<double>( period.den );
 }
 #endif
@@ -1643,7 +1636,9 @@ void AMP_MPI::serializeStop()
 #ifdef AMP_USE_MPI
 static bool called_MPI_Init = false;
 #endif
-void AMP_MPI::start_MPI( int &argc, char *argv[], int profile_level )
+void AMP_MPI::start_MPI( [[maybe_unused]] int &argc,
+                         [[maybe_unused]] char *argv[],
+                         [[maybe_unused]] int profile_level )
 {
     changeProfileLevel( profile_level );
 #ifdef AMP_USE_MPI
@@ -1660,8 +1655,6 @@ void AMP_MPI::start_MPI( int &argc, char *argv[], int profile_level )
         AMPManager::setCommWorld( MPI_COMM_WORLD );
     }
 #else
-    NULL_USE( argc );
-    NULL_USE( argv );
     AMPManager::setCommWorld( MPI_COMM_SELF );
 #endif
 }

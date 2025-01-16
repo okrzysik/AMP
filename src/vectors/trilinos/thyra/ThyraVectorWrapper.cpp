@@ -165,9 +165,8 @@ Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorWrapper::clone_v() const
 /****************************************************************
  * Protected functions derived from Thyra::LinearOpBase          *
  ****************************************************************/
-bool ThyraVectorWrapper::opSupportedImpl( Thyra::EOpTransp M_trans ) const
+bool ThyraVectorWrapper::opSupportedImpl( Thyra::EOpTransp ) const
 {
-    NULL_USE( M_trans );
     AMP_ERROR( "Not finished" );
     return false;
 }
@@ -294,35 +293,25 @@ ThyraVectorWrapper::nonconstNonContigSubViewImpl( const Teuchos::ArrayView<const
     return Teuchos::RCP<ThyraVectorWrapper>( new ThyraVectorWrapper( vecs, cols, d_N_cols ) );
 }
 void ThyraVectorWrapper::acquireDetachedMultiVectorViewImpl(
-    const Teuchos::Range1D &rowRng,
-    const Teuchos::Range1D &colRng,
-    RTOpPack::ConstSubMultiVectorView<double> *sub_mv ) const
+    const Teuchos::Range1D &,
+    const Teuchos::Range1D &,
+    RTOpPack::ConstSubMultiVectorView<double> * ) const
 {
-    NULL_USE( rowRng );
-    NULL_USE( colRng );
-    NULL_USE( sub_mv );
     AMP_ERROR( "Not finished" );
 }
 void ThyraVectorWrapper::releaseDetachedMultiVectorViewImpl(
-    RTOpPack::ConstSubMultiVectorView<double> *sub_mv ) const
+    RTOpPack::ConstSubMultiVectorView<double> * ) const
 {
-    NULL_USE( sub_mv );
     AMP_ERROR( "Not finished" );
 }
 void ThyraVectorWrapper::acquireNonconstDetachedMultiVectorViewImpl(
-    const Teuchos::Range1D &rowRng,
-    const Teuchos::Range1D &colRng,
-    RTOpPack::SubMultiVectorView<double> *sub_mv )
+    const Teuchos::Range1D &, const Teuchos::Range1D &, RTOpPack::SubMultiVectorView<double> * )
 {
-    NULL_USE( rowRng );
-    NULL_USE( colRng );
-    NULL_USE( sub_mv );
     AMP_ERROR( "Not finished" );
 }
 void ThyraVectorWrapper::commitNonconstDetachedMultiVectorViewImpl(
-    RTOpPack::SubMultiVectorView<double> *sub_mv )
+    RTOpPack::SubMultiVectorView<double> * )
 {
-    NULL_USE( sub_mv );
     AMP_ERROR( "Not finished" );
 }
 
@@ -352,9 +341,8 @@ void ThyraVectorWrapper::acquireDetachedVectorViewImpl(
     ENABLE_WARNINGS
 }
 void ThyraVectorWrapper::releaseDetachedVectorViewImpl(
-    RTOpPack::ConstSubVectorView<double> *sub_vec ) const
+    RTOpPack::ConstSubVectorView<double> * ) const
 {
-    NULL_USE( sub_vec );
 }
 void ThyraVectorWrapper::acquireNonconstDetachedVectorViewImpl(
     const Teuchos::Range1D &rng, RTOpPack::SubVectorView<double> *sub_vec )
@@ -393,9 +381,8 @@ void ThyraVectorWrapper::commitNonconstDetachedVectorViewImpl(
     vec->setValuesByLocalID( size, indices, array.get() );
     delete[] indices;
 }
-void ThyraVectorWrapper::setSubVectorImpl( const RTOpPack::SparseSubVectorT<double> &sub_vec )
+void ThyraVectorWrapper::setSubVectorImpl( const RTOpPack::SparseSubVectorT<double> & )
 {
-    NULL_USE( sub_vec );
     AMP_ERROR( "Not finished" );
 }
 

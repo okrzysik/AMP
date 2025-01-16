@@ -1173,11 +1173,8 @@ std::vector<Point3D> sampleQuad( const std::array<Point3D, 4> &v, double d0, boo
         AMP::Utilities::unique( p );
     return p;
 }
-std::vector<Point3D> sampleTet( const std::array<Point3D, 4> &v, double d0, bool interior )
+std::vector<Point3D> sampleTet( const std::array<Point3D, 4> &, double, bool )
 {
-    NULL_USE( v );
-    NULL_USE( d0 );
-    NULL_USE( interior );
     AMP_ERROR( "sampleTet: Not finished" );
     return {};
 }

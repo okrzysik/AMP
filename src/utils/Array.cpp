@@ -65,6 +65,9 @@ ENABLE_WARNINGS
 #endif
 
 
+} // namespace AMP
+
+
 /********************************************************
  *  Pack/Unpack                                          *
  ********************************************************/
@@ -92,9 +95,6 @@ PACK_UNPACK_ARRAY2( std::byte * );
 PACK_UNPACK_ARRAY2( std::string );
 PACK_UNPACK_ARRAY2( std::complex<float> );
 PACK_UNPACK_ARRAY2( std::complex<double> );
-
-
-} // namespace AMP
 
 
 /********************************************************

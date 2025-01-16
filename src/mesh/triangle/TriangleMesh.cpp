@@ -137,7 +137,7 @@ static void removeUnusedVerticies( std::vector<std::array<double, NP>> &vertices
             used[i] = true;
     }
     // Create a map to renumber and remove unused vertices
-    std::vector<size_t> map( used.size(), -1 );
+    std::vector<size_t> map( used.size(), static_cast<size_t>( -1 ) );
     size_t N = 0;
     for ( size_t i = 0; i < used.size(); i++ ) {
         if ( used[i] ) {

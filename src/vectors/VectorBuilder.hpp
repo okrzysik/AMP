@@ -107,7 +107,6 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
         auto vector = createSimpleVector<TYPE, OPS, DATA>( variable, DOFs, comm_list );
         return vector;
     }
-    return Vector::shared_ptr();
 }
 
 template<typename TYPE>

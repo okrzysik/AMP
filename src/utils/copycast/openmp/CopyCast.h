@@ -14,7 +14,7 @@ namespace AMP::Utilities {
  */
 template<typename T1, typename T2, AMP::Utilities::MemoryType MEMTYPE>
 struct copyCast_ {
-    void static apply( size_t, const T1 *, T2 * ) { AMP_ERROR( "Not implemented" ); }
+    static void apply( size_t, const T1 *, T2 * ) { AMP_ERROR( "Not implemented" ); }
 };
 
 } // namespace AMP::Utilities

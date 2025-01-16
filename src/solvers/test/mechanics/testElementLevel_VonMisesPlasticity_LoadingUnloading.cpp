@@ -49,7 +49,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //--------------------------------------------------
     //   Create the Mesh.
     //--------------------------------------------------
-    auto libmeshInit =
+    [[maybe_unused]] auto libmeshInit =
         std::make_shared<AMP::Mesh::initializeLibMesh>( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     std::string mesh_file       = input_db->getString( "mesh_file" );
@@ -241,18 +241,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             fin             = fopen( fname.c_str(), "r" );
             double coord[3] = { 0, 0, 0 }, stress1[6] = { 0, 0, 0 }, strain1[6] = { 0, 0, 0 };
             for ( int ijk = 0; ijk < 8; ijk++ ) {
-                for ( auto &elem : coord ) {
-                    int ret = fscanf( fin, "%lf", &elem );
-                    NULL_USE( ret );
-                }
-                for ( auto &elem : stress1 ) {
-                    int ret = fscanf( fin, "%lf", &elem );
-                    NULL_USE( ret );
-                }
-                for ( auto &elem : strain1 ) {
-                    int ret = fscanf( fin, "%lf", &elem );
-                    NULL_USE( ret );
-                }
+                for ( auto &elem : coord )
+                    [[maybe_unused]] int err = fscanf( fin, "%lf", &elem );
+                for ( auto &elem : stress1 )
+                    [[maybe_unused]] int err = fscanf( fin, "%lf", &elem );
+                for ( auto &elem : strain1 )
+                    [[maybe_unused]] int err = fscanf( fin, "%lf", &elem );
                 if ( ijk == 7 ) {
                     const double prev_stress = 1.0, prev_strain = 1.0;
                     double slope = 1.0;
@@ -267,7 +261,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             fclose( fin );
         }
     }
-    NULL_USE( libmeshInit );
 
     AMP::pout << "epsilon = " << epsilon << std::endl;
 

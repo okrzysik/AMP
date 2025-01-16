@@ -423,7 +423,7 @@ Array<double> volumeOverlap( const AMP::Geometry::Geometry &geom, const std::vec
  ********************************************************/
 ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh )
     : d_mesh( mesh ),
-      d_pos_hash( -1 ),
+      d_pos_hash( static_cast<size_t>( -1 ) ),
       d_elements( mesh->getIterator( mesh->getGeomType() ) ),
       d_dist( std::numeric_limits<double>::quiet_NaN() )
 {
@@ -431,7 +431,7 @@ ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 }
 ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::MeshIterator it )
     : d_mesh( mesh ),
-      d_pos_hash( -1 ),
+      d_pos_hash( static_cast<size_t>( -1 ) ),
       d_elements( std::move( it ) ),
       d_dist( std::numeric_limits<double>::quiet_NaN() )
 {

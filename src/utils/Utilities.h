@@ -319,7 +319,7 @@ inline void sleep_s( int N ) { std::this_thread::sleep_for( std::chrono::seconds
 void printBanner();
 
 //! Null use function
-void nullUse( void * );
+void nullUse( const void * );
 
 //! std::string version of sprintf
 inline std::string stringf( const char *format, ... )

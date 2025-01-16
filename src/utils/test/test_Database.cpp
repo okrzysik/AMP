@@ -358,6 +358,7 @@ struct myClass {
 };
 void testStructToDatabase( AMP::UnitTest &ut )
 {
+#ifndef DISABLE_TO_TUPLE
     // Create a simple struct
     myClass x;
     x.a = 5;
@@ -372,6 +373,9 @@ void testStructToDatabase( AMP::UnitTest &ut )
     bool pass = std::get<0>( t ) == x.a && std::get<1>( t ) == x.b && std::get<2>( t ) == x.c &&
                 std::get<3>( t ) == x.d;
     checkResult( ut, pass, "Convert struct to tuple" );
+#else
+    ut.expected_failure( "to_tuple is not supported by compiler" );
+#endif
 }
 
 
