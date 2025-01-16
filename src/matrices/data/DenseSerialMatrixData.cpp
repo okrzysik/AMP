@@ -37,9 +37,7 @@ std::shared_ptr<MatrixData> DenseSerialMatrixData::cloneMatrixData() const
 {
     // Create the matrix parameters
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        d_DOFManagerLeft, d_DOFManagerRight, getComm() );
-    params->d_VariableLeft  = getLeftVariable();
-    params->d_VariableRight = getRightVariable();
+        d_DOFManagerLeft, d_DOFManagerRight, getComm(), getLeftVariable(), getRightVariable() );
     // Create the matrix
     auto newMatrixData = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrixData>( params );
     double *M2         = newMatrixData->d_M;
@@ -51,9 +49,7 @@ std::shared_ptr<MatrixData> DenseSerialMatrixData::transpose() const
 {
     // Create the matrix parameters
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        d_DOFManagerRight, d_DOFManagerLeft, getComm() );
-    params->d_VariableLeft  = getRightVariable();
-    params->d_VariableRight = getLeftVariable();
+        d_DOFManagerRight, d_DOFManagerLeft, getComm(), getLeftVariable(), getRightVariable() );
     // Create the matrix
     auto newMatrixData = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrixData>( params );
 

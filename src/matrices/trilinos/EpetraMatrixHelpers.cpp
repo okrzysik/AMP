@@ -29,8 +29,13 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
 
         // This approach of making a whole new EpetraMatrix is inefficient
         // -> should consider deprecating, but likely can't if ML still used...
-        auto matParams = std::make_shared<MatrixParameters>(
-            mat->getLeftDOFManager(), mat->getRightDOFManager(), mat->getComm(), getRow );
+        auto matParams =
+            std::make_shared<MatrixParameters>( mat->getLeftDOFManager(),
+                                                mat->getRightDOFManager(),
+                                                mat->getComm(),
+                                                mat->getMatrixData()->getLeftVariable(),
+                                                mat->getMatrixData()->getRightVariable(),
+                                                getRow );
 
         auto epetraMat = std::make_shared<ManagedEpetraMatrix>( matParams );
         auto data      = std::dynamic_pointer_cast<EpetraMatrixData>( epetraMat->getMatrixData() );

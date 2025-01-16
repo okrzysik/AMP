@@ -123,10 +123,8 @@ createAggregateMatrix( std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, All
     rightClParams->d_remote_DOFs = rightDOFs->getRemoteDOFs();
 
     // Create parameters, variables, and data
-    auto params =
-        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOFs, rightDOFs, A->getComm() );
-    params->d_VariableLeft  = A_data->getLeftVariable();
-    params->d_VariableRight = A_data->getRightVariable();
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        leftDOFs, rightDOFs, A->getComm(), A_data->getRightVariable(), A_data->getRightVariable() );
     auto P_data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
 
     // non-zeros only in diag block and only one per row

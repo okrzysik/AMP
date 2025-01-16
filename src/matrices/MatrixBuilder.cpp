@@ -63,11 +63,14 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 
         // Create the matrix parameters
         auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-            leftDOF, rightDOF, comm, getRow );
-        params->d_CommListLeft  = leftVec->getCommunicationList();
-        params->d_CommListRight = rightVec->getCommunicationList();
-        params->d_VariableLeft  = leftVec->getVariable();
-        params->d_VariableRight = rightVec->getVariable();
+            leftDOF,
+            rightDOF,
+            comm,
+            leftVec->getVariable(),
+            rightVec->getVariable(),
+            leftVec->getCommunicationList(),
+            rightVec->getCommunicationList(),
+            getRow );
 
         // Create the matrix
         auto newMatrixData = std::make_shared<AMP::LinearAlgebra::EpetraMatrixData>( params );
@@ -109,11 +112,14 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 
     // Create the matrix parameters
     auto params =
-        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm, getRow );
-    params->d_CommListLeft  = leftVec->getCommunicationList();
-    params->d_CommListRight = rightVec->getCommunicationList();
-    params->d_VariableLeft  = leftVec->getVariable();
-    params->d_VariableRight = rightVec->getVariable();
+        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF,
+                                                                rightDOF,
+                                                                comm,
+                                                                leftVec->getVariable(),
+                                                                rightVec->getVariable(),
+                                                                leftVec->getCommunicationList(),
+                                                                rightVec->getCommunicationList(),
+                                                                getRow );
 
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
@@ -168,13 +174,15 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         comm = AMP_MPI( AMP_COMM_SELF );
     else
         AMP_ERROR( "serial dense matrix does not support parallel matrices" );
+
     // Create the matrix parameters
-    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
-    params->d_VariableLeft  = leftVec->getVariable();
-    params->d_VariableRight = rightVec->getVariable();
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        leftDOF, rightDOF, comm, leftVec->getVariable(), rightVec->getVariable() );
+
     // Create the matrix
     auto data      = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrixData>( params );
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( data );
+
     // Initialize the matrix
     newMatrix->zero();
     newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -197,11 +205,10 @@ createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
                    "be fixed" );
     AMP_MPI comm = leftDOF->getComm();
+
     // Create the matrix parameters
-    auto params =
-        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm, getRow );
-    params->d_VariableLeft  = leftVec->getVariable();
-    params->d_VariableRight = rightVec->getVariable();
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        leftDOF, rightDOF, comm, leftVec->getVariable(), rightVec->getVariable(), getRow );
 
     // Create the matrix
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::NativePetscMatrix>( params );

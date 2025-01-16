@@ -49,14 +49,22 @@ std::shared_ptr<Matrix> DenseSerialMatrix::transpose() const
 void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
                                   std::shared_ptr<Matrix> &result )
 {
-    // Create the matrix
-    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        getLeftDOFManager(), other_op->getRightDOFManager(), getComm() );
+    // pull out matrix data objects and ensure they are of correct type
+    auto thisData =
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::DenseSerialMatrixData>( d_matrixData );
+    auto otherData = std::dynamic_pointer_cast<AMP::LinearAlgebra::DenseSerialMatrixData>(
+        other_op->getMatrixData() );
+    AMP_DEBUG_INSIST( thisData && otherData,
+                      "DenseSerialMatrix::multiply received invalid MatrixData types" );
 
-    auto data = std::dynamic_pointer_cast<DenseSerialMatrixData>( d_matrixData );
-    AMP_ASSERT( data );
-    params->d_VariableLeft  = data->getLeftVariable();
-    params->d_VariableRight = data->getRightVariable();
+    // Build matrix parameters object for result from this op and the other op
+    auto params =
+        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( getLeftDOFManager(),
+                                                                other_op->getRightDOFManager(),
+                                                                getComm(),
+                                                                thisData->getLeftVariable(),
+                                                                otherData->getRightVariable() );
+
     // Create the matrix
     auto newData   = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrixData>( params );
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( newData );
