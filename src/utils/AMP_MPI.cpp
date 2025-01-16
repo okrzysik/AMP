@@ -1317,11 +1317,11 @@ AMP_MPI::Request AMP_MPI::IrecvBytes( void *buf, const int bytes, const int, con
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
-        data.bytes  = bytes;
-        data.data   = buf;
+        data.bytes = bytes;
+        data.data = buf;
         data.status = 2;
-        data.comm   = d_comm;
-        data.tag    = tag;
+        data.comm = d_comm;
+        data.tag = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
