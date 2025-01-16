@@ -35,13 +35,13 @@ static_assert( runTests() );
 /********************************************************
  *  Explicit instantiations of Array<RGB>                *
  ********************************************************/
+// clang-format off
 instantiateArrayConstructors( AMP::RGBA32 );
 instantiateArrayConstructors( AMP::ARGB32 );
-typedef AMP::Array<AMP::RGBA32> RGBA_Array;
-typedef AMP::Array<AMP::ARGB32> ARGB_Array;
-template RGBA_Array RGBA_Array::repmat( const std::vector<size_t> & ) const;
-template ARGB_Array ARGB_Array::repmat( const std::vector<size_t> & ) const;
-template RGBA_Array RGBA_Array::subset( const std::vector<size_t> & ) const;
-template ARGB_Array ARGB_Array::subset( const std::vector<size_t> & ) const;
-template void RGBA_Array::copySubset( const std::vector<size_t> &, const RGBA_Array & );
-template void ARGB_Array::copySubset( const std::vector<size_t> &, const ARGB_Array & );
+template AMP::Array<AMP::RGBA32> AMP::Array<AMP::RGBA32>::repmat( const std::vector<size_t> & ) const;
+template AMP::Array<AMP::ARGB32> AMP::Array<AMP::ARGB32>::repmat( const std::vector<size_t> & ) const;
+template AMP::Array<AMP::RGBA32> AMP::Array<AMP::RGBA32>::subset( const std::vector<size_t> & ) const;
+template AMP::Array<AMP::ARGB32> AMP::Array<AMP::ARGB32>::subset( const std::vector<size_t> & ) const;
+template void AMP::Array<AMP::RGBA32>::copySubset( const std::vector<size_t> &, const AMP::Array<AMP::RGBA32> & );
+template void AMP::Array<AMP::ARGB32>::copySubset( const std::vector<size_t> &, const AMP::Array<AMP::ARGB32> & );
+// clang-format on
