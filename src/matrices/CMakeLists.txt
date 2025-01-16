@@ -29,6 +29,10 @@ IF( USE_KOKKOS )
     ADD_PACKAGE_SUBDIRECTORY( operations/kokkos )
     SET_DEVICE_COMPILER( operations/kokkos/CSRMatrixOperationsKokkos.cpp )
 ENDIF()
+IF( USE_DEVICE )
+    ADD_PACKAGE_SUBDIRECTORY( operations/device )
+    SET_DEVICE_COMPILER( operations/device )
+ENDIF()
 
 SET_DEVICE_COMPILER( CSRMatrix.cpp )
 
