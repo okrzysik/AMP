@@ -678,7 +678,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                         minusDofs[2], gapDofs[0], dz * crossflowSign * u_lateralDonor );
 
                 } // end if (lateralFaceIterator != interiorLateralFaceMap.end()) {
-            }     // end loop over gap faces
+            } // end loop over gap faces
 
             // add Jacobian entries
             // =================================================================
@@ -733,7 +733,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                 d_matrix->addValueByGlobalID( minusDofs[1], minusDofs[1], 1.0 );
             }
         } // end loop over cells of current subchannel
-    }     // end loop over subchannels
+    } // end loop over subchannels
 
     // loop over lateral faces
     AMP::Mesh::MeshIterator face =
@@ -1307,10 +1307,8 @@ int SubchannelFourEqLinearOperator::getSubchannelIndex( double x, double y )
 }
 
 std::shared_ptr<OperatorParameters> SubchannelFourEqLinearOperator::getJacobianParameters(
-    AMP::LinearAlgebra::Vector::const_shared_ptr u )
+    AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    NULL_USE( u );
-
     auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
 
     tmp_db->putScalar( "name", "SubchannelFourEqLinearOperator" );
@@ -1501,8 +1499,8 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
             // adjacent to the current
             // lateral face
             double knownCentroid[3]           = { parentLateralFaceCentroid[0],
-                                        parentLateralFaceCentroid[1],
-                                        daughterCellCentroid[2] };
+                                                  parentLateralFaceCentroid[1],
+                                                  daughterCellCentroid[2] };
             bool isAxiallyAdjacentLateralFace = true;
             for ( size_t i = 0; i < 3; i++ ) {
                 if ( !AMP::Utilities::approx_equal_abs(

@@ -70,11 +70,10 @@ void sleep_inc2( double x )
     sleep_ms( static_cast<int>( round( x * 1000 ) ) );
     ++global_sleep_count;
 }
-void sleep_msg( double x, const std::string &msg )
+void sleep_msg( double x, [[maybe_unused]] const std::string &msg )
 {
     PROFILE2( msg );
     sleep_ms( static_cast<int>( round( x * 1000 ) ) );
-    NULL_USE( msg );
 }
 bool check_inc( int N ) { return global_sleep_count == N; }
 
@@ -173,10 +172,9 @@ class UserWorkItemVoid final : public ThreadPool::WorkItem
 {
 public:
     // User defined constructor (does not need to match any interfaces)
-    explicit UserWorkItemVoid( int dummy )
+    explicit UserWorkItemVoid( int )
     {
         // User initialized variables
-        NULL_USE( dummy );
     }
     // User defined run (can do anything)
     void run() override
@@ -193,10 +191,9 @@ class UserWorkItemInt final : public ThreadPool::WorkItemRet<int>
 {
 public:
     // User defined constructor (does not need to match any interfaces)
-    explicit UserWorkItemInt( int dummy )
+    explicit UserWorkItemInt( int )
     {
         // User initialized variables
-        NULL_USE( dummy );
     }
     // User defined run (can do anything)
     void run() override
@@ -219,10 +216,9 @@ inline double launchAndTime( ThreadPool &tpool, int N, Ret ( *routine )( Args...
 {
     tpool.wait_pool_finished();
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<ThreadPoolID> ids( N );
+    [[maybe_unused]] std::vector<ThreadPoolID> ids( N );
     for ( int i = 0; i < N; i++ )
         ids[i] = ThreadPool_add_work( &tpool, 0, routine, args... );
-    NULL_USE( ids );
     tpool.wait_all( ids );
     // tpool.wait_pool_finished();
     auto stop = std::chrono::high_resolution_clock::now();
@@ -636,8 +632,8 @@ void testThreadPoolPerformance( ThreadPool &tpool )
 
     // Test the timing adding a single item
     printp( "   Testing timmings (adding a single item):\n" );
-    auto timer_name = Utilities::stringf( "Add single item to tpool (%i threads)", N_threads );
-    NULL_USE( timer_name );
+    [[maybe_unused]] auto timer_name =
+        Utilities::stringf( "Add single item to tpool (%i threads)", N_threads );
     int64_t time_add_single  = 0;
     int64_t time_wait_single = 0;
     for ( int n = 0; n < N_it; n++ ) {
@@ -659,7 +655,6 @@ void testThreadPoolPerformance( ThreadPool &tpool )
     // Test the timing pre-creating the work items and adding multiple at a time
     printp( "   Testing timmings (adding a block of items):\n" );
     timer_name = Utilities::stringf( "Add block of items to tpool (%i threads)", N_threads );
-    NULL_USE( timer_name );
     int64_t time_create_multiple = 0;
     int64_t time_add_multiple    = 0;
     int64_t time_wait_multiple   = 0;

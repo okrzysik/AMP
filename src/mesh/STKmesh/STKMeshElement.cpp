@@ -213,9 +213,8 @@ std::vector<std::unique_ptr<MeshElement>> STKMeshElement::getNeighbors() const
         for ( unsigned id = 0; id < num_sides; ++id ) {
             stk::mesh::EntityVector subcell_nodes;
             stk::mesh::EntityVector adj_entities;
-            const CellTopologyData *subcell_topology =
+            [[maybe_unused]] const auto subcell_topology =
                 stk::mesh::fem::get_subcell_nodes( *elem, subcell_rank, id, subcell_nodes );
-            NULL_USE( subcell_topology );
             get_entities_through_relations( subcell_nodes, elem->entity_rank(), adj_entities );
             adjacent_entities.insert(
                 adjacent_entities.end(), adj_entities.begin(), adj_entities.end() );

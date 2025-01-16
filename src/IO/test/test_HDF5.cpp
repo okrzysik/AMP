@@ -34,8 +34,8 @@ static inline void record( bool pass, const std::string &name, AMP::UnitTest &ut
 
 // Structure to test HDF5 compounds
 struct compoundStruct {
-    compoundStruct()                         = default;
-    compoundStruct( const compoundStruct & ) = default;
+    compoundStruct()                                    = default;
+    compoundStruct( const compoundStruct & )            = default;
     compoundStruct &operator=( const compoundStruct & ) = default;
     compoundStruct( int x, float y, double z ) : a( x ), b( y ), c( z ) {}
     bool operator==( const compoundStruct &x ) const { return x.a == a && x.b == b && x.c == c; }
@@ -347,7 +347,7 @@ public: // Data members
 
 
 // Test compression
-void testCompression( AMP::UnitTest &ut )
+void testCompression( [[maybe_unused]] AMP::UnitTest &ut )
 {
     // Write data using different compression formats
     AMP::Array<int> zeros1( 500, 1000 );
@@ -371,12 +371,11 @@ void testCompression( AMP::UnitTest &ut )
     AMP::IO::closeHDF5( fid1 );
     AMP::IO::closeHDF5( fid2 );
     AMP::IO::closeHDF5( fid3 );
-    NULL_USE( ut );
 }
 
 
 // Test writing a large array with compression
-void testLarge( AMP::UnitTest &ut )
+void testLarge( [[maybe_unused]] AMP::UnitTest &ut )
 {
     printf( "Allocating large array\n" );
     AMP::Array<int> data( 40000, 40000 );
@@ -389,7 +388,6 @@ void testLarge( AMP::UnitTest &ut )
     auto fid = AMP::IO::openHDF5( "test_HDF5.large.hdf5", "w", AMP::IO::Compression::GZIP );
     AMP::IO::writeHDF5( fid, "data", data );
     AMP::IO::closeHDF5( fid, true );
-    NULL_USE( ut );
 }
 
 

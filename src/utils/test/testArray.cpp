@@ -377,11 +377,10 @@ void testArray( UnitTest &ut )
         ut.failure( "copyFromSubset" );
 
     // Test the time required to create a view
-    Array<double> M_view;
+    [[maybe_unused]] Array<double> M_view;
     double t1 = Utilities::time();
     for ( size_t i = 0; i < 100000; i++ ) {
         M_view.viewRaw( { M1.size( 0 ), M1.size( 1 ) }, M1.data() );
-        NULL_USE( M_view );
     }
     double t2 = Utilities::time();
     if ( M_view == M1 )

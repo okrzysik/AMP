@@ -627,7 +627,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
 
     // set lateral face quantities (lateral mass flow rates) of input vector
     // array of gap faces
-    AMP::Mesh::MeshElement gapFaces[numGaps_MATLAB][numAxialIntervals]; // gap faces
+    [[maybe_unused]] AMP::Mesh::MeshElement gapFaces[numGaps_MATLAB]
+                                                    [numAxialIntervals]; // gap faces
     // loop over all faces in mesh
     auto face = subchannelMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( ; face != face.end(); ++face ) { // loop over all faces in mesh
@@ -655,7 +656,6 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         }
     }
     SolVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    NULL_USE( gapFaces );
 
     // apply the operator
     subchannelOperator->setFrozenVector( FrozenVec );

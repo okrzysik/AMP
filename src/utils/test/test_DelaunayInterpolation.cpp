@@ -563,7 +563,7 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
 
         // Test the gradient
         AMP::Array<double> grad( ndim, N );
-        double error[4] = { 0 };
+        [[maybe_unused]] double error[4] = { 0 };
         for ( int method = 1; method <= 4; method++ ) {
             if ( method == 2 || N < 20 )
                 continue;
@@ -586,7 +586,6 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
             else
                 ut->failure( message );
         }
-        NULL_USE( error );
 
         // Test nearest-neighbor interpolation
         auto fi                  = data->interp_nearest( f, x, nearest );
@@ -657,12 +656,10 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
         g4_err                  = L2errNorm( g2, gi4, g_extrap_mask );
         bool pass_interp_cubic1 = f1_err <= tol_cubic * f1_norm && g1_err <= tol_c_grad * g1_norm;
         bool pass_interp_cubic2 = f2_err <= tol_cubic * f2_norm && g2_err <= tol_c_grad * g2_norm;
-        bool pass_interp_cubic3 = f3_err <= tol_linear * f3_norm; // The error in the gradient (and
-                                                                  // points) is large for points
-                                                                  // outside the domain
+        // The error in the gradient (and points) is large for points outside the domain
+        bool pass_interp_cubic3 =
+            f3_err <= tol_linear * f3_norm && g3_norm <= 1e100 && g3_err < 1e100;
         bool pass_interp_cubic4 = f4_err <= tol_cubic * f4_norm && g4_err <= tol_c_grad * g4_norm;
-        NULL_USE( g3_norm );
-        NULL_USE( g3_err );
         if ( pass_interp_cubic1 && pass_interp_cubic2 && pass_interp_cubic3 &&
              pass_interp_cubic4 ) {
             ut->passes( "cubic interpolation: " + msg );
@@ -853,12 +850,10 @@ void testConvergence( AMP::UnitTest *ut, int ndim )
     auto set1  = createBoxPoints<TYPE>( 3, box, dx1 );
     auto set2  = createBoxPoints<TYPE>( 3, box, dx2 );
     // Create the tessellation
-    auto data1 = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, set1 );
-    auto data2 = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, set2 );
+    [[maybe_unused]] auto data1 = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, set1 );
+    [[maybe_unused]] auto data2 = createAndTestDelaunayInterpolation<TYPE>( ut, ndim, set2 );
     // Check the convergence for different interpolation method
     for ( int method = 0; method < 3; method++ ) {}
-    NULL_USE( data1 );
-    NULL_USE( data2 );
 }
 
 

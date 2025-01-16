@@ -36,11 +36,7 @@ template<typename vector_t>
 class newton_solver_t
 {
 public:
-    newton_solver_t() : _atol( 1.0e-16 ), _rtol( 1.0e-12 ), _dtol( 1.0e3 ), _maxit( 30 )
-    {
-        NULL_USE( compute_residual );
-        NULL_USE( compute_action_inverse_jacobian_on_minus_residual );
-    }
+    newton_solver_t() : _atol( 1.0e-16 ), _rtol( 1.0e-12 ), _dtol( 1.0e3 ), _maxit( 30 ) {}
     void set( void ( * )( vector_t const &, vector_t &, void * ),
               void ( * )( vector_t const &, vector_t const &, vector_t &, void * ) );
     solve_status_t apply( vector_t &x, void *parameters );
@@ -88,7 +84,7 @@ solve_status_t newton_solver_t<vector_t>::apply( vector_t &solution, void *param
         } else if ( norm_residual > _dtol * initial_residual_norm ) {
             return solve_status_t( status_t::DIV_TOL, i, norm_residual );
         } // end if
-    }     // end for i
+    } // end for i
     return solve_status_t( DIV_MAXIT, _maxit, norm_residual );
 }
 

@@ -79,11 +79,7 @@ public:
      * \param[in] i  particular data block
      * \return The size of a particular block
      */
-    size_t sizeOfDataBlock( size_t i = 0 ) const override
-    {
-        NULL_USE( i );
-        return d_array.length();
-    }
+    size_t sizeOfDataBlock( size_t i = 0 ) const override { return i == 0 ? d_array.length() : 0; }
 
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from

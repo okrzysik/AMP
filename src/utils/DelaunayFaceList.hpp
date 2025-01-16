@@ -134,11 +134,10 @@ bool check_current_triangles( int N,
                               const std::array<int, NDIM + 1> tri[],
                               const std::array<int, NDIM + 1> tri_nab[],
                               const std::vector<size_t> &unused,
-                              double TOL_VOL )
+                              double )
 {
     if ( N_tri == 0 )
         return false;
-    NULL_USE( TOL_VOL );
     PROFILE( "check_current_triangles", 4 );
     bool pass = true;
     for ( size_t i = 0; i < N_tri; i++ ) {
@@ -669,9 +668,8 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::update_face( const int N
  *                                                                   *
  ********************************************************************/
 template<class ETYPE>
-inline void calc_surface_normal( const ETYPE x[1][1], ETYPE norm[1] )
+inline void calc_surface_normal( const ETYPE[1][1], ETYPE norm[1] )
 {
-    NULL_USE( x );
     norm[0] = ETYPE( 1 );
 }
 template<class ETYPE>

@@ -325,22 +325,19 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         PROFILE( "testGeometry-nearest " );
         bool pass_nearest = true;
         for ( const auto &p0 : surfacePoints ) {
-            auto p   = geom.nearest( p0 );
-            double d = ( p - p0 ).abs();
+            [[maybe_unused]] auto p   = geom.nearest( p0 );
+            [[maybe_unused]] double d = ( p - p0 ).abs();
             if ( d > 1e-8 ) {
-                bool test = geom.inside( p0 );
-                p         = geom.nearest( p0 );
-                NULL_USE( p );
-                NULL_USE( test );
-                pass_nearest = false;
+                [[maybe_unused]] bool test = geom.inside( p0 );
+                p                          = geom.nearest( p0 );
+                pass_nearest               = false;
             }
         }
         for ( const auto &p0 : interiorPoints ) {
-            auto p   = geom.nearest( p0 );
-            double d = ( p - p0 ).abs();
+            [[maybe_unused]] auto p   = geom.nearest( p0 );
+            [[maybe_unused]] double d = ( p - p0 ).abs();
             if ( d > 1e-8 ) {
-                p = geom.nearest( p0 );
-                NULL_USE( p );
+                p            = geom.nearest( p0 );
                 pass_nearest = false;
             }
         }

@@ -199,7 +199,7 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         if ( it == d_baseMeshes.end() ) {
             auto path2 = path + mesh->getName() + "_/";
             for ( const auto &[id2, mesh2] : d_baseMeshes ) {
-                NULL_USE( id2 );
+                AMP::Utilities::nullUse( &id2 );
                 if ( mesh2.path == path2 )
                     AMP_ERROR( "Registering multiple meshes with the same name: " +
                                mesh->getName() );
@@ -238,7 +238,7 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     } else {
         // Check if we previously registered the mesh
         for ( const auto &[id, mesh2] : d_multiMeshes ) {
-            NULL_USE( id );
+            AMP::Utilities::nullUse( &id );
             if ( mesh2.mesh->meshID() == mesh->meshID() )
                 return;
             if ( mesh2.mesh->getName() == mesh->getName() )

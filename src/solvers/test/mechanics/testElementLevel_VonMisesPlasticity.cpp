@@ -48,7 +48,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Create the Mesh
-    auto libmeshInit =
+    [[maybe_unused]] auto libmeshInit =
         std::make_shared<AMP::Mesh::initializeLibMesh>( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto mesh_file              = input_db->getString( "mesh_file" );
     const unsigned int mesh_dim = 3;
@@ -217,8 +217,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
     mechanicsNonlinearVolumeOperator->printStressAndStrain( solVec, output_file );
-
-    NULL_USE( libmeshInit );
 
     ut->passes( exeName );
 }

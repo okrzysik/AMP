@@ -257,7 +257,7 @@ public:
 
     virtual void setFinalTime( const double t ) { d_final_time = t; }
 
-    virtual void printStatistics( std::ostream &os = AMP::pout ) { NULL_USE( os ); }
+    virtual void printStatistics( std::ostream &os = AMP::pout );
 
     virtual void setSourceTerm( AMP::LinearAlgebra::Vector::shared_ptr src )
     {
@@ -391,7 +391,7 @@ public: // Write/read restart data
 private:
     // The following are not implemented:
     explicit TimeIntegrator( const TimeIntegrator & ) = delete;
-    void operator=( const TimeIntegrator & ) = delete;
+    void operator=( const TimeIntegrator & )          = delete;
 };
 
 } // namespace AMP::TimeIntegrator

@@ -108,8 +108,7 @@ public:
     {
         auto vec = TYPE::view( d_factory->getVector() );
         AMP_INSIST( vec != nullptr, "Failed to cast view to type" );
-        auto native = vec->getNativeVec();
-        NULL_USE( native );
+        [[maybe_unused]] auto native = vec->getNativeVec();
         return vec->getManagedVec();
     }
     std::string name() const override { return "ViewFactory<" + d_factory->name() + ">"; }

@@ -136,9 +136,8 @@ TrilinosMueLuSolver::getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOpera
     return xA;
 }
 
-Teuchos::ParameterList &TrilinosMueLuSolver::getSmootherParameters( const int level )
+Teuchos::ParameterList &TrilinosMueLuSolver::getSmootherParameters( const int )
 {
-    NULL_USE( level );
     auto &smootherParams = d_MueLuParameterList.get<Teuchos::ParameterList>( "smoother: params" );
 
 #if 0

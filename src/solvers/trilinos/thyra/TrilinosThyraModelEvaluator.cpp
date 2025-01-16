@@ -73,9 +73,8 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
     const Teuchos::RCP<Thyra::PreconditionerBase<double>> W_prec_out = outArgs.get_W_prec();
     if ( nonnull( W_prec_out ) ) {
         // Reset the preconditioner
-        auto x2        = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( x );
-        auto op_params = d_nonlinearOp->getParameters( "Jacobian", x2 );
-        NULL_USE( op_params );
+        [[maybe_unused]] auto x2        = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( x );
+        [[maybe_unused]] auto op_params = d_nonlinearOp->getParameters( "Jacobian", x2 );
     }
 
     if ( f_out != nullptr ) {

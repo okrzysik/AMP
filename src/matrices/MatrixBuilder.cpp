@@ -45,10 +45,10 @@ bool haveSparseMatrix() { return false; }
  * Build a ManagedEpetraMatrix                           *
  ********************************************************/
 std::shared_ptr<AMP::LinearAlgebra::Matrix>
-createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
-                     AMP::LinearAlgebra::Vector::shared_ptr rightVec,
-                     const std::function<std::vector<size_t>( size_t )> &getRow,
-                     const std::string &type )
+createManagedMatrix( [[maybe_unused]] AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+                     [[maybe_unused]] AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+                     [[maybe_unused]] const std::function<std::vector<size_t>( size_t )> &getRow,
+                     [[maybe_unused]] const std::string &type )
 {
     if ( type == "ManagedEpetraMatrix" ) {
 #if defined( AMP_USE_TRILINOS )
@@ -79,10 +79,6 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
         return newMatrix;
 #else
-        NULL_USE( leftVec );
-        NULL_USE( rightVec );
-        NULL_USE( getRow );
-        NULL_USE( type );
         AMP_ERROR( "Unable to build ManagedEpetraMatrix without Trilinos" );
 #endif
     } else {
@@ -192,10 +188,10 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 /********************************************************
  * Build a NativePetscMatrix                             *
  ********************************************************/
-std::shared_ptr<AMP::LinearAlgebra::Matrix>
-createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
-                         AMP::LinearAlgebra::Vector::shared_ptr rightVec,
-                         const std::function<std::vector<size_t>( size_t )> &getRow )
+std::shared_ptr<AMP::LinearAlgebra::Matrix> createNativePetscMatrix(
+    [[maybe_unused]] AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+    [[maybe_unused]] AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+    [[maybe_unused]] const std::function<std::vector<size_t>( size_t )> &getRow )
 {
 #if defined( AMP_USE_PETSC )
     // Get the DOFs
@@ -216,9 +212,6 @@ createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     newMatrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     return newMatrix;
 #else
-    NULL_USE( leftVec );
-    NULL_USE( rightVec );
-    NULL_USE( getRow );
     AMP_ERROR( "Unable to build NativePetscMatrix without Petsc" );
     return nullptr;
 #endif

@@ -28,9 +28,8 @@
 #include <sys/stat.h>
 
 
-static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, int exampleNum )
+static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, int )
 {
-    NULL_USE( exampleNum );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName + ".txt";
 
@@ -182,8 +181,7 @@ int testMacNealstraightBeam_regular( int argc, char *argv[] )
         } catch ( std::exception &err ) {
             AMP::pout << "ERROR: " << err.what() << std::endl;
         } catch ( ... ) {
-            AMP::pout << "ERROR: "
-                      << "An unknown exception was thrown." << std::endl;
+            AMP::pout << "ERROR: " << "An unknown exception was thrown." << std::endl;
         }
     } // end for i
 

@@ -95,7 +95,7 @@ int count( const std::string &s, char c ) { return std::count( s.begin(), s.end(
 
 
 // Check if a factory is valid based on compiled packages
-bool isValid( const std::string &name )
+bool isValid( [[maybe_unused]] const std::string &name )
 {
     bool valid = true;
 #ifndef AMP_USE_PETSC
@@ -116,7 +116,6 @@ bool isValid( const std::string &name )
 #ifndef USE_DEVICE
     valid = valid && name.find( "gpu" ) == std::string::npos;
 #endif
-    NULL_USE( name );
     return valid;
 }
 

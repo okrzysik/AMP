@@ -255,7 +255,15 @@ TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     TimeIntegrator::initialize( d_pParameters );
 }
 
+
+/********************************************************
+ *  Simple functions                                     *
+ ********************************************************/
+void TimeIntegrator::printStatistics( std::ostream & ) {}
+
+
 } // namespace AMP::TimeIntegrator
+
 
 /********************************************************
  *  Restart operations                                   *

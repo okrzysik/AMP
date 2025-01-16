@@ -25,7 +25,7 @@ namespace AMP {
  * Scale data                                                        *
  ********************************************************************/
 template<class TYPE>
-void scaleData( TYPE &data, double factor )
+void scaleData( TYPE &data, [[maybe_unused]] double factor )
 {
     if constexpr ( std::is_same_v<TYPE, bool> ) {
         throw std::logic_error( "Unable to scale bool" );
@@ -36,20 +36,18 @@ void scaleData( TYPE &data, double factor )
     } else if constexpr ( std::is_arithmetic_v<TYPE> ) {
         data = static_cast<TYPE>( factor ) * data;
     } else {
-        NULL_USE( factor );
         std::string type = typeid( TYPE ).name();
         throw std::logic_error( "Unable to scale " + type );
     }
 }
 template<class TYPE>
-void scaleData( Array<TYPE> &data, double factor )
+void scaleData( Array<TYPE> &data, [[maybe_unused]] double factor )
 {
     if constexpr ( std::is_same_v<TYPE, bool> ) {
         throw std::logic_error( "Unable to scale bool" );
     } else if constexpr ( std::is_arithmetic_v<TYPE> ) {
         data.scale( factor );
     } else {
-        NULL_USE( factor );
         std::string type = typeid( TYPE ).name();
         throw std::logic_error( "Unable to scale " + type );
     }

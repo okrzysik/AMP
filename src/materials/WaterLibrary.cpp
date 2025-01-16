@@ -189,8 +189,8 @@ static std::initializer_list<std::array<double, 2>> ViscRanges = {
 
 // enthalpy as a function of temperature and pressure
 [[maybe_unused]] static const double EnthalpyParams[]  = { -256638.942,    -203.118982,
-                                                          0.760349801,    -3848757.66,
-                                                          -0.00106377488, 0.0000006177396046 };
+                                                           0.760349801,    -3848757.66,
+                                                           -0.00106377488, 0.0000006177396046 };
 static std::initializer_list<std::string> EnthalpyArgs = { "temperature", "pressure" };
 static const double EnthalpyTminVal                    = 0.0; // minimum temperature [K]
 static const double EnthalpyTmaxVal =
@@ -385,7 +385,6 @@ static double evalTemperature( double H, double P )
                     T = T + ct3[i][j] * pow( P, (double) i ) * pow( H, (double) j );
         }
     }
-    NULL_USE( H_crit );
 
     // convert result to SI units
     T = 5. / 9. * ( T - 32. ) + 273.15; // [F] to [K]
@@ -601,7 +600,6 @@ static double evalSpecificVolume( double H, double P )
             }
         }
     }
-    NULL_USE( H_crit );
 
     // convert result to SI units
     V = V * 6.24279605761446e-2; // [ft3/lbm] to [m3/kg]

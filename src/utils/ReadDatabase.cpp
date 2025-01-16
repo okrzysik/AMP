@@ -130,9 +130,8 @@ static std::vector<char> readFile( const std::string &filename, Database::source
     size_t bytes = ftell( fid );
     rewind( fid );
     std::vector<char> data( bytes + 1, 0 );
-    size_t result = fread( data.data(), 1, bytes, fid );
+    [[maybe_unused]] size_t result = fread( data.data(), 1, bytes, fid );
     fclose( fid );
-    NULL_USE( result );
     return data;
 }
 

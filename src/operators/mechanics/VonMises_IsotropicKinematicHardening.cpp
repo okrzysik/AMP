@@ -620,8 +620,6 @@ void VonMises_IsotropicKinematicHardening::radialReturn(
     }
     double H_alpha_prime = 1.0;
     double a_n[6], xi_trial, xi_trial_dev[6], alpha_n_kk;
-    NULL_USE( h_alpha );
-    NULL_USE( h_alpha_prime );
 
     double dstra[6];
 

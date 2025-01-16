@@ -3013,9 +3013,8 @@ std::array<double, 10> ManufacturedSolution::cubic_cyl_rod_dirichletz2(
 
 
 std::array<double, 10> ManufacturedSolution::cubic_cyl_rod_rz_none(
-    const double r, const double th, const double z, const ManufacturedSolution *mfs )
+    const double r, const double, const double z, const ManufacturedSolution *mfs )
 {
-    NULL_USE( th );
     const auto &a = mfs->geta();
 
 #ifdef CHECKSIZES
