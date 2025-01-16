@@ -20,9 +20,14 @@
  *  Macros to help instantiate functions                 *
  ********************************************************/
 // clang-format off
+#ifdef __NVCOMPILER
+#define instantiateDestructor(TYPE,FUN,A) template AMP::Array<TYPE,FUN,A>::~Array();
+#else
+#define instantiateDestructor(TYPE,FUN,A) template AMP::Array<TYPE,FUN,A>::~Array<TYPE,FUN,A>();
+#endif
 #define instantiateArrayConstructors2( TYPE, FUN, A )                                    \
+    instantiateDestructor(TYPE,FUN,A)                                                    \
     template AMP::Array<TYPE,FUN,A>::Array();                                            \
-    template AMP::Array<TYPE,FUN,A>::~Array();                                           \
     template AMP::Array<TYPE,FUN,A>::Array( const AMP::ArraySize&, TYPE const* );        \
     template AMP::Array<TYPE,FUN,A>::Array( size_t );                                    \
     template AMP::Array<TYPE,FUN,A>::Array( size_t, size_t );                            \
@@ -1117,7 +1122,7 @@ Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::coarsen(
                     for ( size_t j2 = 0; j2 < ratio[1]; j2++ ) {
                         for ( size_t i2 = 0; i2 < ratio[0]; i2++ ) {
                             tmp( i2, j2, k2 ) = operator()(
-                                i1 *ratio[0] + i2, j1 * ratio[1] + j2, k1 * ratio[2] + k2 );
+                                i1 * ratio[0] + i2, j1 * ratio[1] + j2, k1 * ratio[2] + k2 );
                         }
                     }
                 }
