@@ -12,8 +12,6 @@
 
 // Include external packages for startup/shutdown
 // clang-format off
-#undef NULL_USE
-
 #ifdef AMP_USE_TIMER
     #include "MemoryApp.h"
 #endif
