@@ -53,12 +53,6 @@
         } while ( 0 )
 #endif
 
-#if defined( __INTEL_COMPILER )
-    #include "AMP/utils/UtilityMacros.h"
-DISABLE_WARNINGS
-#endif
-
-
 namespace AMP {
 
 
@@ -472,10 +466,6 @@ CONSTEXPR ArraySize operator+( size_t v, const ArraySize &x )
 
 
 } // namespace AMP
-
-#if defined( __INTEL_COMPILER )
-ENABLE_WARNINGS
-#endif
 
 
 #endif
