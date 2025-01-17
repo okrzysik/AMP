@@ -22,17 +22,6 @@ extern std::ostream plog;
 } // namespace AMP
 
 
-// Template function to deal with null use
-namespace AMP::Utilities {
-void nullUse( const void * );
-template<class TYPE>
-[[deprecated( "Use maybe_unused" )]] inline void nullUseTemplate( const TYPE *ptr )
-{
-    AMP::Utilities::nullUse( reinterpret_cast<const void *>( ptr ) );
-}
-} // namespace AMP::Utilities
-
-
 template<class T>
 inline constexpr bool failed_assert_v = !std::is_same<T, T>::value;
 
@@ -62,15 +51,6 @@ static inline std::string operator+( std::string_view x, std::string_view y )
  *  \addtogroup Macros
  *  @{
  */
-
-
-/*! \def AMP_NULL_USE(variable)
- *  \brief    A null use of a variable
- *  \details  A null use of a variable, use to avoid GNU compiler warnings about unused variables.
- *  \param variable  Variable to pretend to use
- */
-#undef AMPNULL_USE
-#define AMP_NULL_USE( variable ) AMP::Utilities::nullUseTemplate( &variable )
 
 
 /*! \def STATIC_ERROR(variable)
