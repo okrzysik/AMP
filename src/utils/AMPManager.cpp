@@ -13,7 +13,6 @@
 
 // Include external packages for startup/shutdown
 // clang-format off
-#undef NULL_USE
 #ifdef USE_CUDA
     #include <cuda.h>
     #include <cuda_runtime_api.h>
