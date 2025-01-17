@@ -391,7 +391,7 @@ public: // Write/read restart data
 private:
     // The following are not implemented:
     explicit TimeIntegrator( const TimeIntegrator & ) = delete;
-    void operator=( const TimeIntegrator & )          = delete;
+    void operator=( const TimeIntegrator & ) = delete;
 };
 
 } // namespace AMP::TimeIntegrator
