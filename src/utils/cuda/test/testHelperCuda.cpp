@@ -9,7 +9,6 @@
 #include <memory>
 
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
-    #define USE_KOKKOS
     #include <Kokkos_Core.hpp>
     #include <Kokkos_Macros.hpp>
 #endif
@@ -68,7 +67,7 @@ int main( int argc, char *argv[] )
     hostAllocator.deallocate( host, N );
 
     // Check Kokkos memory pointers
-#ifdef USE_KOKKOS
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
     std::cout << std::endl;
     testKokkosMemorySpace<Kokkos::HostSpace>( "HostSpace" );
     #ifdef KOKKOS_ENABLE_CUDA

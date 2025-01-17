@@ -22,7 +22,7 @@
     #include "SAMRAI/tbox/SAMRAIManager.h"
     #include "SAMRAI/tbox/StartupShutdownManager.h"
 #endif
-#ifdef AMP_USE_KOKKOS
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
     #include "AMP/utils/KokkosManager.h"
 #endif
 #ifdef AMP_USE_HDF5
