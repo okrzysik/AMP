@@ -64,13 +64,13 @@ static inline std::string operator+( std::string_view x, std::string_view y )
  */
 
 
-/*! \def NULL_USE(variable)
+/*! \def AMP_NULL_USE(variable)
  *  \brief    A null use of a variable
  *  \details  A null use of a variable, use to avoid GNU compiler warnings about unused variables.
  *  \param variable  Variable to pretend to use
  */
-#undef NULL_USE
-#define NULL_USE( variable ) AMP::Utilities::nullUseTemplate( &variable )
+#undef AMPNULL_USE
+#define AMP_NULL_USE( variable ) AMP::Utilities::nullUseTemplate( &variable )
 
 
 /*! \def STATIC_ERROR(variable)
