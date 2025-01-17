@@ -17,11 +17,6 @@
 #include <stdexcept>
 
 
-#if defined( __INTEL_COMPILER )
-DISABLE_WARNINGS
-#endif
-
-
 namespace AMP::DelaunayTessellation {
 
 
@@ -2433,8 +2428,3 @@ template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<long d
 
 
 } // namespace AMP::DelaunayTessellation
-
-
-#if defined( __INTEL_COMPILER )
-ENABLE_WARNINGS
-#endif
