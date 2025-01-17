@@ -9,7 +9,7 @@
 #if defined( USE_DEVICE )
     #include "AMP/utils/copycast/device/DevCopyCast.h"
     #include "AMP/utils/copycast/device/DevCopyCast.hpp"
-#elif defined( AMP_USE_KOKKOS )
+#elif defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
     #include "AMP/utils/copycast/kokkos/CopyCast.h"
     #include "AMP/utils/copycast/kokkos/CopyCast.hpp"
 #elif defined( USE_OPENMP )

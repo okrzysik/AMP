@@ -3,7 +3,6 @@
 #include "AMP/utils/Utilities.h"
 
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
-    #define USE_KOKKOS
     #include <Kokkos_Core.hpp>
 #endif
 
