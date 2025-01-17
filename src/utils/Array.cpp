@@ -14,9 +14,6 @@ namespace AMP {
 /********************************************************
  *  Explicit instantiations of Array                     *
  ********************************************************/
-#if defined( __INTEL_COMPILER )
-DISABLE_WARNINGS
-#endif
 template class Array<bool>;
 template class Array<char>;
 template class Array<uint8_t>;
@@ -59,10 +56,6 @@ Array<std::complex<double>>::subset( std::vector<unsigned long> const & ) const;
 template bool Array<std::complex<float>>::NaNs() const;
 template bool Array<std::complex<double>>::NaNs() const;
 template void AMP::Array<std::complex<double>, AMP::FunctionTable>::rand();
-
-#if defined( __INTEL_COMPILER )
-ENABLE_WARNINGS
-#endif
 
 
 } // namespace AMP
