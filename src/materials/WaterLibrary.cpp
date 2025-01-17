@@ -189,8 +189,8 @@ static std::initializer_list<std::array<double, 2>> ViscRanges = {
 
 // enthalpy as a function of temperature and pressure
 [[maybe_unused]] static const double EnthalpyParams[]  = { -256638.942,    -203.118982,
-                                                          0.760349801,    -3848757.66,
-                                                          -0.00106377488, 0.0000006177396046 };
+                                                           0.760349801,    -3848757.66,
+                                                           -0.00106377488, 0.0000006177396046 };
 static std::initializer_list<std::string> EnthalpyArgs = { "temperature", "pressure" };
 static const double EnthalpyTminVal                    = 0.0; // minimum temperature [K]
 static const double EnthalpyTmaxVal =

@@ -169,7 +169,7 @@ computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             exactSolutionsVec->setLocalValuesByGlobalID(
                 1, &globalIDs[xyz], &displacementXYZ[xyz] );
         } // end loop over the coordinates
-    }     // end soop over all nodes
+    } // end soop over all nodes
     if ( verbose ) {
         AMP::pout << "--------------------------------------------\n"
                   << "---- exact solution norm = " << std::setprecision( 15 )
