@@ -46,7 +46,7 @@ void runTest( AMP::UnitTest &ut, const std::string &pass_msg )
 
 
 template<class AllocatorIn, class AllocatorOut, typename ptrIn>
-void testOverflow( AMP::UnitTest &ut )
+void testOverflow( AMP::UnitTest &ut, const std::string &mem_type )
 {
     AllocatorIn alloc1;
     double *v1 = alloc1.allocate( 3 );
@@ -60,9 +60,9 @@ void testOverflow( AMP::UnitTest &ut )
     // Perform copy-cast
     try {
         AMP::Utilities::copyCast<double, float>( 3, v1, v2 );
-        ut.failure( "CopyCast didn't catch an overflow." );
+        ut.failure( mem_type + " copyCast didn't catch an overflow." );
     } catch ( ... ) {
-        ut.passes( "Overflow test succeeded." );
+        ut.passes( mem_type + " overflow test succeeded." );
     }
 }
 
@@ -84,10 +84,8 @@ int main( int argc, char *argv[] )
             AMP::HostAllocator<double>,
             float *,
             double *>( ut, "Host float->double passed" );
-
-#ifndef USE_DEVICE
-    // Test Overflow
-    testOverflow<AMP::HostAllocator<double>, AMP::HostAllocator<float>, double *>( ut );
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    testOverflow<AMP::HostAllocator<double>, AMP::HostAllocator<float>, double *>( ut, "Host" );
 #endif
 
 #ifdef USE_DEVICE
@@ -104,7 +102,12 @@ int main( int argc, char *argv[] )
             AMP::ManagedAllocator<double>,
             thrust::device_ptr<float>,
             thrust::device_ptr<double>>( ut, "Managed float->double passed" );
-    // Test Managed
+    #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    testOverflow<AMP::ManagedAllocator<double>,
+                 AMP::ManagedAllocator<float>,
+                 thrust::device_ptr<double>>( ut, "Managed" );
+    #endif
+    // Test Device
     runTest<double,
             float,
             AMP::DeviceAllocator<double>,
@@ -117,6 +120,11 @@ int main( int argc, char *argv[] )
             AMP::DeviceAllocator<double>,
             thrust::device_ptr<float>,
             thrust::device_ptr<double>>( ut, "Device float->double passed" );
+    #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    testOverflow<AMP::DeviceAllocator<double>,
+                 AMP::DeviceAllocator<float>,
+                 thrust::device_ptr<double>>( ut, "Device" );
+    #endif
 #endif
 
     int N_errors = ut.NumFailGlobal();
