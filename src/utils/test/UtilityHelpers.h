@@ -253,7 +253,7 @@ constexpr int calculateDigits()
         TYPE z  = std::pow( 10.0, d );
         TYPE x2 = x + y;
         TYPE x3 = x2 - x;
-        if ( fabs( ( x3 - y ) * z ) < 0.5 )
+        if ( std::abs( ( x3 - y ) * z ) < 0.5 )
             break;
         d--;
     }
