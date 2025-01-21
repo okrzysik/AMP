@@ -430,7 +430,7 @@ static inline uint64_t hashComm( AMP_MPI::Comm comm )
         return AMP_MPI::hashSelf;
     } else if ( comm == MPI_COMM_WORLD ) {
         return AMP_MPI::hashMPI;
-    } else if ( comm == static_cast<MPI_Comm>( AMP_MPI::commWorld ) ) {
+    } else if ( comm == AMP_MPI::commWorld ) {
         return AMP_MPI::hashWorld;
     }
     uint64_t r = AMP::AMPManager::getCommWorld().getRank();

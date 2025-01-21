@@ -56,8 +56,14 @@ public:
     //! Conversion to int64
     constexpr operator int64_t() const;
 
+    //! Conversion to float
+    constexpr operator float() const;
+
     //! Conversion to double
     constexpr operator double() const;
+
+    //! Conversion to long double
+    constexpr operator long double() const;
 
     //! Conversion to bool
     constexpr operator bool() const;

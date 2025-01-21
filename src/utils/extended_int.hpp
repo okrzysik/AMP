@@ -191,7 +191,7 @@ constexpr int64N<N>::operator int() const
     return static_cast<int>( static_cast<int64_t>( data[0] ) );
 }
 template<uint8_t N>
-constexpr int64N<N>::operator double() const
+constexpr int64N<N>::operator long double() const
 {
     // Split the data into sets of unsigned 64-bit numbers
     uint64_t data2[N] = { 0 };
@@ -208,44 +208,26 @@ constexpr int64N<N>::operator double() const
             i++;
         }
     }
-    // Check for overflow
-    uint8_t N2 = N;
-    if constexpr ( N > 16 ) {
-        N2            = 16;
-        bool overflow = false;
-        for ( size_t i = 16; i < N; i++ )
-            overflow = overflow || data2[i] != 0;
-        if ( overflow ) {
-            if ( s >= 0 )
-                return std::numeric_limits<double>::infinity();
-            else
-                return -std::numeric_limits<double>::infinity();
-        }
-    }
-    // Convert to double
-    // Note: using long double in not support in constexpr on IBM
-    constexpr double scale[16] = { 1.0,
-                                   1.8446744073709551616e19,
-                                   3.4028236692093846346e38,
-                                   6.2771017353866807638e57,
-                                   1.1579208923731619542e77,
-                                   2.1359870359209100823e96,
-                                   3.9402006196394479212e115,
-                                   7.2683872429560689054e134,
-                                   1.3407807929942597099e154,
-                                   2.4733040147310453406e173,
-                                   4.5624406176221952186e192,
-                                   8.4162174424773976115e211,
-                                   1.5525180923007089351e231,
-                                   2.8638903918474961204e250,
-                                   5.2829453113566524635e269,
-                                   9.7453140113999990803e288 };
-    double result              = 0.0;
-    for ( size_t i = 0; i < N2; i++ ) {
+    // Convert to long double
+    long double pow64  = 1.8446744073709551616e19; // 2^64
+    long double result = data2[0];
+    long double scale  = pow64;
+    for ( size_t i = 1; i < N; i++ ) {
         if ( data2[i] != 0 )
-            result += scale[i] * static_cast<double>( data2[i] );
+            result += scale * static_cast<long double>( data2[i] );
+        scale *= pow64;
     }
     return s * result;
+}
+template<uint8_t N>
+constexpr int64N<N>::operator double() const
+{
+    return static_cast<long double>( *this );
+}
+template<uint8_t N>
+constexpr int64N<N>::operator float() const
+{
+    return static_cast<long double>( *this );
 }
 template<uint8_t N>
 constexpr int64N<N>::operator bool() const
