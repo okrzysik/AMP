@@ -157,7 +157,6 @@ void testHex8ElementNormalToFaces( AMP::UnitTest &ut )
     };
 
     hex8_element_t volume_element( points );
-    srand( 0 );
     AMP_ASSERT( perform_battery_of_tests( &volume_element, normal_to_faces ) == 0 );
     //  test_normal(&volume_element);
 
@@ -184,9 +183,8 @@ void testHex8ElementNormalToFaces( AMP::UnitTest &ut )
     static std::random_device rd;
     static std::mt19937 gen( rd() );
     static std::uniform_real_distribution<double> dist( -0.1, 0.1 );
-    for ( auto &point : points ) {
+    for ( auto &point : points )
         point += dist( gen );
-    }
     volume_element.set_support_points( points );
     AMP_ASSERT( perform_battery_of_tests( &volume_element ) ==
                 0 ); // isn't actually testing anything

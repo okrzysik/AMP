@@ -17,6 +17,7 @@
 #include <fstream>
 #include <iomanip>
 #include <numeric>
+#include <random>
 
 
 void draw_hex8_element_revisited( hex8_element_t *e_ptr,
@@ -566,24 +567,19 @@ int main( int argc, char *argv[] )
 
 void genUniformPts( int rank, size_t numPtsPerProc, std::vector<double> &pts )
 {
-    const int seed = ( 0x1234567 + ( 24135 * rank ) );
-    srand48( seed );
-
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( 0, 1 );
     pts.resize( 3 * numPtsPerProc );
-    for ( size_t i = 0; i < 3 * numPtsPerProc; ++i ) {
-        pts[i] = drand48();
-    } // end for i
+    for ( size_t i = 0; i < 3 * numPtsPerProc; ++i )
+        pts[i] = dist( gen );
 }
 
 void genGaussPts( int rank, size_t numPtsPerProc, std::vector<double> &pts )
 {
-    const int seed = ( 0x12345678 + ( 76543 * rank ) );
-    srand48( seed );
-
     pts.resize( 3 * numPtsPerProc );
-    for ( size_t i = 0; i < ( 3 * numPtsPerProc ); i++ ) {
+    for ( size_t i = 0; i < ( 3 * numPtsPerProc ); i++ )
         pts[i] = gaussian( 0.5, 0.16 );
-    } // end for i
 }
 
 double gaussian( double mean, double std_deviation )
@@ -604,10 +600,13 @@ double gaussian( double mean, double std_deviation )
     }
 
     // pick randomly a point inside the unit disk
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     do {
-        x1 = 2 * drand48() - 1;
-        x2 = 2 * drand48() - 1;
-        x3 = 2 * drand48() - 1;
+        x1 = dist( gen );
+        x2 = dist( gen );
+        x3 = dist( gen );
         r  = x1 * x1 + x2 * x2 + x3 * x3;
     } while ( r >= 1 );
 
