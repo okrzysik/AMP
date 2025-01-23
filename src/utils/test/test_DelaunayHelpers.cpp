@@ -189,7 +189,6 @@ int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    srand( static_cast<unsigned int>( time( nullptr ) ) );
     PROFILE_ENABLE( 3 ); // 0: code, 1: tests, 3: basic timers, 5: all timers
 
     // Check that we can create "random" points
