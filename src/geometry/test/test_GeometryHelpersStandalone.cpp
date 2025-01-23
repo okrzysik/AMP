@@ -124,7 +124,7 @@ std::tuple<std::vector<PointDist>, std::vector<PointDist>> test_map_logical_circ
 
 
 // Write/Read a single point
-void writePoint( std::FILE *fid, const PointDist x, const Point &logical, const Point &physical )
+void writePoint( std::FILE *fid, const PointDist &x, const Point &logical, const Point &physical )
 {
     double data[7] = { x[0], x[1], x[2], logical[0], logical[1], physical[0], physical[1] };
     std::ignore    = std::fwrite( data, sizeof( double ), 7, fid );

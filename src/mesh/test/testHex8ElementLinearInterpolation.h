@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <random>
 
 
 double my_function( double const *xyz )
@@ -36,9 +37,12 @@ unsigned int perform_battery_of_tests( hex8_element_t *volume_element,
     std::vector<double> basis_functions_values( 8 );
     double interpolated_value, my_function_at_candidate_point, interpolation_error, tol;
     unsigned int count_tests_failing = 0;
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
         for ( unsigned int j = 0; j < 3; ++j ) {
-            candidate_point_local_coordinates[j] = -1.0 + 2.0 * rand() / RAND_MAX;
+            candidate_point_local_coordinates[j] = dist( gen );
         }
 
         hex8_element_t::get_basis_functions_values( &( candidate_point_local_coordinates[0] ),
@@ -107,9 +111,11 @@ void testHex8ElementLinearInterpolation( AMP::UnitTest &ut )
     AMP_ASSERT( perform_battery_of_tests( &volume_element, my_function ) == 0 );
     AMP_ASSERT( perform_battery_of_tests( &volume_element, my_function_no_cross_terms ) == 0 );
 
-    for ( auto &point : points ) {
-        point += -0.1 + 0.2 * rand() / RAND_MAX;
-    }
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -0.1, 0.1 );
+    for ( auto &point : points )
+        point += dist( gen );
     volume_element.set_support_points( points );
     AMP_ASSERT( perform_battery_of_tests( &volume_element, my_function ) > 0 );
     AMP_ASSERT( perform_battery_of_tests( &volume_element, my_function_no_cross_terms ) == 0 );

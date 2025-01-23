@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <random>
 
 
 void test_above_point( triangle_t *t_ptr, unsigned int n_random_candidate_points = 10000 )
@@ -24,11 +25,14 @@ void test_above_point( triangle_t *t_ptr, unsigned int n_random_candidate_points
     double random_motion_along_normal;
     bool triangle_above_random_candidate_point;
     double tolerance = 1.0e-12;
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
         for ( auto &random_motion_along_edge : random_motion_along_edges ) {
-            random_motion_along_edge = -1.0 + 2.0 * rand() / RAND_MAX;
+            random_motion_along_edge = dist( gen );
         }
-        random_motion_along_normal            = -1.0 + 2.0 * rand() / RAND_MAX;
+        random_motion_along_normal            = dist( gen );
         triangle_above_random_candidate_point = !( random_motion_along_normal > tolerance );
         for ( unsigned int j = 0; j < 3; ++j ) {
             random_candidate_point[j] = centroid[j] + random_motion_along_normal * normal[j] +
@@ -49,6 +53,9 @@ void test_project_point( triangle_t *t_ptr, unsigned int n_random_candidate_poin
     double random_candidate_point[3], random_motion_along_normal, random_motion_along_line;
     bool triangle_contains_random_candidate_point;
     double tolerance = 1.0e-12;
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < 3; ++i ) {
         edge_t *e_ptr                = t_ptr->get_edge( i );
         double const *edge_normal    = e_ptr->get_normal();
@@ -67,8 +74,8 @@ void test_project_point( triangle_t *t_ptr, unsigned int n_random_candidate_poin
             triangle_centroid_to_edge_center_line[k] = line_length * edge_normal[k];
         }
         for ( unsigned int j = 0; j < n_random_candidate_points; ++j ) {
-            random_motion_along_normal = -1.0 + 2.0 * rand() / RAND_MAX;
-            random_motion_along_line   = -1.0 + 2.0 * rand() / RAND_MAX;
+            random_motion_along_normal = dist( gen );
+            random_motion_along_line   = dist( gen );
             for ( unsigned int k = 0; k < 3; ++k ) {
                 random_candidate_point[k] =
                     edge_center[k] +
@@ -95,7 +102,7 @@ void test_project_point( triangle_t *t_ptr, unsigned int n_random_candidate_poin
             } // end for if
             AMP_ASSERT( compute_vector_norm( projection_error ) < 1.0e-14 );
         } // end for j
-    }     // end for i
+    } // end for i
 
     // this might fail for very obtus triangles...
     for ( unsigned int i = 0; i < 3; ++i ) {
@@ -104,8 +111,8 @@ void test_project_point( triangle_t *t_ptr, unsigned int n_random_candidate_poin
         make_vector_from_two_points(
             triangle_centroid, triangle_support_point, triangle_centroid_to_support_point_line );
         for ( unsigned int j = 0; j < n_random_candidate_points; ++j ) {
-            random_motion_along_normal = -1.0 + 2.0 * rand() / RAND_MAX;
-            random_motion_along_line   = -1.0 + 2.0 * rand() / RAND_MAX;
+            random_motion_along_normal = dist( gen );
+            random_motion_along_line   = dist( gen );
             for ( unsigned int k = 0; k < 3; ++k ) {
                 random_candidate_point[k] =
                     triangle_support_point[k] +
@@ -130,7 +137,7 @@ void test_project_point( triangle_t *t_ptr, unsigned int n_random_candidate_poin
             } // end for if
             AMP_ASSERT( compute_vector_norm( projection_error ) < 1.0e-14 );
         } // end for j
-    }     // end for i
+    } // end for i
 }
 
 void test_return_status( triangle_t *t_ptr )
@@ -149,7 +156,7 @@ void test_return_status( triangle_t *t_ptr )
             status = e_ptr->project_point( edge_support_point, projection, tolerance );
             AMP_ASSERT( status == static_cast<signed int>( j ) );
         } // end for j
-    }     // end for i
+    } // end for i
 
     double const *triangle_centroid = t_ptr->get_centroid();
     status = t_ptr->project_point( triangle_centroid, projection, tolerance );
@@ -204,8 +211,11 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     rotate_points( 0, 0.75 * pi, 3, points );
 
     srand( 0 );
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<double> dist( -0.1, 0.1 );
     for ( auto &point : points ) {
-        point += -0.1 + 0.2 * rand() / RAND_MAX;
+        point += dist( gen );
     }
 
     triangle_t triangle( points, points + 3, points + 6 );

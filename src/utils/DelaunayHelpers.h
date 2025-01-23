@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <stdlib.h>
 
+#include "AMP/utils/Array.h"
+
 
 namespace AMP::DelaunayHelpers {
 
@@ -208,6 +210,32 @@ double calcVolume( const std::array<TYPE, NDIM> *x )
     }
     constexpr double C = inv_factorial( NDIM );
     return C * static_cast<double>( DelaunayHelpers::det<ETYPE, NDIM>( M ) );
+}
+
+
+/********************************************************************
+ * Helper interfaces to convert arrays                               *
+ ********************************************************************/
+template<class TYPE, std::size_t NDIM>
+AMP::Array<TYPE> convert( const std::vector<std::array<TYPE, NDIM>> &x )
+{
+    AMP::Array<TYPE> y( NDIM, x.size() );
+    for ( size_t i = 0; i < x.size(); i++ ) {
+        for ( size_t d = 0; d < NDIM; d++ )
+            y( d, i ) = x[i][d];
+    }
+    return y;
+}
+template<class TYPE, std::size_t NDIM>
+std::vector<std::array<TYPE, NDIM>> convert( const AMP::Array<TYPE> &x )
+{
+    AMP_ASSERT( x.size( 0 ) == NDIM );
+    std::vector<std::array<TYPE, NDIM>> y( x.size( 1 ) );
+    for ( size_t i = 0; i < y.size(); i++ ) {
+        for ( size_t d = 0; d < NDIM; d++ )
+            y[i][d] = x( d, i );
+    }
+    return y;
 }
 
 
