@@ -102,7 +102,7 @@ void test_project_point( triangle_t *t_ptr, unsigned int n_random_candidate_poin
             } // end for if
             AMP_ASSERT( compute_vector_norm( projection_error ) < 1.0e-14 );
         } // end for j
-    } // end for i
+    }     // end for i
 
     // this might fail for very obtus triangles...
     for ( unsigned int i = 0; i < 3; ++i ) {
@@ -137,7 +137,7 @@ void test_project_point( triangle_t *t_ptr, unsigned int n_random_candidate_poin
             } // end for if
             AMP_ASSERT( compute_vector_norm( projection_error ) < 1.0e-14 );
         } // end for j
-    } // end for i
+    }     // end for i
 }
 
 void test_return_status( triangle_t *t_ptr )
@@ -156,7 +156,7 @@ void test_return_status( triangle_t *t_ptr )
             status = e_ptr->project_point( edge_support_point, projection, tolerance );
             AMP_ASSERT( status == static_cast<signed int>( j ) );
         } // end for j
-    } // end for i
+    }     // end for i
 
     double const *triangle_centroid = t_ptr->get_centroid();
     status = t_ptr->project_point( triangle_centroid, projection, tolerance );
