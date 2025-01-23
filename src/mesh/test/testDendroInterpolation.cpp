@@ -14,6 +14,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <iomanip>
+#include <random>
 
 
 double dummyFunction( const std::vector<double> &xyz, const int dof )
@@ -102,18 +103,17 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // Generate Random points in [min, max]
-    const unsigned int seed = ( 0x1234567 + ( 24135 * rank ) );
-    srand48( seed );
-
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist_x( minCoords[0], maxCoords[0] );
+    static std::uniform_real_distribution<double> dist_y( minCoords[1], maxCoords[1] );
+    static std::uniform_real_distribution<double> dist_z( minCoords[2], maxCoords[2] );
     std::vector<double> pts( 3 * numLocalPts );
     for ( size_t i = 0; i < numLocalPts; ++i ) {
-        double x           = ( ( maxCoords[0] - minCoords[0] ) * drand48() ) + minCoords[0];
-        double y           = ( ( maxCoords[1] - minCoords[1] ) * drand48() ) + minCoords[1];
-        double z           = ( ( maxCoords[2] - minCoords[2] ) * drand48() ) + minCoords[2];
-        pts[3 * i]         = x;
-        pts[( 3 * i ) + 1] = y;
-        pts[( 3 * i ) + 2] = z;
-    } // end i
+        pts[3 * i]     = dist_x( gen );
+        pts[3 * i + 1] = dist_y( gen );
+        pts[3 * i + 2] = dist_z( gen );
+    }
     globalComm.barrier();
     if ( !rank ) {
         std::cout << "Finished generating " << totalNumPts << " random points for search!"

@@ -82,7 +82,6 @@ void testHex8ElementLinearInterpolation( AMP::UnitTest &ut )
     hex8_element_t volume_element( points );
     AMP_ASSERT( perform_battery_of_tests( &volume_element, my_function ) == 0 );
     AMP_ASSERT( perform_battery_of_tests( &volume_element, my_function_no_cross_terms ) == 0 );
-    srand( 0 );
 
     double scaling_factors[3] = { 4.0, 2.0, 1.0 };
     scale_points( scaling_factors, 8, points );
