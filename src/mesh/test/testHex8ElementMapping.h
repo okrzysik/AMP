@@ -319,7 +319,6 @@ void testHex8ElementMapping( AMP::UnitTest &ut )
     volume_element.set_support_points( points );
     AMP_ASSERT( test_mapping_global_to_local( &volume_element ) == 0 );
 
-    srand( 0 );
     static std::random_device rd;
     static std::mt19937 gen( rd() );
     static std::uniform_real_distribution<double> dist( -0.1, 0.7 );

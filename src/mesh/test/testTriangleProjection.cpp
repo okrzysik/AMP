@@ -210,7 +210,6 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     rotate_points( 0, 0.75 * pi, 3, points );
 
-    srand( 0 );
     std::random_device rd;
     std::mt19937 gen( rd() );
     std::uniform_real_distribution<double> dist( -0.1, 0.1 );
