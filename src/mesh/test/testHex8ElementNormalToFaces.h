@@ -55,7 +55,7 @@ void test_normal( hex8_element_t *volume_element, unsigned int n_random_candidat
             }
             std::cout << "}\n";
         } // end for f
-    }     // end for i
+    } // end for i
 }
 
 inline bool soft_equal_to( double x, double y ) { return fabs( x - y ) < 1.0e-15; }
@@ -126,7 +126,7 @@ unsigned int perform_battery_of_tests( hex8_element_t *volume_element,
                     std::cout << "\n" << std::flush;
                 }
             } // end if
-        }     // end for f
+        } // end for f
 
         //    tol = tol_abs+tol_rel*fabs(interpolated_value);
         //    if (interpolation_error > tol) { ++count_tests_failing; }
