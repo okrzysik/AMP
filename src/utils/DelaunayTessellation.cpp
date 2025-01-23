@@ -136,9 +136,54 @@ static inline double dot( int N, const int256_t *x, const int256_t *y )
 
 
 /********************************************************************
+ * Get the tolerance for testing if points are in the volume,        *
+ * collinear or coplaner.                                            *
+ ********************************************************************/
+template<int NDIM, class TYPE>
+static inline std::array<double, 3> getTol( const std::vector<std::array<TYPE, NDIM>> &x,
+                                            const std::pair<int, int> &index_pair )
+{
+    // Get the bounding box for the domain
+    TYPE xmin[3] = { 0, 0, 0 }, xmax[3] = { 0, 0, 0 };
+    for ( size_t i = 0; i < x.size(); i++ ) {
+        for ( int d = 0; d < NDIM; d++ ) {
+            xmin[d] = std::min( xmin[d], x[i][d] );
+            xmax[d] = std::max( xmax[d], x[i][d] );
+        }
+    }
+    TYPE domain_size = 0;
+    for ( int d = 0; d < NDIM; d++ )
+        domain_size += ( xmax[d] - xmin[d] ) * ( xmax[d] - xmin[d] );
+    domain_size = static_cast<TYPE>( sqrt( static_cast<double>( domain_size ) ) );
+
+    // Check that the two closest two points are not the same
+    int i1       = index_pair.first;
+    int i2       = index_pair.second;
+    double r_min = 0;
+    for ( int d = 0; d < NDIM; d++ ) {
+        auto tmp = static_cast<double>( x[i1][d] - x[i2][d] );
+        r_min += tmp * tmp;
+    }
+    r_min = sqrt( r_min );
+    if ( r_min < 1e-8 * domain_size )
+        throw std::logic_error( "Duplicate or nearly duplicate points detected: " +
+                                std::to_string( r_min ) );
+    if constexpr ( std::numeric_limits<TYPE>::is_integer ) {
+        return { 0.0, 1e-12, 0.0 };
+    } else {
+        double TOL_VOL       = ( NDIM <= 2 ? 1e-6 : 1e-3 ) * pow( r_min, NDIM );
+        TOL_VOL              = std::min( TOL_VOL, 0.1 );
+        double TOL_COLLINEAR = 1e-3;
+        double TOL_COPLANAR  = 1e-8 * r_min * r_min;
+        return { TOL_VOL, TOL_COLLINEAR, TOL_COPLANAR };
+    }
+}
+
+
+/********************************************************************
  * Test if 3 points are co-linear                                    *
  ********************************************************************/
-template<int NDIM, class TYPE, class ETYPE>
+template<int NDIM, class TYPE>
 static inline bool collinear( const std::array<TYPE, NDIM> *x, double tol )
 {
     double r1[NDIM];
@@ -163,6 +208,49 @@ static inline bool collinear( const std::array<TYPE, NDIM> *x, double tol )
     bool is_collinear = fabs( 1.0 - fabs( dot ) ) <= tol;
     return is_collinear;
 }
+
+
+/********************************************************************
+ * Test if all points are co-linear                                  *
+ ********************************************************************/
+template<int NDIM, class TYPE>
+static inline bool allCollinear( const Array<TYPE> &x )
+{
+    using Point = std::array<TYPE, NDIM>;
+    auto y      = DelaunayHelpers::convert<TYPE, NDIM>( x );
+    auto [i, j] = find_min_dist<NDIM, TYPE>( y.size(), y[0].data() );
+    auto tol    = getTol<NDIM, TYPE>( y, { i, j } );
+    Point x2[3];
+    x2[0] = y[i];
+    x2[1] = y[j];
+    for ( int k = 0; k < (int) y.size(); k++ ) {
+        if ( k == i || k == j )
+            continue;
+        x2[2] = y[k];
+        if ( !collinear<NDIM, TYPE>( x2, tol[1] ) )
+            return false;
+    }
+    return true;
+}
+template<class TYPE>
+bool collinear( const Array<TYPE> &x )
+{
+    int NDIM = x.size( 0 );
+    if ( NDIM == 1 ) {
+        return allCollinear<1, TYPE>( x );
+    } else if ( NDIM == 2 ) {
+        return allCollinear<2, TYPE>( x );
+    } else if ( NDIM == 3 ) {
+        return allCollinear<3, TYPE>( x );
+    } else {
+        throw std::logic_error( "collinear is not supported for dimension > 5" );
+    }
+}
+template bool collinear<short>( const Array<short> & );
+template bool collinear<int>( const Array<int> & );
+template bool collinear<float>( const Array<float> & );
+template bool collinear<double>( const Array<double> & );
+template bool collinear<long double>( const Array<long double> & );
 
 
 /********************************************************************
@@ -267,46 +355,12 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
 
     PROFILE( "create_tessellation", 2 );
 
-    // Check that no two points match and get the closest pair of points
-    std::pair<int, int> index_pair( -1, -1 );
-    double r_min = 0;
-    {
-        // Get the bounding box for the domain
-        TYPE xmin[3] = { 0, 0, 0 }, xmax[3] = { 0, 0, 0 };
-        for ( int i = 0; i < N; i++ ) {
-            for ( int d = 0; d < NDIM; d++ ) {
-                xmin[d] = std::min( xmin[d], x[i][d] );
-                xmax[d] = std::max( xmax[d], x[i][d] );
-            }
-        }
-        TYPE domain_size = 0;
-        for ( int d = 0; d < NDIM; d++ )
-            domain_size += ( xmax[d] - xmin[d] ) * ( xmax[d] - xmin[d] );
-        domain_size = static_cast<TYPE>( sqrt( static_cast<double>( domain_size ) ) );
+    // First, get the two closest points
+    auto index_pair = find_min_dist<NDIM, TYPE>( N, x[0].data() );
 
-        // First, get the two closest points and check that they are not the same
-        index_pair = find_min_dist<NDIM, TYPE>( N, x[0].data() );
-        int i1     = index_pair.first;
-        int i2     = index_pair.second;
-        r_min      = 0;
-        for ( int d = 0; d < NDIM; d++ ) {
-            auto tmp = static_cast<double>( x[i1][d] - x[i2][d] );
-            r_min += tmp * tmp;
-        }
-        r_min = sqrt( r_min );
-        if ( r_min < 1e-8 * domain_size )
-            throw std::logic_error( "Duplicate or nearly duplicate points detected: " +
-                                    std::to_string( r_min ) );
-    }
-    [[maybe_unused]] double TOL_VOL       = 0.0;
-    [[maybe_unused]] double TOL_COLLINEAR = 1e-12;
-    [[maybe_unused]] double TOL_COPLANAR  = 0.0;
-    if ( !std::numeric_limits<TYPE>::is_integer ) {
-        TOL_VOL       = ( NDIM <= 2 ? 1e-6 : 1e-3 ) * pow( r_min, NDIM );
-        TOL_VOL       = std::min( TOL_VOL, 0.1 );
-        TOL_COLLINEAR = 1e-3;
-        TOL_COPLANAR  = 1e-8 * r_min * r_min;
-    }
+    // Get the tolerance to use
+    [[maybe_unused]] auto [TOL_VOL, TOL_COLLINEAR, TOL_COPLANAR] =
+        getTol<NDIM, TYPE>( x, index_pair );
 
     // Next we need to create a list of the order in which we want to insert the values
     auto I = getInsertionOrder<NDIM, TYPE, ETYPE>( index_pair, x );
@@ -322,7 +376,7 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
             x2[1] = x[I[1]];
             while ( true ) {
                 x2[2]             = x[I[ik]];
-                bool is_collinear = collinear<NDIM, TYPE, ETYPE>( x2, TOL_COLLINEAR );
+                bool is_collinear = collinear<NDIM, TYPE>( x2, TOL_COLLINEAR );
                 if ( !is_collinear )
                     break;
                 ik++;
@@ -2221,42 +2275,21 @@ bool find_flip( const std::array<TYPE, NDIM> *x,
 /********************************************************************
  * Helper interface to create_tessellation                           *
  ********************************************************************/
-template<class TYPE, std::size_t NDIM>
-AMP::Array<TYPE> convert( const std::vector<std::array<TYPE, NDIM>> &x )
-{
-    AMP::Array<TYPE> y( NDIM, x.size() );
-    for ( size_t i = 0; i < x.size(); i++ ) {
-        for ( size_t d = 0; d < NDIM; d++ )
-            y( d, i ) = x[i][d];
-    }
-    return y;
-}
-template<class TYPE, std::size_t NDIM>
-std::vector<std::array<TYPE, NDIM>> convert( const AMP::Array<TYPE> &x )
-{
-    AMP_ASSERT( x.size( 0 ) == NDIM );
-    std::vector<std::array<TYPE, NDIM>> y( x.size( 1 ) );
-    for ( size_t i = 0; i < y.size(); i++ ) {
-        for ( size_t d = 0; d < NDIM; d++ )
-            y[i][d] = x( d, i );
-    }
-    return y;
-}
 template<class TYPE, class ETYPE>
 std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation( const AMP::Array<TYPE> &x )
 {
     int NDIM = x.size( 0 );
     AMP::Array<int> tri, nab;
     if ( NDIM == 2 ) {
-        auto x2           = convert<TYPE, 2>( x );
+        auto x2           = DelaunayHelpers::convert<TYPE, 2>( x );
         auto [tri2, nab2] = create_tessellation<2, TYPE, ETYPE>( x2 );
-        tri               = convert<int, 3>( tri2 );
-        nab               = convert<int, 3>( nab2 );
+        tri               = DelaunayHelpers::convert<int, 3>( tri2 );
+        nab               = DelaunayHelpers::convert<int, 3>( nab2 );
     } else if ( NDIM == 3 ) {
-        auto x2           = convert<TYPE, 3>( x );
+        auto x2           = DelaunayHelpers::convert<TYPE, 3>( x );
         auto [tri2, nab2] = create_tessellation<3, TYPE, ETYPE>( x2 );
-        tri               = convert<int, 4>( tri2 );
-        nab               = convert<int, 4>( nab2 );
+        tri               = DelaunayHelpers::convert<int, 4>( tri2 );
+        nab               = DelaunayHelpers::convert<int, 4>( nab2 );
     } else {
         throw std::logic_error( "Unsupported dimension" );
     }

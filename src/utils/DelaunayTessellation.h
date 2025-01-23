@@ -13,6 +13,17 @@
 namespace AMP::DelaunayTessellation {
 
 
+//! Check if
+/*!
+ * @brief  Check if the points are collinear
+ * @details  This function will check if all the points in a set are collinear
+ * @param x         The coordinates of the vertices (ndim x N)
+ * @return          Returns true if the points are collinear
+ */
+template<class TYPE>
+bool collinear( const Array<TYPE> &x );
+
+
 //! Function that creates the Delaunay Tessellation
 /*!
  * This function will create a valid Delaunay Tessellation in multiple dimensions.

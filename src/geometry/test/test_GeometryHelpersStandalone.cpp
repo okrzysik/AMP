@@ -82,14 +82,6 @@ Point map_circle_logical( double r, double x, double y )
     // Change domain to [0,1]
     return { 0.5 * ( xc + 1 ), 0.5 * ( yc + 1 ) };
 }
-double distance( double x, double y, const Point &xy )
-{
-    return sqrt( ( x - xy[0] ) * ( x - xy[0] ) + ( y - xy[1] ) * ( y - xy[1] ) );
-};
-double distance( double x[2], Point &y )
-{
-    return sqrt( ( x[0] - y[0] ) * ( x[0] - y[0] ) + ( x[1] - y[1] ) * ( x[1] - y[1] ) );
-};
 double distance( const Point &x, Point &y )
 {
     return sqrt( ( x[0] - y[0] ) * ( x[0] - y[0] ) + ( x[1] - y[1] ) * ( x[1] - y[1] ) );
@@ -98,54 +90,41 @@ double distance( const Point &x, Point &y )
 
 // Test the mapping to/from a logical circle
 using PointDist = std::array<double, 3>;
-std::tuple<double, std::vector<PointDist>, std::vector<PointDist>>
-test_map_logical_circle( int N, double tol )
+std::tuple<std::vector<PointDist>, std::vector<PointDist>> test_map_logical_circle( int N )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
-    bool pass      = true;
     const double r = 2.0;
     std::uniform_real_distribution<> dis( 0, 1 );
-    double max_error = 0;
     // Test logical->physical->logical
-    std::vector<PointDist> failed1;
+    std::vector<PointDist> points1( N );
     for ( int i = 0; i < N; i++ ) {
         double x    = dis( gen );
         double y    = dis( gen );
         auto p      = map_logical_circle( r, x, y );
         auto p2     = map_circle_logical( r, p[0], p[1] );
-        double r2   = sqrt( p[0] * p[0] + p[1] * p[1] );
-        double dist = distance( x, y, p2 );
-        pass        = pass && r2 < r + 1e-15;
-        pass        = pass && dist < tol;
-        if ( !pass ) {
-            failed1.push_back( { x, y, dist } );
-            printf( "1: %e %e %e %e %e %e\n", x, y, p2[0], p2[1], p2[0] - x, p2[1] - y );
-        }
-        max_error = std::max( max_error, dist );
+        double dist = distance( { x, y }, p2 );
+        points1.push_back( { x, y, dist } );
     }
+    std::sort( points1.begin(), points1.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
     // Test physical->logical->physical
     dis = std::uniform_real_distribution<>( -3.0, 3.0 );
-    std::vector<PointDist> failed2;
+    std::vector<PointDist> points2( N );
     for ( int i = 0; i < N; i++ ) {
         double x    = dis( gen );
         double y    = dis( gen );
         auto p      = map_circle_logical( 1.0, x, y );
         auto p2     = map_logical_circle( 1.0, p[0], p[1] );
-        double dist = distance( x, y, p2 );
-        pass        = pass && dist < tol;
-        if ( !pass ) {
-            failed2.push_back( { x, y, dist } );
-            printf( "2: %e %e %e %e %e %e\n", x, y, p2[0], p2[1], p2[0] - x, p2[1] - y );
-            max_error = std::max( max_error, dist );
-        }
+        double dist = distance( { x, y }, p2 );
+        points2.push_back( { x, y, dist } );
     }
-    return std::tie( max_error, failed1, failed2 );
+    std::sort( points2.begin(), points2.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
+    return std::tie( points1, points2 );
 }
 
 
 // Write/Read a single point
-void writePoint( std::FILE *fid, const PointDist x, const Point &logical, const Point &physical )
+void writePoint( std::FILE *fid, const PointDist &x, const Point &logical, const Point &physical )
 {
     double data[7] = { x[0], x[1], x[2], logical[0], logical[1], physical[0], physical[1] };
     std::ignore    = std::fwrite( data, sizeof( double ), 7, fid );
@@ -162,23 +141,103 @@ std::tuple<Point, double, Point, Point> readPoint( std::FILE *fid )
 }
 
 
-// Write the failed geometry points
-void writeFailedPoints( std::vector<PointDist> &p1,
-                        std::vector<PointDist> &p2,
-                        const std::string &filename )
+// Run and compare the failed points
+void testFailedPoints( const char *filename, double tol )
 {
-    if ( p1.empty() && p2.empty() )
-        return;
     // Open the file
-    auto fid = std::fopen( filename.data(), "wb" );
+    auto fid = std::fopen( filename, "rb" );
     if ( !fid ) {
         std::cerr << "Unable to open file for writing\n";
         return;
     }
-    // Keep the points with the largest error only
-    int N = 20;
-    std::sort( p1.begin(), p1.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
-    std::sort( p1.begin(), p1.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
+    auto print = []( const char *name, const Point &p1, const Point &p2 ) {
+        printf(
+            "   %s: (%f,%f) (%f,%f) %e\n", name, p1[0], p1[1], p2[0], p2[1], distance( p1, p2 ) );
+    };
+    // Load the points and compare the steps
+    int Np[2]      = { 0 };
+    std::ignore    = std::fread( Np, sizeof( int ), 2, fid );
+    const double r = 2.0;
+    printf( "Checking logical->physical->logical\n" );
+    for ( int i = 0; i < Np[0]; i++ ) {
+        auto [p, d1, l1, p1] = readPoint( fid );
+        auto p2              = map_logical_circle( r, p[0], p[1] );
+        auto l2              = map_circle_logical( r, p2[0], p2[1] );
+        auto l3              = map_circle_logical( r, p1[0], p1[1] );
+        bool t1              = distance( p1, p2 ) < tol;
+        bool t2              = distance( l1, l3 ) < tol;
+        bool t3              = distance( p, l2 ) < tol;
+        if ( d1 < tol && t1 && t2 && t3 ) {
+            // Original point passed
+        } else if ( t1 && t2 && t3 ) {
+            printf( "(%f %f) - matches, %e\n", p[0], p[1], d1 );
+        } else {
+            printf( "(%f,%f):\n", p[0], p[1] );
+            if ( !t1 )
+                print( "map_logical_circle", p1, p2 );
+            if ( !t2 )
+                print( "map_circle_logical", l1, l3 );
+            if ( !t3 )
+                print( "final", p, l2 );
+        }
+    }
+    printf( "\nChecking physical->logical->physical\n" );
+    for ( int i = 0; i < Np[1]; i++ ) {
+        auto [p, d1, l1, p1] = readPoint( fid );
+        auto l2              = map_circle_logical( 1.0, p[0], p[1] );
+        auto p2              = map_logical_circle( 1.0, l2[0], l2[1] );
+        auto p3              = map_logical_circle( 1.0, l1[0], l1[1] );
+        bool t1              = distance( l1, l2 ) < tol;
+        bool t2              = distance( p1, p3 ) < tol;
+        bool t3              = distance( p, p2 ) < tol;
+        if ( d1 < tol && t1 && t2 && t3 ) {
+            // Original point passed
+        } else if ( t1 && t2 && t3 ) {
+            printf( "(%f %f) - matches, %e\n", p[0], p[1], d1 );
+        } else {
+            printf( "(%f %f):\n", p[0], p[1] );
+            if ( !t1 )
+                print( "map_circle_logical", l1, l2 );
+            if ( !t2 )
+                print( "map_logical_circle", p1, p3 );
+            if ( !t3 )
+                print( "final", p, p2 );
+        }
+    }
+    std::fclose( fid );
+    printf( "\n" );
+}
+
+
+// Write the failed geometry points
+int writeFailedPoints( std::vector<PointDist> &p1,
+                       std::vector<PointDist> &p2,
+                       double tol,
+                       const char *filename )
+{
+    // Verify the points are sorted
+    std::is_sorted( p1.begin(), p1.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
+    std::is_sorted( p2.begin(), p2.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
+    // Check how many failures we have
+    int N_failed = 0;
+    for ( size_t i = 0; i < p1.size(); i++ ) {
+        if ( p1[i][2] > tol )
+            N_failed++;
+    }
+    for ( size_t i = 0; i < p2.size(); i++ ) {
+        if ( p2[i][2] > tol )
+            N_failed++;
+    }
+    if ( N_failed == 0 )
+        return N_failed;
+    // Open the file
+    auto fid = std::fopen( filename, "wb" );
+    if ( !fid ) {
+        std::cerr << "Unable to open file for writing\n";
+        return N_failed;
+    }
+    // Keep the points with the largest error
+    int N = 1000;
     p1.resize( std::min<int>( p1.size(), N ) );
     p2.resize( std::min<int>( p2.size(), N ) );
     // Write the points (and intermediate steps)
@@ -196,51 +255,9 @@ void writeFailedPoints( std::vector<PointDist> &p1,
         writePoint( fid, p2[i], logical, physical );
     }
     std::fclose( fid );
-}
-
-
-// Run and compare the failed points
-void testFailedPoints( const std::string &filename )
-{
-    // Open the file
-    auto fid = std::fopen( filename.data(), "rb" );
-    if ( !fid ) {
-        std::cerr << "Unable to open file for writing\n";
-        return;
-    }
-    // Load the points and compare the steps
-    int Np[2]      = { 0 };
-    std::ignore    = std::fread( Np, sizeof( int ), 2, fid );
-    const double r = 2.0;
-    printf( "Checking logical->physical->logical\n" );
-    for ( int i = 0; i < Np[0]; i++ ) {
-        auto [p, d1, l1, p1] = readPoint( fid );
-        auto p2              = map_logical_circle( r, p[0], p[1] );
-        auto l2              = map_circle_logical( r, p2[0], p2[1] );
-        double d2            = distance( p, l2 );
-        if ( std::abs( d1 - d2 ) < 1e-15 ) {
-            printf( "(%f %f) - matches, %e\n", p[0], p[1], d1 );
-        } else {
-            printf( "(%f,%f):\n", p[0], p[1] );
-            printf( "   (%f %f) (%f %f) [%e %e]\n", p1[0], p1[1], l1[0], l1[1], d1, d2 );
-            printf( "   (%f %f) (%f %f) [%e %e]\n", p2[0], p2[1], l2[0], l2[1], d1, d2 );
-        }
-    }
-    printf( "\nChecking physical->logical->physical\n" );
-    for ( int i = 0; i < Np[1]; i++ ) {
-        auto [p, d1, l1, p1] = readPoint( fid );
-        auto l2              = map_circle_logical( 1.0, p[0], p[1] );
-        auto p2              = map_logical_circle( 1.0, l2[0], l2[1] );
-        double d2            = distance( p, p2 );
-        if ( std::abs( d1 - d2 ) < 1e-15 ) {
-            printf( "(%f %f) - matches, %e\n", p[0], p[1], d1 );
-        } else {
-            printf( "(%f %f):\n", p[0], p[1] );
-            printf( "   (%f %f) (%f %f) [%e %e]\n", l1[0], l1[1], p1[0], p1[1], d1, d2 );
-            printf( "   (%f %f) (%f %f) [%e %e]\n", l2[0], l2[1], p2[0], p2[1], d1, d2 );
-        }
-    }
-    std::fclose( fid );
+    // Open the file and retest the points for consistency
+    testFailedPoints( filename, tol );
+    return N_failed;
 }
 
 
@@ -255,15 +272,16 @@ int main( int argc, char **argv )
     }
 
     // Standalone test
+    const double tol = 1e-10;
     if ( argc == 1 ) {
         // Run the test
-        double tol         = 1e-10;
-        auto [err, p1, p2] = test_map_logical_circle( 10000, tol );
+        auto [p1, p2] = test_map_logical_circle( 10000 );
         // Write failed points to a file
-        writeFailedPoints( p1, p2, "failedGeometryHelpersPoints.data" );
+        int N_failed = writeFailedPoints( p1, p2, tol, "failedGeometryHelpersPoints.data" );
+        printf( "N_failed = %i\n", N_failed );
+        printf( "max error = %e\n\n", std::max( p1[0][2], p2[0][2] ) );
         // Finished
-        printf( "max error = %e\n", err );
-        if ( err < tol ) {
+        if ( N_failed == 0 ) {
             printf( "Tests passed\n" );
             return 0;
         } else {
@@ -274,7 +292,7 @@ int main( int argc, char **argv )
 
     // Load existing failed points and compare the answers step by step
     if ( argc == 2 ) {
-        testFailedPoints( argv[1] );
+        testFailedPoints( argv[1], tol );
         return 0;
     }
 

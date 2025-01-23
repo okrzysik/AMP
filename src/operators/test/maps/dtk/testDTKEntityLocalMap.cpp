@@ -12,6 +12,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <random>
 #include <string>
 #include <unordered_map>
 
@@ -108,7 +109,10 @@ static void myTest( AMP::UnitTest *ut )
 
     double epsilon = 1.0e-12;
 
-    // Test the local map with elements.
+    // Test the local map with elements
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     for ( dtk_iterator = dtk_iterator.begin(); dtk_iterator != dtk_iterator.end();
           ++dtk_iterator ) {
         // Get the bounding box.
@@ -136,12 +140,9 @@ static void myTest( AMP::UnitTest *ut )
         Teuchos::Array<double> phys_point( 3 );
         for ( int n = 0; n < num_points; ++n ) {
             // Create a random point in the neighborhood of the box.
-            point[0] = centroid[0] +
-                       ( element_box[3] - element_box[0] ) * ( 2.0 * std::rand() / RAND_MAX - 1.0 );
-            point[1] = centroid[1] +
-                       ( element_box[4] - element_box[1] ) * ( 2.0 * std::rand() / RAND_MAX - 1.0 );
-            point[2] = centroid[2] +
-                       ( element_box[5] - element_box[2] ) * ( 2.0 * std::rand() / RAND_MAX - 1.0 );
+            point[0] = centroid[0] + ( element_box[3] - element_box[0] ) * dist( gen );
+            point[1] = centroid[1] + ( element_box[4] - element_box[1] ) * dist( gen );
+            point[2] = centroid[2] + ( element_box[5] - element_box[2] ) * dist( gen );
 
             // Determine if it is in the box.
             bool gold_inclusion =
