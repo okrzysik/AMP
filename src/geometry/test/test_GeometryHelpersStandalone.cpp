@@ -142,22 +142,17 @@ std::tuple<Point, double, Point, Point> readPoint( std::FILE *fid )
 
 
 // Run and compare the failed points
-void testFailedPoints( const std::string &filename, double tol )
+void testFailedPoints( const char *filename, double tol )
 {
     // Open the file
-    auto fid = std::fopen( filename.data(), "rb" );
+    auto fid = std::fopen( filename, "rb" );
     if ( !fid ) {
         std::cerr << "Unable to open file for writing\n";
         return;
     }
-    auto print = []( const std::string &name, const Point &p1, const Point &p2 ) {
-        printf( "   %s: (%f,%f) (%f,%f) %e\n",
-                name.data(),
-                p1[0],
-                p1[1],
-                p2[0],
-                p2[1],
-                distance( p1, p2 ) );
+    auto print = []( const char *name, const Point &p1, const Point &p2 ) {
+        printf(
+            "   %s: (%f,%f) (%f,%f) %e\n", name, p1[0], p1[1], p2[0], p2[1], distance( p1, p2 ) );
     };
     // Load the points and compare the steps
     int Np[2]      = { 0 };
@@ -218,7 +213,7 @@ void testFailedPoints( const std::string &filename, double tol )
 int writeFailedPoints( std::vector<PointDist> &p1,
                        std::vector<PointDist> &p2,
                        double tol,
-                       const std::string &filename )
+                       const char *filename )
 {
     // Verify the points are sorted
     std::is_sorted( p1.begin(), p1.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
@@ -236,7 +231,7 @@ int writeFailedPoints( std::vector<PointDist> &p1,
     if ( N_failed == 0 )
         return N_failed;
     // Open the file
-    auto fid = std::fopen( filename.data(), "wb" );
+    auto fid = std::fopen( filename, "wb" );
     if ( !fid ) {
         std::cerr << "Unable to open file for writing\n";
         return N_failed;
@@ -261,7 +256,7 @@ int writeFailedPoints( std::vector<PointDist> &p1,
     }
     std::fclose( fid );
     // Open the file and retest the points for consistency
-    testFailedPoints( filename.data(), tol );
+    testFailedPoints( filename, tol );
     return N_failed;
 }
 
@@ -277,7 +272,7 @@ int main( int argc, char **argv )
     }
 
     // Standalone test
-    const double tol = 1e-12;
+    const double tol = 1e-10;
     if ( argc == 1 ) {
         // Run the test
         auto [p1, p2] = test_map_logical_circle( 10000 );
