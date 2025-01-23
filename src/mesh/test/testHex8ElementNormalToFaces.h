@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <random>
 
 
 void test_normal( hex8_element_t *volume_element, unsigned int n_random_candidate_points = 20 )
@@ -14,9 +15,12 @@ void test_normal( hex8_element_t *volume_element, unsigned int n_random_candidat
     double local_coordinates_on_face[2], local_coordinates[3], global_coordinates[3];
     double local_coordinates_on_face_check[2];
     double const *face_support_points_ptr[4];
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
         for ( auto &elem : local_coordinates_on_face ) {
-            elem = -1.0 + 2.0 * rand() / RAND_MAX;
+            elem = dist( gen );
         }
         for ( unsigned int f = 0; f < 6; ++f ) {
             for ( unsigned int v = 0; v < 4; ++v ) {
@@ -60,9 +64,12 @@ void test_recovering_local_coordinates_on_face_from_basis_functions_values(
     unsigned int n_random_candidate_points = 1000 )
 {
     double x[2], x_prime[2], phi[4];
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
         for ( auto &elem : x ) {
-            elem = -1.0 + 2.0 * rand() / RAND_MAX;
+            elem = dist( gen );
         } // end for j
         hex8_element_t::get_basis_functions_values_on_face( x, phi );
         hex8_element_t::get_local_coordinates_on_face( phi, x_prime );
@@ -79,9 +86,12 @@ unsigned int perform_battery_of_tests( hex8_element_t *volume_element,
     double local_coordinates_on_face[2], computed_normal_vector[3], error_vector[3],
         error_vector_norm;
     unsigned int count_tests_failing = 0;
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
         for ( auto &elem : local_coordinates_on_face ) {
-            elem = -1.0 + 2.0 * rand() / RAND_MAX;
+            elem = dist( gen );
         }
         for ( unsigned int f = 0; f < 6; ++f ) {
             volume_element->compute_normal_to_face(
@@ -171,8 +181,11 @@ void testHex8ElementNormalToFaces( AMP::UnitTest &ut )
     volume_element.set_support_points( points );
     AMP_ASSERT( perform_battery_of_tests( &volume_element, normal_to_faces ) == 0 );
 
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -0.1, 0.1 );
     for ( auto &point : points ) {
-        point += -0.1 + 0.2 * rand() / RAND_MAX;
+        point += dist( gen );
     }
     volume_element.set_support_points( points );
     AMP_ASSERT( perform_battery_of_tests( &volume_element ) ==

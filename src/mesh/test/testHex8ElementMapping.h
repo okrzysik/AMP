@@ -4,6 +4,8 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/UtilityMacros.h"
 
+#include <random>
+
 
 class soft_equal_to
 {
@@ -27,9 +29,12 @@ unsigned int test_mapping_global_to_local( hex8_element_t *volume_element,
     double local_coordinates[3], global_coordinates[3], computed_local_coordinates[3], tol,
         error_vector[3];
     unsigned int count_tests_failing = 0;
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
         for ( auto &local_coordinate : local_coordinates ) {
-            local_coordinate = -1.0 + 2.0 * rand() / RAND_MAX;
+            local_coordinate = dist( gen );
         }
         volume_element->map_local_to_global( local_coordinates, global_coordinates );
         volume_element->map_global_to_local( global_coordinates, computed_local_coordinates );
@@ -50,9 +55,12 @@ void test_mapping_face_to_local( hex8_element_t *volume_element,
         computed_local_coordinates_on_face[3], computed_shift[3], error_vector[3];
     local_coordinates_on_face[2]          = 0.0;
     computed_local_coordinates_on_face[2] = 0.0;
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
         for ( unsigned int j = 0; j < 2; ++j ) {
-            local_coordinates_on_face[j] = -1.0 + 2.0 * rand() / RAND_MAX;
+            local_coordinates_on_face[j] = dist( gen );
         }
         for ( unsigned int f = 0; f < 6; ++f ) {
             volume_element->map_face_to_local( f, local_coordinates_on_face, local_coordinates );
@@ -73,9 +81,12 @@ void test_basis_functions_values_on_face( hex8_element_t *volume_element,
     double local_coordinates_on_face[2], local_coordinates[3], basis_functions_values_on_face[4],
         basis_functions_values[8];
     unsigned int const *face_ordering;
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
         for ( auto &elem : local_coordinates_on_face ) {
-            elem = -1.0 + 2.0 * rand() / RAND_MAX;
+            elem = dist( gen );
         }
         for ( unsigned int f = 0; f < 6; ++f ) {
             face_ordering = hex8_element_t::get_face( f );
@@ -96,9 +107,12 @@ void test_mapping_basis_functions_values_to_local_coordinates_on_face(
 {
     double local_coordinates_on_face[2], basis_functions_values_on_face[4],
         computed_local_coordinates_on_face[2];
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     for ( unsigned int i = 0; i < n_random_candidate_points; ++i ) {
         for ( auto &elem : local_coordinates_on_face ) {
-            elem = -1.0 + 2.0 * rand() / RAND_MAX;
+            elem = dist( gen );
         }
         hex8_element_t::get_basis_functions_values_on_face( local_coordinates_on_face,
                                                             basis_functions_values_on_face );
@@ -306,8 +320,11 @@ void testHex8ElementMapping( AMP::UnitTest &ut )
     AMP_ASSERT( test_mapping_global_to_local( &volume_element ) == 0 );
 
     srand( 0 );
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -0.1, 0.7 );
     for ( auto &point : points ) {
-        point += -0.1 + 0.8 * rand() / RAND_MAX;
+        point += dist( gen );
     }
 
     volume_element.set_support_points( points );

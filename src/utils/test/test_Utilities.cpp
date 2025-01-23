@@ -82,14 +82,16 @@ int main( int argc, char *argv[] )
         for ( size_t i = 0; i < N; i++ )
             data[i] = i;
         test_quicksort( ut, data, "sorted" );
-        srand( static_cast<unsigned int>( time( nullptr ) ) );
+        static std::random_device rd;
+        static std::mt19937 gen( rd() );
+        static std::uniform_int_distribution<int> dist( 1, 10000000 );
         for ( size_t i = 0; i < N; i++ )
-            data[i] = rand();
+            data[i] = dist( gen );
         test_quicksort( ut, data, "random" );
 
         // Test quickselect
         for ( size_t i = 0; i < N; i++ )
-            data[i] = rand();
+            data[i] = dist( gen );
         auto data2 = data;
         std::sort( data2.begin(), data2.end() );
         double t    = 0;
@@ -98,7 +100,7 @@ int main( int argc, char *argv[] )
         std::vector<int> data3( data.size(), 0 );
         for ( size_t i = 0; i < N_it; i++ ) {
             data3    = data;
-            size_t k = rand() % N;
+            size_t k = dist( gen ) % N;
             auto t1  = AMP::Utilities::time();
             auto v   = AMP::Utilities::quickselect( data3.size(), data3.data(), k );
             t += AMP::Utilities::time() - t1;
@@ -124,8 +126,6 @@ int main( int argc, char *argv[] )
             ut.passes( "Correctly factored 13958" );
         else
             ut.failure( "Correctly factored 13958" );
-        std::default_random_engine gen;
-        std::uniform_int_distribution<int> dist( 1, 10000000 );
         auto t1 = AMP::Utilities::time();
         N_it    = 10000;
         for ( size_t i = 0; i < N_it; i++ ) {

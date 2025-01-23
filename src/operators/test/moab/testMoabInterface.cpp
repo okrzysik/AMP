@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -91,8 +92,11 @@ static void moabInterface( AMP::UnitTest *ut )
 
     // Create vector with "temperature" data
     std::vector<double> myTemps( nodes_size, -1.0 );
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( 800, 850 );
     for ( int i = 0; i < nodes_size; ++i )
-        myTemps[i] = 800.0 + 50.0 * ( (float) rand() / (float) RAND_MAX );
+        myTemps[i] = dist( gen );
 
     // Add a temperature tag
     iBase_TagHandle tempTagHandle;
