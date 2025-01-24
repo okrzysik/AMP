@@ -3,8 +3,8 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/MultiVectorOperations.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/operations/VectorOperationsFactory.h"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 
 
 namespace AMP::LinearAlgebra {

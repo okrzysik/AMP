@@ -2,7 +2,7 @@
 #include "AMP/IO/RestartManager.h"
 #include "AMP/vectors/Scalar.h"
 #include "AMP/vectors/data/MultiVectorData.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 
 
 namespace AMP::LinearAlgebra {
