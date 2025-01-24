@@ -1,5 +1,5 @@
-#include "AMP/vectors/operations/DeviceOperationsHelpers.h"
-#include "AMP/vectors/operations/DeviceOperationsHelpers.hpp"
+#include "AMP/vectors/operations/device/DeviceOperationsHelpers.h"
+#include "AMP/vectors/operations/device/DeviceOperationsHelpers.hpp"
 
 
 // Explicit instantiations

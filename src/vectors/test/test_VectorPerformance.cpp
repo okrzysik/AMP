@@ -8,7 +8,7 @@
     #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
 #ifdef USE_DEVICE
-    #include "AMP/vectors/operations/VectorOperationsDevice.h"
+    #include "AMP/vectors/operations/device/VectorOperationsDevice.h"
 #endif
 #include "AMP/utils/memory.h"
 
