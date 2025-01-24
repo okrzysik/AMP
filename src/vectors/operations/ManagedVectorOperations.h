@@ -1,7 +1,7 @@
 #ifndef included_AMP_ManagedVectorOperations
 #define included_AMP_ManagedVectorOperations
 
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 
 
 namespace AMP::LinearAlgebra {

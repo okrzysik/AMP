@@ -6,7 +6,7 @@
 #include "AMP/vectors/data/ArrayVectorData.h"
 #ifdef USE_DEVICE
     #include "AMP/utils/device/GPUFunctionTable.h"
-    #include "AMP/vectors/operations/VectorOperationsDevice.h"
+    #include "AMP/vectors/operations/device/VectorOperationsDevice.h"
 #endif
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/utils/memory.h"

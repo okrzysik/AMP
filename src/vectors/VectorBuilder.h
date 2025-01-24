@@ -5,7 +5,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #ifdef USE_DEVICE
     #include "AMP/utils/device/GPUFunctionTable.h"
-    #include "AMP/vectors/operations/VectorOperationsDevice.h"
+    #include "AMP/vectors/operations/device/VectorOperationsDevice.h"
 #else
     #include "AMP/utils/FunctionTable.h"
 #endif
@@ -13,7 +13,7 @@
 #include "AMP/utils/memory.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorDataDefault.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 
 #include <string>
 

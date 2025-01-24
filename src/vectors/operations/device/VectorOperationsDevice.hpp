@@ -4,14 +4,13 @@
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
-#include "AMP/vectors/operations/DeviceOperationsHelpers.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.hpp"
-#include "AMP/vectors/operations/VectorOperationsDevice.h"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.hpp"
+#include "AMP/vectors/operations/device/DeviceOperationsHelpers.h"
+#include "AMP/vectors/operations/device/VectorOperationsDevice.h"
 
 
 namespace AMP {
 namespace LinearAlgebra {
-
 
 extern template class VectorOperationsDevice<double>; // Suppresses implicit instantiation below --
 extern template class VectorOperationsDevice<float>;  // Suppresses implicit instantiation below --

@@ -1,5 +1,4 @@
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.hpp"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.hpp"
 
 
 // Explicit instantiations
