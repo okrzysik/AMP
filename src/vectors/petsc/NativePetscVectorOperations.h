@@ -5,7 +5,7 @@
 #include "petsc/private/vecimpl.h"
 #include "petscvec.h"
 
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
 
 namespace AMP::LinearAlgebra {

@@ -1,5 +1,5 @@
-#include "AMP/vectors/operations/VectorOperationsDevice.h"
-#include "AMP/vectors/operations/VectorOperationsDevice.hpp"
+#include "AMP/vectors/operations/device/VectorOperationsDevice.h"
+#include "AMP/vectors/operations/device/VectorOperationsDevice.hpp"
 
 
 // Explicit instantiations

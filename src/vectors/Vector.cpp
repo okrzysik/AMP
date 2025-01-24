@@ -8,7 +8,7 @@
 #include "AMP/vectors/VectorFactory.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "AMP/vectors/data/VectorDataNull.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 
 #include <cfloat>
 #include <cmath>
