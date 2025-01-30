@@ -1,15 +1,14 @@
 #ifndef included_AMP_GeometryHelpers
 #define included_AMP_GeometryHelpers
 
+#include "AMP/utils/MeshPoint.h"
 
 #include <array>
 #include <vector>
 
 
 namespace AMP::Mesh {
-template<class TYPE>
-class MeshPoint;
-using Point = class AMP::Mesh::MeshPoint<double>;
+using Point = AMP::Mesh::MeshPoint<double>;
 } // namespace AMP::Mesh
 
 namespace AMP::Geometry::GeometryHelpers {

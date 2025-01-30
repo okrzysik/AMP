@@ -42,17 +42,17 @@ instantiateArrayConstructors( std::complex<double> );
 template Array<std::complex<float>>::Array( const Range<std::complex<float>> &range );
 template Array<std::complex<double>>::Array( const Range<std::complex<double>> &range );
 template Array<std::complex<float>>
-Array<std::complex<float>>::repmat( std::vector<unsigned long> const & ) const;
+Array<std::complex<float>>::repmat( std::vector<size_t> const & ) const;
 template Array<std::complex<double>>
-Array<std::complex<double>>::repmat( std::vector<unsigned long> const & ) const;
-template void Array<std::complex<float>>::copySubset( std::vector<unsigned long> const &,
+Array<std::complex<double>>::repmat( std::vector<size_t> const & ) const;
+template void Array<std::complex<float>>::copySubset( std::vector<size_t> const &,
                                                       Array<std::complex<float>> const & );
-template void Array<std::complex<double>>::copySubset( std::vector<unsigned long> const &,
+template void Array<std::complex<double>>::copySubset( std::vector<size_t> const &,
                                                        Array<std::complex<double>> const & );
 template Array<std::complex<float>>
-Array<std::complex<float>>::subset( std::vector<unsigned long> const & ) const;
+Array<std::complex<float>>::subset( std::vector<size_t> const & ) const;
 template Array<std::complex<double>>
-Array<std::complex<double>>::subset( std::vector<unsigned long> const & ) const;
+Array<std::complex<double>>::subset( std::vector<size_t> const & ) const;
 template bool Array<std::complex<float>>::NaNs() const;
 template bool Array<std::complex<double>>::NaNs() const;
 template void AMP::Array<std::complex<double>, AMP::FunctionTable>::rand();

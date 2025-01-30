@@ -279,7 +279,7 @@ size_t Mesh::numGhostElements( const GeomType, int ) const
 static double getTol( const std::vector<double> &box, size_t N )
 {
     int ndim     = box.size();
-    size_t N2    = pow( N, 1.0 / ndim );
+    size_t N2    = std::pow( N, 1.0 / ndim );
     double dx[3] = { 0, 0, 0 };
     for ( int d = 0; d < ndim / 2; d++ )
         dx[d] = ( box[2 * d + 1] - box[2 * d] ) / N2;

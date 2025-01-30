@@ -13,6 +13,6 @@ template int AMP::AMP_MPI::allGather<AMP::Operator::NodeToNodeMap::Point>(
     bool ) const;
 template void AMP::Utilities::quicksort<AMP::Operator::NodeToNodeMap::Point>(
     std::vector<AMP::Operator::NodeToNodeMap::Point> & );
-template unsigned long AMP::Utilities::findfirst<AMP::Operator::NodeToNodeMap::Point>(
+template size_t AMP::Utilities::findfirst<AMP::Operator::NodeToNodeMap::Point>(
     std::vector<AMP::Operator::NodeToNodeMap::Point> const &,
     AMP::Operator::NodeToNodeMap::Point const & );

@@ -39,10 +39,10 @@
 // clang-format off
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || defined( _MSC_VER )
     #include <process.h>
-    #include <psapi.h>
     #include <stdio.h>
     #include <tchar.h>
     #include <windows.h>
+    #include <psapi.h>  // Must be after windows.h
 #else
     #include <dlfcn.h>
     #include <execinfo.h>

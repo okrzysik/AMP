@@ -10,6 +10,7 @@
 #include "AMP/vectors/Vector.h"
 
 #include <algorithm>
+#include <cmath>
 #include <iomanip>
 
 #ifdef ENABLE_RESTART
@@ -1357,7 +1358,7 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         AMP::pout << std::setprecision( 16 )
                   << "Truncation error estimate is: " << d_timeTruncationErrorEstimate << std::endl;
         //   AMP::pout << "Cube root of truncation error estimate is: " <<
-        //   pow(d_timeTruncationErrorEstimate,1.0/3.0) << std::endl;
+        //   std::pow(d_timeTruncationErrorEstimate,1.0/3.0) << std::endl;
     }
 
     double dtFactor = 0.0;
@@ -1381,25 +1382,25 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         //   const double safetyFactor     = 0.9;
         if ( d_pi_controller_type == "H211b" ) {
             const double b = 4.0;
-            dtFactor = pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
+            dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
                             1.0 / ( b * ( p + 1.0 ) ) );
             dtFactor *=
-                pow( safetyFactor / ( std::max( d_prevTimeTruncationErrorEstimate, m_eps ) ),
+                std::pow( safetyFactor / ( std::max( d_prevTimeTruncationErrorEstimate, m_eps ) ),
                      1.0 / ( b * ( p + 1.0 ) ) );
-            dtFactor *= pow( d_alpha, -0.25 );
+            dtFactor *= std::pow( d_alpha, -0.25 );
 
         } else if ( d_pi_controller_type == "PC.4.7" ) {
-            dtFactor = pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
+            dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
                             0.4 / ( p + 1.0 ) );
-            dtFactor = dtFactor * pow( d_timeErrorEstimateRatio, 0.7 / ( p + 1.0 ) ) * d_alpha;
+            dtFactor = dtFactor * std::pow( d_timeErrorEstimateRatio, 0.7 / ( p + 1.0 ) ) * d_alpha;
 
         } else if ( d_pi_controller_type == "PC11" ) {
-            dtFactor = pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
+            dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
                             1.0 / ( p + 1.0 ) );
-            dtFactor = dtFactor * pow( d_timeErrorEstimateRatio, 1.0 / ( p + 1.0 ) ) * d_alpha;
+            dtFactor = dtFactor * std::pow( d_timeErrorEstimateRatio, 1.0 / ( p + 1.0 ) ) * d_alpha;
 
         } else if ( d_pi_controller_type == "Deadbeat" ) {
-            dtFactor = pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
+            dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
                             1.0 / ( p + 1.0 ) );
         } else {
             AMP_ERROR( "ERROR: Unknown PI controller type" );
@@ -1439,7 +1440,7 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         //       p=1;
         //     }
 
-        dtFactor = pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
+        dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
                         1.0 / ( p + 1.0 ) );
 
         // when regridding has taken place and a resolve is done the potential
@@ -1533,12 +1534,12 @@ double BDFIntegrator::calculateLTEScalingFactor()
             // check!! the expressions given in Gresho and Sani appear to be wrong!
             if ( d_predictor_type == "leapfrog" ) {
                 // there might be an error here!!
-                //      errorFactor = 1.0/((1+alpha)*(1.0+ pow (alpha/(1.0+alpha), 2.0 ) ) );
+                //      errorFactor = 1.0/((1+alpha)*(1.0+std::pow(alpha/(1.0+alpha),2) ) );
 
                 errorFactor = ( 1.0 + d_alpha ) / ( 2.0 + 3.0 * d_alpha );
             } else if ( d_predictor_type == "ab2" ) {
                 // compute error factor from M. Pernice communication for AB2 and BDF2
-                errorFactor = 2.0 / ( 6.0 - 1.0 / ( pow( d_alpha + 1, 2.0 ) ) );
+                errorFactor = 2.0 / ( 6.0 - 1.0 / ( std::pow( d_alpha + 1, 2.0 ) ) );
             } else {
                 AMP_ERROR( "ERROR: Unknown BDF2 predictor" );
             }
