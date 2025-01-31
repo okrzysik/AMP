@@ -348,7 +348,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
     double currX[8], currY[8], currZ[8], dNdx[8], dNdy[8], dNdz[8], detJ[1], delta_u[8], delta_v[8],
         delta_w[8];
     double x_np1o2[8], y_np1o2[8], z_np1o2[8], prevX[8], prevY[8], prevZ[8], N[8];
-    double rsq3              = ( 1.0 / sqrt( 3.0 ) );
+    double rsq3              = ( 1.0 / std::sqrt( 3.0 ) );
     const double currXi[8]   = { -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3 };
     const double currEta[8]  = { -rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3 };
     const double currZeta[8] = { -rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3 };
@@ -415,7 +415,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
         computeShapeFunctions( N, currXi[qp], currEta[qp], currZeta[qp] );
 
         // The value of radius is very important.
-        // double radius = sqrt((xyz[qp](0) * xyz[qp](0)) + (xyz[qp](1) * xyz[qp](1)));
+        // double radius = std::sqrt((xyz[qp](0) * xyz[qp](0)) + (xyz[qp](1) * xyz[qp](1)));
 
         // Constructing an identity matrix.
         for ( unsigned int i = 0; i < 3; i++ ) {
@@ -857,7 +857,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Normal()
                 elementOutputVector[( 3 * j ) + d] += ( detJ[0] * tmp );
 
             } // end for d
-        }     // end for j
+        } // end for j
 
         d_materialModel->postNonlinearAssemblyGaussPointOperation();
     } // end for qp
@@ -903,7 +903,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
     double currX[8], currY[8], currZ[8], dNdx[8], dNdy[8], dNdz[8], detJ[1], delta_u[8], delta_v[8],
         delta_w[8], N[8];
     double x_np1o2[8], y_np1o2[8], z_np1o2[8], prevX[8], prevY[8], prevZ[8];
-    double rsq3              = ( 1.0 / sqrt( 3.0 ) );
+    double rsq3              = ( 1.0 / std::sqrt( 3.0 ) );
     const double currXi[8]   = { -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3 };
     const double currEta[8]  = { -rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3 };
     const double currZeta[8] = { -rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3 };
@@ -1322,7 +1322,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::apply_Reduced()
 
                 elementOutputVector[( 3 * j ) + d] += ( detJ[0] * tmp );
             } // end for d
-        }     // end for j
+        } // end for j
 
         d_materialModel->postNonlinearAssemblyGaussPointOperation();
     } // end for qp

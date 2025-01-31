@@ -441,7 +441,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                     rh[n] = d_x( n, k ) - d_x( n, i );
                     r += rh[n] * rh[n];
                 }
-                r = sqrt( r );
+                r = std::sqrt( r );
                 for ( int n = 0; n < ndim; n++ )
                     rh[n] /= r;
                 // Compute the derivative of f in the direction of the neighbor
@@ -508,7 +508,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                     rh[n] = ( d_x( n, k ) - d_x( n, i ) );
                     r += rh[n] * rh[n];
                 }
-                r = sqrt( r );
+                r = std::sqrt( r );
                 for ( int n = 0; n < ndim; n++ )
                     rh[n] /= r;
                 // Compute the derivative of f in the direction of the neighbor
@@ -582,7 +582,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                         rh[n] = d_x( n, k ) - d_x( n, i );
                         r += rh[n] * rh[n];
                     }
-                    r = sqrt( r );
+                    r = std::sqrt( r );
                     for ( int n = 0; n < ndim; n++ )
                         rh[n] /= r;
                     // Compute the derivative of f in the direction of the neighbor
@@ -1088,8 +1088,8 @@ double interp_line( const int n,
         rx += ( x[i] - x0[i] ) * ( x[i] - x0[i] );
         dot += ( x[i] - x0[i] ) * ( x1[i] - x0[i] );
     }
-    r  = sqrt( r );
-    rx = sqrt( rx );
+    r  = std::sqrt( r );
+    rx = std::sqrt( rx );
     if ( dot < 0.0 )
         rx = -rx;
     // double rh[n];
@@ -1529,8 +1529,8 @@ static void Gauss_Seidel( const uint32_t Nb,
                             ( x_old[1] - x_new[1] ) * ( x_old[1] - x_new[1] );
             }
             // Check the quality of the new solution
-            L2_norm  = sqrt( L2_norm );
-            L2_error = sqrt( L2_error );
+            L2_norm  = std::sqrt( L2_norm );
+            L2_error = std::sqrt( L2_error );
             if ( ( L2_error / L2_norm ) < rel_tol || L2_error < abs_tol )
                 break;
         }
@@ -1571,8 +1571,8 @@ static void Gauss_Seidel( const uint32_t Nb,
                             ( x_old[2] - x_new[2] ) * ( x_old[2] - x_new[2] );
             }
             // Check the quality of the new solution
-            L2_norm  = sqrt( L2_norm );
-            L2_error = sqrt( L2_error );
+            L2_norm  = std::sqrt( L2_norm );
+            L2_error = std::sqrt( L2_error );
             if ( ( L2_error / L2_norm ) < rel_tol || L2_error < abs_tol )
                 break;
         }
@@ -1608,8 +1608,8 @@ static void Gauss_Seidel( const uint32_t Nb,
                 }
             }
             // Check the quality of the new solution
-            L2_norm  = sqrt( L2_norm );
-            L2_error = sqrt( L2_error );
+            L2_norm  = std::sqrt( L2_norm );
+            L2_error = std::sqrt( L2_error );
             if ( ( L2_error / L2_norm ) < rel_tol || L2_error < abs_tol )
                 break;
         }

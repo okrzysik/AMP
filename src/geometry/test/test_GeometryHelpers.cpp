@@ -35,7 +35,7 @@ static inline double dot( const Point3D &x, const Point3D &y )
 }
 static inline Point3D normalize( const Point3D &x )
 {
-    double tmp = 1.0 / sqrt( dot( x, x ) );
+    double tmp = 1.0 / std::sqrt( dot( x, x ) );
     return { tmp * x[0], tmp * x[1], tmp * x[2] };
 }
 static inline Point2D convert2( const Point &x ) { return { x.x(), x.y() }; }
@@ -83,7 +83,7 @@ void test_dist_line( int N, AMP::UnitTest &ut )
 void test_map_logical_circle( int N, AMP::UnitTest &ut )
 {
     auto distance = []( double x, double y, std::array<double, 2> xy ) {
-        return sqrt( ( x - xy[0] ) * ( x - xy[0] ) + ( y - xy[1] ) * ( y - xy[1] ) );
+        return std::sqrt( ( x - xy[0] ) * ( x - xy[0] ) + ( y - xy[1] ) * ( y - xy[1] ) );
     };
     std::random_device rd;
     std::mt19937 gen( rd() );
@@ -98,7 +98,7 @@ void test_map_logical_circle( int N, AMP::UnitTest &ut )
             double y  = dis( gen );
             auto p    = map_logical_circle( r, method, x, y );
             auto p2   = map_circle_logical( r, method, p[0], p[1] );
-            double r2 = sqrt( p[0] * p[0] + p[1] * p[1] );
+            double r2 = std::sqrt( p[0] * p[0] + p[1] * p[1] );
             pass      = pass && r2 < r + 1e-15;
             pass      = pass && distance( x, y, p2 ) < tol;
             if ( !( distance( x, y, p2 ) < tol ) )
@@ -148,7 +148,7 @@ void test_map_logical_poly( int N, AMP::UnitTest &ut )
             double y  = dis( gen );
             auto p    = map_logical_poly( Np, r, x, y );
             auto p2   = map_poly_logical( Np, r, p[0], p[1] );
-            double r2 = sqrt( p[0] * p[0] + p[1] * p[1] );
+            double r2 = std::sqrt( p[0] * p[0] + p[1] * p[1] );
             pass      = pass && r2 < r + 1e-15;
             pass      = pass && fabs( p2[0] - x ) < tol && fabs( p2[1] - y ) < tol;
             if ( fabs( p2[0] - x ) > tol || fabs( p2[1] - y ) > tol )
@@ -180,7 +180,7 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
         double y  = dis( gen );
         auto p    = map_logical_sphere_surface( 1, r, x, y );
         auto p2   = map_sphere_surface_logical( 1, r, p[0], p[1], p[2] );
-        double r2 = sqrt( p[0] * p[0] + p[1] * p[1] + p[2] * p[2] );
+        double r2 = std::sqrt( p[0] * p[0] + p[1] * p[1] + p[2] * p[2] );
         pass      = pass && r2 < r + 1e-15;
         pass      = pass && fabs( p2[0] - x ) < tol && fabs( p2[1] - y ) < tol;
         if ( fabs( p2[0] - x ) > tol || fabs( p2[1] - y ) > tol )

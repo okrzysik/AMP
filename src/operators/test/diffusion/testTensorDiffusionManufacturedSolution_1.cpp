@@ -131,7 +131,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
             double x  = ( iterator->coord() )[0];
             double y  = ( iterator->coord() )[1];
             double z  = ( iterator->coord() )[2];
-            double r  = sqrt( x * x + y * y );
+            double r  = std::sqrt( x * x + y * y );
             double Pi = 3.1415926535898;
             double th = 0;
             if ( r > 0 ) {
@@ -198,7 +198,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
                 src = sourceVec->getValueByGlobalID( gid[0] );
                 err = res / ( src + .5 * res + std::numeric_limits<double>::epsilon() );
                 if ( mfgName.find( "Cylindrical" ) < mfgName.size() ) {
-                    double r = sqrt( x * x + y * y ), th = 0.;
+                    double r = std::sqrt( x * x + y * y ), th = 0.;
                     double Pi = 3.1415926535898;
                     if ( r > 0 ) {
                         th = acos( x / r );

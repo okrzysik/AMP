@@ -222,7 +222,7 @@ std::vector<int> factor( uint64_t n )
     uint64_t f = 5;
     while ( true ) {
         // Determine the largest number we need to check
-        auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * sqrt( n ) ) );
+        auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * std::sqrt( n ) ) );
         // Search all remaining numbers (note  we skip every 3rd odd number)
         bool found = false;
         for ( ; f <= f_max && !found; f += 6 ) {
@@ -251,7 +251,7 @@ bool isPrime( uint64_t n )
     if ( ( n & 0x01 ) == 0 || n % 3 == 0 )
         return false;
     // Determine the largest number we need to check
-    auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * sqrt( n ) ) );
+    auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * std::sqrt( n ) ) );
     // Check if the number is prime
     for ( uint64_t f = 5; f <= f_max; f += 6 ) {
         if ( ( n % f == 0 ) || ( n % ( f + 2 ) == 0 ) )
@@ -268,7 +268,7 @@ std::vector<uint64_t> primes( uint64_t n )
         return { 2u };
     // Create our bit array
     uint64_t n2 = ( n + 1 ) / 2;
-    double tmp  = 1.000000000000001 * sqrt( static_cast<double>( n ) );
+    double tmp  = 1.000000000000001 * std::sqrt( static_cast<double>( n ) );
     uint64_t ub = static_cast<uint64_t>( tmp ) >> 1;
     auto N      = ( n2 + 63 ) / 64;
     auto p      = new uint64_t[N];

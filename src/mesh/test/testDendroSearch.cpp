@@ -178,7 +178,7 @@ void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapt
             os << "\\draw[" << option << "]\n";
             write_face( faceDataPtr, os );
         } // end if
-    }     // end for
+    } // end for
 }
 
 double dummyFunction( const std::vector<double> &xyz, const int dof )
@@ -534,16 +534,16 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
                          << globalTimingMeasurements[3] << "  " // interpolation
                          << globalTimingMeasurements[4] << "  " // project on boundary
                          << globalTimingMeasurements[5] << "  " << std::flush; // coarse+fine
-                }                                                              // end if
-            }                                                                  // end for k
+                } // end if
+            } // end for k
             if ( !rank ) {
                 fout << "\n";
             } // end if
-        }     // end for j
+        } // end for j
         if ( !rank ) {
             fout.close();
         } // end if
-    }     // end for i
+    } // end for i
 
     ut->passes( exeName );
 }
@@ -611,7 +611,7 @@ double gaussian( double mean, double std_deviation )
     } while ( r >= 1 );
 
     // Box-Muller transform
-    r = sqrt( -2.0 * log( r ) / r );
+    r = std::sqrt( -2.0 * log( r ) / r );
 
     // save for next call
     t1 = ( r * x2 );

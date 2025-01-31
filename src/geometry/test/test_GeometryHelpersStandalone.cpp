@@ -29,9 +29,9 @@ static inline Point map_c2p( double xc, double yc )
     double yp             = 0;
     const double invsqrt2 = 0.7071067811865475244;
     double D              = invsqrt2 * xc * ( 2 - xc );
-    double center         = D - sqrt( 1.0 - D * D );
+    double center         = D - std::sqrt( 1.0 - D * D );
     yp                    = invsqrt2 * ( 2 - xc ) * yc;
-    xp                    = center + sqrt( 1.0 - yp * yp );
+    xp                    = center + std::sqrt( 1.0 - yp * yp );
     return { scale * xp, scale * yp };
 }
 static inline Point map_p2c( double xp, double yp )
@@ -43,7 +43,7 @@ static inline Point map_p2c( double xp, double yp )
         auto [yc, xc] = map_p2c( yp, xp );
         return { xc, yc };
     }
-    double scale = std::max( sqrt( xp * xp + yp * yp ), 1.0 );
+    double scale = std::max( std::sqrt( xp * xp + yp * yp ), 1.0 );
     if ( scale > 1.0 ) {
         xp /= scale;
         yp /= scale;
@@ -51,9 +51,9 @@ static inline Point map_p2c( double xp, double yp )
     double xc          = 0;
     double yc          = 0;
     const double sqrt2 = 1.4142135623730950488;
-    auto z             = xp - sqrt( 1 - yp * yp );
-    auto D             = 0.5 * ( z + sqrt( 2 - z * z ) );
-    xc                 = 1.0 - sqrt( std::max( 1 - D * sqrt2, 0.0 ) );
+    auto z             = xp - std::sqrt( 1 - yp * yp );
+    auto D             = 0.5 * ( z + std::sqrt( 2 - z * z ) );
+    xc                 = 1.0 - std::sqrt( std::max( 1 - D * sqrt2, 0.0 ) );
     yc                 = yp * sqrt2 / ( 2 - xc );
     return { scale * xc, scale * yc };
 }
@@ -84,7 +84,7 @@ Point map_circle_logical( double r, double x, double y )
 }
 double distance( const Point &x, Point &y )
 {
-    return sqrt( ( x[0] - y[0] ) * ( x[0] - y[0] ) + ( x[1] - y[1] ) * ( x[1] - y[1] ) );
+    return std::sqrt( ( x[0] - y[0] ) * ( x[0] - y[0] ) + ( x[1] - y[1] ) * ( x[1] - y[1] ) );
 };
 
 

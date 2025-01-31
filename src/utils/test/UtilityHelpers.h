@@ -53,12 +53,15 @@ void testApproxEqual( AMP::UnitTest &ut )
 {
     using namespace AMP::Utilities;
     std::string type = typeid( T ).name();
+    constexpr T one  = static_cast<T>( 1.0 );
+    const T closeTol = std::pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
+    const T wrongTol = std::pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
 
-    T mine      = 1.0;
-    T close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    T wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
-    T close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
-    T wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
+    T mine      = one;
+    T close_rel = mine * static_cast<T>( one + closeTol );
+    T wrong_rel = mine * static_cast<T>( one + wrongTol );
+    T close_abs = mine + closeTol;
+    T wrong_abs = mine + wrongTol;
     if ( approx_equal( mine, close_rel ) && approx_equal_abs( mine, close_abs ) &&
          !approx_equal( mine, wrong_rel ) && !approx_equal_abs( mine, wrong_abs ) )
         ut.passes( type + " passes simple check near 1" );
@@ -66,10 +69,10 @@ void testApproxEqual( AMP::UnitTest &ut )
         ut.failure( type + " passes simple check near 1" );
 
     mine      = static_cast<T>( 1e-6 );
-    close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
-    close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
-    wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
+    close_rel = mine * static_cast<T>( one + closeTol );
+    wrong_rel = mine * static_cast<T>( one + wrongTol );
+    close_abs = mine + closeTol;
+    wrong_abs = mine + wrongTol;
     if ( approx_equal( mine, close_rel ) && approx_equal_abs( mine, close_abs ) &&
          !approx_equal( mine, wrong_rel ) && !approx_equal_abs( mine, wrong_abs ) )
         ut.passes( type + " passes simple check near 1e-6" );
@@ -77,10 +80,10 @@ void testApproxEqual( AMP::UnitTest &ut )
         ut.failure( type + " passes simple check near 1e-6" );
 
     mine      = static_cast<T>( -1e-32 );
-    close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
-    close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
-    wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
+    close_rel = mine * static_cast<T>( one + closeTol );
+    wrong_rel = mine * static_cast<T>( one + wrongTol );
+    close_abs = mine + closeTol;
+    wrong_abs = mine + wrongTol;
     if ( approx_equal( mine, close_rel ) && approx_equal_abs( mine, close_abs ) &&
          !approx_equal( mine, wrong_rel ) && !approx_equal_abs( mine, wrong_abs ) )
         ut.passes( type + " passes simple check near -1e-32" );

@@ -209,10 +209,12 @@ public:
     //! Get all supported units
     static inline std::vector<std::string> getAllUnits();
 
-protected:
+
+public:
     using unit_type = std::array<char, 31>;
     using SI_type   = std::array<int8_t, 9>;
 
+protected:
     unit_type d_unit;
     SI_type d_SI;
     double d_scale;

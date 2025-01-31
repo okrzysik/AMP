@@ -46,7 +46,7 @@ double compute_avg_dist( int DIM, int N )
     } else if ( DIM == 5 ) {
         C = 60.0 / pi * pi;
     }
-    return pow( C / ( (double) N ), 1.0 / ( (double) DIM ) );
+    return std::pow( C / ( (double) N ), 1.0 / ( (double) DIM ) );
 }
 
 
@@ -114,7 +114,7 @@ void run_kdtree_test( AMP::UnitTest &ut, int DIM, size_t Nx, size_t Ns )
     {
         PROFILE( "search_unknown" );
         pass            = true;
-        double dist_max = sqrt( (double) DIM ); // Maximum possible distance between two points
+        double dist_max = std::sqrt( (double) DIM ); // Maximum possible distance between two points
         double dist_avg = compute_avg_dist( DIM, (int) Nx ); // Average distance between two points
         double dist, xs[100], pos[100];
         for ( size_t i = 0; i < Ns; i++ ) {
@@ -166,7 +166,7 @@ void run_kdtree2_test( [[maybe_unused]] AMP::UnitTest &ut, size_t N )
     for ( auto tmp : result ) {
         auto p  = std::get<0>( tmp );
         auto pi = intersect( p0, v, p );
-        auto d  = sqrt( norm( pi - p ) );
+        auto d  = std::sqrt( norm( pi - p ) );
         printf( "   (%0.2f,%0.2f,%0.2f)  (%0.2f,%0.2f,%0.2f)  %0.5f\n",
                 p[0],
                 p[1],

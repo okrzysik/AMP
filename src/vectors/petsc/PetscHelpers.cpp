@@ -392,7 +392,7 @@ PetscErrorCode _AMP_sqrt( Vec a )
     auto cur = x->begin();
     auto end = x->end();
     while ( cur != end ) {
-        *cur = sqrt( fabs( *cur ) );
+        *cur = std::sqrt( fabs( *cur ) );
         cur++;
     }
     return 0;

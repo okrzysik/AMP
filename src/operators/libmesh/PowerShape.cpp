@@ -133,8 +133,8 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
         auto coord = iterator->coord();
         double rx  = ( coord[0] - centerx );
         double ry  = ( coord[1] - centery );
-        minR       = std::min( minR, sqrt( rx * rx + ry * ry ) );
-        maxR       = std::max( maxR, sqrt( rx * rx + ry * ry ) );
+        minR       = std::min( minR, std::sqrt( rx * rx + ry * ry ) );
+        maxR       = std::max( maxR, std::sqrt( rx * rx + ry * ry ) );
         ++iterator;
     }
     d_radialBoundingBox[0] = centerx;
@@ -464,16 +464,16 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
                     // 2D Gaussian (Normal) distribution.
                     newval = ( xmax - xmin ) * ( ymax - ymin ) * getGaussianF( x, y );
-                    newval =
-                        newval / ( ( erf( -( xmax - d_muX ) / ( sqrt( 2. ) * d_sigmaX ) ) *
-                                         erf( -( ymax - d_muY ) / ( sqrt( 2. ) * d_sigmaY ) ) +
-                                     erf( -( xmin - d_muX ) / ( sqrt( 2. ) * d_sigmaX ) ) *
-                                         erf( -( ymin - d_muY ) / ( sqrt( 2. ) * d_sigmaY ) ) -
-                                     erf( -( xmax - d_muX ) / ( sqrt( 2. ) * d_sigmaX ) ) *
-                                         erf( -( ymin - d_muY ) / ( sqrt( 2. ) * d_sigmaY ) ) -
-                                     erf( -( xmin - d_muX ) / ( sqrt( 2. ) * d_sigmaX ) ) *
-                                         erf( -( ymax - d_muY ) / ( sqrt( 2. ) * d_sigmaY ) ) ) *
-                                   d_sigmaX * d_sigmaY * PI / 2.0 );
+                    newval = newval /
+                             ( ( erf( -( xmax - d_muX ) / ( std::sqrt( 2. ) * d_sigmaX ) ) *
+                                     erf( -( ymax - d_muY ) / ( std::sqrt( 2. ) * d_sigmaY ) ) +
+                                 erf( -( xmin - d_muX ) / ( std::sqrt( 2. ) * d_sigmaX ) ) *
+                                     erf( -( ymin - d_muY ) / ( std::sqrt( 2. ) * d_sigmaY ) ) -
+                                 erf( -( xmax - d_muX ) / ( std::sqrt( 2. ) * d_sigmaX ) ) *
+                                     erf( -( ymin - d_muY ) / ( std::sqrt( 2. ) * d_sigmaY ) ) -
+                                 erf( -( xmin - d_muX ) / ( std::sqrt( 2. ) * d_sigmaX ) ) *
+                                     erf( -( ymax - d_muY ) / ( std::sqrt( 2. ) * d_sigmaY ) ) ) *
+                               d_sigmaX * d_sigmaY * PI / 2.0 );
                     val = newval;
 
                     // Z moments
@@ -530,7 +530,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     double z = d_fe->get_xyz()[i]( 2 );
 
                     // r based on Frapcon.
-                    double radius = sqrt( x * x + y * y );
+                    double radius = std::sqrt( x * x + y * y );
                     double Fr     = getFrapconFr( radius, rmax );
                     newval        = Fr / volumeIntegral;
                     val           = newval;
@@ -583,7 +583,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     double x = d_fe->get_xyz()[i]( 0 ) - centerx;
                     double y = d_fe->get_xyz()[i]( 1 ) - centery;
                     // r based on Frapcon.
-                    double relativeRadius = sqrt( x * x + y * y ) / rmax;
+                    double relativeRadius = std::sqrt( x * x + y * y ) / rmax;
                     double besArg         = 2.405 * relativeRadius;
                     // Taylor expansion of bessel function
 
@@ -675,7 +675,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     double z = d_fe->get_xyz()[i]( 2 );
 
                     // r based on Frapcon.
-                    double relativeRadius = sqrt( x * x + y * y ) / rmax;
+                    double relativeRadius = std::sqrt( x * x + y * y ) / rmax;
                     val                   = 1 + getZernikeRadial( relativeRadius );
 
                     // phi.
@@ -729,7 +729,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     double z = d_fe->get_xyz()[i]( 2 );
 
                     // r based on Frapcon.
-                    double relativeRadius = sqrt( x * x + y * y ) / rmax;
+                    double relativeRadius = std::sqrt( x * x + y * y ) / rmax;
                     double phi            = atan2( y, x );
                     val                   = 1 + getZernike( relativeRadius, phi );
 
@@ -841,7 +841,7 @@ double PowerShape::getVolumeIntegralSum( double rmax, double cx, double cy )
         for ( int i = 0; i < DOFsPerElement; i++ ) {
             double x      = d_fe->get_xyz()[i]( 0 ) - cx;
             double y      = d_fe->get_xyz()[i]( 1 ) - cy;
-            double radius = sqrt( x * x + y * y );
+            double radius = std::sqrt( x * x + y * y );
             elemSum += getFrapconFr( radius, rmax );
         } // end for gauss-points
         integralFr += ( elemSum / 8.0 ) * elemVolume;
@@ -883,7 +883,8 @@ void PowerShape::destroyCurrentLibMeshElement()
  */
 double PowerShape::getFrapconFr( double radius, double rmax )
 {
-    double fR = ( 1.0 + d_frapconConstant * exp( -3.0 * pow( 1000.0 * ( rmax - radius ), 0.45 ) ) );
+    double fR =
+        ( 1.0 + d_frapconConstant * exp( -3.0 * std::pow( 1000.0 * ( rmax - radius ), 0.45 ) ) );
     return fR;
 }
 
@@ -1029,19 +1030,19 @@ double PowerShape::evalZernike( int m, int n, const double rho, const double phi
     //  multiplying/dividing factorials, probably doesn't matter
     //  but can't hurt
     for ( int k = 0; k <= ( m - n ) / 2; ++k ) {
-        rhoFact += pow( -1, k ) * pow( rho, m - 2 * k ) * choose( m - k, k ) *
+        rhoFact += std::pow( -1, k ) * std::pow( rho, m - 2 * k ) * choose( m - k, k ) *
                    choose( m - 2 * k, ( n + m ) / 2 - k );
     }
 
     // Apply normalization (should be consistent with Denovo?)
     /*    double pi = 4.0*atan(1.0);
           if( m==0 )
-          rhoFact *= sqrt( (n+1)/pi );
+          rhoFact *= std::sqrt( (n+1)/pi );
           else
-          rhoFact *= sqrt( 2*(n+1)/pi );
+          rhoFact *= std::sqrt( 2*(n+1)/pi );
           */
     /*    for(int k=0;k<=(m-n)/2;++k) {
-          rhoFact += pow(rho,m-2*k) * ( pow(-1,k) * evalFactorial(m-k) )
+          rhoFact += std::pow(rho,m-2*k) * ( std::pow(-1,k) * evalFactorial(m-k) )
           / (             evalFactorial(k)
      * evalFactorial((m+n)/2-k)
      * evalFactorial((m-n)/2-k) );
@@ -1060,8 +1061,8 @@ double PowerShape::evalZernike( int m, int n, const double rho, const double phi
  */
 double PowerShape::getGaussianF( double x, double y )
 {
-    double gaussianF = exp( -( pow( x - d_muX, 2 ) / ( 2 * pow( d_sigmaX, 2.0 ) ) +
-                               pow( y - d_muY, 2 ) / ( 2 * pow( d_sigmaY, 2.0 ) ) ) );
+    double gaussianF = exp( -( std::pow( x - d_muX, 2 ) / ( 2 * std::pow( d_sigmaX, 2.0 ) ) +
+                               std::pow( y - d_muY, 2 ) / ( 2 * std::pow( d_sigmaY, 2.0 ) ) ) );
     return gaussianF;
 }
 } // namespace AMP::Operator

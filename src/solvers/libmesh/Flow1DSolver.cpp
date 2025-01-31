@@ -78,7 +78,7 @@ void Flow1DSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         double Heff, he_z, T_b_i, T_b_im1;
         double frhs;
 
-        Heff = ( 0.023 * d_K / d_De ) * pow( d_Re, 0.8 ) * pow( d_Pr, 0.4 );
+        Heff = ( 0.023 * d_K / d_De ) * std::pow( d_Re, 0.8 ) * std::pow( d_Pr, 0.4 );
         he_z = next_node - cur_node;
 
         // T_c_i   = d_cladVec->getValueByLocalID(i);
