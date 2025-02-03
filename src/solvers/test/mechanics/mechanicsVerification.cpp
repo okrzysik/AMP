@@ -169,7 +169,7 @@ computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             exactSolutionsVec->setLocalValuesByGlobalID(
                 1, &globalIDs[xyz], &displacementXYZ[xyz] );
         } // end loop over the coordinates
-    }     // end soop over all nodes
+    } // end soop over all nodes
     if ( verbose ) {
         AMP::pout << "--------------------------------------------\n"
                   << "---- exact solution norm = " << std::setprecision( 15 )
@@ -418,7 +418,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     double Ly          = Lx;
     double Lz          = Lx;
     double nElements   = mesh->numGlobalElements( AMP::Mesh::GeomType::Cell );
-    double scaleFactor = sqrt( Lx * Ly * Lz / nElements );
+    double scaleFactor = std::sqrt( Lx * Ly * Lz / nElements );
     AMP::pout << "number of elements = " << nElements << "\n";
     AMP::pout << "scale factor = " << scaleFactor << "\n";
     AMP::pout << "using manufactured solution " << manufacturedSolution->getName() << "\n";

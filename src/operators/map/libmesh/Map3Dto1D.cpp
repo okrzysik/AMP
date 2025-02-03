@@ -164,8 +164,8 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             }
 
             int pickId;
-            if ( pow( ( y[0] - y[3] ), 2 ) + pow( ( x[0] - x[3] ), 2 ) <
-                 pow( ( y[0] - y[2] ), 2 ) + pow( ( x[0] - x[2] ), 2 ) ) {
+            if ( std::pow( ( y[0] - y[3] ), 2 ) + std::pow( ( x[0] - x[3] ), 2 ) <
+                 std::pow( ( y[0] - y[2] ), 2 ) + std::pow( ( x[0] - x[2] ), 2 ) ) {
                 pickId = 3;
             } else {
                 pickId = 2;
@@ -187,8 +187,8 @@ void Map3Dto1D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     numFaceGauss[i] += 1;
                 }
             } // end for i
-        }     // end for bnd
-    }         // end if
+        } // end for bnd
+    } // end if
 
     // Gather the results from all processors
     std::vector<double> aggMapValues( numPoints );
@@ -289,8 +289,8 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             }
 
             int pickId;
-            if ( pow( ( y[0] - y[3] ), 2 ) + pow( ( x[0] - x[3] ), 2 ) <
-                 pow( ( y[0] - y[2] ), 2 ) + pow( ( x[0] - x[2] ), 2 ) ) {
+            if ( std::pow( ( y[0] - y[3] ), 2 ) + std::pow( ( x[0] - x[3] ), 2 ) <
+                 std::pow( ( y[0] - y[2] ), 2 ) + std::pow( ( x[0] - x[2] ), 2 ) ) {
                 pickId = 3;
             } else {
                 pickId = 2;
@@ -317,7 +317,7 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                     numFaceNodes[i] += 1;
                 }
             } // end for i
-        }     // end for bnd
+        } // end for bnd
     }
 
     // Gather the results from all processors

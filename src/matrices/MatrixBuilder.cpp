@@ -16,7 +16,6 @@
 #ifdef AMP_USE_TRILINOS
     #include "AMP/matrices/trilinos/EpetraMatrixData.h"
     #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
-    #include <Epetra_CrsMatrix.h>
 #endif
 
 #ifdef AMP_USE_HYPRE

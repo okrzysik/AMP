@@ -54,7 +54,8 @@ ENABLE_WARNINGS
 // Manufactured Solution
 static inline double fun( double x, double y, double )
 {
-    return 800 + ( ( 0.00004 - 20 * pow( x, 2 ) - 20 * pow( y, 2 ) ) * pow( 10, 6 ) );
+    return 800 +
+           ( ( 0.00004 - 20 * std::pow( x, 2 ) - 20 * std::pow( y, 2 ) ) * std::pow( 10, 6 ) );
 }
 static inline double __dTdn__( double, double, double, double ) { return 0; }
 static inline double __FsnK__() { return 80000000; }
@@ -191,7 +192,7 @@ void computeL2Norm( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                 double computedAtNode = TemperatureVec->getValueByGlobalID( bndGlobalIds[j] );
                 computedAtGauss[qp] += computedAtNode * phi[j][qp];
             } // end for j
-        }     // end for qp
+        } // end for qp
 
         for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
             double px                  = coordinates[qp]( 0 );
@@ -200,7 +201,7 @@ void computeL2Norm( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
             double manufacturedAtGauss = fun( px, py, pz );
 
             *discretizationErrorNorm2 +=
-                JxW[qp] * pow( ( computedAtGauss[qp] - manufacturedAtGauss ), 2 );
+                JxW[qp] * std::pow( ( computedAtGauss[qp] - manufacturedAtGauss ), 2 );
         }
     }
     *discretizationErrorNorm2 = globalComm.sumReduce( *discretizationErrorNorm2 );
@@ -482,7 +483,7 @@ void myTest( AMP::UnitTest *ut,
     std::cout << "Discretized error norm ^2 for Mesh  2: "<< discretizationErrorNorm2 << std::endl;
     */
 
-    std::cout << "Discretized error norm for ||U-Uh|| : " << sqrt( TotalNorm2 ) << std::endl;
+    std::cout << "Discretized error norm for ||U-Uh|| : " << std::sqrt( TotalNorm2 ) << std::endl;
 
     std::cout << "Max of U : " << TemperatureVec->max() << " Min of U : " << TemperatureVec->min()
               << std::endl;

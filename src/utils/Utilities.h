@@ -32,7 +32,7 @@ inline T type_default_tol()
     else if constexpr ( std::is_same_v<T, double> )
         return 1e-12;
     else if constexpr ( std::is_floating_point_v<T> )
-        return pow( std::numeric_limits<T>::epsilon(), (T) 0.77 );
+        return std::pow( std::numeric_limits<T>::epsilon(), (T) 0.77 );
     else
         return T();
 }

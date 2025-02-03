@@ -81,7 +81,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto Re     = flowDatabase->getScalar<double>( "Reynolds" );
     auto Pr     = flowDatabase->getScalar<double>( "Prandtl" );
     auto nP     = flowDatabase->getScalar<double>( "numpoints" );
-    double heff = ( 0.023 * K / De ) * pow( Re, 0.8 ) * pow( Pr, 0.4 );
+    double heff = ( 0.023 * K / De ) * std::pow( Re, 0.8 ) * std::pow( Pr, 0.4 );
     double dz   = 2. / nP;
 
     double val;

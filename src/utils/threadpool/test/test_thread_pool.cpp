@@ -34,7 +34,7 @@ void waste_cpu( int N )
     {
         double pi = 3.141592653589793;
         for ( int i = 0; i < N; i++ )
-            x = sqrt( x * exp( pi / x ) );
+            x = std::sqrt( x * exp( pi / x ) );
     } // style to limit gcov hits
     if ( fabs( x - 2.926064057273157 ) > 1e-12 )
         abort();

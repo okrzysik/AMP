@@ -194,7 +194,7 @@ constexpr double norm( const std::array<double, N> &x )
 template<std::size_t N>
 constexpr std::array<double, N> normalize( const std::array<double, N> &x )
 {
-    double tmp = 1.0 / sqrt( dot( x, x ) );
+    double tmp = 1.0 / std::sqrt( dot( x, x ) );
     auto y     = x;
     for ( size_t i = 0; i < N; i++ )
         y[i] *= tmp;

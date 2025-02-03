@@ -8,13 +8,12 @@ DISABLE_WARNINGS
 #include "Epetra_CrsMatrix.h"
 #include "Epetra_FECrsMatrix.h"
 #include <EpetraExt_Transpose_RowMatrix.h>
-ENABLE_WARNINGS
-
 #ifdef AMP_USE_MPI
     #include <Epetra_MpiComm.h>
 #else
     #include <Epetra_SerialComm.h>
 #endif
+ENABLE_WARNINGS
 
 #include "AMP/discretization/DOF_Manager.h"
 

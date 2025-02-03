@@ -342,7 +342,7 @@ void ElasticDamageThermalStrainModel::constructConstitutiveMatrix( const double 
         for ( int j = 0; j < 3; j++ ) {
             d_constitutiveMatrix[i][j] += ( K - ( ( 2.0 / 3.0 ) * G ) );
         } // end for j
-    }     // end for i
+    } // end for i
 }
 
 void ElasticDamageThermalStrainModel::computeEvalv( const std::vector<std::vector<double>> &strain )
@@ -483,7 +483,7 @@ void ElasticDamageThermalStrainModel::Thermal_Strain_Gauss_Point(
     }
 
     AMP_INSIST( ( eph_C0_eph >= 0.0 ), "The energy is less than zero, which is wrong." );
-    d_tmp1Tau[d_gaussPtCnt] = sqrt( eph_C0_eph / ( E_curr / 100.0 ) );
+    d_tmp1Tau[d_gaussPtCnt] = std::sqrt( eph_C0_eph / ( E_curr / 100.0 ) );
 
     if ( d_tmp1Tau[d_gaussPtCnt] <= d_EquilibriumDamageThreshold[d_gaussPtCnt] ) {
         d_tmp1DamageThreshold[d_gaussPtCnt] = d_EquilibriumDamageThreshold[d_gaussPtCnt];

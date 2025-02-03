@@ -84,7 +84,7 @@ void eigenVectors( double A[3][3], double val[3], double vec[3][3] )
                 vec[i][j] = 0.0;
                 vec[j][i] = 0.0;
             } // end for j
-        }     // end for i
+        } // end for i
     } else {
         int vecColCnt = 0;
         for ( auto &uniqVal : uniqVals ) {
@@ -105,7 +105,7 @@ void eigenVectors( double A[3][3], double val[3], double vec[3][3] )
                 } // end for j
                 vecColCnt++;
             } // end for k
-        }     // end for i
+        } // end for i
         AMP_ASSERT( vecColCnt == 3 );
     }
 }
@@ -149,7 +149,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                         tmp[2] = 0;
                         sols.push_back( tmp );
                     } // A21
-                }     // A12
+                } // A12
             } else {
                 if ( softEquals( ( A[1][1] * A[2][2] ), ( A[1][2] * A[2][1] ) ) ) {
                     std::vector<double> tmp( 3 );
@@ -168,8 +168,8 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                     tmp[2] = 0;
                     sols.push_back( tmp );
                 } // A21
-            }     // A11
-        }         // A02
+            } // A11
+        } // A02
     } else {
         if ( softEquals( ( A[1][2] * A[0][1] ), ( A[1][1] * A[0][2] ) ) ) {
             if ( softEquals( ( A[2][2] * A[0][1] ), ( A[2][1] * A[0][2] ) ) ) {
@@ -222,7 +222,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                                 tmp[1] = -( A[2][0] + ( A[2][2] * tmp[2] ) ) / A[2][1];
                                 sols.push_back( tmp );
                             } // A21
-                        }     // A10
+                        } // A10
                     } else {
                         if ( softEquals( A[2][1], 0 ) ) {
                             if ( softEquals( ( A[2][2] * A[1][0] ), ( A[2][0] * A[1][2] ) ) ) {
@@ -242,7 +242,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                             tmp[2] = -A[1][0] / A[1][2];
                             sols.push_back( tmp );
                         } // A21
-                    }     // A12
+                    } // A12
                 } else {
                     if ( softEquals( ( A[1][1] * A[2][2] ), ( A[2][1] * A[1][2] ) ) ) {
                         if ( softEquals( ( A[1][1] * A[2][0] ), ( A[2][1] * A[1][0] ) ) ) {
@@ -264,7 +264,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                         sols.push_back( tmp );
                     }
                 } // A11
-            }     // A00
+            } // A00
         } else {
             if ( softEquals( A[1][1], 0 ) ) {
                 std::vector<double> tmp( 3 );
@@ -292,7 +292,7 @@ void solveEquation( double A[3][3], std::vector<std::vector<double>> &sols )
                     sols.push_back( tmp );
                 }
             } // A11
-        }     // A02
+        } // A02
     } else {
         std::vector<double> tmp( 3 );
         tmp[0]   = 1;
@@ -339,7 +339,7 @@ void orthonormalize( std::vector<std::vector<double>> &vecs )
             for ( int k = 0; k < 3; k++ ) {
                 tmp[k] += ( dot1 * re[k] );
             } // end for k
-        }     // end for j
+        } // end for j
 
         std::vector<double> newVec( 3 );
         for ( int k = 0; k < 3; k++ ) {
@@ -349,7 +349,7 @@ void orthonormalize( std::vector<std::vector<double>> &vecs )
         double dot2 = vecDot( newVec, newVec );
 
         if ( !softEquals( dot2, 0 ) ) {
-            vecScale( ( 1.0 / sqrt( dot2 ) ), newVec );
+            vecScale( ( 1.0 / std::sqrt( dot2 ) ), newVec );
             res.push_back( newVec );
         }
     } // end for i
@@ -383,8 +383,8 @@ void quadraticRoots( double a, double b, double c, double &r1, double &r2 )
     AMP_ASSERT( delta >= 0.0 );
     AMP_ASSERT( !softEquals( a, 0 ) );
 
-    r1 = ( -b + sqrt( delta ) ) / ( 2.0 * a );
-    r2 = ( -b - sqrt( delta ) ) / ( 2.0 * a );
+    r1 = ( -b + std::sqrt( delta ) ) / ( 2.0 * a );
+    r2 = ( -b - std::sqrt( delta ) ) / ( 2.0 * a );
 }
 
 void firstCubicRoot( double a, double b, double c, double d, double &r1 )
@@ -400,15 +400,15 @@ void firstCubicRoot( double a, double b, double c, double d, double &r1 )
         t = 0;
     } else if ( softEquals( p, 0 ) ) {
         if ( q > 0 ) {
-            t = -pow( q, ( 1.0 / 3.0 ) );
+            t = -std::pow( q, ( 1.0 / 3.0 ) );
         } else {
-            t = pow( -q, ( 1.0 / 3.0 ) );
+            t = std::pow( -q, ( 1.0 / 3.0 ) );
         }
     } else if ( softEquals( ( 4.0 * p * p * p ), ( -27.0 * q * q ) ) ) {
         t = 3.0 * q / p;
     } else if ( ( ( 4.0 * p * p * p ) + ( 27.0 * q * q ) ) > 0 ) {
-        double uCube = -( q / 2.0 ) + sqrt( ( q * q / 4.0 ) + ( p * p * p / 27.0 ) );
-        double vCube = -( q / 2.0 ) - sqrt( ( q * q / 4.0 ) + ( p * p * p / 27.0 ) );
+        double uCube = -( q / 2.0 ) + std::sqrt( ( q * q / 4.0 ) + ( p * p * p / 27.0 ) );
+        double vCube = -( q / 2.0 ) - std::sqrt( ( q * q / 4.0 ) + ( p * p * p / 27.0 ) );
 
         double u;
         double v;
@@ -416,23 +416,23 @@ void firstCubicRoot( double a, double b, double c, double d, double &r1 )
         if ( softEquals( uCube, 0 ) ) {
             u = 0;
         } else if ( uCube > 0 ) {
-            u = pow( uCube, ( 1.0 / 3.0 ) );
+            u = std::pow( uCube, ( 1.0 / 3.0 ) );
         } else {
-            u = -pow( -uCube, ( 1.0 / 3.0 ) );
+            u = -std::pow( -uCube, ( 1.0 / 3.0 ) );
         }
 
         if ( softEquals( vCube, 0 ) ) {
             v = 0;
         } else if ( vCube > 0 ) {
-            v = pow( vCube, ( 1.0 / 3.0 ) );
+            v = std::pow( vCube, ( 1.0 / 3.0 ) );
         } else {
-            v = -pow( -vCube, ( 1.0 / 3.0 ) );
+            v = -std::pow( -vCube, ( 1.0 / 3.0 ) );
         }
 
         t = u + v;
     } else {
-        t = 2.0 * sqrt( -p / 3.0 ) *
-            cos( 1.0 / 3.0 * acos( ( 3.0 * q / ( 2.0 * p ) ) * sqrt( -3.0 / p ) ) );
+        t = 2.0 * std::sqrt( -p / 3.0 ) *
+            cos( 1.0 / 3.0 * acos( ( 3.0 * q / ( 2.0 * p ) ) * std::sqrt( -3.0 / p ) ) );
     }
 
     r1 = ( t - ( b / ( 3.0 * a ) ) );
@@ -444,7 +444,7 @@ void matTranspose( double A[3][3], double B[3][3] )
         for ( int j = 0; j < 3; j++ ) {
             B[i][j] = A[j][i];
         } // end for j
-    }     // end for i
+    } // end for i
 }
 
 void matInverse( double A[3][3], double B[3][3] )
@@ -485,7 +485,7 @@ void matScale( double A[3][3], double c )
         for ( int j = 0; j < 3; j++ ) {
             A[i][j] *= c;
         } // end for j
-    }     // end for i
+    } // end for i
 }
 
 double matDeterminant( double A[3][3] )
@@ -507,8 +507,8 @@ void matMatMultiply( double A[3][3], double B[3][3], double C[3][3] )
             for ( int k = 0; k < 3; k++ ) {
                 C[i][j] += ( A[i][k] * B[k][j] );
             } // end for k
-        }     // end for j
-    }         // end for i
+        } // end for j
+    } // end for i
 }
 
 void matVecMultiply( double A[3][3], double b[3], double c[3] )
@@ -535,13 +535,13 @@ void matCopy( double A[3][3], double B[3][3] )
         for ( int j = 0; j < 3; j++ ) {
             B[i][j] = A[i][j];
         } // end for j
-    }     // end for i
+    } // end for i
 }
 
 void vecSqrt( double val[3], double valSqrt[3] )
 {
     for ( int i = 0; i < 3; i++ ) {
-        valSqrt[i] = sqrt( val[i] );
+        valSqrt[i] = std::sqrt( val[i] );
     }
 }
 
@@ -771,18 +771,18 @@ void polarDecompositionFeqRU_Simo(
         AMP_INSIST( ( c >= 0.0 ),
                     "Error in the polar decomposition (Simo), value of c is less than zero." );
         for ( auto &elem : x )
-            elem = -pow( c, ( 1.0 / 3.0 ) );
+            elem = -std::pow( c, ( 1.0 / 3.0 ) );
     } else {
         AMP_INSIST( ( b <= 0.0 ),
                     "Error in the polar decomposition (Simo), value of b is greater than zero." );
-        double m     = 2.0 * sqrt( -b / 3.0 );
+        double m     = 2.0 * std::sqrt( -b / 3.0 );
         double n     = ( 3.0 * c ) / ( m * b );
         double term1 = 1.0 - ( n * n );
         term1        = std::max( tol, term1 );
         AMP_INSIST( ( term1 >= 0.0 ),
                     "(1.0 - n*n) is not greater than or equal to zero. Error in "
                     "the polar decomposition (Simo)" );
-        double t    = ( atan2( sqrt( term1 ), n ) ) / 3.0;
+        double t    = ( atan2( std::sqrt( term1 ), n ) ) / 3.0;
         double pi_d = 3.14159265358979;
         for ( int i = 0; i < 3; i++ )
             x[i] = m * cos( t + ( ( 2.0 * ( (double) ( i ) ) * pi_d ) / 3.0 ) );
@@ -795,7 +795,7 @@ void polarDecompositionFeqRU_Simo(
         AMP_INSIST( ( term2 >= 0.0 ),
                     "Error in the polar decomposition (Simo), while calculating "
                     "lambda, lambda^2 is negetive." );
-        lambda[i] = sqrt( term2 );
+        lambda[i] = std::sqrt( term2 );
     }
 
     i1 = lambda[0] + lambda[1] + lambda[2];

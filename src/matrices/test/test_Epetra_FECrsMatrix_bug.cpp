@@ -7,17 +7,20 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <cstdio>
 
+DISABLE_WARNINGS
 #include <Epetra_FECrsMatrix.h>
 #include <Epetra_Map.h>
-
 #ifdef AMP_USE_MPI
     #include <Epetra_MpiComm.h>
 #else
     #include <Epetra_SerialComm.h>
 #endif
+ENABLE_WARNINGS
+
 
 int main( int argc, char *argv[] )
 {

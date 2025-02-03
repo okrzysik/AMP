@@ -53,12 +53,15 @@ void testApproxEqual( AMP::UnitTest &ut )
 {
     using namespace AMP::Utilities;
     std::string type = typeid( T ).name();
+    constexpr T one  = static_cast<T>( 1.0 );
+    const T closeTol = std::pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
+    const T wrongTol = std::pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
 
-    T mine      = 1.0;
-    T close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    T wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
-    T close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
-    T wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
+    T mine      = one;
+    T close_rel = mine * static_cast<T>( one + closeTol );
+    T wrong_rel = mine * static_cast<T>( one + wrongTol );
+    T close_abs = mine + closeTol;
+    T wrong_abs = mine + wrongTol;
     if ( approx_equal( mine, close_rel ) && approx_equal_abs( mine, close_abs ) &&
          !approx_equal( mine, wrong_rel ) && !approx_equal_abs( mine, wrong_abs ) )
         ut.passes( type + " passes simple check near 1" );
@@ -66,10 +69,10 @@ void testApproxEqual( AMP::UnitTest &ut )
         ut.failure( type + " passes simple check near 1" );
 
     mine      = static_cast<T>( 1e-6 );
-    close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
-    close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
-    wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
+    close_rel = mine * static_cast<T>( one + closeTol );
+    wrong_rel = mine * static_cast<T>( one + wrongTol );
+    close_abs = mine + closeTol;
+    wrong_abs = mine + wrongTol;
     if ( approx_equal( mine, close_rel ) && approx_equal_abs( mine, close_abs ) &&
          !approx_equal( mine, wrong_rel ) && !approx_equal_abs( mine, wrong_abs ) )
         ut.passes( type + " passes simple check near 1e-6" );
@@ -77,10 +80,10 @@ void testApproxEqual( AMP::UnitTest &ut )
         ut.failure( type + " passes simple check near 1e-6" );
 
     mine      = static_cast<T>( -1e-32 );
-    close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
-    close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
-    wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
+    close_rel = mine * static_cast<T>( one + closeTol );
+    wrong_rel = mine * static_cast<T>( one + wrongTol );
+    close_abs = mine + closeTol;
+    wrong_abs = mine + wrongTol;
     if ( approx_equal( mine, close_rel ) && approx_equal_abs( mine, close_abs ) &&
          !approx_equal( mine, wrong_rel ) && !approx_equal_abs( mine, wrong_abs ) )
         ut.passes( type + " passes simple check near -1e-32" );
@@ -215,9 +218,9 @@ void test_shared_from_this( AMP::UnitTest &ut )
 
 
 /****************************************************************
- * Test sorting an array of points                               *
+ *  Test quicksort/quickselect                                    *
  ****************************************************************/
-void test_quicksort( AMP::UnitTest &ut, std::vector<int> &data1, const std::string &str )
+void testQuickSort( AMP::UnitTest &ut, std::vector<int> &data1, const std::string &str )
 {
     auto data2 = data1;
     auto data3 = data1;
@@ -237,6 +240,50 @@ void test_quicksort( AMP::UnitTest &ut, std::vector<int> &data1, const std::stri
     PASS_FAIL( pass, "quicksort sorts correctly: " + str );
     std::cout << "quicksort:" << str << " = " << t2 - t1 << ", std::sort = " << t3 - t2
               << ", std::sort(2) = " << t4 - t3 << std::endl;
+}
+void testQuickSort( AMP::UnitTest &ut )
+{
+    size_t N = 500000;
+    std::vector<int> data( N, 31 );
+    testQuickSort( ut, data, "identical" );
+    for ( size_t i = 0; i < N; i++ )
+        data[i] = i;
+    testQuickSort( ut, data, "sorted" );
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_int_distribution<int> dist( 1, 10000000 );
+    for ( size_t i = 0; i < N; i++ )
+        data[i] = dist( gen );
+    testQuickSort( ut, data, "random" );
+}
+void testQuickSelect( AMP::UnitTest &ut )
+{
+    size_t N = 500000;
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_int_distribution<int> dist( 1, 10000000 );
+    std::vector<int> data( N, 31 );
+    for ( size_t i = 0; i < N; i++ )
+        data[i] = dist( gen );
+    auto data2 = data;
+    std::sort( data2.begin(), data2.end() );
+    double t    = 0;
+    bool pass   = true;
+    size_t N_it = 200;
+    std::vector<int> data3( data.size(), 0 );
+    for ( size_t i = 0; i < N_it; i++ ) {
+        data3    = data;
+        size_t k = dist( gen ) % N;
+        auto t1  = AMP::Utilities::time();
+        auto v   = AMP::Utilities::quickselect( data3.size(), data3.data(), k );
+        t += AMP::Utilities::time() - t1;
+        pass = v == data2[k];
+    }
+    if ( pass )
+        ut.passes( "quickselect" );
+    else
+        ut.failure( "quickselect" );
+    std::cout << "quickselect = " << t / N_it << std::endl;
 }
 
 
@@ -285,6 +332,31 @@ void test_precision( [[maybe_unused]] AMP::UnitTest &ut )
     } else {
         static_assert( !std::is_same_v<T, T>, "Invalid type" );
     }
+}
+
+
+/********************************************************
+ *  Test typeid                                          *
+ ********************************************************/
+template<class T>
+void check( const std::string &name, AMP::UnitTest &ut, bool expected )
+{
+    auto type = AMP::getTypeID<T>();
+    bool pass =
+        std::string_view( type.name ) == name && type.bytes == sizeof( T ) && type.hash != 0;
+    if ( pass )
+        ut.passes( "typeid: " + name );
+    else if ( expected )
+        ut.expected_failure( "typeid: " + name + " --- " + std::string( type.name ) );
+    else
+        ut.failure( "typeid: " + name + " --- " + std::string( type.name ) );
+}
+void testTypeID( AMP::UnitTest &ut )
+{
+    check<std::shared_ptr<double>>( "std::shared_ptr<double>", ut, false ); // Fails windows
+    check<double *>( "double*", ut, true );                                 // Fails clang-16
+    check<const double *>( "const double*", ut, true );                     // Fails clang-16
+    check<double const *>( "const double*", ut, true );                     // Fails clang-16
 }
 
 

@@ -372,7 +372,7 @@ void MechanicsNonlinearElement::apply_Normal()
         d_materialModel->preNonlinearAssemblyGaussPointOperation();
 
         // The value of radius is very important.
-        // double radius = sqrt((xyz[qp](0) * xyz[qp](0)) + (xyz[qp](1) * xyz[qp](1)));
+        // double radius = std::sqrt((xyz[qp](0) * xyz[qp](0)) + (xyz[qp](1) * xyz[qp](1)));
 
         /* Compute Strain From Given Displacement */
 
@@ -617,7 +617,7 @@ void MechanicsNonlinearElement::apply_Normal()
                 elementOutputVector[( 3 * j ) + d] += ( JxW[qp] * tmp );
 
             } // end for d
-        }     // end for j
+        } // end for j
 
         d_materialModel->postNonlinearAssemblyGaussPointOperation();
     } // end for qp
@@ -656,8 +656,8 @@ void MechanicsNonlinearElement::apply_Reduced()
             for ( int d = 0; d < 3; d++ ) {
                 avgTraceTerm[( 3 * j ) + d] += ( JxW[qp] * dphi[j][qp]( d ) );
             } // end for d
-        }     // end for j
-    }         // end for qp
+        } // end for j
+    } // end for qp
 
     for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ ) {
         avgTraceTerm[i] = avgTraceTerm[i] / sumJxW;
@@ -887,7 +887,7 @@ void MechanicsNonlinearElement::apply_Reduced()
                 elementOutputVector[( 3 * j ) + d] += ( JxW[qp] * tmp );
 
             } // end for d
-        }     // end for j
+        } // end for j
 
         d_materialModel->postNonlinearAssemblyGaussPointOperation();
     } // end for qp

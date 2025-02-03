@@ -53,7 +53,7 @@ void rotate_points( unsigned int rotation_axis,
         if ( j != rotation_axis ) {
             non_fixed_directions[i++] = j;
         } // end if
-    }     // end for j
+    } // end for j
     double tmp[3];
     for ( unsigned int j = 0; j < n_points; ++j ) {
         tmp[non_fixed_directions[0]] =
@@ -90,7 +90,8 @@ void make_vector_from_two_points( double const *start_point,
 
 double compute_vector_norm( double const *vector )
 {
-    return sqrt( std::inner_product( &( vector[0] ), &( vector[0] ) + 3, &( vector[0] ), 0.0 ) );
+    return std::sqrt(
+        std::inner_product( &( vector[0] ), &( vector[0] ) + 3, &( vector[0] ), 0.0 ) );
 }
 
 void normalize_vector( double *vector )

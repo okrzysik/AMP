@@ -64,7 +64,7 @@ void MechanicsLinearUpdatedLagrangianElement::computeStressAndStrain(
             for ( int c = 0; c < 6; c++ ) {
                 uStress[r] += ( constitutiveMatrix[( 6 * r ) + c] * uStrain[c] );
             } // end for c
-        }     // end for r
+        } // end for r
 
         for ( int i = 0; i < 6; i++ ) {
             stressVec[( 6 * qp ) + i] = uStress[i];
@@ -137,7 +137,7 @@ void MechanicsLinearUpdatedLagrangianElement::printStressAndStrain(
             for ( int c = 0; c < 6; c++ ) {
                 uStress[r] += ( constitutiveMatrix[( 6 * r ) + c] * uStrain[c] );
             } // end for c
-        }     // end for r
+        } // end for r
 
         fprintf( fp, "%.12f %.12f %.12f \n", xyz[qp]( 0 ), xyz[qp]( 1 ), xyz[qp]( 2 ) );
         fprintf( fp,
@@ -189,7 +189,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
     }
 
     double currX[8], currY[8], currZ[8], dNdx[8], dNdy[8], dNdz[8], detJ[1];
-    double rsq3              = ( 1.0 / sqrt( 3.0 ) );
+    double rsq3              = ( 1.0 / std::sqrt( 3.0 ) );
     const double currXi[8]   = { -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3 };
     const double currEta[8]  = { -rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3 };
     const double currZeta[8] = { -rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3 };
@@ -453,9 +453,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
                             ( detJ[0] * materialStiffness[( 3 * k ) + d2][( 3 * j ) + d1] );
 
                     } // end for d2
-                }     // end for k
-            }         // end for d1
-        }             // end for j
+                } // end for k
+            } // end for d1
+        } // end for j
 
         // Adding the stress stiffness matrix to the element stiffness matrix.
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ ) {
@@ -480,7 +480,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
     std::vector<libMesh::Point> xyz, xyz_np1;
     double Bl_np1[6][24], Bnl_np1[9][24];
     double currX[8], currY[8], currZ[8];
-    double rsq3              = ( 1.0 / sqrt( 3.0 ) );
+    double rsq3              = ( 1.0 / std::sqrt( 3.0 ) );
     const double currXi[8]   = { -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3 };
     const double currEta[8]  = { -rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3 };
     const double currZeta[8] = { -rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3 };
@@ -778,9 +778,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
                         // d1<<"]="<<elementStiffnessMatrix[(3 * k) + d2][(3 * j) + d1]<<std::endl;
 
                     } // end for d2
-                }     // end for k
-            }         // end for d1
-        }             // end for j
+                } // end for k
+            } // end for d1
+        } // end for j
 
         // Adding the stress stiffness matrix to the element stiffness matrix.
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ ) {

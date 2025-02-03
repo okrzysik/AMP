@@ -82,9 +82,9 @@ public:
 
 
     // Copy/assigment operators
-    constexpr MeshPoint( MeshPoint && ) noexcept      = default;
-    constexpr MeshPoint( const MeshPoint & ) noexcept = default;
-    constexpr MeshPoint &operator=( MeshPoint && ) noexcept = default;
+    constexpr MeshPoint( MeshPoint && ) noexcept                 = default;
+    constexpr MeshPoint( const MeshPoint & ) noexcept            = default;
+    constexpr MeshPoint &operator=( MeshPoint && ) noexcept      = default;
     constexpr MeshPoint &operator=( const MeshPoint & ) noexcept = default;
 
     // Copy point of a different type
@@ -227,7 +227,7 @@ public:
     }
 
     //! Return the magnitude
-    inline TYPE abs() const { return sqrt( norm() ); }
+    inline TYPE abs() const { return std::sqrt( norm() ); }
 
     //! Print the point
     inline void print( std::ostream &os ) const

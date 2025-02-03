@@ -154,7 +154,7 @@ static inline std::array<double, 3> getTol( const std::vector<std::array<TYPE, N
     TYPE domain_size = 0;
     for ( int d = 0; d < NDIM; d++ )
         domain_size += ( xmax[d] - xmin[d] ) * ( xmax[d] - xmin[d] );
-    domain_size = static_cast<TYPE>( sqrt( static_cast<double>( domain_size ) ) );
+    domain_size = static_cast<TYPE>( std::sqrt( static_cast<double>( domain_size ) ) );
 
     // Check that the two closest two points are not the same
     int i1       = index_pair.first;
@@ -164,14 +164,14 @@ static inline std::array<double, 3> getTol( const std::vector<std::array<TYPE, N
         auto tmp = static_cast<double>( x[i1][d] - x[i2][d] );
         r_min += tmp * tmp;
     }
-    r_min = sqrt( r_min );
+    r_min = std::sqrt( r_min );
     if ( r_min < 1e-8 * domain_size )
         throw std::logic_error( "Duplicate or nearly duplicate points detected: " +
                                 std::to_string( r_min ) );
     if constexpr ( std::numeric_limits<TYPE>::is_integer ) {
         return { 0.0, 1e-12, 0.0 };
     } else {
-        double TOL_VOL       = ( NDIM <= 2 ? 1e-6 : 1e-3 ) * pow( r_min, NDIM );
+        double TOL_VOL       = ( NDIM <= 2 ? 1e-6 : 1e-3 ) * std::pow( r_min, NDIM );
         TOL_VOL              = std::min( TOL_VOL, 0.1 );
         double TOL_COLLINEAR = 1e-3;
         double TOL_COPLANAR  = 1e-8 * r_min * r_min;
@@ -195,8 +195,8 @@ static inline bool collinear( const std::array<TYPE, NDIM> *x, double tol )
         tmp1 += r1[j] * r1[j];
         tmp2 += r2[j] * r2[j];
     }
-    tmp1 = 1.0 / sqrt( tmp1 );
-    tmp2 = 1.0 / sqrt( tmp2 );
+    tmp1 = 1.0 / std::sqrt( tmp1 );
+    tmp2 = 1.0 / std::sqrt( tmp2 );
     for ( int j = 0; j < NDIM; j++ ) {
         r1[j] *= tmp1;
         r2[j] *= tmp2;
@@ -1113,7 +1113,7 @@ void get_circumsphere( const std::array<TYPE, NDIM> x0[], double &R, double *cen
         center[i] = static_cast<double>( d / ( 2 * a ) + static_cast<long double>( x0[0][i] ) );
         R += d * d;
     }
-    R = sqrt( R ) / fabs( static_cast<double>( 2 * a ) );
+    R = std::sqrt( R ) / fabs( static_cast<double>( 2 * a ) );
 }
 
 

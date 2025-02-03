@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <numeric>
 #include <tuple>
 
 namespace AMP::Discretization {

@@ -23,7 +23,7 @@ inline double L2norm( const AMP::Array<double> &x, const bool *mask = nullptr )
         for ( size_t i = 0; i < N; i++ )
             norm += mask[i] ? x( i ) * x( i ) : 0;
     }
-    return sqrt( norm );
+    return std::sqrt( norm );
 }
 
 
@@ -41,7 +41,7 @@ L2errNorm( const AMP::Array<double> &x1, const AMP::Array<double> &x2, const boo
         for ( size_t i = 0; i < N; i++ )
             norm += mask[i] ? ( x1( i ) - x2( i ) ) * ( x1( i ) - x2( i ) ) : 0;
     }
-    return sqrt( norm );
+    return std::sqrt( norm );
 }
 
 
@@ -117,11 +117,11 @@ std::vector<PointInt<NDIM>> createRandomPointsInt( int N )
     points.reserve( N + 10 );
     // Create a logical Nd-hypercube on [-1,1] and keep only the points within R<=R_INT
     if ( N > 10 ) {
-        int Nd          = static_cast<int>( floor( pow( N, 1.0 / NDIM ) ) );
+        int Nd          = static_cast<int>( floor( std::pow( N, 1.0 / NDIM ) ) );
         Nd              = std::min( N / 2, Nd );
         Nd              = 2 * ( Nd / 2 ) + 1;
         const double dx = 2.0 / static_cast<double>( Nd - 1 );
-        for ( size_t k = 0; k < pow( Nd, NDIM ); k++ ) {
+        for ( size_t k = 0; k < std::pow( Nd, NDIM ); k++ ) {
             PointInt<NDIM> p;
             size_t j = k;
             for ( int d = 0; d < NDIM; d++ ) {
@@ -209,9 +209,9 @@ AMP::Array<double> createRandomPoints<double>( int ndim, int N )
     AMP::Array<double> points( ndim, N );
     int i = 0;
     // Create a Nd-hypercube on [-1,1] and keep only the points within R<=1
-    int Nd = static_cast<int>( floor( pow( N, 1.0 / ndim ) ) );
+    int Nd = static_cast<int>( floor( std::pow( N, 1.0 / ndim ) ) );
     Nd     = std::min( N / 2, Nd );
-    for ( size_t k = 0; k < pow( Nd, ndim ); k++ ) {
+    for ( size_t k = 0; k < std::pow( Nd, ndim ); k++ ) {
         double x[10] = { 0 };
         double R     = 0.0;
         size_t j     = k;
