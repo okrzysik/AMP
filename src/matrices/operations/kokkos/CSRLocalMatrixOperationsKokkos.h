@@ -36,7 +36,11 @@ public:
      * \param[out] y  The resulting vectory
      * \details  Compute \f$\mathbf{Ax} = \mathbf{y}\f$.
      */
-    void mult( const scalar_t *in, std::shared_ptr<LocalMatrixData> A, scalar_t *out );
+    void mult( const scalar_t *in,
+               const scalar_t alpha,
+               std::shared_ptr<LocalMatrixData> A,
+               const scalar_t beta,
+               scalar_t *out );
 
     /** \brief  Matrix transpose-vector multiplication
      * \param[in]  in  The vector to multiply
