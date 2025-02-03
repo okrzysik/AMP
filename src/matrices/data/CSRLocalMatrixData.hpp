@@ -10,6 +10,7 @@
 #include "AMP/utils/Algorithms.h"
 #include "AMP/utils/Utilities.h"
 
+#include <numeric>
 #include <set>
 #include <type_traits>
 

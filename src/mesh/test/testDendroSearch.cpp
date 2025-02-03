@@ -611,7 +611,7 @@ double gaussian( double mean, double std_deviation )
     } while ( r >= 1 );
 
     // Box-Muller transform
-    r = sqrt( -2.0 * log( r ) / r );
+    r = std::sqrt( -2.0 * log( r ) / r );
 
     // save for next call
     t1 = ( r * x2 );

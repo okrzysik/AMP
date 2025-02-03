@@ -140,7 +140,8 @@ Array<TYPE, FUN, Allocator>::Array( size_t N1, size_t N2, size_t N3, size_t N4, 
     allocate( ArraySize( N1, N2, N3, N4, N5 ) );
 }
 template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator>::Array( const Range<TYPE> &range )
+template<typename U, typename>
+Array<TYPE, FUN, Allocator>::Array( const Range<U> &range )
     : d_isCopyable( true ), d_isFixedSize( false )
 {
     size_t N = range.size();

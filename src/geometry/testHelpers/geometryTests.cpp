@@ -350,7 +350,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         bool passNorm = true;
         for ( const auto &p : surfacePoints ) {
             auto norm = geom.surfaceNorm( p );
-            double n  = sqrt( norm.x() * norm.x() + norm.y() * norm.y() + norm.z() * norm.z() );
+            double n = std::sqrt( norm.x() * norm.x() + norm.y() * norm.y() + norm.z() * norm.z() );
             // auto p1   = p - 1e-5 * norm;
             // auto p2   = p + 1e-5 * norm;
             passNorm = passNorm && fabs( n - 1.0 ) < 1e-6;

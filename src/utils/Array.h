@@ -89,7 +89,8 @@ public: // Constructors / assignment operators
      * Create a 1D Array with the range
      * @param range         Range of the data
      */
-    explicit Array( const Range<TYPE> &range );
+    template<typename U = TYPE, typename = typename std::enable_if<std::is_same_v<U, TYPE>>::type>
+    explicit Array( const Range<U> &range );
 
     /*!
      * Create a 1D Array using a string that mimic's MATLAB

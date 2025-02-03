@@ -67,7 +67,7 @@ Point Cylinder::nearest( const Point &pos ) const
     // Calculate the nearest point
     z        = std::min( z, d_z_max );
     z        = std::max( z, d_z_min );
-    double r = sqrt( x * x + y * y );
+    double r = std::sqrt( x * x + y * y );
     double R = getR( z );
     if ( r > R ) {
         x *= R / r;
@@ -132,7 +132,7 @@ int Cylinder::surface( const Point &pos ) const
     double x  = pos.x() - d_offset[0];
     double y  = pos.y() - d_offset[1];
     double z  = pos.z() - d_offset[2];
-    double r  = sqrt( x * x + y * y );
+    double r  = std::sqrt( x * x + y * y );
     double R  = getR( z );
     double d1 = std::abs( r - R );
     double d2 = std::abs( z - d_z_min );
@@ -159,7 +159,7 @@ Point Cylinder::surfaceNorm( const Point &pos ) const
         // r
         double x = pos.x() - d_offset[0];
         double y = pos.y() - d_offset[1];
-        double n = sqrt( x * x + y * y );
+        double n = std::sqrt( x * x + y * y );
         return { x / n, y / n, 0 };
     }
 }

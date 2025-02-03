@@ -88,7 +88,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     Pr = ( flowDatabase )->getScalar<double>( "Prandtl" );
     nP = ( flowDatabase )->getScalar<double>( "numpoints" );
 
-    heff = ( 0.023 * K / De ) * pow( Re, 0.8 ) * pow( Pr, 0.4 );
+    heff = ( 0.023 * K / De ) * std::pow( Re, 0.8 ) * std::pow( Pr, 0.4 );
     dz   = 2. / nP;
 
     std::cout << "Original Flow Solution  " << std::endl;

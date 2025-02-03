@@ -300,7 +300,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     Pr = flowDatabase->getScalar<double>( "Prandtl" );
     // Tin  = flowDatabase->getScalar<double>("Temp_Inlet");
 
-    hclad = ( 0.023 * K / De ) * pow( Re, 0.8 ) * pow( Pr, 0.4 );
+    hclad = ( 0.023 * K / De ) * std::pow( Re, 0.8 ) * std::pow( Pr, 0.4 );
 
     // dz = 0.0127/flowVecSize ;
 

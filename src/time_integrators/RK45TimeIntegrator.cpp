@@ -277,7 +277,8 @@ double RK45TimeIntegrator::getNextDt( const bool good_solution )
         if ( good_solution ) {
             auto l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
 
-            next_dt = 0.84 * d_current_dt * pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 5.0 );
+            next_dt =
+                0.84 * d_current_dt * std::pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 5.0 );
 
             // check to make sure the timestep is not too small or large
             next_dt = std::min( std::max( next_dt, d_min_dt ), d_max_dt );

@@ -56,7 +56,7 @@ inline bool checkAnalyticalSolution( const std::string &exeName,
             if ( rank == nranks - 1 ) {
                 file << "};" << std::endl;
                 mse /= ( 1. * iNode );
-                mse = sqrt( mse );
+                mse = std::sqrt( mse );
                 file << "l2err = {" << iNode << "," << mse << "};\n";
             }
             file.close();

@@ -3,10 +3,10 @@
 #include "AMP/matrices/trilinos/EpetraMatrixData.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
-#include <EpetraExt_MatrixMatrix.h>
-#include <Epetra_FECrsMatrix.h>
 DISABLE_WARNINGS
+#include <EpetraExt_MatrixMatrix.h>
 #include <EpetraExt_Transpose_RowMatrix.h>
+#include <Epetra_FECrsMatrix.h>
 ENABLE_WARNINGS
 
 #include "ProfilerApp.h"

@@ -251,7 +251,7 @@ createAndTestDelaunayInterpolation( AMP::UnitTest &ut, const AMP::Array<TYPE> &x
                 double dist = 0.0;
                 for ( int d = 0; d < ndim; d++ )
                     dist += ( x2[d + j * ndim] - c[d] ) * ( x2[d + j * ndim] - c[d] );
-                if ( fabs( sqrt( dist ) - R ) / R > 1e-7 )
+                if ( fabs( std::sqrt( dist ) - R ) / R > 1e-7 )
                     pass = false;
             }
             for ( int j = 0; j < ndim; j++ ) {
@@ -388,9 +388,9 @@ std::string initialize_problem( int p,
     } else if ( p == 2 ) {
         // Quadratic profile
         problem           = "f(x) = 1+x-y+2*z+0.1*x^2+0.2*y^2-0.3*z^2";
-        double dx2        = 1.0 / pow( 1.0 * N, 1.0 / ndim );
+        double dx2        = 1.0 / std::pow( 1.0 * N, 1.0 / ndim );
         tol_grad          = 2.0 * dx2;
-        tol_linear        = std::min( 4 * pow( 3.0, ndim ) * dx2, 0.5 );
+        tol_linear        = std::min( 4 * std::pow( 3.0, ndim ) * dx2, 0.5 );
         tol_cubic         = 1e-8;
         tol_cubic_grad    = 1e-6;
         tol_cubic_extrap1 = tol_linear;
@@ -423,10 +423,10 @@ std::string initialize_problem( int p,
     } else {
         throw std::logic_error( "Unknown problem" );
     }
-    tol_grad *=
-        sqrt( grad_max[0] * grad_max[0] + grad_max[1] * grad_max[1] + grad_max[2] * grad_max[2] );
-    tol_cubic_grad *=
-        sqrt( grad_max[0] * grad_max[0] + grad_max[1] * grad_max[1] + grad_max[2] * grad_max[2] );
+    tol_grad *= std::sqrt( grad_max[0] * grad_max[0] + grad_max[1] * grad_max[1] +
+                           grad_max[2] * grad_max[2] );
+    tol_cubic_grad *= std::sqrt( grad_max[0] * grad_max[0] + grad_max[1] * grad_max[1] +
+                                 grad_max[2] * grad_max[2] );
     tol_grad       = std::max( tol_grad, 1e-12 );
     tol_cubic_grad = std::max( tol_cubic_grad, 1e-12 );
     return problem;
@@ -491,7 +491,7 @@ void testInterpolation( AMP::UnitTest &ut, const AMP::Array<TYPE> &x, bool check
     // Create a second grid for interpolation
     double dx[3]     = { 0, 0, 0 };
     double xrange[3] = { 1, 1, 1 };
-    double tol       = std::min( 1e-2, 1.0 / pow( 1.0 * N, 1.0 / ndim ) );
+    double tol       = std::min( 1e-2, 1.0 / std::pow( 1.0 * N, 1.0 / ndim ) );
     for ( int d = 0; d < ndim; d++ ) {
         double x_min = 1e100;
         double x_max = -1e100;
@@ -578,7 +578,7 @@ void testInterpolation( AMP::UnitTest &ut, const AMP::Array<TYPE> &x, bool check
                 for ( int d = 0; d < ndim; d++ )
                     err += ( grad( d, i ) - g( d, i ) ) * ( grad( d, i ) - g( d, i ) );
             }
-            err               = sqrt( err / N );
+            err               = std::sqrt( err / N );
             error[method - 1] = err;
             auto message      = AMP::Utilities::stringf( "calc_gradient (%i,%s) (%i,%i) (%e)",
                                                     method,

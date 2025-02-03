@@ -657,7 +657,7 @@ double structuredMeshElement::volume() const
         double dist2 = 0.0;
         for ( int i = 0; i < d_physicalDim; i++ )
             dist2 += ( x[0][i] - x[1][i] ) * ( x[0][i] - x[1][i] );
-        return sqrt( dist2 );
+        return std::sqrt( dist2 );
     } else if ( type == GeomType::Face ) {
         // Use 2x2 quadrature to approximate the surface area. See for example,
         // Y. Zhang, C. Bajaj, G. Xu. Surface Smoothing and Quality Improvement

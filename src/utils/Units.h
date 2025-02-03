@@ -100,6 +100,10 @@ enum class UnitType : int8_t {
 class alignas( 8 ) Units final
 {
 public:
+    using unit_type = std::array<char, 31>;
+    using SI_type   = std::array<int8_t, 9>;
+
+public:
     //! Empty constructor
     constexpr Units();
 
@@ -127,6 +131,22 @@ public:
      * \param value     Value of constant scalar
      */
     constexpr Units( const std::string_view &unit, double value );
+
+    /**
+     * \brief  Construct the units
+     * \details  Construct units directly by specifying the SI units and scale
+     * \param unit      Input string
+     * \param scale     Value of constant scalar
+     */
+    explicit constexpr Units( const SI_type &unit, double scale = 1.0 );
+
+    /**
+     * \brief  Construct the units
+     * \details  Construct units directly by specifying the SI units and scale
+     * \param unit      Input string
+     * \param scale     Value of constant scalar
+     */
+    explicit constexpr Units( const UnitType &unit, double scale = 1.0 );
 
     /**
      * \brief  Get the unit type
@@ -209,18 +229,13 @@ public:
     //! Get all supported units
     static inline std::vector<std::string> getAllUnits();
 
-protected:
-    using unit_type = std::array<char, 31>;
-    using SI_type   = std::array<int8_t, 9>;
 
+protected:
     unit_type d_unit;
     SI_type d_SI;
     double d_scale;
 
 protected:
-    explicit constexpr Units( const SI_type &u, double s = 1.0 );
-    explicit constexpr Units( const UnitType &u, double s = 1.0 );
-
     std::string printSIBase() const;
     static constexpr Units read( std::string_view str );
     static constexpr Units read2( std::string_view str );

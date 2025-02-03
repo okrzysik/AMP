@@ -10,7 +10,6 @@
 //
 #include "AMP/time_integrators/RK23TimeIntegrator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
-
 #include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/Vector.h"
 
@@ -248,7 +247,7 @@ double RK23TimeIntegrator::getNextDt( const bool good_solution )
         auto l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
 
         next_dt =
-            d_safety_factor * d_current_dt * pow( d_atol / l2NormOfEstimatedError, 1.0 / 3.0 );
+            d_safety_factor * d_current_dt * std::pow( d_atol / l2NormOfEstimatedError, 1.0 / 3.0 );
 
         // check to make sure the timestep is not too small or large
         next_dt = std::min( std::max( next_dt, d_min_dt ), d_max_dt );

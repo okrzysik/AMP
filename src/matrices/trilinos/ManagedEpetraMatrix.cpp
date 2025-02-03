@@ -10,19 +10,20 @@
 #include "ProfilerApp.h"
 #include <algorithm>
 
-#include <EpetraExt_MatrixMatrix.h>
-#include <Epetra_FECrsMatrix.h>
 DISABLE_WARNINGS
+#include <EpetraExt_MatrixMatrix.h>
 #include <EpetraExt_Transpose_RowMatrix.h>
-ENABLE_WARNINGS
-
+#include <Epetra_FECrsMatrix.h>
 #ifdef AMP_USE_MPI
     #include <Epetra_MpiComm.h>
 #else
     #include <Epetra_SerialComm.h>
 #endif
+ENABLE_WARNINGS
+
 
 namespace AMP::LinearAlgebra {
+
 
 /********************************************************
  * Constructors                                          *

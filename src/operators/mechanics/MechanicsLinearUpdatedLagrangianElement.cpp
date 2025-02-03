@@ -189,7 +189,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
     }
 
     double currX[8], currY[8], currZ[8], dNdx[8], dNdy[8], dNdz[8], detJ[1];
-    double rsq3              = ( 1.0 / sqrt( 3.0 ) );
+    double rsq3              = ( 1.0 / std::sqrt( 3.0 ) );
     const double currXi[8]   = { -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3 };
     const double currEta[8]  = { -rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3 };
     const double currZeta[8] = { -rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3 };
@@ -480,7 +480,7 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
     std::vector<libMesh::Point> xyz, xyz_np1;
     double Bl_np1[6][24], Bnl_np1[9][24];
     double currX[8], currY[8], currZ[8];
-    double rsq3              = ( 1.0 / sqrt( 3.0 ) );
+    double rsq3              = ( 1.0 / std::sqrt( 3.0 ) );
     const double currXi[8]   = { -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3 };
     const double currEta[8]  = { -rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3 };
     const double currZeta[8] = { -rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3 };

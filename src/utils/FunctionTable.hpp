@@ -22,13 +22,23 @@ inline void FunctionTable::rand( Array<TYPE, FUN> &x )
     std::random_device rd;
     std::mt19937 gen( rd() );
     if constexpr ( std::is_same_v<TYPE, bool> ) {
-        std::uniform_int_distribution<uint8_t> dis( 0, 1 );
+        std::uniform_int_distribution<unsigned short> dis( 0, 1 );
         for ( size_t i = 0; i < x.length(); i++ )
             x( i ) = dis( gen ) != 0;
     } else if constexpr ( std::is_integral_v<TYPE> ) {
-        std::uniform_int_distribution<TYPE> dis;
-        for ( size_t i = 0; i < x.length(); i++ )
-            x( i ) = dis( gen );
+        if ( std::is_signed_v<TYPE> ) {
+            auto min = static_cast<int64_t>( std::numeric_limits<TYPE>::min() );
+            auto max = static_cast<int64_t>( std::numeric_limits<TYPE>::max() );
+            std::uniform_int_distribution<int64_t> dis( min, max );
+            for ( size_t i = 0; i < x.length(); i++ )
+                x( i ) = static_cast<TYPE>( dis( gen ) );
+        } else {
+            auto min = static_cast<uint64_t>( std::numeric_limits<TYPE>::min() );
+            auto max = static_cast<uint64_t>( std::numeric_limits<TYPE>::max() );
+            std::uniform_int_distribution<uint64_t> dis( min, max );
+            for ( size_t i = 0; i < x.length(); i++ )
+                x( i ) = static_cast<TYPE>( dis( gen ) );
+        }
     } else if constexpr ( std::is_floating_point_v<TYPE> ) {
         std::uniform_real_distribution<TYPE> dis;
         for ( size_t i = 0; i < x.length(); i++ )

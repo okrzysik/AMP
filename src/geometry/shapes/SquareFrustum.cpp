@@ -117,11 +117,12 @@ void SquareFrustum::initialize( const std::vector<double> &range, int dir, doubl
     S1 = fabs( S1 );
     S2 = fabs( S2 );
     // Compute the volume
-    d_volume = h / 3.0 * ( S1 + S2 + sqrt( S1 * S2 ) );
+    d_volume = h / 3.0 * ( S1 + S2 + std::sqrt( S1 * S2 ) );
     // Compute the centroid
     if ( S2 > S1 )
         std::swap( S1, S2 );
-    double z   = 0.25 * ( S1 + 2 * sqrt( S1 * S2 ) + 3 * S2 ) / ( S1 + sqrt( S1 * S2 ) * S2 );
+    double z =
+        0.25 * ( S1 + 2 * std::sqrt( S1 * S2 ) + 3 * S2 ) / ( S1 + std::sqrt( S1 * S2 ) * S2 );
     d_centroid = physical( { 0.5, 0.5, z } );
 }
 

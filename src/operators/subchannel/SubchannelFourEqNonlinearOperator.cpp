@@ -877,7 +877,8 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                     double rodDiameter =
                         0.5 * ( d_rodDiameter[isub] + d_rodDiameter[neighborSubchannelIndex] );
                     double beta = 0.005 * D_gap_avg / gapWidth *
-                                  pow( gapWidth / rodDiameter, 0.106 ) * pow( Re_gap_avg, -0.1 );
+                                  std::pow( gapWidth / rodDiameter, 0.106 ) *
+                                  std::pow( Re_gap_avg, -0.1 );
                     double massFlux_gap_avg =
                         0.5 * ( m_mid / area + m_mid_neighbor / neighborArea );
                     double wt = beta * gapWidth * massFlux_gap_avg;

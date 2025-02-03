@@ -449,7 +449,7 @@ void ElementFinder::initialize() const
         volume += elem.volume();
     }
     volume /= d_elements.size();
-    d_dist = 0.5 * pow( volume, 1.0 / static_cast<int>( type ) );
+    d_dist = 0.5 * std::pow( volume, 1.0 / static_cast<int>( type ) );
     // Create a list of points in each element and the mesh ids
     std::vector<AMP::Mesh::MeshElementID> ids;
     std::vector<std::array<double, 3>> points;
