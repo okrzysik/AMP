@@ -82,9 +82,9 @@ public:
 
 
     // Copy/assigment operators
-    constexpr MeshPoint( MeshPoint && ) noexcept                 = default;
-    constexpr MeshPoint( const MeshPoint & ) noexcept            = default;
-    constexpr MeshPoint &operator=( MeshPoint && ) noexcept      = default;
+    constexpr MeshPoint( MeshPoint && ) noexcept      = default;
+    constexpr MeshPoint( const MeshPoint & ) noexcept = default;
+    constexpr MeshPoint &operator=( MeshPoint && ) noexcept = default;
     constexpr MeshPoint &operator=( const MeshPoint & ) noexcept = default;
 
     // Copy point of a different type

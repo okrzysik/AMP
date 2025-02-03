@@ -53,7 +53,7 @@ void rotate_points( unsigned int rotation_axis,
         if ( j != rotation_axis ) {
             non_fixed_directions[i++] = j;
         } // end if
-    } // end for j
+    }     // end for j
     double tmp[3];
     for ( unsigned int j = 0; j < n_points; ++j ) {
         tmp[non_fixed_directions[0]] =
