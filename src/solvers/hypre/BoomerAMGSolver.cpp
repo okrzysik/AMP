@@ -375,7 +375,9 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Query iteration count and store on AMP side
-    HYPRE_BoomerAMGGetNumIterations( d_solver, &d_iNumberIterations );
+    HYPRE_Int hypre_iters;
+    HYPRE_BoomerAMGGetNumIterations( d_solver, &hypre_iters );
+    d_iNumberIterations = hypre_iters;
     HYPRE_Real hypre_res;
     HYPRE_BoomerAMGGetFinalRelativeResidualNorm( d_solver, &hypre_res );
 
