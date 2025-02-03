@@ -58,6 +58,9 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "Unknown OS" );
 
+        // Test typeid
+        testTypeID( ut );
+
         // Try converting an int to a string
         if ( AMP::Utilities::intToString( 37, 0 ) == "37" &&
              AMP::Utilities::intToString( 37, 3 ) == "037" )
@@ -76,41 +79,10 @@ int main( int argc, char *argv[] )
         test_interp( ut );
 
         // Test quicksort performance
-        size_t N = 500000;
-        std::vector<int> data( N, 31 );
-        test_quicksort( ut, data, "identical" );
-        for ( size_t i = 0; i < N; i++ )
-            data[i] = i;
-        test_quicksort( ut, data, "sorted" );
-        static std::random_device rd;
-        static std::mt19937 gen( rd() );
-        static std::uniform_int_distribution<int> dist( 1, 10000000 );
-        for ( size_t i = 0; i < N; i++ )
-            data[i] = dist( gen );
-        test_quicksort( ut, data, "random" );
+        testQuickSort( ut );
 
         // Test quickselect
-        for ( size_t i = 0; i < N; i++ )
-            data[i] = dist( gen );
-        auto data2 = data;
-        std::sort( data2.begin(), data2.end() );
-        double t    = 0;
-        bool pass   = true;
-        size_t N_it = 200;
-        std::vector<int> data3( data.size(), 0 );
-        for ( size_t i = 0; i < N_it; i++ ) {
-            data3    = data;
-            size_t k = dist( gen ) % N;
-            auto t1  = AMP::Utilities::time();
-            auto v   = AMP::Utilities::quickselect( data3.size(), data3.data(), k );
-            t += AMP::Utilities::time() - t1;
-            pass = v == data2[k];
-        }
-        if ( pass )
-            ut.passes( "quickselect" );
-        else
-            ut.failure( "quickselect" );
-        std::cout << "quickselect = " << t / N_it << std::endl;
+        testQuickSelect( ut );
 
         // Test the hash key
         unsigned int key = AMP::Utilities::hash_char( "test" );
@@ -126,9 +98,12 @@ int main( int argc, char *argv[] )
             ut.passes( "Correctly factored 13958" );
         else
             ut.failure( "Correctly factored 13958" );
-        auto t1 = AMP::Utilities::time();
-        N_it    = 10000;
-        for ( size_t i = 0; i < N_it; i++ ) {
+        std::random_device rd;
+        std::mt19937 gen( rd() );
+        std::uniform_int_distribution<int> dist( 1, 10000000 );
+        auto t1  = AMP::Utilities::time();
+        int N_it = 10000;
+        for ( int i = 0; i < N_it; i++ ) {
             [[maybe_unused]] auto tmp = AMP::Utilities::factor( dist( gen ) );
         }
         auto t2 = AMP::Utilities::time();
@@ -141,7 +116,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "isPrime" );
         t1 = AMP::Utilities::time();
-        for ( size_t i = 0; i < N_it; i++ ) {
+        for ( int i = 0; i < N_it; i++ ) {
             [[maybe_unused]] auto tmp = AMP::Utilities::factor( dist( gen ) );
         }
         t2 = AMP::Utilities::time();
@@ -149,9 +124,9 @@ int main( int argc, char *argv[] )
 
 
         // Test the primes function
-        auto p1 = AMP::Utilities::primes( 50 );
-        pass    = p1 ==
-               std::vector<uint64_t>( { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47 } );
+        auto p1   = AMP::Utilities::primes( 50 );
+        bool pass = p1 == std::vector<uint64_t>(
+                              { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47 } );
         t1 = AMP::Utilities::time();
         for ( int i = 0; i < 10; i++ )
             p1 = AMP::Utilities::primes( 1000000 );

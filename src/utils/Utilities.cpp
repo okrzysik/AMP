@@ -274,32 +274,31 @@ std::vector<uint64_t> primes( uint64_t n )
     auto p      = new uint64_t[N];
     memset( p, 0xFF, sizeof( uint64_t ) * N );
     // Helper functions to get/set the bits
-    auto get = [p]( size_t i ) {
-        size_t i1 = i >> 6;
-        size_t i2 = i & 0x3F;
+    auto get = [p]( uint64_t i ) {
+        uint64_t i1 = i >> 6;
+        uint64_t i2 = i & 0x3F;
         return ( p[i1] & ( 1UL << i2 ) ) != 0;
     };
-    auto unset = [p]( size_t i ) {
-        size_t i1 = i >> 6;
-        size_t i2 = i & 0x3F;
+    auto unset = [p]( uint64_t i ) {
+        uint64_t i1 = i >> 6;
+        uint64_t i2 = i & 0x3F;
         p[i1] &= ~( 1UL << i2 );
     };
     // Set all non-prime values to false
-    static_assert( sizeof( unsigned long ) == sizeof( uint64_t ) );
     for ( uint64_t k = 1; k <= ub; k++ ) {
         if ( get( k ) ) {
             uint64_t k2 = 2 * k + 1;
-            for ( size_t j = 2 * k * ( k + 1 ); j < n2; j += k2 )
+            for ( uint64_t j = 2 * k * ( k + 1 ); j < n2; j += k2 )
                 unset( j );
         }
     }
     // Store the prime numbers (note: this takes longer than computing them)
-    auto M = static_cast<size_t>( n / log2( n ) );
-    M      = 1UL << static_cast<int>( round( log2( M ) ) );
+    auto M = static_cast<uint64_t>( n / log2( n ) );
+    M      = ( (uint64_t) 1 ) << static_cast<int>( round( log2( M ) ) );
     std::vector<uint64_t> p2;
     p2.reserve( M );
     p2.push_back( 2 );
-    for ( size_t i = 1; i < n2; i++ ) {
+    for ( uint64_t i = 1; i < n2; i++ ) {
         if ( get( i ) )
             p2.push_back( 2 * i + 1 );
     }
