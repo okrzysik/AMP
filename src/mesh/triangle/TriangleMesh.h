@@ -315,7 +315,7 @@ public:
 
 protected:
     // Constructors
-    TriangleMesh();
+    TriangleMesh() = default;
     explicit TriangleMesh( std::shared_ptr<const MeshParameters> );
     explicit TriangleMesh( std::vector<std::array<double, NP>> vertices,
                            std::vector<std::array<int64_t, NG + 1>> triangles,
