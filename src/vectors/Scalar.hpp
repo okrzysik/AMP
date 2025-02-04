@@ -81,7 +81,7 @@ Scalar::Scalar( const TYPE &x )
             AMP_ASSERT( x == z );
         } else if constexpr ( std::is_floating_point_v<TYPE> ) {
             constexpr TYPE inf = std::numeric_limits<TYPE>::infinity();
-            constexpr TYPE tol = 10 * std::abs( std::numeric_limits<TYPE>::epsilon() );
+            constexpr TYPE tol = 10 * std::numeric_limits<TYPE>::epsilon();
             if ( x != inf && x != -inf && x == x ) {
                 auto z = get<TYPE>();
                 AMP_ASSERT( std::abs( x - z ) <= tol * std::abs( x ) );
