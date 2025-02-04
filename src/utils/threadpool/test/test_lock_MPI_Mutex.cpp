@@ -7,6 +7,8 @@
 
 #include "ProfilerApp.h"
 
+#include <chrono>
+#include <random>
 #include <thread>
 #include <vector>
 
@@ -20,6 +22,8 @@ void test_lock( AMP::AMP_MPI comm, int N, bool call_sleep )
 {
     while ( !_global_start )
         std::this_thread::yield();
+    std::random_device rd;
+    std::mt19937 gen( rd() );
     for ( int i = 0; i < N; i++ ) {
         // Acquire the lock
         AMP::lock_MPI_Mutex( _global_lock, comm );
@@ -45,12 +49,12 @@ void test_lock( AMP::AMP_MPI comm, int N, bool call_sleep )
         // Release the mutex
         _global_lock.unlock();
         // Try to add some random waits
-        for ( int j = 0; j < rand() % 10; j++ ) {
+        std::uniform_int_distribution<int> dist( 0, 10 );
+        for ( int j = 0; j < dist( gen ); j++ ) {
             std::this_thread::yield();
-            timespec duration;
-            duration.tv_sec  = 0;
-            duration.tv_nsec = 100000 * ( rand() % 5 );
-            nanosleep( &duration, nullptr );
+            std::uniform_int_distribution<int> dist2( 0, 500000 );
+            std::chrono::nanoseconds ns( dist2( gen ) );
+            std::this_thread::sleep_for( ns );
         }
     }
 }
