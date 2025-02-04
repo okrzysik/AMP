@@ -1429,7 +1429,7 @@ std::vector<int> AMP_MPI::waitSome( int count, Request2 *request )
     AMP_ASSERT( outcount != MPI_UNDEFINED ); // Check that the first call is valid
     while ( outcount == 0 ) {
         // Put the current thread to sleep to allow other threads to run
-        sched_yield();
+        std::this_thread::yield();
         // Check if the request has finished
         MPI_Testsome( count, request, &outcount, &indicies[0], MPI_STATUS_IGNORE );
     }

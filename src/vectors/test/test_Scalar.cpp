@@ -50,16 +50,18 @@ bool testArithmetic()
     AMP::Scalar y( b );
     bool pass = true;
     // Test some different operations
-    pass = pass && std::fabs( ( a - b ) - ( x - y ).get<TYPE>() ) < 1e-8;
-    pass = pass && std::fabs( ( a + b ) - ( x + y ).get<TYPE>() ) < 1e-8;
-    pass = pass && std::fabs( ( a * b ) - ( x * y ).get<TYPE>() ) < 1e-8;
-    pass = pass && std::fabs( ( a / b ) - ( x / y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::abs( ( a - b ) - ( x - y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::abs( ( a + b ) - ( x + y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::abs( ( a * b ) - ( x * y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::abs( ( a / b ) - ( x / y ).get<TYPE>() ) < 1e-8;
     // Test NaNs/Inf
     if ( std::numeric_limits<TYPE>::has_infinity ) {
         x       = (TYPE) 1;
         y       = (TYPE) 0;
         auto z1 = x / y;
+        DISABLE_WARNINGS
         AMP::Scalar z2( (TYPE) 1 / (TYPE) 0 );
+        ENABLE_WARNINGS
         auto v1 = z1.get<double>();
         auto v2 = z2.get<double>();
         pass    = pass && v1 == std::numeric_limits<double>::infinity();
