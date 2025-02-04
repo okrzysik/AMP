@@ -773,7 +773,7 @@ AMP_MPI AMP_MPI::dup( bool manage ) const
     MPI_Comm_dup( d_comm, &new_MPI_comm );
 #else
     static AMP_MPI::Comm uniqueGlobalComm = 11;
-    new_MPI_comm = uniqueGlobalComm;
+    new_MPI_comm                          = uniqueGlobalComm;
     uniqueGlobalComm++;
 #endif
     // Create the new comm object
@@ -1292,11 +1292,11 @@ AMP_MPI::Request AMP_MPI::IsendBytes( const void *buf, int bytes, int, int tag )
     if ( it == global_isendrecv_list.end() ) {
         // We are calling isend first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 1;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request2, Isendrecv_struct>( id, data ) );
     } else {
         // We called irecv first
@@ -1317,11 +1317,11 @@ AMP_MPI::Request AMP_MPI::IrecvBytes( void *buf, const int bytes, const int, con
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 2;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
@@ -1460,7 +1460,7 @@ int AMP_MPI::waitAny( int count, Request2 *request )
         for ( int i = 0; i < count; i++ ) {
             if ( global_isendrecv_list.find( request[i] ) == global_isendrecv_list.end() ) {
                 found_any = true;
-                index = i;
+                index     = i;
             }
         }
         if ( found_any )
@@ -1588,7 +1588,7 @@ double AMP_MPI::tick() { return MPI_Wtick(); }
 #else
 double AMP_MPI::time()
 {
-    auto t = std::chrono::system_clock::now();
+    auto t  = std::chrono::system_clock::now();
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t.time_since_epoch() );
     return 1e-9 * ns.count();
 }
@@ -1752,15 +1752,15 @@ INSTANTIATE_MPI_SENDRECV( std::string );
 INSTANTIATE_MPI_GATHER( std::string );
 template std::vector<size_t> AMP::AMP_MPI::bcast<std::vector<size_t>>( std::vector<size_t> const &,
                                                                        int ) const;
-template std::vector<std::array<long, 1>>
-AMP::AMP_MPI::bcast<std::vector<std::array<long, 1>>>( std::vector<std::array<long, 1>> const &,
-                                                       int ) const;
-template std::vector<std::array<long, 2>>
-AMP::AMP_MPI::bcast<std::vector<std::array<long, 2>>>( std::vector<std::array<long, 2>> const &,
-                                                       int ) const;
-template std::vector<std::array<long, 3>>
-AMP::AMP_MPI::bcast<std::vector<std::array<long, 3>>>( std::vector<std::array<long, 3>> const &,
-                                                       int ) const;
+template std::vector<std::array<int64_t, 1>>
+AMP::AMP_MPI::bcast<std::vector<std::array<int64_t, 1>>>(
+    std::vector<std::array<int64_t, 1>> const &, int ) const;
+template std::vector<std::array<int64_t, 2>>
+AMP::AMP_MPI::bcast<std::vector<std::array<int64_t, 2>>>(
+    std::vector<std::array<int64_t, 2>> const &, int ) const;
+template std::vector<std::array<int64_t, 3>>
+AMP::AMP_MPI::bcast<std::vector<std::array<int64_t, 3>>>(
+    std::vector<std::array<int64_t, 3>> const &, int ) const;
 template void AMP::AMP_MPI::mapGather<uint64_t, uint64_t>( std::map<uint64_t, uint64_t> & ) const;
 template int AMP::AMP_MPI::allGather<std::pair<int, int>>(
     std::pair<int, int> const *, int, std::pair<int, int> *, int *, int *, bool ) const;
