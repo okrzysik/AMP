@@ -184,7 +184,7 @@ static inline std::string operator+( std::string_view x, std::string_view y )
 #ifndef DISABLE_WARNINGS
     #if defined( _MSC_VER )
         #define DISABLE_WARNINGS __pragma( warning( push, 0 ) ) \
-           #pragma warning( disable : 2124 )
+           __pragma warning( disable : 2124 )
         #define ENABLE_WARNINGS __pragma( warning( pop ) )
     #elif defined( __clang__ )
         #define DISABLE_WARNINGS                                                      \
