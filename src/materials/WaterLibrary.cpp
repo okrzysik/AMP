@@ -740,8 +740,8 @@ static double evalDynamicViscosity( double T, double rho )
     double expsum = 0;
     for ( size_t i = 0; i < 5; i++ )
         for ( size_t j = 0; j < 6; j++ )
-            expsum = expsum + b[i][j] * std::pow( Tstar / T - 1, j ) *
-                                  std::pow( rho / rhostar - 1, i );
+            expsum =
+                expsum + b[i][j] * std::pow( Tstar / T - 1, j ) * std::pow( rho / rhostar - 1, i );
     u = u0 * exp( rho / rhostar * expsum );
 
     // According to the source of the correlation, it seems that the viscosity

@@ -248,7 +248,7 @@ void hex8_element_t::build_bounding_polyhedron()
             tmp_triangles_ptr[2] = nullptr;
             tmp_triangles_ptr[3] = nullptr;
         } // end if
-    } // end for i
+    }     // end for i
     bounding_polyhedron_updated = true;
 }
 
@@ -305,7 +305,7 @@ bool hex8_element_t::contains_point( double const *coordinates,
         if ( fabs( local_coordinates[i] ) > 1.0 + tolerance ) {
             return false;
         } // end if
-    } // end for i
+    }     // end for i
     return true;
 }
 
@@ -327,8 +327,8 @@ void hex8_element_t::build_bounding_box()
             if ( bounding_box[j + 3] < support_points[3 * i + j] ) {
                 bounding_box[j + 3] = support_points[3 * i + j];
             } // end if
-        } // end for j
-    } // end for i
+        }     // end for j
+    }         // end for i
     bounding_box_updated = true;
 }
 
@@ -343,7 +343,7 @@ void hex8_element_t::compute_residual_vector( double const *x, double *f )
         for ( unsigned int j = 0; j < 8; ++j ) {
             f[i] += support_points[3 * j + i] * basis_functions_values[j];
         } // end for j
-    } // end for i
+    }     // end for i
 }
 
 void hex8_element_t::compute_jacobian_matrix( double const *x, double *J )
@@ -358,8 +358,8 @@ void hex8_element_t::compute_jacobian_matrix( double const *x, double *J )
             for ( unsigned int k = 0; k < 8; ++k ) {
                 J[3 * i + j] += support_points[3 * k + i] * basis_functions_derivatives[8 * j + k];
             } // end for k
-        } // end for j
-    } // end for i
+        }     // end for j
+    }         // end for i
 }
 
 double compute_inverse_3_by_3_matrix( double const *A, double *inverse_of_A )
@@ -390,7 +390,7 @@ void compute_n_by_n_matrix_times_vector( unsigned int n,
         for ( unsigned int j = 0; j < n; ++j ) {
             b[i] += A[n * i + j] * x[j];
         } // end for j
-    } // end for i
+    }     // end for i
 }
 
 void hex8_element_t::compute_initial_guess( double *initial_guess )
@@ -469,7 +469,7 @@ double hex8_element_t::solve_newton(
                 line_search_passed = true;
                 break;
             } // end if
-        } // end for
+        }     // end for
         AMP_ASSERT( line_search_passed );
     } // end for
     std::cerr << "failed to converge with tolerance " << tol << " after " << max_iter - 1
@@ -714,7 +714,7 @@ void hex8_element_t::get_normal_to_face( double const **support_points_ptr,
         for ( unsigned int j = 0; j < 3; ++j ) {
             global_coordinates[j] += basis_functions_values_on_face[i] * support_points_ptr[i][j];
         } // end for j
-    } // end for i
+    }     // end for i
     for ( unsigned int d = 0; d < 2; ++d ) {
         std::copy( local_coordinates_on_face,
                    local_coordinates_on_face + 2,
@@ -733,7 +733,7 @@ void hex8_element_t::get_normal_to_face( double const **support_points_ptr,
                 perturbated_global_coordinates[j] +=
                     basis_functions_values_on_face[i] * support_points_ptr[i][j];
             } // end for j
-        } // end for i
+        }     // end for i
         make_vector_from_two_points(
             global_coordinates, perturbated_global_coordinates, &( tangential_vectors[3 * d] ) );
     } // end for d
@@ -762,7 +762,7 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
             global_coordinates[j] +=
                 basis_functions_values_on_face[i] * support_points[3 * faces[4 * f + i] + j];
         } // end for j
-    } // end for i
+    }     // end for i
     for ( unsigned int d = 0; d < 2; ++d ) {
         std::copy( local_coordinates_on_face,
                    local_coordinates_on_face + 2,
@@ -781,7 +781,7 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
                 perturbated_global_coordinates[j] +=
                     basis_functions_values_on_face[i] * support_points[3 * faces[4 * f + i] + j];
             } // end for j
-        } // end for i
+        }     // end for i
         make_vector_from_two_points(
             global_coordinates, perturbated_global_coordinates, &( tangential_vectors[3 * d] ) );
     } // end for d
@@ -864,7 +864,7 @@ void compute_constitutive_matrix( double const E, double const nu, double *C )
         for ( size_t j = 0; j < 3; ++j ) {
             C[6 * i + j] += ( K - ( ( 2.0 * G ) / 3.0 ) );
         } // end for j
-    } // end for i
+    }     // end for i
 }
 
 void compute_stress_tensor( double const *C, double const *epsilon, double *sigma )
@@ -874,7 +874,7 @@ void compute_stress_tensor( double const *C, double const *epsilon, double *sigm
         for ( size_t j = 0; j < 6; ++j ) {
             sigma[i] += ( C[6 * i + j] * epsilon[j] );
         } // end for j
-    } // end for i
+    }     // end for i
 }
 
 void compute_traction( double const *sigma, double const *n, double *t )

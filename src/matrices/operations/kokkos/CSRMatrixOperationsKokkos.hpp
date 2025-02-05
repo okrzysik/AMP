@@ -47,8 +47,6 @@ void CSRMatrixOperationsKokkos<Policy,
 
     AMP_DEBUG_ASSERT( diagMatrix && offdMatrix );
 
-    out->zero();
-
     auto inData                 = in->getVectorData();
     const scalar_t *inDataBlock = inData->getRawDataBlock<scalar_t>( 0 );
     auto outData                = out->getVectorData();
@@ -71,29 +69,42 @@ void CSRMatrixOperationsKokkos<Policy,
 
     {
         PROFILE( "CSRMatrixOperationsKokkos::mult(local)" );
-        d_localops_diag->mult( inDataBlock, diagMatrix, outDataBlock );
+        d_localops_diag->mult( inDataBlock, 1.0, diagMatrix, 0.0, outDataBlock );
     }
 
     if ( csrData->hasOffDiag() ) {
-        PROFILE( "CSRMatrixOperationsKokkos::mult(ghost)" );
+        PROFILE( "CSRMatrixOperationsKokkos::mult(ghost -- all)" );
         const auto nGhosts = offdMatrix->numUniqueColumns();
         std::vector<scalar_t> ghosts( nGhosts );
         if constexpr ( std::is_same_v<size_t, gidx_t> ) {
+            PROFILE( "CSRMatrixOperationsKokkos::mult(ghost -- match type)" );
             // column map can be passed to get ghosts function directly
             size_t *colMap = offdMatrix->getColumnMap();
             in->getGhostValuesByGlobalID( nGhosts, colMap, ghosts.data() );
         } else {
+            PROFILE( "CSRMatrixOperationsKokkos::mult(ghost -- mismatch type)" );
             // type mismatch, need to copy/cast into temporary vector
             std::vector<size_t> colMap;
-            offdMatrix->getColumnMap( colMap );
-            in->getGhostValuesByGlobalID( nGhosts, colMap.data(), ghosts.data() );
+            {
+                PROFILE( "CSRMatrixOperationsKokkos::mult(ghost -- mismatch copy)" );
+                offdMatrix->getColumnMap( colMap );
+            }
+            {
+                PROFILE( "CSRMatrixOperationsKokkos::mult(ghost -- mismatch get ghost)" );
+                in->getGhostValuesByGlobalID( nGhosts, colMap.data(), ghosts.data() );
+            }
         }
 
-        Kokkos::View<scalar_t *, Kokkos::LayoutRight, Kokkos::HostSpace> ghostView_h(
-            ghosts.data(), ghosts.size() );
-        auto ghostView_d = Kokkos::create_mirror_view_and_copy( d_exec_space, ghostView_h );
-
-        d_localops_offd->mult( ghostView_d.data(), offdMatrix, outDataBlock );
+        {
+            PROFILE( "CSRMatrixOperationsKokkos::mult(ghost -- kokkos copy)" );
+            Kokkos::View<scalar_t *, Kokkos::LayoutRight, Kokkos::HostSpace> ghostView_h(
+                ghosts.data(), ghosts.size() );
+            auto ghostView_d = Kokkos::create_mirror_view_and_copy( d_exec_space, ghostView_h );
+            {
+                PROFILE( "CSRMatrixOperationsKokkos::mult(ghost -- locops mult)" );
+                d_localops_offd->mult( ghostView_d.data(), 1.0, offdMatrix, 1.0, outDataBlock );
+            }
+        }
     }
 
     d_exec_space.fence(); // get rid of this eventually
