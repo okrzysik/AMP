@@ -268,8 +268,7 @@ std::vector<uint64_t> primes( uint64_t n )
         return { 2u };
     // Create our bit array
     uint64_t n2 = ( n + 1 ) / 2;
-    double tmp  = 1.000000000000001 * std::sqrt( static_cast<double>( n ) );
-    uint64_t ub = static_cast<uint64_t>( tmp ) >> 1;
+    uint64_t ub = static_cast<uint64_t>( std::sqrt( n + 0.1 ) + 1 );
     auto N      = ( n2 + 63 ) / 64;
     auto p      = new uint64_t[N];
     memset( p, 0xFF, sizeof( uint64_t ) * N );
@@ -302,6 +301,7 @@ std::vector<uint64_t> primes( uint64_t n )
         if ( get( i ) )
             p2.push_back( 2 * i + 1 );
     }
+    delete[] p;
     return p2;
 }
 
