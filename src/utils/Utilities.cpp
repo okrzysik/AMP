@@ -276,12 +276,12 @@ std::vector<uint64_t> primes( uint64_t n )
     auto get = [p]( uint64_t i ) {
         uint64_t i1 = i >> 6;
         uint64_t i2 = i & 0x3F;
-        return ( p[i1] & ( 1UL << i2 ) ) != 0;
+        return ( p[i1] & ( ( (uint64_t) 1 ) << i2 ) ) != 0;
     };
     auto unset = [p]( uint64_t i ) {
         uint64_t i1 = i >> 6;
         uint64_t i2 = i & 0x3F;
-        p[i1] &= ~( 1UL << i2 );
+        p[i1] &= ~( ( (uint64_t) 1 ) << i2 );
     };
     // Set all non-prime values to false
     for ( uint64_t k = 1; k <= ub; k++ ) {

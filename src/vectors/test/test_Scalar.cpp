@@ -37,7 +37,7 @@ bool testGet( TYPE x )
     pass   = pass && y.get<uint64_t>() == static_cast<uint64_t>( z );
     pass   = pass && y.get<float>() == static_cast<float>( z );
     pass   = pass && y.get<double>() == static_cast<double>( z );
-    pass   = pass && y.get<std::complex<int>>() == std::complex<int>( z, 0.0 );
+    pass   = pass && y.get<std::complex<int>>() == std::complex<int>( z, 0 );
     pass   = pass && y.get<std::complex<float>>() == std::complex<float>( z, 0.0 );
     pass   = pass && y.get<std::complex<double>>() == std::complex<double>( z, 0.0 );
     return pass;
