@@ -98,10 +98,10 @@ Array<TYPE2> convert( const Array<TYPE1> &x )
 {
     if constexpr ( std::is_same_v<TYPE1, TYPE2> ) {
         return x;
-    } else if constexpr ( std::is_same_v<TYPE1,bool> && std::is_arithmetic_v<TYPE2> ) {
+    } else if constexpr ( std::is_same_v<TYPE1, bool> && std::is_arithmetic_v<TYPE2> ) {
         Array<TYPE2> y( x.size() );
         for ( size_t i = 0; i < x.length(); i++ )
-            y( i ) = static_cast<TYPE2>( x( i ) ? 1:0 );
+            y( i ) = static_cast<TYPE2>( x( i ) ? 1 : 0 );
         return y;
     } else if constexpr ( std::is_arithmetic_v<TYPE1> && std::is_arithmetic_v<TYPE2> ) {
         Array<TYPE2> y( x.size() );

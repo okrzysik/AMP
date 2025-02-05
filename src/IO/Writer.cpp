@@ -659,7 +659,8 @@ void Writer::getNodeElemList( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
 #include "AMP/utils/Utilities.hpp"
 AMP_INSTANTIATE_SORT( AMP::IO::Writer::GlobalID );
 INSTANTIATE_MPI_GATHER( AMP::IO::Writer::GlobalID );
-#if !( defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || defined( _MSC_VER ) )
+#if !( defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
+       defined( _MSC_VER ) )
 INSTANTIATE_MPI_BCAST( AMP::IO::Writer::GlobalID );
 INSTANTIATE_MPI_SENDRECV( AMP::IO::Writer::GlobalID );
 #endif
