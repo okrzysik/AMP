@@ -78,7 +78,7 @@ static std::vector<int> divideGroups( int N, const std::vector<double> &x )
     AMP_ASSERT( (int) x.size() >= N );
     std::vector<std::pair<double, int>> ids( x.size() );
     for ( size_t i = 0; i < x.size(); i++ )
-        ids[i] = std::make_pair( x[i], i );
+        ids[i] = std::make_pair( x[i], (int) i );
     AMP::Utilities::quicksort( ids );
     std::vector<double> cost( N, 0 );
     std::vector<int> groups( x.size(), -1 );
