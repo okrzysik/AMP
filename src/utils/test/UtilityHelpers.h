@@ -1,6 +1,8 @@
 #ifndef included_AMP_UtilityHelpers
 #define included_AMP_UtilityHelpers
 
+#include "AMP/IO/FileSystem.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Utilities.hpp"
@@ -9,11 +11,13 @@
 
 #include "StackTrace/StackTrace.h"
 
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <limits>
 #include <random>
 #include <set>
+#include <thread>
 #include <type_traits>
 #include <vector>
 
@@ -415,6 +419,41 @@ void testPrimes( AMP::UnitTest &ut )
     std::cout << "primes (1000000):" << std::endl;
     std::cout << "   size: " << p1.size() << std::endl;
     std::cout << "   time: " << round( 1e6 * ( t2 - t1 ) ) << " us" << std::endl;
+}
+
+
+/********************************************************
+ *  Test filesystem                                      *
+ ********************************************************/
+void testFileSystem( AMP::UnitTest &ut )
+{
+    // Test deleting and checking if a file exists
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    if ( globalComm.getRank() == 0 ) {
+        FILE *fid = fopen( "testDeleteFile.txt", "w" );
+        fputs( "Temporary test", fid );
+        fclose( fid );
+        PASS_FAIL( AMP::IO::fileExists( "testDeleteFile.txt" ), "File exists" );
+        AMP::IO::deleteFile( "testDeleteFile.txt" );
+        PASS_FAIL( !AMP::IO::fileExists( "testDeleteFile.txt" ), "File deleted" );
+    }
+
+    // Test creating/deleting directories
+    using namespace std::chrono_literals;
+    AMP::IO::recursiveMkdir( "." );
+    AMP::IO::recursiveMkdir( "testUtilitiesDir/a/b" );
+    globalComm.barrier();
+    std::this_thread::sleep_for( 10ms );
+    PASS_FAIL( AMP::IO::fileExists( "testUtilitiesDir/a/b" ), "Create directory" );
+    globalComm.barrier();
+    if ( globalComm.getRank() == 0 ) {
+        AMP::IO::deleteFile( "testUtilitiesDir/a/b" );
+        AMP::IO::deleteFile( "testUtilitiesDir/a" );
+        AMP::IO::deleteFile( "testUtilitiesDir" );
+        std::this_thread::sleep_for( 10ms );
+    }
+    globalComm.barrier();
+    PASS_FAIL( !AMP::IO::fileExists( "testUtilitiesDir/a/b" ), "Destroy directory" );
 }
 
 

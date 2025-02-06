@@ -1,6 +1,5 @@
 #include "UtilityHelpers.h"
 
-#include "AMP/IO/FileSystem.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
@@ -35,7 +34,7 @@ int main( int argc, char *argv[] )
 
     // Limit the scope of variables
     {
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+        int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
 
         // Create the unit test
         AMP::UnitTest ut;
@@ -92,7 +91,7 @@ int main( int argc, char *argv[] )
         double ts1      = AMP::Utilities::time();
         auto call_stack = get_call_stack();
         double ts2      = AMP::Utilities::time();
-        if ( globalComm.getRank() == 0 ) {
+        if ( rank == 0 ) {
             std::cout << "Call stack:" << std::endl;
             for ( auto &elem : call_stack )
                 std::cout << "   " << elem.print() << std::endl;
@@ -119,32 +118,12 @@ int main( int argc, char *argv[] )
 
         // Test getting the executable
         std::string exe = StackTrace::getExecutable();
-        if ( globalComm.getRank() == 0 )
+        if ( rank == 0 )
             std::cout << "Executable: " << exe << std::endl;
         PASS_FAIL( exe.find( "test_Utilities" ) != std::string::npos, "getExecutable" );
 
-        // Test deleting and checking if a file exists
-        if ( globalComm.getRank() == 0 ) {
-            FILE *fid = fopen( "testDeleteFile.txt", "w" );
-            fputs( "Temporary test", fid );
-            fclose( fid );
-            PASS_FAIL( AMP::IO::fileExists( "testDeleteFile.txt" ), "File exists" );
-            AMP::IO::deleteFile( "testDeleteFile.txt" );
-            PASS_FAIL( !AMP::IO::fileExists( "testDeleteFile.txt" ), "File deleted" );
-        }
-
-        // Test creating directories
-        AMP::IO::recursiveMkdir( "." );
-        AMP::IO::recursiveMkdir( "testUtilitiesDir/a/b" );
-        globalComm.barrier();
-        PASS_FAIL( AMP::IO::fileExists( "testUtilitiesDir/a/b" ), "Create directory" );
-        if ( globalComm.getRank() == 0 ) {
-            AMP::IO::deleteFile( "testUtilitiesDir/a/b" );
-            AMP::IO::deleteFile( "testUtilitiesDir/a" );
-            AMP::IO::deleteFile( "testUtilitiesDir" );
-        }
-        globalComm.barrier();
-        PASS_FAIL( !AMP::IO::fileExists( "testUtilitiesDir/a/b" ), "Destroy directory" );
+        // Test filesystem routines
+        testFileSystem( ut );
 
         // Test catching an error
         try {

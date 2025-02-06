@@ -59,13 +59,17 @@ constexpr void replace( char *str, size_t N, std::string_view match, std::string
 }
 constexpr void deblank( char *str, size_t N )
 {
+    const char *whitespaces = " \t\f\v\n\r\0";
     std::string_view str2( str, N );
     str2   = str2.substr( 0, str2.find( (char) 0 ) );
-    auto i = str2.find_first_not_of( ' ' );
-    auto j = str2.find_last_not_of( ' ' );
-    for ( size_t k = 0; k < j - i + 1; k++ )
-        str[k] = str[k + i];
-    for ( size_t k = j - i + 1; k < N; k++ )
+    auto i = str2.find_first_not_of( whitespaces );
+    auto j = str2.find_last_not_of( whitespaces );
+    if ( i == std::string::npos )
+        return;
+    str2 = str2.substr( i, j - i + 1 );
+    for ( size_t k = 0; k < str2.size(); k++ )
+        str[k] = str2[k];
+    for ( size_t k = str2.size(); k < N; k++ )
         str[k] = 0;
 }
 
