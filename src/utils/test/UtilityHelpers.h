@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdio>
 #include <limits>
+#include <random>
 #include <type_traits>
 
 
@@ -265,20 +266,16 @@ void testQuickSelect( AMP::UnitTest &ut )
     std::vector<int> data( N, 31 );
     for ( size_t i = 0; i < N; i++ )
         data[i] = dist( gen );
-    auto data2 = data;
-    std::sort( data2.begin(), data2.end() );
-    double t    = 0;
-    bool pass   = true;
+    std::sort( data.begin(), data.end() );
     size_t N_it = 200;
-    std::vector<int> data3( data.size(), 0 );
+    bool pass   = true;
+    auto t1     = AMP::Utilities::time();
     for ( size_t i = 0; i < N_it; i++ ) {
-        data3    = data;
         size_t k = dist( gen ) % N;
-        auto t1  = AMP::Utilities::time();
-        auto v   = AMP::Utilities::quickselect( data3.size(), data3.data(), k );
-        t += AMP::Utilities::time() - t1;
-        pass = v == data2[k];
+        auto v   = AMP::Utilities::quickselect( data.size(), data.data(), k );
+        pass     = v == data[k];
     }
+    double t = AMP::Utilities::time() - t1;
     if ( pass )
         ut.passes( "quickselect" );
     else

@@ -6,7 +6,6 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
-#include <unistd.h>
 #include <vector>
 
 #include "AMP/utils/AMPManager.h"

@@ -16,10 +16,12 @@ namespace AMP {
 /********************************************************************
  *  Constructor/Destructor                                           *
  ********************************************************************/
-UnitTest::UnitTest() : d_verbose( false ), d_comm( AMP_COMM_SELF )
+UnitTest::UnitTest() : d_verbose( false )
 {
     if ( AMP_MPI::MPI_Active() )
-        d_comm = AMP_COMM_WORLD;
+        d_comm = std::make_unique<AMP_MPI>( AMP_COMM_WORLD );
+    else
+        d_comm = std::make_unique<AMP_MPI>( AMP_COMM_SELF );
 }
 UnitTest::~UnitTest() { reset(); }
 void UnitTest::reset()
@@ -40,7 +42,7 @@ void UnitTest::passes( std::string in )
 {
     d_mutex.lock();
     if ( d_verbose )
-        printf( "UnitTest: %i passes: %s\n", d_comm.getRank(), in.data() );
+        printf( "UnitTest: %i passes: %s\n", d_comm->getRank(), in.data() );
     d_pass.emplace_back( std::move( in ) );
     d_mutex.unlock();
 }
@@ -48,7 +50,7 @@ void UnitTest::failure( std::string in )
 {
     d_mutex.lock();
     if ( d_verbose )
-        printf( "UnitTest: %i failed: %s\n", d_comm.getRank(), in.data() );
+        printf( "UnitTest: %i failed: %s\n", d_comm->getRank(), in.data() );
     d_fail.emplace_back( std::move( in ) );
     d_mutex.unlock();
 }
@@ -56,7 +58,7 @@ void UnitTest::expected_failure( std::string in )
 {
     d_mutex.lock();
     if ( d_verbose )
-        printf( "UnitTest: %i expected_failure: %s\n", d_comm.getRank(), in.data() );
+        printf( "UnitTest: %i expected_failure: %s\n", d_comm->getRank(), in.data() );
     d_expected.emplace_back( std::move( in ) );
     d_mutex.unlock();
 }
@@ -84,19 +86,19 @@ static inline void print_messages( const std::vector<std::vector<std::string>> &
 void UnitTest::report( const int level0 ) const
 {
     d_mutex.lock();
-    int size = d_comm.getSize();
-    int rank = d_comm.getRank();
+    int size = d_comm->getSize();
+    int rank = d_comm->getRank();
     // Give all processors a chance to print any remaining messages
-    d_comm.barrier();
+    d_comm->barrier();
     Utilities::sleep_ms( 10 );
     // Broadcast the print level from rank 0
-    int level = d_comm.bcast( level0, 0 );
+    int level = d_comm->bcast( level0, 0 );
     if ( level < 0 || level > 2 )
         AMP_ERROR( "Invalid print level" );
     // Perform a global all gather to get the number of failures per processor
-    auto N_pass        = d_comm.allGather<int>( d_pass.size() );
-    auto N_fail        = d_comm.allGather<int>( d_fail.size() );
-    auto N_expected    = d_comm.allGather<int>( d_expected.size() );
+    auto N_pass        = d_comm->allGather<int>( d_pass.size() );
+    auto N_fail        = d_comm->allGather<int>( d_fail.size() );
+    auto N_expected    = d_comm->allGather<int>( d_expected.size() );
     int N_pass_tot     = 0;
     int N_fail_tot     = 0;
     int N_expected_tot = 0;
@@ -188,7 +190,7 @@ void UnitTest::report( const int level0 ) const
         pout << std::endl;
     }
     // Add a barrier to synchronize all processors (rank 0 is much slower)
-    d_comm.barrier();
+    d_comm->barrier();
     AMP::Utilities::sleep_ms( 10 ); // Need a brief pause to allow any printing to finish
     d_mutex.unlock();
 }
@@ -200,8 +202,8 @@ void UnitTest::report( const int level0 ) const
 std::vector<std::vector<std::string>>
 UnitTest::gatherMessages( const std::vector<std::string> &local_messages, int tag ) const
 {
-    const int rank = d_comm.getRank();
-    const int size = std::max( d_comm.getSize(), 1 );
+    const int rank = d_comm->getRank();
+    const int size = std::max( d_comm->getSize(), 1 );
     std::vector<std::vector<std::string>> messages( size );
     if ( rank == 0 ) {
         // Rank 0 should receive all messages
@@ -246,9 +248,9 @@ void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
         k += msg_size[i];
     }
     // Send the message stream (using a non-blocking send)
-    auto request = d_comm.Isend( data, size_data, rank, tag );
+    auto request = d_comm->Isend( data, size_data, rank, tag );
     // Wait for the communication to send and free the temporary memory
-    d_comm.wait( request );
+    d_comm->wait( request );
     delete[] data;
     delete[] msg_size;
 }
@@ -260,14 +262,14 @@ void UnitTest::pack_message_stream( const std::vector<std::string> &messages,
 std::vector<std::string> UnitTest::unpack_message_stream( const int rank, const int tag ) const
 {
     // Probe the message to get the message size
-    int size_data = d_comm.probe( rank, tag );
+    int size_data = d_comm->probe( rank, tag );
     AMP_ASSERT( size_data >= 0 );
     // Allocate memory to receive the data
     auto *data = new char[size_data];
     // receive the data (using a non-blocking receive)
-    auto request = d_comm.Irecv( data, size_data, rank, tag );
+    auto request = d_comm->Irecv( data, size_data, rank, tag );
     // Wait for the communication to be received
-    d_comm.wait( request );
+    d_comm->wait( request );
     // Unpack the message stream
     int N_messages = 0;
     memcpy( &N_messages, data, sizeof( int ) );
@@ -292,9 +294,9 @@ std::vector<std::string> UnitTest::unpack_message_stream( const int rank, const 
 /********************************************************************
  *  Other functions                                                  *
  ********************************************************************/
-size_t UnitTest::NumPassGlobal() const { return d_comm.sumReduce( d_pass.size() ); }
-size_t UnitTest::NumFailGlobal() const { return d_comm.sumReduce( d_fail.size() ); }
-size_t UnitTest::NumExpectedFailGlobal() const { return d_comm.sumReduce( d_expected.size() ); }
+size_t UnitTest::NumPassGlobal() const { return d_comm->sumReduce( d_pass.size() ); }
+size_t UnitTest::NumFailGlobal() const { return d_comm->sumReduce( d_fail.size() ); }
+size_t UnitTest::NumExpectedFailGlobal() const { return d_comm->sumReduce( d_expected.size() ); }
 
 
 } // namespace AMP

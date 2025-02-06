@@ -637,7 +637,7 @@ inline void MPI_Isend2( const void *buf,
     MPI_Isend( buf, length, type, proc, tag, comm, request );
 #else
     size_t bytes = length * MPI_getTypeSize( type );
-    *request     = AMP_MPI( comm ).IsendBytes( buf, bytes, proc, tag );
+    *request = AMP_MPI( comm ).IsendBytes( buf, bytes, proc, tag );
 #endif
 }
 template<class TYPE>
@@ -751,7 +751,7 @@ inline void MPI_Irecv2( [[maybe_unused]] void *buf,
     MPI_Irecv( buf, length, type, proc, tag, comm, request );
 #else
     size_t bytes = length * MPI_getTypeSize( type );
-    *request     = AMP_MPI( comm ).IrecvBytes( buf, bytes, proc, tag );
+    *request = AMP_MPI( comm ).IrecvBytes( buf, bytes, proc, tag );
 #endif
 }
 template<class TYPE>

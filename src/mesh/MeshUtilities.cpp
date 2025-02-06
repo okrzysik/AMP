@@ -545,4 +545,5 @@ double ElementFinder::distance( const Point &pos, const Point &dir ) const
 /********************************************************
  *  Explicit instantiations of kdtree2                   *
  ********************************************************/
+#include "AMP/utils/kdtree2.hpp"
 template class AMP::kdtree2<3, AMP::Mesh::MeshElementID>;

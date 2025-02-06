@@ -226,7 +226,7 @@ constexpr Units Units::read( std::string_view str )
     if ( N == 1 )
         return read2( v[0] );
     // Evaluate and apply operators
-    Units u( SI_type{ 0 }, 1.0 );
+    Units u( UnitType::unitless, 1.0 );
     char last_op = '*';
     for ( int i = 0; i < N; i++ ) {
         Units u2 = read( v[i] );

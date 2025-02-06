@@ -1429,7 +1429,7 @@ std::vector<int> AMP_MPI::waitSome( int count, Request2 *request )
     AMP_ASSERT( outcount != MPI_UNDEFINED ); // Check that the first call is valid
     while ( outcount == 0 ) {
         // Put the current thread to sleep to allow other threads to run
-        sched_yield();
+        std::this_thread::yield();
         // Check if the request has finished
         MPI_Testsome( count, request, &outcount, &indicies[0], MPI_STATUS_IGNORE );
     }
@@ -1752,15 +1752,15 @@ INSTANTIATE_MPI_SENDRECV( std::string );
 INSTANTIATE_MPI_GATHER( std::string );
 template std::vector<size_t> AMP::AMP_MPI::bcast<std::vector<size_t>>( std::vector<size_t> const &,
                                                                        int ) const;
-template std::vector<std::array<long, 1>>
-AMP::AMP_MPI::bcast<std::vector<std::array<long, 1>>>( std::vector<std::array<long, 1>> const &,
-                                                       int ) const;
-template std::vector<std::array<long, 2>>
-AMP::AMP_MPI::bcast<std::vector<std::array<long, 2>>>( std::vector<std::array<long, 2>> const &,
-                                                       int ) const;
-template std::vector<std::array<long, 3>>
-AMP::AMP_MPI::bcast<std::vector<std::array<long, 3>>>( std::vector<std::array<long, 3>> const &,
-                                                       int ) const;
+template std::vector<std::array<int64_t, 1>>
+AMP::AMP_MPI::bcast<std::vector<std::array<int64_t, 1>>>(
+    std::vector<std::array<int64_t, 1>> const &, int ) const;
+template std::vector<std::array<int64_t, 2>>
+AMP::AMP_MPI::bcast<std::vector<std::array<int64_t, 2>>>(
+    std::vector<std::array<int64_t, 2>> const &, int ) const;
+template std::vector<std::array<int64_t, 3>>
+AMP::AMP_MPI::bcast<std::vector<std::array<int64_t, 3>>>(
+    std::vector<std::array<int64_t, 3>> const &, int ) const;
 template void AMP::AMP_MPI::mapGather<uint64_t, uint64_t>( std::map<uint64_t, uint64_t> & ) const;
 template int AMP::AMP_MPI::allGather<std::pair<int, int>>(
     std::pair<int, int> const *, int, std::pair<int, int> *, int *, int *, bool ) const;

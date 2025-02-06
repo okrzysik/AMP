@@ -1,8 +1,7 @@
 #ifndef included_AMP_AMPUnitTest
 #define included_AMP_AMPUnitTest
 
-#include "AMP/utils/AMP_MPI.h"
-
+#include <memory>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -10,6 +9,10 @@
 
 
 namespace AMP {
+
+
+class AMP_MPI;
+
 
 /*!
  * @brief Class UnitTest is simple utility for running unit tests.
@@ -113,7 +116,7 @@ private:
     std::vector<std::string> d_expected;
     bool d_verbose;
     mutable std::mutex d_mutex;
-    AMP::AMP_MPI d_comm;
+    std::unique_ptr<AMP::AMP_MPI> d_comm;
 
 private:
     // Function to pack the messages into a single data stream and send to the given processor
