@@ -33,6 +33,47 @@ constexpr void copy( char *dst, const char *src, size_t N )
 }
 
 
+// Helper function to replace substrings
+constexpr void replace( char *str, size_t N, std::string_view match, std::string_view replace )
+{
+    std::string_view str2( str, N );
+    str2   = str2.substr( 0, str2.find( (char) 0 ) );
+    auto i = str2.find( match );
+    while ( i != std::string::npos ) {
+        if ( match.size() == replace.size() ) {
+            for ( size_t j = 0; j < match.size(); j++ )
+                str[i + j] = replace[j];
+        } else if ( match.size() > replace.size() ) {
+            for ( size_t j = 0; j < replace.size(); j++ )
+                str[i + j] = replace[j];
+            size_t D = match.size() - replace.size();
+            for ( size_t j = i + replace.size(); j < N - D; j++ )
+                str[j] = str[j + D];
+            for ( size_t j = N - D; j < N; j++ )
+                str[j] = 0;
+        } else {
+            throw std::logic_error( "Not finished" );
+        }
+        i = str2.find( match );
+    }
+}
+constexpr void deblank( char *str, size_t N )
+{
+    const char *whitespaces = " \t\f\v\n\r\0";
+    std::string_view str2( str, N );
+    str2   = str2.substr( 0, str2.find( (char) 0 ) );
+    auto i = str2.find_first_not_of( whitespaces );
+    auto j = str2.find_last_not_of( whitespaces );
+    if ( i == std::string::npos )
+        return;
+    str2 = str2.substr( i, j - i + 1 );
+    for ( size_t k = 0; k < str2.size(); k++ )
+        str[k] = str2[k];
+    for ( size_t k = str2.size(); k < N; k++ )
+        str[k] = 0;
+}
+
+
 //! Get the type name
 template<typename T>
 constexpr void getTypeName( uint64_t N, char *name )
@@ -70,34 +111,55 @@ constexpr void getTypeName( uint64_t N, char *name )
     } else if constexpr ( std::is_same_v<T, std::string_view> ) {
         copy( name, "std::string_view", N );
     } else {
-        // Get the name of the function to create the type name
-        char name0[1024] = { 0 };
-#if defined( __clang__ )
-        copy( name0, __PRETTY_FUNCTION__, sizeof( name0 ) );
-#elif defined( __GNUC__ )
-        copy( name0, __PRETTY_FUNCTION__, sizeof( name0 ) );
+        // Get the type name from the function
+#if defined( __clang__ ) || defined( __GNUC__ )
+        constexpr std::string_view name0 = __PRETTY_FUNCTION__;
+        std::string_view name2           = name0;
+        if ( name2.find( "T = " ) != std::string::npos ) {
+            name2 = name2.substr( name2.find( "T = " ) + 4 );
+            if ( name2.find( ';' ) != std::string::npos )
+                name2 = name2.substr( 0, name2.find( ';' ) );
+            else
+                name2 = name2.substr( 0, name2.rfind( ']' ) );
+        }
 #elif defined( _MSC_VER )
-        copy( name0, __FUNCSIG__, sizeof( name0 ) );
+        constexpr std::string_view name0 = __FUNCSIG__;
+        std::string_view name2           = name0;
+        if ( name2.find( "getTypeName<" ) != std::string::npos ) {
+            auto i1 = name2.find( "getTypeName<" );
+            auto i2 = name2.rfind( ">" );
+            name2   = name2.substr( i1 + 12, i2 - i1 - 12 );
+        }
+        if ( name2.substr( 0, 5 ) != "class" )
+            name2.remove_prefix( 5 );
+        if ( name2.substr( 0, 5 ) != "struct" )
+            name2.remove_prefix( 6 );
+        if ( name2[0] == ' ' )
+            name2.remove_prefix( 1 );
 #else
     // Not finished, one possible workaround, pass default class name as string_view
     #error "Not finished";
 #endif
-        // Get the type name from the function
-        std::string_view name2( name0 );
-        if ( name2.find( "]" ) != std::string::npos )
-            name2 = name2.substr( 0, name2.find( "]" ) );
-        if ( name2.find( "T = " ) != std::string::npos ) {
-            name2 = name2.substr( name2.find( "T = " ) + 4 );
-            name2 = name2.substr( 0, name2.find( ';' ) );
-        }
-        if ( name2.rfind( " = " ) != std::string::npos ) {
-            name2 = name2.substr( name2.rfind( " = " ) + 3 );
-        }
+        // Copy the function name
         name2 = name2.substr( 0, N - 1 );
         for ( size_t i = 0; i < N; i++ )
             name[i] = 0;
         for ( size_t i = 0; i < std::min( name2.size(), N - 1 ); i++ )
             name[i] = name2[i];
+        // Cleanup some common format issues to make the typeid more consistent
+        // clang-format off
+        name[N - 1] = 0;
+        replace( name, N, " *", "* " );
+        replace( name, N, "std::__cxx11::basic_string<char>", "std::string" );
+        replace( name, N, "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>", "std::string" );
+        replace( name, N, "std::__cxx11::basic_string_view<char>", "std::string_view" );
+        replace( name, N, "std::__cxx11::basic_string_view<char, std::char_traits<char>>", "std::string_view" );
+        replace( name, N, "std::basic_string_view<char>", "std::string_view" );
+        replace( name, N, "std::basic_string_view<char, std::char_traits<char>>", "std::string_view" );
+        replace( name, N, "std::__debug::", "std::" );
+        replace( name, N, " >", ">" );
+        deblank( name, N );
+        // clang-format on
     }
 }
 
@@ -139,7 +201,7 @@ constexpr typeID getTypeIDEval()
     using T2 = typename std::remove_cv_t<T1>;
     using T  = typename std::remove_cv_t<T2>;
     // Get the name of the class
-    char name[128] = { 0 };
+    char name[1024] = { 0 };
     getTypeName<T>( sizeof( name ), name );
     copy( id.name, name, sizeof( id.name ) );
     // Create the hash

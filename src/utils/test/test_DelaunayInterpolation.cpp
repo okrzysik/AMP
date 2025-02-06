@@ -634,10 +634,15 @@ void testInterpolation( AMP::UnitTest &ut, const AMP::Array<TYPE> &x, bool check
         f2_err  = L2errNorm( f2, fi2, f_mask );
         f3_err  = L2errNorm( f2, fi3, f_extrap_mask );
         if ( f1_err <= tol_linear * f1_norm && f2_err <= tol_linear * f2_norm &&
-             f3_err <= tol_linear * f3_norm )
+             f3_err <= tol_linear * f3_norm ) {
             ut.passes( "linear interpolation: " + msg );
-        else
+        } else {
+            printf( "Failed linear interpolation: %s (%e)\n", msg.data(), tol_linear );
+            printf( "   %e %e\n", f1_err, f1_norm );
+            printf( "   %e %e\n", f2_err, f2_norm );
+            printf( "   %e %e\n", f3_err, f3_norm );
             ut.failure( "linear interpolation: " + msg );
+        }
         // Test the cubic interpolation (using the exact gradient)
         std::tie( fi1, gi1 )    = data->interp_cubic( f, g, x1, index1, false );
         std::tie( fi2, gi2 )    = data->interp_cubic( f, g, x2, index2, 0 );
@@ -669,6 +674,11 @@ void testInterpolation( AMP::UnitTest &ut, const AMP::Array<TYPE> &x, bool check
              pass_interp_cubic4 ) {
             ut.passes( "cubic interpolation: " + msg );
         } else {
+            printf( "Failed cubic interpolation: %s (%e,%e)\n", msg.data(), tol_cubic, tol_c_grad );
+            printf( "   %e %e %e %e\n", f1_err, f1_norm, g1_err, g1_norm );
+            printf( "   %e %e %e %e\n", f2_err, f2_norm, g2_err, g2_norm );
+            printf( "   %e %e %e %e\n", f3_err, f3_norm, g3_err, g3_norm );
+            printf( "   %e %e %e %e\n", f4_err, f4_norm, g4_err, g4_norm );
             ut.failure( "cubic interpolation: " + msg );
         }
 

@@ -1,6 +1,5 @@
 #include "UtilityHelpers.h"
 
-#include "AMP/IO/FileSystem.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
@@ -26,7 +25,6 @@
 // Run the tests
 int main( int argc, char *argv[] )
 {
-
     // Control the behavior of the startup
     AMP::AMPManagerProperties startup_properties;
 
@@ -36,7 +34,7 @@ int main( int argc, char *argv[] )
 
     // Limit the scope of variables
     {
-        AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+        int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
 
         // Create the unit test
         AMP::UnitTest ut;
@@ -78,73 +76,22 @@ int main( int argc, char *argv[] )
         // Test interpolations
         test_interp( ut );
 
-        // Test quicksort performance
+        // Test quicksort / quickselect
         testQuickSort( ut );
-
-        // Test quickselect
         testQuickSelect( ut );
 
         // Test the hash key
         unsigned int key = AMP::Utilities::hash_char( "test" );
-        if ( key == 2087956275 )
-            ut.passes( "Got the expected hash key" );
-        else
-            ut.failure( "Got the expected hash key" );
+        PASS_FAIL( key == 2087956275, "hash 'test'" );
 
-
-        // Test the factor function
-        auto factors = AMP::Utilities::factor( 13958 );
-        if ( factors == std::vector<int>( { 2, 7, 997 } ) )
-            ut.passes( "Correctly factored 13958" );
-        else
-            ut.failure( "Correctly factored 13958" );
-        std::random_device rd;
-        std::mt19937 gen( rd() );
-        std::uniform_int_distribution<int> dist( 1, 10000000 );
-        auto t1  = AMP::Utilities::time();
-        int N_it = 10000;
-        for ( int i = 0; i < N_it; i++ ) {
-            [[maybe_unused]] auto tmp = AMP::Utilities::factor( dist( gen ) );
-        }
-        auto t2 = AMP::Utilities::time();
-        std::cout << "factor = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
-
-
-        // Test the isPrime function
-        if ( !AMP::Utilities::isPrime( 13958 ) && AMP::Utilities::isPrime( 9999991 ) )
-            ut.passes( "isPrime" );
-        else
-            ut.failure( "isPrime" );
-        t1 = AMP::Utilities::time();
-        for ( int i = 0; i < N_it; i++ ) {
-            [[maybe_unused]] auto tmp = AMP::Utilities::factor( dist( gen ) );
-        }
-        t2 = AMP::Utilities::time();
-        std::cout << "isPrime = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
-
-
-        // Test the primes function
-        auto p1   = AMP::Utilities::primes( 50 );
-        bool pass = p1 == std::vector<uint64_t>(
-                              { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47 } );
-        t1 = AMP::Utilities::time();
-        for ( int i = 0; i < 10; i++ )
-            p1 = AMP::Utilities::primes( 1000000 );
-        t2 = AMP::Utilities::time();
-        if ( p1.size() == 78498 )
-            ut.passes( "primes" );
-        else
-            ut.failure( "primes" );
-        std::cout << "size: primes(1000000) = " << p1.size() << std::endl;
-        std::cout << "time: primes(1000000) = " << round( 1e6 * ( t2 - t1 ) / 10 ) << " us"
-                  << std::endl;
-
+        // Test the factor / primes function
+        testPrimes( ut );
 
         // Test getting the current call stack
         double ts1      = AMP::Utilities::time();
         auto call_stack = get_call_stack();
         double ts2      = AMP::Utilities::time();
-        if ( globalComm.getRank() == 0 ) {
+        if ( rank == 0 ) {
             std::cout << "Call stack:" << std::endl;
             for ( auto &elem : call_stack )
                 std::cout << "   " << elem.print() << std::endl;
@@ -152,7 +99,7 @@ int main( int argc, char *argv[] )
         }
         if ( !call_stack.empty() ) {
             ut.passes( "non empty call stack" );
-            pass = false;
+            bool pass = false;
             if ( call_stack.size() > 1 ) {
                 if ( call_stack[1].print().find( "get_call_stack" ) != std::string::npos )
                     pass = true;
@@ -171,56 +118,19 @@ int main( int argc, char *argv[] )
 
         // Test getting the executable
         std::string exe = StackTrace::getExecutable();
-        if ( globalComm.getRank() == 0 )
+        if ( rank == 0 )
             std::cout << "Executable: " << exe << std::endl;
-        if ( exe.find( "test_Utilities" ) != std::string::npos )
-            ut.passes( "getExecutable" );
-        else
-            ut.failure( "getExecutable" );
+        PASS_FAIL( exe.find( "test_Utilities" ) != std::string::npos, "getExecutable" );
 
-        // Test deleting and checking if a file exists
-        if ( globalComm.getRank() == 0 ) {
-            FILE *fid = fopen( "testDeleteFile.txt", "w" );
-            fputs( "Temporary test", fid );
-            fclose( fid );
-            if ( AMP::IO::fileExists( "testDeleteFile.txt" ) )
-                ut.passes( "File exists" );
-            else
-                ut.failure( "File exists" );
-            AMP::IO::deleteFile( "testDeleteFile.txt" );
-            if ( !AMP::IO::fileExists( "testDeleteFile.txt" ) )
-                ut.passes( "File deleted" );
-            else
-                ut.failure( "File deleted" );
-        }
-
-        // Test creating directories
-        AMP::IO::recursiveMkdir( "." );
-        AMP::IO::recursiveMkdir( "testUtilitiesDir/a/b" );
-        globalComm.barrier();
-        pass = AMP::IO::fileExists( "testUtilitiesDir/a/b" );
-        globalComm.barrier();
-        if ( globalComm.getRank() == 0 ) {
-            AMP::IO::deleteFile( "testUtilitiesDir/a/b" );
-            AMP::IO::deleteFile( "testUtilitiesDir/a" );
-            AMP::IO::deleteFile( "testUtilitiesDir" );
-        }
-        globalComm.barrier();
-        pass = pass && !AMP::IO::fileExists( "testUtilitiesDir/a/b" );
-        if ( pass )
-            ut.passes( "Create/destroy directory" );
-        else
-            ut.failure( "Create/destroy directory" );
+        // Test filesystem routines
+        testFileSystem( ut );
 
         // Test catching an error
         try {
             AMP_ERROR( "test_error" );
             ut.failure( "Failed to catch error" );
         } catch ( const StackTrace::abort_error &err ) {
-            if ( err.message == "test_error" )
-                ut.passes( "Caught error" );
-            else
-                ut.failure( "Failed to catch error with proper message" );
+            PASS_FAIL( err.message == "test_error", "Catch error" );
         } catch ( std::exception &err ) {
             ut.failure( "Caught unknown exception type" );
         }
