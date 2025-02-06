@@ -198,7 +198,7 @@ void ArrayVectorData<T, FUN, Allocator>::getValuesByLocalID( size_t num,
     } else if ( id == getTypeID<double>() ) {
         auto data = reinterpret_cast<double *>( vals );
         for ( size_t i = 0; i < num; ++i )
-            data[i] = d_array( indices[i] );
+            data[i] = static_cast<double>( d_array( indices[i] ) );
     } else {
         AMP_ERROR( "Conversion not supported yet" );
     }

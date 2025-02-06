@@ -35,7 +35,6 @@ int main( int argc, char *argv[] )
 // Create the matrix
 #ifdef AMP_USE_MPI
     Epetra_MpiComm comm = MPI_COMM_WORLD;
-    #include <Epetra_MpiComm.h>
 #else
     Epetra_SerialComm comm;
 #endif

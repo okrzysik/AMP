@@ -268,8 +268,7 @@ std::vector<uint64_t> primes( uint64_t n )
         return { 2u };
     // Create our bit array
     uint64_t n2 = ( n + 1 ) / 2;
-    double tmp  = 1.000000000000001 * std::sqrt( static_cast<double>( n ) );
-    uint64_t ub = static_cast<uint64_t>( tmp ) >> 1;
+    uint64_t ub = static_cast<uint64_t>( std::sqrt( n + 0.1 ) + 1 );
     auto N      = ( n2 + 63 ) / 64;
     auto p      = new uint64_t[N];
     memset( p, 0xFF, sizeof( uint64_t ) * N );
@@ -277,12 +276,12 @@ std::vector<uint64_t> primes( uint64_t n )
     auto get = [p]( uint64_t i ) {
         uint64_t i1 = i >> 6;
         uint64_t i2 = i & 0x3F;
-        return ( p[i1] & ( 1UL << i2 ) ) != 0;
+        return ( p[i1] & ( ( (uint64_t) 1 ) << i2 ) ) != 0;
     };
     auto unset = [p]( uint64_t i ) {
         uint64_t i1 = i >> 6;
         uint64_t i2 = i & 0x3F;
-        p[i1] &= ~( 1UL << i2 );
+        p[i1] &= ~( ( (uint64_t) 1 ) << i2 );
     };
     // Set all non-prime values to false
     for ( uint64_t k = 1; k <= ub; k++ ) {
@@ -302,6 +301,7 @@ std::vector<uint64_t> primes( uint64_t n )
         if ( get( i ) )
             p2.push_back( 2 * i + 1 );
     }
+    delete[] p;
     return p2;
 }
 
