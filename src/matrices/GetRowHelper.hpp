@@ -37,10 +37,14 @@ void GetRowHelper::getRow( INT_TYPE row, INT_TYPE *local, INT_TYPE *remote ) con
         auto local2              = new size_t[N_local];
         auto remote2             = new size_t[N_remote];
         getRow2( row, local2, remote2 );
-        for ( size_t i = 0; i < N_local; i++ )
-            local[i] = static_cast<INT_TYPE>( local2[i] );
-        for ( size_t i = 0; i < N_remote; i++ )
-            remote[i] = static_cast<INT_TYPE>( remote2[i] );
+        if ( local ) {
+            for ( size_t i = 0; i < N_local; i++ )
+                local[i] = static_cast<INT_TYPE>( local2[i] );
+        }
+        if ( remote ) {
+            for ( size_t i = 0; i < N_remote; i++ )
+                remote[i] = static_cast<INT_TYPE>( remote2[i] );
+        }
         delete[] local2;
         delete[] remote2;
     }
