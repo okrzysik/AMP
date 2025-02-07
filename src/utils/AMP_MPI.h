@@ -1152,6 +1152,16 @@ public: // Member functions
     template<class type>
     void allToAll( int n, const type *send_data, type *recv_data ) const;
 
+    /*!
+     * Each processor sends a single value to each processor.
+     * Each processor sends a single value to each processor.
+     * Note that this is a blocking global communication.
+     * @param[in] send_data     Input array (nxN)
+     * @param[in] recv_data     Output array of received values (nxN)
+     */
+    template<class type>
+    std::vector<type> allToAll( const std::vector<type> &send ) const;
+
 
     /*!
      * Each processor sends an array of data to the different processors.
@@ -1176,10 +1186,10 @@ public: // Member functions
      *                          processor i.
      * @param[in] known_recv    Are the received counts and displacements known.
      *                          If the received sizes are known, then they must be provided,
-     *                          and an extra communication step is not necessary.  If the received
-     *                          sizes are not know, then an extra communication step will occur
-     *                          internally and the sizes and displacements will be returned (if
-     * desired).
+     *                          and an extra communication step is not necessary.
+     *                          If the received sizes are not know, then an extra communication
+     *                          step will occur internally and the sizes and displacements will
+     *                          be returned (if desired).
      */
     template<class type>
     int allToAll( const type *send_data,
@@ -1189,6 +1199,40 @@ public: // Member functions
                   int *recv_cnt   = nullptr,
                   int *recv_disp  = nullptr,
                   bool known_recv = false ) const;
+
+
+    /*!
+     * Each processor sends an array of data to the different processors.
+     * Each processor may send any size array to any processor.  In the variable
+     * description, N is the size of the communicator.  Note that this is a
+     * blocking global communication.
+     * @param[in] send_data     Input array
+     * @param[in] send_cnt      The number of values to send to each processor (N)
+     * @param[in] send_disp     The displacement (relative to the start of the array)
+     *                          from which to send to processor i
+     * @param[in] recv_cnt      The number of values to receive from each processor (N).
+     *                          If known, this should be provided as an input.  Otherwise
+     *                          it is an optional output that will return the number of
+     *                          received values from each processor.
+     * @param[in] recv_disp     The displacement (relative to the start of the array)
+     *                          from which to send to processor i.
+     *                          If known, this should be provided as an input.  Otherwise
+     *                          it is an optional output that will return the starting location
+     *                          (relative to the start of the array) for the received data from
+     *                          processor i.
+     * @param[in] known_recv    Are the received counts and displacements known.
+     *                          If the received sizes are known, then they must be provided,
+     *                          and an extra communication step is not necessary.
+     *                          If the received sizes are not know, then an extra communication
+     *                          step will occur internally and the sizes and displacements will
+     *                          be returned (if desired).
+     */
+    template<class type, class int_type>
+    std::vector<type> allToAll( const std::vector<type> &send_data,
+                                const std::vector<int_type> &send_cnt,
+                                const std::vector<int_type> &send_disp,
+                                const std::vector<int_type> &recv_cnt,
+                                const std::vector<int_type> &recv_disp ) const;
 
 
     /*!
