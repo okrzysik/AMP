@@ -47,7 +47,7 @@ template<typename Policy,
          class AAView,
          class XView,
          class YView>
-struct Mult {
+struct aAxpby {
     typedef typename Policy::lidx_t lidx_t;
     typedef typename Policy::scalar_t scalar_t;
 
@@ -56,21 +56,27 @@ struct Mult {
     RSView rowstarts;
     JAView cols_loc;
     AAView coeffs;
+    const scalar_t alpha;
+    const scalar_t beta;
     XView inDataBlock;
     YView outDataBlock;
 
-    Mult( lidx_t num_rows_,
-          lidx_t num_rows_team_,
-          RSView rowstarts_,
-          JAView cols_loc_,
-          AAView coeffs_,
-          XView inDataBlock_,
-          YView outDataBlock_ )
+    aAxpby( lidx_t num_rows_,
+            lidx_t num_rows_team_,
+            RSView rowstarts_,
+            JAView cols_loc_,
+            AAView coeffs_,
+            const scalar_t alpha_,
+            const scalar_t beta_,
+            XView inDataBlock_,
+            YView outDataBlock_ )
         : num_rows( num_rows_ ),
           num_rows_team( num_rows_team_ ),
           rowstarts( rowstarts_ ),
           cols_loc( cols_loc_ ),
           coeffs( coeffs_ ),
+          alpha( alpha_ ),
+          beta( beta_ ),
           inDataBlock( inDataBlock_ ),
           outDataBlock( outDataBlock_ )
     {
@@ -90,7 +96,8 @@ struct Mult {
             const auto cl = cols_loc( c );
             sum += coeffs( c ) * inDataBlock( cl );
         }
-        outDataBlock( row ) += sum;
+        outDataBlock( row ) *= beta;
+        outDataBlock( row ) += alpha * sum;
     }
 
     // process a block of rows hierarchically
@@ -115,7 +122,8 @@ struct Mult {
                                           lsum += coeffs( rs + c ) * inDataBlock( cl );
                                       },
                                       sum );
-                                  outDataBlock( row ) += sum;
+                                  outDataBlock( row ) *= beta;
+                                  outDataBlock( row ) += alpha * sum;
                               } );
     }
 };
@@ -201,7 +209,9 @@ struct MultTranspose {
 template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, class LocalMatrixData>
 void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::mult(
     const typename Policy::scalar_t *in,
+    const typename Policy::scalar_t alpha,
     std::shared_ptr<LocalMatrixData> A,
+    const typename Policy::scalar_t beta,
     typename Policy::scalar_t *out )
 {
     using scalar_t = typename Policy::scalar_t;
@@ -227,14 +237,14 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
     const lidx_t vector_length = 8;
     const lidx_t num_teams     = ( nRows + team_rows - 1 ) / team_rows;
 
-    CSRMatOpsKokkosFunctor::Mult<Policy,
-                                 ExecSpace,
-                                 decltype( rowstarts ),
-                                 decltype( cols_loc ),
-                                 decltype( coeffs ),
-                                 decltype( inView ),
-                                 decltype( outView )>
-        ftor( nRows, team_rows, rowstarts, cols_loc, coeffs, inView, outView );
+    CSRMatOpsKokkosFunctor::aAxpby<Policy,
+                                   ExecSpace,
+                                   decltype( rowstarts ),
+                                   decltype( cols_loc ),
+                                   decltype( coeffs ),
+                                   decltype( inView ),
+                                   decltype( outView )>
+        ftor( nRows, team_rows, rowstarts, cols_loc, coeffs, alpha, beta, inView, outView );
 
     if constexpr ( std::is_same_v<ExecSpace, Kokkos::DefaultExecutionSpace> ) {
         Kokkos::TeamPolicy<ExecSpace, Kokkos::Schedule<Kokkos::Dynamic>> team_policy(

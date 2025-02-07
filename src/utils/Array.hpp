@@ -586,7 +586,7 @@ template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::addSubset( const std::vector<Range<size_t>> &index,
                                              const Array<TYPE, FUN, Allocator> &subset )
 {
-    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE,bool> ) {
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
         // Get the subset indices
         checkSubsetIndex( index );
         std::array<size_t, 5> first, last, inc, N1;
@@ -606,7 +606,7 @@ void Array<TYPE, FUN, Allocator>::addSubset( const std::vector<Range<size_t>> &i
             }
         }
     } else {
-        AMP_ERROR("addSubset not supported for non-arithmetic types" );
+        AMP_ERROR( "addSubset not supported for non-arithmetic types" );
     }
 }
 template<class TYPE, class FUN, class Allocator>
@@ -791,7 +791,7 @@ bool Array<TYPE, FUN, Allocator>::NaNs() const
 template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::mean( void ) const
 {
-    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE,bool> ) {
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
         TYPE x = sum() / d_size.length();
         return x;
     } else {
@@ -848,7 +848,7 @@ Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::max( int dir ) const
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::sum( int dir ) const
 {
-    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE,bool> ) {
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
         auto size_ans = d_size;
         size_ans.resize( dir, 1 );
         Array<TYPE, FUN, Allocator> ans( size_ans );
@@ -923,7 +923,7 @@ TYPE Array<TYPE, FUN, Allocator>::max( const std::vector<Range<size_t>> &range )
 template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::sum( const std::vector<Range<size_t>> &range ) const
 {
-    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE,bool> ) {
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
         // Get the subset indicies
         checkSubsetIndex( range );
         std::array<size_t, 5> first, last, inc, N1;
@@ -944,13 +944,13 @@ TYPE Array<TYPE, FUN, Allocator>::sum( const std::vector<Range<size_t>> &range )
         }
         return x;
     } else {
-        AMP_ERROR("sum not supported for non-arithmetic types" );
+        AMP_ERROR( "sum not supported for non-arithmetic types" );
     }
 }
 template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::mean( const std::vector<Range<size_t>> &range ) const
 {
-    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE,bool> ) {
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
         // Get the subset indicies
         checkSubsetIndex( range );
         std::array<size_t, 5> first, last, inc, N1;
@@ -962,7 +962,7 @@ TYPE Array<TYPE, FUN, Allocator>::mean( const std::vector<Range<size_t>> &range 
         TYPE x = sum( range ) / n;
         return x;
     } else {
-        AMP_ERROR("mean not supported for non-arithmetic types" );
+        AMP_ERROR( "mean not supported for non-arithmetic types" );
     }
 }
 template<class TYPE, class FUN, class Allocator>
@@ -1093,7 +1093,7 @@ template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>
 Array<TYPE, FUN, Allocator>::coarsen( const Array<TYPE, FUN, Allocator> &filter ) const
 {
-    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE,bool> ) {
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
         auto S2 = size();
         for ( size_t i = 0; i < S2.size(); i++ ) {
             size_t s = S2[i] / filter.size( i );
@@ -1124,7 +1124,7 @@ Array<TYPE, FUN, Allocator>::coarsen( const Array<TYPE, FUN, Allocator> &filter 
         }
         return y;
     } else {
-        AMP_ERROR("coarsen not supported for non-arithmetic types" );
+        AMP_ERROR( "coarsen not supported for non-arithmetic types" );
     }
 }
 template<class TYPE, class FUN, class Allocator>
@@ -1151,7 +1151,7 @@ Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::coarsen(
                     for ( size_t j2 = 0; j2 < ratio[1]; j2++ ) {
                         for ( size_t i2 = 0; i2 < ratio[0]; i2++ ) {
                             tmp( i2, j2, k2 ) = operator()(
-                                i1 * ratio[0] + i2, j1 * ratio[1] + j2, k1 * ratio[2] + k2 );
+                                i1 *ratio[0] + i2, j1 * ratio[1] + j2, k1 * ratio[2] + k2 );
                         }
                     }
                 }

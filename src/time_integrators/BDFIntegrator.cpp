@@ -1382,26 +1382,30 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         //   const double safetyFactor     = 0.9;
         if ( d_pi_controller_type == "H211b" ) {
             const double b = 4.0;
-            dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
-                            1.0 / ( b * ( p + 1.0 ) ) );
+            dtFactor =
+                std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
+                          1.0 / ( b * ( p + 1.0 ) ) );
             dtFactor *=
                 std::pow( safetyFactor / ( std::max( d_prevTimeTruncationErrorEstimate, m_eps ) ),
-                     1.0 / ( b * ( p + 1.0 ) ) );
+                          1.0 / ( b * ( p + 1.0 ) ) );
             dtFactor *= std::pow( d_alpha, -0.25 );
 
         } else if ( d_pi_controller_type == "PC.4.7" ) {
-            dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
-                            0.4 / ( p + 1.0 ) );
+            dtFactor =
+                std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
+                          0.4 / ( p + 1.0 ) );
             dtFactor = dtFactor * std::pow( d_timeErrorEstimateRatio, 0.7 / ( p + 1.0 ) ) * d_alpha;
 
         } else if ( d_pi_controller_type == "PC11" ) {
-            dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
-                            1.0 / ( p + 1.0 ) );
+            dtFactor =
+                std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
+                          1.0 / ( p + 1.0 ) );
             dtFactor = dtFactor * std::pow( d_timeErrorEstimateRatio, 1.0 / ( p + 1.0 ) ) * d_alpha;
 
         } else if ( d_pi_controller_type == "Deadbeat" ) {
-            dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
-                            1.0 / ( p + 1.0 ) );
+            dtFactor =
+                std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
+                          1.0 / ( p + 1.0 ) );
         } else {
             AMP_ERROR( "ERROR: Unknown PI controller type" );
         }
@@ -1441,7 +1445,7 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         //     }
 
         dtFactor = std::pow( safetyFactor / ( std::max( d_timeTruncationErrorEstimate, m_eps ) ),
-                        1.0 / ( p + 1.0 ) );
+                             1.0 / ( p + 1.0 ) );
 
         // when regridding has taken place and a resolve is done the potential
         // exists for a situation where the convergence rate of the solve on the
