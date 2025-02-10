@@ -97,9 +97,12 @@ public:
     std::vector<size_t> getRemoteDOFs() const override;
 
 
+public: // Advanced interfaces
     //! Get the row DOFs given a mesh element
-    size_t
-    getRowDOFs( const AMP::Mesh::MeshElementID &id, size_t *dofs, size_t N_alloc ) const override;
+    size_t getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                       size_t *dofs,
+                       size_t N_alloc,
+                       bool sort = true ) const override;
     using DOFManager::getRowDOFs;
 
 
@@ -116,8 +119,8 @@ private:
 
     // Data members
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
-    int d_DOFsPerFace[3] = { 0, 0, 0 };
-    int d_gcw            = 0;
+    uint8_t d_DOFsPerFace[3] = { 0, 0, 0 };
+    uint8_t d_gcw            = 0;
 
     std::vector<AMP::Mesh::MeshElementID> d_local_ids[3];
     std::vector<AMP::Mesh::MeshElementID> d_remote_ids[3];

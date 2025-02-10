@@ -148,11 +148,6 @@ public:
     std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElementID &id ) const;
 
 
-    //! Get the row DOFs given a mesh element (advanced interface)
-    virtual size_t
-    getRowDOFs( const AMP::Mesh::MeshElementID &id, size_t *dofs, size_t N_alloc ) const;
-
-
     /** \brief Subset the DOF Manager for a AMP_MPI communicator
      * \details  This will subset a DOF manager for a given communicator.
      * \param[in]  comm         The communicator to use to subset
@@ -184,6 +179,14 @@ public:
 
     //! Get a unique id hash
     uint64_t getID() const;
+
+
+public: // Advanced interfaces
+    //! Get the row DOFs given a mesh element
+    virtual size_t getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                               size_t *dofs,
+                               size_t N_alloc,
+                               bool sort = true ) const;
 
 
 public: // Write/read restart data

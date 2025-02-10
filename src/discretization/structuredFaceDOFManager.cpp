@@ -227,7 +227,8 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOFs() const
  ****************************************************************/
 size_t structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
                                              size_t *dofs_out,
-                                             size_t N_alloc ) const
+                                             size_t N_alloc,
+                                             bool sort ) const
 {
     if ( id.type() != AMP::Mesh::GeomType::Face )
         return 0;
@@ -258,7 +259,7 @@ size_t structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
     AMP::Utilities::unique( ids );
     // AMP_ASSERT(ids.size()==6||ids.size()==11);
     // Get all dofs for each element id
-    int maxDOFsPerFace = 0;
+    uint8_t maxDOFsPerFace = 0;
     for ( auto &elem : d_DOFsPerFace )
         maxDOFsPerFace = std::max( maxDOFsPerFace, elem );
     std::vector<size_t> dofs;
@@ -270,7 +271,8 @@ size_t structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
             dofs.push_back( elem );
     }
     // Sort the row dofs
-    AMP::Utilities::quicksort( dofs );
+    if ( sort )
+        AMP::Utilities::quicksort( dofs );
     for ( size_t i = 0; i < std::min( dofs.size(), N_alloc ); i++ )
         dofs_out[i] = dofs[i];
     return dofs.size();

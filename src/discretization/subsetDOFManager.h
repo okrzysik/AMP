@@ -88,12 +88,6 @@ public:
     std::vector<size_t> getRemoteDOFs() const override;
 
 
-    //! Get the row DOFs given a mesh element
-    size_t
-    getRowDOFs( const AMP::Mesh::MeshElementID &id, size_t *dofs, size_t N_alloc ) const override;
-    using DOFManager::getRowDOFs;
-
-
     //! Function to return the local DOFs on the parent DOF manager
     virtual std::vector<size_t> getLocalParentDOFs() const;
 
@@ -112,6 +106,15 @@ public:
 
     //! Get the parent DOFManager
     virtual std::shared_ptr<const DOFManager> getDOFManager() const;
+
+
+public: // Advanced interfaces
+    //! Get the row DOFs given a mesh element
+    size_t getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                       size_t *dofs,
+                       size_t N_alloc,
+                       bool sort = true ) const override;
+    using DOFManager::getRowDOFs;
 
 
 protected:

@@ -85,11 +85,6 @@ public:
     //! Get the remote DOFs for a vector
     std::vector<size_t> getRemoteDOFs() const override;
 
-    //! Get the row DOFs given a mesh element
-    size_t
-    getRowDOFs( const AMP::Mesh::MeshElementID &id, size_t *dofs, size_t N_alloc ) const override;
-    using DOFManager::getRowDOFs;
-
 
     /** \brief Subset the DOF Manager for a AMP_MPI communicator
      * \details  This will subset a DOF manager for a given communicator.
@@ -154,6 +149,15 @@ public:
      */
     std::vector<size_t> getSubDOF( const int DOFManager,
                                    const std::vector<size_t> &globalDOF ) const;
+
+
+public: // Advanced interfaces
+    //! Get the row DOFs given a mesh element
+    size_t getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                       size_t *dofs,
+                       size_t N_alloc,
+                       bool sort = true ) const override;
+    using DOFManager::getRowDOFs;
 
 
 private:

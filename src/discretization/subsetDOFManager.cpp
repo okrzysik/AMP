@@ -155,7 +155,8 @@ std::vector<size_t> subsetDOFManager::getRemoteDOFs() const { return d_remoteSub
  ****************************************************************/
 size_t subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
                                      size_t *dofs,
-                                     size_t N_alloc ) const
+                                     size_t N_alloc,
+                                     bool sort ) const
 {
     auto parentDOFs = d_parentDOFManager->getRowDOFs( id );
     auto subsetDOFs = getSubsetDOF( parentDOFs );

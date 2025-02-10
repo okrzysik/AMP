@@ -117,7 +117,7 @@ std::vector<size_t> DOFManager::getRemoteDOFs() const { return d_remoteDOFs; }
 /****************************************************************
  * Return the global number of D.O.F.s                           *
  ****************************************************************/
-size_t DOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &, size_t *, size_t ) const
+size_t DOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &, size_t *, size_t, bool ) const
 {
     AMP_ERROR( "getRowDOFs(element) is not implemented for the base class" );
     return 0;

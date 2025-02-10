@@ -143,12 +143,6 @@ public:
     std::vector<size_t> getRemoteDOFs() const override;
 
 
-    //! Get the row DOFs given a mesh element
-    size_t
-    getRowDOFs( const AMP::Mesh::MeshElementID &id, size_t *dofs, size_t N_alloc ) const override;
-    using DOFManager::getRowDOFs;
-
-
     /** \brief Subset the DOF Manager for a mesh
      * \details  This will subset a DOF manager for a particular mesh.  The resulting DOFManager
      *    can exist on either the comm of the parent DOF manager, or the comm of the mesh (default).
@@ -159,6 +153,15 @@ public:
      */
     std::shared_ptr<DOFManager> subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                         bool useMeshComm = true ) override;
+
+
+public: // Advanced interfaces
+    //! Get the row DOFs given a mesh element
+    size_t getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                       size_t *dofs,
+                       size_t N_alloc,
+                       bool sort = true ) const override;
+    using DOFManager::getRowDOFs;
 
 
 public: // Write/read restart data

@@ -317,7 +317,8 @@ std::vector<size_t> simpleDOFManager::getRemoteDOFs() const
  ****************************************************************/
 size_t simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
                                      size_t *dofs_out,
-                                     size_t N_alloc ) const
+                                     size_t N_alloc,
+                                     bool sort ) const
 {
     // Check if the element is in the mesh
     bool found = false;
@@ -372,7 +373,8 @@ size_t simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
             dofs.push_back( elem );
     }
     // Sort the row dofs
-    AMP::Utilities::quicksort( dofs );
+    if ( sort )
+        AMP::Utilities::quicksort( dofs );
     for ( size_t i = 0; i < std::min( dofs.size(), N_alloc ); i++ )
         dofs_out[i] = dofs[i];
     return dofs.size();
