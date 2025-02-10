@@ -13,24 +13,29 @@ GetRowHelper::GetRowHelper( std::shared_ptr<const AMP::Discretization::DOFManage
                             std::shared_ptr<const AMP::Discretization::DOFManager> rightDOF )
     : d_leftDOF( leftDOF ), d_rightDOF( rightDOF )
 {
-    const size_t beginRow = d_leftDOF->beginDOF();
-    const size_t endRow   = d_leftDOF->endDOF();
-    const size_t N_rows   = endRow - beginRow;
-    d_NNZ                 = new std::array<size_t, 2>[N_rows];
-    size_t beginCol       = d_rightDOF->beginDOF();
-    size_t endCol         = d_rightDOF->endDOF();
+    size_t beginRow = d_leftDOF->beginDOF();
+    size_t endRow   = d_leftDOF->endDOF();
+    size_t N_rows   = endRow - beginRow;
+    d_NNZ           = new std::array<size_t, 2>[N_rows];
+    size_t beginCol = d_rightDOF->beginDOF();
+    size_t endCol   = d_rightDOF->endDOF();
+    std::vector<size_t> dofs( 1024 );
     for ( size_t row = beginRow, i = 0; i < N_rows; i++, row++ ) {
-        d_NNZ[i]  = { 0, 0 };
-        auto id   = d_leftDOF->getElementID( row );
-        auto dofs = d_rightDOF->getRowDOFs( id );
-        reserve( dofs.size() );
-        for ( auto dof : dofs ) {
-            if ( dof >= beginCol && dof < endCol ) {
+        d_NNZ[i] = { 0, 0 };
+        auto id  = d_leftDOF->getElementID( row );
+        size_t N = d_rightDOF->getRowDOFs( id, dofs.data(), dofs.size() );
+        if ( N > dofs.size() ) {
+            dofs.resize( N );
+            N = d_rightDOF->getRowDOFs( id, dofs.data(), dofs.size() );
+        }
+        reserve( N );
+        for ( size_t k = 0; k < N; k++ ) {
+            if ( dofs[k] >= beginCol && dofs[k] < endCol ) {
                 d_NNZ[i][0]++;
-                d_local[d_size[0]++] = dof;
+                d_local[d_size[0]++] = dofs[k];
             } else {
                 d_NNZ[i][1]++;
-                d_remote[d_size[1]++] = dof;
+                d_remote[d_size[1]++] = dofs[k];
             }
         }
     }

@@ -52,45 +52,27 @@ multiDOFManager::~multiDOFManager() = default;
 /****************************************************************
  * Get the dofs for the element                                  *
  ****************************************************************/
-void multiDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-                               std::vector<size_t> &dofs ) const
+size_t multiDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
+                                    size_t *dofs,
+                                    size_t index,
+                                    size_t capacity ) const
 {
-    dofs.resize( 0 );
     if ( d_managers.empty() )
-        return;
+        return 0;
     if ( d_managers[0]->numGlobalDOF() == this->d_global ) {
-        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with
-        // multivectors)
-        d_managers[0]->getDOFs( ids, dofs );
+        // We are dealing with a multiDOFManager with only 1 sub DOF
+        //   this happens with multivectors
+        return d_managers[0]->appendDOFs( id, dofs, index, capacity );
     } else {
-        std::vector<size_t> local_dofs;
+        size_t N = 0;
         for ( size_t i = 0; i < d_managers.size(); i++ ) {
-            d_managers[i]->getDOFs( ids, local_dofs );
-            if ( !local_dofs.empty() ) {
-                auto tmp_dofs = getGlobalDOF( i, local_dofs );
-                dofs.insert( dofs.end(), tmp_dofs.begin(), tmp_dofs.end() );
-            }
+            size_t N2 = d_managers[i]->appendDOFs( id, dofs, index, capacity );
+            for ( size_t j = index; j < std::min( index + N2, capacity ); j++ )
+                dofs[j] = subToGlobal( i, dofs[j] );
+            N += N2;
+            index += N2;
         }
-    }
-}
-void multiDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const
-{
-    dofs.resize( 0 );
-    if ( d_managers.empty() )
-        return;
-    if ( d_managers[0]->numGlobalDOF() == this->d_global ) {
-        // We are dealing with a multiDOFManager with only 1 sub DOF (this happens with
-        // multivectors)
-        d_managers[0]->getDOFs( id, dofs );
-    } else {
-        std::vector<size_t> local_dofs;
-        for ( size_t i = 0; i < d_managers.size(); i++ ) {
-            d_managers[i]->getDOFs( id, local_dofs );
-            if ( !local_dofs.empty() ) {
-                auto tmp_dofs = getGlobalDOF( i, local_dofs );
-                dofs.insert( dofs.end(), tmp_dofs.begin(), tmp_dofs.end() );
-            }
-        }
+        return N;
     }
 }
 
@@ -175,10 +157,9 @@ std::vector<size_t> multiDOFManager::getRemoteDOFs() const
     std::vector<size_t> global_dofs;
     for ( size_t i = 0; i < d_managers.size(); i++ ) {
         auto local_dofs = d_managers[i]->getRemoteDOFs();
-        if ( !local_dofs.empty() ) {
-            std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
-            global_dofs.insert( global_dofs.end(), tmp_dofs.begin(), tmp_dofs.end() );
-        }
+        global_dofs.reserve( global_dofs.size() + local_dofs.size() );
+        for ( size_t j = 0; j < local_dofs.size(); j++ )
+            global_dofs.push_back( subToGlobal( i, local_dofs[j] ) );
     }
     AMP::Utilities::quicksort( global_dofs );
     return global_dofs;
@@ -193,19 +174,18 @@ size_t multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
                                     size_t N_alloc,
                                     bool sort ) const
 {
-    std::vector<size_t> global_dofs;
+    size_t N = 0;
     for ( size_t i = 0; i < d_managers.size(); i++ ) {
-        std::vector<size_t> local_dofs = d_managers[i]->getRowDOFs( id );
-        if ( !local_dofs.empty() ) {
-            std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
-            global_dofs.insert( global_dofs.end(), tmp_dofs.begin(), tmp_dofs.end() );
-        }
+        size_t N_alloc2 = N >= N_alloc ? 0 : N_alloc - N;
+        size_t N_local  = d_managers[i]->getRowDOFs( id, &dofs[N], N_alloc2, false );
+        size_t N2       = std::min( N_local, N_alloc2 );
+        for ( size_t j = 0; j < N2; j++ )
+            dofs[N + j] = subToGlobal( i, dofs[N + j] );
+        N += N_local;
     }
     if ( sort )
-        AMP::Utilities::quicksort( global_dofs );
-    for ( size_t i = 0; i < std::min( global_dofs.size(), N_alloc ); i++ )
-        dofs[i] = global_dofs[i];
-    return global_dofs.size();
+        AMP::Utilities::quicksort( std::min( N, N_alloc ), dofs );
+    return N;
 }
 
 

@@ -105,30 +105,6 @@ public:
     AMP::Mesh::MeshElement getElement( size_t dof ) const override;
 
 
-    /** \brief Get the entry indices of DOFs given a mesh element ID
-     * \details  This will return a vector of pointers into a Vector that are associated with which.
-     *  Note: this function only works if the element we are search for is a element on which a DOF
-     * exists
-     *  (the underlying mesh element type must match the geometric entity type specified at
-     * construction).
-     * \param[in]  id       The element ID to collect nodal objects for.  Note: the mesh element may
-     * be any type
-     * (include a vertex).
-     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
-     */
-    void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const override;
-
-
-    /** \brief Get the entry indices of DOFs given a mesh element ID
-     * \details  This will return a vector of pointers into a Vector that are associated with which.
-     * \param[in]  ids      The element IDs to collect nodal objects for.
-     *                      Note: the mesh element may be any type (include a vertex).
-     * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
-     */
-    void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-                  std::vector<size_t> &dofs ) const override;
-
-
     /** \brief   Get an entry over the mesh elements associated with the DOFs
      * \details  This will return an iterator over the mesh elements associated
      *  with the DOFs.  Each element in the iterator will have 1 or more DOFs
@@ -163,6 +139,12 @@ public: // Advanced interfaces
                        bool sort = true ) const override;
     using DOFManager::getRowDOFs;
 
+    // Append DOFs to the list
+    virtual size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
+                               size_t *dofs,
+                               size_t index,
+                               size_t capacity ) const override;
+
 
 public: // Write/read restart data
     void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
@@ -179,14 +161,11 @@ protected:
     // Function to initialize the data
     void initialize();
 
-    // Append DOFs
-    inline void appendDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
-
 
 protected:                                                     // Data members
     bool d_isBaseMesh          = false;                        // Is the mesh a base mesh
     AMP::Mesh::GeomType d_type = AMP::Mesh::GeomType::Nullity; // entity type
-    int d_DOFsPerElement       = 0;                            // # Of DOFs per type
+    uint8_t d_DOFsPerElement   = 0;                            // # Of DOFs per type
     std::shared_ptr<const AMP::Mesh::Mesh> d_mesh;             // Mesh
     AMP::Mesh::MeshID d_meshID;                                // MeshID
     std::vector<AMP::Mesh::MeshID> d_baseMeshIDs;              // Must be global list

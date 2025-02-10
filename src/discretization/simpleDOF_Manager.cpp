@@ -219,47 +219,39 @@ std::shared_ptr<DOFManager> simpleDOFManager::subset( const std::shared_ptr<AMP:
 /****************************************************************
  * Get the DOFs for the element                                  *
  ****************************************************************/
-inline void simpleDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
-                                          std::vector<size_t> &dofs ) const
+size_t simpleDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
+                                     size_t *dofs,
+                                     size_t N0,
+                                     size_t capacity ) const
 {
-    // Search for the dof locally
-    if ( !d_local_id.empty() ) {
-        size_t index = AMP::Utilities::findfirst( d_local_id, id );
-        if ( index == d_local_id.size() )
-            index--;
-        if ( id == d_local_id[index] ) {
-            // The id was found
-            for ( int j = 0; j < d_DOFsPerElement; j++ )
-                dofs.emplace_back( index * d_DOFsPerElement + d_begin + j );
-            return;
+    if ( id.is_local() ) {
+        // Search for the dof locally
+        if ( !d_local_id.empty() ) {
+            size_t index = AMP::Utilities::findfirst( d_local_id, id );
+            if ( index == d_local_id.size() )
+                index--;
+            if ( id == d_local_id[index] ) {
+                // The id was found
+                for ( size_t j = 0, k = N0; j < d_DOFsPerElement && k < capacity; j++, k++ )
+                    dofs[k] = index * d_DOFsPerElement + d_begin + j;
+                return d_DOFsPerElement;
+            }
+        }
+    } else {
+        // Search for the dof in the remote list
+        if ( !d_remote_id.empty() ) {
+            size_t index = AMP::Utilities::findfirst( d_remote_id, id );
+            if ( index == d_remote_id.size() )
+                index--;
+            if ( id == d_remote_id[index] ) {
+                // The id was found
+                for ( size_t j = 0, k = N0; j < d_DOFsPerElement && k < capacity; j++, k++ )
+                    dofs[k] = d_remote_dof[index] * d_DOFsPerElement + j;
+                return d_DOFsPerElement;
+            }
         }
     }
-    // Search for the dof in the remote list
-    if ( !d_remote_id.empty() ) {
-        size_t index = AMP::Utilities::findfirst( d_remote_id, id );
-        if ( index == d_remote_id.size() )
-            index--;
-        if ( id == d_remote_id[index] ) {
-            // The id was found
-            for ( int j = 0; j < d_DOFsPerElement; j++ )
-                dofs.emplace_back( d_remote_dof[index] * d_DOFsPerElement + j );
-        }
-    }
-}
-void simpleDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-                                std::vector<size_t> &dofs ) const
-{
-    dofs.resize( 0 );
-    dofs.reserve( ids.size() * d_DOFsPerElement );
-    for ( auto id : ids )
-        appendDOFs( id, dofs );
-}
-void simpleDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
-                                std::vector<size_t> &dofs ) const
-{
-    dofs.resize( 0 );
-    dofs.reserve( d_DOFsPerElement );
-    appendDOFs( id, dofs );
+    return 0;
 }
 
 
@@ -316,7 +308,7 @@ std::vector<size_t> simpleDOFManager::getRemoteDOFs() const
  * Return the row DOFs                                           *
  ****************************************************************/
 size_t simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
-                                     size_t *dofs_out,
+                                     size_t *dofs,
                                      size_t N_alloc,
                                      bool sort ) const
 {
@@ -364,20 +356,13 @@ size_t simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
         AMP_ERROR( "Internal error" );
     }
     // Get all dofs for each element id
-    std::vector<size_t> dofs;
-    dofs.reserve( ids.size() * d_DOFsPerElement );
-    std::vector<size_t> dofs2( d_DOFsPerElement );
-    for ( auto &id2 : ids ) {
-        getDOFs( id2, dofs2 );
-        for ( auto &elem : dofs2 )
-            dofs.push_back( elem );
-    }
+    size_t N = 0;
+    for ( auto &id2 : ids )
+        N += appendDOFs( id2, dofs, N, N_alloc );
     // Sort the row dofs
     if ( sort )
-        AMP::Utilities::quicksort( dofs );
-    for ( size_t i = 0; i < std::min( dofs.size(), N_alloc ); i++ )
-        dofs_out[i] = dofs[i];
-    return dofs.size();
+        AMP::Utilities::quicksort( std::min( N, N_alloc ), dofs );
+    return N;
 }
 
 

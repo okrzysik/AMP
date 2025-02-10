@@ -83,7 +83,7 @@ public:
      *                      Note: the mesh element may be any type (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
+    void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
@@ -92,8 +92,8 @@ public:
      *                      Note: the mesh element may be any type (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-                          std::vector<size_t> &dofs ) const;
+    void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
+                  std::vector<size_t> &dofs ) const;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
@@ -187,6 +187,12 @@ public: // Advanced interfaces
                                size_t *dofs,
                                size_t N_alloc,
                                bool sort = true ) const;
+
+    // Append DOFs to the list
+    virtual size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
+                               size_t *dofs,
+                               size_t index,
+                               size_t capacity ) const;
 
 
 public: // Write/read restart data

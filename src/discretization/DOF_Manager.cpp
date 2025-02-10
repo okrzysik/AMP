@@ -41,25 +41,34 @@ std::string DOFManager::className() const { return "DOFManager"; }
 /****************************************************************
  * Get the DOFs for the element                                  *
  ****************************************************************/
-void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &, std::vector<size_t> & ) const
+void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const
 {
-    AMP_ERROR( "getDOFs is not implemented for the base class" );
+    dofs.resize( 8 );
+    size_t N = appendDOFs( id, dofs.data(), 0, dofs.size() );
+    if ( N > dofs.size() ) {
+        dofs.resize( N );
+        N = appendDOFs( id, dofs.data(), 0, dofs.size() );
+    }
+    dofs.resize( N );
 }
 void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
                           std::vector<size_t> &dofs ) const
 {
-    // This is a simple loop to provide a vector interface
-    // Ideally this should be overwritten by derived DOFManager for performance
-    dofs.resize( 0 );
-    dofs.reserve( 2 );
-    std::vector<size_t> local_dofs;
-    for ( auto &id : ids ) {
-        getDOFs( id, local_dofs );
-        if ( local_dofs.size() + dofs.size() > dofs.capacity() )
-            dofs.reserve( 2 * dofs.capacity() );
-        for ( auto &local_dof : local_dofs )
-            dofs.push_back( local_dof );
+    size_t N = 0;
+    dofs.resize( ids.size() );
+    for ( auto id : ids ) {
+        size_t N2 = appendDOFs( id, dofs.data(), N, dofs.size() );
+        if ( N + N2 >= dofs.size() ) {
+            dofs.resize( std::max( N + N2, 2 * dofs.size() ) );
+            N2 = appendDOFs( id, dofs.data(), N, dofs.size() );
+        }
+        N += N2;
     }
+    dofs.resize( N );
+}
+size_t DOFManager::appendDOFs( const AMP::Mesh::MeshElementID &, size_t *, size_t, size_t ) const
+{
+    AMP_ERROR( "getDOFs is not implemented for the base class" );
 }
 
 
