@@ -123,6 +123,12 @@ inline std::pair<size_t, int> multiDOFManager::globalToSub( size_t dof ) const
 /****************************************************************
  * Get the element ID give a dof                                 *
  ****************************************************************/
+AMP::Mesh::MeshElementID multiDOFManager::getElementID( size_t dof ) const
+{
+    auto map = globalToSub( dof );
+    AMP_ASSERT( map.second >= 0 );
+    return d_managers[map.second]->getElementID( map.first );
+}
 AMP::Mesh::MeshElement multiDOFManager::getElement( size_t dof ) const
 {
     auto map = globalToSub( dof );
@@ -182,18 +188,22 @@ std::vector<size_t> multiDOFManager::getRemoteDOFs() const
 /****************************************************************
  * Return the global number of D.O.F.s                           *
  ****************************************************************/
-std::vector<size_t> multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
+size_t multiDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                                    size_t *dofs,
+                                    size_t N_alloc ) const
 {
     std::vector<size_t> global_dofs;
     for ( size_t i = 0; i < d_managers.size(); i++ ) {
-        std::vector<size_t> local_dofs = d_managers[i]->getRowDOFs( obj );
+        std::vector<size_t> local_dofs = d_managers[i]->getRowDOFs( id );
         if ( !local_dofs.empty() ) {
             std::vector<size_t> tmp_dofs = getGlobalDOF( i, local_dofs );
             global_dofs.insert( global_dofs.end(), tmp_dofs.begin(), tmp_dofs.end() );
         }
     }
     AMP::Utilities::quicksort( global_dofs );
-    return global_dofs;
+    for ( size_t i = 0; i < std::min( global_dofs.size(), N_alloc ); i++ )
+        dofs[i] = global_dofs[i];
+    return global_dofs.size();
 }
 
 

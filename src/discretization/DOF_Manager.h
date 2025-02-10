@@ -4,6 +4,7 @@
 #include "AMP/discretization/DOF_ManagerParameters.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
+#include "AMP/mesh/MeshID.h"
 #include "AMP/utils/AMP_MPI.h"
 
 
@@ -58,6 +59,14 @@ public:
      * \param  rhs     DOFManager to compare
      */
     bool operator!=( const DOFManager &rhs ) const;
+
+
+    /** \brief Get the mesh element for a DOF
+     * \details  This will return the mesh element associated with a given DOF.
+     * \param[in] dof       The entry in the vector associated with DOF
+     * @return              The element for the given DOF.
+     */
+    virtual AMP::Mesh::MeshElementID getElementID( size_t dof ) const;
 
 
     /** \brief Get the mesh element for a DOF
@@ -136,7 +145,12 @@ public:
 
 
     //! Get the row DOFs given a mesh element
-    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
+    std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElementID &id ) const;
+
+
+    //! Get the row DOFs given a mesh element (advanced interface)
+    virtual size_t
+    getRowDOFs( const AMP::Mesh::MeshElementID &id, size_t *dofs, size_t N_alloc ) const;
 
 
     /** \brief Subset the DOF Manager for a AMP_MPI communicator

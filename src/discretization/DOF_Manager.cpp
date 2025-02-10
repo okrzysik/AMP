@@ -71,6 +71,12 @@ AMP::Mesh::MeshElement DOFManager::getElement( size_t ) const
     AMP_ERROR( "getElement is not implemented for the base class" );
     return AMP::Mesh::MeshElement();
 }
+AMP::Mesh::MeshElementID DOFManager::getElementID( size_t ) const
+{
+    AMP_ERROR( "getElement is not implemented for the base class" );
+    return AMP::Mesh::MeshElementID();
+}
+
 
 /****************************************************************
  * Get an entry over the mesh elements associated with the DOFs  *
@@ -111,10 +117,21 @@ std::vector<size_t> DOFManager::getRemoteDOFs() const { return d_remoteDOFs; }
 /****************************************************************
  * Return the global number of D.O.F.s                           *
  ****************************************************************/
-std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement & ) const
+size_t DOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &, size_t *, size_t ) const
 {
     AMP_ERROR( "getRowDOFs(element) is not implemented for the base class" );
-    return std::vector<size_t>();
+    return 0;
+}
+std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id ) const
+{
+    std::vector<size_t> dofs( 32 );
+    size_t N = getRowDOFs( id, dofs.data(), dofs.size() );
+    if ( N >= dofs.size() ) {
+        dofs.resize( N );
+        N = getRowDOFs( id, dofs.data(), dofs.size() );
+    }
+    dofs.resize( N );
+    return dofs;
 }
 
 

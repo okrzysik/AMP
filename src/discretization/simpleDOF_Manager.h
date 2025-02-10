@@ -34,7 +34,7 @@ public:
      * \param split         Do we want to split the DOFManager by the meshes returning a
      * multiDOFManager
      */
-    static std::shared_ptr<DOFManager> create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+    static std::shared_ptr<DOFManager> create( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                                                AMP::Mesh::GeomType type,
                                                int gcw,
                                                int DOFsPerElement,
@@ -49,7 +49,7 @@ public:
      * \param type          The geometric entity type for the DOF map
      * \param DOFsPerElement The desired number of DOFs per element
      */
-    simpleDOFManager( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+    simpleDOFManager( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                       const AMP::Mesh::MeshIterator &local,
                       const AMP::Mesh::MeshIterator &ghost,
                       AMP::Mesh::GeomType type,
@@ -64,7 +64,7 @@ public:
      * \param local         Local iterator
      * \param DOFsPerElement The desired number of DOFs per element
      */
-    static std::shared_ptr<DOFManager> create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+    static std::shared_ptr<DOFManager> create( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                                                const AMP::Mesh::MeshIterator &ghost,
                                                const AMP::Mesh::MeshIterator &local,
                                                int DOFsPerElement );
@@ -87,6 +87,14 @@ public:
 
     //! Return a string with the mesh class name
     std::string className() const override { return "simpleDOFManager"; }
+
+
+    /** \brief Get the mesh element ID for a DOF
+     * \details  This will return the mesh element id associated with a given DOF.
+     * \param[in] dof       The entry in the vector associated with DOF
+     * @return              The element id for the given DOF.
+     */
+    AMP::Mesh::MeshElementID getElementID( size_t dof ) const override;
 
 
     /** \brief Get the mesh element for a DOF
@@ -136,7 +144,9 @@ public:
 
 
     //! Get the row DOFs given a mesh element
-    std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
+    size_t
+    getRowDOFs( const AMP::Mesh::MeshElementID &id, size_t *dofs, size_t N_alloc ) const override;
+    using DOFManager::getRowDOFs;
 
 
     /** \brief Subset the DOF Manager for a mesh
@@ -174,7 +184,7 @@ protected:                                                     // Data members
     bool d_isBaseMesh          = false;                        // Is the mesh a base mesh
     AMP::Mesh::GeomType d_type = AMP::Mesh::GeomType::Nullity; // entity type
     int d_DOFsPerElement       = 0;                            // # Of DOFs per type
-    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;                   // Mesh
+    std::shared_ptr<const AMP::Mesh::Mesh> d_mesh;             // Mesh
     AMP::Mesh::MeshID d_meshID;                                // MeshID
     std::vector<AMP::Mesh::MeshID> d_baseMeshIDs;              // Must be global list
     AMP::Mesh::MeshIterator d_localIterator;                   // Local iterator

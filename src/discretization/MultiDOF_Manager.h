@@ -58,6 +58,15 @@ public:
     void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
                   std::vector<size_t> &dofs ) const override;
 
+
+    /** \brief Get the mesh element ID for a DOF
+     * \details  This will return the mesh element id associated with a given DOF.
+     * \param[in] dof       The entry in the vector associated with DOF
+     * @return              The element id for the given DOF.
+     */
+    AMP::Mesh::MeshElementID getElementID( size_t dof ) const override;
+
+
     /** \brief Get the mesh element for a DOF
      * \details  This will return the mesh element associated with a given DOF.
      * \param[in] dof       The entry in the vector associated with DOF
@@ -76,9 +85,10 @@ public:
     //! Get the remote DOFs for a vector
     std::vector<size_t> getRemoteDOFs() const override;
 
-
     //! Get the row DOFs given a mesh element
-    std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const override;
+    size_t
+    getRowDOFs( const AMP::Mesh::MeshElementID &id, size_t *dofs, size_t N_alloc ) const override;
+    using DOFManager::getRowDOFs;
 
 
     /** \brief Subset the DOF Manager for a AMP_MPI communicator

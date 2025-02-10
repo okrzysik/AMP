@@ -21,8 +21,8 @@ GetRowHelper::GetRowHelper( std::shared_ptr<const AMP::Discretization::DOFManage
     size_t endCol         = d_rightDOF->endDOF();
     for ( size_t row = beginRow, i = 0; i < N_rows; i++, row++ ) {
         d_NNZ[i]  = { 0, 0 };
-        auto elem = d_leftDOF->getElement( row );
-        auto dofs = d_rightDOF->getRowDOFs( elem );
+        auto id   = d_leftDOF->getElementID( row );
+        auto dofs = d_rightDOF->getRowDOFs( id );
         reserve( dofs.size() );
         for ( auto dof : dofs ) {
             if ( dof >= beginCol && dof < endCol ) {

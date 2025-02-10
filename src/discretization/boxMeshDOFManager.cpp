@@ -12,13 +12,13 @@ namespace AMP::Discretization {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-boxMeshDOFManager::boxMeshDOFManager( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+boxMeshDOFManager::boxMeshDOFManager( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                                       AMP::Mesh::GeomType type,
                                       int gcw,
                                       int DOFsPerObject )
     : simpleDOFManager(
           mesh, mesh->getIterator( type, 0 ), mesh->getIterator( type, gcw ), type, DOFsPerObject ),
-      d_boxMesh( std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh ) )
+      d_boxMesh( std::dynamic_pointer_cast<const AMP::Mesh::BoxMesh>( mesh ) )
 {
     AMP_INSIST( d_boxMesh, "Mesh must be a BoxMesh" );
 }

@@ -153,7 +153,7 @@ void structuredFaceDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
 /****************************************************************
  * Get the element ID give a dof                                 *
  ****************************************************************/
-AMP::Mesh::MeshElement structuredFaceDOFManager::getElement( size_t dof ) const
+AMP::Mesh::MeshElementID structuredFaceDOFManager::getElementID( size_t dof ) const
 {
     AMP::Mesh::MeshElementID id;
     if ( dof >= d_begin && dof < d_end ) {
@@ -173,6 +173,11 @@ AMP::Mesh::MeshElement structuredFaceDOFManager::getElement( size_t dof ) const
             }
         }
     }
+    return id;
+}
+AMP::Mesh::MeshElement structuredFaceDOFManager::getElement( size_t dof ) const
+{
+    auto id = getElementID( dof );
     if ( id.isNull() )
         return AMP::Mesh::MeshElement();
     return d_mesh->getElement( id );
@@ -220,14 +225,16 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOFs() const
 /****************************************************************
  * Return the row DOFs                                           *
  ****************************************************************/
-std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
+size_t structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                                             size_t *dofs_out,
+                                             size_t N_alloc ) const
 {
-    if ( obj.elementType() != AMP::Mesh::GeomType::Face )
-        return std::vector<size_t>();
+    if ( id.type() != AMP::Mesh::GeomType::Face )
+        return 0;
     // Get a list of all element ids that are part of the row
     // Only faces that share an element are part of the row
-    std::vector<AMP::Mesh::MeshElement> parents =
-        d_mesh->getElementParents( obj, AMP::Mesh::GeomType::Cell );
+    auto obj     = d_mesh->getElement( id );
+    auto parents = d_mesh->getElementParents( obj, AMP::Mesh::GeomType::Cell );
     AMP_ASSERT( parents.size() == 1 || parents.size() == 2 );
     // Temporarily add neighbor elements
     size_t p_size = parents.size();
@@ -243,8 +250,7 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve( 6 * parents.size() );
     for ( auto &parent : parents ) {
-        std::vector<AMP::Mesh::MeshElement> children =
-            parent.getElements( AMP::Mesh::GeomType::Face );
+        auto children = parent.getElements( AMP::Mesh::GeomType::Face );
         AMP_ASSERT( children.size() == 6 );
         for ( auto &elem : children )
             ids.push_back( elem.globalID() );
@@ -265,7 +271,9 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     }
     // Sort the row dofs
     AMP::Utilities::quicksort( dofs );
-    return dofs;
+    for ( size_t i = 0; i < std::min( dofs.size(), N_alloc ); i++ )
+        dofs_out[i] = dofs[i];
+    return dofs.size();
 }
 
 

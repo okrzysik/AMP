@@ -1,4 +1,5 @@
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/GetRowHelper.h"
 #include "AMP/mesh/Mesh.h"
@@ -18,8 +19,8 @@ std::pair<size_t, size_t> getRowNNZ( const AMP::Discretization::DOFManager *left
                                      const AMP::Discretization::DOFManager *rightDOF,
                                      size_t row )
 {
-    auto elem       = leftDOF->getElement( row );
-    auto dofs       = rightDOF->getRowDOFs( elem );
+    auto id         = leftDOF->getElementID( row );
+    auto dofs       = rightDOF->getRowDOFs( id );
     size_t N_local  = 0;
     size_t N_remote = 0;
     size_t start    = rightDOF->beginDOF();
@@ -41,8 +42,8 @@ void getRow( const AMP::Discretization::DOFManager *leftDOF,
              size_t *local,
              size_t *remote )
 {
-    auto elem    = leftDOF->getElement( row );
-    auto dofs    = rightDOF->getRowDOFs( elem );
+    auto id      = leftDOF->getElementID( row );
+    auto dofs    = rightDOF->getRowDOFs( id );
     size_t start = rightDOF->beginDOF();
     size_t end   = rightDOF->endDOF();
     size_t i     = 0;
@@ -53,6 +54,137 @@ void getRow( const AMP::Discretization::DOFManager *leftDOF,
         else
             remote[j++] = dof;
     }
+}
+
+
+// Create a vector
+std::shared_ptr<AMP::Discretization::DOFManager> createDOFs(
+    std::shared_ptr<const AMP::Mesh::Mesh> mesh, const AMP::Mesh::GeomType &type, bool multivec )
+{
+    auto dof1 = AMP::Discretization::simpleDOFManager::create( mesh, type, 1, 1, true );
+    if ( !multivec )
+        return dof1;
+    auto dof2 = AMP::Discretization::simpleDOFManager::create( mesh, type, 1, 3, true );
+    std::vector<std::shared_ptr<AMP::Discretization::DOFManager>> dofs = { dof1, dof2 };
+    return std::make_shared<AMP::Discretization::multiDOFManager>( AMP_COMM_WORLD, dofs );
+}
+
+
+// Struct to store test times
+struct TestTimes {
+    double DOFs            = 0;
+    double naiveNNZ        = 0;
+    double naiveGetRow     = 0;
+    double rowHelper       = 0;
+    double rowHelperNNZ    = 0;
+    double rowHelperGetRow = 0;
+    void print( const std::string_view prefix )
+    {
+        if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() != 0 )
+            return;
+        std::cout << prefix << "Time to create DOFManager: " << DOFs << std::endl;
+        std::cout << prefix << "Time to get NNZ (naive): " << naiveNNZ << std::endl;
+        std::cout << prefix << "Time to get rows (naive): " << naiveGetRow << std::endl;
+        std::cout << prefix << "Time to construct (GetRowHelper): " << rowHelper << std::endl;
+        std::cout << prefix << "Time to get NNZ (GetRowHelper): " << rowHelperNNZ << std::endl;
+        std::cout << prefix << "Time to get row (GetRowHelper): " << rowHelperGetRow << std::endl;
+    }
+};
+
+
+// Test GetRowHelper
+void testGetRowHelper( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
+                       const AMP::Mesh::GeomType &leftType,
+                       bool leftMultiVec,
+                       const AMP::Mesh::GeomType &rightType,
+                       bool rightMultiVec,
+                       AMP::UnitTest &ut )
+{
+    TestTimes times;
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
+
+    // Create a DOF managers
+    auto t1    = AMP::Utilities::time();
+    auto left  = createDOFs( mesh, leftType, leftMultiVec );
+    auto right = createDOFs( mesh, rightType, rightMultiVec );
+    comm.barrier();
+    times.DOFs = AMP::Utilities::time() - t1;
+
+    // Test naive implementation for getRowNNZ
+    auto leftDOF  = left.get();
+    auto rightDOF = right.get();
+    size_t begin  = leftDOF->beginDOF();
+    size_t end    = leftDOF->endDOF();
+    std::vector<size_t> NNZ_local( end - begin, 0 );
+    std::vector<size_t> NNZ_remote( end - begin, 0 );
+    t1 = AMP::Utilities::time();
+    for ( size_t row = begin, i = 0; row < end; i++, row++ )
+        std::tie( NNZ_local[i], NNZ_remote[i] ) = getRowNNZ( leftDOF, rightDOF, row );
+    comm.barrier();
+    times.naiveNNZ = AMP::Utilities::time() - t1;
+
+    // Test naive implementation for getRow
+    size_t NNZ[2] = { 0, 0 };
+    for ( size_t i = 0; i < NNZ_local.size(); i++ ) {
+        NNZ[0] += NNZ_local[i];
+        NNZ[1] += NNZ_remote[i];
+    }
+    auto local     = new size_t[NNZ[0]];
+    auto remote    = new size_t[NNZ[1]];
+    auto localPtr  = new size_t *[NNZ_local.size()];
+    auto remotePtr = new size_t *[NNZ_local.size()];
+    for ( size_t i = 0, j1 = 0, j2 = 0; i < NNZ_local.size(); i++ ) {
+        localPtr[i]  = &local[j1];
+        remotePtr[i] = &remote[j2];
+        j1 += NNZ_local[i];
+        j2 += NNZ_remote[i];
+    }
+    t1 = AMP::Utilities::time();
+    for ( size_t row = begin, i = 0; row < end; i++, row++ )
+        getRow( leftDOF, rightDOF, row, localPtr[i], remotePtr[i] );
+    comm.barrier();
+    times.naiveGetRow = AMP::Utilities::time() - t1;
+
+    // Test getRowHelper
+    t1 = AMP::Utilities::time();
+    AMP::LinearAlgebra::GetRowHelper rowHelper( left, right );
+    comm.barrier();
+    times.rowHelper = AMP::Utilities::time() - t1;
+    bool pass       = true;
+    t1              = AMP::Utilities::time();
+    for ( size_t row = begin, i = 0; row < end; i++, row++ ) {
+        auto [N1, N2] = rowHelper.NNZ( row );
+        pass          = pass && N1 == NNZ_local[i] && N2 == NNZ_remote[i];
+    }
+    comm.barrier();
+    times.rowHelperNNZ = AMP::Utilities::time() - t1;
+    if ( pass )
+        ut.passes( "getRowHelper.NNZ" );
+    else
+        ut.failure( "getRowHelper.NNZ" );
+    pass = true;
+    t1   = AMP::Utilities::time();
+    size_t d1[1024], d2[1024];
+    for ( size_t row = begin, i = 0; row < end; i++, row++ ) {
+        rowHelper.getRow( row, d1, d2 );
+        for ( size_t j = 0; j < NNZ_local[i]; j++ )
+            pass = pass && d1[j] == localPtr[i][j];
+        for ( size_t j = 0; j < NNZ_remote[i]; j++ )
+            pass = pass && d2[j] == remotePtr[i][j];
+    }
+    comm.barrier();
+    times.rowHelperGetRow = AMP::Utilities::time() - t1;
+    if ( pass )
+        ut.passes( "getRowHelper.getRow" );
+    else
+        ut.failure( "getRowHelper.getRow" );
+
+    delete[] local;
+    delete[] remote;
+    delete[] localPtr;
+    delete[] remotePtr;
+
+    times.print( "" );
 }
 
 
@@ -78,99 +210,9 @@ void testGetRows( const std::string &input_file, AMP::UnitTest &ut )
     if ( comm.getRank() == 0 )
         std::cout << "Time to create mesh: " << t2 - t1 << std::endl;
 
-    // Create a DOF manager for a nodal vector
-    t1               = AMP::Utilities::time();
-    auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    auto leftDOF  = nodalDofMap.get();
-    auto rightDOF = nodalDofMap.get();
-    comm.barrier();
-    t2 = AMP::Utilities::time();
-    if ( comm.getRank() == 0 )
-        std::cout << "Time to create DOFManager: " << t2 - t1 << std::endl;
-
-    // Test naive implementation for getRowNNZ
-    size_t begin = leftDOF->beginDOF();
-    size_t end   = leftDOF->endDOF();
-    std::vector<size_t> NNZ_local( end - begin, 0 );
-    std::vector<size_t> NNZ_remote( end - begin, 0 );
-    t1 = AMP::Utilities::time();
-    for ( size_t row = begin, i = 0; row < end; i++, row++ )
-        std::tie( NNZ_local[i], NNZ_remote[i] ) = getRowNNZ( leftDOF, rightDOF, row );
-    comm.barrier();
-    t2 = AMP::Utilities::time();
-    if ( comm.getRank() == 0 )
-        std::cout << "Time to get NNZ (naive): " << t2 - t1 << std::endl;
-
-    // Test naive implementation for getRow
-    size_t NNZ[2] = { 0, 0 };
-    for ( size_t i = 0; i < NNZ_local.size(); i++ ) {
-        NNZ[0] += NNZ_local[i];
-        NNZ[1] += NNZ_remote[i];
-    }
-    auto local     = new size_t[NNZ[0]];
-    auto remote    = new size_t[NNZ[1]];
-    auto localPtr  = new size_t *[NNZ_local.size()];
-    auto remotePtr = new size_t *[NNZ_local.size()];
-    for ( size_t i = 0, j1 = 0, j2 = 0; i < NNZ_local.size(); i++ ) {
-        localPtr[i]  = &local[j1];
-        remotePtr[i] = &remote[j2];
-        j1 += NNZ_local[i];
-        j2 += NNZ_remote[i];
-    }
-    t1 = AMP::Utilities::time();
-    for ( size_t row = begin, i = 0; row < end; i++, row++ )
-        getRow( leftDOF, rightDOF, row, localPtr[i], remotePtr[i] );
-    comm.barrier();
-    t2 = AMP::Utilities::time();
-    if ( comm.getRank() == 0 )
-        std::cout << "Time to get rows (naive): " << t2 - t1 << std::endl;
-
-    // Test getRowHelper
-    t1 = AMP::Utilities::time();
-    AMP::LinearAlgebra::GetRowHelper rowHelper( nodalDofMap, nodalDofMap );
-    comm.barrier();
-    t2 = AMP::Utilities::time();
-    if ( comm.getRank() == 0 )
-        std::cout << "Time to construct (GetRowHelper): " << t2 - t1 << std::endl;
-    bool pass = true;
-    t1        = AMP::Utilities::time();
-    for ( size_t row = begin, i = 0; row < end; i++, row++ ) {
-        auto [N1, N2] = rowHelper.NNZ( row );
-        pass          = pass && N1 == NNZ_local[i] && N2 == NNZ_remote[i];
-    }
-    comm.barrier();
-    t2 = AMP::Utilities::time();
-    if ( comm.getRank() == 0 )
-        std::cout << "Time to get NNZ (GetRowHelper): " << t2 - t1 << std::endl;
-    if ( pass )
-        ut.passes( "getRowHelper.NNZ" );
-    else
-        ut.failure( "getRowHelper.NNZ" );
-    pass = true;
-    t1   = AMP::Utilities::time();
-    size_t d1[1024], d2[1024];
-    for ( size_t row = begin, i = 0; row < end; i++, row++ ) {
-        rowHelper.getRow( row, d1, d2 );
-        for ( size_t j = 0; j < NNZ_local[i]; j++ )
-            pass = pass && d1[j] == localPtr[i][j];
-        for ( size_t j = 0; j < NNZ_remote[i]; j++ )
-            pass = pass && d2[j] == remotePtr[i][j];
-    }
-    comm.barrier();
-    t2 = AMP::Utilities::time();
-    if ( comm.getRank() == 0 )
-        std::cout << "Time to get row (GetRowHelper): " << t2 - t1 << std::endl;
-    if ( pass )
-        ut.passes( "getRowHelper.getRow" );
-    else
-        ut.failure( "getRowHelper.getRow" );
-
-
-    delete[] local;
-    delete[] remote;
-    delete[] localPtr;
-    delete[] remotePtr;
+    // Test GetRowHelper
+    auto vertex = AMP::Mesh::GeomType::Vertex;
+    testGetRowHelper( mesh, vertex, false, vertex, false, ut );
 }
 
 
