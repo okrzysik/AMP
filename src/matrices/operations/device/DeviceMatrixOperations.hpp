@@ -6,32 +6,32 @@ namespace AMP {
 namespace LinearAlgebra {
 
 // sparce matrix vector multiplication
-template<typename G, typename L, typename S>
+template<typename L, typename S>
 __global__ void mult_kernel(
-    const L *row_starts, const G *cols, const S *coeffs, const unsigned N, const S *x, S *y )
+    const L *row_starts, const L *cols_loc, const S *coeffs, const unsigned N, const S *x, S *y )
 {
     for ( int i = blockIdx.x * blockDim.x + threadIdx.x; i < N; i += blockDim.x * gridDim.x ) {
         int start = row_starts[i];
         int end   = row_starts[i + 1];
         for ( int j = start; j < end; j++ )
-            y[i] += coeffs[j] * x[cols[j]];
+            y[i] += coeffs[j] * x[cols_loc[j]];
     }
 }
 
 template<typename G, typename L, typename S>
 void DeviceMatrixOperations<G, L, S>::mult(
-    const L *row_starts, const G *cols, const S *coeffs, const size_t N, const S *in, S *out )
+    const L *row_starts, const L *cols_loc, const S *coeffs, const size_t N, const S *in, S *out )
 {
     dim3 BlockDim;
     dim3 GridDim;
     setKernelDims( N, BlockDim, GridDim );
-    mult_kernel<<<GridDim, BlockDim>>>( row_starts, cols, coeffs, N, in, out );
+    mult_kernel<<<GridDim, BlockDim>>>( row_starts, cols_loc, coeffs, N, in, out );
     deviceSynchronize();
 }
 
 template<typename G, typename L, typename S>
 void DeviceMatrixOperations<G, L, S>::mult( const L *row_starts,
-                                            const G *cols,
+                                            const L *cols_loc,
                                             const S *coeffs,
                                             const size_t N,
                                             const S *in_h,
@@ -47,7 +47,7 @@ void DeviceMatrixOperations<G, L, S>::mult( const L *row_starts,
     dim3 BlockDim;
     dim3 GridDim;
     setKernelDims( N, BlockDim, GridDim );
-    mult_kernel<<<GridDim, BlockDim>>>( row_starts, cols, coeffs, N, in_d, out );
+    mult_kernel<<<GridDim, BlockDim>>>( row_starts, cols_loc, coeffs, N, in_d, out );
     deviceSynchronize();
     deviceFree( in );
 }
@@ -110,111 +110,72 @@ void DeviceMatrixOperations<G, L, S>::axpy( const size_t N, const S alpha, S *x,
 }
 
 // extract diagonal
-template<typename G, typename L, typename S>
-__global__ static void extractDiagonal_kernel( const L *row_starts,
-                                               const G *cols,
-                                               const S *coeffs,
-                                               const size_t N,
-                                               const size_t first_col,
-                                               S *diag )
+template<typename L, typename S>
+__global__ static void
+extractDiagonal_kernel( const L *row_starts, const S *coeffs, const size_t N, S *diag )
 {
     for ( int i = blockIdx.x * blockDim.x + threadIdx.x; i < N; i += blockDim.x * gridDim.x ) {
-        diag[i]          = 0.0;
-        const auto start = row_starts[i];
-        const auto end   = row_starts[i + 1];
-
-        for ( auto j = start; j < end; j++ ) {
-            if ( cols[j] == first_col + i ) {
-                diag[i] = coeffs[j];
-                break;
-            }
-        }
+        diag[i] = coeffs[row_starts[i]];
     }
 }
 
 template<typename G, typename L, typename S>
 void DeviceMatrixOperations<G, L, S>::extractDiagonal( const L *row_starts,
-                                                       const G *cols,
                                                        const S *coeffs,
                                                        const size_t N,
-                                                       const size_t first_col,
                                                        S *diag )
 {
     dim3 BlockDim;
     dim3 GridDim;
     setKernelDims( N, BlockDim, GridDim );
-    extractDiagonal_kernel<<<GridDim, BlockDim>>>( row_starts, cols, coeffs, N, first_col, diag );
+    extractDiagonal_kernel<<<GridDim, BlockDim>>>( row_starts, coeffs, N, diag );
     deviceSynchronize();
 }
 
 // set diagonal
-template<typename G, typename L, typename S>
-__global__ static void setDiagonal_kernel( const L *row_starts,
-                                           const G *cols,
-                                           S *coeffs,
-                                           const size_t N,
-                                           const size_t first_col,
-                                           const S *diag )
+template<typename L, typename S>
+__global__ static void
+setDiagonal_kernel( const L *row_starts, S *coeffs, const size_t N, const S *diag )
 {
     for ( int i = blockIdx.x * blockDim.x + threadIdx.x; i < N; i += blockDim.x * gridDim.x ) {
-        const auto start = row_starts[i];
-        const auto end   = row_starts[i + 1];
-
-        for ( auto j = start; j < end; j++ ) {
-            if ( cols[j] == first_col + i ) {
-                coeffs[j] = diag[i];
-                break;
-            }
-        }
+        coeffs[row_starts[i]] = diag[i];
     }
 }
 
 template<typename G, typename L, typename S>
 void DeviceMatrixOperations<G, L, S>::setDiagonal( const L *row_starts,
-                                                   const G *cols,
                                                    S *coeffs,
                                                    const size_t N,
-                                                   const size_t first_col,
                                                    const S *diag )
 {
     dim3 BlockDim;
     dim3 GridDim;
     setKernelDims( N, BlockDim, GridDim );
-    setDiagonal_kernel<<<GridDim, BlockDim>>>( row_starts, cols, coeffs, N, first_col, diag );
+    setDiagonal_kernel<<<GridDim, BlockDim>>>( row_starts, coeffs, N, diag );
     deviceSynchronize();
 }
 
 // set identity
-template<typename G, typename L, typename S>
-__global__ static void setIdentity_kernel(
-    const L *row_starts, const G *cols, S *coeffs, const size_t N, const size_t first_col )
+template<typename L, typename S>
+__global__ static void setIdentity_kernel( const L *row_starts, S *coeffs, const size_t N )
 {
     for ( int i = blockIdx.x * blockDim.x + threadIdx.x; i < N; i += blockDim.x * gridDim.x ) {
-        const auto start = row_starts[i];
-        const auto end   = row_starts[i + 1];
-
-        for ( auto j = start; j < end; j++ ) {
-            if ( cols[j] == first_col + i ) {
-                coeffs[j] = 1.0;
-                break;
-            }
-        }
+        coeffs[row_starts[i]] = 1.0;
     }
 }
 
 template<typename G, typename L, typename S>
-void DeviceMatrixOperations<G, L, S>::setIdentity(
-    const L *row_starts, const G *cols, S *coeffs, const size_t N, const size_t first_col )
+void DeviceMatrixOperations<G, L, S>::setIdentity( const L *row_starts, S *coeffs, const size_t N )
 {
     dim3 BlockDim;
     dim3 GridDim;
     setKernelDims( N, BlockDim, GridDim );
-    setIdentity_kernel<<<GridDim, BlockDim>>>( row_starts, cols, coeffs, N, first_col );
+    setIdentity_kernel<<<GridDim, BlockDim>>>( row_starts, coeffs, N );
     deviceSynchronize();
 }
 
 // Linf norms
-template<typename G, typename L, typename S>
+template<typename L, typename S>
 __global__ static void
 LinfNorm_kernel( const size_t N, const S *x, const L *row_starts, S *row_sums )
 {
@@ -238,7 +199,7 @@ void DeviceMatrixOperations<G, L, S>::LinfNorm( const size_t N,
     dim3 BlockDim;
     dim3 GridDim;
     setKernelDims( N, BlockDim, GridDim );
-    LinfNorm_kernel<G, L, S><<<GridDim, BlockDim>>>( N, x, row_starts, row_sums );
+    LinfNorm_kernel<<<GridDim, BlockDim>>>( N, x, row_starts, row_sums );
     deviceSynchronize();
 }
 
