@@ -26,7 +26,7 @@ public:
      * \param DOFsPerElement The desired number of DOFs per element
      * multiDOFManager
      */
-    boxMeshDOFManager( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+    boxMeshDOFManager( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                        AMP::Mesh::GeomType type,
                        int gcw,
                        int DOFsPerElement );
@@ -46,7 +46,7 @@ private:
     boxMeshDOFManager() = delete;
 
 private: // Data
-    std::shared_ptr<AMP::Mesh::BoxMesh> d_boxMesh;
+    std::shared_ptr<const AMP::Mesh::BoxMesh> d_boxMesh;
 };
 
 } // namespace AMP::Discretization
