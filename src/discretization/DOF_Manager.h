@@ -4,6 +4,7 @@
 #include "AMP/discretization/DOF_ManagerParameters.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
+#include "AMP/mesh/MeshID.h"
 #include "AMP/utils/AMP_MPI.h"
 
 
@@ -65,6 +66,14 @@ public:
      * \param[in] dof       The entry in the vector associated with DOF
      * @return              The element for the given DOF.
      */
+    virtual AMP::Mesh::MeshElementID getElementID( size_t dof ) const;
+
+
+    /** \brief Get the mesh element for a DOF
+     * \details  This will return the mesh element associated with a given DOF.
+     * \param[in] dof       The entry in the vector associated with DOF
+     * @return              The element for the given DOF.
+     */
     virtual AMP::Mesh::MeshElement getElement( size_t dof ) const;
 
 
@@ -74,7 +83,7 @@ public:
      *                      Note: the mesh element may be any type (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s
      */
-    virtual void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
+    void getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
 
 
     /** \brief Get the entry indices of DOFs given a mesh element ID
@@ -83,8 +92,8 @@ public:
      *                      Note: the mesh element may be any type (include a vertex).
      * \param[out] dofs     The entries in the vector associated with D.O.F.s on the nodes
      */
-    virtual void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-                          std::vector<size_t> &dofs ) const;
+    void getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
+                  std::vector<size_t> &dofs ) const;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
@@ -136,7 +145,7 @@ public:
 
 
     //! Get the row DOFs given a mesh element
-    virtual std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElement &obj ) const;
+    std::vector<size_t> getRowDOFs( const AMP::Mesh::MeshElementID &id ) const;
 
 
     /** \brief Subset the DOF Manager for a AMP_MPI communicator
@@ -170,6 +179,20 @@ public:
 
     //! Get a unique id hash
     uint64_t getID() const;
+
+
+public: // Advanced interfaces
+    //! Get the row DOFs given a mesh element
+    virtual size_t getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                               size_t *dofs,
+                               size_t N_alloc,
+                               bool sort = true ) const;
+
+    // Append DOFs to the list
+    virtual size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
+                               size_t *dofs,
+                               size_t index,
+                               size_t capacity ) const;
 
 
 public: // Write/read restart data
