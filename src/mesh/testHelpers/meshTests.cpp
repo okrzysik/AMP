@@ -755,7 +755,15 @@ void meshTests::testBlockIDs( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh
 // This tests basic id info
 void meshTests::testID( AMP::UnitTest &ut )
 {
+    int rank                 = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
     unsigned int num_failed0 = ut.NumFailLocal();
+    // Print some basic meshID hashes
+    if ( rank == 0 ) {
+        std::cout << "MeshID( 0, 0 ).hash() = " << MeshID( 0, 0 ).getHash() << std::endl;
+        std::cout << "MeshID( 0, 1 ).hash() = " << MeshID( 0, 1 ).getHash() << std::endl;
+        std::cout << "MeshID( 1, 0 ).hash() = " << MeshID( 1, 0 ).getHash() << std::endl;
+        std::cout << "MeshID( 1, 1 ).hash() = " << MeshID( 1, 1 ).getHash() << std::endl;
+    }
     // Create some IDs for testing
     AMP::Mesh::MeshElementID id0;
     AMP::Mesh::MeshElementID id1( false, AMP::Mesh::GeomType::Vertex, 2, 1, 103 );

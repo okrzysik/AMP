@@ -263,14 +263,14 @@ AMP::Mesh::MeshElementID simpleDOFManager::getElementID( size_t dof ) const
     AMP::Mesh::MeshElementID id;
     if ( dof >= d_begin && dof < d_end ) {
         // We are searching for a local dof
-        id = d_local_id[( dof - d_begin ) / d_DOFsPerElement];
+        return d_local_id[( dof - d_begin ) / d_DOFsPerElement];
     }
     const size_t dof2 = dof / d_DOFsPerElement;
     for ( size_t i = 0; i < d_remote_id.size(); i++ ) {
         if ( d_remote_dof[i] == dof2 )
-            id = d_remote_id[i];
+            return d_remote_id[i];
     }
-    return id;
+    return AMP::Mesh::MeshElementID();
 }
 AMP::Mesh::MeshElement simpleDOFManager::getElement( size_t dof ) const
 {

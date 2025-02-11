@@ -1,5 +1,7 @@
 #include "AMP/matrices/GetRowHelper.h"
 
+#include "ProfilerApp.h"
+
 #include <cstdlib>
 
 
@@ -13,6 +15,7 @@ GetRowHelper::GetRowHelper( std::shared_ptr<const AMP::Discretization::DOFManage
                             std::shared_ptr<const AMP::Discretization::DOFManager> rightDOF )
     : d_leftDOF( leftDOF ), d_rightDOF( rightDOF )
 {
+    PROFILE( "GetRowHelper" );
     size_t beginRow = d_leftDOF->beginDOF();
     size_t endRow   = d_leftDOF->endDOF();
     size_t N_rows   = endRow - beginRow;
