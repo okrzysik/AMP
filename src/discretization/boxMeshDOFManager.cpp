@@ -21,6 +21,10 @@ boxMeshDOFManager::boxMeshDOFManager( std::shared_ptr<const AMP::Mesh::Mesh> mes
       d_boxMesh( std::dynamic_pointer_cast<const AMP::Mesh::BoxMesh>( mesh ) )
 {
     AMP_INSIST( d_boxMesh, "Mesh must be a BoxMesh" );
+    /*if ( !d_local_id.empty() ) {
+        AMP_ASSERT( d_local_id.front().local_id() == 0 );
+        AMP_ASSERT( d_local_id.back().local_id() + 1 == d_local_id.size() );
+    }*/
 }
 
 

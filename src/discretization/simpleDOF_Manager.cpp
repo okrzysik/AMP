@@ -27,17 +27,15 @@ static int64_t find( int64_t N, const T *x, const T &value )
         return 0;
     int64_t lower = 0;
     int64_t upper = N - 1;
-    int64_t index;
-    while ( ( upper - lower ) != 1 ) {
-        index = ( upper + lower ) / 2;
+    while ( ( upper - lower ) > 1 ) {
+        auto index = ( upper + lower ) / 2;
         if ( x[index] >= value )
             upper = index;
         else
             lower = index;
     }
-    index = upper;
-    if ( x[index] == value )
-        return index;
+    if ( x[upper] == value )
+        return upper;
     return -1;
 }
 template<class T>

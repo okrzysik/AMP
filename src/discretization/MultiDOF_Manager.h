@@ -33,7 +33,7 @@ public:
     multiDOFManager( const AMP_MPI &comm, std::vector<std::shared_ptr<DOFManager>> managers );
 
     //! Deconstructor
-    ~multiDOFManager() override;
+    virtual ~multiDOFManager() override;
 
 
     /** \brief Get the mesh element ID for a DOF
@@ -137,10 +137,10 @@ public: // Advanced interfaces
     using DOFManager::getRowDOFs;
 
     // Append DOFs to the list
-    virtual size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
-                               size_t *dofs,
-                               size_t index,
-                               size_t capacity ) const override;
+    size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
+                       size_t *dofs,
+                       size_t index,
+                       size_t capacity ) const override;
 
 
 private:

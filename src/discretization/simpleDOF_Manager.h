@@ -140,10 +140,10 @@ public: // Advanced interfaces
     using DOFManager::getRowDOFs;
 
     // Append DOFs to the list
-    virtual size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
-                               size_t *dofs,
-                               size_t index,
-                               size_t capacity ) const override;
+    size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
+                       size_t *dofs,
+                       size_t index,
+                       size_t capacity ) const override;
 
 
 public: // Write/read restart data

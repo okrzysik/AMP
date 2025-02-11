@@ -170,6 +170,9 @@ size_t subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
     subsetDOFs.resize( index );
     for ( size_t i = 0; i < std::min( index, N_alloc ); i++ )
         dofs[i] = subsetDOFs[i];
+    // Sort the row dofs
+    if ( sort )
+        AMP::Utilities::quicksort( std::min( index, N_alloc ), dofs );
     return index;
 }
 
