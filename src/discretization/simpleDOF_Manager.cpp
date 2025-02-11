@@ -16,6 +16,38 @@ namespace AMP::Discretization {
 
 
 /****************************************************************
+ * Find a value, returning the index if found or -1              *
+ ****************************************************************/
+template<class T>
+static int64_t find( int64_t N, const T *x, const T &value )
+{
+    if ( N == 0 )
+        return -1;
+    if ( x[0] == value )
+        return 0;
+    int64_t lower = 0;
+    int64_t upper = N - 1;
+    int64_t index;
+    while ( ( upper - lower ) != 1 ) {
+        index = ( upper + lower ) / 2;
+        if ( x[index] >= value )
+            upper = index;
+        else
+            lower = index;
+    }
+    index = upper;
+    if ( x[index] == value )
+        return index;
+    return -1;
+}
+template<class T>
+static inline int64_t find( const std::vector<T> &x, const T &value )
+{
+    return find( x.size(), x.data(), value );
+}
+
+
+/****************************************************************
  * Constructors                                                  *
  ****************************************************************/
 std::shared_ptr<DOFManager> simpleDOFManager::create( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
@@ -226,29 +258,22 @@ size_t simpleDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
 {
     if ( id.is_local() ) {
         // Search for the dof locally
-        if ( !d_local_id.empty() ) {
-            size_t index = AMP::Utilities::findfirst( d_local_id, id );
-            if ( index == d_local_id.size() )
-                index--;
-            if ( id == d_local_id[index] ) {
-                // The id was found
-                for ( size_t j = 0, k = N0; j < d_DOFsPerElement && k < capacity; j++, k++ )
-                    dofs[k] = index * d_DOFsPerElement + d_begin + j;
-                return d_DOFsPerElement;
-            }
+        auto index = find( d_local_id, id );
+        if ( index != -1 ) {
+            size_t dof = index * d_DOFsPerElement + d_begin;
+            for ( size_t j = 0, k = N0; j < d_DOFsPerElement && k < capacity; j++, k++, dof++ )
+                dofs[k] = dof;
+            return d_DOFsPerElement;
         }
     } else {
         // Search for the dof in the remote list
-        if ( !d_remote_id.empty() ) {
-            size_t index = AMP::Utilities::findfirst( d_remote_id, id );
-            if ( index == d_remote_id.size() )
-                index--;
-            if ( id == d_remote_id[index] ) {
-                // The id was found
-                for ( size_t j = 0, k = N0; j < d_DOFsPerElement && k < capacity; j++, k++ )
-                    dofs[k] = d_remote_dof[index] * d_DOFsPerElement + j;
-                return d_DOFsPerElement;
-            }
+        auto index = find( d_remote_id, id );
+        if ( index != -1 ) {
+            // The id was found
+            size_t dof = d_remote_dof[index] * d_DOFsPerElement;
+            for ( size_t j = 0, k = N0; j < d_DOFsPerElement && k < capacity; j++, k++, dof++ )
+                dofs[k] = dof;
+            return d_DOFsPerElement;
         }
     }
     return 0;
