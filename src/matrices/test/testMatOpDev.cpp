@@ -76,8 +76,8 @@ void createMatrixAndVectors(
     const auto _rightDOF = rightDOF.get();
     std::function<std::vector<size_t>( size_t )> getRow;
     getRow = [_leftDOF, _rightDOF]( size_t row ) {
-        auto elem = _leftDOF->getElement( row );
-        return _rightDOF->getRowDOFs( elem );
+        auto id = _leftDOF->getElementID( row );
+        return _rightDOF->getRowDOFs( id );
     };
 
     // Create the matrix parameters

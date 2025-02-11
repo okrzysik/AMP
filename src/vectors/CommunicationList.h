@@ -72,22 +72,10 @@ public:
     CommunicationList( size_t local, const AMP_MPI &comm );
 
     /**
-     * \brief Retrieve list of global indices shared locally stored elsewhere
-     * \return A vector of indices not owned by the core but are stored locally.
-     */
-    const std::vector<size_t> &getGhostIDList() const;
-
-    /**
      * \brief Subset a communication list based on a VectorIndexer
      * \param[in] sub  A VectorIndexer pointer that describes a subset
      */
     std::shared_ptr<CommunicationList> subset( std::shared_ptr<VectorIndexer> sub );
-
-    /**
-     * \brief Retrieve list of global indices stored here and shared elsewhere
-     * \return A vector of indices owned by the core and shared on other cores.
-     */
-    const std::vector<size_t> &getReplicatedIDList() const;
 
     /**
      * \brief Retrieve the size of the buffer used to receive data from other processes
@@ -102,6 +90,39 @@ public:
      * \return The number of owned entries on this core shared with other cores
      */
     size_t getVectorSendBufferSize() const;
+
+    /**
+     * \brief Retrieve list of global indices shared locally stored elsewhere
+     * \return A vector of indices not owned by the core but are stored locally.
+     */
+    const std::vector<size_t> &getGhostIDList() const;
+
+    /**
+     * \brief Retrieve list of global indices stored here and shared elsewhere
+     * \return A vector of indices owned by the core and shared on other cores.
+     */
+    const std::vector<size_t> &getReplicatedIDList() const;
+
+    /**
+     * \brief Retrieve number of DOFs recieved from each rank
+     * \return A vector size of comm.getSize() containing the number
+     *         of DOFs we will receive from each rank
+     */
+    const std::vector<int> &getRecieveSizes() const;
+
+    /**
+     * \brief Retrieve number of DOFs sent to each rank
+     * \return A vector size of comm.getSize() containing the number
+     *         of DOFs we will sent to each rank
+     */
+    const std::vector<int> &getSendSizes() const;
+
+    /**
+     * \brief Retrieve the partition of DOFs
+     * \return A vector size of comm.getSize() containing the endDOF
+     *        (getStartGID()+numLocalRows()) for each rank
+     */
+    const std::vector<size_t> &getPartition() const;
 
     /**
      * \brief Scatter data stored here to processors that share the data.
@@ -159,37 +180,27 @@ public:
     uint64_t getID() const;
 
 
+public:
+    //! Build the partition info from the local size
+    static std::vector<size_t> buildPartition( AMP_MPI &comm, size_t N_local );
+
+
 protected:
-    /**
-     * \brief Construct the arrays that track which data are sent/received to/from where
-     * \param[out] dofs List of degrees of freedom not on this processor that will need to be
-     * received
-     * \param[out] partition  One more than the last degree of freedom on each processor such that
-     * \f$\mathit{partition}_{i-1}\le \mathit{d.o.f.} < \mathit{partition}_i\f$.
-     * \param[in] commRank  My rank in the communicator
-     *
-     * \details  Given dofs, the list of needed data for this core, it will compute the send
-     * and receive lists for this processor so that scatters can be done in minimal space.
-     */
-    void buildCommunicationArrays( const std::vector<size_t> &dofs,
-                                   const std::vector<size_t> &partition,
-                                   int commRank );
+    // Build the communication lists
+    void buildCommunicationArrays( const std::vector<size_t> &dofs );
+
+    // Empty constructor
+    CommunicationList();
 
 private:
-    std::vector<int> d_ReceiveSizes;
-    std::vector<int> d_ReceiveDisplacements;
-    std::vector<size_t> d_ReceiveDOFList; // Sorted DOF lists
-
-    std::vector<int> d_SendSizes;
-    std::vector<int> d_SendDisplacements;
-    std::vector<size_t> d_SendDOFList;
-
-    AMP_MPI d_comm;
-    size_t d_iBegin;
-    size_t d_iNumRows;
-    size_t d_iTotalRows;
-
-    CommunicationList();
+    AMP_MPI d_comm;                       // Communicator
+    std::vector<size_t> d_ReceiveDOFList; // Sorted DOF receive lists
+    std::vector<size_t> d_SendDOFList;    // Sorted DOF send lists
+    std::vector<size_t> d_partition;      // Partition info
+    std::vector<int> d_ReceiveSizes;      // Number of DOFs to receive from each rank
+    std::vector<int> d_ReceiveDisp;       // Displacement for each rank into d_ReceiveDOFList
+    std::vector<int> d_SendSizes;         // Number of DOFs to send from each rank
+    std::vector<int> d_SendDisp;          // Displacement for each rank into d_SendDisplacements
 };
 
 } // namespace AMP::LinearAlgebra

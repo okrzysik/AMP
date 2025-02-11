@@ -130,9 +130,9 @@ constexpr void getTypeName( uint64_t N, char *name )
             auto i2 = name2.rfind( ">" );
             name2   = name2.substr( i1 + 12, i2 - i1 - 12 );
         }
-        if ( name2.substr( 0, 5 ) != "class" )
+        if ( name2.substr( 0, 5 ) == "class" )
             name2.remove_prefix( 5 );
-        if ( name2.substr( 0, 5 ) != "struct" )
+        if ( name2.substr( 0, 6 ) == "struct" )
             name2.remove_prefix( 6 );
         if ( name2[0] == ' ' )
             name2.remove_prefix( 1 );

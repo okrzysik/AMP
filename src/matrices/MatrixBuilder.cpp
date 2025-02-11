@@ -258,8 +258,8 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         const auto leftDOF  = leftVec->getDOFManager().get();
         const auto rightDOF = rightVec->getDOFManager().get();
         getRow              = [leftDOF, rightDOF]( size_t row ) {
-            auto elem = leftDOF->getElement( row );
-            return rightDOF->getRowDOFs( elem );
+            auto id = leftDOF->getElementID( row );
+            return rightDOF->getRowDOFs( id );
         };
     }
 

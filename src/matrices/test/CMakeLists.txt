@@ -23,6 +23,8 @@ IF ( AMP_DATA )
     COPY_MESH_FILE( cube343H27.e )
     COPY_MESH_FILE( mpcMesh-1 )
 ENDIF()
+FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D" DESTINATION . )
+FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D_hires" DESTINATION . )
 
 
 # Add matrix test
@@ -37,6 +39,8 @@ COPY_TEST_FILE( input_testMatVecPerf-2 )
 COPY_TEST_FILE( input_testMatVecPerf-3 )
 
 ADD_AMP_TEST_124_MATRIX( testMatOpDev )
+
+ADD_AMP_TEST( test_getRow input_AMP_mesh_zoo_3D )
 
 IF( USE_LIBMESH AND AMP_DATA )
   ADD_AMP_TEST_124_MATRIX( testMatCreate )
