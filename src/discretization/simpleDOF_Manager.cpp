@@ -283,7 +283,6 @@ size_t simpleDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
  ****************************************************************/
 AMP::Mesh::MeshElementID simpleDOFManager::getElementID( size_t dof ) const
 {
-    AMP::Mesh::MeshElementID id;
     if ( dof >= d_begin && dof < d_end ) {
         // We are searching for a local dof
         return d_local_id[( dof - d_begin ) / d_DOFsPerElement];
