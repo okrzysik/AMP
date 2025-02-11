@@ -206,12 +206,6 @@ public:
 
     auto getMemoryLocation() const { return d_memory_location; }
 
-    void sortColumns( MatrixSortScheme sort_type )
-    {
-        d_diag_matrix->sortColumns( sort_type );
-        d_offd_matrix->sortColumns( sort_type );
-    }
-
     void setNNZ( const std::vector<lidx_t> &nnz_diag, const std::vector<lidx_t> &nnz_offd );
 
     void globalToLocalColumns();
