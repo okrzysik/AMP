@@ -14,7 +14,7 @@ namespace AMP::Discretization {
  * \details  This derived class implements a simpleDOFManager for creating Vectors
  *    over a mesh on boxMesh.
  */
-class boxMeshDOFManager : public simpleDOFManager
+class boxMeshDOFManager final : public simpleDOFManager
 {
 public:
     /**
@@ -41,12 +41,30 @@ public:
     //! Get the array size for the local variables
     ArraySize getArraySize() const;
 
+
+public: // Advanced interfaces
+    // Append DOFs to the list
+    /*size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
+                       size_t *dofs,
+                       size_t index,
+                       size_t capacity ) const override;*/
+
 private:
     // Private constructor
     boxMeshDOFManager() = delete;
 
+    // Convert a MeshElementID to a DOF index
+    size_t convert( const AMP::Mesh::MeshElementID & ) const;
+
+    // Convert a MeshElementID to a DOF index
+    AMP::Mesh::MeshElementID convert( size_t ) const;
+
 private: // Data
+    int d_gcw;
     std::shared_ptr<const AMP::Mesh::BoxMesh> d_boxMesh;
+    std::vector<std::array<AMP::Mesh::BoxMesh::MeshElementIndex,3>> d_ifirst;
+    std::vector<std::array<std::array<int,3>,3>> d_boxSize;
+    std::vector<size_t> d_start;
 };
 
 } // namespace AMP::Discretization
