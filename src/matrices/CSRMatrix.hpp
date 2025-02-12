@@ -30,23 +30,31 @@ template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params )
     : Matrix( params )
 {
-    if ( params->d_backend == AMP::Utilities::Backend::serial ) {
-        d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
-    } else if ( params->d_backend == AMP::Utilities::Backend::hip_cuda ) {
+    bool set_ops = false;
+
+    if ( params->d_backend == AMP::Utilities::Backend::hip_cuda ) {
 #ifdef USE_DEVICE
         d_matrixOps = std::make_shared<CSRMatrixOperationsDevice<Policy, Allocator>>();
+        set_ops     = true;
 #else
         AMP_ERROR( "HIP or CUDA need to be loaded to be able to use hip_cuda backend." );
 #endif
-    } else if ( params->d_backend == AMP::Utilities::Backend::kokkos ) {
+    }
+
+    if ( params->d_backend == AMP::Utilities::Backend::kokkos ) {
 #if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
         d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
+        set_ops     = true;
 #else
         AMP_ERROR( "KOKKOS need to be loaded to be able to use kokkos backend." );
 #endif
-    } else {
+    }
+
+    // nothing above matched, fall back on default operations
+    if ( !set_ops ) {
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     }
+
     d_matrixData = std::make_shared<CSRMatrixData<Policy, Allocator>>( params );
 }
 
@@ -54,21 +62,28 @@ template<typename Policy, typename Allocator>
 CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
     auto backend = data->getBackend();
-    if ( backend == AMP::Utilities::Backend::serial ) {
-        d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
-    } else if ( backend == AMP::Utilities::Backend::hip_cuda ) {
+    bool set_ops = false;
+
+    if ( backend == AMP::Utilities::Backend::hip_cuda ) {
 #ifdef USE_DEVICE
         d_matrixOps = std::make_shared<CSRMatrixOperationsDevice<Policy, Allocator>>();
+        set_ops     = true;
 #else
         AMP_ERROR( "HIP or CUDA need to be loaded to be able to use hip_cuda backend." );
 #endif
-    } else if ( backend == AMP::Utilities::Backend::kokkos ) {
+    }
+
+    if ( backend == AMP::Utilities::Backend::kokkos ) {
 #if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
         d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
+        set_ops     = true;
 #else
         AMP_ERROR( "KOKKOS need to be loaded to be able to use kokkos backend." );
 #endif
-    } else {
+    }
+
+    // nothing above matched, fall back on default operations
+    if ( !set_ops ) {
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     }
 }
