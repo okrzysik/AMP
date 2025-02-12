@@ -43,7 +43,7 @@ public:
 
 
 public: // Advanced interfaces
-    // Append DOFs to the list
+        // Append DOFs to the list
     /*size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
                        size_t *dofs,
                        size_t index,
@@ -62,8 +62,8 @@ private:
 private: // Data
     int d_gcw;
     std::shared_ptr<const AMP::Mesh::BoxMesh> d_boxMesh;
-    std::vector<std::array<AMP::Mesh::BoxMesh::MeshElementIndex,3>> d_ifirst;
-    std::vector<std::array<std::array<int,3>,3>> d_boxSize;
+    std::vector<std::array<AMP::Mesh::BoxMesh::MeshElementIndex, 3>> d_ifirst;
+    std::vector<std::array<std::array<int, 3>, 3>> d_boxSize;
     std::vector<size_t> d_start;
 };
 
