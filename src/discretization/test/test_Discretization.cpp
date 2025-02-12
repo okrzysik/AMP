@@ -18,7 +18,7 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
 
     // Run the simpleDOFManager tests
-    // testLogicalDOFMap( ut );
+    testLogicalDOFMap( ut );
     testSimpleDOFManager( std::make_shared<AMPCubeGenerator<10>>(), ut );
     testSimpleDOFManager( std::make_shared<AMPMultiMeshGenerator>(), ut );
 #ifdef AMP_USE_LIBMESH

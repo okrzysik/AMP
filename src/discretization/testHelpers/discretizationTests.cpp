@@ -359,20 +359,19 @@ void testLogicalDOFMap( int ndim, AMP::UnitTest &ut )
     auto mesh = std::make_shared<AMP::Mesh::PureLogicalMesh>( params );
 
     // Run different tests
-    /*for ( int i = 0; i <= ndim; i++ ) {
+    for ( int i = 0; i <= ndim; i++ ) {
         auto type = static_cast<AMP::Mesh::GeomType>( i );
         for ( int gcw = 0; gcw <= 2; gcw++ ) {
             testLogicalDOFMap( mesh, type, gcw, 1, ut );
             testLogicalDOFMap( mesh, type, gcw, 3, ut );
         }
-    }*/
-    testLogicalDOFMap( mesh, AMP::Mesh::GeomType::Face, 1, 1, ut );
+    }
 }
 void testLogicalDOFMap( AMP::UnitTest &ut )
 {
-    // testLogicalDOFMap( 1, ut );
-    testLogicalDOFMap( 2, ut );
-    // testLogicalDOFMap( 3, ut );
+    testLogicalDOFMap( 1, ut );
+    // testLogicalDOFMap( 2, ut );
+    testLogicalDOFMap( 3, ut );
 }
 
 
