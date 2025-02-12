@@ -81,7 +81,7 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
             GetRowHelper rowHelper( d_leftDOFManager, d_rightDOFManager );
 
             // number of non-zeros per row of each block
-            const lidx_t nrows = d_last_row - d_first_row;
+            const auto nrows = static_cast<lidx_t>( d_last_row - d_first_row );
             std::vector<lidx_t> nnz_diag( nrows ), nnz_offd( nrows );
             rowHelper.NNZ( d_first_row, d_last_row, nnz_diag.data(), nnz_offd.data() );
             d_diag_matrix->setNNZ( nnz_diag );
@@ -92,6 +92,7 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
 
             // get pointers to columns within each row, fill via helper class
             std::vector<gidx_t *> cols_diag( nrows ), cols_offd( nrows );
+            d_diag_matrix->getColPtrs( cols_diag );
             d_offd_matrix->getColPtrs( cols_offd );
             rowHelper.getRow( d_first_row, d_last_row, cols_diag.data(), cols_offd.data() );
 

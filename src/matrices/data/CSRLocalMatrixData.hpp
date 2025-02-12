@@ -210,13 +210,6 @@ void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
     // sort column ids within each row
     sortColumns();
 
-    // DEBUG
-    const lidx_t row_query = 0;
-    AMP::pout << "Row " << row_query << " of matrix block" << std::endl;
-    for ( lidx_t c = d_row_starts[row_query]; c < d_row_starts[row_query + 1]; ++c ) {
-        AMP::pout << "[" << d_cols[c] << "|" << d_cols_loc[c] << "], ";
-    }
-
     // free global cols as they should not be used from here on out
     d_cols.reset();
 }
