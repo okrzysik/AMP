@@ -4,6 +4,7 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
+#include "AMP/matrices/GetRowHelper.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/utils/AMPManager.h"
@@ -68,6 +69,35 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         d_offd_matrix = std::make_shared<OffdMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
         d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
+
+        // If there is no getRow function but initialization is desired
+        // use GetRowHelper class to fill in each local block
+        if ( !matParams->getRowFunction() && !matParams->getSkipInitialize() ) {
+            AMP::pout << "Constructing CSRMatrixData with GetRowHelper" << std::endl;
+
+            // create instance of helper class for querying NNZ structure from DOF managers
+            // this is scope limited to get it to free its memory after filling in
+            // matrix blocks
+            GetRowHelper rowHelper( d_leftDOFManager, d_rightDOFManager );
+
+            // number of non-zeros per row of each block
+            const lidx_t nrows = d_last_row - d_first_row;
+            std::vector<lidx_t> nnz_diag( nrows ), nnz_offd( nrows );
+            rowHelper.NNZ( d_first_row, d_last_row, nnz_diag.data(), nnz_offd.data() );
+            d_diag_matrix->setNNZ( nnz_diag );
+            d_offd_matrix->setNNZ( nnz_offd );
+
+            AMP::pout << "Set NNZ in diag to " << d_diag_matrix->d_nnz << " total and in offd to "
+                      << d_offd_matrix->d_nnz << " total" << std::endl;
+
+            // get pointers to columns within each row, fill via helper class
+            std::vector<gidx_t *> cols_diag( nrows ), cols_offd( nrows );
+            d_offd_matrix->getColPtrs( cols_offd );
+            rowHelper.getRow( d_first_row, d_last_row, cols_diag.data(), cols_offd.data() );
+
+            // trigger re-packing of columns and convert to local cols
+            globalToLocalColumns();
+        }
 
     } else {
         AMP_ERROR( "Check supplied MatrixParameters object" );

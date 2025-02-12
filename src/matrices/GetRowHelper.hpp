@@ -12,25 +12,44 @@ namespace AMP::LinearAlgebra {
 /****************************************************************
  * Get rows / size of rows                                       *
  ****************************************************************/
-template<class INT_TYPE>
-void GetRowHelper::NNZ( INT_TYPE start, INT_TYPE end, INT_TYPE *N_local, INT_TYPE *N_remote ) const
-{
-    for ( INT_TYPE i = 0, row = start; row < end; i++, row++ )
-        std::tie( N_local[i], N_remote[i] ) = NNZ( row );
-}
-template<class INT_TYPE>
-void GetRowHelper::NNZ( INT_TYPE N_rows,
-                        INT_TYPE *rows,
+template<class BIGINT_TYPE, class INT_TYPE>
+void GetRowHelper::NNZ( BIGINT_TYPE start,
+                        BIGINT_TYPE end,
                         INT_TYPE *N_local,
                         INT_TYPE *N_remote ) const
 {
-    for ( INT_TYPE i = 0; i < N_rows; i++ )
-        std::tie( N_local[i], N_remote[i] ) = NNZ( rows[i] );
+    BIGINT_TYPE row = start;
+    INT_TYPE i      = 0;
+    for ( ; row < end; i++, row++ ) {
+        auto rnnz = NNZ( row );
+        if ( N_local ) {
+            N_local[i] = static_cast<INT_TYPE>( rnnz[0] );
+        }
+        if ( N_remote ) {
+            N_remote[i] = static_cast<INT_TYPE>( rnnz[1] );
+        }
+    }
 }
-template<class INT_TYPE>
-void GetRowHelper::getRow( INT_TYPE row, INT_TYPE *local, INT_TYPE *remote ) const
+template<class BIGINT_TYPE, class INT_TYPE>
+void GetRowHelper::NNZ( BIGINT_TYPE N_rows,
+                        BIGINT_TYPE *rows,
+                        INT_TYPE *N_local,
+                        INT_TYPE *N_remote ) const
 {
-    if constexpr ( std::is_integral_v<INT_TYPE> && sizeof( INT_TYPE ) == sizeof( size_t ) ) {
+    for ( BIGINT_TYPE i = 0; i < N_rows; i++ ) {
+        auto rnnz = NNZ( rows[i] );
+        if ( N_local ) {
+            N_local[i] = static_cast<INT_TYPE>( rnnz[0] );
+        }
+        if ( N_remote ) {
+            N_remote[i] = static_cast<INT_TYPE>( rnnz[1] );
+        }
+    }
+}
+template<class BIGINT_TYPE>
+void GetRowHelper::getRow( BIGINT_TYPE row, BIGINT_TYPE *local, BIGINT_TYPE *remote ) const
+{
+    if constexpr ( std::is_integral_v<BIGINT_TYPE> && sizeof( BIGINT_TYPE ) == sizeof( size_t ) ) {
         getRow2( row, reinterpret_cast<size_t *>( local ), reinterpret_cast<size_t *>( remote ) );
     } else {
         auto [N_local, N_remote] = NNZ( row );
@@ -39,21 +58,25 @@ void GetRowHelper::getRow( INT_TYPE row, INT_TYPE *local, INT_TYPE *remote ) con
         getRow2( row, local2, remote2 );
         if ( local ) {
             for ( size_t i = 0; i < N_local; i++ )
-                local[i] = static_cast<INT_TYPE>( local2[i] );
+                local[i] = static_cast<BIGINT_TYPE>( local2[i] );
         }
         if ( remote ) {
             for ( size_t i = 0; i < N_remote; i++ )
-                remote[i] = static_cast<INT_TYPE>( remote2[i] );
+                remote[i] = static_cast<BIGINT_TYPE>( remote2[i] );
         }
         delete[] local2;
         delete[] remote2;
     }
 }
-template<class INT_TYPE>
-void GetRowHelper::getRow( INT_TYPE start, INT_TYPE end, INT_TYPE **local, INT_TYPE **remote ) const
+template<class BIGINT_TYPE>
+void GetRowHelper::getRow( BIGINT_TYPE start,
+                           BIGINT_TYPE end,
+                           BIGINT_TYPE **local,
+                           BIGINT_TYPE **remote ) const
 {
-    if constexpr ( std::is_integral_v<INT_TYPE> && sizeof( INT_TYPE ) == sizeof( size_t ) ) {
-        for ( size_t row = start, i = 0; row < end; row++, i++ )
+    if constexpr ( std::is_integral_v<BIGINT_TYPE> && sizeof( BIGINT_TYPE ) == sizeof( size_t ) ) {
+        const auto end_st = static_cast<size_t>( end );
+        for ( size_t row = start, i = 0; row < end_st; row++, i++ )
             getRow2( row,
                      reinterpret_cast<size_t *>( local[i] ),
                      reinterpret_cast<size_t *>( remote[i] ) );
@@ -70,21 +93,21 @@ void GetRowHelper::getRow( INT_TYPE start, INT_TYPE end, INT_TYPE **local, INT_T
             auto [N_local, N_remote] = NNZ( row );
             getRow2( row, local2, remote2 );
             for ( size_t j = 0; j < N_local; j++ )
-                local[i][j] = static_cast<INT_TYPE>( local2[j] );
+                local[i][j] = static_cast<BIGINT_TYPE>( local2[j] );
             for ( size_t j = 0; j < N_remote; j++ )
-                remote[i][j] = static_cast<INT_TYPE>( remote2[j] );
+                remote[i][j] = static_cast<BIGINT_TYPE>( remote2[j] );
         }
         delete[] local2;
         delete[] remote2;
     }
 }
-template<class INT_TYPE>
-void GetRowHelper::getRow( INT_TYPE N_rows,
-                           INT_TYPE *rows,
-                           INT_TYPE **local,
-                           INT_TYPE **remote ) const
+template<class BIGINT_TYPE>
+void GetRowHelper::getRow( BIGINT_TYPE N_rows,
+                           BIGINT_TYPE *rows,
+                           BIGINT_TYPE **local,
+                           BIGINT_TYPE **remote ) const
 {
-    if constexpr ( std::is_integral_v<INT_TYPE> && sizeof( INT_TYPE ) == sizeof( size_t ) ) {
+    if constexpr ( std::is_integral_v<BIGINT_TYPE> && sizeof( BIGINT_TYPE ) == sizeof( size_t ) ) {
         for ( size_t i = i = 0; i < N_rows; i++ )
             getRow2( rows[i],
                      reinterpret_cast<size_t *>( local[i] ),
@@ -102,9 +125,9 @@ void GetRowHelper::getRow( INT_TYPE N_rows,
             auto [N_local, N_remote] = NNZ( rows[i] );
             getRow2( rows[i], local2, remote2 );
             for ( size_t j = 0; j < N_local; j++ )
-                local[i][j] = static_cast<INT_TYPE>( local2[j] );
+                local[i][j] = static_cast<BIGINT_TYPE>( local2[j] );
             for ( size_t j = 0; j < N_remote; j++ )
-                remote[i][j] = static_cast<INT_TYPE>( remote2[j] );
+                remote[i][j] = static_cast<BIGINT_TYPE>( remote2[j] );
         }
         delete[] local2;
         delete[] remote2;

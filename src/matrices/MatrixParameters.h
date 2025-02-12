@@ -33,7 +33,8 @@ public:
     explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
                                std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
                                const AMP_MPI &comm,
-                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+                               const std::function<std::vector<size_t>( size_t )> getRow = {},
+                               const bool skipInitialize                                 = false );
 
     /** \brief Constructor
      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
@@ -49,7 +50,8 @@ public:
                                const AMP_MPI &comm,
                                std::shared_ptr<Variable> varLeft,
                                std::shared_ptr<Variable> varRight,
-                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+                               const std::function<std::vector<size_t>( size_t )> getRow = {},
+                               const bool skipInitialize                                 = false );
 
     /** \brief Constructor
      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
@@ -65,7 +67,8 @@ public:
                                const AMP_MPI &comm,
                                std::shared_ptr<CommunicationList> commListLeft,
                                std::shared_ptr<CommunicationList> commListRight,
-                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+                               const std::function<std::vector<size_t>( size_t )> getRow = {},
+                               const bool skipInitialize                                 = false );
 
     /** \brief Constructor
      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
@@ -83,7 +86,8 @@ public:
                                std::shared_ptr<Variable> varRight,
                                std::shared_ptr<CommunicationList> commListLeft,
                                std::shared_ptr<CommunicationList> commListRight,
-                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+                               const std::function<std::vector<size_t>( size_t )> getRow = {},
+                               const bool skipInitialize                                 = false );
 
     //! Deconstructor
     virtual ~MatrixParameters() = default;
@@ -100,12 +104,14 @@ public:
     //! Return the global number of columns
     size_t getGlobalNumberOfColumns() const;
 
-    /** \brief Get the bound function that generates column IDs for each row
-     */
+    //! Get the bound function that generates column IDs for each row
     const std::function<std::vector<size_t>( size_t )> &getRowFunction() const
     {
         return d_getRowFunction;
     }
+
+    //! Return flag for skipping intitialization or not
+    bool getSkipInitialize() const { return d_skipInitialize; }
 
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
@@ -141,6 +147,8 @@ protected:
 
     //! Function that generates column ids for each row of the matrix
     std::function<std::vector<size_t>( size_t )> d_getRowFunction;
+
+    const bool d_skipInitialize;
 };
 } // namespace AMP::LinearAlgebra
 

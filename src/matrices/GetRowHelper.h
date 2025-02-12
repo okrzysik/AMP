@@ -55,53 +55,56 @@ public: // Standard interfaces
      * \param[out] local        The local non-zero entries (may be null)
      * \param[out] remote       The remote non-zero entries (may be null)
      */
-    template<class INT_TYPE>
-    void getRow( INT_TYPE row, INT_TYPE *local, INT_TYPE *remote ) const;
-
+    template<class BIGINT_TYPE>
+    void getRow( BIGINT_TYPE row, BIGINT_TYPE *local, BIGINT_TYPE *remote ) const;
 
 public: // Multi-row interfaces
     /** \brief  Get the number of non-zeros
      * \details  This will return the number remote of non-zeros for each row
      * \param[in]  start        The first row of interest
      * \param[in]  end          One past the last row of interest
-     * \param[out] N_local        The number of local non-zero entries
-     * \param[out] N_remote       The number of remote non-zero entries
+     * \param[out] N_local        The number of local non-zero entries (may be null)
+     * \param[out] N_remote       The number of remote non-zero entries (may be null)
      */
-    template<class INT_TYPE>
-    void NNZ( INT_TYPE start, INT_TYPE end, INT_TYPE *N_local, INT_TYPE *N_remote ) const;
+    template<class BIGINT_TYPE, class INT_TYPE>
+    void NNZ( BIGINT_TYPE start, BIGINT_TYPE end, INT_TYPE *N_local, INT_TYPE *N_remote ) const;
 
 
     /** \brief  Get the number of non-zeros
      * \details  This will return the number remote of non-zeros for each row
      * \param[in]  N_rows       The number of rows of interest
      * \param[in]  rows         The rows of interest
-     * \param[out] N_local        The number of local non-zero entries
-     * \param[out] N_remote       The number of remote non-zero entries
+     * \param[out] N_local        The number of local non-zero entries (may be null)
+     * \param[out] N_remote       The number of remote non-zero entries (may be null)
      */
-    template<class INT_TYPE>
-    void NNZ( INT_TYPE N_rows, INT_TYPE *rows, INT_TYPE *N_local, INT_TYPE *N_remote ) const;
+    template<class BIGINT_TYPE, class INT_TYPE>
+    void NNZ( BIGINT_TYPE N_rows, BIGINT_TYPE *rows, INT_TYPE *N_local, INT_TYPE *N_remote ) const;
 
 
     /** \brief  Get the rows
      * \details  This will return the local and remote non-zero entries for the rows
      * \param[in]  start        The first row of interest
      * \param[in]  end          One past the last row of interest
-     * \param[out] local        The local non-zero entries
-     * \param[out] remote       The remote non-zero entries
+     * \param[out] local        The local non-zero entries (may be null)
+     * \param[out] remote       The remote non-zero entries (may be null)
      */
-    template<class INT_TYPE>
-    void getRow( INT_TYPE start, INT_TYPE end, INT_TYPE **local, INT_TYPE **remote ) const;
+    template<class BIGINT_TYPE>
+    void
+    getRow( BIGINT_TYPE start, BIGINT_TYPE end, BIGINT_TYPE **local, BIGINT_TYPE **remote ) const;
 
 
     /** \brief  Get the rows
      * \details  This will return the local and remote non-zero entries for the rows
-     * \param[in]  N_rows       The number of rows of interest
-     * \param[in]  rows         The rows of interest
-     * \param[out] local        The local non-zero entries
-     * \param[out] remote       The remove non-zero entries
+     * \param[in]  N_rows     The number of rows of interest
+     * \param[in]  rows       The rows of interest
+     * \param[out] local      The local non-zero entries (NOT null, but could be filled with nulls)
+     * \param[out] remote     The remove non-zero entries (NOT null, but could be filled with nulls)
      */
-    template<class INT_TYPE>
-    void getRow( INT_TYPE N_rows, INT_TYPE *rows, INT_TYPE **local, INT_TYPE **remote ) const;
+    template<class BIGINT_TYPE>
+    void getRow( BIGINT_TYPE N_rows,
+                 BIGINT_TYPE *rows,
+                 BIGINT_TYPE **local,
+                 BIGINT_TYPE **remote ) const;
 
 
 private: // Private routines

@@ -26,7 +26,6 @@
 
 #include <functional>
 
-
 namespace AMP::LinearAlgebra {
 
 
@@ -114,7 +113,8 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                                                                 rightVec->getVariable(),
                                                                 leftVec->getCommunicationList(),
                                                                 rightVec->getCommunicationList(),
-                                                                getRow );
+                                                                getRow,
+                                                                false );
 
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
@@ -253,8 +253,11 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         type = DEFAULT_MATRIX; // Definition set by CMake variable DEFAULT_MATRIX
     if ( type == "NULL" )
         return nullptr; // Special case to return nullptr
+
     // Create the default getRow function (if not provided)
+    bool useDefaultGetRow = false;
     if ( !getRow ) {
+        useDefaultGetRow    = true;
         const auto leftDOF  = leftVec->getDOFManager().get();
         const auto rightDOF = rightVec->getDOFManager().get();
         getRow              = [leftDOF, rightDOF]( size_t row ) {
@@ -273,20 +276,23 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     } else if ( type == "NativePetscMatrix" ) {
         matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
     } else if ( type == "CSRMatrix" ) {
+        // CSRMatrixData can use GetRowHelper class internally
+        // only pass in getRow function if explicitly provided
+        std::function<std::vector<size_t>( size_t )> emptyGetRow;
         if ( memType <= AMP::Utilities::MemoryType::host ) {
             matrix = createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<void>>(
-                leftVec, rightVec, getRow );
+                leftVec, rightVec, useDefaultGetRow ? emptyGetRow : getRow );
         } else if ( memType == AMP::Utilities::MemoryType::managed ) {
 #ifdef USE_DEVICE
             matrix = createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator<void>>(
-                leftVec, rightVec, getRow );
+                leftVec, rightVec, useDefaultGetRow ? emptyGetRow : getRow );
 #else
             AMP_ERROR( "Creating CSRMatrix in managed memory requires HIP or CUDA support" );
 #endif
         } else if ( memType == AMP::Utilities::MemoryType::device ) {
 #ifdef USE_DEVICE
             matrix = createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator<void>>(
-                leftVec, rightVec, getRow );
+                leftVec, rightVec, useDefaultGetRow ? emptyGetRow : getRow );
 #else
             AMP_ERROR( "Creating CSRMatrix in device memory requires HIP or CUDA support" );
 #endif

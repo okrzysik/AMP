@@ -118,6 +118,8 @@ public:
 
     void setNNZ( const std::vector<lidx_t> &nnz );
 
+    void getColPtrs( std::vector<gidx_t *> &col_ptrs );
+
     void printStats( bool show_zeros ) const
     {
         std::cout << ( d_is_diag ? "  diag block:" : "  offd block:" ) << std::endl;

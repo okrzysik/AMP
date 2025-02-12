@@ -11,11 +11,13 @@ namespace AMP::LinearAlgebra {
 MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
                                     std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
                                     const AMP_MPI &comm,
-                                    const std::function<std::vector<size_t>( size_t )> getRow )
+                                    const std::function<std::vector<size_t>( size_t )> getRow,
+                                    const bool skipInitialize )
     : MatrixParametersBase( comm ),
       d_DOFManagerLeft( dofLeft ),
       d_DOFManagerRight( dofRight ),
-      d_getRowFunction( getRow )
+      d_getRowFunction( getRow ),
+      d_skipInitialize( skipInitialize )
 {
     AMP_ASSERT( d_DOFManagerLeft );
     AMP_ASSERT( d_DOFManagerRight );
@@ -29,11 +31,13 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
                                     const AMP_MPI &comm,
                                     std::shared_ptr<Variable> varLeft,
                                     std::shared_ptr<Variable> varRight,
-                                    const std::function<std::vector<size_t>( size_t )> getRow )
+                                    const std::function<std::vector<size_t>( size_t )> getRow,
+                                    const bool skipInitialize )
     : MatrixParametersBase( comm, varLeft, varRight ),
       d_DOFManagerLeft( dofLeft ),
       d_DOFManagerRight( dofRight ),
-      d_getRowFunction( getRow )
+      d_getRowFunction( getRow ),
+      d_skipInitialize( skipInitialize )
 {
     AMP_ASSERT( d_DOFManagerLeft );
     AMP_ASSERT( d_DOFManagerRight );
@@ -47,13 +51,15 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
                                     const AMP_MPI &comm,
                                     std::shared_ptr<CommunicationList> commListLeft,
                                     std::shared_ptr<CommunicationList> commListRight,
-                                    const std::function<std::vector<size_t>( size_t )> getRow )
+                                    const std::function<std::vector<size_t>( size_t )> getRow,
+                                    const bool skipInitialize )
     : MatrixParametersBase( comm ),
       d_DOFManagerLeft( dofLeft ),
       d_DOFManagerRight( dofRight ),
       d_CommListLeft( commListLeft ),
       d_CommListRight( commListRight ),
-      d_getRowFunction( getRow )
+      d_getRowFunction( getRow ),
+      d_skipInitialize( skipInitialize )
 {
     AMP_ASSERT( d_DOFManagerLeft );
     AMP_ASSERT( d_DOFManagerRight );
@@ -66,13 +72,15 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
                                     std::shared_ptr<Variable> varRight,
                                     std::shared_ptr<CommunicationList> commListLeft,
                                     std::shared_ptr<CommunicationList> commListRight,
-                                    const std::function<std::vector<size_t>( size_t )> getRow )
+                                    const std::function<std::vector<size_t>( size_t )> getRow,
+                                    const bool skipInitialize )
     : MatrixParametersBase( comm, varLeft, varRight ),
       d_DOFManagerLeft( dofLeft ),
       d_DOFManagerRight( dofRight ),
       d_CommListLeft( commListLeft ),
       d_CommListRight( commListRight ),
-      d_getRowFunction( getRow )
+      d_getRowFunction( getRow ),
+      d_skipInitialize( skipInitialize )
 {
     AMP_ASSERT( d_DOFManagerLeft );
     AMP_ASSERT( d_DOFManagerRight );

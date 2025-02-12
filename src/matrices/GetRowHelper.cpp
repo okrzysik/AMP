@@ -103,12 +103,18 @@ void GetRowHelper::getRow2( size_t row, size_t *local, size_t *remote ) const
     auto p_local  = &d_local[d_localOffset[row - begin]];
     auto p_remote = &d_remote[d_remoteOffset[row - begin]];
     if ( local ) {
-        for ( size_t i = 0; i < N[0]; i++ )
+        assert( false );
+        for ( size_t i = 0; i < N[0]; i++ ) {
             local[i] = p_local[i];
+            if ( row == begin ) {
+                AMP::pout << "(" << p_local[i] << ")" << std::endl;
+            }
+        }
     }
     if ( remote ) {
-        for ( size_t i = 0; i < N[1]; i++ )
+        for ( size_t i = 0; i < N[1]; i++ ) {
             remote[i] = p_remote[i];
+        }
     }
 }
 
