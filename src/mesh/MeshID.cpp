@@ -8,6 +8,30 @@
 
 
 /********************************************************
+ * GeomType                                              *
+ ********************************************************/
+std::string AMP::Mesh::to_string( GeomType x )
+{
+    if ( x == GeomType::Vertex )
+        return "Vertex";
+    else if ( x == GeomType::Edge )
+        return "Edge";
+    else if ( x == GeomType::Face )
+        return "Face";
+    else if ( x == GeomType::Cell )
+        return "Cell";
+    else if ( x == GeomType::Polytope_4D )
+        return "Polytope_4D";
+    else if ( x == GeomType::Polytope_5D )
+        return "Polytope_5D";
+    else if ( x == GeomType::Nullity )
+        return "Nullity";
+    else
+        return "Invalid";
+}
+
+
+/********************************************************
  * MeshID                                                *
  ********************************************************/
 #ifdef AMP_USE_HDF5
@@ -229,3 +253,8 @@ template class AMP::kdtree2<2, AMP::Mesh::MeshElementID>;
 template class AMP::kdtree2<3, AMP::Mesh::MeshElementID>;
 template void AMP::Utilities::quicksort<int, AMP::Mesh::MeshElementID>(
     size_t, int *, AMP::Mesh::MeshElementID * );
+template void
+AMP::Utilities::quicksort<int, AMP::Mesh::MeshElementID>( std::vector<int> &,
+                                                          std::vector<AMP::Mesh::MeshElementID> & );
+template void AMP::Utilities::quicksort<AMP::Mesh::MeshElementID, unsigned long>(
+    std::vector<AMP::Mesh::MeshElementID> &, std::vector<unsigned long> & );
