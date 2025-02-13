@@ -59,15 +59,15 @@ boxMeshDOFManager::boxMeshDOFManager( std::shared_ptr<const AMP::Mesh::Mesh> mes
     for ( size_t rank = 0; rank < d_ifirst.size(); rank++ ) {
         auto box   = d_boxMesh->getLocalBlock( rank );
         auto range = d_boxMesh->getIteratorRange( box, type, 0 );
-        for ( size_t i=0; i < range.size(); i++ ) {
-            d_ifirst[rank][i] = range[i].first;
-            d_boxSize[rank][i][0] = range[i].second.index(0) - range[i].first.index(0) + 1;
-            d_boxSize[rank][i][1] = range[i].second.index(1) - range[i].first.index(1) + 1;
-            d_boxSize[rank][i][2] = range[i].second.index(2) - range[i].first.index(2) + 1;
+        for ( size_t i = 0; i < range.size(); i++ ) {
+            d_ifirst[rank][i]     = range[i].first;
+            d_boxSize[rank][i][0] = range[i].second.index( 0 ) - range[i].first.index( 0 ) + 1;
+            d_boxSize[rank][i][1] = range[i].second.index( 1 ) - range[i].first.index( 1 ) + 1;
+            d_boxSize[rank][i][2] = range[i].second.index( 2 ) - range[i].first.index( 2 ) + 1;
         }
     }
     size_t start = beginDOF() / DOFsPerObject;
-    d_start = d_comm.allGather( start );
+    d_start      = d_comm.allGather( start );
 
     // Perform some verification tests
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
@@ -121,10 +121,10 @@ ArraySize boxMeshDOFManager::getArraySize() const
  ****************************************************************/
 size_t boxMeshDOFManager::convert( const AMP::Mesh::MeshElementID &id ) const
 {
-    auto index             = d_boxMesh->convert( id );
-    int rank               = id.owner_rank();
-    int side               = index.side();
-    size_t dof             = 0;
+    auto index = d_boxMesh->convert( id );
+    int rank   = id.owner_rank();
+    int side   = index.side();
+    size_t dof = 0;
     for ( int s = 0; s < side; s++ ) {
         auto N = d_boxSize[rank][s];
         dof += N[0] * N[1] * N[2];
