@@ -94,6 +94,8 @@ public:
         constexpr ArraySize size() const; //!< Return the size of the box
         int first[3];                     //!< Starting element
         int last[3];                      //!< Ending element
+        std::string print() const;
+
     private:
     };
 
