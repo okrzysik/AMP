@@ -123,7 +123,13 @@ createAggregateMatrix( std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, All
 
     // Create parameters, variables, and data
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        leftDOFs, rightDOFs, A->getComm(), A_data->getRightVariable(), A_data->getRightVariable() );
+        leftDOFs,
+        rightDOFs,
+        A->getComm(),
+        A_data->getRightVariable(),
+        A_data->getRightVariable(),
+        std::function<std::vector<size_t>( size_t )>(),
+        true );
     auto P_data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
 
     // non-zeros only in diag block and only one per row
