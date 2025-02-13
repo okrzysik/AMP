@@ -343,6 +343,15 @@ void structuredMeshElement::getNeighbors(
                     elem.d_index[d] -= size[d];
             } else if ( BC[d] == 2 ) {
                 AMP_WARN_ONCE( "Not finished" );
+                if ( elem.d_index[d] < 0 )
+                    in_mesh = false;
+                if ( d_index.type() == d_meshType ) {
+                    if ( elem.d_index[d] >= size[d] )
+                        in_mesh = false;
+                } else {
+                    if ( elem.d_index[d] > size[d] )
+                        in_mesh = false;
+                }
             } else {
                 if ( elem.d_index[d] < 0 )
                     in_mesh = false;

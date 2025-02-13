@@ -43,11 +43,11 @@ public:
 
 
 public: // Advanced interfaces
-        // Append DOFs to the list
-    /*size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
+    // Append DOFs to the list
+    size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
                        size_t *dofs,
                        size_t index,
-                       size_t capacity ) const override;*/
+                       size_t capacity ) const override;
 
 private:
     // Private constructor

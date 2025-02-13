@@ -167,7 +167,7 @@ AMP::Mesh::MeshElementID boxMeshDOFManager::convert( size_t ) const
  * Note complete but promising, failure is how to eliminate      *
  *    elements beyond the gcw (remote)                           *
  ****************************************************************/
-/*size_t boxMeshDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
+size_t boxMeshDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
                                       size_t *dofs,
                                       size_t N0,
                                       size_t capacity ) const
@@ -180,7 +180,7 @@ AMP::Mesh::MeshElementID boxMeshDOFManager::convert( size_t ) const
     for ( size_t j = 0, k = N0; j < d_DOFsPerElement && k < capacity; j++, k++, dof++ )
         dofs[k] = dof;
     return d_DOFsPerElement;
-}*/
+}
 
 
 } // namespace AMP::Discretization

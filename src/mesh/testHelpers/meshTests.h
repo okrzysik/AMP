@@ -69,6 +69,15 @@ public: // Basic tests
     static void testID( AMP::UnitTest &ut );
 
 
+    /**
+     * \brief Check box mesh indicies
+     * \details  This tests checks conversion of box mesh indicies
+     * \param[in,out] ut        Unit test class to report the results
+     * \param[in] ndim          Number of dimensions for test
+     */
+    static void testBoxMeshIndicies( AMP::UnitTest &ut, int ndim );
+
+
 public: // Mesh based tests
     /**
      * \brief Checks the mesh iterators
