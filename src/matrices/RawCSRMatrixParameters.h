@@ -1,16 +1,16 @@
-#ifndef included_AMP_CSRMatrixParameters
-#define included_AMP_CSRMatrixParameters
+#ifndef included_AMP_RawCSRMatrixParameters
+#define included_AMP_RawCSRMatrixParameters
 
 #include "AMP/matrices/MatrixParametersBase.h"
 
 namespace AMP::LinearAlgebra {
 
 
-/** \class CSRMatrixParameters
+/** \class RawCSRMatrixParameters
  * \brief  A class used to hold basic parameters for a matrix
  */
 template<typename CSRPolicy>
-class CSRMatrixParameters : public MatrixParametersBase
+class RawCSRMatrixParameters : public MatrixParametersBase
 {
 public:
     using gidx_t   = typename CSRPolicy::gidx_t;
@@ -19,16 +19,16 @@ public:
 
     // The diagonal and off-diagonal blocks need all the same parameters
     // Like in CSRMatrixData use a nested class to pack all this away
-    struct CSRLocalMatrixParameters {
+    struct RawCSRLocalMatrixParameters {
         // No bare constructor, only initializer lists and default copy/moves
-        CSRLocalMatrixParameters() = delete;
+        RawCSRLocalMatrixParameters() = delete;
 
         lidx_t *d_row_starts;
         gidx_t *d_cols;
         scalar_t *d_coeffs;
     };
 
-    CSRMatrixParameters() = delete;
+    RawCSRMatrixParameters() = delete;
 
     /** \brief Constructor
      * \param[in] first_row     Index for first row
@@ -39,13 +39,13 @@ public:
      * \param[in] off_diag      Parameters for offd block
      * \param[in] comm          Communicator for the matrix
      */
-    explicit CSRMatrixParameters( gidx_t first_row,
-                                  gidx_t last_row,
-                                  gidx_t first_col,
-                                  gidx_t last_col,
-                                  const CSRLocalMatrixParameters &diag,
-                                  const CSRLocalMatrixParameters &off_diag,
-                                  const AMP_MPI &comm )
+    explicit RawCSRMatrixParameters( gidx_t first_row,
+                                     gidx_t last_row,
+                                     gidx_t first_col,
+                                     gidx_t last_col,
+                                     const RawCSRLocalMatrixParameters &diag,
+                                     const RawCSRLocalMatrixParameters &off_diag,
+                                     const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
           d_first_row( first_row ),
           d_last_row( last_row ),
@@ -67,15 +67,15 @@ public:
      * \param[in] var_left      Variable for left vector
      * \param[in] var_right     Variable for right vector
      */
-    explicit CSRMatrixParameters( gidx_t first_row,
-                                  gidx_t last_row,
-                                  gidx_t first_col,
-                                  gidx_t last_col,
-                                  const CSRLocalMatrixParameters &diag,
-                                  const CSRLocalMatrixParameters &off_diag,
-                                  const AMP_MPI &comm,
-                                  std::shared_ptr<Variable> var_left,
-                                  std::shared_ptr<Variable> var_right )
+    explicit RawCSRMatrixParameters( gidx_t first_row,
+                                     gidx_t last_row,
+                                     gidx_t first_col,
+                                     gidx_t last_col,
+                                     const CSRLocalMatrixParameters &diag,
+                                     const CSRLocalMatrixParameters &off_diag,
+                                     const AMP_MPI &comm,
+                                     std::shared_ptr<Variable> var_left,
+                                     std::shared_ptr<Variable> var_right )
         : MatrixParametersBase( comm, var_left, var_right ),
           d_first_row( first_row ),
           d_last_row( last_row ),
@@ -87,7 +87,7 @@ public:
     }
 
     //! Destructor
-    virtual ~CSRMatrixParameters() = default;
+    virtual ~RawCSRMatrixParameters() = default;
 
     // Bulk information
     gidx_t d_first_row;
@@ -95,7 +95,7 @@ public:
     gidx_t d_first_col;
     gidx_t d_last_col;
     // Blockwise information
-    CSRLocalMatrixParameters d_diag, d_off_diag;
+    RawCSRLocalMatrixParameters d_diag, d_off_diag;
 };
 } // namespace AMP::LinearAlgebra
 

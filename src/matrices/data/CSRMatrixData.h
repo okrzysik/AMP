@@ -1,6 +1,10 @@
 #ifndef included_AMP_CSRMatrixData_h
 #define included_AMP_CSRMatrixData_h
 
+#include "AMP/matrices/AMPCSRMatrixParameters.h"
+#include "AMP/matrices/MatrixParameters.h"
+#include "AMP/matrices/MatrixParametersBase.h"
+#include "AMP/matrices/RawCSRMatrixParameters.h"
 #include "AMP/matrices/data/CSRLocalMatrixData.h"
 #include "AMP/matrices/data/MatrixData.h"
 #include "AMP/utils/Utilities.h"

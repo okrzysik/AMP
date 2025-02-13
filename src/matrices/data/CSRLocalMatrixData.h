@@ -199,8 +199,6 @@ protected:
     gidxAllocator_t d_gidxAllocator;
     lidxAllocator_t d_lidxAllocator;
     scalarAllocator_t d_scalarAllocator;
-
-    std::shared_ptr<MatrixParametersBase> d_pParameters;
 };
 
 } // namespace AMP::LinearAlgebra

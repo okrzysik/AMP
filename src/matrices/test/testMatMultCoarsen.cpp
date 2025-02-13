@@ -3,7 +3,6 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/CSRMatrix.h"
-#include "AMP/matrices/CSRMatrixParameters.h"
 #include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/MatrixParameters.h"

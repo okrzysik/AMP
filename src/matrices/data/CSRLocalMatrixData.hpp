@@ -3,8 +3,8 @@
 
 #include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/matrices/CSRMatrixParameters.h"
 #include "AMP/matrices/MatrixParameters.h"
+#include "AMP/matrices/RawCSRMatrixParameters.h"
 #include "AMP/matrices/data/CSRLocalMatrixData.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Algorithms.h"
@@ -60,9 +60,8 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
       d_num_rows( last_row - first_row )
 {
     AMPManager::incrementResource( "CSRLocalMatrixData" );
-    d_pParameters  = params;
-    auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
-    auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    auto csrParams = std::dynamic_pointer_cast<RawCSRMatrixParameters<Policy>>( params );
+    auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( params );
 
     if ( csrParams ) {
         // Pull out block specific parameters
@@ -287,13 +286,8 @@ CSRLocalMatrixData<Policy, Allocator>::cloneMatrixData()
 {
     std::shared_ptr<CSRLocalMatrixData> cloneData;
 
-    cloneData = std::make_shared<CSRLocalMatrixData>( d_pParameters,
-                                                      d_memory_location,
-                                                      d_first_row,
-                                                      d_last_row,
-                                                      d_first_col,
-                                                      d_last_col,
-                                                      d_is_diag );
+    cloneData = std::make_shared<CSRLocalMatrixData>(
+        nullptr, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, d_is_diag );
 
     cloneData->d_is_empty = d_is_empty;
     cloneData->d_nnz      = d_nnz;

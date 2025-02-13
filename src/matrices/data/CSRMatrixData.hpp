@@ -3,9 +3,11 @@
 
 #include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/matrices/CSRMatrixParameters.h"
+#include "AMP/matrices/AMPCSRMatrixParameters.h"
 #include "AMP/matrices/GetRowHelper.h"
 #include "AMP/matrices/MatrixParameters.h"
+#include "AMP/matrices/MatrixParametersBase.h"
+#include "AMP/matrices/RawCSRMatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
@@ -30,15 +32,20 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
     : MatrixData( params ), d_memory_location( AMP::Utilities::getAllocatorMemoryType<Allocator>() )
 {
     AMPManager::incrementResource( "CSRMatrixData" );
-    auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
-    auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
     AMP_INSIST(
         d_memory_location != AMP::Utilities::MemoryType::device,
         "CSRMatrixData and CSRSerialMatrixData do not support pure-device memory locations yet" );
 
-    if ( csrParams ) {
+    // Figure out what kind of parameters object we have
+    // Note: matParams always true if ampCSRParams is by inheritance
+    auto rawCSRParams = std::dynamic_pointer_cast<RawCSRMatrixParameters<Policy>>( d_pParameters );
+    auto ampCSRParams = std::dynamic_pointer_cast<AMPCSRMatrixParameters<Policy>>( d_pParameters );
+    auto matParams    = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
+    if ( rawCSRParams ) {
+
+        // Simplest initialization, extract row/column bounds and pass through to diag/offd
         d_first_row = csrParams->d_first_row;
         d_last_row  = csrParams->d_last_row;
         d_first_col = csrParams->d_first_col;
@@ -50,11 +57,12 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         d_offd_matrix = std::make_shared<OffdMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
 
-        // (Re)make DOF managers
+        // Only special item, raw data doesn't come with DOFManagers so need to make some
         resetDOFManagers();
 
     } else if ( matParams ) {
 
+        // get row/column bounds from DOFManagers
         d_leftDOFManager  = matParams->getLeftDOFManager();
         d_rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
@@ -63,37 +71,58 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         d_first_col = d_rightDOFManager->beginDOF();
         d_last_col  = d_rightDOFManager->endDOF();
 
-        // send params forward to the on/off diagonal blocks
+        // Construct on/off diag blocks
         d_diag_matrix = std::make_shared<DiagMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, true );
         d_offd_matrix = std::make_shared<OffdMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
-        d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
 
-        // If there is no getRow function but initialization is desired
-        // use GetRowHelper class to fill in each local block
-        if ( !matParams->getRowFunction() && !matParams->getSkipInitialize() ) {
+        // If, more specifically, have ampCSRParams then blocks are not yet
+        // filled. This consolidates calls to getRow{NNZ,Cols} for both blocks
+        if ( ampCSRParams && ampCSRParams->getRowNNZFunction() ) {
             AMP::pout << "Constructing CSRMatrixData with GetRowHelper" << std::endl;
 
-            // create instance of helper class for querying NNZ structure from DOF managers
-            // this is scope limited to get it to free its memory after filling in
-            // matrix blocks
-            GetRowHelper rowHelper( d_leftDOFManager, d_rightDOFManager );
+            // number of local rows
+            const lidx_t nrows = static_cast<lidx_t>( d_last_row - d_first_row );
 
-            // number of non-zeros per row of each block
-            const lidx_t nrows = d_last_row - d_first_row;
+            // pull out row functions
+            auto getRowNNZ  = ampCSRParams->getRowNNZFunction();
+            auto getRowCols = ampCSRParams->getRowColsFunction();
+
+            // get NNZ counts and trigger allocations in blocks
             std::vector<lidx_t> nnz_diag( nrows ), nnz_offd( nrows );
-            rowHelper.NNZ( d_first_row, d_last_row, nnz_diag.data(), nnz_offd.data() );
+            for ( lidx_t n = 0; n < nrows; ++nrows ) {
+                getRowNNZ( d_first_row + n, nnz_diag[n], nnz_offd[n] );
+            }
             d_diag_matrix->setNNZ( nnz_diag );
             d_offd_matrix->setNNZ( nnz_offd );
 
-            AMP::pout << "Set NNZ in diag to " << d_diag_matrix->d_nnz << " total and in offd to "
-                      << d_offd_matrix->d_nnz << " total" << std::endl;
+            // Fill in column indices
+            for ( lidx_t n = 0; n < nrows; ++nrows ) {
+                const auto rs_diag = d_diag_matrix->d_row_starts[n];
+                auto cols_diag     = &( d_diag_matrix->d_cols[rs_diag] );
+                const auto rs_offd = d_offd_matrix->d_row_starts[n];
+                auto cols_offd =
+                    d_offd_matrix->d_is_empty ? nullptr : &( d_offd_matrix->d_cols[rs_offd] );
+                getRowCols( d_first_row + n, cols_diag, cols_offd );
+            }
 
-            // get pointers to columns within each row, fill via helper class
-            std::vector<gidx_t *> cols_diag( nrows ), cols_offd( nrows );
-            d_offd_matrix->getColPtrs( cols_offd );
-            rowHelper.getRow( d_first_row, d_last_row, cols_diag.data(), cols_offd.data() );
+            {
+                // // create instance of helper class for querying NNZ structure from DOF managers
+                // // this is scope limited to get it to free its memory after filling in
+                // // matrix blocks
+                // GetRowHelper rowHelper( d_leftDOFManager, d_rightDOFManager );
+
+                // // number of non-zeros per row of each block
+                // rowHelper.NNZ( d_first_row, d_last_row, nnz_diag.data(), nnz_offd.data() );
+                // d_diag_matrix->setNNZ( nnz_diag );
+                // d_offd_matrix->setNNZ( nnz_offd );
+
+                // // get pointers to columns within each row, fill via helper class
+                // std::vector<gidx_t *> cols_diag( nrows ), cols_offd( nrows );
+                // d_offd_matrix->getColPtrs( cols_offd );
+                // rowHelper.getRow( d_first_row, d_last_row, cols_diag.data(), cols_offd.data() );
+            }
 
             // trigger re-packing of columns and convert to local cols
             globalToLocalColumns();
@@ -155,7 +184,6 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::globalToL
 {
     d_diag_matrix->globalToLocalColumns();
     d_offd_matrix->globalToLocalColumns();
-    resetDOFManagers();
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
