@@ -406,7 +406,7 @@ void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex 
         if ( d_meshType == GeomType::Face ) {
             N = 4;
             index[0].reset( GeomType::Face, 0, ijk[0], ijk[1] - 1 );
-            index[1].reset( GeomType::Face, 0, ijk[0] + 1, ijk[0] );
+            index[1].reset( GeomType::Face, 0, ijk[0] + 1, ijk[1] );
             index[2].reset( GeomType::Face, 0, ijk[0], ijk[1] + 1 );
             index[3].reset( GeomType::Face, 0, ijk[0] - 1, ijk[1] );
         } else {
