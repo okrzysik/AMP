@@ -189,6 +189,22 @@ inline std::array<int, 6> BoxMesh::getLocalBlock( int rank ) const
 /****************************************************************
  * Convert between the different id types                        *
  ****************************************************************/
+inline int BoxMesh::getRank( const MeshElementIndex &index ) const
+{
+    int i        = index.index( 0 );
+    int j        = index.index( 1 );
+    int k        = index.index( 2 );
+    bool isLocal = i >= d_localIndex[0] && i < d_localIndex[1] && j >= d_localIndex[2] &&
+                   j < d_localIndex[3] && k >= d_localIndex[4] && k < d_localIndex[5];
+    if ( isLocal ) {
+        return d_rank;
+    } else {
+        int px = std::min<int>( Utilities::findfirst( d_endIndex[0], i + 1 ), d_numBlocks[0] - 1 );
+        int py = std::min<int>( Utilities::findfirst( d_endIndex[1], j + 1 ), d_numBlocks[1] - 1 );
+        int pz = std::min<int>( Utilities::findfirst( d_endIndex[2], k + 1 ), d_numBlocks[2] - 1 );
+        return px + d_numBlocks[0] * ( py + d_numBlocks[1] * pz );
+    }
+}
 inline MeshElementID BoxMesh::convert( const BoxMesh::MeshElementIndex &index ) const
 {
     int i        = index.index( 0 );

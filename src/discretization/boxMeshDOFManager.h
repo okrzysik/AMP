@@ -63,11 +63,12 @@ private:
     // Convert a MeshElementID to a DOF index
     size_t convert( const AMP::Mesh::MeshElementID & ) const;
 
-    // Convert a MeshElementID to a DOF index
+    // Convert a DOF index to a MeshElementID
     AMP::Mesh::MeshElementID convert( size_t ) const;
 
 private: // Data
     int d_gcw;
+    int d_rank;
     std::shared_ptr<const AMP::Mesh::BoxMesh> d_boxMesh;
     std::vector<std::array<AMP::Mesh::BoxMesh::MeshElementIndex, 3>> d_ifirst;
     std::vector<std::array<std::array<int, 3>, 3>> d_boxSize;

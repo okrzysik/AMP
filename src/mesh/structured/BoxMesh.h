@@ -393,6 +393,9 @@ public: // BoxMesh specific functionality
      */
     MeshElementIndex getElementFromPhysical( const AMP::Geometry::Point &x, GeomType type ) const;
 
+    //! Get the rank that owns the element
+    inline int getRank( const MeshElementIndex &id ) const;
+
     //! Convert the MeshElementIndex to the MeshElementID
     inline MeshElementID convert( const MeshElementIndex &id ) const;
 

@@ -1,5 +1,6 @@
 #include "AMP/discretization/boxMeshDOFManager.h"
 #include "AMP/mesh/structured/BoxMesh.h"
+#include "AMP/mesh/structured/structuredMeshElement.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include <set>
@@ -49,6 +50,7 @@ boxMeshDOFManager::boxMeshDOFManager( std::shared_ptr<const AMP::Mesh::Mesh> mes
     : simpleDOFManager(
           mesh, mesh->getIterator( type, 0 ), mesh->getIterator( type, gcw ), type, DOFsPerObject ),
       d_gcw( gcw ),
+      d_rank( mesh->getComm().getRank() ),
       d_boxMesh( std::dynamic_pointer_cast<const AMP::Mesh::BoxMesh>( mesh ) )
 {
     AMP_INSIST( d_boxMesh, "Mesh must be a BoxMesh" );
