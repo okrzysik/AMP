@@ -1,8 +1,10 @@
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/matrices/AMPCSRMatrixParameters.h"
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/DenseSerialMatrix.h"
+#include "AMP/matrices/GetRowHelperLean.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/data/DenseSerialMatrixData.h"
@@ -94,6 +96,9 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                  AMP::LinearAlgebra::Vector::shared_ptr rightVec,
                  const std::function<std::vector<size_t>( size_t )> &getRow )
 {
+    using gidx_t = typename Policy::gidx_t;
+    using lidx_t = typename Policy::lidx_t;
+
     // Get the DOFs
     auto leftDOF  = leftVec->getDOFManager();
     auto rightDOF = rightVec->getDOFManager();
@@ -104,17 +109,43 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     if ( comm.getSize() == 1 )
         comm = AMP_MPI( AMP_COMM_SELF );
 
-    // Create the matrix parameters
-    auto params =
-        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF,
-                                                                rightDOF,
-                                                                comm,
-                                                                leftVec->getVariable(),
-                                                                rightVec->getVariable(),
-                                                                leftVec->getCommunicationList(),
-                                                                rightVec->getCommunicationList(),
-                                                                getRow,
-                                                                false );
+    std::shared_ptr<AMP::LinearAlgebra::MatrixParametersBase> params;
+
+    if ( getRow ) {
+        // explicit getRow function passed in, wrap into MatrixParameters
+        params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+            leftDOF,
+            rightDOF,
+            comm,
+            leftVec->getVariable(),
+            rightVec->getVariable(),
+            leftVec->getCommunicationList(),
+            rightVec->getCommunicationList(),
+            getRow );
+    } else {
+        // no getRow function available
+        // Use GetRowHelper class to build a usable default
+        GetRowHelperLean rowHelper( leftDOF, rightDOF );
+
+        std::function<void( const gidx_t, lidx_t &, lidx_t & )> getRowNNZ =
+            [&rowHelper]( const gidx_t row, lidx_t &nnz_local, lidx_t &nnz_remote ) {
+                rowHelper.NNZ( row, nnz_local, nnz_remote );
+            };
+        std::function<void( const gidx_t, gidx_t *, gidx_t * )> getRowCols =
+            [&rowHelper]( const gidx_t row, gidx_t *cols_local, gidx_t *cols_remote ) {
+                rowHelper.getRow( row, cols_local, cols_remote );
+            };
+        params = std::make_shared<AMP::LinearAlgebra::AMPCSRMatrixParameters<Policy>>(
+            leftDOF,
+            rightDOF,
+            comm,
+            leftVec->getVariable(),
+            rightVec->getVariable(),
+            leftVec->getCommunicationList(),
+            rightVec->getCommunicationList(),
+            getRowNNZ,
+            getRowCols );
+    }
 
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );

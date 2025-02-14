@@ -1,5 +1,5 @@
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/matrices/AMPMatrixParameters.h"
+#include "AMP/matrices/AMPCSRMatrixParameters.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/Vector.h"

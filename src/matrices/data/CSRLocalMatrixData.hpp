@@ -60,12 +60,16 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
       d_num_rows( last_row - first_row )
 {
     AMPManager::incrementResource( "CSRLocalMatrixData" );
-    auto csrParams = std::dynamic_pointer_cast<RawCSRMatrixParameters<Policy>>( params );
-    auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( params );
 
-    if ( csrParams ) {
+    // Figure out what kind of parameters object we have
+    // Note: matParams always true if ampCSRParams is by inheritance
+    auto rawCSRParams = std::dynamic_pointer_cast<RawCSRMatrixParameters<Policy>>( params );
+    auto ampCSRParams = std::dynamic_pointer_cast<AMPCSRMatrixParameters<Policy>>( params );
+    auto matParams    = std ::dynamic_pointer_cast<MatrixParameters>( params );
+
+    if ( rawCSRParams ) {
         // Pull out block specific parameters
-        auto &blParams = d_is_diag ? csrParams->d_diag : csrParams->d_off_diag;
+        auto &blParams = d_is_diag ? rawCSRParams->d_diag : rawCSRParams->d_off_diag;
 
         if ( blParams.d_row_starts == nullptr ) {
             d_is_empty = true;
@@ -95,15 +99,13 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
 
         const auto &getRow = matParams->getRowFunction();
 
-        if ( !getRow || matParams->getSkipInitialize() ) {
+        if ( !getRow || ampCSRParams ) {
             // Initialization not desired or not possible
             // can be set later by calling setNNZ and filling d_cols in some fashion
             d_nnz      = 0;
             d_is_empty = true;
             return;
         }
-
-        AMP::pout << "Constructing CSRMatrixData without GetRowHelper" << std::endl;
 
         // Count number of nonzeros per row and total
         d_nnz = 0;

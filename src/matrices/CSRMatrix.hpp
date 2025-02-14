@@ -132,8 +132,7 @@ void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
         getComm(),
         thisData->getLeftVariable(),
         otherData->getRightVariable(),
-        std::function<std::vector<size_t>( size_t )>(),
-        true );
+        std::function<std::vector<size_t>( size_t )>() );
 
     // Create the matrix
     auto newData = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );

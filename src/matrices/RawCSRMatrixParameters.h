@@ -71,8 +71,8 @@ public:
                                      gidx_t last_row,
                                      gidx_t first_col,
                                      gidx_t last_col,
-                                     const CSRLocalMatrixParameters &diag,
-                                     const CSRLocalMatrixParameters &off_diag,
+                                     const RawCSRLocalMatrixParameters &diag,
+                                     const RawCSRLocalMatrixParameters &off_diag,
                                      const AMP_MPI &comm,
                                      std::shared_ptr<Variable> var_left,
                                      std::shared_ptr<Variable> var_right )

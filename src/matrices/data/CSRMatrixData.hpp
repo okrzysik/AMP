@@ -46,10 +46,10 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
     if ( rawCSRParams ) {
 
         // Simplest initialization, extract row/column bounds and pass through to diag/offd
-        d_first_row = csrParams->d_first_row;
-        d_last_row  = csrParams->d_last_row;
-        d_first_col = csrParams->d_first_col;
-        d_last_col  = csrParams->d_last_col;
+        d_first_row = rawCSRParams->d_first_row;
+        d_last_row  = rawCSRParams->d_last_row;
+        d_first_col = rawCSRParams->d_first_col;
+        d_last_col  = rawCSRParams->d_last_col;
 
         // Construct on/off diag blocks
         d_diag_matrix = std::make_shared<DiagMatrixData>(
@@ -91,37 +91,20 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
 
             // get NNZ counts and trigger allocations in blocks
             std::vector<lidx_t> nnz_diag( nrows ), nnz_offd( nrows );
-            for ( lidx_t n = 0; n < nrows; ++nrows ) {
+            for ( lidx_t n = 0; n < nrows; ++n ) {
                 getRowNNZ( d_first_row + n, nnz_diag[n], nnz_offd[n] );
             }
             d_diag_matrix->setNNZ( nnz_diag );
             d_offd_matrix->setNNZ( nnz_offd );
 
             // Fill in column indices
-            for ( lidx_t n = 0; n < nrows; ++nrows ) {
+            for ( lidx_t n = 0; n < nrows; ++n ) {
                 const auto rs_diag = d_diag_matrix->d_row_starts[n];
                 auto cols_diag     = &( d_diag_matrix->d_cols[rs_diag] );
                 const auto rs_offd = d_offd_matrix->d_row_starts[n];
                 auto cols_offd =
                     d_offd_matrix->d_is_empty ? nullptr : &( d_offd_matrix->d_cols[rs_offd] );
                 getRowCols( d_first_row + n, cols_diag, cols_offd );
-            }
-
-            {
-                // // create instance of helper class for querying NNZ structure from DOF managers
-                // // this is scope limited to get it to free its memory after filling in
-                // // matrix blocks
-                // GetRowHelper rowHelper( d_leftDOFManager, d_rightDOFManager );
-
-                // // number of non-zeros per row of each block
-                // rowHelper.NNZ( d_first_row, d_last_row, nnz_diag.data(), nnz_offd.data() );
-                // d_diag_matrix->setNNZ( nnz_diag );
-                // d_offd_matrix->setNNZ( nnz_offd );
-
-                // // get pointers to columns within each row, fill via helper class
-                // std::vector<gidx_t *> cols_diag( nrows ), cols_offd( nrows );
-                // d_offd_matrix->getColPtrs( cols_offd );
-                // rowHelper.getRow( d_first_row, d_last_row, cols_diag.data(), cols_offd.data() );
             }
 
             // trigger re-packing of columns and convert to local cols
