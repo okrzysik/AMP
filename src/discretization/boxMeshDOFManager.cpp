@@ -163,6 +163,74 @@ AMP::Mesh::MeshElementID boxMeshDOFManager::convert( size_t ) const
 
 
 /****************************************************************
+ * Return the row DOFs                                           *
+ * This is an optimized version of simpleDOFManager              *
+ ****************************************************************/
+size_t boxMeshDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                                      size_t *dofs,
+                                      size_t N_alloc,
+                                      bool sort ) const
+{
+    // Check if the element is in the mesh
+    if ( id.meshID() != d_meshID )
+        return 0;
+    // Append DOFs (we can skip some checking and provide some minor optimizations)
+    size_t N        = 0;
+    auto appendDOFs = [dofs, N_alloc, &N, this]( const AMP::Mesh::MeshElementID &id ) {
+        if ( id.is_local() || d_gcw >= 1 ) {
+            auto dof = d_DOFsPerElement * convert( id );
+            for ( size_t j = 0, k = N; j < d_DOFsPerElement && k < N_alloc; j++, k++, dof++ )
+                dofs[k] = dof;
+            N += d_DOFsPerElement;
+        }
+    };
+    // Get a list of all element ids and corresponding DOFs that are part of the row
+    auto meshType = d_mesh->getGeomType();
+    auto objType  = id.type();
+    auto obj      = d_mesh->getElement( id );
+    if ( objType == d_type && ( objType == AMP::Mesh::GeomType::Vertex || objType == meshType ) ) {
+        // Use the getNeighbors function to get the neighbors of the current element
+        appendDOFs( id );
+        auto neighbors = obj.getNeighbors();
+        for ( auto &elem : neighbors ) {
+            if ( elem )
+                appendDOFs( elem->globalID() );
+        }
+    } else if ( objType == d_type ) {
+        // We need to use the mesh to get the connectivity of the elements of the same type
+        auto parents = d_mesh->getElementParents( obj, meshType );
+        std::vector<AMP::Mesh::MeshElementID> ids;
+        for ( auto &parent : parents ) {
+            auto children = parent.getElements( objType );
+            ids.reserve( ids.size() + children.size() );
+            for ( auto &elem : children )
+                ids.push_back( elem.globalID() );
+        }
+        AMP::Utilities::unique( ids );
+        for ( auto &id2 : ids )
+            appendDOFs( id2 );
+    } else if ( objType > d_type ) {
+        // The desired element type is < the current element type, use getElements
+        auto children = obj.getElements( d_type );
+        for ( auto &elem : children )
+            appendDOFs( elem.globalID() );
+    } else if ( objType < d_type ) {
+        // The desired element type is < the current element type, use getElementParents
+        auto parents = d_mesh->getElementParents( obj, meshType );
+        std::vector<AMP::Mesh::MeshElementID> ids;
+        for ( auto &parent : parents )
+            appendDOFs( parent.globalID() );
+    } else {
+        AMP_ERROR( "Internal error" );
+    }
+    // Sort the row dofs
+    if ( sort )
+        AMP::Utilities::quicksort( std::min( N, N_alloc ), dofs );
+    return N;
+}
+
+
+/****************************************************************
  * Get the DOFs for the element                                  *
  * Note complete but promising, failure is how to eliminate      *
  *    elements beyond the gcw (remote)                           *

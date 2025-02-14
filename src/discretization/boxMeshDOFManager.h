@@ -43,6 +43,13 @@ public:
 
 
 public: // Advanced interfaces
+    //! Get the row DOFs given a mesh element
+    size_t getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                       size_t *dofs,
+                       size_t N_alloc,
+                       bool sort = true ) const override;
+    using DOFManager::getRowDOFs;
+
     // Append DOFs to the list
     size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
                        size_t *dofs,

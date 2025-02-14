@@ -38,6 +38,14 @@ constexpr BoxMesh::MeshElementIndex::MeshElementIndex(
     : d_type( static_cast<uint8_t>( type_in ) ), d_side( side_in ), d_index{ x, y, z }
 {
 }
+constexpr void BoxMesh::MeshElementIndex::reset()
+{
+    d_type     = 0;
+    d_side     = 255;
+    d_index[0] = 0;
+    d_index[1] = 0;
+    d_index[2] = 0;
+}
 constexpr void
 BoxMesh::MeshElementIndex::reset( GeomType type_in, uint8_t side_in, int x, int y, int z )
 {

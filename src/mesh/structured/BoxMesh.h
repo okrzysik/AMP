@@ -121,6 +121,7 @@ public:
          */
         constexpr explicit MeshElementIndex(
             GeomType type, uint8_t side, int x, int y = 0, int z = 0 );
+        constexpr void reset();
         constexpr void reset( GeomType type, uint8_t side, int x, int y = 0, int z = 0 );
         constexpr bool isNull() const { return d_side == 255; }
         constexpr bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
