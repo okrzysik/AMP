@@ -57,10 +57,12 @@ boxMeshDOFManager::boxMeshDOFManager( std::shared_ptr<const AMP::Mesh::Mesh> mes
 
     // Initialize local data
     d_ifirst.resize( d_comm.getSize() );
-    d_boxSize.resize( d_ifirst.size(), { { 0 } } );
+    d_boxSize.resize( d_ifirst.size() );
     for ( size_t rank = 0; rank < d_ifirst.size(); rank++ ) {
         auto box   = d_boxMesh->getLocalBlock( rank );
         auto range = d_boxMesh->getIteratorRange( box, type, 0 );
+        for ( size_t i = 0; i < 3; i++ )
+            d_boxSize[rank][i] = { 0, 0, 0 };
         for ( size_t i = 0; i < range.size(); i++ ) {
             d_ifirst[rank][i]     = range[i].first;
             d_boxSize[rank][i][0] = range[i].second.index( 0 ) - range[i].first.index( 0 ) + 1;
