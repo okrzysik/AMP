@@ -327,10 +327,10 @@ void structuredMeshElement::getNeighbors(
 {
     BoxMesh::MeshElementIndex index[27];
     int N = getNeighborIndex( index );
-    neighbors.reserve( N );
+    neighbors.resize( N );
     for ( int i = 0; i < N; i++ ) {
         if ( !index[i].isNull() )
-            neighbors.push_back( std::make_unique<structuredMeshElement>( index[i], d_mesh ) );
+            neighbors[i] = std::make_unique<structuredMeshElement>( index[i], d_mesh );
     }
 }
 int structuredMeshElement::getNeighborIndex( BoxMesh::MeshElementIndex *index ) const

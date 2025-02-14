@@ -202,6 +202,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
             }
         }
         if ( id.is_local() ) {
+            // Test getElements
             for ( int t2 = 0; t2 <= (int) type; t2++ ) {
                 auto type2  = static_cast<AMP::Mesh::GeomType>( t2 );
                 auto pieces = element.getElements( type2 );
@@ -214,24 +215,24 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
                     elements_pass = false;
                 }
             }
-            auto neighbors = element.getNeighbors();
-            if ( neighbors.empty() ) {
+            // Test getNeighbors
+            // Note: some neighbors may be null (e.g. surfaces)
+            auto neighbors     = element.getNeighbors();
+            size_t N_neighbors = 0;
+            for ( auto &neighbor : neighbors ) {
+                if ( neighbor ) {
+                    N_neighbors++;
+                    // Verify that the neighbors does not include self
+                    if ( *neighbor == element )
+                        neighbor_pass = 0;
+                }
+            }
+            if ( N_neighbors == 0 ) {
                 if ( element.elementType() == AMP::Mesh::GeomType::Vertex ||
                      static_cast<int>( element.elementType() ) == mesh->getDim() )
-                    neighbor_pass = 0; // All nodes / elements should have neighbors
+                    neighbor_pass = 0; // All nodes / elements should have some neighbors
                 else if ( neighbor_pass == 1 )
                     neighbor_pass = 2; // Neighbors of other element types are not always supported
-            } else {
-                for ( auto &neighbor : neighbors ) {
-                    if ( neighbor ) {
-                        // Verify that the neighbors does not include self
-                        if ( *neighbor == element )
-                            neighbor_pass = 0;
-                    } else {
-                        // Neighbor is empty
-                        neighbor_pass = 0;
-                    }
-                }
             }
             if ( ownerRank != myRank )
                 id_pass = false;
