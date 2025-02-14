@@ -138,6 +138,22 @@ size_t boxMeshDOFManager::convert( const AMP::Mesh::MeshElementID &id ) const
         ( ijk[0] - first[0] ) + ( ijk[1] - first[1] ) * N[0] + ( ijk[2] - first[2] ) * N[0] * N[1];
     return dof + d_start[rank];
 }
+size_t boxMeshDOFManager::convert( const AMP::Mesh::BoxMesh::MeshElementIndex &index,
+                                   int rank ) const
+{
+    int side   = index.side();
+    size_t dof = 0;
+    for ( int s = 0; s < side; s++ ) {
+        auto N = d_boxSize[rank][s];
+        dof += N[0] * N[1] * N[2];
+    }
+    auto ijk   = index.index();
+    auto N     = d_boxSize[rank][side];
+    auto first = d_ifirst[rank][side].index();
+    dof +=
+        ( ijk[0] - first[0] ) + ( ijk[1] - first[1] ) * N[0] + ( ijk[2] - first[2] ) * N[0] * N[1];
+    return dof + d_start[rank];
+}
 AMP::Mesh::MeshElementID boxMeshDOFManager::convert( size_t ) const
 {
     AMP_ERROR( "Not finished" );
@@ -186,17 +202,28 @@ size_t boxMeshDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
             N += d_DOFsPerElement;
         }
     };
+    auto appendDOFs2 = [dofs, N_alloc, &N, this]( const AMP::Mesh::BoxMesh::MeshElementIndex &id,
+                                                  int rank ) {
+        if ( rank == d_rank || d_gcw >= 1 ) {
+            auto dof = d_DOFsPerElement * convert( id, rank );
+            for ( size_t j = 0, k = N; j < d_DOFsPerElement && k < N_alloc; j++, k++, dof++ )
+                dofs[k] = dof;
+            N += d_DOFsPerElement;
+        }
+    };
     // Get a list of all element ids and corresponding DOFs that are part of the row
     auto meshType = d_mesh->getGeomType();
     auto objType  = id.type();
-    auto obj      = d_mesh->getElement( id );
+    auto objIndex = d_boxMesh->convert( id );
+    AMP::Mesh::structuredMeshElement obj( objIndex, d_boxMesh.get() );
     if ( objType == d_type && ( objType == AMP::Mesh::GeomType::Vertex || objType == meshType ) ) {
         // Use the getNeighbors function to get the neighbors of the current element
-        appendDOFs( id );
-        auto neighbors = obj.getNeighbors();
-        for ( auto &elem : neighbors ) {
-            if ( elem )
-                appendDOFs( elem->globalID() );
+        appendDOFs2( objIndex, id.owner_rank() );
+        AMP::Mesh::BoxMesh::MeshElementIndex index[27];
+        int N2 = obj.getNeighborIndex( index );
+        for ( int i = 0; i < N2; i++ ) {
+            if ( !index[i].isNull() )
+                appendDOFs2( index[i], d_boxMesh->getRank( index[i] ) );
         }
     } else if ( objType == d_type ) {
         // We need to use the mesh to get the connectivity of the elements of the same type

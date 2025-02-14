@@ -63,6 +63,9 @@ private:
     // Convert a MeshElementID to a DOF index
     size_t convert( const AMP::Mesh::MeshElementID & ) const;
 
+    // Convert a MeshElementIndex to a DOF index
+    size_t convert( const AMP::Mesh::BoxMesh::MeshElementIndex &, int ) const;
+
     // Convert a DOF index to a MeshElementID
     AMP::Mesh::MeshElementID convert( size_t ) const;
 
