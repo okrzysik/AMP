@@ -365,7 +365,7 @@ void testTypeID( AMP::UnitTest &ut )
     check<double *>( "double*", ut );
     check<const double *>( "const double*", ut );
     check<double const *>( "const double*", ut );
-    check<decltype( argv )>( "char* [3]", ut );
+    check<decltype( argv )>( "char*[3]", ut );
     check<std::shared_ptr<double>>( "std::shared_ptr<double>", ut );
     check<std::string>( "std::string", ut );
     check<std::string_view>( "std::string_view", ut );
@@ -390,8 +390,8 @@ void testPrimes( AMP::UnitTest &ut )
     PASS_FAIL( factors == std::vector<int>( { 2, 7, 997 } ), "Correctly factored 13958" );
     auto t1  = AMP::Utilities::time();
     int N_it = 10000;
-    for ( int i = 0; i < N_it; i++ )
-        [[maybe_unused]] auto tmp = AMP::Utilities::factor( dist( gen ) );
+    for ( int i = 0; i < N_it; i++ ) [[maybe_unused]]
+        auto tmp = AMP::Utilities::factor( dist( gen ) );
     auto t2 = AMP::Utilities::time();
     std::cout << "factor = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
 
@@ -399,8 +399,8 @@ void testPrimes( AMP::UnitTest &ut )
     bool pass = !AMP::Utilities::isPrime( 13958 ) && AMP::Utilities::isPrime( 9999991 );
     PASS_FAIL( pass, "isPrime" );
     t1 = AMP::Utilities::time();
-    for ( int i = 0; i < N_it; i++ )
-        [[maybe_unused]] auto tmp = AMP::Utilities::isPrime( dist( gen ) );
+    for ( int i = 0; i < N_it; i++ ) [[maybe_unused]]
+        auto tmp = AMP::Utilities::isPrime( dist( gen ) );
     t2 = AMP::Utilities::time();
     std::cout << "isPrime = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
 
