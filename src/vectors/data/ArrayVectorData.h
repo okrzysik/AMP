@@ -13,7 +13,7 @@
 namespace AMP::LinearAlgebra {
 
 /** \brief A core-local vector
- * \details This is a Vector that implements the Vector interface for a std::vector<double>.
+ * \details This is a Vector that implements the Vector interface for an AMP::Array.
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<void>>
 class ArrayVectorData : public VectorData
@@ -172,7 +172,7 @@ protected:
     }
 
     typeID getType( size_t ) const override { return getTypeID<T>(); }
-    size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
+    size_t sizeofDataBlockType( size_t ) const override { return sizeof( T ); }
     void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
 };

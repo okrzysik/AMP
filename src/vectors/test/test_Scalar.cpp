@@ -63,7 +63,7 @@ bool testArithmetic()
         x       = (TYPE) 1;
         y       = (TYPE) 0;
         auto z1 = x / y;
-        AMP::Scalar z2( (TYPE) 1 / (TYPE) 0 );
+        AMP::Scalar z2( std::numeric_limits<TYPE>::infinity() );
         auto v1 = z1.get<double>();
         auto v2 = z2.get<double>();
         pass    = pass && v1 == std::numeric_limits<double>::infinity();
@@ -73,7 +73,7 @@ bool testArithmetic()
         x       = (TYPE) 0;
         y       = (TYPE) 0;
         auto z1 = x / y;
-        AMP::Scalar z2( (TYPE) 0 / (TYPE) 0 );
+        AMP::Scalar z2( std::numeric_limits<TYPE>::quiet_NaN() );
         auto v1 = z1.get<double>();
         auto v2 = z2.get<double>();
         pass    = pass && v1 != v1;
