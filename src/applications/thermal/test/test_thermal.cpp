@@ -185,6 +185,4 @@ int main( int argc, char *argv[] )
     ut.reset();
     AMP::AMPManager::shutdown();
     return num_failed;
-
-    return 0;
 }

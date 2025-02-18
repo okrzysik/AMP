@@ -1,11 +1,98 @@
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/typeid.h"
 
 #include <cstring>
 
 
 namespace AMP::Mesh {
+
+
+/********************************************************
+ * Constructors                                          *
+ ********************************************************/
+constexpr auto MeshElementHash = AMP::getTypeID<MeshElement>().hash;
+static_assert( MeshElementHash != 0 );
+MeshElement::MeshElement() : d_typeHash( MeshElementHash ), d_element( nullptr ) {}
+MeshElement::MeshElement( const MeshElement &rhs )
+    : d_typeHash( MeshElementHash ), d_element( nullptr )
+{
+    if ( rhs.d_element == nullptr && rhs.d_typeHash == MeshElementHash ) {
+        d_element = nullptr;
+    } else if ( rhs.d_typeHash != MeshElementHash ) {
+        d_element = rhs.clone();
+    } else {
+        d_element = rhs.d_element->clone();
+    }
+}
+MeshElement::MeshElement( MeshElement &&rhs )
+    : d_typeHash( MeshElementHash ), d_element( rhs.d_element )
+{
+    if ( rhs.d_typeHash != MeshElementHash )
+        d_element = rhs.clone();
+    rhs.d_element = nullptr;
+}
+MeshElement &MeshElement::operator=( const MeshElement &rhs )
+{
+    if ( this == &rhs ) // protect against invalid self-assignment
+        return *this;
+    if ( d_element != nullptr ) {
+        // Delete the existing d_element
+        delete d_element;
+        d_element = nullptr;
+    }
+    d_typeHash = MeshElementHash;
+    if ( rhs.d_element == nullptr && rhs.d_typeHash == MeshElementHash ) {
+        d_element = nullptr;
+    } else if ( rhs.d_typeHash != MeshElementHash ) {
+        d_element = rhs.clone();
+    } else {
+        d_element = rhs.d_element->clone();
+    }
+    return *this;
+}
+MeshElement &MeshElement::operator=( MeshElement &&rhs )
+{
+    if ( this == &rhs ) // protect against invalid self-assignment
+        return *this;
+    if ( d_element != nullptr ) {
+        // Delete the existing d_element
+        delete d_element;
+        d_element = nullptr;
+    }
+    d_typeHash = MeshElementHash;
+    std::swap( d_element, rhs.d_element );
+    if ( rhs.d_typeHash != MeshElementHash )
+        d_element = rhs.clone();
+    return *this;
+}
+MeshElement::MeshElement( MeshElement *rhs ) : d_typeHash( MeshElementHash ), d_element( nullptr )
+{
+    if ( rhs->d_element ) {
+        std::swap( d_element, rhs->d_element );
+        delete rhs;
+    } else {
+        d_element = rhs;
+    }
+}
+
+
+/********************************************************
+ * Destructor                                            *
+ ********************************************************/
+MeshElement::~MeshElement()
+{
+    if ( d_element != nullptr )
+        delete d_element;
+    d_element = nullptr;
+}
+
+
+/********************************************************
+ * Is the d_element null                                   *
+ ********************************************************/
+bool MeshElement::isNull() const { return d_typeHash == MeshElementHash && d_element == nullptr; }
 
 
 /********************************************************

@@ -229,8 +229,6 @@ void testMoabMesh( AMP::UnitTest &ut )
     // MeshTestLoop( ut, mesh );
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
-#else
-    ut.expected_failure( "testMoabMesh disabled (compiled without MOAB)" );
 #endif
 }
 
@@ -313,6 +311,9 @@ void testDefaults( AMP::UnitTest &ut )
     AMP::Mesh::meshTests::testID( ut );
 
     // Run tests on a native AMP mesh
+    AMP::Mesh::meshTests::testBoxMeshIndicies( ut, 1 );
+    AMP::Mesh::meshTests::testBoxMeshIndicies( ut, 2 );
+    AMP::Mesh::meshTests::testBoxMeshIndicies( ut, 3 );
     testAMPMesh( ut );
 
     // Run tests on a STKmesh mesh (currently disabled)
@@ -364,7 +365,10 @@ int main( int argc, char **argv )
 
     // Print the results and return
     int num_failed = ut.NumFailGlobal();
-    ut.report();
+    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 )
+        ut.report( 2 );
+    else
+        ut.report( 1 );
     ut.reset();
     AMP::AMPManager::shutdown();
     return num_failed;

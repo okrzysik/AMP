@@ -39,7 +39,6 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::multTr
     using lidx_t = typename Policy::lidx_t;
 
     const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
-    const bool isDiag                 = A->isDiag();
     auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
     A->getColumnMap( rcols );
     vvals.resize( rcols.size(), 0.0 );
@@ -47,9 +46,6 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::multTr
     for ( lidx_t row = 0; row < nRows; ++row ) {
         const auto val = in[row];
         for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
-            if ( isDiag ) {
-                rcols[cols_loc[c]] = cols[c];
-            }
             vvals[cols_loc[c]] += coeffs[c] * val;
         }
     }
@@ -86,9 +82,9 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::axpy(
 
     for ( lidx_t row = 0; row < nrows; ++row ) {
         for ( lidx_t iy = rs_y[row]; iy < rs_y[row + 1]; ++iy ) {
-            const auto yc = cols_y[iy];
+            const auto yc = cols_loc_y[iy];
             for ( lidx_t ix = rs_x[row]; ix < rs_x[row + 1]; ++ix ) {
-                if ( yc == cols_x[ix] ) {
+                if ( yc == cols_loc_x[ix] ) {
                     coeffs_y[iy] += alpha * coeffs_x[ix];
                     break;
                 }
@@ -119,20 +115,12 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::setDia
     const typename Policy::scalar_t *in, std::shared_ptr<LocalMatrixData> A )
 {
     using lidx_t = typename Policy::lidx_t;
-    using gidx_t = typename Policy::gidx_t;
 
-    const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
-    const auto beginRow = A->beginRow();
-
+    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
     auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
 
     for ( lidx_t row = 0; row < nRows; ++row ) {
-        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
-            if ( cols[c] == static_cast<gidx_t>( beginRow + row ) ) {
-                coeffs[c] = in[row];
-                break;
-            }
-        }
+        coeffs[rs[row]] = in[row];
     }
 }
 
@@ -140,22 +128,13 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::setIdentity(
     std::shared_ptr<LocalMatrixData> A )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
+    using lidx_t = typename Policy::lidx_t;
 
     auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
-
-    const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
-    const auto beginRow = A->beginRow();
+    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
 
     for ( lidx_t row = 0; row < nRows; ++row ) {
-        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
-            if ( cols[c] == static_cast<gidx_t>( beginRow + row ) ) {
-                coeffs[c] = static_cast<scalar_t>( 1.0 );
-                break;
-            }
-        }
+        coeffs[rs[row]] = 1.0;
     }
 }
 
@@ -164,20 +143,12 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::extrac
     std::shared_ptr<LocalMatrixData> A, typename Policy::scalar_t *buf )
 {
     using lidx_t = typename Policy::lidx_t;
-    using gidx_t = typename Policy::gidx_t;
 
     auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
-
-    const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
-    const auto beginRow = A->beginRow();
+    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
 
     for ( lidx_t row = 0; row < nRows; ++row ) {
-        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
-            if ( cols[c] == static_cast<gidx_t>( beginRow + row ) ) {
-                buf[row] = coeffs[c];
-                break;
-            }
-        }
+        buf[row] = coeffs[rs[row]];
     }
 }
 

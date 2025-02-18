@@ -25,6 +25,7 @@ public:
         return mesh;
     }
     virtual ~MeshGenerator(){};
+    virtual std::string name() const = 0;
 
 protected:
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
@@ -50,6 +51,12 @@ public:
         // Create an AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
     }
+    std::string name() const override
+    {
+        char tmp[128];
+        snprintf( tmp, sizeof( tmp ), "AMPCubeGenerator3<%i,%i,%i>", SIZE_X, SIZE_Y, SIZE_Z );
+        return std::string( tmp );
+    }
 };
 template<int SIZE>
 class AMPCubeGenerator : public MeshGenerator
@@ -61,7 +68,7 @@ public:
         gen.build_mesh();
         mesh = gen.getMesh();
     }
-    static std::string name()
+    std::string name() const override
     {
         char tmp[128];
         snprintf( tmp, sizeof( tmp ), "AMPCubeGenerator<%i>", SIZE );
@@ -88,7 +95,7 @@ public:
         // Create an AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
     }
-    static std::string name() { return "AMPCylinderGenerator"; }
+    std::string name() const override { return "AMPCylinderGenerator"; }
 };
 
 
@@ -110,7 +117,7 @@ public:
         // Create an AMP mesh
         mesh = AMP::Mesh::BoxMesh::generate( params );
     }
-    static std::string name() { return "AMPTubeGenerator"; }
+    std::string name() const override { return "AMPTubeGenerator"; }
 };
 
 
@@ -138,7 +145,7 @@ public:
         // Create the mesh
         mesh = AMP::Mesh::MeshFactory::create( params );
     }
-    static std::string name() { return "AMPMultiMeshGenerator"; }
+    std::string name() const override { return "AMPMultiMeshGenerator"; }
 
 private:
     void createPelletMeshDatabase( std::shared_ptr<Database> db )
@@ -198,7 +205,7 @@ public:
         auto it    = mesh1->getSurfaceIterator( type2, GCW );
         mesh       = mesh1->Subset( it );
     }
-    static std::string name() { return "SurfaceSubsetGenerator"; }
+    std::string name() const override { return "SurfaceSubsetGenerator"; }
 };
 
 

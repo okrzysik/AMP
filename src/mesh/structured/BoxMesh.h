@@ -94,6 +94,8 @@ public:
         constexpr ArraySize size() const; //!< Return the size of the box
         int first[3];                     //!< Starting element
         int last[3];                      //!< Ending element
+        std::string print() const;
+
     private:
     };
 
@@ -119,6 +121,7 @@ public:
          */
         constexpr explicit MeshElementIndex(
             GeomType type, uint8_t side, int x, int y = 0, int z = 0 );
+        constexpr void reset();
         constexpr void reset( GeomType type, uint8_t side, int x, int y = 0, int z = 0 );
         constexpr bool isNull() const { return d_side == 255; }
         constexpr bool operator==( const MeshElementIndex &rhs ) const; //!< Operator ==
@@ -389,6 +392,9 @@ public: // BoxMesh specific functionality
      *                      the given type contains the point.
      */
     MeshElementIndex getElementFromPhysical( const AMP::Geometry::Point &x, GeomType type ) const;
+
+    //! Get the rank that owns the element
+    inline int getRank( const MeshElementIndex &id ) const;
 
     //! Convert the MeshElementIndex to the MeshElementID
     inline MeshElementID convert( const MeshElementIndex &id ) const;

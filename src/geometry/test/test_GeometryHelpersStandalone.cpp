@@ -215,9 +215,6 @@ int writeFailedPoints( std::vector<PointDist> &p1,
                        double tol,
                        const char *filename )
 {
-    // Verify the points are sorted
-    std::is_sorted( p1.begin(), p1.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
-    std::is_sorted( p2.begin(), p2.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
     // Check how many failures we have
     int N_failed = 0;
     for ( size_t i = 0; i < p1.size(); i++ ) {

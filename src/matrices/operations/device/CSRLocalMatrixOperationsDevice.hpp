@@ -33,7 +33,7 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::mult(
     {
         PROFILE( "CSRLocalMatrixOperationsDevice::mult (local)" );
         DeviceMatrixOperations<gidx_t, lidx_t, scalar_t>::mult(
-            row_starts_d, cols_d, coeffs_d, nRows, in, out );
+            row_starts_d, cols_loc_d, coeffs_d, nRows, in, out );
     }
 }
 
@@ -123,13 +123,10 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setDiag
     using scalar_t = typename Policy::scalar_t;
 
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
-
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
-
-    auto beginRow = A->beginRow();
+    const auto nRows                                  = static_cast<lidx_t>( A->numLocalRows() );
 
     DeviceMatrixOperations<gidx_t, lidx_t, scalar_t>::setDiagonal(
-        row_starts_d, cols_d, coeffs_d, nRows, beginRow, in );
+        row_starts_d, coeffs_d, nRows, in );
 }
 
 
@@ -142,11 +139,10 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::extract
     using scalar_t = typename Policy::scalar_t;
 
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
+    const auto nRows                                  = static_cast<lidx_t>( A->numLocalRows() );
 
-    const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
-    const auto beginRow = A->beginRow();
     DeviceMatrixOperations<gidx_t, lidx_t, scalar_t>::extractDiagonal(
-        row_starts_d, cols_d, coeffs_d, nRows, beginRow, buf );
+        row_starts_d, coeffs_d, nRows, buf );
 }
 
 template<typename Policy, class Allocator, class LocalMatrixData>
@@ -160,12 +156,9 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setIden
     zero( A );
 
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
+    const auto nRows                                  = static_cast<lidx_t>( A->numLocalRows() );
 
-    const auto nRows    = static_cast<lidx_t>( A->numLocalRows() );
-    const auto beginRow = A->beginRow();
-
-    DeviceMatrixOperations<gidx_t, lidx_t, scalar_t>::setIdentity(
-        row_starts_d, cols_d, coeffs_d, nRows, beginRow );
+    DeviceMatrixOperations<gidx_t, lidx_t, scalar_t>::setIdentity( row_starts_d, coeffs_d, nRows );
 }
 
 template<typename Policy, class Allocator, class LocalMatrixData>
@@ -177,8 +170,7 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::LinfNor
     using scalar_t = typename Policy::scalar_t;
 
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
-
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
+    const auto nRows                                  = static_cast<lidx_t>( A->numLocalRows() );
 
     DeviceMatrixOperations<gidx_t, lidx_t, scalar_t>::LinfNorm(
         nRows, coeffs_d, row_starts_d, rowSums );
