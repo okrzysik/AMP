@@ -149,11 +149,16 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
     bool centroid_pass = true;
     bool elements_pass = true;
     bool block_pass    = true;
-    int neighbor_pass  = 1;
-    int myRank         = mesh->getComm().getRank();
-    int maxRank        = mesh->getComm().getSize() - 1;
-    int myGlobalRank   = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
-    auto blockIds      = mesh->getBlockIDs();
+    bool skip_nearest  = false;
+    for ( const auto &element : iterator ) {
+        if ( element.elementClass() == "libmeshMeshElement" )
+            skip_nearest = true;
+    }
+    int neighbor_pass = 1;
+    int myRank        = mesh->getComm().getRank();
+    int maxRank       = mesh->getComm().getSize() - 1;
+    int myGlobalRank  = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
+    auto blockIds     = mesh->getBlockIDs();
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve( iterator.size() );
     for ( const auto &element : iterator ) {
@@ -282,31 +287,33 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
     else
         ut.failure( name + "-Got elements from element ids" );
     // Check nearest
-    try {
-        bool pass = true;
-        for ( const auto &element : iterator ) {
-            auto x = element.centroid();
-            auto y = element.nearest( x );
-            auto d = ( x - y ).norm();
-            pass   = pass && d < 1e-12;
+    if ( !skip_nearest ) {
+        try {
+            bool pass = true;
+            for ( const auto &element : iterator ) {
+                auto x = element.centroid();
+                auto y = element.nearest( x );
+                auto d = ( x - y ).norm();
+                pass   = pass && d < 1e-12;
+            }
+            if ( pass )
+                ut.passes( name + "-elements nearest passed" );
+            else
+                ut.failure( name + "-elements nearest failed" );
+        } catch ( const StackTrace::abort_error &e ) {
+            std::string msg = e.message;
+            auto pos        = msg.find( "nearest is not implemented" );
+            if ( pos != std::string::npos )
+                ut.expected_failure( name + "-elements " + msg );
+            else
+                ut.failure( name + "-elements nearest exception: " + msg );
+        } catch ( ... ) {
+            ut.failure( name + "-nearest distance unknown exception" );
         }
-        if ( pass )
-            ut.passes( name + "-elements nearest passed" );
-        else
-            ut.failure( name + "-elements nearest failed" );
-    } catch ( const StackTrace::abort_error &e ) {
-        std::string msg = e.message;
-        auto pos        = msg.find( "nearest is not implemented" );
-        if ( pos != std::string::npos )
-            ut.expected_failure( name + "-elements " + msg );
-        else
-            ut.failure( name + "-elements nearest exception: " + msg );
-    } catch ( ... ) {
-        ut.failure( name + "-nearest distance unknown exception" );
     }
     // Check distance
     try {
-        ut.expected_failure( name + "-elements distance test not implemented yet" );
+        ut.expected_failure( "elements distance test not implemented yet" );
         /*bool pass  = true;
         for ( const auto &element : iterator ) {
             auto centroid = element.centroid();
@@ -1175,7 +1182,7 @@ void meshTests::VerifyElementForNode( AMP::UnitTest &ut, std::shared_ptr<AMP::Me
             meshTests::VerifyElementForNode( ut, mesh2 );
     } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
         // libmeshMesh does not currently support getElementParents
-        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        ut.expected_failure( "VerifyElementForNode not supported for libMesh" );
         return;
     } else {
         auto element_has_node = []( const AMP::Mesh::MeshElement &elem,
@@ -1215,7 +1222,7 @@ void meshTests::VerifyNodeElemMapIteratorTest( AMP::UnitTest &ut,
             meshTests::VerifyNodeElemMapIteratorTest( ut, mesh2 );
     } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
         // libmeshMesh does not currently support getElementParents
-        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        ut.expected_failure( "Verify Node<->Element not supported for libMesh" );
         return;
     } else {
         auto verify_node = []( const AMP::Mesh::MeshElement &node,
@@ -1261,7 +1268,7 @@ void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest &ut,
             meshTests::VerifyBoundaryIteratorTest( ut, mesh2 );
     } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
         // libmeshMesh does not currently support getElementParents
-        ut.expected_failure( "VerifyElementForNode: " + mesh->getName() );
+        ut.expected_failure( "Verify Boundary iterator not supported for libMesh" );
         return;
     } else {
         auto isBoundaryElement = []( const AMP::Mesh::MeshElement &elem ) {

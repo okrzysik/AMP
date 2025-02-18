@@ -229,8 +229,6 @@ void testMoabMesh( AMP::UnitTest &ut )
     // MeshTestLoop( ut, mesh );
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
-#else
-    ut.expected_failure( "testMoabMesh disabled (compiled without MOAB)" );
 #endif
 }
 
@@ -367,7 +365,10 @@ int main( int argc, char **argv )
 
     // Print the results and return
     int num_failed = ut.NumFailGlobal();
-    ut.report();
+    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 )
+        ut.report( 2 );
+    else
+        ut.report( 1 );
     ut.reset();
     AMP::AMPManager::shutdown();
     return num_failed;

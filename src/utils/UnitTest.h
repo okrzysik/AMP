@@ -100,9 +100,15 @@ public:
      *                  1: Report the passed tests (if <=20) or number passed,
      *                     Report all failures,
      *                     Report the expected failed tests (if <=50) or the number passed.
-     *                  2: Report all passed, failed, and expected failed tests.
+     *                  2: Report the passed tests (if <=50)
+     *                     Report all failures,
+     *                     Report all expected
+     *                  3: Report all passed, failed, and expected failed tests.
+     * @param level     Remove duplicate messages.
+     *                  If set, the total number of message will be unchanged but if printed
+     *                  duplicate messages will be removed
      */
-    void report( const int level = 1 ) const;
+    void report( const int level = 1, bool removeDuplicates = true ) const;
 
     //! Clear the messages
     void reset();
@@ -117,22 +123,9 @@ private:
     bool d_verbose;
     mutable std::mutex d_mutex;
     std::unique_ptr<AMP::AMP_MPI> d_comm;
-
-private:
-    // Function to pack the messages into a single data stream and send to the given processor
-    // Note: This function does not return until the message stream has been sent
-    void pack_message_stream( const std::vector<std::string> &messages,
-                              const int rank,
-                              const int tag ) const;
-
-    // Function to unpack the messages from a single data stream
-    // Note: This function does not return until the message stream has been received
-    std::vector<std::string> unpack_message_stream( const int rank, const int tag ) const;
-
-    // Gather the messages
-    inline std::vector<std::vector<std::string>>
-    gatherMessages( const std::vector<std::string> &local_messages, int tag ) const;
 };
+
+
 } // namespace AMP
 
 #endif
