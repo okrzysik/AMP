@@ -170,9 +170,6 @@ public: // Non-virtual functions
      */
     const TYPE &operator[]( size_t i ) const;
 
-    //! Return the allocator associated with the container
-    Allocator get_allocator() const noexcept;
-
 
 public: // Write/read restart data
     void registerChildObjects( AMP::IO::RestartManager *manager ) const override;

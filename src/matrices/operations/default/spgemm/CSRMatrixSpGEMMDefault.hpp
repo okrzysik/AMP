@@ -94,8 +94,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
                       const bool is_diag,
                       std::vector<std::set<typename Policy::gidx_t>> &C_cols )
 {
-    using lidx_t = typename Policy::lidx_t;
-    using gidx_t = typename Policy::gidx_t;
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
 
     auto idx_test = [col_diag_start, col_diag_end, is_diag]( const gidx_t col ) -> bool {
         return is_diag ? ( col_diag_start <= col && col < col_diag_end ) :
@@ -105,7 +106,25 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
     const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
 
     auto [A_rs, A_cols, A_cols_loc, A_coeffs] = A_data->getDataFields();
-    auto [B_rs, B_cols, B_cols_loc, B_coeffs] = B_data->getDataFields();
+
+    // can't capture structured bindings so pull out B fields via std::tie
+    lidx_t *B_rs = nullptr, *B_cols_loc = nullptr;
+    gidx_t *B_cols     = nullptr;
+    scalar_t *B_coeffs = nullptr;
+
+    std::tie( B_rs, B_cols, B_cols_loc, B_coeffs ) = B_data->getDataFields();
+
+    // may or may not have access to B global column indices
+    // set up conversion function from local indices
+    auto B_colmap          = B_data->getColumnMap();
+    const auto B_first_col = B_data->beginCol();
+    const bool have_B_cols = ( B_cols != nullptr );
+
+    auto B_to_global = [B_cols, B_cols_loc, B_first_col, B_colmap, is_diag, have_B_cols](
+                           const lidx_t k ) -> gidx_t {
+        return have_B_cols ? B_cols[k] :
+                             ( is_diag ? B_first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]] );
+    };
 
     // for each row in A block
     for ( lidx_t row = 0; row < nRows; ++row ) {
@@ -114,7 +133,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
             auto Acl = A_cols_loc[j];
             // then row of C is union of those B row nz patterns
             for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
-                const auto bc = B_cols[k];
+                const auto bc = B_to_global( k );
                 if ( idx_test( bc ) ) {
                     C_cols[row].insert( bc );
                 }
@@ -293,13 +312,16 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
 
     auto B_diag                                       = B->getDiagMatrix();
     auto [B_rs_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
+    const auto B_first_col_d                          = B_diag->beginCol();
 
     lidx_t *B_rs_od = nullptr, *B_cols_loc_od = nullptr;
     gidx_t *B_cols_od     = nullptr;
+    gidx_t *B_colmap_od   = nullptr;
     scalar_t *B_coeffs_od = nullptr;
     if ( B->hasOffDiag() ) {
         auto B_offd                                                = B->getOffdMatrix();
         std::tie( B_rs_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
+        B_colmap_od                                                = B_offd->getColumnMap();
     }
 
     // First set up all of the comm information
@@ -345,11 +367,11 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
                 const auto rid = it->second.rowids[r];
                 std::vector<gidx_t> send_cols;
                 for ( lidx_t n = B_rs_d[rid]; n < B_rs_d[rid + 1]; ++n ) {
-                    send_cols.push_back( B_cols_d[n] );
+                    send_cols.push_back( B_first_col_d + B_cols_loc_d[n] );
                 }
                 if ( B_rs_od != nullptr ) {
                     for ( lidx_t n = B_rs_od[rid]; n < B_rs_od[rid + 1]; ++n ) {
-                        send_cols.push_back( B_cols_od[n] );
+                        send_cols.push_back( B_colmap_od[B_cols_loc_od[n]] );
                     }
                 }
                 comm.send( send_cols.data(), it->second.rownnz[r], it->first, TAG );
@@ -472,8 +494,40 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
     const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
 
     auto [A_rs, A_cols, A_cols_loc, A_coeffs] = A_data->getDataFields();
-    auto [B_rs, B_cols, B_cols_loc, B_coeffs] = B_data->getDataFields();
-    auto [C_rs, C_cols, C_cols_loc, C_coeffs] = C_data->getDataFields();
+
+    // can't capture structured bindings so pull out B fields via std::tie
+    lidx_t *B_rs = nullptr, *B_cols_loc = nullptr;
+    gidx_t *B_cols     = nullptr;
+    scalar_t *B_coeffs = nullptr;
+
+    std::tie( B_rs, B_cols, B_cols_loc, B_coeffs ) = B_data->getDataFields();
+
+    // same for C fields
+    lidx_t *C_rs = nullptr, *C_cols_loc = nullptr;
+    gidx_t *C_cols     = nullptr;
+    scalar_t *C_coeffs = nullptr;
+
+    std::tie( C_rs, C_cols, C_cols_loc, C_coeffs ) = C_data->getDataFields();
+
+    // may or may not have access to B global column indices
+    // set up conversion function from local indices
+    auto B_colmap          = B_data->getColumnMap();
+    const auto B_first_col = B_data->beginCol();
+    const bool have_B_cols = ( B_cols != nullptr );
+
+    auto B_to_global = [B_cols, B_cols_loc, B_first_col, B_colmap, is_diag, have_B_cols](
+                           const lidx_t k ) -> gidx_t {
+        return have_B_cols ? B_cols[k] :
+                             ( is_diag ? B_first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]] );
+    };
+
+    // and similar for C, except never have access to global cols
+    auto C_colmap          = C_data->getColumnMap();
+    const auto C_first_col = C_data->beginCol();
+
+    auto C_to_global = [C_cols_loc, C_first_col, C_colmap, is_diag]( const lidx_t k ) -> gidx_t {
+        return is_diag ? C_first_col + C_cols_loc[k] : C_colmap[C_cols_loc[k]];
+    };
 
     // for each row in A block
     std::map<gidx_t, scalar_t> C_colval;
@@ -483,7 +537,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
             const auto Acl = A_cols_loc[j];
             const auto Av  = A_coeffs[j];
             for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
-                const auto Bc = B_cols[k];
+                const auto Bc = B_to_global( k );
                 if ( idx_test( Bc ) ) {
                     const auto val = Av * B_coeffs[k];
                     auto in        = C_colval.insert( { Bc, val } );
@@ -495,7 +549,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData, OffdMatrixD
         }
         // Unpack col<->val maps into coeffs of C
         for ( lidx_t c = C_rs[row]; c < C_rs[row + 1]; ++c ) {
-            C_coeffs[c] += C_colval[C_cols[c]];
+            C_coeffs[c] += C_colval[C_to_global( c )];
         }
     }
 }

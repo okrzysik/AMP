@@ -313,6 +313,9 @@ void testDefaults( AMP::UnitTest &ut )
     AMP::Mesh::meshTests::testID( ut );
 
     // Run tests on a native AMP mesh
+    AMP::Mesh::meshTests::testBoxMeshIndicies( ut, 1 );
+    AMP::Mesh::meshTests::testBoxMeshIndicies( ut, 2 );
+    AMP::Mesh::meshTests::testBoxMeshIndicies( ut, 3 );
     testAMPMesh( ut );
 
     // Run tests on a STKmesh mesh (currently disabled)

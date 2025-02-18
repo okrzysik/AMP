@@ -96,34 +96,39 @@ subsetDOFManager::~subsetDOFManager() = default;
 /****************************************************************
  * Get the dofs for the given element                            *
  ****************************************************************/
-void subsetDOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
-                                std::vector<size_t> &dofs ) const
+size_t subsetDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
+                                     size_t *dofs,
+                                     size_t index,
+                                     size_t capacity ) const
 {
     // Get the parent DOFs
     std::vector<size_t> parentDOFs;
-    d_parentDOFManager->getDOFs( ids, parentDOFs );
-    if ( parentDOFs.empty() ) {
-        dofs.resize( 0 );
-        return;
-    }
+    d_parentDOFManager->getDOFs( id, parentDOFs );
+    if ( parentDOFs.empty() )
+        return 0;
     // Get the subset DOFs
     auto subsetDOFs = getSubsetDOF( parentDOFs );
     // Remove any DOFs == -1
-    dofs.clear();
+    size_t N = 0;
     for ( auto dof : subsetDOFs ) {
-        if ( dof < d_global )
-            dofs.push_back( dof );
+        if ( dof < d_global ) {
+            N++;
+            if ( index < capacity )
+                dofs[index++] = dof;
+        }
     }
+    return N;
 }
-void subsetDOFManager::getDOFs( const AMP::Mesh::MeshElementID &id,
-                                std::vector<size_t> &dofs ) const
-{
-    getDOFs( std::vector<AMP::Mesh::MeshElementID>( 1, id ), dofs );
-}
+
 
 /****************************************************************
  * Get the element ID give a dof                                 *
  ****************************************************************/
+AMP::Mesh::MeshElementID subsetDOFManager::getElementID( size_t dof ) const
+{
+    std::vector<size_t> dof2 = getParentDOF( { dof } );
+    return d_parentDOFManager->getElementID( dof2[0] );
+}
 AMP::Mesh::MeshElement subsetDOFManager::getElement( size_t dof ) const
 {
     std::vector<size_t> dof2 = getParentDOF( { dof } );
@@ -148,9 +153,12 @@ std::vector<size_t> subsetDOFManager::getRemoteDOFs() const { return d_remoteSub
 /****************************************************************
  * Return the global number of D.O.F.s                           *
  ****************************************************************/
-std::vector<size_t> subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &obj ) const
+size_t subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                                     size_t *dofs,
+                                     size_t N_alloc,
+                                     bool sort ) const
 {
-    auto parentDOFs = d_parentDOFManager->getRowDOFs( obj );
+    auto parentDOFs = d_parentDOFManager->getRowDOFs( id );
     auto subsetDOFs = getSubsetDOF( parentDOFs );
     size_t index    = 0;
     for ( size_t i = 0; i < subsetDOFs.size(); i++ ) {
@@ -160,7 +168,12 @@ std::vector<size_t> subsetDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
         }
     }
     subsetDOFs.resize( index );
-    return subsetDOFs;
+    for ( size_t i = 0; i < std::min( index, N_alloc ); i++ )
+        dofs[i] = subsetDOFs[i];
+    // Sort the row dofs
+    if ( sort )
+        AMP::Utilities::quicksort( std::min( index, N_alloc ), dofs );
+    return index;
 }
 
 

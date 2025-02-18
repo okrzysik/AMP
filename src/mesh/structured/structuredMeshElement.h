@@ -78,7 +78,11 @@ public: // Functions derived from MeshElement
     bool isInBlock( int id ) const override;
     unsigned int globalOwnerRank() const override;
     void getVertices( std::vector<Point> &vertices ) const override;
+    using MeshElement::getElements;
+    using MeshElement::getNeighbors;
 
+public: // Expert interfaces
+    int getNeighborIndex( BoxMesh::MeshElementIndex *index ) const;
 
 protected:
     // Clone the iterator
@@ -91,7 +95,6 @@ protected:
     const AMP::Mesh::BoxMesh *d_mesh;  // Pointer to mesh
 
     // Helper functions
-    void getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const;
     void getElementIndex( const GeomType type, int &N, BoxMesh::MeshElementIndex *index ) const;
     std::array<int8_t, 3> getBC() const;
 

@@ -1,6 +1,8 @@
 #ifndef included_AMP_UtilityHelpers
 #define included_AMP_UtilityHelpers
 
+#include "AMP/IO/FileSystem.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Utilities.hpp"
@@ -9,11 +11,15 @@
 
 #include "StackTrace/StackTrace.h"
 
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <limits>
 #include <random>
+#include <set>
+#include <thread>
 #include <type_traits>
+#include <vector>
 
 
 // Helper function to record pass/failure
@@ -290,9 +296,9 @@ void testQuickSelect( AMP::UnitTest &ut )
 template<class TYPE>
 constexpr int calculateDigits()
 {
-    int d = 40;
+    int d = 37;
     while ( true ) {
-        TYPE x  = 1;
+        TYPE x  = 1.5;
         TYPE y  = std::pow( 10.0, -d );
         TYPE z  = std::pow( 10.0, d );
         TYPE x2 = x + y;
@@ -322,7 +328,12 @@ void test_precision( [[maybe_unused]] AMP::UnitTest &ut )
         } else if constexpr ( std::is_same_v<T, double> ) {
             PASS_FAIL( digits == 15 && match, "<double> matches IEEE" );
         } else if constexpr ( std::is_same_v<T, long double> ) {
-            PASS_FAIL( digits >= 18 && match, "<long double> matches expected" );
+            if ( match && sizeof( long double ) == sizeof( double ) &&
+                 digits == std::numeric_limits<double>::digits10 ) {
+                ut.expected_failure( "long double is 64-bits" );
+            } else {
+                PASS_FAIL( digits >= 18 && match, "<long double> matches expected" );
+            }
         } else {
             ut.failure( "Unknown type" );
         }
@@ -336,7 +347,7 @@ void test_precision( [[maybe_unused]] AMP::UnitTest &ut )
  *  Test typeid                                          *
  ********************************************************/
 template<class T>
-void check( const std::string &name, AMP::UnitTest &ut, bool expected )
+void check( const std::string &name, AMP::UnitTest &ut, bool expected = false )
 {
     auto type = AMP::getTypeID<T>();
     bool pass =
@@ -350,10 +361,99 @@ void check( const std::string &name, AMP::UnitTest &ut, bool expected )
 }
 void testTypeID( AMP::UnitTest &ut )
 {
-    check<std::shared_ptr<double>>( "std::shared_ptr<double>", ut, false ); // Fails windows
-    check<double *>( "double*", ut, true );                                 // Fails clang-16
-    check<const double *>( "const double*", ut, true );                     // Fails clang-16
-    check<double const *>( "const double*", ut, true );                     // Fails clang-16
+    constexpr char *argv[3] = { nullptr };
+    check<double *>( "double*", ut );
+    check<const double *>( "const double*", ut );
+    check<double const *>( "const double*", ut );
+    check<decltype( argv )>( "char*[3]", ut );
+    check<std::shared_ptr<double>>( "std::shared_ptr<double>", ut );
+    check<std::string>( "std::string", ut );
+    check<std::string_view>( "std::string_view", ut );
+    check<std::set<double>>( "std::set<double>", ut, true );
+    check<std::vector<double>>( "std::vector<double>", ut, true );
+    check<std::vector<std::string>>( "std::vector<std::string>", ut, true );
+    check<std::vector<std::string_view>>( "std::vector<std::string_view>", ut, true );
+}
+
+
+/********************************************************
+ *  Test primes                                          *
+ ********************************************************/
+void testPrimes( AMP::UnitTest &ut )
+{
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_int_distribution<int> dist( 1, 10000000 );
+
+    // Test the factor function
+    auto factors = AMP::Utilities::factor( 13958 );
+    PASS_FAIL( factors == std::vector<int>( { 2, 7, 997 } ), "Correctly factored 13958" );
+    auto t1  = AMP::Utilities::time();
+    int N_it = 10000;
+    for ( int i = 0; i < N_it; i++ )
+        [[maybe_unused]] auto tmp = AMP::Utilities::factor( dist( gen ) );
+    auto t2 = AMP::Utilities::time();
+    std::cout << "factor = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
+
+    // Test the isPrime function
+    bool pass = !AMP::Utilities::isPrime( 13958 ) && AMP::Utilities::isPrime( 9999991 );
+    PASS_FAIL( pass, "isPrime" );
+    t1 = AMP::Utilities::time();
+    for ( int i = 0; i < N_it; i++ )
+        [[maybe_unused]] auto tmp = AMP::Utilities::isPrime( dist( gen ) );
+    t2 = AMP::Utilities::time();
+    std::cout << "isPrime = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
+
+    // Test primes function
+    auto p1 = AMP::Utilities::primes( 50 );
+    pass =
+        p1 == std::vector<uint64_t>( { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47 } );
+    pass = pass && AMP::Utilities::primes( 3 ) == std::vector<uint64_t>( { 2, 3 } );
+    pass = pass && AMP::Utilities::primes( 4 ) == std::vector<uint64_t>( { 2, 3 } );
+    pass = pass && AMP::Utilities::primes( 5 ) == std::vector<uint64_t>( { 2, 3, 5 } );
+    t1   = AMP::Utilities::time();
+    p1   = AMP::Utilities::primes( 1000000 );
+    t2   = AMP::Utilities::time();
+    pass = pass && p1.size() == 78498;
+    PASS_FAIL( pass, "primes" );
+    std::cout << "primes (1000000):" << std::endl;
+    std::cout << "   size: " << p1.size() << std::endl;
+    std::cout << "   time: " << round( 1e6 * ( t2 - t1 ) ) << " us" << std::endl;
+}
+
+
+/********************************************************
+ *  Test filesystem                                      *
+ ********************************************************/
+void testFileSystem( AMP::UnitTest &ut )
+{
+    // Test deleting and checking if a file exists
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    if ( globalComm.getRank() == 0 ) {
+        FILE *fid = fopen( "testDeleteFile.txt", "w" );
+        fputs( "Temporary test", fid );
+        fclose( fid );
+        PASS_FAIL( AMP::IO::fileExists( "testDeleteFile.txt" ), "File exists" );
+        AMP::IO::deleteFile( "testDeleteFile.txt" );
+        PASS_FAIL( !AMP::IO::fileExists( "testDeleteFile.txt" ), "File deleted" );
+    }
+
+    // Test creating/deleting directories
+    using namespace std::chrono_literals;
+    AMP::IO::recursiveMkdir( "." );
+    AMP::IO::recursiveMkdir( "testUtilitiesDir/a/b" );
+    globalComm.barrier();
+    std::this_thread::sleep_for( 10ms );
+    PASS_FAIL( AMP::IO::fileExists( "testUtilitiesDir/a/b" ), "Create directory" );
+    globalComm.barrier();
+    if ( globalComm.getRank() == 0 ) {
+        AMP::IO::deleteFile( "testUtilitiesDir/a/b" );
+        AMP::IO::deleteFile( "testUtilitiesDir/a" );
+        AMP::IO::deleteFile( "testUtilitiesDir" );
+        std::this_thread::sleep_for( 10ms );
+    }
+    globalComm.barrier();
+    PASS_FAIL( !AMP::IO::fileExists( "testUtilitiesDir/a/b" ), "Destroy directory" );
 }
 
 
