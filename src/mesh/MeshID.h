@@ -2,6 +2,7 @@
 #define included_AMP_MeshID
 
 #include <memory>
+#include <string>
 #include <vector>
 
 
@@ -220,6 +221,7 @@ std::ostream &operator<<( std::ostream &out, GeomType x );
 std::ostream &operator<<( std::ostream &out, MeshID x );
 std::ostream &operator<<( std::ostream &out, ElementID x );
 std::ostream &operator<<( std::ostream &out, MeshElementID x );
+std::string to_string( GeomType x );
 
 
 // Arithmetic operators

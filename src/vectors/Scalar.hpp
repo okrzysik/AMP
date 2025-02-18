@@ -98,9 +98,9 @@ Scalar Scalar::create( const TYPE &x ) const
     y.d_type = d_type;
     if constexpr ( AMP::is_complex_v<TYPE> ) {
         if ( d_type == 'i' ) {
-            y.d_data = std::make_any<int64_t>( x.real() );
+            y.d_data = std::make_any<int64_t>( static_cast<int64_t>( x.real() ) );
         } else if ( d_type == 'f' ) {
-            y.d_data = std::make_any<double>( x.real() );
+            y.d_data = std::make_any<double>( static_cast<double>( x.real() ) );
         } else if ( d_type == 'c' ) {
             y.d_data = std::make_any<std::complex<double>>( x.real(), x.imag() );
         } else {

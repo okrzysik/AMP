@@ -918,7 +918,7 @@ template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
 inline void AMP::Array<TYPE, FUN, Allocator>::copy( const TYPE2 *data )
 {
-    if ( std::is_same_v<TYPE, TYPE2> ) {
+    if constexpr ( std::is_same_v<TYPE, TYPE2> ) {
         std::copy( data, data + d_size.length(), d_data );
     } else {
         for ( size_t i = 0; i < d_size.length(); i++ )
@@ -929,7 +929,7 @@ template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
 inline void AMP::Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *data ) const
 {
-    if ( std::is_same_v<TYPE, TYPE2> ) {
+    if constexpr ( std::is_same_v<TYPE, TYPE2> ) {
         std::copy( d_data, d_data + d_size.length(), data );
     } else {
         for ( size_t i = 0; i < d_size.length(); i++ )

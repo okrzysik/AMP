@@ -365,7 +365,7 @@ void testTypeID( AMP::UnitTest &ut )
     check<double *>( "double*", ut );
     check<const double *>( "const double*", ut );
     check<double const *>( "const double*", ut );
-    check<decltype( argv )>( "char* [3]", ut );
+    check<decltype( argv )>( "char*[3]", ut );
     check<std::shared_ptr<double>>( "std::shared_ptr<double>", ut );
     check<std::string>( "std::string", ut );
     check<std::string_view>( "std::string_view", ut );

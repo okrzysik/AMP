@@ -299,7 +299,6 @@ INSTANTIATE_SCALAR( uint64_t );
 INSTANTIATE_SCALAR( float );
 INSTANTIATE_SCALAR( double );
 INSTANTIATE_SCALAR( long double );
-INSTANTIATE_SCALAR( std::complex<int> );
 INSTANTIATE_SCALAR( std::complex<float> );
 INSTANTIATE_SCALAR( std::complex<double> );
 

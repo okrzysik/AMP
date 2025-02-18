@@ -25,7 +25,7 @@ class LibMeshCubeGenerator : public MeshGenerator
 public:
     void build_mesh() override;
 
-    static std::string name() { return "LibMeshCubeGenerator"; }
+    std::string name() const override { return "LibMeshCubeGenerator"; }
 };
 
 
@@ -35,7 +35,7 @@ class ExodusReaderGenerator : public MeshGenerator
 {
 public:
     void build_mesh() override;
-    static std::string name() { return "ExodusReaderGenerator"; }
+    std::string name() const override { return "ExodusReaderGenerator"; }
 };
 
 
@@ -44,7 +44,7 @@ class MultiMeshGenerator : public MeshGenerator
 {
 public:
     void build_mesh() override;
-    static std::string name() { return "MultiMeshGenerator"; }
+    std::string name() const override { return "MultiMeshGenerator"; }
 };
 
 
@@ -52,7 +52,7 @@ public:
 class libMeshThreeElementGenerator : public MeshGenerator
 {
 public:
-    static std::string name() { return "libMeshThreeElementGenerator"; }
+    std::string name() const override { return "libMeshThreeElementGenerator"; }
 
     static std::vector<unsigned int> getBndDofIndices();
 
