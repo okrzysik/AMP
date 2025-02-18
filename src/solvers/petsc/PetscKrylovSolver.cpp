@@ -128,7 +128,7 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
             checkErr( KSPGMRESSetCGSRefinementType( d_KrylovSolver, KSP_GMRES_CGS_REFINE_ALWAYS ) );
         }
     } else if ( d_sKspType == "bcgs" ) {
-        checkErr( KSPSetNormType( d_KrylovSolver, KSP_NORM_NONE ) );
+        //        checkErr( KSPSetNormType( d_KrylovSolver, KSP_NORM_NONE ) );
     } else if ( d_sKspType == "preonly" ) {
         // if only preconditioner, override preconditioner side
         d_PcSide = "LEFT";
