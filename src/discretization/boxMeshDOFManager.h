@@ -43,11 +43,18 @@ public:
 
 
 public: // Advanced interfaces
-        // Append DOFs to the list
-    /*size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
+    //! Get the row DOFs given a mesh element
+    size_t getRowDOFs( const AMP::Mesh::MeshElementID &id,
+                       size_t *dofs,
+                       size_t N_alloc,
+                       bool sort = true ) const override;
+    using DOFManager::getRowDOFs;
+
+    // Append DOFs to the list
+    size_t appendDOFs( const AMP::Mesh::MeshElementID &id,
                        size_t *dofs,
                        size_t index,
-                       size_t capacity ) const override;*/
+                       size_t capacity ) const override;
 
 private:
     // Private constructor
@@ -56,11 +63,15 @@ private:
     // Convert a MeshElementID to a DOF index
     size_t convert( const AMP::Mesh::MeshElementID & ) const;
 
-    // Convert a MeshElementID to a DOF index
+    // Convert a MeshElementIndex to a DOF index
+    size_t convert( const AMP::Mesh::BoxMesh::MeshElementIndex &, int ) const;
+
+    // Convert a DOF index to a MeshElementID
     AMP::Mesh::MeshElementID convert( size_t ) const;
 
 private: // Data
     int d_gcw;
+    int d_rank;
     std::shared_ptr<const AMP::Mesh::BoxMesh> d_boxMesh;
     std::vector<std::array<AMP::Mesh::BoxMesh::MeshElementIndex, 3>> d_ifirst;
     std::vector<std::array<std::array<int, 3>, 3>> d_boxSize;

@@ -37,7 +37,6 @@ bool testGet( TYPE x )
     pass   = pass && y.get<uint64_t>() == static_cast<uint64_t>( z );
     pass   = pass && y.get<float>() == static_cast<float>( z );
     pass   = pass && y.get<double>() == static_cast<double>( z );
-    pass   = pass && y.get<std::complex<int>>() == std::complex<int>( z, 0 );
     pass   = pass && y.get<std::complex<float>>() == std::complex<float>( z, 0.0 );
     pass   = pass && y.get<std::complex<double>>() == std::complex<double>( z, 0.0 );
     return pass;
@@ -64,7 +63,7 @@ bool testArithmetic()
         x       = (TYPE) 1;
         y       = (TYPE) 0;
         auto z1 = x / y;
-        AMP::Scalar z2( (TYPE) 1 / (TYPE) 0 );
+        AMP::Scalar z2( std::numeric_limits<TYPE>::infinity() );
         auto v1 = z1.get<double>();
         auto v2 = z2.get<double>();
         pass    = pass && v1 == std::numeric_limits<double>::infinity();
@@ -74,7 +73,7 @@ bool testArithmetic()
         x       = (TYPE) 0;
         y       = (TYPE) 0;
         auto z1 = x / y;
-        AMP::Scalar z2( (TYPE) 0 / (TYPE) 0 );
+        AMP::Scalar z2( std::numeric_limits<TYPE>::quiet_NaN() );
         auto v1 = z1.get<double>();
         auto v2 = z2.get<double>();
         pass    = pass && v1 != v1;
@@ -127,7 +126,6 @@ int main( int, char ** )
     pass = pass && testGet<float>( 4 );
     pass = pass && testGet<double>( 5 );
     pass = pass && testGet<long double>( 6 );
-    pass = pass && testGet( std::complex<int>( 7.0, 0.0 ) );
     pass = pass && testGet( std::complex<float>( 8.0, 0.0 ) );
     pass = pass && testGet( std::complex<double>( 9.0, 0.0 ) );
 

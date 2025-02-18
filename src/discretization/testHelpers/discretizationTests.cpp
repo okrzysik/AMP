@@ -303,38 +303,17 @@ void testLogicalDOFMap( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
         return;
     }
 
-    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() == 0 ) {
-        auto id = dofs1->getElementID( 35 );
-        dofs1->getRowDOFs( id );
-        dofs2->getRowDOFs( id );
-    }
-
     // Check getRow
     size_t size       = DOFsPerElement * expectedRowSize( mesh->getDim(), type );
     size_t minRowSize = size;
     size_t maxRowSize = 0;
     for ( size_t dof = dofs1->beginDOF(); dof < dofs1->endDOF(); dof++ ) {
-        auto id1            = dofs1->getElementID( dof );
-        auto id2            = dofs2->getElementID( dof );
-        auto row1           = dofs1->getRowDOFs( id1 );
-        auto row2           = dofs2->getRowDOFs( id2 );
-        pass                = pass && id1 == id2;
-        pass                = pass && row1.size() == row2.size();
-        static bool printed = false;
-        if ( row1.size() != row2.size() && !printed ) {
-            auto boxMesh = std::dynamic_pointer_cast<const AMP::Mesh::BoxMesh>( mesh );
-            std::cout << "row1 (" << dof << "):\n";
-            for ( auto d : row1 ) {
-                auto id = dofs1->getElementID( d );
-                std::cout << "   " << d << ": " << boxMesh->convert( id ) << std::endl;
-            }
-            std::cout << "row2 (" << dof << "):\n";
-            for ( auto d : row2 ) {
-                auto id = dofs2->getElementID( d );
-                std::cout << "   " << d << ": " << boxMesh->convert( id ) << std::endl;
-            }
-            printed = true;
-        }
+        auto id1   = dofs1->getElementID( dof );
+        auto id2   = dofs2->getElementID( dof );
+        auto row1  = dofs1->getRowDOFs( id1 );
+        auto row2  = dofs2->getRowDOFs( id2 );
+        pass       = pass && id1 == id2;
+        pass       = pass && row1.size() == row2.size();
         minRowSize = std::min( minRowSize, row1.size() );
         maxRowSize = std::max( maxRowSize, row1.size() );
     }
@@ -370,7 +349,7 @@ void testLogicalDOFMap( int ndim, AMP::UnitTest &ut )
 void testLogicalDOFMap( AMP::UnitTest &ut )
 {
     testLogicalDOFMap( 1, ut );
-    // testLogicalDOFMap( 2, ut );
+    testLogicalDOFMap( 2, ut );
     testLogicalDOFMap( 3, ut );
 }
 

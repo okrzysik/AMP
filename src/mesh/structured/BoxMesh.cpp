@@ -629,7 +629,8 @@ size_t BoxMesh::numGhostElements( const GeomType type, int gcw ) const
 BoxMesh::ElementBlocks
 BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const int gcw ) const
 {
-    AMP_ASSERT( type <= GeomDim );
+    if ( type > GeomDim )
+        return {};
     // Get the range of cells we care about
     bool isPeriodic[3] = { d_surfaceId[1] == -1, d_surfaceId[3] == -1, d_surfaceId[5] == -1 };
     if ( std::find( d_surfaceId.begin(), d_surfaceId.end(), -2 ) != d_surfaceId.end() )
@@ -999,6 +1000,20 @@ std::string BoxMesh::MeshElementIndex::print() const
     char tmp[128];
     snprintf(
         tmp, 128, "(%i,%i,%i,%s,%u)", d_index[0], d_index[1], d_index[2], type[d_type], d_side );
+    return tmp;
+}
+std::string BoxMesh::Box::print() const
+{
+    char tmp[128];
+    snprintf( tmp,
+              128,
+              "(%i,%i,%i)-(%i,%i,%i)",
+              first[0],
+              first[1],
+              first[2],
+              last[0],
+              last[1],
+              last[2] );
     return tmp;
 }
 

@@ -2,6 +2,7 @@
 #define included_AMP_MeshID
 
 #include <memory>
+#include <string>
 #include <vector>
 
 
