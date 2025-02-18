@@ -345,6 +345,16 @@ public: // the next set of functions defines the public math. interface for vect
     Scalar dot( const Vector &x ) const;
 
     /**
+     * \brief Return the L2 norm of this vector and the dot product with the argument vector
+     * \details Returns \f[\sum_i this_i^2 \f] and  \f[\sum_i x_i\mathit{this}_i\f].
+     *    Note that this is an unoptimized version purely meant to provide functionality
+     * \param[in] x        a vector
+     * \param[in] y a vector
+     * \return std::pair of L2Norm of vector and dot in that order
+     */
+    std::pair<Scalar, Scalar> L2NormAndDot( const Vector &x ) const;
+
+    /**
      * \brief Check if two vectors are equal
      * \details Returns true if each vaue is within tol of the corresponding
      *    vaue in the other vector
