@@ -22,8 +22,7 @@ public:
         : d_leftDOF( leftDOF ),
           d_rightDOF( rightDOF ),
           d_beginCol( rightDOF->beginDOF() ),
-          d_endCol( rightDOF->endDOF() ),
-          d_rowDOFs( 100 )
+          d_endCol( rightDOF->endDOF() )
     {
         AMP_ASSERT( d_leftDOF && d_rightDOF );
     }

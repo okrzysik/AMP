@@ -11,10 +11,11 @@ void GetRowHelperLean::NNZ( BIGINT_TYPE row, INT_TYPE &num_local, INT_TYPE &num_
 
     // attempt to get row dofs and resize backing vector if needed
     const auto id = d_leftDOF->getElementID( row );
-    const auto N  = d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size() );
+    const auto N  = d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     if ( N > d_rowDOFs.size() ) {
+        AMP::pout << "  (NNZ) Resizing " << d_rowDOFs.size() << " -> " << N << std::endl;
         d_rowDOFs.resize( N );
-        d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size() );
+        d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     }
 
     // test for local vs remote and assign accordingly
@@ -38,10 +39,11 @@ void GetRowHelperLean::getRow( BIGINT_TYPE row, BIGINT_TYPE *cols_local, BIGINT_
     // resize shouldn't be needed since a prior call to NNZ should have already
     // done this
     const auto id = d_leftDOF->getElementID( row );
-    const auto N  = d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size() );
+    const auto N  = d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     if ( N > d_rowDOFs.size() ) {
+        AMP::pout << "  (GR) Resizing " << d_rowDOFs.size() << " -> " << N << std::endl;
         d_rowDOFs.resize( N );
-        d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size() );
+        d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     }
 
     // test for local vs remote and assign accordingly

@@ -128,8 +128,7 @@ createAggregateMatrix( std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, All
         A->getComm(),
         A_data->getRightVariable(),
         A_data->getRightVariable(),
-        std::function<std::vector<size_t>( size_t )>(),
-        true );
+        std::function<std::vector<size_t>( size_t )>() );
     auto P_data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
 
     // non-zeros only in diag block and only one per row

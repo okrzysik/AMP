@@ -62,6 +62,8 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
 
     } else if ( matParams ) {
 
+        std::cout << "in csrdata matparams" << std::endl;
+
         // get row/column bounds from DOFManagers
         d_leftDOFManager  = matParams->getLeftDOFManager();
         d_rightDOFManager = matParams->getRightDOFManager();
@@ -80,7 +82,7 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         // If, more specifically, have ampCSRParams then blocks are not yet
         // filled. This consolidates calls to getRow{NNZ,Cols} for both blocks
         if ( ampCSRParams && ampCSRParams->getRowNNZFunction() ) {
-            AMP::pout << "Constructing CSRMatrixData with GetRowHelper" << std::endl;
+            std::cout << "Constructing CSRMatrixData with GetRowHelper" << std::endl;
 
             // number of local rows
             const lidx_t nrows = static_cast<lidx_t>( d_last_row - d_first_row );
