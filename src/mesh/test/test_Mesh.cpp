@@ -207,7 +207,7 @@ void testlibMesh( AMP::UnitTest &ut )
 
 
 // Function to test the creation/destruction of a moab mesh
-void testMoabMesh( AMP::UnitTest &ut )
+void testMoabMesh( [[maybe_unused]] AMP::UnitTest &ut )
 {
 #if defined( AMP_USE_MOAB ) && defined( USE_AMP_DATA )
     PROFILE( "testMoabMesh" );
