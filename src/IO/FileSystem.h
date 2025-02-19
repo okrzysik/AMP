@@ -11,13 +11,14 @@
 #include <sys/types.h>
 
 
-#ifdef _MSC_VER
+#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || defined( _MSC_VER )
     #include <direct.h>
 typedef int mode_t;
     #define S_ISDIR( m ) ( ( (m) &S_IFMT ) == S_IFDIR )
     #define S_IRUSR 0
     #define S_IWUSR 0
     #define S_IXUSR 0
+    #define S_IRWXU 0
 #endif
 
 
