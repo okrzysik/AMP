@@ -351,9 +351,8 @@ public: // Views/copies/subset
     template<class TYPE2>
     ARRAY_INLINE void scale( const TYPE2 &y )
     {
-        TYPE y2 = static_cast<TYPE>( y );
         for ( auto &x : *this )
-            x *= y2;
+            x *= y;
     }
 
 
