@@ -21,8 +21,8 @@ public:
                       std::shared_ptr<const AMP::Discretization::DOFManager> rightDOF )
         : d_leftDOF( leftDOF ),
           d_rightDOF( rightDOF ),
-          d_beginCol( rightDOF->beginDOF() ),
-          d_endCol( rightDOF->endDOF() )
+          d_beginCol( d_rightDOF->beginDOF() ),
+          d_endCol( d_rightDOF->endDOF() )
     {
         AMP_ASSERT( d_leftDOF && d_rightDOF );
     }
@@ -38,8 +38,8 @@ public:
     void getRow( BIGINT_TYPE row, BIGINT_TYPE *cols_local, BIGINT_TYPE *cols_remote );
 
 private: // Member data
-    std::shared_ptr<const AMP::Discretization::DOFManager> d_leftDOF;
-    std::shared_ptr<const AMP::Discretization::DOFManager> d_rightDOF;
+    const std::shared_ptr<const AMP::Discretization::DOFManager> d_leftDOF;
+    const std::shared_ptr<const AMP::Discretization::DOFManager> d_rightDOF;
     const size_t d_beginCol;
     const size_t d_endCol;
     std::vector<size_t> d_rowDOFs;

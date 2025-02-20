@@ -96,7 +96,6 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                  AMP::LinearAlgebra::Vector::shared_ptr rightVec,
                  const std::function<std::vector<size_t>( size_t )> &getRow )
 {
-    std::cout << "in createCSRMatrix" << std::endl;
     using gidx_t = typename Policy::gidx_t;
     using lidx_t = typename Policy::lidx_t;
 
@@ -124,18 +123,17 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
             rightVec->getCommunicationList(),
             getRow );
     } else {
-        std::cout << "in createMatrix (create getrow)" << std::endl;
         // no getRow function available
         // Use GetRowHelper class to build a usable default
-        GetRowHelperLean rowHelper( leftDOF, rightDOF );
+        auto rowHelper = std::make_shared<GetRowHelperLean>( leftDOF, rightDOF );
 
         std::function<void( const gidx_t, lidx_t &, lidx_t & )> getRowNNZ =
-            [&rowHelper]( const gidx_t row, lidx_t &nnz_local, lidx_t &nnz_remote ) {
-                rowHelper.NNZ( row, nnz_local, nnz_remote );
+            [rowHelper]( const gidx_t row, lidx_t &nnz_local, lidx_t &nnz_remote ) {
+                rowHelper->NNZ( row, nnz_local, nnz_remote );
             };
         std::function<void( const gidx_t, gidx_t *, gidx_t * )> getRowCols =
-            [&rowHelper]( const gidx_t row, gidx_t *cols_local, gidx_t *cols_remote ) {
-                rowHelper.getRow( row, cols_local, cols_remote );
+            [rowHelper]( const gidx_t row, gidx_t *cols_local, gidx_t *cols_remote ) {
+                rowHelper->getRow( row, cols_local, cols_remote );
             };
         params = std::make_shared<AMP::LinearAlgebra::AMPCSRMatrixParameters<Policy>>(
             leftDOF,
@@ -282,8 +280,6 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
               std::string type,
               std::function<std::vector<size_t>( size_t )> getRow )
 {
-    std::cout << "in createMatrix" << std::endl;
-
     if ( type == "auto" )
         type = DEFAULT_MATRIX; // Definition set by CMake variable DEFAULT_MATRIX
     if ( type == "NULL" )

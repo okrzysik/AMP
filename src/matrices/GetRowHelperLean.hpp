@@ -13,7 +13,6 @@ void GetRowHelperLean::NNZ( BIGINT_TYPE row, INT_TYPE &num_local, INT_TYPE &num_
     const auto id = d_leftDOF->getElementID( row );
     const auto N  = d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     if ( N > d_rowDOFs.size() ) {
-        AMP::pout << "  (NNZ) Resizing " << d_rowDOFs.size() << " -> " << N << std::endl;
         d_rowDOFs.resize( N );
         d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     }
@@ -41,7 +40,8 @@ void GetRowHelperLean::getRow( BIGINT_TYPE row, BIGINT_TYPE *cols_local, BIGINT_
     const auto id = d_leftDOF->getElementID( row );
     const auto N  = d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     if ( N > d_rowDOFs.size() ) {
-        AMP::pout << "  (GR) Resizing " << d_rowDOFs.size() << " -> " << N << std::endl;
+        AMP_WARNING( "GetRowHelperLean: resize of backing vector needed in getRow. This should not "
+                     "happen." );
         d_rowDOFs.resize( N );
         d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     }
