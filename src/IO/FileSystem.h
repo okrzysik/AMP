@@ -11,7 +11,8 @@
 #include <sys/types.h>
 
 
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || defined( _MSC_VER )
+#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
+    defined( _MSC_VER )
     #include <direct.h>
 typedef int mode_t;
     #define S_ISDIR( m ) ( ( (m) &S_IFMT ) == S_IFDIR )
