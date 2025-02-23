@@ -8,7 +8,7 @@
 #include "AMP/vectors/VectorFactory.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "AMP/vectors/data/VectorDataNull.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 
 #include <cfloat>
 #include <cmath>
@@ -296,6 +296,12 @@ Scalar Vector::wrmsNormMask( const Vector &x, const Vector &mask, const Vector &
 Scalar Vector::dot( const Vector &x ) const
 {
     return d_VectorOps->dot( *getVectorData(), *x.getVectorData() );
+}
+std::pair<Scalar, Scalar> Vector::L2NormAndDot( const Vector &x ) const
+{
+    auto L2  = this->L2Norm();
+    auto dot = this->dot( x );
+    return std::make_pair( L2, dot );
 }
 bool Vector::equals( const Vector &a, const Scalar &tol ) const
 {

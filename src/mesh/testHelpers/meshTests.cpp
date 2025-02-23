@@ -6,6 +6,8 @@
 #include "AMP/mesh/MeshIterator.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/SubsetMesh.h"
+#include "AMP/mesh/structured/PureLogicalMesh.h"
+#include "AMP/mesh/structured/structuredMeshElement.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -147,11 +149,16 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
     bool centroid_pass = true;
     bool elements_pass = true;
     bool block_pass    = true;
-    int neighbor_pass  = 1;
-    int myRank         = mesh->getComm().getRank();
-    int maxRank        = mesh->getComm().getSize() - 1;
-    int myGlobalRank   = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
-    auto blockIds      = mesh->getBlockIDs();
+    bool skip_nearest  = false;
+    for ( const auto &element : iterator ) {
+        if ( element.elementClass() == "libmeshMeshElement" )
+            skip_nearest = true;
+    }
+    int neighbor_pass = 1;
+    int myRank        = mesh->getComm().getRank();
+    int maxRank       = mesh->getComm().getSize() - 1;
+    int myGlobalRank  = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
+    auto blockIds     = mesh->getBlockIDs();
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve( iterator.size() );
     for ( const auto &element : iterator ) {
@@ -200,6 +207,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
             }
         }
         if ( id.is_local() ) {
+            // Test getElements
             for ( int t2 = 0; t2 <= (int) type; t2++ ) {
                 auto type2  = static_cast<AMP::Mesh::GeomType>( t2 );
                 auto pieces = element.getElements( type2 );
@@ -212,24 +220,24 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
                     elements_pass = false;
                 }
             }
-            auto neighbors = element.getNeighbors();
-            if ( neighbors.empty() ) {
+            // Test getNeighbors
+            // Note: some neighbors may be null (e.g. surfaces)
+            auto neighbors     = element.getNeighbors();
+            size_t N_neighbors = 0;
+            for ( auto &neighbor : neighbors ) {
+                if ( neighbor ) {
+                    N_neighbors++;
+                    // Verify that the neighbors does not include self
+                    if ( *neighbor == element )
+                        neighbor_pass = 0;
+                }
+            }
+            if ( N_neighbors == 0 ) {
                 if ( element.elementType() == AMP::Mesh::GeomType::Vertex ||
                      static_cast<int>( element.elementType() ) == mesh->getDim() )
-                    neighbor_pass = 0; // All nodes / elements should have neighbors
+                    neighbor_pass = 0; // All nodes / elements should have some neighbors
                 else if ( neighbor_pass == 1 )
                     neighbor_pass = 2; // Neighbors of other element types are not always supported
-            } else {
-                for ( auto &neighbor : neighbors ) {
-                    if ( neighbor ) {
-                        // Verify that the neighbors does not include self
-                        if ( *neighbor == element )
-                            neighbor_pass = 0;
-                    } else {
-                        // Neighbor is empty
-                        neighbor_pass = 0;
-                    }
-                }
             }
             if ( ownerRank != myRank )
                 id_pass = false;
@@ -279,31 +287,33 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
     else
         ut.failure( name + "-Got elements from element ids" );
     // Check nearest
-    try {
-        bool pass = true;
-        for ( const auto &element : iterator ) {
-            auto x = element.centroid();
-            auto y = element.nearest( x );
-            auto d = ( x - y ).norm();
-            pass   = pass && d < 1e-12;
+    if ( !skip_nearest ) {
+        try {
+            bool pass = true;
+            for ( const auto &element : iterator ) {
+                auto x = element.centroid();
+                auto y = element.nearest( x );
+                auto d = ( x - y ).norm();
+                pass   = pass && d < 1e-12;
+            }
+            if ( pass )
+                ut.passes( name + "-elements nearest passed" );
+            else
+                ut.failure( name + "-elements nearest failed" );
+        } catch ( const StackTrace::abort_error &e ) {
+            std::string msg = e.message;
+            auto pos        = msg.find( "nearest is not implemented" );
+            if ( pos != std::string::npos )
+                ut.expected_failure( name + "-elements " + msg );
+            else
+                ut.failure( name + "-elements nearest exception: " + msg );
+        } catch ( ... ) {
+            ut.failure( name + "-nearest distance unknown exception" );
         }
-        if ( pass )
-            ut.passes( name + "-elements nearest passed" );
-        else
-            ut.failure( name + "-elements nearest failed" );
-    } catch ( const StackTrace::abort_error &e ) {
-        std::string msg = e.message;
-        auto pos        = msg.find( "nearest is not implemented" );
-        if ( pos != std::string::npos )
-            ut.expected_failure( name + "-elements " + msg );
-        else
-            ut.failure( name + "-elements nearest exception: " + msg );
-    } catch ( ... ) {
-        ut.failure( name + "-nearest distance unknown exception" );
     }
     // Check distance
     try {
-        ut.expected_failure( name + "-elements distance test not implemented yet" );
+        ut.expected_failure( "elements distance test not implemented yet" );
         /*bool pass  = true;
         for ( const auto &element : iterator ) {
             auto centroid = element.centroid();
@@ -755,7 +765,15 @@ void meshTests::testBlockIDs( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh
 // This tests basic id info
 void meshTests::testID( AMP::UnitTest &ut )
 {
+    int rank                 = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
     unsigned int num_failed0 = ut.NumFailLocal();
+    // Print some basic meshID hashes
+    if ( rank == 0 ) {
+        std::cout << "MeshID( 0, 0 ).hash() = " << MeshID( 0, 0 ).getHash() << std::endl;
+        std::cout << "MeshID( 0, 1 ).hash() = " << MeshID( 0, 1 ).getHash() << std::endl;
+        std::cout << "MeshID( 1, 0 ).hash() = " << MeshID( 1, 0 ).getHash() << std::endl;
+        std::cout << "MeshID( 1, 1 ).hash() = " << MeshID( 1, 1 ).getHash() << std::endl;
+    }
     // Create some IDs for testing
     AMP::Mesh::MeshElementID id0;
     AMP::Mesh::MeshElementID id1( false, AMP::Mesh::GeomType::Vertex, 2, 1, 103 );
@@ -813,6 +831,123 @@ void meshTests::testID( AMP::UnitTest &ut )
         ut.passes( "MeshElementID tests" );
     else
         ut.failure( "MeshElementID tests" );
+}
+
+
+// Function to test the index conversions for BoxMesh
+static inline bool inBox( const BoxMesh::MeshElementIndex &index, const BoxMesh::Box &box )
+{
+    auto [i, j, k] = index.index();
+    return i >= box.first[0] && i <= box.last[0] && j >= box.first[1] && j <= box.last[1] &&
+           k >= box.first[2] && k <= box.last[2];
+}
+static inline bool inBox( const MeshIterator &it, const BoxMesh::Box &box, const BoxMesh &mesh )
+{
+    bool pass = true;
+    for ( const auto &elem : it ) {
+        auto index = mesh.convert( elem.globalID() );
+        pass       = pass && inBox( index, box );
+    }
+    return pass;
+}
+void meshTests::testBoxMeshIndicies( AMP::UnitTest &ut, int ndim )
+{
+    bool pass = true;
+    auto msg  = AMP::Utilities::stringf( "testBoxMeshIndicies<%i>", ndim );
+
+    // Create the mesh
+    std::vector<size_t> size = { 15, 12, 8 };
+    size.resize( ndim );
+    std::vector<bool> per( size.size(), true );
+    auto db =
+        AMP::Database::create( "MeshName", "domain", "Size", size, "Periodic", per, "GCW", 2 );
+    auto params = std::make_shared<AMP::Mesh::MeshParameters>( std::move( db ) );
+    params->setComm( AMP_COMM_WORLD );
+    auto mesh = std::make_shared<AMP::Mesh::PureLogicalMesh>( params );
+    auto type = mesh->getGeomType();
+
+    // Check box domain
+    auto globalSize = mesh->size();
+    auto globalBox  = mesh->getGlobalBox( 2 );
+    AMP_ASSERT( globalSize == size );
+    for ( int d = 0; d < ndim; d++ ) {
+        AMP_ASSERT( globalBox.first[d] == -2 );
+        AMP_ASSERT( globalBox.last[d] == (int) size[d] + 1 );
+    }
+
+    // Get a list of element ids
+    auto local = mesh->getIterator( type, 0 );
+    auto ghost = mesh->getIterator( type, 1 );
+    std::vector<AMP::Mesh::MeshElementID> ghostIDs;
+    for ( auto element : ghost )
+        ghostIDs.push_back( element.globalID() );
+    AMP::Utilities::unique( ghostIDs );
+    if ( !inBox( local, mesh->getLocalBox( 0 ), *mesh ) ) {
+        ut.failure( msg + " - local iterator not in box" );
+        pass = false;
+    }
+
+    // Check the conversion between ids
+    for ( auto id : ghostIDs ) {
+        auto index = mesh->convert( id );
+        auto id2   = mesh->convert( index );
+        if ( id != id2 ) {
+            std::cout << "Failed mesh id conversion:" << std::endl;
+            std::cout << "  id: " << id << std::endl;
+            std::cout << "  index: " << index << std::endl;
+            std::cout << "  id2: " << id2 << std::endl;
+            ut.failure( msg );
+            return;
+        }
+    }
+
+    // For each local element, check the neighbors
+    bool pass2 = true;
+    std::vector<std::unique_ptr<MeshElement>> neighbors;
+    std::vector<AMP::Mesh::MeshElementID> notFound;
+    size_t N_neighbors = 2 * ndim;
+    for ( auto &element : local ) {
+        neighbors.clear();
+        element.getNeighbors( neighbors );
+        pass2 = pass2 && neighbors.size() == N_neighbors;
+        for ( auto &neighbor : neighbors ) {
+            auto id = neighbor->globalID();
+            int i   = AMP::Utilities::findfirst( ghostIDs, id );
+            i       = std::min<int>( i, ghostIDs.size() - 1 );
+            if ( ghostIDs[i] != id )
+                notFound.push_back( id );
+        }
+    }
+    pass2 = pass2 && notFound.empty();
+    pass  = pass && pass2;
+
+    // Print any failed elements
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
+    for ( int r = 0; r < comm.getSize(); r++ ) {
+        comm.barrier();
+        if ( r == comm.getRank() && !notFound.empty() ) {
+            auto box = mesh->getLocalBox( 0 );
+            printf( "Rank %i\n", r );
+            printf( "N_local: %i\n", (int) mesh->numLocalElements( type ) );
+            printf( "N_ghost: %i\n", (int) mesh->numGhostElements( type, 1 ) );
+            printf( "N_total: %i\n", (int) ghostIDs.size() );
+            printf( "Box: (%i,%i,%i)-(%i,%i,%i)\n",
+                    box.first[0],
+                    box.first[1],
+                    box.first[2],
+                    box.last[0],
+                    box.last[1],
+                    box.last[2] );
+            printf( "Not found:\n" );
+            for ( auto id : notFound )
+                std::cout << "   " << mesh->convert( id ) << std::endl;
+        }
+    }
+    comm.barrier();
+    if ( pass )
+        ut.passes( msg );
+    else
+        ut.failure( msg );
 }
 
 
@@ -1047,7 +1182,7 @@ void meshTests::VerifyElementForNode( AMP::UnitTest &ut, std::shared_ptr<AMP::Me
             meshTests::VerifyElementForNode( ut, mesh2 );
     } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
         // libmeshMesh does not currently support getElementParents
-        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        ut.expected_failure( "VerifyElementForNode not supported for libMesh" );
         return;
     } else {
         auto element_has_node = []( const AMP::Mesh::MeshElement &elem,
@@ -1087,7 +1222,7 @@ void meshTests::VerifyNodeElemMapIteratorTest( AMP::UnitTest &ut,
             meshTests::VerifyNodeElemMapIteratorTest( ut, mesh2 );
     } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
         // libmeshMesh does not currently support getElementParents
-        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        ut.expected_failure( "Verify Node<->Element not supported for libMesh" );
         return;
     } else {
         auto verify_node = []( const AMP::Mesh::MeshElement &node,
@@ -1133,7 +1268,7 @@ void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest &ut,
             meshTests::VerifyBoundaryIteratorTest( ut, mesh2 );
     } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
         // libmeshMesh does not currently support getElementParents
-        ut.expected_failure( "VerifyElementForNode: " + mesh->getName() );
+        ut.expected_failure( "Verify Boundary iterator not supported for libMesh" );
         return;
     } else {
         auto isBoundaryElement = []( const AMP::Mesh::MeshElement &elem ) {

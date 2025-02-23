@@ -21,7 +21,7 @@ inline double r_squared( const double x, const double y, const double z )
 }
 inline double radius( const double x, const double y, const double z )
 {
-    return sqrt( r_squared( x, y, z ) );
+    return std::sqrt( r_squared( x, y, z ) );
 }
 
 #endif /* PATCHFUNCTIONS_H_ */

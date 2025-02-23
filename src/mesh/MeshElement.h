@@ -3,7 +3,6 @@
 
 #include "AMP/mesh/MeshID.h"
 #include "AMP/utils/MeshPoint.h"
-#include "AMP/utils/typeid.h"
 
 #include <memory>
 #include <vector>
@@ -21,33 +20,33 @@ namespace AMP::Mesh {
  */
 class MeshElement
 {
-public:
+public: // Constructors
     //! Empty constructor for a MeshElement
-    inline MeshElement();
+    MeshElement();
 
     //! Copy constructor
-    inline MeshElement( const MeshElement & );
+    MeshElement( const MeshElement & );
 
     //! Move constructor
-    inline MeshElement( MeshElement && );
+    MeshElement( MeshElement && );
 
     //! Assignment operator
-    inline MeshElement &operator=( const MeshElement & );
+    MeshElement &operator=( const MeshElement & );
 
     //! Move assignment operator
-    inline MeshElement &operator=( MeshElement && );
+    MeshElement &operator=( MeshElement && );
 
     //! Create a mesh element taking ownership
-    inline MeshElement( MeshElement * );
+    MeshElement( MeshElement * );
 
     //! Destructor for a MeshElement
-    virtual inline ~MeshElement();
-
-    //! Is the mesh element null
-    inline bool isNull() const;
+    virtual ~MeshElement();
 
 
 public: // non-virtual functions
+    //! Is the mesh element null
+    bool isNull() const;
+
     //! Function to get a pointer to the raw mesh element (structuredMeshElement, etc.)
     inline MeshElement *getRawElement();
 

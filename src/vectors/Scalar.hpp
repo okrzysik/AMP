@@ -81,7 +81,7 @@ Scalar::Scalar( const TYPE &x )
             AMP_ASSERT( x == z );
         } else if constexpr ( std::is_floating_point_v<TYPE> ) {
             constexpr TYPE inf = std::numeric_limits<TYPE>::infinity();
-            constexpr TYPE tol = 10 * std::abs( std::numeric_limits<TYPE>::epsilon() );
+            constexpr TYPE tol = 10 * std::numeric_limits<TYPE>::epsilon();
             if ( x != inf && x != -inf && x == x ) {
                 auto z = get<TYPE>();
                 AMP_ASSERT( std::abs( x - z ) <= tol * std::abs( x ) );
@@ -98,9 +98,9 @@ Scalar Scalar::create( const TYPE &x ) const
     y.d_type = d_type;
     if constexpr ( AMP::is_complex_v<TYPE> ) {
         if ( d_type == 'i' ) {
-            y.d_data = std::make_any<int64_t>( x.real() );
+            y.d_data = std::make_any<int64_t>( static_cast<int64_t>( x.real() ) );
         } else if ( d_type == 'f' ) {
-            y.d_data = std::make_any<double>( x.real() );
+            y.d_data = std::make_any<double>( static_cast<double>( x.real() ) );
         } else if ( d_type == 'c' ) {
             y.d_data = std::make_any<std::complex<double>>( x.real(), x.imag() );
         } else {

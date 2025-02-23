@@ -2,7 +2,7 @@
 #define included_AMP_VectorOperationsDevice
 
 
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 
 
 namespace AMP {

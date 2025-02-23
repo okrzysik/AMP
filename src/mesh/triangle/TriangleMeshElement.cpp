@@ -45,9 +45,9 @@ static inline double abs( const std::array<double, N> &x )
     if constexpr ( N == 1 )
         return std::abs( x[0] );
     else if constexpr ( N == 2 )
-        return sqrt( x[0] * x[0] + x[1] * x[1] );
+        return std::sqrt( x[0] * x[0] + x[1] * x[1] );
     else if constexpr ( N == 3 )
-        return sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+        return std::sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
     return {};
 }
 template<size_t N>
@@ -67,10 +67,10 @@ static inline std::array<double, N> normalize( const std::array<double, N> &x )
     if constexpr ( N == 1 ) {
         return { 1.0 };
     } else if constexpr ( N == 2 ) {
-        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] );
+        double tmp = 1.0 / std::sqrt( x[0] * x[0] + x[1] * x[1] );
         return { tmp * x[0], tmp * x[1] };
     } else if constexpr ( N == 3 ) {
-        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+        double tmp = 1.0 / std::sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
         return { tmp * x[0], tmp * x[1], tmp * x[2] };
     }
     return {};
@@ -276,7 +276,7 @@ double TriangleMeshElement<NG, NP, TYPE>::volume() const
         auto AB  = x[1] - x[0];
         auto AC  = x[2] - x[0];
         double t = dot( AB, AC );
-        double V = 0.5 * sqrt( dot( AB, AB ) * dot( AC, AC ) - t * t );
+        double V = 0.5 * std::sqrt( dot( AB, AB ) * dot( AC, AC ) - t * t );
         AMP_ASSERT( V == V );
         return V;
     } else if constexpr ( TYPE == NP ) {

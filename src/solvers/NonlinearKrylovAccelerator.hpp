@@ -576,7 +576,7 @@ void NonlinearKrylovAccelerator<T>::factorizeNormalMatrix( void )
         }
 
         if ( hkk > d_vtol * d_vtol ) {
-            hk[k] = sqrt( hkk );
+            hk[k] = std::sqrt( hkk );
         } else {
             // The current w nearly lies in the span of the previous vectors so drop
             // it

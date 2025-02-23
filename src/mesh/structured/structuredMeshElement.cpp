@@ -325,42 +325,18 @@ void structuredMeshElement::getElementIndex( const GeomType type,
 void structuredMeshElement::getNeighbors(
     std::vector<std::unique_ptr<MeshElement>> &neighbors ) const
 {
-    int N = 0;
     BoxMesh::MeshElementIndex index[27];
-    getNeighborIndex( N, index );
-    // Get the neighbor elements
-    neighbors.reserve( N );
-    auto BC   = getBC();
-    auto size = d_mesh->d_globalSize;
+    int N = getNeighborIndex( index );
+    neighbors.resize( N );
     for ( int i = 0; i < N; i++ ) {
-        bool in_mesh = true;
-        auto &elem   = index[i];
-        for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
-            if ( BC[d] == 1 ) {
-                if ( elem.d_index[d] < 0 )
-                    elem.d_index[d] += size[d];
-                if ( elem.d_index[d] >= size[d] )
-                    elem.d_index[d] -= size[d];
-            } else if ( BC[d] == 2 ) {
-                AMP_WARN_ONCE( "Not finished" );
-            } else {
-                if ( elem.d_index[d] < 0 )
-                    in_mesh = false;
-                if ( d_index.type() == d_meshType ) {
-                    if ( elem.d_index[d] >= size[d] )
-                        in_mesh = false;
-                } else {
-                    if ( elem.d_index[d] > size[d] )
-                        in_mesh = false;
-                }
-            }
-        }
-        if ( in_mesh )
-            neighbors.push_back( std::make_unique<structuredMeshElement>( elem, d_mesh ) );
+        if ( !index[i].isNull() )
+            neighbors[i] = std::make_unique<structuredMeshElement>( index[i], d_mesh );
     }
 }
-void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const
+int structuredMeshElement::getNeighborIndex( BoxMesh::MeshElementIndex *index ) const
 {
+    int N = 0;
+    // Get the neighbor indicies
     const int *ijk = d_index.d_index.data();
     if ( d_index.type() == GeomType::Vertex ) {
         // Get the list of neighbor nodex (there are no null neighbors)
@@ -406,7 +382,7 @@ void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex 
         if ( d_meshType == GeomType::Face ) {
             N = 4;
             index[0].reset( GeomType::Face, 0, ijk[0], ijk[1] - 1 );
-            index[1].reset( GeomType::Face, 0, ijk[0] + 1, ijk[0] );
+            index[1].reset( GeomType::Face, 0, ijk[0] + 1, ijk[1] );
             index[2].reset( GeomType::Face, 0, ijk[0], ijk[1] + 1 );
             index[3].reset( GeomType::Face, 0, ijk[0] - 1, ijk[1] );
         } else {
@@ -427,6 +403,45 @@ void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex 
     } else {
         AMP_ERROR( "Unknown entity type" );
     }
+    // Apply boundary conditions
+    auto BC   = getBC();
+    auto size = d_mesh->d_globalSize;
+    for ( int i = 0; i < N; i++ ) {
+        bool in_mesh = true;
+        auto &elem   = index[i];
+        for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
+            if ( BC[d] == 1 ) {
+                if ( elem.d_index[d] < 0 )
+                    elem.d_index[d] += size[d];
+                if ( elem.d_index[d] >= size[d] )
+                    elem.d_index[d] -= size[d];
+            } else if ( BC[d] == 2 ) {
+                AMP_WARN_ONCE( "Not finished" );
+                if ( elem.d_index[d] < 0 )
+                    in_mesh = false;
+                if ( d_index.type() == d_meshType ) {
+                    if ( elem.d_index[d] >= size[d] )
+                        in_mesh = false;
+                } else {
+                    if ( elem.d_index[d] > size[d] )
+                        in_mesh = false;
+                }
+            } else {
+                if ( elem.d_index[d] < 0 )
+                    in_mesh = false;
+                if ( d_index.type() == d_meshType ) {
+                    if ( elem.d_index[d] >= size[d] )
+                        in_mesh = false;
+                } else {
+                    if ( elem.d_index[d] > size[d] )
+                        in_mesh = false;
+                }
+            }
+        }
+        if ( !in_mesh )
+            index[i].reset();
+    }
+    return N;
 }
 
 
@@ -657,7 +672,7 @@ double structuredMeshElement::volume() const
         double dist2 = 0.0;
         for ( int i = 0; i < d_physicalDim; i++ )
             dist2 += ( x[0][i] - x[1][i] ) * ( x[0][i] - x[1][i] );
-        return sqrt( dist2 );
+        return std::sqrt( dist2 );
     } else if ( type == GeomType::Face ) {
         // Use 2x2 quadrature to approximate the surface area. See for example,
         // Y. Zhang, C. Bajaj, G. Xu. Surface Smoothing and Quality Improvement

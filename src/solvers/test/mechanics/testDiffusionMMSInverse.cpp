@@ -124,7 +124,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
         std::array<double, 10> poly;
         if ( isCylindrical ) {
             double th = 0.;
-            double r  = sqrt( x * x + y * y );
+            double r  = std::sqrt( x * x + y * y );
             if ( r > 0 ) {
                 th = acos( x / r );
                 if ( y < 0. )
@@ -154,7 +154,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
             std::array<double, 10> poly;
             if ( isCylindrical ) {
                 double th = 0.;
-                double r  = sqrt( x * x + y * y );
+                double r  = std::sqrt( x * x + y * y );
                 if ( r > 0 ) {
                     th = acos( x / r );
                     if ( y < 0. )

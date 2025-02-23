@@ -65,16 +65,30 @@
     template void AMP::AMP_MPI::recv<TYPE>( TYPE *, int &, int, const bool, int ) const;           \
     template AMP::AMP_MPI::Request AMP::AMP_MPI::Irecv<TYPE>( TYPE & buf, int, int ) const;        \
     template AMP::AMP_MPI::Request AMP::AMP_MPI::Irecv<TYPE>( TYPE * buf, int, int, int ) const
-#define INSTANTIATE_MPI_GATHER( TYPE )                                                           \
-    template std::vector<TYPE> AMP::AMP_MPI::allGather<TYPE>( const TYPE & ) const;              \
-    template std::vector<TYPE> AMP::AMP_MPI::allGather<TYPE>( const std::vector<TYPE> & ) const; \
-    template void AMP::AMP_MPI::allGather<TYPE>( const TYPE &, TYPE * ) const;                   \
-    template int AMP::AMP_MPI::allGather<TYPE>( const TYPE *, int, TYPE *, int *, int *, bool )  \
-        const;                                                                                   \
-    template void AMP::AMP_MPI::setGather<TYPE>( std::set<TYPE> & ) const;                       \
-    template void AMP::AMP_MPI::allToAll<TYPE>( int, const TYPE *, TYPE * ) const;               \
-    template int AMP::AMP_MPI::allToAll<TYPE>(                                                   \
-        const TYPE *, const int[], const int[], TYPE *, int *, int *, bool ) const
+#define INSTANTIATE_MPI_GATHER( TYPE )                                                             \
+    template std::vector<TYPE> AMP::AMP_MPI::allGather<TYPE>( const TYPE & ) const;                \
+    template std::vector<TYPE> AMP::AMP_MPI::allGather<TYPE>( const std::vector<TYPE> & ) const;   \
+    template void AMP::AMP_MPI::allGather<TYPE>( const TYPE &, TYPE * ) const;                     \
+    template int AMP::AMP_MPI::allGather<TYPE>( const TYPE *, int, TYPE *, int *, int *, bool )    \
+        const;                                                                                     \
+    template void AMP::AMP_MPI::setGather<TYPE>( std::set<TYPE> & ) const;                         \
+    template std::vector<TYPE> AMP::AMP_MPI::allToAll<TYPE>( const std::vector<TYPE> & ) const;    \
+    template void AMP::AMP_MPI::allToAll<TYPE>( int, const TYPE *, TYPE * ) const;                 \
+    template int AMP::AMP_MPI::allToAll<TYPE>(                                                     \
+        const TYPE *, const int[], const int[], TYPE *, int *, int *, bool ) const;                \
+    template std::vector<TYPE> AMP::AMP_MPI::allToAll<TYPE, int>( const std::vector<TYPE> &,       \
+                                                                  const std::vector<int> &,        \
+                                                                  const std::vector<int> &,        \
+                                                                  const std::vector<int> &,        \
+                                                                  const std::vector<int> & )       \
+        const;                                                                                     \
+    template std::vector<TYPE> AMP::AMP_MPI::allToAll<TYPE, size_t>( const std::vector<TYPE> &,    \
+                                                                     const std::vector<size_t> &,  \
+                                                                     const std::vector<size_t> &,  \
+                                                                     const std::vector<size_t> &,  \
+                                                                     const std::vector<size_t> & ) \
+        const
+
 #define INSTANTIATE_MPI_TYPE( TYPE )  \
     INSTANTIATE_MPI_REDUCE( TYPE );   \
     INSTANTIATE_MPI_BCAST( TYPE );    \
@@ -637,7 +651,7 @@ inline void MPI_Isend2( const void *buf,
     MPI_Isend( buf, length, type, proc, tag, comm, request );
 #else
     size_t bytes = length * MPI_getTypeSize( type );
-    *request     = AMP_MPI( comm ).IsendBytes( buf, bytes, proc, tag );
+    *request = AMP_MPI( comm ).IsendBytes( buf, bytes, proc, tag );
 #endif
 }
 template<class TYPE>
@@ -751,7 +765,7 @@ inline void MPI_Irecv2( [[maybe_unused]] void *buf,
     MPI_Irecv( buf, length, type, proc, tag, comm, request );
 #else
     size_t bytes = length * MPI_getTypeSize( type );
-    *request     = AMP_MPI( comm ).IrecvBytes( buf, bytes, proc, tag );
+    *request = AMP_MPI( comm ).IrecvBytes( buf, bytes, proc, tag );
 #endif
 }
 template<class TYPE>
@@ -927,19 +941,19 @@ void AMP_MPI::gather( const TYPE *sendbuf,
 template<class TYPE>
 std::vector<TYPE> AMP_MPI::allGather( const TYPE &x ) const
 {
-    if ( getSize() <= 1 )
+    if ( d_size <= 1 )
         return { x };
-    std::vector<TYPE> data( getSize() );
+    std::vector<TYPE> data( d_size );
     allGather( x, data.data() );
     return data;
 }
 template<class TYPE>
 std::vector<TYPE> AMP_MPI::allGather( const std::vector<TYPE> &x ) const
 {
-    if ( getSize() <= 1 )
+    if ( d_size <= 1 )
         return x;
     std::vector<int> count = allGather<int>( x.size() );
-    std::vector<int> disp( getSize(), 0 );
+    std::vector<int> disp( d_size, 0 );
     size_t N = count[0];
     for ( size_t i = 1; i < count.size(); i++ ) {
         disp[i] = disp[i - 1] + count[i - 1];
@@ -1274,6 +1288,14 @@ void AMP_MPI::allToAll( int n, const TYPE *send, TYPE *recv ) const
     }
 #endif
 }
+template<class type>
+std::vector<type> AMP_MPI::allToAll( const std::vector<type> &send ) const
+{
+    AMP_ASSERT( (int) send.size() == d_size );
+    std::vector<type> recv( send.size() );
+    allToAll( 1, send.data(), recv.data() );
+    return recv;
+}
 
 
 /************************************************************************
@@ -1361,6 +1383,44 @@ int AMP_MPI::allToAll( const TYPE *send_data,
 #else
     return 0;
 #endif
+}
+template<class type, class int_type>
+std::vector<type> AMP_MPI::allToAll( const std::vector<type> &send_data,
+                                     const std::vector<int_type> &send_cnt,
+                                     const std::vector<int_type> &send_disp,
+                                     const std::vector<int_type> &recv_cnt,
+                                     const std::vector<int_type> &recv_disp ) const
+{
+    if constexpr ( std::is_same_v<int_type, int> ) {
+        AMP_ASSERT( (int) send_cnt.size() == d_size );
+        AMP_ASSERT( (int) send_disp.size() == d_size );
+        AMP_ASSERT( (int) recv_cnt.size() == d_size );
+        AMP_ASSERT( (int) recv_disp.size() == d_size );
+        size_t N_recv = 0;
+        for ( size_t i = 0; i < recv_cnt.size(); i++ )
+            N_recv += recv_cnt[i];
+        std::vector<type> recv_data( N_recv );
+        allToAll<type>( send_data.data(),
+                        send_cnt.data(),
+                        send_disp.data(),
+                        recv_data.data(),
+                        const_cast<int *>( recv_cnt.data() ),
+                        const_cast<int *>( recv_disp.data() ),
+                        true );
+        return recv_data;
+    } else {
+        auto to_int = []( const std::vector<int_type> &x ) {
+            std::vector<int> y( x.size() );
+            for ( size_t i = 0; i < x.size(); i++ )
+                y[i] = x[i];
+            return y;
+        };
+        auto send_cnt2  = to_int( send_cnt );
+        auto recv_cnt2  = to_int( recv_cnt );
+        auto send_disp2 = to_int( send_disp );
+        auto recv_disp2 = to_int( recv_disp );
+        return allToAll<type, int>( send_data, send_cnt2, send_disp2, recv_cnt2, recv_disp2 );
+    }
 }
 
 

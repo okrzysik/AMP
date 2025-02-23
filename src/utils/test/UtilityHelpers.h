@@ -1,6 +1,8 @@
 #ifndef included_AMP_UtilityHelpers
 #define included_AMP_UtilityHelpers
 
+#include "AMP/IO/FileSystem.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Utilities.hpp"
@@ -9,10 +11,15 @@
 
 #include "StackTrace/StackTrace.h"
 
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <limits>
+#include <random>
+#include <set>
+#include <thread>
 #include <type_traits>
+#include <vector>
 
 
 // Helper function to record pass/failure
@@ -53,12 +60,15 @@ void testApproxEqual( AMP::UnitTest &ut )
 {
     using namespace AMP::Utilities;
     std::string type = typeid( T ).name();
+    constexpr T one  = static_cast<T>( 1.0 );
+    const T closeTol = std::pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
+    const T wrongTol = std::pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
 
-    T mine      = 1.0;
-    T close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    T wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
-    T close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
-    T wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
+    T mine      = one;
+    T close_rel = mine * static_cast<T>( one + closeTol );
+    T wrong_rel = mine * static_cast<T>( one + wrongTol );
+    T close_abs = mine + closeTol;
+    T wrong_abs = mine + wrongTol;
     if ( approx_equal( mine, close_rel ) && approx_equal_abs( mine, close_abs ) &&
          !approx_equal( mine, wrong_rel ) && !approx_equal_abs( mine, wrong_abs ) )
         ut.passes( type + " passes simple check near 1" );
@@ -66,10 +76,10 @@ void testApproxEqual( AMP::UnitTest &ut )
         ut.failure( type + " passes simple check near 1" );
 
     mine      = static_cast<T>( 1e-6 );
-    close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
-    close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
-    wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
+    close_rel = mine * static_cast<T>( one + closeTol );
+    wrong_rel = mine * static_cast<T>( one + wrongTol );
+    close_abs = mine + closeTol;
+    wrong_abs = mine + wrongTol;
     if ( approx_equal( mine, close_rel ) && approx_equal_abs( mine, close_abs ) &&
          !approx_equal( mine, wrong_rel ) && !approx_equal_abs( mine, wrong_abs ) )
         ut.passes( type + " passes simple check near 1e-6" );
@@ -77,10 +87,10 @@ void testApproxEqual( AMP::UnitTest &ut )
         ut.failure( type + " passes simple check near 1e-6" );
 
     mine      = static_cast<T>( -1e-32 );
-    close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
-    wrong_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 ) );
-    close_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 );
-    wrong_abs = mine + pow( std::numeric_limits<T>::epsilon(), (T) 0.7 );
+    close_rel = mine * static_cast<T>( one + closeTol );
+    wrong_rel = mine * static_cast<T>( one + wrongTol );
+    close_abs = mine + closeTol;
+    wrong_abs = mine + wrongTol;
     if ( approx_equal( mine, close_rel ) && approx_equal_abs( mine, close_abs ) &&
          !approx_equal( mine, wrong_rel ) && !approx_equal_abs( mine, wrong_abs ) )
         ut.passes( type + " passes simple check near -1e-32" );
@@ -215,9 +225,9 @@ void test_shared_from_this( AMP::UnitTest &ut )
 
 
 /****************************************************************
- * Test sorting an array of points                               *
+ *  Test quicksort/quickselect                                    *
  ****************************************************************/
-void test_quicksort( AMP::UnitTest &ut, std::vector<int> &data1, const std::string &str )
+void testQuickSort( AMP::UnitTest &ut, std::vector<int> &data1, const std::string &str )
 {
     auto data2 = data1;
     auto data3 = data1;
@@ -238,6 +248,46 @@ void test_quicksort( AMP::UnitTest &ut, std::vector<int> &data1, const std::stri
     std::cout << "quicksort:" << str << " = " << t2 - t1 << ", std::sort = " << t3 - t2
               << ", std::sort(2) = " << t4 - t3 << std::endl;
 }
+void testQuickSort( AMP::UnitTest &ut )
+{
+    size_t N = 500000;
+    std::vector<int> data( N, 31 );
+    testQuickSort( ut, data, "identical" );
+    for ( size_t i = 0; i < N; i++ )
+        data[i] = i;
+    testQuickSort( ut, data, "sorted" );
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_int_distribution<int> dist( 1, 10000000 );
+    for ( size_t i = 0; i < N; i++ )
+        data[i] = dist( gen );
+    testQuickSort( ut, data, "random" );
+}
+void testQuickSelect( AMP::UnitTest &ut )
+{
+    size_t N = 500000;
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_int_distribution<int> dist( 1, 10000000 );
+    std::vector<int> data( N, 31 );
+    for ( size_t i = 0; i < N; i++ )
+        data[i] = dist( gen );
+    std::sort( data.begin(), data.end() );
+    size_t N_it = 200;
+    bool pass   = true;
+    auto t1     = AMP::Utilities::time();
+    for ( size_t i = 0; i < N_it; i++ ) {
+        size_t k = dist( gen ) % N;
+        auto v   = AMP::Utilities::quickselect( data.size(), data.data(), k );
+        pass     = v == data[k];
+    }
+    double t = AMP::Utilities::time() - t1;
+    if ( pass )
+        ut.passes( "quickselect" );
+    else
+        ut.failure( "quickselect" );
+    std::cout << "quickselect = " << t / N_it << std::endl;
+}
 
 
 /****************************************************************
@@ -246,9 +296,9 @@ void test_quicksort( AMP::UnitTest &ut, std::vector<int> &data1, const std::stri
 template<class TYPE>
 constexpr int calculateDigits()
 {
-    int d = 40;
+    int d = 37;
     while ( true ) {
-        TYPE x  = 1;
+        TYPE x  = 1.5;
         TYPE y  = std::pow( 10.0, -d );
         TYPE z  = std::pow( 10.0, d );
         TYPE x2 = x + y;
@@ -278,13 +328,132 @@ void test_precision( [[maybe_unused]] AMP::UnitTest &ut )
         } else if constexpr ( std::is_same_v<T, double> ) {
             PASS_FAIL( digits == 15 && match, "<double> matches IEEE" );
         } else if constexpr ( std::is_same_v<T, long double> ) {
-            PASS_FAIL( digits >= 18 && match, "<long double> matches expected" );
+            if ( match && sizeof( long double ) == sizeof( double ) &&
+                 digits == std::numeric_limits<double>::digits10 ) {
+                ut.expected_failure( "long double is 64-bits" );
+            } else {
+                PASS_FAIL( digits >= 18 && match, "<long double> matches expected" );
+            }
         } else {
             ut.failure( "Unknown type" );
         }
     } else {
         static_assert( !std::is_same_v<T, T>, "Invalid type" );
     }
+}
+
+
+/********************************************************
+ *  Test typeid                                          *
+ ********************************************************/
+template<class T>
+void check( const std::string &name, AMP::UnitTest &ut, bool expected = false )
+{
+    auto type = AMP::getTypeID<T>();
+    bool pass =
+        std::string_view( type.name ) == name && type.bytes == sizeof( T ) && type.hash != 0;
+    if ( pass )
+        ut.passes( "typeid: " + name );
+    else if ( expected )
+        ut.expected_failure( "typeid: " + name + " --- " + std::string( type.name ) );
+    else
+        ut.failure( "typeid: " + name + " --- " + std::string( type.name ) );
+}
+void testTypeID( AMP::UnitTest &ut )
+{
+    constexpr char *argv[3] = { nullptr };
+    check<double *>( "double*", ut );
+    check<const double *>( "const double*", ut );
+    check<double const *>( "const double*", ut );
+    check<decltype( argv )>( "char*[3]", ut );
+    check<std::shared_ptr<double>>( "std::shared_ptr<double>", ut );
+    check<std::string>( "std::string", ut );
+    check<std::string_view>( "std::string_view", ut );
+    check<std::set<double>>( "std::set<double>", ut, true );
+    check<std::vector<double>>( "std::vector<double>", ut, true );
+    check<std::vector<std::string>>( "std::vector<std::string>", ut, true );
+    check<std::vector<std::string_view>>( "std::vector<std::string_view>", ut, true );
+}
+
+
+/********************************************************
+ *  Test primes                                          *
+ ********************************************************/
+void testPrimes( AMP::UnitTest &ut )
+{
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_int_distribution<int> dist( 1, 10000000 );
+
+    // Test the factor function
+    auto factors = AMP::Utilities::factor( 13958 );
+    PASS_FAIL( factors == std::vector<int>( { 2, 7, 997 } ), "Correctly factored 13958" );
+    auto t1  = AMP::Utilities::time();
+    int N_it = 10000;
+    for ( int i = 0; i < N_it; i++ )
+        [[maybe_unused]] auto tmp = AMP::Utilities::factor( dist( gen ) );
+    auto t2 = AMP::Utilities::time();
+    std::cout << "factor = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
+
+    // Test the isPrime function
+    bool pass = !AMP::Utilities::isPrime( 13958 ) && AMP::Utilities::isPrime( 9999991 );
+    PASS_FAIL( pass, "isPrime" );
+    t1 = AMP::Utilities::time();
+    for ( int i = 0; i < N_it; i++ )
+        [[maybe_unused]] auto tmp = AMP::Utilities::isPrime( dist( gen ) );
+    t2 = AMP::Utilities::time();
+    std::cout << "isPrime = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
+
+    // Test primes function
+    auto p1 = AMP::Utilities::primes( 50 );
+    pass =
+        p1 == std::vector<uint64_t>( { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47 } );
+    pass = pass && AMP::Utilities::primes( 3 ) == std::vector<uint64_t>( { 2, 3 } );
+    pass = pass && AMP::Utilities::primes( 4 ) == std::vector<uint64_t>( { 2, 3 } );
+    pass = pass && AMP::Utilities::primes( 5 ) == std::vector<uint64_t>( { 2, 3, 5 } );
+    t1   = AMP::Utilities::time();
+    p1   = AMP::Utilities::primes( 1000000 );
+    t2   = AMP::Utilities::time();
+    pass = pass && p1.size() == 78498;
+    PASS_FAIL( pass, "primes" );
+    std::cout << "primes (1000000):" << std::endl;
+    std::cout << "   size: " << p1.size() << std::endl;
+    std::cout << "   time: " << round( 1e6 * ( t2 - t1 ) ) << " us" << std::endl;
+}
+
+
+/********************************************************
+ *  Test filesystem                                      *
+ ********************************************************/
+void testFileSystem( AMP::UnitTest &ut )
+{
+    // Test deleting and checking if a file exists
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    if ( globalComm.getRank() == 0 ) {
+        FILE *fid = fopen( "testDeleteFile.txt", "w" );
+        fputs( "Temporary test", fid );
+        fclose( fid );
+        PASS_FAIL( AMP::IO::fileExists( "testDeleteFile.txt" ), "File exists" );
+        AMP::IO::deleteFile( "testDeleteFile.txt" );
+        PASS_FAIL( !AMP::IO::fileExists( "testDeleteFile.txt" ), "File deleted" );
+    }
+
+    // Test creating/deleting directories
+    using namespace std::chrono_literals;
+    AMP::IO::recursiveMkdir( "." );
+    AMP::IO::recursiveMkdir( "testUtilitiesDir/a/b" );
+    globalComm.barrier();
+    std::this_thread::sleep_for( 10ms );
+    PASS_FAIL( AMP::IO::fileExists( "testUtilitiesDir/a/b" ), "Create directory" );
+    globalComm.barrier();
+    if ( globalComm.getRank() == 0 ) {
+        AMP::IO::deleteFile( "testUtilitiesDir/a/b" );
+        AMP::IO::deleteFile( "testUtilitiesDir/a" );
+        AMP::IO::deleteFile( "testUtilitiesDir" );
+        std::this_thread::sleep_for( 10ms );
+    }
+    globalComm.barrier();
+    PASS_FAIL( !AMP::IO::fileExists( "testUtilitiesDir/a/b" ), "Destroy directory" );
 }
 
 

@@ -142,17 +142,6 @@ public:
      */
     static size_t estimateMeshSize( std::shared_ptr<const MeshParameters> params );
 
-    /**
-     * \brief   Estimate the number of elements in the mesh
-     * \details  This function will estimate the number of elements in the mesh.
-     *   This is used so that we can properly balance the meshes across multiple processors.
-     *   Ideally this should be both an accurate estimate and very fast.  It should not require
-     *   any communication and should not have to actually load a mesh.
-     * \param params Parameters for constructing a mesh from an input database
-     */
-    static std::vector<size_t>
-    estimateLogicalMeshSize( std::shared_ptr<const MeshParameters> params );
-
 
     /**
      * \brief   Return the maximum number of processors that can be used with the mesh
@@ -253,21 +242,6 @@ public:
 
 
     /**
-     * \brief    Return an MeshIterator constructed through a set operation of two other
-     * MeshIterators.
-     * \details  Return an MeshIterator constructed through a set operation of two other
-     * MeshIterators.
-     * \param OP Set operation to perform.
-     *           SetOP::Union - Perform a union of the iterators ( A U B )
-     *           SetOP::Intersection - Perform an intersection of the iterators ( A n B )
-     *           SetOP::Complement - Perform a compliment of the iterators ( A - B )
-     * \param A  Pointer to MeshIterator A
-     * \param B  Pointer to MeshIterator B
-     */
-    static MeshIterator getIterator( SetOP OP, const MeshIterator &A, const MeshIterator &B );
-
-
-    /**
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.
      *    This function is only required to return an element if the id is local.
@@ -341,7 +315,7 @@ public:
 
 protected:
     // Constructors
-    TriangleMesh();
+    TriangleMesh() = default;
     explicit TriangleMesh( std::shared_ptr<const MeshParameters> );
     explicit TriangleMesh( std::vector<std::array<double, NP>> vertices,
                            std::vector<std::array<int64_t, NG + 1>> triangles,

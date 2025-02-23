@@ -204,7 +204,9 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Query iteration count and store on AMP side
-    HYPRE_PCGGetNumIterations( d_solver, &d_iNumberIterations );
+    HYPRE_Int hypre_iters;
+    HYPRE_PCGGetNumIterations( d_solver, &hypre_iters );
+    d_iNumberIterations = hypre_iters;
     HYPRE_Real hypre_res;
     HYPRE_PCGGetFinalRelativeResidualNorm( d_solver, &hypre_res );
 

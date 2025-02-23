@@ -48,11 +48,10 @@ public:
 
     std::string name() const override
     {
-        return AMP::Utilities::stringf( "DOFMatrixTestFactory<%i,%i,%s,%i>",
-                                        NUM_DOF_ROW,
-                                        NUM_DOF_COL,
-                                        GENERATOR::name().c_str(),
-                                        TYPE );
+        GENERATOR meshGenerator;
+        auto name = meshGenerator.name();
+        return AMP::Utilities::stringf(
+            "DOFMatrixTestFactory<%i,%i,%s,%i>", NUM_DOF_ROW, NUM_DOF_COL, name.c_str(), TYPE );
     }
 
     std::string type() const override

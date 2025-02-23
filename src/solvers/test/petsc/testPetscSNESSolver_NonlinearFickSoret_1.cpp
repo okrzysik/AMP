@@ -297,8 +297,8 @@ int testPetscSNESSolver_NonlinearFickSoret_1( int argc, char *argv[] )
         err = fickSoretOff[i] - fickSoretZero[i];
         l2err2 += err * err;
     }
-    l2err1 = sqrt( l2err1 );
-    l2err2 = sqrt( l2err2 );
+    l2err1 = std::sqrt( l2err1 );
+    l2err2 = std::sqrt( l2err2 );
 
     std::cout << "fick/soretOff err = " << l2err1 << "  soretOff/soretZero err = " << l2err2
               << std::endl;
@@ -308,7 +308,7 @@ int testPetscSNESSolver_NonlinearFickSoret_1( int argc, char *argv[] )
         double err = fickOnlyReal[i] - fickSoretOffReal[i];
         l2err3 += err * err;
     }
-    l2err3 = sqrt( l2err3 );
+    l2err3 = std::sqrt( l2err3 );
 
     std::cout << "fick/soretOff real err = " << l2err3 << std::endl;
 

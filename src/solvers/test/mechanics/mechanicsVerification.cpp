@@ -418,7 +418,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     double Ly          = Lx;
     double Lz          = Lx;
     double nElements   = mesh->numGlobalElements( AMP::Mesh::GeomType::Cell );
-    double scaleFactor = sqrt( Lx * Ly * Lz / nElements );
+    double scaleFactor = std::sqrt( Lx * Ly * Lz / nElements );
     AMP::pout << "number of elements = " << nElements << "\n";
     AMP::pout << "scale factor = " << scaleFactor << "\n";
     AMP::pout << "using manufactured solution " << manufacturedSolution->getName() << "\n";

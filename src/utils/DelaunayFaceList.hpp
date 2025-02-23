@@ -722,7 +722,7 @@ double DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::calc_surface_distance(
         tmp += norm2 * norm2;
     }
     double sign = ( dot < 0 ) ? -1.0 : 1.0;
-    return sign * static_cast<double>( dist ) / sqrt( tmp );
+    return sign * static_cast<double>( dist ) / std::sqrt( tmp );
 }
 
 

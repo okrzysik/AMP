@@ -3,7 +3,9 @@
 
 #include "AMP/operators/LinearOperator.h"
 
+DISABLE_WARNINGS
 #include "ml_include.h"
+ENABLE_WARNINGS
 
 #include <functional>
 

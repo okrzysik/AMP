@@ -39,10 +39,10 @@
 // clang-format off
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || defined( _MSC_VER )
     #include <process.h>
-    #include <psapi.h>
     #include <stdio.h>
     #include <tchar.h>
     #include <windows.h>
+    #include <psapi.h>  // Must be after windows.h
 #else
     #include <dlfcn.h>
     #include <execinfo.h>
@@ -222,7 +222,7 @@ std::vector<int> factor( uint64_t n )
     uint64_t f = 5;
     while ( true ) {
         // Determine the largest number we need to check
-        auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * sqrt( n ) ) );
+        auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * std::sqrt( n ) ) );
         // Search all remaining numbers (note  we skip every 3rd odd number)
         bool found = false;
         for ( ; f <= f_max && !found; f += 6 ) {
@@ -251,7 +251,7 @@ bool isPrime( uint64_t n )
     if ( ( n & 0x01 ) == 0 || n % 3 == 0 )
         return false;
     // Determine the largest number we need to check
-    auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * sqrt( n ) ) );
+    auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * std::sqrt( n ) ) );
     // Check if the number is prime
     for ( uint64_t f = 5; f <= f_max; f += 6 ) {
         if ( ( n % f == 0 ) || ( n % ( f + 2 ) == 0 ) )
@@ -268,41 +268,40 @@ std::vector<uint64_t> primes( uint64_t n )
         return { 2u };
     // Create our bit array
     uint64_t n2 = ( n + 1 ) / 2;
-    double tmp  = 1.000000000000001 * sqrt( static_cast<double>( n ) );
-    uint64_t ub = static_cast<uint64_t>( tmp ) >> 1;
+    uint64_t ub = static_cast<uint64_t>( std::sqrt( n + 0.1 ) + 1 );
     auto N      = ( n2 + 63 ) / 64;
     auto p      = new uint64_t[N];
     memset( p, 0xFF, sizeof( uint64_t ) * N );
     // Helper functions to get/set the bits
-    auto get = [p]( size_t i ) {
-        size_t i1 = i >> 6;
-        size_t i2 = i & 0x3F;
-        return ( p[i1] & ( 1UL << i2 ) ) != 0;
+    auto get = [p]( uint64_t i ) {
+        uint64_t i1 = i >> 6;
+        uint64_t i2 = i & 0x3F;
+        return ( p[i1] & ( ( (uint64_t) 1 ) << i2 ) ) != 0;
     };
-    auto unset = [p]( size_t i ) {
-        size_t i1 = i >> 6;
-        size_t i2 = i & 0x3F;
-        p[i1] &= ~( 1UL << i2 );
+    auto unset = [p]( uint64_t i ) {
+        uint64_t i1 = i >> 6;
+        uint64_t i2 = i & 0x3F;
+        p[i1] &= ~( ( (uint64_t) 1 ) << i2 );
     };
     // Set all non-prime values to false
-    static_assert( sizeof( unsigned long ) == sizeof( uint64_t ) );
     for ( uint64_t k = 1; k <= ub; k++ ) {
         if ( get( k ) ) {
             uint64_t k2 = 2 * k + 1;
-            for ( size_t j = 2 * k * ( k + 1 ); j < n2; j += k2 )
+            for ( uint64_t j = 2 * k * ( k + 1 ); j < n2; j += k2 )
                 unset( j );
         }
     }
     // Store the prime numbers (note: this takes longer than computing them)
-    auto M = static_cast<size_t>( n / log2( n ) );
-    M      = 1UL << static_cast<int>( round( log2( M ) ) );
+    auto M = static_cast<uint64_t>( n / log2( n ) );
+    M      = ( (uint64_t) 1 ) << static_cast<int>( round( log2( M ) ) );
     std::vector<uint64_t> p2;
     p2.reserve( M );
     p2.push_back( 2 );
-    for ( size_t i = 1; i < n2; i++ ) {
+    for ( uint64_t i = 1; i < n2; i++ ) {
         if ( get( i ) )
             p2.push_back( 2 * i + 1 );
     }
+    delete[] p;
     return p2;
 }
 

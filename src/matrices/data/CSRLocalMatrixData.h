@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <numeric>
 #include <tuple>
 
 namespace AMP::Discretization {
@@ -78,12 +79,12 @@ public:
 
     lidx_t endCol() const { return d_last_col; }
 
-    void sortColumns( MatrixSortScheme sort_type );
+    void globalToLocalColumns();
 
     gidx_t *getColumnMap() const
     {
         if ( d_is_diag ) {
-            AMP_ERROR( "Diagonal block of CSRMatrixData can not shallow copy the column map" );
+            return nullptr;
         }
         return d_cols_unq.get();
     }
@@ -116,8 +117,6 @@ public:
     }
 
     void setNNZ( const std::vector<lidx_t> &nnz );
-
-    void globalToLocalColumns();
 
     void printStats( bool show_zeros ) const
     {
@@ -173,6 +172,8 @@ protected:
 
     std::vector<size_t> getColumnIDs( const size_t local_row ) const;
 
+    void sortColumns();
+
     // Data members passed from outer CSRMatrixData object
     const AMP::Utilities::MemoryType d_memory_location;
     const gidx_t d_first_row;
@@ -189,10 +190,9 @@ protected:
     std::shared_ptr<lidx_t[]> d_cols_loc;
     std::shared_ptr<scalar_t[]> d_coeffs;
 
-    lidx_t d_num_rows    = 0;
-    lidx_t d_nnz         = 0;
-    lidx_t d_ncols_unq   = 0;
-    lidx_t d_max_row_len = 0;
+    lidx_t d_num_rows  = 0;
+    lidx_t d_nnz       = 0;
+    lidx_t d_ncols_unq = 0;
 
     gidxAllocator_t d_gidxAllocator;
     lidxAllocator_t d_lidxAllocator;

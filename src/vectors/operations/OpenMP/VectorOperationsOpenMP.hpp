@@ -444,7 +444,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localL2Norm( const VectorData &x ) const
             ans += tmp * tmp;
         }
     }
-    return sqrt( ans );
+    return std::sqrt( ans );
 }
 
 template<typename TYPE>
@@ -516,7 +516,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localWrmsNorm( const VectorData &x, const V
         ++cury;
         ++N;
     }
-    return sqrt( ans / N );
+    return std::sqrt( ans / N );
 }
 
 template<typename TYPE>
@@ -541,7 +541,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localWrmsNormMask( const VectorData &x,
         ++curm;
         ++N;
     }
-    return sqrt( ans / N );
+    return std::sqrt( ans / N );
 }
 
 template<typename TYPE>

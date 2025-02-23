@@ -24,7 +24,7 @@ static inline double calcDist( const std::array<double, NDIM> &x,
     double dist = 0;
     for ( int d = 0; d < NDIM; d++ )
         dist += ( x[d] - y[d] ) * ( x[d] - y[d] );
-    return sqrt( dist );
+    return std::sqrt( dist );
 }
 
 

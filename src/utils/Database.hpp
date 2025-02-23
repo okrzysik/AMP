@@ -98,6 +98,11 @@ Array<TYPE2> convert( const Array<TYPE1> &x )
 {
     if constexpr ( std::is_same_v<TYPE1, TYPE2> ) {
         return x;
+    } else if constexpr ( std::is_same_v<TYPE1, bool> && std::is_arithmetic_v<TYPE2> ) {
+        Array<TYPE2> y( x.size() );
+        for ( size_t i = 0; i < x.length(); i++ )
+            y( i ) = static_cast<TYPE2>( x( i ) ? 1 : 0 );
+        return y;
     } else if constexpr ( std::is_arithmetic_v<TYPE1> && std::is_arithmetic_v<TYPE2> ) {
         Array<TYPE2> y( x.size() );
         y.fill( 0 );
@@ -396,10 +401,14 @@ public:
         if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
             typedef typename TYPE::element_type TYPE1;
             typedef typename AMP::remove_cvref_t<TYPE1> TYPE2;
-            AMP::Array<TYPE2> y( d_data.size() );
-            for ( size_t i = 0; i < d_data.length(); i++ )
-                y( i ) = *d_data( i );
-            AMP::IO::writeHDF5( fid, name, y );
+            if constexpr ( std::is_copy_constructible_v<TYPE2> ) {
+                AMP::Array<TYPE2> y( d_data.size() );
+                for ( size_t i = 0; i < d_data.length(); i++ )
+                    y( i ) = *d_data( i );
+                AMP::IO::writeHDF5( fid, name, y );
+            } else {
+                throw std::logic_error( name + " is not copy constructible" );
+            }
         } else {
             AMP::IO::writeHDF5( fid, name, d_data );
         }
@@ -409,11 +418,15 @@ public:
         if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
             typedef typename TYPE::element_type TYPE1;
             typedef typename AMP::remove_cvref_t<TYPE1> TYPE2;
-            AMP::Array<TYPE2> y;
-            AMP::IO::readHDF5( fid, name, y );
-            d_data.resize( y.size() );
-            for ( size_t i = 0; i < d_data.length(); i++ )
-                d_data( i ) = std::make_shared<TYPE2>( y( i ) );
+            if constexpr ( std::is_copy_constructible_v<TYPE2> ) {
+                AMP::Array<TYPE2> y;
+                AMP::IO::readHDF5( fid, name, y );
+                d_data.resize( y.size() );
+                for ( size_t i = 0; i < d_data.length(); i++ )
+                    d_data( i ) = std::make_shared<TYPE2>( y( i ) );
+            } else {
+                throw std::logic_error( name + " is not copy constructible" );
+            }
         } else {
             AMP::IO::readHDF5( fid, name, d_data );
         }

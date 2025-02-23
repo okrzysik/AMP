@@ -5,9 +5,11 @@
 #include <iostream>
 #include <string_view>
 
+
 // Test auto creation of a Scalar
 bool fun( const AMP::Scalar &x ) { return x.get<double>() != 0.0; }
 bool fun2( const std::any &x ) { return std::any_cast<size_t>( x ) != 0; }
+
 
 // Test the create function
 bool testCreate()
@@ -20,6 +22,7 @@ bool testCreate()
                 y1.type() == y3.type() && y1.getTypeHash() == y3.getTypeHash();
     return pass;
 }
+
 
 // Test storing and getting a value (integer)
 template<class TYPE>
@@ -34,11 +37,11 @@ bool testGet( TYPE x )
     pass   = pass && y.get<uint64_t>() == static_cast<uint64_t>( z );
     pass   = pass && y.get<float>() == static_cast<float>( z );
     pass   = pass && y.get<double>() == static_cast<double>( z );
-    pass   = pass && y.get<std::complex<int>>() == std::complex<int>( z, 0.0 );
     pass   = pass && y.get<std::complex<float>>() == std::complex<float>( z, 0.0 );
     pass   = pass && y.get<std::complex<double>>() == std::complex<double>( z, 0.0 );
     return pass;
 }
+
 
 // Test basic arithmetic
 template<class TYPE>
@@ -50,16 +53,17 @@ bool testArithmetic()
     AMP::Scalar y( b );
     bool pass = true;
     // Test some different operations
-    pass = pass && std::fabs( ( a - b ) - ( x - y ).get<TYPE>() ) < 1e-8;
-    pass = pass && std::fabs( ( a + b ) - ( x + y ).get<TYPE>() ) < 1e-8;
-    pass = pass && std::fabs( ( a * b ) - ( x * y ).get<TYPE>() ) < 1e-8;
-    pass = pass && std::fabs( ( a / b ) - ( x / y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::abs( ( a - b ) - ( x - y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::abs( ( a + b ) - ( x + y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::abs( ( a * b ) - ( x * y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::abs( ( a / b ) - ( x / y ).get<TYPE>() ) < 1e-8;
     // Test NaNs/Inf
+#ifndef _MSC_VER
     if ( std::numeric_limits<TYPE>::has_infinity ) {
         x       = (TYPE) 1;
         y       = (TYPE) 0;
         auto z1 = x / y;
-        AMP::Scalar z2( (TYPE) 1 / (TYPE) 0 );
+        AMP::Scalar z2( std::numeric_limits<TYPE>::infinity() );
         auto v1 = z1.get<double>();
         auto v2 = z2.get<double>();
         pass    = pass && v1 == std::numeric_limits<double>::infinity();
@@ -69,14 +73,16 @@ bool testArithmetic()
         x       = (TYPE) 0;
         y       = (TYPE) 0;
         auto z1 = x / y;
-        AMP::Scalar z2( (TYPE) 0 / (TYPE) 0 );
+        AMP::Scalar z2( std::numeric_limits<TYPE>::quiet_NaN() );
         auto v1 = z1.get<double>();
         auto v2 = z2.get<double>();
         pass    = pass && v1 != v1;
         pass    = pass && v2 != v2;
     }
+#endif
     return pass;
 }
+
 
 // Test the performance
 void testPerformance()
@@ -99,12 +105,14 @@ void testPerformance()
     printf( "Time to store/get value: %i ns\n", static_cast<int>( ns / N ) );
 }
 
+
 // Test passing scalar by reference
 void passConstRef( const AMP::Scalar &x )
 {
     auto y = x; // d_data for x has a bad address according to totalview
     AMP_ASSERT( static_cast<double>( y ) == 1.0 );
 }
+
 
 int main( int, char ** )
 {
@@ -118,7 +126,6 @@ int main( int, char ** )
     pass = pass && testGet<float>( 4 );
     pass = pass && testGet<double>( 5 );
     pass = pass && testGet<long double>( 6 );
-    pass = pass && testGet( std::complex<int>( 7.0, 0.0 ) );
     pass = pass && testGet( std::complex<float>( 8.0, 0.0 ) );
     pass = pass && testGet( std::complex<double>( 9.0, 0.0 ) );
 

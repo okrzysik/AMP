@@ -227,7 +227,7 @@ public:
     }
 
     //! Return the magnitude
-    inline TYPE abs() const { return sqrt( norm() ); }
+    inline TYPE abs() const { return std::sqrt( norm() ); }
 
     //! Print the point
     inline void print( std::ostream &os ) const

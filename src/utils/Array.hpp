@@ -140,7 +140,8 @@ Array<TYPE, FUN, Allocator>::Array( size_t N1, size_t N2, size_t N3, size_t N4, 
     allocate( ArraySize( N1, N2, N3, N4, N5 ) );
 }
 template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator>::Array( const Range<TYPE> &range )
+template<typename U, typename>
+Array<TYPE, FUN, Allocator>::Array( const Range<U> &range )
     : d_isCopyable( true ), d_isFixedSize( false )
 {
     size_t N = range.size();
@@ -585,23 +586,27 @@ template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::addSubset( const std::vector<Range<size_t>> &index,
                                              const Array<TYPE, FUN, Allocator> &subset )
 {
-    // Get the subset indices
-    checkSubsetIndex( index );
-    std::array<size_t, 5> first, last, inc, N1;
-    getSubsetArrays( index, first, last, inc, N1 );
-    // add the sub-array
-    static_assert( ArraySize::maxDim() == 5, "Not programmed for more than 5 dimensions" );
-    for ( size_t i4 = first[4], k1 = 0; i4 <= last[4]; i4 += inc[4] ) {
-        for ( size_t i3 = first[3]; i3 <= last[3]; i3 += inc[3] ) {
-            for ( size_t i2 = first[2]; i2 <= last[2]; i2 += inc[2] ) {
-                for ( size_t i1 = first[1]; i1 <= last[1]; i1 += inc[1] ) {
-                    for ( size_t i0 = first[0]; i0 <= last[0]; i0 += inc[0], k1++ ) {
-                        size_t k2 = d_size.index( i0, i1, i2, i3, i4 );
-                        d_data[k2] += subset.d_data[k1];
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
+        // Get the subset indices
+        checkSubsetIndex( index );
+        std::array<size_t, 5> first, last, inc, N1;
+        getSubsetArrays( index, first, last, inc, N1 );
+        // add the sub-array
+        static_assert( ArraySize::maxDim() == 5, "Not programmed for more than 5 dimensions" );
+        for ( size_t i4 = first[4], k1 = 0; i4 <= last[4]; i4 += inc[4] ) {
+            for ( size_t i3 = first[3]; i3 <= last[3]; i3 += inc[3] ) {
+                for ( size_t i2 = first[2]; i2 <= last[2]; i2 += inc[2] ) {
+                    for ( size_t i1 = first[1]; i1 <= last[1]; i1 += inc[1] ) {
+                        for ( size_t i0 = first[0]; i0 <= last[0]; i0 += inc[0], k1++ ) {
+                            size_t k2 = d_size.index( i0, i1, i2, i3, i4 );
+                            d_data[k2] += subset.d_data[k1];
+                        }
                     }
                 }
             }
         }
+    } else {
+        AMP_ERROR( "addSubset not supported for non-arithmetic types" );
     }
 }
 template<class TYPE, class FUN, class Allocator>
@@ -774,16 +779,24 @@ Array<TYPE, FUN, Allocator>::repmat( const std::vector<size_t> &N_rep ) const
 template<class TYPE, class FUN, class Allocator>
 bool Array<TYPE, FUN, Allocator>::NaNs() const
 {
-    bool test = false;
-    for ( size_t i = 0; i < d_size.length(); i++ )
-        test = test || d_data[i] != d_data[i];
-    return test;
+    if constexpr ( std::is_floating_point_v<TYPE> ) {
+        bool test = false;
+        for ( size_t i = 0; i < d_size.length(); i++ )
+            test = test || d_data[i] != d_data[i];
+        return test;
+    } else {
+        return false;
+    }
 }
 template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::mean( void ) const
 {
-    TYPE x = sum() / d_size.length();
-    return x;
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
+        TYPE x = sum() / d_size.length();
+        return x;
+    } else {
+        AMP_ERROR( "mean is not supported for non-arithmetic types" );
+    }
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::min( int dir ) const
@@ -835,27 +848,31 @@ Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::max( int dir ) const
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::sum( int dir ) const
 {
-    auto size_ans = d_size;
-    size_ans.resize( dir, 1 );
-    Array<TYPE, FUN, Allocator> ans( size_ans );
-    size_t N1 = 1, N2 = 1, N3 = 1;
-    for ( int d = 0; d < std::min<int>( dir, d_size.ndim() ); d++ )
-        N1 *= d_size[d];
-    N2 = d_size[dir];
-    DISABLE_WARNINGS
-    for ( size_t d = dir + 1; d < d_size.ndim(); d++ )
-        N3 *= d_size[d];
-    ENABLE_WARNINGS
-    TYPE *data2 = ans.d_data;
-    for ( size_t i3 = 0; i3 < N3; i3++ ) {
-        for ( size_t i1 = 0; i1 < N1; i1++ ) {
-            TYPE x = 0;
-            for ( size_t i2 = 0; i2 < N2; i2++ )
-                x += d_data[i1 + i2 * N1 + i3 * N1 * N2];
-            data2[i1 + i3 * N1] = x;
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
+        auto size_ans = d_size;
+        size_ans.resize( dir, 1 );
+        Array<TYPE, FUN, Allocator> ans( size_ans );
+        size_t N1 = 1, N2 = 1, N3 = 1;
+        for ( int d = 0; d < std::min<int>( dir, d_size.ndim() ); d++ )
+            N1 *= d_size[d];
+        N2 = d_size[dir];
+        DISABLE_WARNINGS
+        for ( size_t d = dir + 1; d < d_size.ndim(); d++ )
+            N3 *= d_size[d];
+        ENABLE_WARNINGS
+        TYPE *data2 = ans.d_data;
+        for ( size_t i3 = 0; i3 < N3; i3++ ) {
+            for ( size_t i1 = 0; i1 < N1; i1++ ) {
+                TYPE x = 0;
+                for ( size_t i2 = 0; i2 < N2; i2++ )
+                    x += d_data[i1 + i2 * N1 + i3 * N1 * N2];
+                data2[i1 + i3 * N1] = x;
+            }
         }
+        return ans;
+    } else {
+        AMP_ERROR( "sum is not supported for non-arithmetic types" );
     }
-    return ans;
 }
 template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::min( const std::vector<Range<size_t>> &range ) const
@@ -906,39 +923,47 @@ TYPE Array<TYPE, FUN, Allocator>::max( const std::vector<Range<size_t>> &range )
 template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::sum( const std::vector<Range<size_t>> &range ) const
 {
-    // Get the subset indicies
-    checkSubsetIndex( range );
-    std::array<size_t, 5> first, last, inc, N1;
-    getSubsetArrays( range, first, last, inc, N1 );
-    static_assert( ArraySize::maxDim() <= 5, "Function programmed for more than 5 dimensions" );
-    TYPE x = 0;
-    for ( size_t i4 = first[4]; i4 <= last[4]; i4 += inc[4] ) {
-        for ( size_t i3 = first[3]; i3 <= last[3]; i3 += inc[3] ) {
-            for ( size_t i2 = first[2]; i2 <= last[2]; i2 += inc[2] ) {
-                for ( size_t i1 = first[1]; i1 <= last[1]; i1 += inc[1] ) {
-                    for ( size_t i0 = first[0]; i0 <= last[0]; i0 += inc[0] ) {
-                        size_t k1 = d_size.index( i0, i1, i2, i3, i4 );
-                        x += d_data[k1];
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
+        // Get the subset indicies
+        checkSubsetIndex( range );
+        std::array<size_t, 5> first, last, inc, N1;
+        getSubsetArrays( range, first, last, inc, N1 );
+        static_assert( ArraySize::maxDim() <= 5, "Function programmed for more than 5 dimensions" );
+        TYPE x = 0;
+        for ( size_t i4 = first[4]; i4 <= last[4]; i4 += inc[4] ) {
+            for ( size_t i3 = first[3]; i3 <= last[3]; i3 += inc[3] ) {
+                for ( size_t i2 = first[2]; i2 <= last[2]; i2 += inc[2] ) {
+                    for ( size_t i1 = first[1]; i1 <= last[1]; i1 += inc[1] ) {
+                        for ( size_t i0 = first[0]; i0 <= last[0]; i0 += inc[0] ) {
+                            size_t k1 = d_size.index( i0, i1, i2, i3, i4 );
+                            x += d_data[k1];
+                        }
                     }
                 }
             }
         }
+        return x;
+    } else {
+        AMP_ERROR( "sum not supported for non-arithmetic types" );
     }
-    return x;
 }
 template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::mean( const std::vector<Range<size_t>> &range ) const
 {
-    // Get the subset indicies
-    checkSubsetIndex( range );
-    std::array<size_t, 5> first, last, inc, N1;
-    getSubsetArrays( range, first, last, inc, N1 );
-    static_assert( ArraySize::maxDim() <= 5, "Function programmed for more than 5 dimensions" );
-    size_t n = 1;
-    for ( auto &d : N1 )
-        n *= d;
-    TYPE x = sum( range ) / n;
-    return x;
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
+        // Get the subset indicies
+        checkSubsetIndex( range );
+        std::array<size_t, 5> first, last, inc, N1;
+        getSubsetArrays( range, first, last, inc, N1 );
+        static_assert( ArraySize::maxDim() <= 5, "Function programmed for more than 5 dimensions" );
+        size_t n = 1;
+        for ( auto &d : N1 )
+            n *= d;
+        TYPE x = sum( range ) / n;
+        return x;
+    } else {
+        AMP_ERROR( "mean not supported for non-arithmetic types" );
+    }
 }
 template<class TYPE, class FUN, class Allocator>
 TYPE Array<TYPE, FUN, Allocator>::min( const std::vector<size_t> &index ) const
@@ -1068,35 +1093,39 @@ template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>
 Array<TYPE, FUN, Allocator>::coarsen( const Array<TYPE, FUN, Allocator> &filter ) const
 {
-    auto S2 = size();
-    for ( size_t i = 0; i < S2.size(); i++ ) {
-        size_t s = S2[i] / filter.size( i );
-        S2.resize( i, s );
-        if ( S2[i] * filter.size( i ) != size( i ) )
-            throw std::invalid_argument( "Array must be multiple of filter size" );
-    }
-    Array<TYPE, FUN, Allocator> y( S2 );
-    if ( d_size.ndim() > 3 )
-        throw std::logic_error( "Function not programmed for more than 3 dimensions" );
-    const auto &Nh = filter.d_size;
-    for ( size_t k1 = 0; k1 < y.d_size[2]; k1++ ) {
-        for ( size_t j1 = 0; j1 < y.d_size[1]; j1++ ) {
-            for ( size_t i1 = 0; i1 < y.d_size[0]; i1++ ) {
-                TYPE tmp = 0;
-                for ( size_t k2 = 0; k2 < Nh[2]; k2++ ) {
-                    for ( size_t j2 = 0; j2 < Nh[1]; j2++ ) {
-                        for ( size_t i2 = 0; i2 < Nh[0]; i2++ ) {
-                            tmp += filter( i2, j2, k2 ) * operator()( i1 *Nh[0] + i2,
-                                                                      j1 * Nh[1] + j2,
-                                                                      k1 * Nh[2] + k2 );
+    if constexpr ( std::is_arithmetic_v<TYPE> && !std::is_same_v<TYPE, bool> ) {
+        auto S2 = size();
+        for ( size_t i = 0; i < S2.size(); i++ ) {
+            size_t s = S2[i] / filter.size( i );
+            S2.resize( i, s );
+            if ( S2[i] * filter.size( i ) != size( i ) )
+                throw std::invalid_argument( "Array must be multiple of filter size" );
+        }
+        Array<TYPE, FUN, Allocator> y( S2 );
+        if ( d_size.ndim() > 3 )
+            throw std::logic_error( "Function not programmed for more than 3 dimensions" );
+        const auto &Nh = filter.d_size;
+        for ( size_t k1 = 0; k1 < y.d_size[2]; k1++ ) {
+            for ( size_t j1 = 0; j1 < y.d_size[1]; j1++ ) {
+                for ( size_t i1 = 0; i1 < y.d_size[0]; i1++ ) {
+                    TYPE tmp = 0;
+                    for ( size_t k2 = 0; k2 < Nh[2]; k2++ ) {
+                        for ( size_t j2 = 0; j2 < Nh[1]; j2++ ) {
+                            for ( size_t i2 = 0; i2 < Nh[0]; i2++ ) {
+                                tmp += filter( i2, j2, k2 ) * operator()( i1 *Nh[0] + i2,
+                                                                          j1 * Nh[1] + j2,
+                                                                          k1 * Nh[2] + k2 );
+                            }
                         }
                     }
+                    y( i1, j1, k1 ) = tmp;
                 }
-                y( i1, j1, k1 ) = tmp;
             }
         }
+        return y;
+    } else {
+        AMP_ERROR( "coarsen not supported for non-arithmetic types" );
     }
-    return y;
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> Array<TYPE, FUN, Allocator>::coarsen(

@@ -154,7 +154,7 @@ void FlowFrapconJacobian::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         dT_b_i   = flowInputVec->getValueByLocalID( i );
         dT_b_im1 = flowInputVec->getValueByLocalID( i - 1 );
 
-        Heff = ( 0.023 * d_K / d_De ) * pow( d_Re, 0.8 ) * pow( d_Pr, 0.4 );
+        Heff = ( 0.023 * d_K / d_De ) * std::pow( d_Re, 0.8 ) * std::pow( d_Pr, 0.4 );
         //                  Cp   = getHeatCapacity(T_b_i);
         //                  dCp  = getHeatCapacityGradient(T_b_i);
         dCp  = 0.0;

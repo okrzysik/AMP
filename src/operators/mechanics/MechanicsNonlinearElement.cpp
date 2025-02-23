@@ -372,7 +372,7 @@ void MechanicsNonlinearElement::apply_Normal()
         d_materialModel->preNonlinearAssemblyGaussPointOperation();
 
         // The value of radius is very important.
-        // double radius = sqrt((xyz[qp](0) * xyz[qp](0)) + (xyz[qp](1) * xyz[qp](1)));
+        // double radius = std::sqrt((xyz[qp](0) * xyz[qp](0)) + (xyz[qp](1) * xyz[qp](1)));
 
         /* Compute Strain From Given Displacement */
 

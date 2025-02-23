@@ -7,7 +7,7 @@
 #include "ProfilerApp.h"
 
 
-//#define R_INT 0x20000000
+// #define R_INT 0x20000000
 #define R_INT 1000000
 
 
@@ -23,7 +23,7 @@ inline double L2norm( const AMP::Array<double> &x, const bool *mask = nullptr )
         for ( size_t i = 0; i < N; i++ )
             norm += mask[i] ? x( i ) * x( i ) : 0;
     }
-    return sqrt( norm );
+    return std::sqrt( norm );
 }
 
 
@@ -41,32 +41,7 @@ L2errNorm( const AMP::Array<double> &x1, const AMP::Array<double> &x2, const boo
         for ( size_t i = 0; i < N; i++ )
             norm += mask[i] ? ( x1( i ) - x2( i ) ) * ( x1( i ) - x2( i ) ) : 0;
     }
-    return sqrt( norm );
-}
-
-
-// Random number generator in the interval [0,1]
-inline double rand_double()
-{
-    const double rmax = static_cast<double>( RAND_MAX );
-    double x          = static_cast<double>( rand() ) / rmax;
-    x += 1e-4 * static_cast<double>( rand() ) / rmax;
-    x += 1e-8 * static_cast<double>( rand() ) / rmax;
-    x += 1e-12 * static_cast<double>( rand() ) / rmax;
-    x /= 1.0 + 1e-4 + 1e-8 + 1e-12;
-    return x;
-}
-
-
-// Random number generator in the interval [0,R_INT-1]
-// Note: this is not a perfect distribution but should be good enough for our purposes
-inline int rand_int()
-{
-    unsigned int i1 =
-        ( static_cast<unsigned int>( rand() ) * 0x9E3779B9 ) % 32767; // 2^32*0.5*(sqrt(5)-1)
-    unsigned int i2 =
-        ( static_cast<unsigned int>( rand() ) * 0x9E3779B9 ) % 32767; // 2^32*0.5*(sqrt(5)-1)
-    return static_cast<int>( ( i1 + ( i2 << 15 ) ) % R_INT );
+    return std::sqrt( norm );
 }
 
 
@@ -142,11 +117,11 @@ std::vector<PointInt<NDIM>> createRandomPointsInt( int N )
     points.reserve( N + 10 );
     // Create a logical Nd-hypercube on [-1,1] and keep only the points within R<=R_INT
     if ( N > 10 ) {
-        int Nd          = static_cast<int>( floor( pow( N, 1.0 / NDIM ) ) );
+        int Nd          = static_cast<int>( floor( std::pow( N, 1.0 / NDIM ) ) );
         Nd              = std::min( N / 2, Nd );
         Nd              = 2 * ( Nd / 2 ) + 1;
         const double dx = 2.0 / static_cast<double>( Nd - 1 );
-        for ( size_t k = 0; k < pow( Nd, NDIM ); k++ ) {
+        for ( size_t k = 0; k < std::pow( Nd, NDIM ); k++ ) {
             PointInt<NDIM> p;
             size_t j = k;
             for ( int d = 0; d < NDIM; d++ ) {
@@ -159,10 +134,13 @@ std::vector<PointInt<NDIM>> createRandomPointsInt( int N )
         }
     }
     // Add random points
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_int_distribution<int> dist( -R_INT, R_INT );
     while ( static_cast<int>( points.size() ) < N + 5 ) {
         PointInt<NDIM> p;
         for ( int d = 0; d < NDIM; d++ )
-            p.x[d] = ( rand() % 2 == 1 ? 1 : -1 ) * rand_int();
+            p.x[d] = dist( gen );
         if ( p.R2() <= R_INT2 )
             points.push_back( p );
     }
@@ -224,19 +202,6 @@ AMP::Array<int> createRandomPoints<int>( int ndim, int N )
 {
     return getPointListInt( ndim, N );
 }
-/*template<>
-std::vector<double> createRandomPoints<double>( int ndim, int N )
-{
-    std::vector<int> points = getPointListInt( ndim, N );
-    std::vector<double> points2(points.size(),0);
-    const double R_intd = R_INT;
-    const double rand_max = RAND_MAX;
-    for (size_t i=0; i<points.size(); i++) {
-        points2[i] = static_cast<double>(points[i])/R_intd;
-        points2[i] += 1.0/R_intd*((rand()/rand_max)-0.5);     // Wiggle the point slightly
-    }
-    return points2;
-}*/
 template<>
 AMP::Array<double> createRandomPoints<double>( int ndim, int N )
 {
@@ -244,9 +209,9 @@ AMP::Array<double> createRandomPoints<double>( int ndim, int N )
     AMP::Array<double> points( ndim, N );
     int i = 0;
     // Create a Nd-hypercube on [-1,1] and keep only the points within R<=1
-    int Nd = static_cast<int>( floor( pow( N, 1.0 / ndim ) ) );
+    int Nd = static_cast<int>( floor( std::pow( N, 1.0 / ndim ) ) );
     Nd     = std::min( N / 2, Nd );
-    for ( size_t k = 0; k < pow( Nd, ndim ); k++ ) {
+    for ( size_t k = 0; k < std::pow( Nd, ndim ); k++ ) {
         double x[10] = { 0 };
         double R     = 0.0;
         size_t j     = k;
@@ -262,11 +227,14 @@ AMP::Array<double> createRandomPoints<double>( int ndim, int N )
         }
     }
     // Add random points
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dist( -1, 1 );
     while ( i < N ) {
         double x[10] = { 0 };
         double R     = 0.0;
         for ( int d = 0; d < ndim; d++ ) {
-            x[d] = 2.0 * rand_double() - 1.0;
+            x[d] = dist( gen );
             R += x[d] * x[d];
         }
         if ( R <= 1.0 ) {

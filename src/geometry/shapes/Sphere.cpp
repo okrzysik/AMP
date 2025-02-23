@@ -40,7 +40,7 @@ Point Sphere::nearest( const Point &pos ) const
     double y = pos.y() - d_offset[1];
     double z = pos.z() - d_offset[2];
     // Calculate the nearest point
-    double r = sqrt( x * x + y * y + z * z );
+    double r = std::sqrt( x * x + y * y + z * z );
     if ( r <= d_r ) {
         return pos;
     } else {
@@ -85,7 +85,7 @@ Point Sphere::surfaceNorm( const Point &pos ) const
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
     double z = pos.z() - d_offset[2];
-    double r = sqrt( x * x + y * y + z * z );
+    double r = std::sqrt( x * x + y * y + z * z );
     return { x / r, y / r, z / r };
 }
 

@@ -836,9 +836,9 @@ PetscErrorCode PetscSNESSolver::KSPPreSolve_SNESEW( KSP ksp, Vec, Vec, SNES snes
             if ( stol > kctx->threshold )
                 rtol = PetscMax( rtol, stol );
         } else if ( kctx->version == 3 ) { /* contributed by Luis Chacon, June 2006. */
-            rtol = kctx->gamma * pow( snes->norm / kctx->norm_last, kctx->alpha );
+            rtol = kctx->gamma * std::pow( snes->norm / kctx->norm_last, kctx->alpha );
             /* safeguard: avoid sharp decrease of rtol */
-            stol = kctx->gamma * pow( kctx->rtol_last, kctx->alpha );
+            stol = kctx->gamma * std::pow( kctx->rtol_last, kctx->alpha );
             if ( stol <= 0.1 ) {
                 rtol = PetscMin( kctx->rtol_0, rtol );
             } else {

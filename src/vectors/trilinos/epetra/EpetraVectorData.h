@@ -1,10 +1,12 @@
 #ifndef included_AMP_EpetraVectorData
 #define included_AMP_EpetraVectorData
 
+#include "AMP/vectors/data/VectorData.h"
+
+DISABLE_WARNINGS
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-
-#include "AMP/vectors/data/VectorData.h"
+ENABLE_WARNINGS
 
 
 namespace AMP::LinearAlgebra {

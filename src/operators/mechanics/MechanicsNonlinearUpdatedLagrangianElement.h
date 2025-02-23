@@ -345,7 +345,7 @@ void MechanicsNonlinearUpdatedLagrangianElement::updateMaterialModel(
     double currX[8], currY[8], currZ[8], dNdx[8], dNdy[8], dNdz[8], detJ[1], delta_u[8], delta_v[8],
         delta_w[8];
     double x_np1o2[8], y_np1o2[8], z_np1o2[8];
-    double rsq3              = ( 1.0 / sqrt( 3.0 ) );
+    double rsq3              = ( 1.0 / std::sqrt( 3.0 ) );
     const double currXi[8]   = { -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3, -rsq3, rsq3 };
     const double currEta[8]  = { -rsq3, -rsq3, rsq3, rsq3, -rsq3, -rsq3, rsq3, rsq3 };
     const double currZeta[8] = { -rsq3, -rsq3, -rsq3, -rsq3, rsq3, rsq3, rsq3, rsq3 };

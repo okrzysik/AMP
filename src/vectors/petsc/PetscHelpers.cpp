@@ -392,7 +392,7 @@ PetscErrorCode _AMP_sqrt( Vec a )
     auto cur = x->begin();
     auto end = x->end();
     while ( cur != end ) {
-        *cur = sqrt( fabs( *cur ) );
+        *cur = std::sqrt( fabs( *cur ) );
         cur++;
     }
     return 0;
@@ -499,6 +499,15 @@ PetscErrorCode _AMP_mtdot( Vec v, PetscInt num, const Vec vec[], PetscScalar *an
 {
     for ( PetscInt i = 0; i != num; i++ )
         VecTDot( v, vec[i], ans + i );
+    return 0;
+}
+PetscErrorCode _AMP_l2normanddot( Vec a, Vec b, PetscScalar *dp, PetscReal *nm )
+{
+    auto x     = getAMP( a );
+    auto y     = getAMP( b );
+    auto rvals = x->L2NormAndDot( *y );
+    *dp        = static_cast<PetscScalar>( rvals.second );
+    *nm        = static_cast<PetscReal>( rvals.first );
     return 0;
 }
 PetscErrorCode _AMP_destroyvecs( PetscInt num, Vec vecArray[] )
@@ -692,6 +701,7 @@ void reset_vec_ops( Vec t )
     t->ops->log                     = _AMP_log;
     t->ops->shift                   = _AMP_shift;
     t->ops->create                  = _AMP_create;
+    t->ops->dotnorm2                = _AMP_l2normanddot;
 
     auto p = getAMP( t );
     if ( p->getVectorData()->hasContiguousData() ) {

@@ -596,38 +596,39 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                     double rodDiameter =
                         0.5 * ( d_rodDiameter[isub] + d_rodDiameter[neighborSubchannelIndex] );
                     double beta = 0.005 * D_gap_avg / gapWidth *
-                                  pow( gapWidth / rodDiameter, 0.106 ) * pow( Re_gap_avg, -0.1 );
+                                  std::pow( gapWidth / rodDiameter, 0.106 ) *
+                                  std::pow( Re_gap_avg, -0.1 );
                     double massFlux_gap_avg =
                         0.5 * ( m_mid / area + m_mid_neighbor / neighborArea );
                     double wt = beta * gapWidth * massFlux_gap_avg;
 
                     double turbulence_term_energy =
                         ( h_axialDonor - h_axialDonor_neighbor ) *
-                        ( 0.00125 * D_gap_avg * pow( gapWidth / rodDiameter, 0.106 ) *
+                        ( 0.00125 * D_gap_avg * std::pow( gapWidth / rodDiameter, 0.106 ) *
                           ( -0.1 * std::pow( Re_gap_avg, -1.1 ) * neighborDiam * massFlux_gap_avg /
                                 ( visc_mid_neighbor * neighborArea ) +
-                            pow( Re_gap_avg, -0.1 ) / neighborArea ) );
+                            std::pow( Re_gap_avg, -0.1 ) / neighborArea ) );
                     double turbulence_term_axial =
-                        ( 0.00125 * D_gap_avg * pow( gapWidth / rodDiameter, 0.106 ) *
+                        ( 0.00125 * D_gap_avg * std::pow( gapWidth / rodDiameter, 0.106 ) *
                           ( -0.1 * std::pow( Re_gap_avg, -1.1 ) * neighborDiam * massFlux_gap_avg /
                                 ( visc_mid_neighbor * neighborArea ) +
-                            pow( Re_gap_avg, -0.1 ) / neighborArea ) ) *
+                            std::pow( Re_gap_avg, -0.1 ) / neighborArea ) ) *
                             ( u_mid - u_mid_neighbor ) -
                         0.5 * wt * vol_axialDonor_neighbor / neighborArea;
 
                     // add to sums
                     turbulence_sum_energy +=
                         ( h_axialDonor - h_axialDonor_neighbor ) *
-                        ( 0.00125 * D_gap_avg * pow( gapWidth / rodDiameter, 0.106 ) *
+                        ( 0.00125 * D_gap_avg * std::pow( gapWidth / rodDiameter, 0.106 ) *
                           ( -0.1 * std::pow( Re_gap_avg, -1.1 ) * D * massFlux_gap_avg /
                                 ( visc_mid * area ) +
-                            pow( Re_gap_avg, -0.1 ) / area ) );
+                            std::pow( Re_gap_avg, -0.1 ) / area ) );
                     turbulence_sum += wt;
                     turbulence_sum_axial +=
-                        ( 0.00125 * D_gap_avg * pow( gapWidth / rodDiameter, 0.106 ) *
+                        ( 0.00125 * D_gap_avg * std::pow( gapWidth / rodDiameter, 0.106 ) *
                           ( -0.1 * std::pow( Re_gap_avg, -1.1 ) * D * massFlux_gap_avg /
                                 ( visc_mid * area ) +
-                            pow( Re_gap_avg, -0.1 ) / area ) ) *
+                            std::pow( Re_gap_avg, -0.1 ) / area ) ) *
                             ( u_mid - u_mid_neighbor ) +
                         0.5 * wt * vol_axialDonor / area;
 

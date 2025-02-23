@@ -62,7 +62,7 @@ int getCurrentProcessor()
 #if defined( USE_LINUX )
     return sched_getcpu() + 1;
 #elif defined( USE_MAC )
-    pout << "Warning: MAC does not support getCurrentProcessor" << std::endl;
+    OS_warning( "Warning: MAC does not support getCurrentProcessor" );
     return 0;
 #elif defined( USE_WINDOWS )
     return GetCurrentProcessorNumber() + 1;
@@ -103,12 +103,11 @@ std::vector<int> getProcessAffinity()
             procs.push_back( i );
     }
     #else
-        #warning sched_getaffinity is not supported for this compiler/OS
-    pout << "Warning: sched_getaffinity is not supported for this compiler/OS" << std::endl;
+    OS_warning( "Warning: sched_getaffinity is not supported for this compiler/OS" );
     #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
-    OS_warning( "MAC does not support getting the process affinity" << std::endl;
+    OS_warning( "MAC does not support getting the process affinity" );
 #elif defined( USE_WINDOWS )
     HANDLE hProc = GetCurrentProcess();
     size_t procMask;
@@ -138,12 +137,11 @@ void setProcessAffinity( const std::vector<int> &procs )
     if ( error != 0 )
         throw std::logic_error( "Error setting process affinity" );
     #else
-        #warning sched_setaffinity is not supported for this compiler/OS
-    pout << "Warning: sched_setaffinity is not supported for this compiler/OS" << std::endl;
+    OS_warning( "Warning: sched_setaffinity is not supported for this compiler/OS" );
     #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
-    pout << "Warning: MAC does not support setting the process affinity" << std::endl;
+    OS_warning( "Warning: MAC does not support setting the process affinity" );
 #elif defined( USE_WINDOWS )
     DWORD mask = 0;
     for ( size_t i = 0; i < procs.size(); i++ )
@@ -193,7 +191,6 @@ std::vector<int> getThreadAffinity( [[maybe_unused]] std::thread::native_handle_
             procs.push_back( i );
     }
     #else
-        #warning pthread_getaffinity_np is not supported
     OS_warning( "pthread does not support pthread_getaffinity_np" );
     #endif
 #elif defined( USE_MAC )
@@ -229,7 +226,6 @@ void setThreadAffinity( [[maybe_unused]] std::thread::native_handle_type handle,
     if ( error != 0 )
         throw std::logic_error( "Error setting thread affinity" );
     #else
-        #warning pthread_getaffinity_np is not supported
     OS_warning( "pthread does not support pthread_setaffinity_np" );
     #endif
 #elif defined( USE_MAC )

@@ -438,7 +438,7 @@ int SubchannelTwoEqLinearOperator::getSubchannelIndex( double x, double y )
 double SubchannelTwoEqLinearOperator::dhdp( double T, double p )
 {
     // calculate perturbation
-    double b    = pow( d_machinePrecision, 0.5 );
+    double b    = std::pow( d_machinePrecision, 0.5 );
     double pert = ( 1.0 + p ) * b; // perturbation
 
     // calculate perturbed value
@@ -469,7 +469,7 @@ double SubchannelTwoEqLinearOperator::dhdp( double T, double p )
 double SubchannelTwoEqLinearOperator::dvdh( double h, double p )
 {
     // calculate perturbation
-    double b    = pow( d_machinePrecision, 0.5 );
+    double b    = std::pow( d_machinePrecision, 0.5 );
     double pert = ( 1.0 + h ) * b; // perturbation
 
     // calculate perturbed value
@@ -502,7 +502,7 @@ double SubchannelTwoEqLinearOperator::dvdh( double h, double p )
 double SubchannelTwoEqLinearOperator::dvdp( double h, double p )
 {
     // calculate perturbation
-    double b    = pow( d_machinePrecision, 0.5 );
+    double b    = std::pow( d_machinePrecision, 0.5 );
     double pert = ( 1.0 + p ) * b; // perturbation
 
     // calculate perturbed value
@@ -629,7 +629,7 @@ double SubchannelTwoEqLinearOperator::dfdh_lower(
     double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D )
 {
     // calculate perturbation
-    double b    = pow( d_machinePrecision, 0.5 );
+    double b    = std::pow( d_machinePrecision, 0.5 );
     double pert = ( 1.0 + h_minus ) * b; // perturbation
 
     double f_pert = friction(
@@ -646,7 +646,7 @@ double SubchannelTwoEqLinearOperator::dfdh_upper(
     double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D )
 {
     // calculate perturbation
-    double b    = pow( d_machinePrecision, 0.5 );
+    double b    = std::pow( d_machinePrecision, 0.5 );
     double pert = ( 1.0 + h_plus ) * b; // perturbation
 
     double f_pert = friction(
@@ -663,7 +663,7 @@ double SubchannelTwoEqLinearOperator::dfdp_lower(
     double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D )
 {
     // calculate perturbation
-    double b    = pow( d_machinePrecision, 0.5 );
+    double b    = std::pow( d_machinePrecision, 0.5 );
     double pert = ( 1.0 + p_minus ) * b; // perturbation
 
     double f_pert = friction(
@@ -680,7 +680,7 @@ double SubchannelTwoEqLinearOperator::dfdp_upper(
     double h_minus, double p_minus, double h_plus, double p_plus, double mass, double A, double D )
 {
     // calculate perturbation
-    double b    = pow( d_machinePrecision, 0.5 );
+    double b    = std::pow( d_machinePrecision, 0.5 );
     double pert = ( 1.0 + p_plus ) * b; // perturbation
 
     double f_pert = friction(

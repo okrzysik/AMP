@@ -9,10 +9,7 @@
 // RK12 method
 //
 #include "AMP/time_integrators/RK12TimeIntegrator.h"
-
-
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
-
 #include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/Vector.h"
 
@@ -239,7 +236,7 @@ double RK12TimeIntegrator::getNextDt( const bool good_solution )
             auto l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
 
             next_dt = d_safety_factor * d_current_dt *
-                      pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 2.0 );
+                      std::pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 2.0 );
 
             // check to make sure the timestep is not too small or large
             next_dt = std::min( std::max( next_dt, d_min_dt ), d_max_dt );

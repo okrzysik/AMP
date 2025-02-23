@@ -10,6 +10,7 @@
 #include "AMP/utils/Algorithms.h"
 #include "AMP/utils/Utilities.h"
 
+#include <numeric>
 #include <set>
 #include <type_traits>
 
@@ -153,13 +154,6 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         return;
     }
 
-    // now do setup that is independent of MatrixParameter datatype
-    d_max_row_len = 0;
-    for ( lidx_t row = 0; row < d_num_rows; ++row ) {
-        const auto ncols = d_row_starts[row + 1] - d_row_starts[row];
-        d_max_row_len    = d_max_row_len < ncols ? ncols : d_max_row_len;
-    }
-
     // local columns always owned internally
     d_cols_loc = sharedArrayBuilder( d_nnz, d_lidxAllocator );
 
@@ -168,65 +162,98 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
 }
 
 template<typename Policy, class Allocator>
-void CSRLocalMatrixData<Policy, Allocator>::sortColumns( MatrixSortScheme sort_type )
+void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
+{
+    if ( d_is_empty ) {
+        return;
+    }
+
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRLocalMatrixData::globalToLocalColumns not implemented on device yet" );
+
+    if ( d_is_diag ) {
+        for ( lidx_t n = 0; n < d_nnz; ++n ) {
+            d_cols_loc[n] = static_cast<lidx_t>( d_cols[n] - d_first_col );
+        }
+    } else {
+        // for offd setup column map as part of the process
+        // insert all into std::set to make unique and sorted
+        std::set<gidx_t> colSet;
+        for ( lidx_t n = 0; n < d_nnz; ++n ) {
+            colSet.insert( d_cols[n] );
+        }
+        d_ncols_unq = static_cast<lidx_t>( colSet.size() );
+
+        // find all local column indices from set
+        for ( lidx_t n = 0; n < d_nnz; ++n ) {
+            auto it       = colSet.lower_bound( d_cols[n] );
+            d_cols_loc[n] = static_cast<lidx_t>( std::distance( colSet.begin(), it ) );
+            AMP_ASSERT( d_cols_loc[n] < d_ncols_unq );
+        }
+
+        // offd column map also always owned internally
+        d_cols_unq = sharedArrayBuilder( d_ncols_unq, d_gidxAllocator );
+        std::copy( colSet.begin(), colSet.end(), d_cols_unq.get() );
+    }
+
+    // Now that local columns are formed and colMap is present
+    // sort column ids within each row
+    sortColumns();
+
+    // free global cols as they should not be used from here on out
+    d_cols.reset();
+}
+
+template<typename Policy, class Allocator>
+void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
 {
     typedef std::tuple<lidx_t, gidx_t, scalar_t> tuple_t;
 
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRSerialMatrixData::sortColumns not implemented for device memory" );
-    AMP_INSIST( sort_type <= MatrixSortScheme::hypre, "Unknown sorting type requested" );
 
-    if ( d_is_empty || sort_type == MatrixSortScheme::unsorted ) {
+    if ( d_is_empty ) {
         return;
     }
 
-    std::vector<tuple_t> rTpl( d_max_row_len );
+    std::vector<tuple_t> rTpl;
     for ( lidx_t row = 0; row < d_num_rows; ++row ) {
         const auto rs      = d_row_starts[row];
         const auto row_len = d_row_starts[row + 1] - rs;
 
+        // enlarge temp vector of tuples if needed
+        if ( row_len > static_cast<lidx_t>( rTpl.size() ) ) {
+            rTpl.resize( row_len );
+        }
+
+        // pack local column and coeff into array of tuples
         for ( lidx_t k = 0; k < row_len; ++k ) {
             rTpl[k] = std::make_tuple( d_cols_loc[rs + k], d_cols[rs + k], d_coeffs[rs + k] );
         }
 
-        if ( sort_type == MatrixSortScheme::hypre && d_is_diag ) {
+        // slightly different sorting criteria for on and off diagonal blocks
+        if ( d_is_diag ) {
+            // diag block puts diag entry first, then ascending order on local col
             std::sort( rTpl.begin(),
                        rTpl.begin() + row_len,
                        [row]( const tuple_t &a, const tuple_t &b ) -> bool {
                            const lidx_t lca = std::get<0>( a ), lcb = std::get<0>( b );
                            return row != lcb && ( lca < lcb || lca == row );
                        } );
-        } else if ( sort_type == MatrixSortScheme::ascending ||
-                    sort_type == MatrixSortScheme::hypre ) {
-            // note: ascending sort also for offd hypre convention
+        } else {
+            // offd block is plain ascending order on local col
             std::sort( rTpl.begin(),
                        rTpl.begin() + row_len,
                        []( const tuple_t &a, const tuple_t &b ) -> bool {
-                           // note that this sorts on global index, not local
-                           return std::get<1>( a ) < std::get<1>( b );
+                           return std::get<0>( a ) < std::get<0>( b );
                        } );
         }
 
+        // unpack now sorted array of tuples
         for ( lidx_t k = 0; k < row_len; ++k ) {
             d_cols_loc[rs + k] = std::get<0>( rTpl[k] );
             d_cols[rs + k]     = std::get<1>( rTpl[k] );
             d_coeffs[rs + k]   = std::get<2>( rTpl[k] );
-        }
-    }
-
-    // re-write column map to match now permuted columns
-    if ( !d_is_diag && sort_type != MatrixSortScheme::hypre ) {
-        for ( lidx_t n = 0; n < d_nnz; ++n ) {
-            d_cols_unq[d_cols_loc[n]] = d_cols[n];
-        }
-    } else if ( !d_is_diag ) {
-        // hypre requires sorted column map, so sort it and
-        // instead change local indices to match
-        std::sort( d_cols_unq.get(), d_cols_unq.get() + d_ncols_unq );
-        for ( lidx_t n = 0; n < d_nnz; ++n ) {
-            auto it =
-                std::lower_bound( d_cols_unq.get(), d_cols_unq.get() + d_ncols_unq, d_cols[n] );
-            d_cols_loc[n] = static_cast<lidx_t>( std::distance( d_cols_unq.get(), it ) );
         }
     }
 }
@@ -254,24 +281,27 @@ CSRLocalMatrixData<Policy, Allocator>::cloneMatrixData()
     cloneData->d_is_empty = d_is_empty;
     cloneData->d_nnz      = d_nnz;
 
+    cloneData->d_row_starts = nullptr;
+    cloneData->d_cols       = nullptr;
+    cloneData->d_cols_loc   = nullptr;
+    cloneData->d_coeffs     = nullptr;
+
     if ( !d_is_empty ) {
         cloneData->d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
-        cloneData->d_cols       = sharedArrayBuilder( d_nnz, d_gidxAllocator );
         cloneData->d_cols_loc   = sharedArrayBuilder( d_nnz, d_lidxAllocator );
         cloneData->d_coeffs     = sharedArrayBuilder( d_nnz, d_scalarAllocator );
 
         AMP::Utilities::Algorithms<lidx_t>::copy_n(
             d_row_starts.get(), d_num_rows + 1, cloneData->d_row_starts.get() );
-        AMP::Utilities::Algorithms<gidx_t>::copy_n( d_cols.get(), d_nnz, cloneData->d_cols.get() );
         AMP::Utilities::Algorithms<lidx_t>::copy_n(
             d_cols_loc.get(), d_nnz, cloneData->d_cols_loc.get() );
         AMP::Utilities::Algorithms<scalar_t>::fill_n( cloneData->d_coeffs.get(), d_nnz, 0.0 );
 
-    } else {
-        cloneData->d_row_starts = nullptr;
-        cloneData->d_cols       = nullptr;
-        cloneData->d_cols_loc   = nullptr;
-        cloneData->d_coeffs     = nullptr;
+        if ( d_cols.get() != nullptr ) {
+            cloneData->d_cols = sharedArrayBuilder( d_nnz, d_gidxAllocator );
+            AMP::Utilities::Algorithms<gidx_t>::copy_n(
+                d_cols.get(), d_nnz, cloneData->d_cols.get() );
+        }
     }
 
     return cloneData;
@@ -309,41 +339,6 @@ void CSRLocalMatrixData<Policy, Allocator>::setNNZ( const std::vector<lidx_t> &n
 }
 
 template<typename Policy, class Allocator>
-void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
-{
-    if ( d_is_empty ) {
-        return;
-    }
-
-    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
-                "CSRLocalMatrixData::globalToLocalColumns not implemented on device yet" );
-
-    if ( d_is_diag ) {
-        for ( lidx_t n = 0; n < d_nnz; ++n ) {
-            d_cols_loc[n] = static_cast<lidx_t>( d_cols[n] - d_first_col );
-        }
-    } else {
-        // for offd setup column map as part of the process
-        std::unordered_map<gidx_t, lidx_t> colMap;
-        d_ncols_unq = 0;
-        for ( lidx_t n = 0; n < d_nnz; ++n ) {
-            const auto inserted = colMap.insert( { d_cols[n], d_ncols_unq } );
-            if ( inserted.second ) {
-                ++d_ncols_unq;
-            }
-            d_cols_loc[n] = inserted.first->second;
-        }
-
-        // offd column map also always owned internally
-        d_cols_unq = sharedArrayBuilder( d_ncols_unq, d_gidxAllocator );
-        for ( auto it = colMap.begin(); it != colMap.end(); ++it ) {
-            d_cols_unq[it->second] = it->first;
-        }
-    }
-}
-
-
-template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::getRowByGlobalID( const size_t local_row,
                                                               std::vector<size_t> &cols,
                                                               std::vector<double> &values ) const
@@ -356,28 +351,33 @@ void CSRLocalMatrixData<Policy, Allocator>::getRowByGlobalID( const size_t local
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::getRowByGlobalID not implemented for device memory" );
 
-    const auto offset = d_row_starts[local_row];
-    auto n            = d_row_starts[local_row + 1] - d_row_starts[local_row];
+    const auto start = d_row_starts[local_row];
+    auto end         = d_row_starts[local_row + 1];
+    cols.resize( end - start );
+    values.resize( end - start );
 
-    cols.resize( n );
-    values.resize( n );
-
-    if constexpr ( std::is_same_v<size_t, gidx_t> ) {
-        std::copy( &d_cols[offset], &d_cols[offset] + n, cols.begin() );
-    } else {
-        std::transform( &d_cols[offset],
-                        &d_cols[offset] + n,
+    // don't store global ids, need to generate on the fly
+    if ( d_is_diag ) {
+        const auto first_col = d_first_col;
+        std::transform( &d_cols_loc[start],
+                        &d_cols_loc[end],
                         cols.begin(),
-                        []( size_t col ) -> gidx_t { return col; } );
+                        [&]( lidx_t col ) -> size_t { return col + first_col; } );
+    } else {
+        const auto cols_unq = d_cols_unq;
+        std::transform( &d_cols_loc[start],
+                        &d_cols_loc[end],
+                        cols.begin(),
+                        [&]( lidx_t col ) -> size_t { return cols_unq[col]; } );
     }
 
     if constexpr ( std::is_same_v<double, scalar_t> ) {
-        std::copy( &d_coeffs[offset], &d_coeffs[offset] + n, values.begin() );
+        std::copy( &d_coeffs[start], &d_coeffs[end], values.begin() );
     } else {
-        std::transform( &d_coeffs[offset],
-                        &d_coeffs[offset] + n,
+        std::transform( &d_coeffs[start],
+                        &d_coeffs[end],
                         values.begin(),
-                        []( size_t val ) -> scalar_t { return val; } );
+                        []( scalar_t val ) -> double { return val; } );
     }
 }
 
@@ -401,9 +401,17 @@ void CSRLocalMatrixData<Policy, Allocator>::getValuesByGlobalID( const size_t lo
     const auto start = d_row_starts[local_row];
     auto end         = d_row_starts[local_row + 1];
 
-    for ( lidx_t i = start; i < end; ++i ) {
-        if ( d_cols[i] == static_cast<gidx_t>( col ) ) {
-            *( reinterpret_cast<scalar_t *>( values ) ) = d_coeffs[i];
+    if ( d_is_diag ) {
+        for ( lidx_t i = start; i < end; ++i ) {
+            if ( d_first_col + d_cols_loc[i] == static_cast<gidx_t>( col ) ) {
+                *( reinterpret_cast<scalar_t *>( values ) ) = d_coeffs[i];
+            }
+        }
+    } else {
+        for ( lidx_t i = start; i < end; ++i ) {
+            if ( d_cols_unq[d_cols_loc[i]] == static_cast<gidx_t>( col ) ) {
+                *( reinterpret_cast<scalar_t *>( values ) ) = d_coeffs[i];
+            }
         }
     }
 }
@@ -428,12 +436,22 @@ void CSRLocalMatrixData<Policy, Allocator>::addValuesByGlobalID( const size_t nu
     const auto start = d_row_starts[local_row];
     auto end         = d_row_starts[local_row + 1];
 
-    // Inefficient because we don't assume order
-    // not sure it's worth optimizing for our use cases
-    for ( size_t icol = 0; icol < num_cols; ++icol ) {
-        for ( lidx_t j = start; j < end; ++j ) {
-            if ( d_cols[j] == static_cast<gidx_t>( cols[icol] ) ) {
-                d_coeffs[j] += vals[icol];
+    if ( d_is_diag ) {
+        for ( size_t icol = 0; icol < num_cols; ++icol ) {
+            for ( lidx_t j = start; j < end; ++j ) {
+                if ( d_first_col + d_cols_loc[j] == static_cast<gidx_t>( cols[icol] ) ) {
+                    d_coeffs[j] += vals[icol];
+                    break;
+                }
+            }
+        }
+    } else {
+        for ( size_t icol = 0; icol < num_cols; ++icol ) {
+            for ( lidx_t j = start; j < end; ++j ) {
+                if ( d_cols_unq[d_cols_loc[j]] == static_cast<gidx_t>( cols[icol] ) ) {
+                    d_coeffs[j] += vals[icol];
+                    break;
+                }
             }
         }
     }
@@ -459,12 +477,22 @@ void CSRLocalMatrixData<Policy, Allocator>::setValuesByGlobalID( const size_t nu
     const auto start = d_row_starts[local_row];
     auto end         = d_row_starts[local_row + 1];
 
-    // Inefficient because we don't assume order
-    // not sure it's worth optimizing for our use cases
-    for ( size_t icol = 0; icol < num_cols; ++icol ) {
-        for ( lidx_t j = start; j < end; ++j ) {
-            if ( d_cols[j] == static_cast<gidx_t>( cols[icol] ) ) {
-                d_coeffs[j] = vals[icol];
+    if ( d_is_diag ) {
+        for ( size_t icol = 0; icol < num_cols; ++icol ) {
+            for ( lidx_t j = start; j < end; ++j ) {
+                if ( d_first_col + d_cols_loc[j] == static_cast<gidx_t>( cols[icol] ) ) {
+                    d_coeffs[j] = vals[icol];
+                    break;
+                }
+            }
+        }
+    } else {
+        for ( size_t icol = 0; icol < num_cols; ++icol ) {
+            for ( lidx_t j = start; j < end; ++j ) {
+                if ( d_cols_unq[d_cols_loc[j]] == static_cast<gidx_t>( cols[icol] ) ) {
+                    d_coeffs[j] = vals[icol];
+                    break;
+                }
             }
         }
     }
@@ -482,21 +510,28 @@ CSRLocalMatrixData<Policy, Allocator>::getColumnIDs( const size_t local_row ) co
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::getColumnIDs not implemented for device memory" );
 
-    AMP_INSIST( d_cols && d_row_starts,
+    AMP_INSIST( d_cols_loc && d_row_starts,
                 "CSRLocalMatrixData::getColumnIDs nnz layout must be initialized" );
 
-    std::vector<size_t> cols;
-    const auto offset = d_row_starts[local_row];
-    auto n            = d_row_starts[local_row + 1] - d_row_starts[local_row];
+    const auto start = d_row_starts[local_row];
+    const auto end   = d_row_starts[local_row + 1];
+    std::vector<size_t> cols( end - start, 0 );
 
-    if constexpr ( std::is_same_v<size_t, gidx_t> ) {
-        std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );
+    // don't store global ids, need to generate on the fly
+    if ( d_is_diag ) {
+        const auto first_col = d_first_col;
+        std::transform( &d_cols_loc[start],
+                        &d_cols_loc[end],
+                        cols.begin(),
+                        [&]( lidx_t col ) -> size_t { return col + first_col; } );
     } else {
-        std::transform( &d_cols[offset],
-                        &d_cols[offset] + n,
-                        std::back_inserter( cols ),
-                        []( size_t col ) -> gidx_t { return col; } );
+        const auto cols_unq = d_cols_unq;
+        std::transform( &d_cols_loc[start],
+                        &d_cols_loc[end],
+                        cols.begin(),
+                        [&]( lidx_t col ) -> size_t { return cols_unq[col]; } );
     }
+
     return cols;
 }
 

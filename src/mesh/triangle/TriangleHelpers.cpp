@@ -753,8 +753,8 @@ static inline std::vector<Point> getSurfacePoints( const AMP::Geometry::Geometry
     const auto x0       = 0.5 * ( x1 + x2 );
     const auto dx       = x2 - x1;
     if ( ndim == 3 ) {
-        double r = sqrt( dx.x() * dx.x() + dx.y() * dx.y() + dx.z() * dx.z() );
-        int n    = ceil( sqrt( N ) );
+        double r = std::sqrt( dx.x() * dx.x() + dx.y() * dx.y() + dx.z() * dx.z() );
+        int n    = ceil( std::sqrt( N ) );
         for ( int i = 0; i < n; i++ ) {
             double x = ( 0.5 + i ) / (double) n;
             for ( int j = 0; j < n; j++ ) {

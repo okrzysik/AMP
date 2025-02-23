@@ -116,8 +116,6 @@ HypreMatrixAdaptor::~HypreMatrixAdaptor()
 template<class csr_data_type>
 void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData )
 {
-    // ensure that columns are sorted for hypre compatibility
-    csrData->sortColumns( AMP::LinearAlgebra::MatrixSortScheme::hypre );
     // extract fields from csrData
     const auto first_row    = static_cast<HYPRE_BigInt>( csrData->beginRow() );
     const auto last_row     = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );
@@ -127,7 +125,7 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     auto [rs_od, cols_od, cols_loc_od, coeffs_od] = csrData->getOffdMatrix()->getDataFields();
     const bool haveOffd                           = csrData->hasOffDiag();
 
-    AMP_INSIST( rs_d && cols_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
+    AMP_INSIST( rs_d && cols_loc_d && coeffs_d, "diagonal block layout cannot be NULL" );
 
     const auto nrows = last_row - first_row + 1;
 
@@ -171,11 +169,11 @@ void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> c
     hypre_CSRMatrixSetDataOwner( off_diag, 0 );
 
     // Now set diag/off_diag members to point at our data
-    diag->big_j = cols_d;
+    diag->big_j = NULL;
     diag->data  = coeffs_d;
     diag->j     = cols_loc_d;
 
-    off_diag->big_j = cols_od;
+    off_diag->big_j = NULL;
     off_diag->data  = coeffs_od;
     off_diag->j     = cols_loc_od;
 

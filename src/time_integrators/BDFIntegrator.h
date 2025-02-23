@@ -395,7 +395,7 @@ protected:
     double d_gamma = 0.0;
 
     //! index into d_integrator_names that shows what is the max BDF order
-    size_t d_max_integrator_index = -1;
+    size_t d_max_integrator_index = static_cast<size_t>( -1 );
 
     //! index into d_integrator_names showing what is the current integrator
     size_t d_integrator_index = 0;
