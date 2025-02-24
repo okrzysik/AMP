@@ -110,7 +110,7 @@ void VectorOperationsOpenMP<TYPE>::copy( const VectorData &x, VectorData &y )
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::copyCast( const VectorData &x, VectorData &y )
 {
-    // VectorOperationsDefault::copyCast( x, y );
+    using OpenMP = AMP::Utilities::PortabilityBackend::OpenMP;
     if ( x.numberOfDataBlocks() == y.numberOfDataBlocks() ) {
         for ( size_t block_id = 0; block_id < y.numberOfDataBlocks(); block_id++ ) {
             auto ydata = y.getRawDataBlock<TYPE>( block_id );
@@ -118,10 +118,10 @@ void VectorOperationsOpenMP<TYPE>::copyCast( const VectorData &x, VectorData &y 
             AMP_ASSERT( N == x.sizeOfDataBlock( block_id ) );
             if ( x.getType( 0 ) == getTypeID<float>() ) {
                 auto xdata = x.getRawDataBlock<float>( block_id );
-                AMP::Utilities::copyCast<float, TYPE>( N, xdata, ydata );
+                AMP::Utilities::copyCast<float, TYPE, OpenMP>( N, xdata, ydata );
             } else if ( x.getType( 0 ) == getTypeID<double>() ) {
                 auto xdata = x.getRawDataBlock<double>( block_id );
-                AMP::Utilities::copyCast<double, TYPE>( N, xdata, ydata );
+                AMP::Utilities::copyCast<double, TYPE, OpenMP>( N, xdata, ydata );
             } else {
                 AMP_ERROR( "CopyCast only implemented for float or doubles." );
             }

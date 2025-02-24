@@ -2,6 +2,7 @@
 #define included_AMP_Utilities
 
 
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/UtilityMacros.h"
 
 #include "StackTrace/Utilities.h"
@@ -156,7 +157,10 @@ inline bool approx_equal_abs( const T &v1, const T &v2, const T tol = type_defau
  * @param[inout] vec_out  The outgoing vector to with the up/down-casted values from vec_in
  *                        It is assumed that vec_out is properly allocated
  */
-template<typename T1, typename T2>
+template<typename T1, typename T2, typename Backend, class Allocator>
+void copyCast( size_t len, const T1 *vec_in, T2 *vec_out );
+
+template<typename T1, typename T2, typename Backend>
 void copyCast( size_t len, const T1 *vec_in, T2 *vec_out );
 
 
@@ -405,6 +409,36 @@ enum class Backend : uint8_t {
     openCL   = 5,
     RAJA     = 6
 };
+
+//! Structs for each backend
+namespace PortabilityBackend {
+struct Serial {
+};
+#ifdef USE_DEVICE
+struct Hip_Cuda {
+};
+#endif
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+struct Kokkos {
+};
+#endif
+#ifdef USE_OPENMP
+struct OpenMP {
+};
+#endif
+#ifdef USE_OPENACC
+struct OpenACC {
+};
+#endif
+#ifdef USE_OPENCL
+struct OpenCL {
+};
+#endif
+#ifdef USE_RAJA
+struct RAJA {
+};
+#endif
+} // namespace PortabilityBackend
 
 } // namespace Utilities
 } // namespace AMP
