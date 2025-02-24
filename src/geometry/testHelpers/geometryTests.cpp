@@ -292,29 +292,35 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         auto length     = box.second - box.first;
         const double d0 = 0.2 * std::max( { length.x(), length.y(), length.z() } );
         int N_failed    = 0;
+        int N_repeat    = 10;
         for ( const auto &tmp : surfacePoints ) {
-            auto ang = genRandDir( ndim );
-            auto pos = tmp - d0 * ang;
-            double d = std::abs( geom.distance( pos, ang ) );
-            for ( int it = 0; it < 1000 && d < d0 - 1e-5; it++ ) {
-                // We may have crossed multiple surfaces, find the original
-                d += 1e-6;
-                auto pos2 = pos + d * ang;
-                d += std::abs( geom.distance( pos2, ang ) );
+            for ( int i = 0; i < N_repeat; i++ ) {
+                auto ang = genRandDir( ndim );
+                auto pos = tmp - d0 * ang;
+                double d = std::abs( geom.distance( pos, ang ) );
+                for ( int it = 0; it < 1000 && d < d0 - 1e-5; it++ ) {
+                    // We may have crossed multiple surfaces, find the original
+                    d += 1e-6;
+                    auto pos2 = pos + d * ang;
+                    d += std::abs( geom.distance( pos2, ang ) );
+                }
+                if ( std::abs( d - d0 ) > 1e-5 )
+                    N_failed++;
             }
-            if ( std::abs( d - d0 ) > 1e-5 )
-                N_failed++;
         }
-        using AMP::Utilities::stringf;
-        if ( N_failed > 10 ) {
-            auto msg =
-                stringf( "testGeometry distances do not match (%i): %s", N_failed, name.data() );
-            ut.failure( msg );
-            pass = false;
-        } else if ( N_failed > 0 ) {
-            auto msg =
-                stringf( "testGeometry distances do not match (%i): %s", N_failed, name.data() );
-            ut.expected_failure( msg );
+        if ( N_failed > 0 ) {
+            using AMP::Utilities::stringf;
+            int N_test = N_repeat * surfacePoints.size();
+            auto msg   = stringf( "testGeometry distances do not match (%i of %i): %s",
+                                N_failed,
+                                name.data(),
+                                N_test );
+            if ( N_failed > 0.001 * N_test ) {
+                ut.failure( msg );
+                pass = false;
+            } else if ( N_failed > 0 ) {
+                ut.expected_failure( msg );
+            }
         }
     }
     // Get a set of interior points by randomly sampling the space
