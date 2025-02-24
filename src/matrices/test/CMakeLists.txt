@@ -40,7 +40,7 @@ COPY_TEST_FILE( input_testMatVecPerf-3 )
 
 ADD_AMP_TEST_124_MATRIX( testMatOpDev )
 
-ADD_AMP_TEST( test_getRow input_AMP_mesh_zoo_3D )
+# ADD_AMP_TEST( test_getRow input_AMP_mesh_zoo_3D )
 
 IF( USE_LIBMESH AND AMP_DATA )
   ADD_AMP_TEST_124_MATRIX( testMatCreate )

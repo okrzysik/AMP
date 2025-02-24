@@ -4,7 +4,7 @@
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/DenseSerialMatrix.h"
-#include "AMP/matrices/GetRowHelperLean.h"
+#include "AMP/matrices/GetRowHelper.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/data/DenseSerialMatrixData.h"
@@ -125,7 +125,7 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     } else {
         // no getRow function available
         // Use GetRowHelper class to build a usable default
-        auto rowHelper = std::make_shared<GetRowHelperLean>( leftDOF, rightDOF );
+        auto rowHelper = std::make_shared<GetRowHelper>( leftDOF, rightDOF );
 
         std::function<void( const gidx_t, lidx_t &, lidx_t & )> getRowNNZ =
             [rowHelper]( const gidx_t row, lidx_t &nnz_local, lidx_t &nnz_remote ) {
