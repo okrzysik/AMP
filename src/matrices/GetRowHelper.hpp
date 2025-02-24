@@ -38,9 +38,8 @@ void GetRowHelper::getRow( BIGINT_TYPE row, BIGINT_TYPE *cols_local, BIGINT_TYPE
     const auto id = d_leftDOF->getElementID( row );
     const auto N  = d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     if ( N > d_rowDOFs.size() ) {
-        AMP_DEBUG_WARNING(
-            "GetRowHelper: resize of backing vector needed in getRow. This should not "
-            "happen." );
+        AMP_WARNING(
+            "GetRowHelper: resize of backing vector needed in getRow. This should not happen." );
         d_rowDOFs.resize( N );
         d_rightDOF->getRowDOFs( id, d_rowDOFs.data(), d_rowDOFs.size(), false );
     }
