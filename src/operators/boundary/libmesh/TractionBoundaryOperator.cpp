@@ -70,7 +70,7 @@ void TractionBoundaryOperator::computeCorrection()
     auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
     auto qruleType   = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
     auto feType      = std::make_shared<libMesh::FEType>( feTypeOrder, feFamily );
-    auto qruleOrder = feType->default_quadrature_order();
+    auto qruleOrder  = feType->default_quadrature_order();
     std::shared_ptr<libMesh::QBase> qrule(
         ( libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
@@ -81,12 +81,11 @@ void TractionBoundaryOperator::computeCorrection()
     for ( size_t b = 0; b < d_sideNumbers.size(); ++b ) {
         libMesh::Elem *elem = new libMesh::Hex8;
         for ( int j = 0; j < 8; ++j ) {
-            auto ptr = &d_volumeElements[( 24 * b ) + ( 3 * j )];
+            auto ptr            = &d_volumeElements[( 24 * b ) + ( 3 * j )];
             elem->set_node( j ) = new libMesh::Node( ptr[0], ptr[1], ptr[2], j );
         }
 
-        std::shared_ptr<libMesh::FEBase> fe(
-            ( libMesh::FEBase::build( 3, *feType ) ).release() );
+        std::shared_ptr<libMesh::FEBase> fe( ( libMesh::FEBase::build( 3, *feType ) ).release() );
         fe->attach_quadrature_rule( qrule.get() );
         fe->reinit( elem, d_sideNumbers[b] );
 
@@ -133,8 +132,7 @@ TractionBoundaryOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr
     if ( vec != nullptr ) {
         if ( d_Mesh ) {
             AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-            auto meshSubsetVec =
-                vec->select( meshSelector, vec->getVariable()->getName() );
+            auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
             return meshSubsetVec->subsetVectorForVariable( var );
         } else {
             return vec->subsetVectorForVariable( var );
