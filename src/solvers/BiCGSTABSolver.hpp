@@ -73,6 +73,14 @@ template<typename T>
 void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
+    // NOTE:: Things that need to be rechecked
+    // 1. Should p = res initially
+    // 2. Should res be the preconditioned residual
+    // 3. Should the algorithm use the residual and a zero initial solution
+    //    and add the solution back at the end. Literature suggests so
+    // 4. Will 3, be affected by the transition to using checkStoppingCriteria
+    // 5. This implementation is both BiCGSTAB & Flexible BiCGSTAB with right preconditioning
+    //    See J. Vogels paper
     PROFILE( "BiCGSTABSolver<T>::apply" );
 
     // Always zero before checking stopping criteria for any reason
@@ -158,7 +166,9 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         }
 
         if ( d_iNumberIterations == 0 ) {
-
+            // NOTE: there are differences in the literature in what the initial p is
+            // Van der Vorst, Eigen, Petsc : p = 0
+            // J. Vogel, J. Chen et. al on FBiCGSTAB: p = res
             p->copyVector( res );
         } else {
 
@@ -223,6 +233,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
         auto t_sqnorm = static_cast<T>( t->dot( *t ) );
         auto t_dot_s  = static_cast<T>( t->dot( *s ) );
+        // note the choice of omega below corresponds to what van der Vorst calls BiCGSTAB-P
         omega = ( t_sqnorm == static_cast<T>( 0.0 ) ) ? static_cast<T>( 0.0 ) : t_dot_s / t_sqnorm;
 
         u->axpy( alpha, *p_hat, *u );
