@@ -313,8 +313,8 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
             int N_test = N_repeat * surfacePoints.size();
             auto msg   = stringf( "testGeometry distances do not match (%i of %i): %s",
                                 N_failed,
-                                name.data(),
-                                N_test );
+                                N_test,
+                                name.data() );
             if ( N_failed > 0.001 * N_test ) {
                 ut.failure( msg );
                 pass = false;
