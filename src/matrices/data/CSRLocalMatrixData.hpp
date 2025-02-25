@@ -3,6 +3,7 @@
 
 #include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/matrices/AMPCSRMatrixParameters.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/RawCSRMatrixParameters.h"
 #include "AMP/matrices/data/CSRLocalMatrixData.h"
@@ -406,16 +407,12 @@ void CSRLocalMatrixData<Policy, Allocator>::getRowByGlobalID( const size_t local
 template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::getValuesByGlobalID( const size_t local_row,
                                                                  const size_t col,
-                                                                 void *values,
-                                                                 const typeID &id ) const
+                                                                 scalar_t *values ) const
 {
     // Don't do anything on empty matrices
     if ( d_is_empty ) {
         return;
     }
-
-    AMP_INSIST( getTypeID<scalar_t>() == id,
-                "CSRLocalMatrixData::getValuesByGlobalID called with inconsistent typeID" );
 
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::getValuesByGlobalID not implemented for device memory" );
@@ -442,15 +439,11 @@ template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::addValuesByGlobalID( const size_t num_cols,
                                                                  const size_t local_row,
                                                                  const size_t *cols,
-                                                                 const scalar_t *vals,
-                                                                 const typeID &id )
+                                                                 const scalar_t *vals )
 {
     if ( d_is_empty ) {
         return;
     }
-
-    AMP_INSIST( getTypeID<scalar_t>() == id,
-                "CSRLocalMatrixData::addValuesByGlobalID called with inconsistent typeID" );
 
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::addValuesByGlobalID not implemented for device memory" );
@@ -483,15 +476,11 @@ template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::setValuesByGlobalID( const size_t num_cols,
                                                                  const size_t local_row,
                                                                  const size_t *cols,
-                                                                 const scalar_t *vals,
-                                                                 const typeID &id )
+                                                                 const scalar_t *vals )
 {
     if ( d_is_empty ) {
         return;
     }
-
-    AMP_INSIST( getTypeID<scalar_t>() == id,
-                "CSRLocalMatrixData::setValuesByGlobalID called with inconsistent typeID" );
 
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::setValuesByGlobalID not implemented for device memory" );

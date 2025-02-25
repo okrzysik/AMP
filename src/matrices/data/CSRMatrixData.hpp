@@ -218,7 +218,7 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getRowByG
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
     const
 {
     AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
@@ -227,12 +227,13 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getValues
     AMP_DEBUG_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                       "CSRMatrixData::getValuesByGlobalID not implemented for device memory" );
 
-    if ( num_rows == 1 && num_cols == 1 ) {
+    auto values = reinterpret_cast<scalar_t *>( vals );
 
+    if ( num_rows == 1 && num_cols == 1 ) {
         const auto local_row = rows[0] - d_first_row;
         // Forward to internal matrices, nothing will happen if not found
-        d_diag_matrix->getValuesByGlobalID( local_row, cols[0], values, id );
-        d_offd_matrix->getValuesByGlobalID( local_row, cols[0], values, id );
+        d_diag_matrix->getValuesByGlobalID( local_row, cols[0], values );
+        d_offd_matrix->getValuesByGlobalID( local_row, cols[0], values );
     } else {
         AMP_ERROR( "CSRSerialMatrixData::getValuesByGlobalID not implemented for num_rows > 1 || "
                    "num_cols > 1" );
@@ -262,8 +263,8 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::addValues
             // auto lcols = &cols[num_cols * i];
             const auto local_row = rows[i] - d_first_row;
             auto lvals           = &values[num_cols * i];
-            d_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-            d_offd_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+            d_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals );
+            d_offd_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals );
         } else {
             for ( size_t icol = 0; icol < num_cols; ++icol ) {
                 d_other_data[rows[i]][cols[icol]] += values[num_cols * i + icol];
@@ -293,8 +294,8 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setValues
             // auto lcols = &cols[num_cols * i];
             const auto local_row = rows[i] - d_first_row;
             auto lvals           = &values[num_cols * i];
-            d_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-            d_offd_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+            d_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals );
+            d_offd_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals );
         } else {
             for ( size_t icol = 0; icol < num_cols; ++icol ) {
                 d_ghost_data[rows[i]][cols[icol]] = values[num_cols * i + icol];
