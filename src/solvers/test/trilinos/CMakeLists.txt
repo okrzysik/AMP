@@ -38,7 +38,7 @@ IF( USE_PETSC AND USE_LIBMESH AND USE_TRILINOS AND AMP_DATA )
     ADD_TB_TEST_1_2_4( testTrilinosMLSolver_LinearThermalOperator_bar )
     ADD_TB_TEST_1_2_4( testTrilinosMLSolver_LinearFickOperator_bar )
     ADD_TB_TEST_1_2_4( testTrilinosMLSolver_LinearThermalOperator_cylinder )
-    ADD_TB_TEST( testTrilinosMLSolver_LinearThermalOperator_2 PROCS 8 WEEKLY )
+    ADD_TB_TEST( testTrilinosMLSolver_LinearThermalOperator_2 PROCS 8 )
 ENDIF()
 FINALIZE_TESTBUILDER()
 
