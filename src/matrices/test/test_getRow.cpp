@@ -117,7 +117,7 @@ void testGetRowHelper( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
         remote_cols( default_num_nnz_remote, 0 );
     size_t local_pos = 0, remote_pos = 0;
     start_time = AMP::Utilities::time();
-    for ( size_t row = first_row, i = 0; row < last_row; i++, row++ ) {
+    for ( size_t row = first_row; row < last_row; row++ ) {
         auto cols = defaultGetRow( row );
         for ( auto &&col : cols ) {
             if ( first_col <= col && col < last_col ) {
@@ -141,7 +141,7 @@ void testGetRowHelper( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
     // Test native implementation for non-zeros per row
     size_t native_num_nnz_local = 0, native_num_nnz_remote = 0;
     start_time = AMP::Utilities::time();
-    for ( size_t row = first_row, i = 0; row < last_row; i++, row++ ) {
+    for ( size_t row = first_row; row < last_row; row++ ) {
         int nl = 0, nr = 0;
         nativeGetRowNNZ( row, nl, nr );
         native_num_nnz_local += nl;
