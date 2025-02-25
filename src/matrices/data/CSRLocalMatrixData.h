@@ -184,10 +184,17 @@ protected:
                            std::vector<size_t> &cols,
                            std::vector<double> &values ) const;
 
-    /** \brief Hmm
+    /** \brief  Get values from the matrix
+     * \param[in]  local_row  Local row to query
+     * \param[in]  num_cols   Number of cols to query
+     * \param[in]  cols       The column indices to query
+     * \param[out] values     Place to write retrieved values
+     * \details  If the matrix has not allocated a particular col
+     * specified those values will be set to zero.
      */
     void getValuesByGlobalID( const size_t local_row,
-                              const size_t col,
+                              const size_t num_cols,
+                              size_t *cols,
                               scalar_t *values ) const;
 
     /** \brief  Add to existing values at given column locations in a row

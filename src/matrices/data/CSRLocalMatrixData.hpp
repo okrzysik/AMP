@@ -406,7 +406,8 @@ void CSRLocalMatrixData<Policy, Allocator>::getRowByGlobalID( const size_t local
 
 template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::getValuesByGlobalID( const size_t local_row,
-                                                                 const size_t col,
+                                                                 const size_t num_cols,
+                                                                 size_t *cols,
                                                                  scalar_t *values ) const
 {
     // Don't do anything on empty matrices
@@ -420,16 +421,13 @@ void CSRLocalMatrixData<Policy, Allocator>::getValuesByGlobalID( const size_t lo
     const auto start = d_row_starts[local_row];
     auto end         = d_row_starts[local_row + 1];
 
-    if ( d_is_diag ) {
+
+    for ( size_t nc = 0; nc < num_cols; ++nc ) {
+        auto query_col = cols[nc];
         for ( lidx_t i = start; i < end; ++i ) {
-            if ( d_first_col + d_cols_loc[i] == static_cast<gidx_t>( col ) ) {
-                *( reinterpret_cast<scalar_t *>( values ) ) = d_coeffs[i];
-            }
-        }
-    } else {
-        for ( lidx_t i = start; i < end; ++i ) {
-            if ( d_cols_unq[d_cols_loc[i]] == static_cast<gidx_t>( col ) ) {
-                *( reinterpret_cast<scalar_t *>( values ) ) = d_coeffs[i];
+            auto icol = d_is_diag ? ( d_first_col + d_cols_loc[i] ) : ( d_cols_unq[d_cols_loc[i]] );
+            if ( icol == static_cast<gidx_t>( query_col ) ) {
+                values[nc] = d_coeffs[i];
             }
         }
     }

@@ -218,8 +218,12 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getRowByG
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
-    const
+    size_t num_rows,
+    size_t num_cols,
+    size_t *rows,
+    size_t *cols,
+    void *vals,
+    [[maybe_unused]] const typeID &id ) const
 {
     AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
                       "CSRMatrixData::getValuesByGlobalID called with inconsistent typeID" );
@@ -229,14 +233,20 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getValues
 
     auto values = reinterpret_cast<scalar_t *>( vals );
 
-    if ( num_rows == 1 && num_cols == 1 ) {
-        const auto local_row = rows[0] - d_first_row;
-        // Forward to internal matrices, nothing will happen if not found
-        d_diag_matrix->getValuesByGlobalID( local_row, cols[0], values );
-        d_offd_matrix->getValuesByGlobalID( local_row, cols[0], values );
-    } else {
-        AMP_ERROR( "CSRSerialMatrixData::getValuesByGlobalID not implemented for num_rows > 1 || "
-                   "num_cols > 1" );
+    // zero out values
+    for ( size_t i = 0; i < num_rows * num_cols; i++ ) {
+        values[i] = 0.0;
+    }
+
+    // get values row-by-row from the enclosed blocks
+    lidx_t start_pos = 0;
+    for ( size_t nr = 0; nr < num_rows; ++nr ) {
+        const auto local_row = static_cast<lidx_t>( rows[nr] - d_first_row );
+        d_diag_matrix->getValuesByGlobalID(
+            local_row, num_cols, &cols[start_pos], &values[start_pos] );
+        d_offd_matrix->getValuesByGlobalID(
+            local_row, num_cols, &cols[start_pos], &values[start_pos] );
+        start_pos += num_cols;
     }
 }
 
@@ -245,7 +255,12 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getValues
 // they need to also handle the other_data case
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::addValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
+    size_t num_rows,
+    size_t num_cols,
+    size_t *rows,
+    size_t *cols,
+    void *vals,
+    [[maybe_unused]] const typeID &id )
 {
     AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
                       "CSRMatrixData::addValuesByGlobalID called with inconsistent typeID" );
@@ -275,7 +290,12 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::addValues
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
+    size_t num_rows,
+    size_t num_cols,
+    size_t *rows,
+    size_t *cols,
+    void *vals,
+    [[maybe_unused]] const typeID &id )
 {
     AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
                       "CSRMatrixData::setValuesByGlobalID called with inconsistent typeID" );

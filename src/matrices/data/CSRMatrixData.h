@@ -105,7 +105,15 @@ public:
                               void *values,
                               const typeID &id ) override;
 
-    /** \brief  Hmmm
+    /** \brief  Get values from the matrix
+     * \param[in]  num_rows The number of rows represented in values
+     * \param[in]  num_cols The number of cols represented in values
+     * \param[in]  rows     The row ids of values
+     * \param[in]  cols     The column ids of values
+     * \param[out] values   Place to write retrieved values
+     * \param[in]  id       typeID of raw data
+     * \details  If the matrix has not allocated a particular (row,col)
+     * specified those values will be set to zero.
      */
     void getValuesByGlobalID( size_t num_rows,
                               size_t num_cols,
@@ -222,7 +230,7 @@ protected:
     //! Global index of last column of diagonal block
     gidx_t d_last_col = 0;
     //! Total number of nonzeros in both blocks
-    lidx_t d_nnz       = 0;
+    lidx_t d_nnz = 0;
 
     //! Allocator for gidx_t matched to template parameter
     gidxAllocator_t d_gidxAllocator;
