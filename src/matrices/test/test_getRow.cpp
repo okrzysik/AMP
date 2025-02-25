@@ -13,50 +13,6 @@
 
 #include "ProfilerApp.h"
 
-
-// Get the number of local and remote columns for a given row
-std::pair<size_t, size_t> getRowNNZ( const AMP::Discretization::DOFManager *leftDOF,
-                                     const AMP::Discretization::DOFManager *rightDOF,
-                                     size_t row )
-{
-    auto id         = leftDOF->getElementID( row );
-    auto dofs       = rightDOF->getRowDOFs( id );
-    size_t N_local  = 0;
-    size_t N_remote = 0;
-    size_t start    = rightDOF->beginDOF();
-    size_t end      = rightDOF->endDOF();
-    for ( auto dof : dofs ) {
-        if ( dof >= start && dof < end )
-            N_local++;
-        else
-            N_remote++;
-    }
-    return { N_local, N_remote };
-}
-
-
-// Get the local and remote columns for a given row
-void getRow( const AMP::Discretization::DOFManager *leftDOF,
-             const AMP::Discretization::DOFManager *rightDOF,
-             size_t row,
-             size_t *local,
-             size_t *remote )
-{
-    auto id      = leftDOF->getElementID( row );
-    auto dofs    = rightDOF->getRowDOFs( id );
-    size_t start = rightDOF->beginDOF();
-    size_t end   = rightDOF->endDOF();
-    size_t i     = 0;
-    size_t j     = 0;
-    for ( auto dof : dofs ) {
-        if ( dof >= start && dof < end )
-            local[i++] = dof;
-        else
-            remote[j++] = dof;
-    }
-}
-
-
 // Create a vector
 std::shared_ptr<AMP::Discretization::DOFManager> createDOFs(
     std::shared_ptr<const AMP::Mesh::Mesh> mesh, const AMP::Mesh::GeomType &type, bool multivec )
@@ -72,22 +28,20 @@ std::shared_ptr<AMP::Discretization::DOFManager> createDOFs(
 
 // Struct to store test times
 struct TestTimes {
-    double DOFs            = 0;
-    double naiveNNZ        = 0;
-    double naiveGetRow     = 0;
-    double rowHelper       = 0;
-    double rowHelperNNZ    = 0;
-    double rowHelperGetRow = 0;
+    double DOFs          = 0;
+    double defaultNNZ    = 0;
+    double defaultGetRow = 0;
+    double nativeNNZ     = 0;
+    double nativeGetRow  = 0;
     void print( const std::string_view prefix )
     {
         if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() != 0 )
             return;
         std::cout << prefix << "Time to create DOFManager: " << DOFs << std::endl;
-        std::cout << prefix << "Time to get NNZ (naive): " << naiveNNZ << std::endl;
-        std::cout << prefix << "Time to get rows (naive): " << naiveGetRow << std::endl;
-        std::cout << prefix << "Time to construct (GetRowHelper): " << rowHelper << std::endl;
-        std::cout << prefix << "Time to get NNZ (GetRowHelper): " << rowHelperNNZ << std::endl;
-        std::cout << prefix << "Time to get row (GetRowHelper): " << rowHelperGetRow << std::endl;
+        std::cout << prefix << "Time to get NNZ (default): " << defaultNNZ << std::endl;
+        std::cout << prefix << "Time to get rows (default): " << defaultGetRow << std::endl;
+        std::cout << prefix << "Time to get NNZ (native): " << nativeNNZ << std::endl;
+        std::cout << prefix << "Time to get rows (native): " << nativeGetRow << std::endl;
     }
 };
 
@@ -103,86 +57,122 @@ void testGetRowHelper( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
     TestTimes times;
     AMP::AMP_MPI comm( AMP_COMM_WORLD );
 
+    bool pass = true;
+
     // Create a DOF managers
-    auto t1    = AMP::Utilities::time();
-    auto left  = createDOFs( mesh, leftType, leftMultiVec );
-    auto right = createDOFs( mesh, rightType, rightMultiVec );
+    auto start_time = AMP::Utilities::time();
+    auto left       = createDOFs( mesh, leftType, leftMultiVec );
+    auto right      = createDOFs( mesh, rightType, rightMultiVec );
     comm.barrier();
-    times.DOFs = AMP::Utilities::time() - t1;
+    times.DOFs = AMP::Utilities::time() - start_time;
 
-    // Test naive implementation for getRowNNZ
-    auto leftDOF  = left.get();
-    auto rightDOF = right.get();
-    size_t begin  = leftDOF->beginDOF();
-    size_t end    = leftDOF->endDOF();
-    std::vector<size_t> NNZ_local( end - begin, 0 );
-    std::vector<size_t> NNZ_remote( end - begin, 0 );
-    t1 = AMP::Utilities::time();
-    for ( size_t row = begin, i = 0; row < end; i++, row++ )
-        std::tie( NNZ_local[i], NNZ_remote[i] ) = getRowNNZ( leftDOF, rightDOF, row );
-    comm.barrier();
-    times.naiveNNZ = AMP::Utilities::time() - t1;
+    // range of rows to query on this rank
+    size_t first_row = left->beginDOF();
+    size_t last_row  = left->endDOF();
+    size_t num_rows  = last_row - first_row;
 
-    // Test naive implementation for getRow
-    size_t NNZ[2] = { 0, 0 };
-    for ( size_t i = 0; i < NNZ_local.size(); i++ ) {
-        NNZ[0] += NNZ_local[i];
-        NNZ[1] += NNZ_remote[i];
-    }
-    auto local     = new size_t[NNZ[0]];
-    auto remote    = new size_t[NNZ[1]];
-    auto localPtr  = new size_t *[NNZ_local.size()];
-    auto remotePtr = new size_t *[NNZ_local.size()];
-    for ( size_t i = 0, j1 = 0, j2 = 0; i < NNZ_local.size(); i++ ) {
-        localPtr[i]  = &local[j1];
-        remotePtr[i] = &remote[j2];
-        j1 += NNZ_local[i];
-        j2 += NNZ_remote[i];
-    }
-    t1 = AMP::Utilities::time();
-    for ( size_t row = begin, i = 0; row < end; i++, row++ )
-        getRow( leftDOF, rightDOF, row, localPtr[i], remotePtr[i] );
-    comm.barrier();
-    times.naiveGetRow = AMP::Utilities::time() - t1;
+    // range of columns for determining local vs remote
+    size_t first_col = right->beginDOF();
+    size_t last_col  = right->endDOF();
 
-    // Test getRowHelper
-    t1 = AMP::Utilities::time();
-    AMP::LinearAlgebra::GetRowHelper rowHelper( left, right );
-    comm.barrier();
-    times.rowHelper = AMP::Utilities::time() - t1;
-    bool pass       = true;
-    t1              = AMP::Utilities::time();
-    for ( size_t row = begin, i = 0; row < end; i++, row++ ) {
-        auto [N1, N2] = rowHelper.NNZ( row );
-        pass          = pass && N1 == NNZ_local[i] && N2 == NNZ_remote[i];
+    // create the get row functions from MatrixBuilder
+    // default for non-native matrices, and pair using
+    // GetRowHelper for native matrices
+    // auto leftDOF       = left.get();
+    // auto rightDOF      = right.get();
+    auto defaultGetRow = [left, right]( size_t row ) {
+        auto id = left->getElementID( row );
+        return right->getRowDOFs( id );
+    };
+    auto rowHelper       = std::make_shared<AMP::LinearAlgebra::GetRowHelper>( left, right );
+    auto nativeGetRowNNZ = [rowHelper]( size_t row, int &nlocal, int &nremote ) {
+        rowHelper->NNZ( row, nlocal, nremote );
+    };
+    auto nativeGetRow = [rowHelper]( size_t row, size_t *clocal, size_t *cremote ) {
+        rowHelper->getRow( row, clocal, cremote );
+    };
+
+    // Test default implementation for non-zeros per row
+    std::vector<int> NNZ_local( num_rows, 0 );
+    std::vector<int> NNZ_remote( num_rows, 0 );
+    size_t default_num_nnz_local = 0, default_num_nnz_remote = 0;
+    start_time = AMP::Utilities::time();
+    for ( size_t row = first_row, i = 0; row < last_row; i++, row++ ) {
+        auto cols = defaultGetRow( row );
+        for ( auto &&col : cols ) {
+            if ( first_col <= col && col < last_col ) {
+                NNZ_local[i]++;
+                ++default_num_nnz_local;
+            } else {
+                NNZ_remote[i]++;
+                ++default_num_nnz_remote;
+            }
+        }
     }
     comm.barrier();
-    times.rowHelperNNZ = AMP::Utilities::time() - t1;
-    if ( pass )
-        ut.passes( "getRowHelper.NNZ" );
-    else
-        ut.failure( "getRowHelper.NNZ" );
-    pass = true;
-    t1   = AMP::Utilities::time();
-    size_t d1[1024], d2[1024];
-    for ( size_t row = begin, i = 0; row < end; i++, row++ ) {
-        rowHelper.getRow( row, d1, d2 );
-        for ( size_t j = 0; j < NNZ_local[i]; j++ )
-            pass = pass && d1[j] == localPtr[i][j];
-        for ( size_t j = 0; j < NNZ_remote[i]; j++ )
-            pass = pass && d2[j] == remotePtr[i][j];
+    times.defaultNNZ = AMP::Utilities::time() - start_time;
+
+    // Test default implementation for column indices
+    std::vector<size_t> local_cols( default_num_nnz_local, 0 ),
+        remote_cols( default_num_nnz_remote, 0 );
+    size_t local_pos = 0, remote_pos = 0;
+    start_time = AMP::Utilities::time();
+    for ( size_t row = first_row; row < last_row; row++ ) {
+        auto cols = defaultGetRow( row );
+        for ( auto &&col : cols ) {
+            if ( first_col <= col && col < last_col ) {
+                local_cols[local_pos] = col;
+                ++local_pos;
+            } else {
+                remote_cols[local_pos] = col;
+                ++remote_pos;
+            }
+        }
     }
     comm.barrier();
-    times.rowHelperGetRow = AMP::Utilities::time() - t1;
-    if ( pass )
+    times.defaultGetRow = AMP::Utilities::time() - start_time;
+
+    // clear out backing vectors and retest with native get row routines
+    std::fill( NNZ_local.begin(), NNZ_local.end(), 0 );
+    std::fill( NNZ_remote.begin(), NNZ_remote.end(), 0 );
+    std::fill( local_cols.begin(), local_cols.end(), 0 );
+    std::fill( remote_cols.begin(), remote_cols.end(), 0 );
+
+    // Test native implementation for non-zeros per row
+    size_t native_num_nnz_local = 0, native_num_nnz_remote = 0;
+    start_time = AMP::Utilities::time();
+    for ( size_t row = first_row; row < last_row; row++ ) {
+        int nl = 0, nr = 0;
+        nativeGetRowNNZ( row, nl, nr );
+        native_num_nnz_local += nl;
+        native_num_nnz_remote += nr;
+    }
+    comm.barrier();
+    times.nativeNNZ = AMP::Utilities::time() - start_time;
+
+    if ( native_num_nnz_local != default_num_nnz_local ||
+         native_num_nnz_remote != default_num_nnz_remote ) {
+        pass = false;
+        ut.failure( "Default and native NNZ counts differ" );
+    }
+
+    // Test default implementation for column indices
+    local_pos  = 0;
+    remote_pos = 0;
+    start_time = AMP::Utilities::time();
+    for ( size_t row = first_row, i = 0; row < last_row; i++, row++ ) {
+        size_t *clocal  = &local_cols[local_pos];
+        size_t *cremote = &remote_cols[remote_pos];
+        nativeGetRow( row, clocal, cremote );
+        local_pos += NNZ_local[i];
+        remote_pos += NNZ_remote[i];
+    }
+    comm.barrier();
+    times.nativeGetRow = AMP::Utilities::time() - start_time;
+
+    if ( pass ) {
         ut.passes( "getRowHelper.getRow" );
-    else
-        ut.failure( "getRowHelper.getRow" );
-
-    delete[] local;
-    delete[] remote;
-    delete[] localPtr;
-    delete[] remotePtr;
+    }
 
     times.print( "" );
 }

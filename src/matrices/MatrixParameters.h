@@ -1,14 +1,10 @@
 #ifndef included_AMP_MatrixParameters
 #define included_AMP_MatrixParameters
 
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/MatrixParametersBase.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/Vector.h"
-
-
-namespace AMP::Discretization {
-class DOFManager;
-}
-
 
 namespace AMP::LinearAlgebra {
 
@@ -85,7 +81,7 @@ public:
                                std::shared_ptr<CommunicationList> commListRight,
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
-    //! Deconstructor
+    //! Destructor
     virtual ~MatrixParameters() = default;
 
     //! Return the local number of rows
@@ -100,12 +96,8 @@ public:
     //! Return the global number of columns
     size_t getGlobalNumberOfColumns() const;
 
-    /** \brief Get the bound function that generates column IDs for each row
-     */
-    const std::function<std::vector<size_t>( size_t )> &getRowFunction() const
-    {
-        return d_getRowFunction;
-    }
+    //! Get the bound function that generates column IDs for each row
+    const std::function<std::vector<size_t>( size_t )> &getRowFunction() const { return d_getRow; }
 
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
@@ -140,7 +132,7 @@ protected:
     std::shared_ptr<CommunicationList> d_CommListRight;
 
     //! Function that generates column ids for each row of the matrix
-    std::function<std::vector<size_t>( size_t )> d_getRowFunction;
+    std::function<std::vector<size_t>( size_t )> d_getRow;
 };
 } // namespace AMP::LinearAlgebra
 

@@ -126,12 +126,13 @@ void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
                       "CSRMatrix::multiply received invalid MatrixData types" );
 
     // Build matrix parameters object for result from this op and the other op
-    auto params =
-        std::make_shared<AMP::LinearAlgebra::MatrixParameters>( getLeftDOFManager(),
-                                                                other_op->getRightDOFManager(),
-                                                                getComm(),
-                                                                thisData->getLeftVariable(),
-                                                                otherData->getRightVariable() );
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        getLeftDOFManager(),
+        other_op->getRightDOFManager(),
+        getComm(),
+        thisData->getLeftVariable(),
+        otherData->getRightVariable(),
+        std::function<std::vector<size_t>( size_t )>() );
 
     // Create the matrix
     auto newData = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );

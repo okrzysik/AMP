@@ -1,6 +1,7 @@
 #ifndef included_AMP_CSRLocalMatrixData_h
 #define included_AMP_CSRLocalMatrixData_h
 
+#include "AMP/matrices/MatrixParametersBase.h"
 #include "AMP/matrices/data/MatrixData.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/memory.h"
@@ -55,32 +56,44 @@ public:
     //! Destructor
     virtual ~CSRLocalMatrixData();
 
+    //! Get all data fields as tuple
     std::tuple<lidx_t *, gidx_t *, lidx_t *, scalar_t *> getDataFields()
     {
         return std::make_tuple(
             d_row_starts.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
     }
 
+    //! Check if this is a diagonal block
     bool isDiag() const { return d_is_diag; }
 
+    //! Get total number of nonzeros in block
     lidx_t numberOfNonZeros() const { return d_nnz; }
 
+    //! Get number of local rows
     lidx_t numLocalRows() const { return d_last_row - d_first_row; }
 
+    //! Get number of local columns in diagonal region
     lidx_t numLocalColumns() const { return d_last_col - d_first_col; }
 
+    //! Get number of unique columns
     lidx_t numUniqueColumns() const { return d_ncols_unq; }
 
-    lidx_t beginRow() const { return d_first_row; }
+    //! Get global index of first row in block (inclusive)
+    gidx_t beginRow() const { return d_first_row; }
 
-    lidx_t endRow() const { return d_last_row; }
+    //! Get global index of last row in block (exclusive)
+    gidx_t endRow() const { return d_last_row; }
 
-    lidx_t beginCol() const { return d_first_col; }
+    //! Get global index of first column in diagonal region (inclusive)
+    gidx_t beginCol() const { return d_first_col; }
 
-    lidx_t endCol() const { return d_last_col; }
+    //! Get global index of last column in diagonal region (exclusive)
+    gidx_t endCol() const { return d_last_col; }
 
+    //! Convert global column ids to local and free global columns
     void globalToLocalColumns();
 
+    //! Get pointer to unique columns, only useful for off-diagonal block
     gidx_t *getColumnMap() const
     {
         if ( d_is_diag ) {
@@ -89,6 +102,13 @@ public:
         return d_cols_unq.get();
     }
 
+    /** \brief  Copy unique columns into
+     * \param[out] colMap  Vector to copy column indices into
+     * \details  If this is a diagonal block the uniques are all columns
+     * in diagonal region and is only supported for simplicity in calling
+     * contexts. If this is an off-diagonal block this copies out the
+     * the contents of d_cols_unq.
+     */
     template<typename idx_t>
     void getColumnMap( std::vector<idx_t> &colMap ) const
     {
@@ -116,8 +136,13 @@ public:
         }
     }
 
+    //! Set number of nonzeros in each row and allocate space accordingly
     void setNNZ( const std::vector<lidx_t> &nnz );
 
+    //! Get pointers into d_cols at start of each row
+    void getColPtrs( std::vector<gidx_t *> &col_ptrs );
+
+    //! Print information about matrix block
     void printStats( bool show_zeros ) const
     {
         std::cout << ( d_is_diag ? "  diag block:" : "  offd block:" ) << std::endl;
@@ -147,58 +172,111 @@ public:
     }
 
 protected:
+    //! Make a clone of this matrix data
     std::shared_ptr<CSRLocalMatrixData> cloneMatrixData();
 
+    /** \brief  Get columns and values from one row
+     * \param[in]  local_row  Local index of desired row
+     * \param[out] cols       Vector of global column ids to push onto
+     * \param[out] values     Vector of values to push onto
+     */
     void getRowByGlobalID( const size_t local_row,
                            std::vector<size_t> &cols,
                            std::vector<double> &values ) const;
 
+    /** \brief  Get values from the matrix
+     * \param[in]  local_row  Local row to query
+     * \param[in]  num_cols   Number of cols to query
+     * \param[in]  cols       The column indices to query
+     * \param[out] values     Place to write retrieved values
+     * \details  If the matrix has not allocated a particular col
+     * specified those values will be set to zero.
+     */
     void getValuesByGlobalID( const size_t local_row,
-                              const size_t col,
-                              void *values,
-                              const typeID &id ) const;
+                              const size_t num_cols,
+                              size_t *cols,
+                              scalar_t *values ) const;
 
+    /** \brief  Add to existing values at given column locations in a row
+     * \param[in] num_cols   Number of columns/values passed in
+     * \param[in] local_row  Local index row to alter
+     * \param[in] cols       Global column indices where values are to be altered
+     * \param[in] values     Values to add to existing ones
+     * \details Entries in passed cols array that aren't the stored row are ignored
+     */
     void addValuesByGlobalID( const size_t num_cols,
                               const size_t rows,
                               const size_t *cols,
-                              const scalar_t *vals,
-                              const typeID &id );
+                              const scalar_t *vals );
 
+    /** \brief  Overwrite existing values at given column locations in a row
+     * \param[in] num_cols   Number of columns/values passed in
+     * \param[in] local_row  Local index row to alter
+     * \param[in] cols       Global column indices where values are to be set
+     * \param[in] values     Values to write
+     * \details Entries in passed cols array that aren't the stored row are ignored
+     */
     void setValuesByGlobalID( const size_t num_cols,
                               const size_t rows,
                               const size_t *cols,
-                              const scalar_t *vals,
-                              const typeID &id );
+                              const scalar_t *vals );
 
+    /** \brief  Get columns and values from one row
+     * \param[in] local_row  Local index of desired row
+     * \param[out] cols      Vector of global column ids to push onto
+     * \param[out] values    Vector of values to push onto
+     */
     std::vector<size_t> getColumnIDs( const size_t local_row ) const;
 
+    /** \brief  Sort the columns/values within each row
+     * \details  This sorts within each row using the same ordering as
+     * Hypre. Diagonal blocks will have the diagonal entry first, and
+     * keep columns in ascending order after that. Off-diagonal blocks
+     * have *local* columns in ascending order.
+     */
     void sortColumns();
 
     // Data members passed from outer CSRMatrixData object
+    //! Memory space where data lives, compatible with allocator template parameter
     const AMP::Utilities::MemoryType d_memory_location;
+    //! Global index of first row of this block
     const gidx_t d_first_row;
+    //! Global index of last row of this block
     const gidx_t d_last_row;
+    //! Global index of first column of diagonal block
     const gidx_t d_first_col;
+    //! Global index of last column of diagonal block
     const gidx_t d_last_col;
 
+    //! Flag to indicate if this a diagonal block or not
     const bool d_is_diag;
+    //! Flag to indicate if this is empty
     bool d_is_empty = true;
 
-    std::shared_ptr<lidx_t[]> d_row_starts;
-    std::shared_ptr<gidx_t[]> d_cols;
-    std::shared_ptr<gidx_t[]> d_cols_unq;
-    std::shared_ptr<lidx_t[]> d_cols_loc;
-    std::shared_ptr<scalar_t[]> d_coeffs;
-
-    lidx_t d_num_rows  = 0;
-    lidx_t d_nnz       = 0;
-    lidx_t d_ncols_unq = 0;
-
+    //! Allocator for gidx_t matched to template parameter
     gidxAllocator_t d_gidxAllocator;
+    //! Allocator for lidx_t matched to template parameter
     lidxAllocator_t d_lidxAllocator;
+    //! Allocator for scalar_t matched to template parameter
     scalarAllocator_t d_scalarAllocator;
 
-    std::shared_ptr<MatrixParametersBase> d_pParameters;
+    //! Starting index of each row within other data arrays
+    std::shared_ptr<lidx_t[]> d_row_starts;
+    //! Global column indices for nonzeros in each row
+    std::shared_ptr<gidx_t[]> d_cols;
+    //! Unique set of indices from d_cols, unused for diagonal block
+    std::shared_ptr<gidx_t[]> d_cols_unq;
+    //! Local column indices for nonzeros in each row
+    std::shared_ptr<lidx_t[]> d_cols_loc;
+    //! Nonzero values in each row
+    std::shared_ptr<scalar_t[]> d_coeffs;
+
+    //! Number of locally stored rows, (d_local_row - d_first_row)
+    const lidx_t d_num_rows;
+    //! Total number of nonzeros
+    lidx_t d_nnz = 0;
+    //! Number of unique columns referenced by block
+    lidx_t d_ncols_unq = 0;
 };
 
 } // namespace AMP::LinearAlgebra
