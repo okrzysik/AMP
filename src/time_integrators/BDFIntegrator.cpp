@@ -2159,7 +2159,9 @@ void BDFIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) con
 void BDFIntegrator::writeRestart( int64_t fid ) const
 {
     d_pParameters->d_db->putScalar<int>( "final_constant_timestep_current_step",
-                                         d_final_constant_timestep_current_step );
+                                         d_final_constant_timestep_current_step,
+                                         {},
+                                         AMP::Database::Check::Overwrite );
     ImplicitIntegrator::writeRestart( fid );
 }
 
