@@ -4,7 +4,7 @@
 #include "CopyCastHelper.hpp"
 
 namespace AMP::Utilities {
-    
+
 template struct copyCast_<double,
                           float,
                           AMP::Utilities::PortabilityBackend::OpenMP,
