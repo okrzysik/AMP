@@ -154,7 +154,7 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::extrac
 
 template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::LinfNorm(
-    std::shared_ptr<LocalMatrixData> A, typename Policy::scalar_t *rowSums ) const
+    std::shared_ptr<LocalMatrixData> A, typename Policy::scalar_t *rowSums )
 {
     using lidx_t = typename Policy::lidx_t;
 

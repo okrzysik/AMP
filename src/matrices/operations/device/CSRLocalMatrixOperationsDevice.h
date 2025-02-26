@@ -1,8 +1,6 @@
 #ifndef included_CSRLocalMatrixOperationsDevice_H_
 #define included_CSRLocalMatrixOperationsDevice_H_
 
-#include "AMP/matrices/operations/MatrixOperations.h"
-
 namespace AMP::LinearAlgebra {
 
 template<typename Policy,
