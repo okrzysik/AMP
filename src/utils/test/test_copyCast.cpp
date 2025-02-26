@@ -163,8 +163,8 @@ int main( int argc, char *argv[] )
             float,
             AMP::ManagedAllocator<double>,
             AMP::ManagedAllocator<float>,
-            double *,
-            float *,
+            thrust::device_ptr<double>,
+            thrust::device_ptr<float>,
             AMP::ManagedAllocator<void>,
             AMP::Utilities::PortabilityBackend::Kokkos>( ut,
                                                          "Kokkos Managed double->float passed" );
@@ -172,15 +172,15 @@ int main( int argc, char *argv[] )
             double,
             AMP::ManagedAllocator<float>,
             AMP::ManagedAllocator<double>,
-            float *,
-            double *,
+            thrust::device_ptr<float>,
+            thrust::device_ptr<double>,
             AMP::ManagedAllocator<void>,
             AMP::Utilities::PortabilityBackend::Kokkos>( ut,
                                                          "Kokkos Managed float->double passed" );
         #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     testOverflow<AMP::ManagedAllocator<double>,
                  AMP::ManagedAllocator<float>,
-                 double *,
+                 thrust::device_ptr<double>,
                  AMP::ManagedAllocator<void>,
                  AMP::Utilities::PortabilityBackend::Kokkos>( ut, "Kokkos Managed" );
         #endif
