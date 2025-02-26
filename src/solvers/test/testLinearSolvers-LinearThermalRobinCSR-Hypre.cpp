@@ -3,8 +3,8 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/CSRMatrix.h"
-#include "AMP/matrices/CSRMatrixParameters.h"
 #include "AMP/matrices/CSRPolicy.h"
+#include "AMP/matrices/RawCSRMatrixParameters.h"
 #include "AMP/matrices/testHelpers/MatrixDataTransforms.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -171,15 +171,15 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
                                                    cols_od,
                                                    coeffs_od );
 
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRLocalMatrixParameters pars_d{
+    AMP::LinearAlgebra::RawCSRMatrixParameters<Policy>::RawCSRLocalMatrixParameters pars_d{
         rs_d.data(), cols_d.data(), coeffs_d.data()
     };
 
-    AMP::LinearAlgebra::CSRMatrixParameters<Policy>::CSRLocalMatrixParameters pars_od{
+    AMP::LinearAlgebra::RawCSRMatrixParameters<Policy>::RawCSRLocalMatrixParameters pars_od{
         rs_od.data(), cols_od.data(), coeffs_od.data()
     };
 
-    auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
+    auto csrParams = std::make_shared<AMP::LinearAlgebra::RawCSRMatrixParameters<Policy>>(
         startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
 
 #ifdef USE_DEVICE

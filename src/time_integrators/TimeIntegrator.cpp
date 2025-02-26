@@ -230,9 +230,12 @@ void TimeIntegrator::registerChildObjects( AMP::IO::RestartManager *manager ) co
 }
 void TimeIntegrator::writeRestart( int64_t fid ) const
 {
-    d_pParameters->d_db->putScalar<double>( "initial_time", d_current_time );
-    d_pParameters->d_db->putScalar<double>( "initial_dt", d_current_dt );
-    d_pParameters->d_db->putScalar<double>( "integrator_step", d_integrator_step );
+    d_pParameters->d_db->putScalar<double>(
+        "initial_time", d_current_time, {}, AMP::Database::Check::Overwrite );
+    d_pParameters->d_db->putScalar<double>(
+        "initial_dt", d_current_dt, {}, AMP::Database::Check::Overwrite );
+    d_pParameters->d_db->putScalar<double>(
+        "integrator_step", d_integrator_step, {}, AMP::Database::Check::Overwrite );
     IO::writeHDF5( fid, "ti_db", *( d_pParameters->d_db ) );
     IO::writeHDF5( fid, "ic_vec", d_solution_vector->getID() );
     IO::writeHDF5( fid, "global_db", *( d_pParameters->d_global_db ) );

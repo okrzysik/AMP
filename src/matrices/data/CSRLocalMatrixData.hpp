@@ -3,8 +3,9 @@
 
 #include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/matrices/CSRMatrixParameters.h"
+#include "AMP/matrices/AMPCSRMatrixParameters.h"
 #include "AMP/matrices/MatrixParameters.h"
+#include "AMP/matrices/RawCSRMatrixParameters.h"
 #include "AMP/matrices/data/CSRLocalMatrixData.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Algorithms.h"
@@ -60,13 +61,16 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
       d_num_rows( last_row - first_row )
 {
     AMPManager::incrementResource( "CSRLocalMatrixData" );
-    d_pParameters  = params;
-    auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
-    auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
-    if ( csrParams ) {
+    // Figure out what kind of parameters object we have
+    // Note: matParams always true if ampCSRParams is by inheritance
+    auto rawCSRParams = std::dynamic_pointer_cast<RawCSRMatrixParameters<Policy>>( params );
+    auto ampCSRParams = std::dynamic_pointer_cast<AMPCSRMatrixParameters<Policy>>( params );
+    auto matParams    = std ::dynamic_pointer_cast<MatrixParameters>( params );
+
+    if ( rawCSRParams ) {
         // Pull out block specific parameters
-        auto &blParams = d_is_diag ? csrParams->d_diag : csrParams->d_off_diag;
+        auto &blParams = d_is_diag ? rawCSRParams->d_diag : rawCSRParams->d_off_diag;
 
         if ( blParams.d_row_starts == nullptr ) {
             d_is_empty = true;
@@ -91,25 +95,30 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         // Getting device memory support in this constructor mode will be very challenging
         AMP_ASSERT( d_memory_location != AMP::Utilities::MemoryType::device );
 
+        // can always allocate row starts without external information
+        d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
+
         const auto &getRow = matParams->getRowFunction();
 
-        if ( !getRow ) {
-            // Without a getRow function there is no way to set the nnz structure
-            // This route will just create an empty matrix
-            // This can happen e.g. when constructing the output matrix of SpGEMM
+        if ( !getRow || ampCSRParams ) {
+            // Initialization not desired or not possible
+            // can be set later by calling setNNZ and filling d_cols in some fashion
             d_nnz      = 0;
             d_is_empty = true;
             return;
         }
 
-        // Count number of nonzeros
+        // Count number of nonzeros per row and total
         d_nnz = 0;
         for ( gidx_t i = d_first_row; i < d_last_row; ++i ) {
+            lidx_t valid_nnz = 0;
             for ( auto &&col : getRow( i ) ) {
                 if ( isColValid<Policy>( col, d_is_diag, d_first_col, d_last_col ) ) {
-                    ++d_nnz;
+                    ++valid_nnz;
                 }
             }
+            d_row_starts[i - d_first_row] = valid_nnz;
+            d_nnz += valid_nnz;
         }
 
         // bail out for degenerate case with no nnz
@@ -121,20 +130,22 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         d_is_empty = false;
 
         // Allocate internal arrays
-        d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
-        d_cols       = sharedArrayBuilder( d_nnz, d_gidxAllocator );
-        d_coeffs     = sharedArrayBuilder( d_nnz, d_scalarAllocator );
+        d_cols   = sharedArrayBuilder( d_nnz, d_gidxAllocator );
+        d_coeffs = sharedArrayBuilder( d_nnz, d_scalarAllocator );
 
         // Fill cols and nnz based on local row extents and on/off diag status
         lidx_t nnzFilled = 0;
+        lidx_t nnzCached = d_row_starts[0];
         d_row_starts[0]  = 0;
         for ( lidx_t row = 0; row < d_num_rows; ++row ) {
+            // do exclusive scan on nnz per row along the way
+            lidx_t rs             = d_row_starts[row] + nnzCached;
+            nnzCached             = d_row_starts[row + 1];
+            d_row_starts[row + 1] = rs;
+            // fill in valid columns from getRow function
             auto cols = getRow( d_first_row + row );
-            // initialize next rs to this one and push forward as nz's added to this row
-            d_row_starts[row + 1] = d_row_starts[row];
             for ( auto &&col : cols ) {
                 if ( isColValid<Policy>( col, d_is_diag, d_first_col, d_last_col ) ) {
-                    d_row_starts[row + 1]++;
                     d_cols[nnzFilled]   = col;
                     d_coeffs[nnzFilled] = 0.0;
                     ++nnzFilled;
@@ -149,8 +160,9 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         // In this case matrices will stay purely local (e.g. not parts of
         // an encasing CSRMatrixData object). This is used for remote blocks
         // in SpGEMM
-        d_nnz      = 0;
-        d_is_empty = true;
+        d_nnz        = 0;
+        d_is_empty   = true;
+        d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
         return;
     }
 
@@ -270,13 +282,8 @@ CSRLocalMatrixData<Policy, Allocator>::cloneMatrixData()
 {
     std::shared_ptr<CSRLocalMatrixData> cloneData;
 
-    cloneData = std::make_shared<CSRLocalMatrixData>( d_pParameters,
-                                                      d_memory_location,
-                                                      d_first_row,
-                                                      d_last_row,
-                                                      d_first_col,
-                                                      d_last_col,
-                                                      d_is_diag );
+    cloneData = std::make_shared<CSRLocalMatrixData>(
+        nullptr, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, d_is_diag );
 
     cloneData->d_is_empty = d_is_empty;
     cloneData->d_nnz      = d_nnz;
@@ -313,8 +320,7 @@ void CSRLocalMatrixData<Policy, Allocator>::setNNZ( const std::vector<lidx_t> &n
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::setNNZ not implemented on device yet" );
 
-    // allocate and fill rowstarts from scan of passed nnz vector
-    d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
+    // fill rowstarts from scan of passed nnz vector
     std::exclusive_scan( nnz.begin(), nnz.end(), d_row_starts.get(), 0 );
     d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + nnz[d_num_rows - 1];
 
@@ -336,6 +342,23 @@ void CSRLocalMatrixData<Policy, Allocator>::setNNZ( const std::vector<lidx_t> &n
     std::fill( d_cols.get(), d_cols.get() + d_nnz, 0 );
     std::fill( d_cols_loc.get(), d_cols_loc.get() + d_nnz, 0 );
     std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, 0.0 );
+}
+
+template<typename Policy, class Allocator>
+void CSRLocalMatrixData<Policy, Allocator>::getColPtrs( std::vector<gidx_t *> &col_ptrs )
+{
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRLocalMatrixData::setNNZ not implemented on device yet" );
+
+    if ( !d_is_empty ) {
+        for ( lidx_t row = 0; row < d_num_rows; ++row ) {
+            col_ptrs[row] = &d_cols[d_row_starts[row]];
+        }
+    } else {
+        for ( lidx_t row = 0; row < d_num_rows; ++row ) {
+            col_ptrs[row] = nullptr;
+        }
+    }
 }
 
 template<typename Policy, class Allocator>
@@ -383,17 +406,14 @@ void CSRLocalMatrixData<Policy, Allocator>::getRowByGlobalID( const size_t local
 
 template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::getValuesByGlobalID( const size_t local_row,
-                                                                 const size_t col,
-                                                                 void *values,
-                                                                 const typeID &id ) const
+                                                                 const size_t num_cols,
+                                                                 size_t *cols,
+                                                                 scalar_t *values ) const
 {
     // Don't do anything on empty matrices
     if ( d_is_empty ) {
         return;
     }
-
-    AMP_INSIST( getTypeID<scalar_t>() == id,
-                "CSRLocalMatrixData::getValuesByGlobalID called with inconsistent typeID" );
 
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::getValuesByGlobalID not implemented for device memory" );
@@ -401,16 +421,13 @@ void CSRLocalMatrixData<Policy, Allocator>::getValuesByGlobalID( const size_t lo
     const auto start = d_row_starts[local_row];
     auto end         = d_row_starts[local_row + 1];
 
-    if ( d_is_diag ) {
+
+    for ( size_t nc = 0; nc < num_cols; ++nc ) {
+        auto query_col = cols[nc];
         for ( lidx_t i = start; i < end; ++i ) {
-            if ( d_first_col + d_cols_loc[i] == static_cast<gidx_t>( col ) ) {
-                *( reinterpret_cast<scalar_t *>( values ) ) = d_coeffs[i];
-            }
-        }
-    } else {
-        for ( lidx_t i = start; i < end; ++i ) {
-            if ( d_cols_unq[d_cols_loc[i]] == static_cast<gidx_t>( col ) ) {
-                *( reinterpret_cast<scalar_t *>( values ) ) = d_coeffs[i];
+            auto icol = d_is_diag ? ( d_first_col + d_cols_loc[i] ) : ( d_cols_unq[d_cols_loc[i]] );
+            if ( icol == static_cast<gidx_t>( query_col ) ) {
+                values[nc] = d_coeffs[i];
             }
         }
     }
@@ -420,15 +437,11 @@ template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::addValuesByGlobalID( const size_t num_cols,
                                                                  const size_t local_row,
                                                                  const size_t *cols,
-                                                                 const scalar_t *vals,
-                                                                 const typeID &id )
+                                                                 const scalar_t *vals )
 {
     if ( d_is_empty ) {
         return;
     }
-
-    AMP_INSIST( getTypeID<scalar_t>() == id,
-                "CSRLocalMatrixData::addValuesByGlobalID called with inconsistent typeID" );
 
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::addValuesByGlobalID not implemented for device memory" );
@@ -461,15 +474,11 @@ template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::setValuesByGlobalID( const size_t num_cols,
                                                                  const size_t local_row,
                                                                  const size_t *cols,
-                                                                 const scalar_t *vals,
-                                                                 const typeID &id )
+                                                                 const scalar_t *vals )
 {
     if ( d_is_empty ) {
         return;
     }
-
-    AMP_INSIST( getTypeID<scalar_t>() == id,
-                "CSRLocalMatrixData::setValuesByGlobalID called with inconsistent typeID" );
 
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::setValuesByGlobalID not implemented for device memory" );

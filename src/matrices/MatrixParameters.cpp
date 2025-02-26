@@ -15,7 +15,7 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
     : MatrixParametersBase( comm ),
       d_DOFManagerLeft( dofLeft ),
       d_DOFManagerRight( dofRight ),
-      d_getRowFunction( getRow )
+      d_getRow( getRow )
 {
     AMP_ASSERT( d_DOFManagerLeft );
     AMP_ASSERT( d_DOFManagerRight );
@@ -33,7 +33,7 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
     : MatrixParametersBase( comm, varLeft, varRight ),
       d_DOFManagerLeft( dofLeft ),
       d_DOFManagerRight( dofRight ),
-      d_getRowFunction( getRow )
+      d_getRow( getRow )
 {
     AMP_ASSERT( d_DOFManagerLeft );
     AMP_ASSERT( d_DOFManagerRight );
@@ -53,7 +53,7 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
       d_DOFManagerRight( dofRight ),
       d_CommListLeft( commListLeft ),
       d_CommListRight( commListRight ),
-      d_getRowFunction( getRow )
+      d_getRow( getRow )
 {
     AMP_ASSERT( d_DOFManagerLeft );
     AMP_ASSERT( d_DOFManagerRight );
@@ -72,7 +72,7 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
       d_DOFManagerRight( dofRight ),
       d_CommListLeft( commListLeft ),
       d_CommListRight( commListRight ),
-      d_getRowFunction( getRow )
+      d_getRow( getRow )
 {
     AMP_ASSERT( d_DOFManagerLeft );
     AMP_ASSERT( d_DOFManagerRight );

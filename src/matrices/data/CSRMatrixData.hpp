@@ -3,8 +3,11 @@
 
 #include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/matrices/CSRMatrixParameters.h"
+#include "AMP/matrices/AMPCSRMatrixParameters.h"
+#include "AMP/matrices/GetRowHelper.h"
 #include "AMP/matrices/MatrixParameters.h"
+#include "AMP/matrices/MatrixParametersBase.h"
+#include "AMP/matrices/RawCSRMatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
@@ -29,19 +32,24 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
     : MatrixData( params ), d_memory_location( AMP::Utilities::getAllocatorMemoryType<Allocator>() )
 {
     AMPManager::incrementResource( "CSRMatrixData" );
-    auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
-    auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
     AMP_INSIST(
         d_memory_location != AMP::Utilities::MemoryType::device,
         "CSRMatrixData and CSRSerialMatrixData do not support pure-device memory locations yet" );
 
-    if ( csrParams ) {
+    // Figure out what kind of parameters object we have
+    // Note: matParams always true if ampCSRParams is by inheritance
+    auto rawCSRParams = std::dynamic_pointer_cast<RawCSRMatrixParameters<Policy>>( d_pParameters );
+    auto ampCSRParams = std::dynamic_pointer_cast<AMPCSRMatrixParameters<Policy>>( d_pParameters );
+    auto matParams    = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
-        d_first_row = csrParams->d_first_row;
-        d_last_row  = csrParams->d_last_row;
-        d_first_col = csrParams->d_first_col;
-        d_last_col  = csrParams->d_last_col;
+    if ( rawCSRParams ) {
+
+        // Simplest initialization, extract row/column bounds and pass through to diag/offd
+        d_first_row = rawCSRParams->d_first_row;
+        d_last_row  = rawCSRParams->d_last_row;
+        d_first_col = rawCSRParams->d_first_col;
+        d_last_col  = rawCSRParams->d_last_col;
 
         // Construct on/off diag blocks
         d_diag_matrix = std::make_shared<DiagMatrixData>(
@@ -49,11 +57,11 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         d_offd_matrix = std::make_shared<OffdMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
 
-        // (Re)make DOF managers
+        // Only special item, raw data doesn't come with DOFManagers so need to make some
         resetDOFManagers();
 
     } else if ( matParams ) {
-
+        // get row/column bounds from DOFManagers
         d_leftDOFManager  = matParams->getLeftDOFManager();
         d_rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
@@ -62,12 +70,47 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::CSRMatrixData(
         d_first_col = d_rightDOFManager->beginDOF();
         d_last_col  = d_rightDOFManager->endDOF();
 
-        // send params forward to the on/off diagonal blocks
+        // Construct on/off diag blocks
         d_diag_matrix = std::make_shared<DiagMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, true );
         d_offd_matrix = std::make_shared<OffdMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
-        d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
+
+        // If, more specifically, have ampCSRParams then blocks are not yet
+        // filled. This consolidates calls to getRow{NNZ,Cols} for both blocks
+        if ( ampCSRParams && ampCSRParams->getRowNNZFunction() ) {
+            AMP_INSIST( ampCSRParams->getRowColsFunction(),
+                        "ampCSRParams->getRowColsFunction() must give valid function" );
+
+            // number of local rows
+            const lidx_t nrows = static_cast<lidx_t>( d_last_row - d_first_row );
+
+            // pull out row functions
+            auto getRowNNZ  = ampCSRParams->getRowNNZFunction();
+            auto getRowCols = ampCSRParams->getRowColsFunction();
+
+            // get NNZ counts and trigger allocations in blocks
+            std::vector<lidx_t> nnz_diag( nrows ), nnz_offd( nrows );
+            for ( lidx_t n = 0; n < nrows; ++n ) {
+                getRowNNZ( d_first_row + n, nnz_diag[n], nnz_offd[n] );
+            }
+            d_diag_matrix->setNNZ( nnz_diag );
+            d_offd_matrix->setNNZ( nnz_offd );
+
+
+            // Fill in column indices
+            for ( lidx_t n = 0; n < nrows; ++n ) {
+                const auto rs_diag = d_diag_matrix->d_row_starts[n];
+                auto cols_diag     = &( d_diag_matrix->d_cols[rs_diag] );
+                const auto rs_offd = d_offd_matrix->d_row_starts[n];
+                auto cols_offd =
+                    d_offd_matrix->d_is_empty ? nullptr : &( d_offd_matrix->d_cols[rs_offd] );
+                getRowCols( d_first_row + n, cols_diag, cols_offd );
+            }
+
+            // trigger re-packing of columns and convert to local cols
+            globalToLocalColumns();
+        }
 
     } else {
         AMP_ERROR( "Check supplied MatrixParameters object" );
@@ -125,7 +168,6 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::globalToL
 {
     d_diag_matrix->globalToLocalColumns();
     d_offd_matrix->globalToLocalColumns();
-    resetDOFManagers();
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
@@ -176,8 +218,12 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getRowByG
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
-    const
+    size_t num_rows,
+    size_t num_cols,
+    size_t *rows,
+    size_t *cols,
+    void *vals,
+    [[maybe_unused]] const typeID &id ) const
 {
     AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
                       "CSRMatrixData::getValuesByGlobalID called with inconsistent typeID" );
@@ -185,15 +231,22 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getValues
     AMP_DEBUG_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                       "CSRMatrixData::getValuesByGlobalID not implemented for device memory" );
 
-    if ( num_rows == 1 && num_cols == 1 ) {
+    auto values = reinterpret_cast<scalar_t *>( vals );
 
-        const auto local_row = rows[0] - d_first_row;
-        // Forward to internal matrices, nothing will happen if not found
-        d_diag_matrix->getValuesByGlobalID( local_row, cols[0], values, id );
-        d_offd_matrix->getValuesByGlobalID( local_row, cols[0], values, id );
-    } else {
-        AMP_ERROR( "CSRSerialMatrixData::getValuesByGlobalID not implemented for num_rows > 1 || "
-                   "num_cols > 1" );
+    // zero out values
+    for ( size_t i = 0; i < num_rows * num_cols; i++ ) {
+        values[i] = 0.0;
+    }
+
+    // get values row-by-row from the enclosed blocks
+    lidx_t start_pos = 0;
+    for ( size_t nr = 0; nr < num_rows; ++nr ) {
+        const auto local_row = static_cast<lidx_t>( rows[nr] - d_first_row );
+        d_diag_matrix->getValuesByGlobalID(
+            local_row, num_cols, &cols[start_pos], &values[start_pos] );
+        d_offd_matrix->getValuesByGlobalID(
+            local_row, num_cols, &cols[start_pos], &values[start_pos] );
+        start_pos += num_cols;
     }
 }
 
@@ -202,7 +255,12 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::getValues
 // they need to also handle the other_data case
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::addValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
+    size_t num_rows,
+    size_t num_cols,
+    size_t *rows,
+    size_t *cols,
+    void *vals,
+    [[maybe_unused]] const typeID &id )
 {
     AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
                       "CSRMatrixData::addValuesByGlobalID called with inconsistent typeID" );
@@ -220,8 +278,8 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::addValues
             // auto lcols = &cols[num_cols * i];
             const auto local_row = rows[i] - d_first_row;
             auto lvals           = &values[num_cols * i];
-            d_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-            d_offd_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+            d_diag_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals );
+            d_offd_matrix->addValuesByGlobalID( num_cols, local_row, cols, lvals );
         } else {
             for ( size_t icol = 0; icol < num_cols; ++icol ) {
                 d_other_data[rows[i]][cols[icol]] += values[num_cols * i + icol];
@@ -232,7 +290,12 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::addValues
 
 template<typename Policy, class Allocator, class DiagMatrixData, class OffdMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
+    size_t num_rows,
+    size_t num_cols,
+    size_t *rows,
+    size_t *cols,
+    void *vals,
+    [[maybe_unused]] const typeID &id )
 {
     AMP_DEBUG_INSIST( getTypeID<scalar_t>() == id,
                       "CSRMatrixData::setValuesByGlobalID called with inconsistent typeID" );
@@ -251,8 +314,8 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData>::setValues
             // auto lcols = &cols[num_cols * i];
             const auto local_row = rows[i] - d_first_row;
             auto lvals           = &values[num_cols * i];
-            d_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
-            d_offd_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals, id );
+            d_diag_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals );
+            d_offd_matrix->setValuesByGlobalID( num_cols, local_row, cols, lvals );
         } else {
             for ( size_t icol = 0; icol < num_cols; ++icol ) {
                 d_ghost_data[rows[i]][cols[icol]] = values[num_cols * i + icol];
