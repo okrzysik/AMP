@@ -39,6 +39,10 @@ COPY_TEST_FILE( input_testMatVecPerf-2 )
 COPY_TEST_FILE( input_testMatVecPerf-3 )
 
 ADD_AMP_TEST_124_MATRIX( testMatOpDev )
+ADD_AMP_TEST_124_MATRIX( testMatCopyCast )
+IF ( USE_DEVICE )
+    SET_DEVICE_COMPILER( testMatCopyCast )
+ENDIF()
 
 ADD_AMP_TEST( test_getRow input_AMP_mesh_zoo_3D )
 

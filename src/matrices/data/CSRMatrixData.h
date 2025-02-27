@@ -166,6 +166,13 @@ public:
     //!  Get the global id of the last column in diagonal block (exclusive)
     size_t endCol() const override;
 
+    //! Return the typeid of the matrix coeffs
+    typeID getCoeffType() const override
+    {
+        constexpr auto type = getTypeID<scalar_t>();
+        return type;
+    }
+
     //! Get pointer to diagonal block
     std::shared_ptr<DiagMatrixData> getDiagMatrix() { return d_diag_matrix; }
 
