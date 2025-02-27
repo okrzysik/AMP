@@ -137,8 +137,7 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copyCas
         AMP::Utilities::copyCast<scalar_t_in,
                                  scalar_t_out,
                                  AMP::Utilities::PortabilityBackend::Hip_Cuda,
-                                 Allocator>(
-            X->numberOfNonZeros(), X_coeffs, Y_coeffs );
+                                 Allocator>( X->numberOfNonZeros(), X_coeffs, Y_coeffs );
     }
 }
 
