@@ -16,6 +16,7 @@ namespace AMP::Geometry::GeometryHelpers {
  ****************************************************************/
 static inline std::array<double, 2> map_c2p( int method, double xc, double yc )
 {
+    constexpr double invsqrt2 = 0.7071067811865475244;
     if ( fabs( xc ) < 1e-12 && fabs( yc ) < 1e-12 )
         return { 0.0, 0.0 };
     if ( fabs( yc ) > fabs( xc ) ) {
@@ -31,9 +32,8 @@ static inline std::array<double, 2> map_c2p( int method, double xc, double yc )
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
     //       and Finite Volume Methods for PDEs in Circular and Spherical Domains",
     //       SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
-    double xp             = 0;
-    double yp             = 0;
-    const double invsqrt2 = 0.7071067811865475244;
+    double xp = 0;
+    double yp = 0;
     if ( method == 1 ) {
         yp = invsqrt2 * yc;
         xp = std::sqrt( xc * xc - yp * yp );
@@ -54,6 +54,8 @@ static inline std::array<double, 2> map_c2p( int method, double xc, double yc )
 static inline std::array<double, 2> map_p2c( int method, double xp, double yp )
 {
     // Perform the inverse mapping as map_c2p
+    constexpr double sqrt2    = 1.4142135623730950488;
+    constexpr double invsqrt2 = 0.7071067811865475244;
     if ( fabs( xp ) < 1e-12 && fabs( yp ) < 1e-12 )
         return { 0.0, 0.0 };
     if ( fabs( yp ) > fabs( xp ) ) {
@@ -65,10 +67,8 @@ static inline std::array<double, 2> map_p2c( int method, double xp, double yp )
         xp /= scale;
         yp /= scale;
     }
-    double xc             = 0;
-    double yc             = 0;
-    const double sqrt2    = 1.4142135623730950488;
-    const double invsqrt2 = 0.7071067811865475244;
+    double xc = 0;
+    double yc = 0;
     if ( method == 1 ) {
         yc = yp * sqrt2;
         xc = std::sqrt( xp * xp + yp * yp );
@@ -80,6 +80,7 @@ static inline std::array<double, 2> map_p2c( int method, double xp, double yp )
         auto z = xp - std::sqrt( 1 - yp * yp );
         auto D = 0.5 * ( z + std::sqrt( 2 - z * z ) );
         xc     = 1.0 - std::sqrt( std::max( 1 - D * sqrt2, 0.0 ) );
+        xc     = xc - ( sqrt2 * D - xc * ( 2 - xc ) ) / std::max( xc - 1, 1e-3 );
         yc     = yp * sqrt2 / ( 2 - xc );
     } else {
         AMP_ERROR( "Invalid method" );

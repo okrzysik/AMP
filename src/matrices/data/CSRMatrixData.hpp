@@ -4,7 +4,6 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/AMPCSRMatrixParameters.h"
-#include "AMP/matrices/GetRowHelper.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/MatrixParametersBase.h"
 #include "AMP/matrices/RawCSRMatrixParameters.h"
