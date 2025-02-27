@@ -8,35 +8,77 @@
 #include <vector>
 
 
+#ifdef _GLIBCXX_USE_FLOAT128
+__float128 sqrtq( __float128 x )
+{
+    // Use builtin sqrt as starting point
+    __float128 y = sqrt( (double) x );
+    // Two Newton iterations
+    constexpr __float128 C = 0.5;
+    y -= C * ( y - x / y );
+    y -= C * ( y - x / y );
+    y -= C * ( y - x / y );
+    return y;
+}
+#endif
+long double sqrtq( long double x ) { return sqrtl( x ); }
+
+double sqrtq( double x ) { return sqrt( x ); }
+
+float sqrtq( float x ) { return sqrtf( x ); }
+
+
 /****************************************************************
  * Map the logical coordinates to a circle                       *
  ****************************************************************/
 using Point = const std::array<double, 2>;
+template<class TYPE>
+static inline double map_test( TYPE xc, TYPE yc )
+{
+    constexpr TYPE one      = 1;
+    constexpr TYPE two      = 2;
+    constexpr TYPE one_half = 0.5;
+    constexpr TYPE sqrt2    = 1.414213562373095048801688724209698L;
+    constexpr TYPE invsqrt2 = 0.707106781186547524400844362104849L;
+    // Convert from circle to logical
+    TYPE D      = invsqrt2 * xc * ( two - xc );
+    TYPE center = D - sqrtq( one - D * D );
+    TYPE yp     = invsqrt2 * ( two - xc ) * yc;
+    TYPE xp     = center + sqrtq( one - yp * yp );
+    // Convert from logical to circle
+    TYPE z   = xp - sqrtq( one - yp * yp );
+    TYPE D2  = one_half * ( z + sqrtq( two - z * z ) );
+    TYPE xc2 = one - sqrtq( one - D2 * sqrt2 );
+    // Perform one iterative refinement using Newton's method
+    xc2      = xc2 - ( sqrt2 * D2 - xc2 * ( two - xc2 ) ) / std::max<TYPE>( xc2 - 1, 1e-3 );
+    TYPE yc2 = yp * sqrt2 / ( two - xc );
+    return std::max( fabs( static_cast<double>( xc - xc2 ) ),
+                     fabs( static_cast<double>( yc - yc2 ) ) );
+}
 static inline Point map_c2p( double xc, double yc )
 {
+    constexpr double invsqrt2 = 0.7071067811865475244;
     if ( fabs( xc ) < 1e-12 && fabs( yc ) < 1e-12 )
         return { 0.0, 0.0 };
     if ( fabs( yc ) > fabs( xc ) ) {
         auto [yp, xp] = map_c2p( yc, xc );
         return { xp, yp };
     }
-    double scale = std::max( { 1.0, xc, yc } );
+    double scale = std::max( 1.0, fabs( xc ) );
     if ( scale > 1.0 ) {
         xc /= scale;
         yc /= scale;
     }
-    double xp             = 0;
-    double yp             = 0;
-    const double invsqrt2 = 0.7071067811865475244;
-    double D              = invsqrt2 * xc * ( 2 - xc );
-    double center         = D - std::sqrt( 1.0 - D * D );
-    yp                    = invsqrt2 * ( 2 - xc ) * yc;
-    xp                    = center + std::sqrt( 1.0 - yp * yp );
+    double D      = invsqrt2 * xc * ( 2 - xc );
+    double center = D - std::sqrt( 1.0 - D * D );
+    double yp     = invsqrt2 * ( 2 - xc ) * yc;
+    double xp     = center + std::sqrt( 1.0 - yp * yp );
     return { scale * xp, scale * yp };
 }
 static inline Point map_p2c( double xp, double yp )
 {
     // Perform the inverse mapping as map_c2p
+    constexpr double sqrt2 = 1.4142135623730950488;
     if ( fabs( xp ) < 1e-12 && fabs( yp ) < 1e-12 )
         return { 0.0, 0.0 };
     if ( fabs( yp ) > fabs( xp ) ) {
@@ -48,13 +90,12 @@ static inline Point map_p2c( double xp, double yp )
         xp /= scale;
         yp /= scale;
     }
-    double xc          = 0;
-    double yc          = 0;
-    const double sqrt2 = 1.4142135623730950488;
-    auto z             = xp - std::sqrt( 1 - yp * yp );
-    auto D             = 0.5 * ( z + std::sqrt( 2 - z * z ) );
-    xc                 = 1.0 - std::sqrt( std::max( 1 - D * sqrt2, 0.0 ) );
-    yc                 = yp * sqrt2 / ( 2 - xc );
+    auto z    = xp - std::sqrt( 1 - yp * yp );
+    auto D    = 0.5 * ( z + std::sqrt( 2 - z * z ) );
+    double xc = 1.0 - std::sqrt( std::max( 1 - D * sqrt2, 0.0 ) );
+    // Perform one iterative refinement using Newton's method
+    xc        = xc - ( sqrt2 * D - xc * ( 2 - xc ) ) / std::max( xc - 1, 1e-3 );
+    double yc = yp * sqrt2 / ( 2 - xc );
     return { scale * xc, scale * yc };
 }
 Point map_logical_circle( double r, double x, double y )
@@ -258,6 +299,33 @@ int writeFailedPoints( std::vector<PointDist> &p1,
 }
 
 
+void testMap()
+{
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<> dis( 0, 1 );
+    double err[4] = { 0, 0, 0, 0 };
+    for ( int i = 0; i < 100000; i++ ) {
+        double x = dis( gen );
+        double y = dis( gen );
+        if ( fabs( y ) > fabs( x ) )
+            std::swap( x, y );
+        err[0] = std::max( err[0], map_test<float>( x, y ) );
+        err[1] = std::max( err[1], map_test<double>( x, y ) );
+        err[2] = std::max( err[2], map_test<long double>( x, y ) );
+#ifdef _GLIBCXX_USE_FLOAT128
+        err[3] = std::max( err[3], map_test<__float128>( x, y ) );
+#endif
+    }
+    printf( "Map error (float): %e\n", err[0] );
+    printf( "Map error (double): %e\n", err[1] );
+    printf( "Map error (long): %e\n", err[2] );
+    if ( err[3] != 0 )
+        printf( "Map error (f128): %e\n", err[3] );
+    printf( "\n" );
+}
+
+
 // Main function
 int main( int argc, char **argv )
 {
@@ -268,6 +336,9 @@ int main( int argc, char **argv )
         return -1;
     }
 
+    // Test mapping with extended precision
+    testMap();
+
     // Standalone test
     const double tol = 1e-10;
     if ( argc == 1 ) {
@@ -276,7 +347,8 @@ int main( int argc, char **argv )
         // Write failed points to a file
         int N_failed = writeFailedPoints( p1, p2, tol, "failedGeometryHelpersPoints.data" );
         printf( "N_failed = %i\n", N_failed );
-        printf( "max error = %e\n\n", std::max( p1[0][2], p2[0][2] ) );
+        printf( "max error (lpl) = %e\n", p1[0][2] );
+        printf( "max error (plp) = %e\n\n", p2[0][2] );
         // Finished
         if ( N_failed == 0 ) {
             printf( "Tests passed\n" );
