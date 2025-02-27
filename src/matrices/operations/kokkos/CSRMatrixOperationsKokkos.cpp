@@ -23,7 +23,6 @@
             allocator,                                                     \
             execspace,                                                     \
             viewspace,                                                     \
-            AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,     \
             AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
 
     // Execution spaces and view spaces are instatiated together and anchor
@@ -82,17 +81,14 @@ INSTANTIATE_ALLOCS( HYPRECSRPolicyFloat )
             allocator,                                                                          \
             execspace,                                                                          \
             viewspace,                                                                          \
-            AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,                          \
             AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>::                        \
             copyCast<policyIn>(                                                                 \
                 CSRMatrixData<policyIn,                                                         \
                               allocator,                                                        \
-                              AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>,      \
                               AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> *    \
                     X,                                                                          \
                 CSRMatrixData<policy,                                                           \
                               allocator,                                                        \
-                              AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,        \
                               AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> *      \
                     Y );                                                                        \
         template void AMP::LinearAlgebra::CSRLocalMatrixOperationsKokkos<                       \

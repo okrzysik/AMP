@@ -10,8 +10,7 @@ namespace AMP::LinearAlgebra {
 
 template<typename Policy,
          class Allocator,
-         class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>,
-         class OffdMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+         class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixOperationsDevice : public MatrixOperations
 {
 
@@ -61,11 +60,9 @@ class CSRMatrixOperationsDevice : public MatrixOperations
     void copyCast( const MatrixData &X, MatrixData &Y ) override;
 
     template<typename PolicyIn>
-    static void copyCast( CSRMatrixData<PolicyIn,
-                                        Allocator,
-                                        CSRLocalMatrixData<PolicyIn, Allocator>,
-                                        CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-                          CSRMatrixData<Policy, Allocator, DiagMatrixData, OffdMatrixData> *Y );
+    static void
+    copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
+              CSRMatrixData<Policy, Allocator, DiagMatrixData> *Y );
 
     /** \brief  Set the non-zeros of the matrix to a scalar
      * \param[in]  alpha  The value to set the non-zeros to

@@ -17,7 +17,6 @@
     template class AMP::LinearAlgebra::CSRMatrixOperationsDevice<      \
         policy,                                                        \
         allocator,                                                     \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,     \
         AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
 
 // Allocator instatiator is responsible for adding all supported
@@ -55,17 +54,14 @@ INSTANTIATE_ALLOCS( HYPRECSRPolicyFloat )
     template void AMP::LinearAlgebra::CSRMatrixOperationsDevice<                            \
         policy,                                                                             \
         allocator,                                                                          \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,                          \
         AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>::                        \
         copyCast<policyIn>(                                                                 \
             CSRMatrixData<policyIn,                                                         \
                           allocator,                                                        \
-                          AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>,      \
                           AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> *    \
                 X,                                                                          \
             CSRMatrixData<policy,                                                           \
                           allocator,                                                        \
-                          AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,        \
                           AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> *      \
                 Y );                                                                        \
     template void AMP::LinearAlgebra::CSRLocalMatrixOperationsDevice<                       \
