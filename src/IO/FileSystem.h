@@ -51,15 +51,14 @@ std::string getSuffix( const std::string &filename );
 
 // Deprecated functions
 [[deprecated( "recursiveMkdir(path,mode,rank_create) is deprecated, no need to specify "
-              "only_node_zero_creates, use recursiveMkdir(path)" )]]
-void recursiveMkdir( const std::string &, mode_t, bool );
-[[deprecated(
-    "recursiveMkdir(path,mode) is deprecated, use recursiveMkdir(path) and permissions(mode)" )]]
-void recursiveMkdir( const std::string &, mode_t );
-[[deprecated( "fileExists() is deprecated, use exists()" )]]
-bool fileExists( const std::string & );
-[[deprecated( "renameFile() is deprecated, use rename()" )]]
-void renameFile( const std::string &old_filename, const std::string &new_filename );
+              "only_node_zero_creates, use recursiveMkdir(path)" )]] void
+recursiveMkdir( const std::string &, mode_t, bool );
+[[deprecated( "recursiveMkdir(path,mode) is deprecated, use recursiveMkdir(path) and "
+              "permissions(mode)" )]] void
+recursiveMkdir( const std::string &, mode_t );
+[[deprecated( "fileExists() is deprecated, use exists()" )]] bool fileExists( const std::string & );
+[[deprecated( "renameFile() is deprecated, use rename()" )]] void
+renameFile( const std::string &old_filename, const std::string &new_filename );
 
 
 } // namespace AMP::IO
