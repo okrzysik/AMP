@@ -9,7 +9,6 @@
     template class AMP::LinearAlgebra::CSRMatrixData<                         \
         policy,                                                               \
         allocator,                                                            \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,            \
         AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
 
 // Check if device based allocators are needed

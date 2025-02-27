@@ -14,12 +14,10 @@
     template class AMP::LinearAlgebra::CSRMatrixOperationsDefault<      \
         policy,                                                         \
         allocator,                                                      \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,      \
         AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;     \
     template class AMP::LinearAlgebra::CSRMatrixSpGEMMHelperDefault<    \
         policy,                                                         \
         allocator,                                                      \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,      \
         AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
 
 // Check if device based allocators are needed
@@ -54,17 +52,14 @@ INSTANTIATE_ALLOCS( HYPRECSRPolicyFloat )
     template void AMP::LinearAlgebra::CSRMatrixOperationsDefault<                           \
         policy,                                                                             \
         allocator,                                                                          \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,                          \
         AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>::                        \
         copyCast<policyIn>(                                                                 \
             CSRMatrixData<policyIn,                                                         \
                           allocator,                                                        \
-                          AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>,      \
                           AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> *    \
                 X,                                                                          \
             CSRMatrixData<policy,                                                           \
                           allocator,                                                        \
-                          AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>,        \
                           AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> *      \
                 Y );                                                                        \
     template void AMP::LinearAlgebra::CSRLocalMatrixOperationsDefault<                      \
