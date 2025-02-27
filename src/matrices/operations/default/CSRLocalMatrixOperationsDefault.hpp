@@ -133,7 +133,12 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::copyCa
     if constexpr ( std::is_same_v<scalar_t_in, scalar_t_out> ) {
         std::copy( X_coeffs, X_coeffs + X->numberOfNonZeros(), Y_coeffs );
     } else {
-        AMP::Utilities::copyCast<scalar_t_in, scalar_t_out>(
+#ifdef AMP_USE_OPENMP
+        using DefaultBcknd = AMP::Utilities::PortabilityBackend::OpenMP;
+#else
+        using DefaultBcknd = AMP::Utilities::PortabilityBackend::Serial;
+#endif
+        AMP::Utilities::copyCast<scalar_t_in, scalar_t_out, DefaultBcknd, Allocator>(
             X->numberOfNonZeros(), X_coeffs, Y_coeffs );
     }
 }
