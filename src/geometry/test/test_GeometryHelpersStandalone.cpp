@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -22,9 +23,7 @@ __float128 sqrtq( __float128 x )
 }
 #endif
 long double sqrtq( long double x ) { return sqrtl( x ); }
-
 double sqrtq( double x ) { return sqrt( x ); }
-
 float sqrtq( float x ) { return sqrtf( x ); }
 
 
@@ -57,46 +56,48 @@ static inline double map_test( TYPE xc, TYPE yc )
 }
 static inline Point map_c2p( double xc, double yc )
 {
-    constexpr double invsqrt2 = 0.7071067811865475244;
-    if ( fabs( xc ) < 1e-12 && fabs( yc ) < 1e-12 )
-        return { 0.0, 0.0 };
     if ( fabs( yc ) > fabs( xc ) ) {
         auto [yp, xp] = map_c2p( yc, xc );
         return { xp, yp };
     }
-    double scale = std::max( 1.0, fabs( xc ) );
-    if ( scale > 1.0 ) {
-        xc /= scale;
-        yc /= scale;
+    // map xc > 0 and |yc| < xc = d
+    assert( xc >= 0 && xc >= fabs( yc ) );
+    constexpr double invsqrt2 = 0.7071067811865475244;
+    if ( xc < 1e-12 )
+        return { 0.0, 0.0 };
+    if ( xc > 1.0 ) {
+        double scale = xc;
+        double yp    = invsqrt2 * yc / scale;
+        double xp    = std::sqrt( 1.0 - yp * yp );
+        return { scale * xp, scale * yp };
     }
     double D      = invsqrt2 * xc * ( 2 - xc );
     double center = D - std::sqrt( 1.0 - D * D );
     double yp     = invsqrt2 * ( 2 - xc ) * yc;
     double xp     = center + std::sqrt( 1.0 - yp * yp );
-    return { scale * xp, scale * yp };
+    return { xp, yp };
 }
 static inline Point map_p2c( double xp, double yp )
 {
     // Perform the inverse mapping as map_c2p
-    constexpr double sqrt2 = 1.4142135623730950488;
-    if ( fabs( xp ) < 1e-12 && fabs( yp ) < 1e-12 )
-        return { 0.0, 0.0 };
     if ( fabs( yp ) > fabs( xp ) ) {
         auto [yc, xc] = map_p2c( yp, xp );
         return { xc, yc };
     }
-    double scale = std::max( std::sqrt( xp * xp + yp * yp ), 1.0 );
-    if ( scale > 1.0 ) {
-        xp /= scale;
-        yp /= scale;
-    }
+    // map |xp| > |yp| to logical
+    constexpr double sqrt2 = 1.4142135623730950488;
+    if ( fabs( xp ) < 1e-12 )
+        return { 0.0, 0.0 };
+    double R = std::sqrt( xp * xp + yp * yp );
+    if ( R > 1.0 )
+        return { R, sqrt2 * yp };
     auto z    = xp - std::sqrt( 1 - yp * yp );
     auto D    = 0.5 * ( z + std::sqrt( 2 - z * z ) );
     double xc = 1.0 - std::sqrt( std::max( 1 - D * sqrt2, 0.0 ) );
     // Perform one iterative refinement using Newton's method
     xc        = xc - ( sqrt2 * D - xc * ( 2 - xc ) ) / std::max( xc - 1, 1e-3 );
     double yc = yp * sqrt2 / ( 2 - xc );
-    return { scale * xc, scale * yc };
+    return { xc, yc };
 }
 Point map_logical_circle( double r, double x, double y )
 {
@@ -149,7 +150,7 @@ std::tuple<std::vector<PointDist>, std::vector<PointDist>> test_map_logical_circ
     }
     std::sort( points1.begin(), points1.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
     // Test physical->logical->physical
-    dis = std::uniform_real_distribution<>( -3.0, 3.0 );
+    dis = std::uniform_real_distribution<>( -1.1, 1.1 );
     std::vector<PointDist> points2( N );
     for ( int i = 0; i < N; i++ ) {
         double x    = dis( gen );
@@ -160,6 +161,21 @@ std::tuple<std::vector<PointDist>, std::vector<PointDist>> test_map_logical_circ
         points2.push_back( { x, y, dist } );
     }
     std::sort( points2.begin(), points2.end(), []( auto a, auto b ) { return a[2] > b[2]; } );
+    // Test points outside domain (should be nearly exact)
+    double err = 0;
+    dis        = std::uniform_real_distribution<>( -1e3, 1e3 );
+    for ( int i = 0; i < N; i++ ) {
+        double x = dis( gen );
+        double y = dis( gen );
+        double R = sqrt( x * x + y * y );
+        if ( R < 1.0 )
+            continue;
+        auto p      = map_circle_logical( 1.0, x, y );
+        auto p2     = map_logical_circle( 1.0, p[0], p[1] );
+        double dist = distance( { x, y }, p2 );
+        err         = std::max( err, dist * 1e-3 );
+    }
+    printf( "Far points error: %e\n\n", err );
     return std::tie( points1, points2 );
 }
 
