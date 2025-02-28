@@ -16,22 +16,26 @@ namespace AMP::Geometry::GeometryHelpers {
  ****************************************************************/
 static inline std::array<double, 2> map_c2p( int method, double xc, double yc )
 {
-    constexpr double invsqrt2 = 0.7071067811865475244;
-    if ( fabs( xc ) < 1e-12 && fabs( yc ) < 1e-12 )
-        return { 0.0, 0.0 };
-    if ( fabs( yc ) > fabs( xc ) ) {
-        auto [yp, xp] = map_c2p( method, yc, xc );
-        return { xp, yp };
-    }
-    double scale = std::max( { 1.0, xc, yc } );
-    if ( scale > 1.0 ) {
-        xc /= scale;
-        yc /= scale;
-    }
     // map xc > 0 and |yc| < xc = d to (xp,yp) in r=1 using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
     //       and Finite Volume Methods for PDEs in Circular and Spherical Domains",
     //       SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
+    if ( fabs( yc ) > fabs( xc ) ) {
+        auto [yp, xp] = map_c2p( method, yc, xc );
+        return { xp, yp };
+    }
+    // map xc > 0 and |yc| < xc = d
+    constexpr double invsqrt2 = 0.7071067811865475244;
+    AMP_DEBUG_ASSERT( xc >= 0 && xc >= fabs( yc ) );
+    if ( fabs( xc ) < 1e-12 )
+        return { 0.0, 0.0 };
+    if ( xc > 1.0 ) {
+        double scale = xc;
+        yc /= scale;
+        double yp = invsqrt2 * yc;
+        double xp = std::sqrt( 1 - yp * yp );
+        return { scale * xp, scale * yp };
+    }
     double xp = 0;
     double yp = 0;
     if ( method == 1 ) {
@@ -49,24 +53,23 @@ static inline std::array<double, 2> map_c2p( int method, double xc, double yc )
     } else {
         AMP_ERROR( "Invalid method" );
     }
-    return { scale * xp, scale * yp };
+    return { xp, yp };
 }
 static inline std::array<double, 2> map_p2c( int method, double xp, double yp )
 {
     // Perform the inverse mapping as map_c2p
-    constexpr double sqrt2    = 1.4142135623730950488;
-    constexpr double invsqrt2 = 0.7071067811865475244;
-    if ( fabs( xp ) < 1e-12 && fabs( yp ) < 1e-12 )
-        return { 0.0, 0.0 };
     if ( fabs( yp ) > fabs( xp ) ) {
         auto [yc, xc] = map_p2c( method, yp, xp );
         return { xc, yc };
     }
-    double scale = std::max( std::sqrt( xp * xp + yp * yp ), 1.0 );
-    if ( scale > 1.0 ) {
-        xp /= scale;
-        yp /= scale;
-    }
+    // map |xp| > |yp| to logical
+    constexpr double sqrt2    = 1.4142135623730950488;
+    constexpr double invsqrt2 = 0.7071067811865475244;
+    if ( fabs( xp ) < 1e-12 )
+        return { 0.0, 0.0 };
+    double R = std::sqrt( xp * xp + yp * yp );
+    if ( R > 1.0 )
+        return { R, sqrt2 * yp };
     double xc = 0;
     double yc = 0;
     if ( method == 1 ) {
@@ -85,7 +88,7 @@ static inline std::array<double, 2> map_p2c( int method, double xp, double yp )
     } else {
         AMP_ERROR( "Invalid method" );
     }
-    return { scale * xc, scale * yc };
+    return { xc, yc };
 }
 std::array<double, 2> map_logical_circle( double r, int method, double x, double y )
 {
