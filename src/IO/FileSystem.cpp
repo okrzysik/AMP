@@ -87,6 +87,8 @@ void AMP::IO::renameFile( const std::string &old_filename, const std::string &ne
 {
     rename( old_filename, new_filename );
 }
+#if !( defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
+       defined( _MSC_VER ) )
 void AMP::IO::recursiveMkdir( const std::string &path, mode_t mode )
 {
     bool created = recursiveMkdir2( path );
@@ -99,3 +101,4 @@ void AMP::IO::recursiveMkdir( const std::string &path, mode_t mode, bool )
     if ( created )
         std::filesystem::permissions( path, static_cast<std::filesystem::perms>( mode ) );
 }
+#endif
