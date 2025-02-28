@@ -147,20 +147,20 @@ void testCopyCast( AMP::UnitTest *ut,
 
     B->copyCast( A );
     C->copyCast( B );
-    checkEqualEntries<PolicyD,Allocator>( ut,
-                       test_name,
-                       "copyCast double->float->double",
-                       dofManager,
-                       A,
-                       C,
-                       std::numeric_limits<float>::epsilon() );
+    checkEqualEntries<PolicyD, Allocator>( ut,
+                                           test_name,
+                                           "copyCast double->float->double",
+                                           dofManager,
+                                           A,
+                                           C,
+                                           std::numeric_limits<float>::epsilon() );
 
     C->copyCast( A );
-    checkEqualEntries<PolicyD,Allocator>(
+    checkEqualEntries<PolicyD, Allocator>(
         ut, test_name, "copy doubles", dofManager, A, C, std::numeric_limits<double>::epsilon() );
 
     D->copyCast( B );
-    checkEqualEntries<PolicyF,Allocator>(
+    checkEqualEntries<PolicyF, Allocator>(
         ut, test_name, "copy floats", dofManager, B, D, std::numeric_limits<float>::epsilon() );
 }
 
