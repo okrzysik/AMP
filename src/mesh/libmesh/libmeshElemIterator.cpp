@@ -19,14 +19,12 @@ static MeshElement nullElement;
 static constexpr auto MeshIteratorType = AMP::getTypeID<libmeshElemIterator>().hash;
 static_assert( MeshIteratorType != 0 );
 libmeshElemIterator::libmeshElemIterator( const AMP::Mesh::libmeshMesh *mesh,
-                                          int gcw,
                                           const libMesh::Mesh::element_iterator &begin,
                                           const libMesh::Mesh::element_iterator &end,
                                           const libMesh::Mesh::element_iterator &pos,
                                           int size,
                                           int pos2 )
-    : d_gcw( gcw ),
-      d_dim( mesh->getlibMesh()->mesh_dimension() ),
+    : d_dim( mesh->getlibMesh()->mesh_dimension() ),
       d_rank( mesh->getComm().getRank() ),
       d_begin2( begin ),
       d_end2( end ),
@@ -61,7 +59,6 @@ libmeshElemIterator::libmeshElemIterator( const AMP::Mesh::libmeshMesh *mesh,
 }
 libmeshElemIterator::libmeshElemIterator( const libmeshElemIterator &rhs )
     : MeshIterator(), // Note: we never want to call the base copy constructor
-      d_gcw( rhs.d_gcw ),
       d_dim( rhs.d_dim ),
       d_rank( rhs.d_rank ),
       d_begin2( rhs.d_begin2 ),
@@ -85,7 +82,6 @@ libmeshElemIterator &libmeshElemIterator::operator=( const libmeshElemIterator &
     this->d_typeHash     = MeshIteratorType;
     this->d_iteratorType = rhs.d_iteratorType;
     this->d_mesh         = rhs.d_mesh;
-    this->d_gcw          = rhs.d_gcw;
     this->d_pos          = rhs.d_pos;
     this->d_size         = rhs.d_size;
     this->d_rank         = rhs.d_rank;
@@ -111,11 +107,11 @@ MeshIterator *libmeshElemIterator::clone() const { return new libmeshElemIterato
  ********************************************************/
 MeshIterator libmeshElemIterator::begin() const
 {
-    return libmeshElemIterator( d_mesh, d_gcw, d_begin2, d_end2, d_begin2, d_size, 0 );
+    return libmeshElemIterator( d_mesh, d_begin2, d_end2, d_begin2, d_size, 0 );
 }
 MeshIterator libmeshElemIterator::end() const
 {
-    return libmeshElemIterator( d_mesh, d_gcw, d_begin2, d_end2, d_end2, d_size, d_size );
+    return libmeshElemIterator( d_mesh, d_begin2, d_end2, d_end2, d_size, d_size );
 }
 
 

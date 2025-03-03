@@ -10,7 +10,6 @@ DISABLE_WARNINGS
 #undef LIBMESH_ENABLE_REFERENCE_COUNTING
 #include "libmesh/mesh.h"
 #include "libmesh/node.h"
-//#include "libmesh/mesh_data.h"
 ENABLE_WARNINGS
 
 
@@ -278,7 +277,7 @@ private:
     std::vector<unsigned int> neighborNodeIDs;
     std::vector<std::vector<libMesh::Node *>> neighborNodes;
 
-    // Data used to elements that libmesh doesn't create
+    // Data used to store elements that libmesh doesn't create
     std::shared_ptr<std::vector<MeshElement>> d_localElements[4];
     std::shared_ptr<std::vector<MeshElement>> d_ghostElements[4];
 

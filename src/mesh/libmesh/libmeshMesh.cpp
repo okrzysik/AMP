@@ -630,11 +630,11 @@ MeshIterator libmeshMesh::getIterator( const GeomType type, const int gcw ) cons
         if ( gcw == 0 ) {
             auto begin = d_libMesh->local_elements_begin();
             auto end   = d_libMesh->local_elements_end();
-            it         = libmeshElemIterator( this, gcw, begin, end, begin, n_local[i], 0 );
+            it         = libmeshElemIterator( this, begin, end, begin, n_local[i], 0 );
         } else if ( gcw == 1 ) {
             auto begin = d_libMesh->elements_begin();
             auto end   = d_libMesh->elements_end();
-            it = libmeshElemIterator( this, gcw, begin, end, begin, n_local[i] + n_ghost[i], 0 );
+            it         = libmeshElemIterator( this, begin, end, begin, n_local[i] + n_ghost[i], 0 );
         } else {
             AMP_ERROR( "Unsupported ghost cell width" );
         }
@@ -643,11 +643,11 @@ MeshIterator libmeshMesh::getIterator( const GeomType type, const int gcw ) cons
         if ( gcw == 0 ) {
             auto begin = d_libMesh->local_nodes_begin();
             auto end   = d_libMesh->local_nodes_end();
-            it         = libmeshNodeIterator( this, gcw, begin, end, begin, n_local[i], 0 );
+            it         = libmeshNodeIterator( this, begin, end, begin, n_local[i], 0 );
         } else if ( gcw == 1 ) {
             auto begin = d_libMesh->nodes_begin();
             auto end   = d_libMesh->nodes_end();
-            it = libmeshNodeIterator( this, gcw, begin, end, begin, n_local[i] + n_ghost[i], 0 );
+            it         = libmeshNodeIterator( this, begin, end, begin, n_local[i] + n_ghost[i], 0 );
         } else {
             AMP_ERROR( "Unsupported ghost cell width" );
         }

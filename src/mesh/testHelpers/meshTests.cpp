@@ -471,7 +471,7 @@ void meshTests::MeshCountTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mes
         const size_t N_local  = mesh->numLocalElements( type );
         const size_t N_global = mesh->numGlobalElements( type );
         const size_t N_ghost0 = mesh->numGhostElements( type, 0 );
-        const size_t N_ghost1 = comm.sumReduce( mesh->numGhostElements( type, 1 ) );
+        const size_t N_ghost1 = mesh->numGhostElements( type, 1 );
         const size_t N_sum    = comm.sumReduce( N_local );
         if ( N_global > 0 )
             ut.passes( "Non-trivial mesh created" );
@@ -490,8 +490,10 @@ void meshTests::MeshCountTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mes
         if ( N_local != N_global && is_base_mesh ) {
             if ( N_ghost1 > 0 )
                 ut.passes( "gcw=1 has ghost elements" );
-            else
+            else if ( N_local > 0 )
                 ut.failure( "gcw=1 has ghost elements: " + mesh->getName() );
+            if ( N_ghost1 + N_local >= N_global )
+                ut.expected_failure( "gcw=1 has all elements: " + mesh->getName() );
         }
     }
 }
@@ -584,24 +586,16 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh
             ++iterator;
         }
         // Broadcast the list of ghost ids to everybody
-        size_t N_ghost_global = mesh->getComm().sumReduce( ghost.size() );
-        if ( N_ghost_global == 0 )
-            continue;
-        std::vector<AMP::Mesh::MeshElementID> ghost_global( N_ghost_global );
-        AMP::Mesh::MeshElementID *send_data = nullptr;
-        if ( !ghost.empty() ) {
-            send_data = &ghost[0];
-        }
-        auto recv_data = &ghost_global[0];
-        mesh->getComm().allGather( send_data, (int) ghost.size(), recv_data );
-        // Check that each ghost appears in the owner's rank's list
+        auto ghost_global = mesh->getComm().allGather( ghost );
+        if ( ghost_global.empty() )
+            continue; // Check that each ghost appears in the owner's rank's list
         AMP::Utilities::quicksort( owned );        // Sort for search
         AMP::Utilities::quicksort( ghost_global ); // Sort for speed
         std::vector<int> found( ghost_global.size(), 0 );
         auto my_mesh    = mesh;
         auto my_rank    = my_mesh->getComm().getRank();
         auto my_mesh_id = my_mesh->meshID();
-        for ( size_t i = 0; i < N_ghost_global; i++ ) {
+        for ( size_t i = 0; i < ghost_global.size(); i++ ) {
             // Get the current mesh
             if ( ghost_global[i].meshID() != my_mesh_id ) {
                 my_mesh_id = ghost_global[i].meshID();
@@ -625,8 +619,8 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh
         }
         mesh->getComm().maxReduce( &found[0], (int) found.size() );
         bool all_found = true;
-        for ( int i : found ) {
-            if ( i == 0 )
+        for ( size_t i = 0; i < found.size(); i++ ) {
+            if ( found[i] == 0 )
                 all_found = false;
         }
         if ( all_found )

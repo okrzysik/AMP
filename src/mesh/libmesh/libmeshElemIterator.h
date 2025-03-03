@@ -55,7 +55,6 @@ public:
 protected:
     /** Default constructor
      * \param mesh      Pointer to the libMesh mesh
-     * \param gcw       gcw to use
      * \param begin     Pointer to iterator with the begining position
      * \param end       Pointer to iterator with the end position
      * \param pos       Pointer to iterator with the current position
@@ -63,7 +62,6 @@ protected:
      * \param pos2      Index of the current position in the iterator (-1: unknown)
      */
     libmeshElemIterator( const AMP::Mesh::libmeshMesh *mesh,
-                         int gcw,
                          const libMesh::Mesh::element_iterator &begin,
                          const libMesh::Mesh::element_iterator &end,
                          const libMesh::Mesh::element_iterator &pos,
@@ -77,7 +75,6 @@ protected:
 
 private:
     // Data members
-    int d_gcw;
     int d_dim;
     int d_rank;
     libMesh::Mesh::element_iterator d_begin2;
