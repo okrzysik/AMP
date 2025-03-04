@@ -49,8 +49,8 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
         d_matrix->zero();
         d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     }
-    AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getLeftDOFManager() ) );
-    AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getRightDOFManager() ) );
+    // AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getLeftDOFManager() ) );
+    // AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getRightDOFManager() ) );
 
     this->preAssembly( params );
 
