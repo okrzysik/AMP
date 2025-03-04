@@ -98,12 +98,12 @@ public:
 
 
 public: // Copy/assignment operators
-    kdtree2()                             = default;
-    ~kdtree2()                            = default;
-    kdtree2( const kdtree2 & )            = delete;
-    kdtree2( kdtree2 && )                 = default;
+    kdtree2()                  = default;
+    ~kdtree2()                 = default;
+    kdtree2( const kdtree2 & ) = delete;
+    kdtree2( kdtree2 && )      = default;
     kdtree2 &operator=( const kdtree2 & ) = delete;
-    kdtree2 &operator=( kdtree2 && )      = default;
+    kdtree2 &operator=( kdtree2 && ) = default;
 
 
 private: // Internal data
