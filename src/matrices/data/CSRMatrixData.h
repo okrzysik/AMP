@@ -127,6 +127,13 @@ public:
     //!  Perform communication to ensure values in the matrix are the same across cores
     void makeConsistent( AMP::LinearAlgebra::ScatterType t ) override;
 
+    /** \brief Get the DOFManager associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$\mathbf{y}\f$ is
+     * a left vector )
+     * \return  The DOFManager associated with a left vector
+     */
+    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
+
     /** \brief Get the DOFManager associated with a right vector ( For
      * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$
      * is a right vector )
@@ -134,12 +141,19 @@ public:
      */
     std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
 
-    /** \brief Get the DOFManager associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+    /** \brief Get the CommList associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$\mathbf{y}\f$ is
      * a left vector )
-     * \return  The DOFManager associated with a left vector
+     * \return  The CommList associated with a left vector
      */
-    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
+    std::shared_ptr<CommunicationList> getLeftCommList() const;
+
+    /** \brief Get the CommList associated with a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$\mathbf{y}\f$ is
+     * a right vector )
+     * \return  The CommList associated with a right vector
+     */
+    std::shared_ptr<CommunicationList> getRightCommList() const;
 
     //!  Get the number of local rows in the matrix
     size_t numLocalRows() const override;
@@ -211,7 +225,7 @@ public:
     //! Convert global columns in blocks to local columns and free global columns
     void globalToLocalColumns();
 
-    /** \brief  Replace left and right DOFManagers with ones matching nnz structure
+    /** \brief  Replace left/right DOFManagers and CommunicationLists to match NNZ structure
      * \details  This is necessary for matrices not created from pairs of vectors,
      * e.g. result matrices from SpGEMM and prolongators in AMG
      */
@@ -254,6 +268,11 @@ protected:
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
     //! DOFManager for right vectors
     std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;
+
+    //! CommunicationList for left vectors
+    std::shared_ptr<CommunicationList> d_leftCommList;
+    //! CommunicationList for right vectors
+    std::shared_ptr<CommunicationList> d_rightCommList;
 
     //!  \f$A_{i,j}\f$ storage of off core matrix data
     std::map<gidx_t, std::map<gidx_t, scalar_t>> d_other_data;

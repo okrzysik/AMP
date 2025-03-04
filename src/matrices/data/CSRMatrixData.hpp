@@ -56,18 +56,22 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::CSRMatrixData(
         d_offd_matrix = std::make_shared<DiagMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
 
-        // Only special item, raw data doesn't come with DOFManagers so need to make some
-        resetDOFManagers();
+        d_leftDOFManager  = nullptr;
+        d_rightDOFManager = nullptr;
+        d_leftCommList    = nullptr;
+        d_rightCommList   = nullptr;
 
     } else if ( matParams ) {
-        // get row/column bounds from DOFManagers
+        // Pull out DOFManagers and CommunicationLists, set row/col bounds
         d_leftDOFManager  = matParams->getLeftDOFManager();
         d_rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
-        d_first_row = d_leftDOFManager->beginDOF();
-        d_last_row  = d_leftDOFManager->endDOF();
-        d_first_col = d_rightDOFManager->beginDOF();
-        d_last_col  = d_rightDOFManager->endDOF();
+        d_first_row     = d_leftDOFManager->beginDOF();
+        d_last_row      = d_leftDOFManager->endDOF();
+        d_first_col     = d_rightDOFManager->beginDOF();
+        d_last_col      = d_rightDOFManager->endDOF();
+        d_leftCommList  = matParams->getLeftCommList();
+        d_rightCommList = matParams->getRightCommList();
 
         // Construct on/off diag blocks
         d_diag_matrix = std::make_shared<DiagMatrixData>(
@@ -117,6 +121,9 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::CSRMatrixData(
 
     // get total nnz count
     d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
+
+    // determine if DOFManagers and CommLists need to be (re)created
+    resetDOFManagers();
 
     d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
 }
@@ -171,15 +178,44 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::globalToLocalColumns()
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData>::resetDOFManagers()
 {
-    std::vector<size_t> remoteDOFsRight;
-    d_offd_matrix->getColumnMap( remoteDOFsRight );
-    d_rightDOFManager = std::make_shared<Discretization::DOFManager>(
-        d_last_col - d_first_col, getComm(), remoteDOFsRight );
-    // Finding ghosts for leftDM hard to do and not currently needed
-    // should think about how to approach it though
-    if ( !d_leftDOFManager ) {
-        d_leftDOFManager =
-            std::make_shared<Discretization::DOFManager>( d_last_row - d_first_row, getComm() );
+    // There is no easy way to determine the remote DOFs and comm pattern
+    // for the left vector. This side's DOFManager/CommList are rarely used
+    // so we only create them if they don't exist
+    if ( !d_leftDOFManager || !d_leftCommList ) {
+        auto cl_params         = std::make_shared<CommunicationListParameters>();
+        cl_params->d_comm      = getComm();
+        cl_params->d_localsize = d_last_row - d_first_row;
+        d_leftCommList         = std::make_shared<CommunicationList>( cl_params );
+        d_leftDOFManager = std::make_shared<Discretization::DOFManager>( cl_params->d_localsize,
+                                                                         cl_params->d_comm );
+    }
+
+    // The right DOFManager and CommList are used extensively, and having the remote
+    // DOFs be correct is important to minimize communications.
+    // (Re)create these if they don't exist or have excess remote DOFs
+    bool need_right = false;
+    if ( !d_rightDOFManager || !d_rightCommList ) {
+        need_right = true;
+    } else {
+        // right DOF does exist, get remote dofs and test them
+        auto dm_rdofs = d_rightDOFManager->getRemoteDOFs();
+        if ( static_cast<size_t>( d_offd_matrix->numUniqueColumns() ) != dm_rdofs.size() ) {
+            // wrong number of rdofs, no further testing needed
+            need_right = true;
+        } else {
+            // test if individual DOFs match?
+        }
+    }
+
+    if ( need_right ) {
+        std::cout << "Replacing right DOFManager and CommunicationList" << std::endl;
+        auto cl_params         = std::make_shared<CommunicationListParameters>();
+        cl_params->d_comm      = getComm();
+        cl_params->d_localsize = d_last_col - d_first_col;
+        d_offd_matrix->getColumnMap( cl_params->d_remote_DOFs );
+        d_rightCommList   = std::make_shared<CommunicationList>( cl_params );
+        d_rightDOFManager = std::make_shared<Discretization::DOFManager>(
+            cl_params->d_localsize, cl_params->d_comm, cl_params->d_remote_DOFs );
     }
 }
 
