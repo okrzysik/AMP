@@ -41,7 +41,7 @@ class libmeshMeshElement;
  * communicators.  If multiple meshes are used, they must either share communicators or have unique
  * communicators.
  */
-class libmeshMesh : public Mesh
+class libmeshMesh final : public Mesh
 {
 public:
     /**
@@ -252,16 +252,21 @@ protected:
      */
     std::vector<libMesh::Node *> getNeighborNodes( const MeshElementID & ) const;
 
+
+private:
     // Friend functions to access protected functions
     friend class libmeshMeshElement;
 
-private:
-    //!  Empty constructor for a mesh
+
+private: // Functions use for initialization
     libmeshMesh(){};
-
-    //!  Function to properly initialize the internal data once a libmesh mesh is loaded
     void initialize();
+    std::shared_ptr<std::vector<MeshElement>> generateGhosts() const;
+    std::shared_ptr<std::vector<MeshElement>> generateLocalElements( GeomType ) const;
+    std::shared_ptr<std::vector<MeshElement>> generateGhostElements( GeomType ) const;
 
+
+private:
     // Index indicating number of times the position has changed
     uint64_t d_pos_hash;
 

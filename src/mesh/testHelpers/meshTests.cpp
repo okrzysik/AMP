@@ -952,8 +952,8 @@ void meshTests::getNodeNeighbors( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::
     // Get a list of all neighors for each local node
     auto nodeIterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     std::vector<AMP::Mesh::MeshElementID> neighbors( 100 );
-    for ( size_t i = 0; i < nodeIterator.size(); i++ ) {
-        auto elements = nodeIterator->getNeighbors();
+    for ( const auto &node : nodeIterator ) {
+        auto elements = node.getNeighbors();
         // Store the neighbor list
         neighbors.resize( 0 );
         for ( auto &element : elements ) {
@@ -962,9 +962,8 @@ void meshTests::getNodeNeighbors( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::
         }
         // Sort the neighbor list for easy searching
         AMP::Utilities::quicksort( neighbors );
-        auto entry = std::make_pair( nodeIterator->globalID(), neighbors );
+        auto entry = std::make_pair( node.globalID(), neighbors );
         neighbor_list.insert( entry );
-        ++nodeIterator;
     }
     // First check if the neighbor lists are unique and don't contain self
     {

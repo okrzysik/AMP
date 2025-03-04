@@ -96,13 +96,13 @@ void meshTests::GhostWriteTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Me
                 double proc = mesh->getComm().getRank();
                 bool passes = true;
                 // Loop through the owned nodes
-                auto it = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-                for ( size_t i = 0; i < it.size(); i++, ++it ) {
+                auto nodes = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+                for ( auto &node : nodes ) {
                     // Get the DOFs for the node and it's neighbors
                     std::vector<size_t> localDOFs;
-                    DOFs->getDOFs( it->globalID(), localDOFs );
+                    DOFs->getDOFs( node.globalID(), localDOFs );
                     std::vector<size_t> neighborDOFs, dofs;
-                    auto neighbors = it->getNeighbors();
+                    auto neighbors = node.getNeighbors();
                     for ( const auto &neighbor : neighbors ) {
                         if ( neighbor == nullptr )
                             continue;

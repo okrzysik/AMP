@@ -20,7 +20,7 @@ namespace AMP::Mesh {
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
  * of GeomType.  This class is derived to store a libMesh element.
  */
-class libmeshMeshElement : public MeshElement
+class libmeshMeshElement final : public MeshElement
 {
 public:
     //! Empty constructor for a MeshElement
