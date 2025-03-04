@@ -732,7 +732,7 @@ void meshTests::VerifyBoundaryIterator( AMP::UnitTest &ut, std::shared_ptr<AMP::
     if ( !passFound )
         ut.failure( "Surface iterator found all points: " + mesh->getName() );
     if ( passCreated && passInterior && passUnique && passFound )
-        ut.passes( "Non-trivial surface iterator created: " + mesh->getName() );*/
+        ut.passes( "Non-trivial surface iterator created: " + mesh->getName() );
 #else
     if ( !passFound )
         ut.expected_failure( "Surface iterator found all points: " + mesh->getName() );

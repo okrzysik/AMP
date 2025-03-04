@@ -824,7 +824,7 @@ bool structuredMeshElement::isOnSurface() const
     if ( d_index.type() != d_mesh->GeomDim && d_index.type() > GeomType::Face )
         AMP_ERROR( "Internal error (dim>3?)" );
     for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
-        if ( ( ijk[d] > 0 || ijk[d] < size[d] ) || ( ijk[d] == 0 && surfaceId[2 * d] < 0 ) ||
+        if ( ( ijk[d] > 0 && ijk[d] < size[d] ) || ( ijk[d] == 0 && surfaceId[2 * d] < 0 ) ||
              ( ijk[d] == size[d] && surfaceId[2 * d + 1] < 0 ) ) {
             continue;
         }
