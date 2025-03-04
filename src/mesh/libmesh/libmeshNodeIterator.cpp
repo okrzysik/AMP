@@ -20,6 +20,24 @@ static constexpr auto MeshIteratorType = AMP::getTypeID<libmeshNodeIterator>().h
 static_assert( MeshIteratorType != 0 );
 libmeshNodeIterator::libmeshNodeIterator( const AMP::Mesh::libmeshMesh *mesh,
                                           const libMesh::Mesh::node_iterator &begin,
+                                          const libMesh::Mesh::node_iterator &end )
+    : d_dim( mesh->getlibMesh()->mesh_dimension() ),
+      d_rank( mesh->getComm().getRank() ),
+      d_begin2( begin ),
+      d_end2( end ),
+      d_pos2( begin ),
+      d_meshID( mesh->meshID() ),
+      d_mesh( mesh )
+{
+    d_typeHash     = MeshIteratorType;
+    d_iteratorType = MeshIterator::Type::Forward;
+    d_pos          = 0;
+    d_size         = std::distance( begin, end );
+    d_element      = &d_cur_element;
+    setCurrentElement();
+}
+libmeshNodeIterator::libmeshNodeIterator( const AMP::Mesh::libmeshMesh *mesh,
+                                          const libMesh::Mesh::node_iterator &begin,
                                           const libMesh::Mesh::node_iterator &end,
                                           const libMesh::Mesh::node_iterator &pos,
                                           int size,
@@ -37,24 +55,6 @@ libmeshNodeIterator::libmeshNodeIterator( const AMP::Mesh::libmeshMesh *mesh,
     d_pos          = pos2;
     d_size         = size;
     d_element      = &d_cur_element;
-    // Count the number of elements in the iterator
-    if ( size == -1 ) {
-        d_size = 0;
-        libMesh::Mesh::node_iterator cur( begin );
-        while ( cur != d_end2 ) {
-            d_size++;
-            ++cur;
-        }
-    }
-    // Count the position
-    if ( pos2 == -1 ) {
-        d_pos = 0;
-        libMesh::Mesh::node_iterator cur( begin );
-        while ( cur != pos ) {
-            d_pos++;
-            ++cur;
-        }
-    }
     setCurrentElement();
 }
 libmeshNodeIterator::libmeshNodeIterator( const libmeshNodeIterator &rhs )

@@ -17,6 +17,7 @@ namespace AMP::Mesh {
 
 
 class libmeshMeshElement;
+class libmeshElemIterator;
 
 
 /**
@@ -266,7 +267,8 @@ private: // Functions use for initialization
     ElemListPtr generateGhosts() const;
     ElemListPtr generateLocalElements( GeomType ) const;
     ElemListPtr generateGhostElements( GeomType ) const;
-
+    void fillBoundaryElements();
+    libmeshElemIterator localElements() const;
 
 private:
     // Index indicating number of times the position has changed

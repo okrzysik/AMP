@@ -707,6 +707,19 @@ void meshTests::VerifyBoundaryIterator( AMP::UnitTest &ut, std::shared_ptr<AMP::
         AMP::Utilities::unique( ids );
         passUnique = passUnique && ids.size() == iterator.size();
     }
+    // Verify that all nodes were found
+    bool passFound = true;
+    for ( int gcw = 0; gcw <= 1; gcw++ ) {
+        auto iterator   = mesh->getSurfaceIterator( AMP::Mesh::GeomType::Vertex, gcw );
+        size_t numFound = 0;
+        auto nodes      = mesh->getIterator( AMP::Mesh::GeomType::Vertex, gcw );
+        for ( auto &node : nodes ) {
+            if ( node.isOnSurface() )
+                numFound++;
+        }
+        if ( numFound != iterator.size() )
+            passFound = false;
+    }
     if ( !passCreated ) {
         ut.failure( "Non-trivial surface iterator created: " + mesh->getName() );
         return;
@@ -715,8 +728,17 @@ void meshTests::VerifyBoundaryIterator( AMP::UnitTest &ut, std::shared_ptr<AMP::
         ut.expected_failure( "Surface iterator created (no interior points): " + mesh->getName() );
     if ( !passUnique )
         ut.failure( "Surface iterator has duplicate points: " + mesh->getName() );
+#if 0
+    if ( !passFound )
+        ut.failure( "Surface iterator found all points: " + mesh->getName() );
+    if ( passCreated && passInterior && passUnique && passFound )
+        ut.passes( "Non-trivial surface iterator created: " + mesh->getName() );*/
+#else
+    if ( !passFound )
+        ut.expected_failure( "Surface iterator found all points: " + mesh->getName() );
     if ( passCreated && passInterior && passUnique )
         ut.passes( "Non-trivial surface iterator created: " + mesh->getName() );
+#endif
     // Check that the nodes of surface elements < physical dim are on the surface
     std::vector<AMP::Mesh::MeshElementID> nodes;
     for ( auto &elem : mesh->getSurfaceIterator( AMP::Mesh::GeomType::Vertex, 1 ) )

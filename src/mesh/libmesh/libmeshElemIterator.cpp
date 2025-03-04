@@ -20,6 +20,24 @@ static constexpr auto MeshIteratorType = AMP::getTypeID<libmeshElemIterator>().h
 static_assert( MeshIteratorType != 0 );
 libmeshElemIterator::libmeshElemIterator( const AMP::Mesh::libmeshMesh *mesh,
                                           const libMesh::Mesh::element_iterator &begin,
+                                          const libMesh::Mesh::element_iterator &end )
+    : d_dim( mesh->getlibMesh()->mesh_dimension() ),
+      d_rank( mesh->getComm().getRank() ),
+      d_begin2( begin ),
+      d_end2( end ),
+      d_pos2( begin ),
+      d_meshID( mesh->meshID() ),
+      d_mesh( mesh )
+{
+    d_typeHash     = MeshIteratorType;
+    d_iteratorType = MeshIterator::Type::Forward;
+    d_pos          = 0;
+    d_size         = std::distance( begin, end );
+    d_element      = &d_cur_element;
+    setCurrentElement();
+}
+libmeshElemIterator::libmeshElemIterator( const AMP::Mesh::libmeshMesh *mesh,
+                                          const libMesh::Mesh::element_iterator &begin,
                                           const libMesh::Mesh::element_iterator &end,
                                           const libMesh::Mesh::element_iterator &pos,
                                           int size,
@@ -37,24 +55,6 @@ libmeshElemIterator::libmeshElemIterator( const AMP::Mesh::libmeshMesh *mesh,
     d_pos          = pos2;
     d_size         = size;
     d_element      = &d_cur_element;
-    // Count the number of elements in the iterator
-    if ( size == -1 ) {
-        d_size = 0;
-        libMesh::Mesh::element_iterator cur( begin );
-        while ( cur != d_end2 ) {
-            d_size++;
-            ++cur;
-        }
-    }
-    // Count the position
-    if ( pos2 == -1 ) {
-        d_pos = 0;
-        libMesh::Mesh::element_iterator cur( begin );
-        while ( cur != pos ) {
-            d_pos++;
-            ++cur;
-        }
-    }
     setCurrentElement();
 }
 libmeshElemIterator::libmeshElemIterator( const libmeshElemIterator &rhs )
@@ -215,6 +215,13 @@ void libmeshElemIterator::setCurrentElement()
         d_cur_element =
             libmeshMeshElement( d_dim, (GeomType) d_dim, *d_pos2, d_rank, d_meshID, d_mesh );
 }
+
+
+/********************************************************
+ * Get the current underlying element                    *
+ ********************************************************/
+const libmeshMeshElement &libmeshElemIterator::current() const { return d_cur_element; }
+libMesh::Elem *libmeshElemIterator::elem() const { return *d_pos2; }
 
 
 } // namespace AMP::Mesh

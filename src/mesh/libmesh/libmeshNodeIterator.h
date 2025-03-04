@@ -57,6 +57,15 @@ protected:
      * \param mesh      Pointer to the libMesh mesh
      * \param begin     Pointer to iterator with the begining position
      * \param end       Pointer to iterator with the end position
+     */
+    libmeshNodeIterator( const AMP::Mesh::libmeshMesh *mesh,
+                         const libMesh::Mesh::node_iterator &begin,
+                         const libMesh::Mesh::node_iterator &end );
+
+    /** Default constructor
+     * \param mesh      Pointer to the libMesh mesh
+     * \param begin     Pointer to iterator with the begining position
+     * \param end       Pointer to iterator with the end position
      * \param pos       Pointer to iterator with the current position
      * \param size      Number of elements in the iterator (-1: unknown)
      * \param pos2      Index of the current position in the iterator (-1: unknown)
@@ -65,8 +74,8 @@ protected:
                          const libMesh::Mesh::node_iterator &begin,
                          const libMesh::Mesh::node_iterator &end,
                          const libMesh::Mesh::node_iterator &pos,
-                         int size = -1,
-                         int pos2 = -1 );
+                         int size,
+                         int pos2 );
 
     //! Clone the iterator
     MeshIterator *clone() const override;
