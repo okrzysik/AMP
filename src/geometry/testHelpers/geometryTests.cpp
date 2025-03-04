@@ -329,7 +329,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     {
         PROFILE( "testGeometry-sample" );
         auto box = geom.box();
-        static std::mt19937 gen( 84397 );
+        std::mt19937 gen( 84397 );
         std::uniform_real_distribution<double> dist[3];
         for ( int d = 0; d < ndim; d++ )
             dist[d] = std::uniform_real_distribution<double>( box.first[d], box.second[d] );
