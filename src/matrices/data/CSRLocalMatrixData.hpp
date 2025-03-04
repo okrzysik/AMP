@@ -347,7 +347,7 @@ void CSRLocalMatrixData<Policy, Allocator>::setNNZ( const std::vector<lidx_t> &n
 
     std::fill( d_cols.get(), d_cols.get() + d_nnz, 0 );
     std::fill( d_cols_loc.get(), d_cols_loc.get() + d_nnz, 0 );
-    std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, 0.0 );
+    std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, static_cast<scalar_t>( 0.0 ) );
 }
 
 template<typename Policy, class Allocator>
