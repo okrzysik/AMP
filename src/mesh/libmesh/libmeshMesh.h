@@ -257,13 +257,15 @@ private:
     // Friend functions to access protected functions
     friend class libmeshMeshElement;
 
+    typedef std::shared_ptr<std::vector<libmeshMeshElement>> ElemListPtr;
+
 
 private: // Functions use for initialization
     libmeshMesh(){};
     void initialize();
-    std::shared_ptr<std::vector<MeshElement>> generateGhosts() const;
-    std::shared_ptr<std::vector<MeshElement>> generateLocalElements( GeomType ) const;
-    std::shared_ptr<std::vector<MeshElement>> generateGhostElements( GeomType ) const;
+    ElemListPtr generateGhosts() const;
+    ElemListPtr generateLocalElements( GeomType ) const;
+    ElemListPtr generateGhostElements( GeomType ) const;
 
 
 private:
@@ -283,15 +285,15 @@ private:
     std::vector<std::vector<libMesh::Node *>> neighborNodes;
 
     // Data used to store elements that libmesh doesn't create
-    std::shared_ptr<std::vector<MeshElement>> d_localElements[4];
-    std::shared_ptr<std::vector<MeshElement>> d_ghostElements[4];
+    ElemListPtr d_localElements[4];
+    ElemListPtr d_ghostElements[4];
 
     // Data used to store the boundary elements
-    std::map<std::pair<int, GeomType>, std::shared_ptr<std::vector<MeshElement>>> d_boundarySets;
+    std::map<std::pair<int, GeomType>, ElemListPtr> d_boundarySets;
 
     // Data used to store the surface elements
-    std::vector<std::shared_ptr<std::vector<MeshElement>>> d_localSurfaceElements;
-    std::vector<std::shared_ptr<std::vector<MeshElement>>> d_ghostSurfaceElements;
+    std::vector<ElemListPtr> d_localSurfaceElements;
+    std::vector<ElemListPtr> d_ghostSurfaceElements;
 
     // Data used to store block info
     std::vector<int> d_block_ids;

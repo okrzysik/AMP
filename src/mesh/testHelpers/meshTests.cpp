@@ -399,7 +399,7 @@ void meshTests::MeshIteratorOperationTest( AMP::UnitTest &ut,
         ( *elements )[i] = *tmp;
 
     // Check operator== and operator!=
-    auto C = AMP::Mesh::MultiVectorIterator( elements );
+    auto C = AMP::Mesh::MeshElementVectorIterator( elements );
     if ( A == A && B == B && C == C )
         ut.passes( "Iterator == with same iterator" );
     else

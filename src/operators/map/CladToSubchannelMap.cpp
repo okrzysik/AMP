@@ -189,7 +189,7 @@ CladToSubchannelMap::getSubchannelIterator( std::shared_ptr<AMP::Mesh::Mesh> mes
     elements->reserve( xyFace.size() );
     for ( auto &elem : xyFace )
         elements->push_back( elem.second );
-    return AMP::Mesh::MultiVectorIterator( elements );
+    return AMP::Mesh::MeshElementVectorIterator( elements );
 }
 
 

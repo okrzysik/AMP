@@ -327,6 +327,7 @@ std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshElement &x )
 /********************************************************
  * Explicit instantiations                               *
  ********************************************************/
+#include "AMP/mesh/MeshElementVectorIterator.hpp"
 #include "AMP/utils/Utilities.hpp"
 using intTuple3 = std::tuple<int, int, int>;
 AMP_INSTANTIATE_SORT( intTuple3 );
@@ -337,3 +338,4 @@ template void AMP::Utilities::quicksort<intTuple3, AMP::Mesh::MeshElement>(
     std::vector<intTuple3> &, std::vector<AMP::Mesh::MeshElement> & );
 template void AMP::Utilities::quicksort<AMP::Mesh::MeshElementID, size_t>(
     size_t, AMP::Mesh::MeshElementID *, size_t * );
+template class AMP::Mesh::MeshElementVectorIterator<AMP::Mesh::MeshElement>;

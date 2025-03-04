@@ -1,6 +1,8 @@
-#include "AMP/mesh/MeshElementVectorIterator.h"
+#ifndef included_AMP_MeshElementVectorIterator_hpp
+#define included_AMP_MeshElementVectorIterator_hpp
+
 #include "AMP/mesh/MeshElement.h"
-#include "AMP/utils/typeid.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 
 
 namespace AMP::Mesh {
@@ -9,50 +11,45 @@ namespace AMP::Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-static constexpr auto MeshIteratorType = AMP::getTypeID<MultiVectorIterator>().hash;
-static_assert( MeshIteratorType != 0 );
-MultiVectorIterator::MultiVectorIterator()
+template<class TYPE>
+MeshElementVectorIterator<TYPE>::MeshElementVectorIterator()
 {
-    d_typeHash = MeshIteratorType;
+    static_assert( MeshIteratorType() != 0 );
+    d_typeHash = MeshIteratorType();
     d_iterator = nullptr;
     d_pos      = 0;
     d_size     = 0;
     d_element  = nullptr;
 }
-MultiVectorIterator::MultiVectorIterator( std::shared_ptr<std::vector<MeshElement>> elements,
-                                          size_t pos )
+template<class TYPE>
+MeshElementVectorIterator<TYPE>::MeshElementVectorIterator(
+    std::shared_ptr<std::vector<TYPE>> elements, size_t pos )
     : d_elements( elements )
 {
-    d_typeHash = MeshIteratorType;
+    d_typeHash = MeshIteratorType();
     d_iterator = nullptr;
     d_pos      = pos;
     d_size     = d_elements->size();
     d_element  = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;
 }
-MultiVectorIterator::MultiVectorIterator( const std::vector<MeshElement> &elements, size_t pos )
-    : d_elements( new std::vector<MeshElement>( elements ) )
-{
-    d_typeHash = MeshIteratorType;
-    d_iterator = nullptr;
-    d_pos      = pos;
-    d_size     = d_elements->size();
-    d_element  = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;
-}
-MultiVectorIterator::MultiVectorIterator( const MultiVectorIterator &rhs )
+template<class TYPE>
+MeshElementVectorIterator<TYPE>::MeshElementVectorIterator( const MeshElementVectorIterator &rhs )
     : MeshIterator(), // Note: we never want to call the base copy constructor
       d_elements( rhs.d_elements )
 {
-    d_typeHash = MeshIteratorType;
+    d_typeHash = MeshIteratorType();
     d_iterator = nullptr;
     d_pos      = rhs.d_pos;
     d_size     = rhs.d_size;
     d_element  = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;
 }
-MultiVectorIterator &MultiVectorIterator::operator=( const MultiVectorIterator &rhs )
+template<class TYPE>
+MeshElementVectorIterator<TYPE> &
+MeshElementVectorIterator<TYPE>::operator=( const MeshElementVectorIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    d_typeHash = MeshIteratorType;
+    d_typeHash = MeshIteratorType();
     d_iterator = nullptr;
     d_elements = rhs.d_elements;
     d_pos      = rhs.d_pos;
@@ -65,36 +62,41 @@ MultiVectorIterator &MultiVectorIterator::operator=( const MultiVectorIterator &
 /********************************************************
  * Function to clone the iterator                        *
  ********************************************************/
-MeshIterator *MultiVectorIterator::clone() const { return new MultiVectorIterator( *this ); }
-
-
-/********************************************************
- * De-constructor                                        *
- ********************************************************/
-MultiVectorIterator::~MultiVectorIterator() = default;
+template<class TYPE>
+MeshIterator *MeshElementVectorIterator<TYPE>::clone() const
+{
+    return new MeshElementVectorIterator( *this );
+}
 
 
 /********************************************************
  * Return an iterator to the beginning or end            *
  ********************************************************/
-MeshIterator MultiVectorIterator::begin() const { return MultiVectorIterator( d_elements, 0 ); }
-MeshIterator MultiVectorIterator::end() const
+template<class TYPE>
+MeshIterator MeshElementVectorIterator<TYPE>::begin() const
 {
-    return MultiVectorIterator( d_elements, d_elements->size() );
+    return MeshElementVectorIterator( d_elements, 0 );
+}
+template<class TYPE>
+MeshIterator MeshElementVectorIterator<TYPE>::end() const
+{
+    return MeshElementVectorIterator( d_elements, d_elements->size() );
 }
 
 
 /********************************************************
  * Increment/Decrement the iterator                      *
  ********************************************************/
-MeshIterator &MultiVectorIterator::operator++()
+template<class TYPE>
+MeshIterator &MeshElementVectorIterator<TYPE>::operator++()
 {
     // Prefix increment (increment and return this)
     d_pos++;
     d_element = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;
     return *this;
 }
-MeshIterator &MultiVectorIterator::operator--()
+template<class TYPE>
+MeshIterator &MeshElementVectorIterator<TYPE>::operator--()
 {
     // Prefix decrement (increment and return this)
     d_pos--;
@@ -106,7 +108,8 @@ MeshIterator &MultiVectorIterator::operator--()
 /********************************************************
  * Random access iterators                               *
  ********************************************************/
-MeshIterator &MultiVectorIterator::operator+=( int n )
+template<class TYPE>
+MeshIterator &MeshElementVectorIterator<TYPE>::operator+=( int n )
 {
     if ( n >= 0 ) { // increment *this
         auto n2 = static_cast<size_t>( n );
@@ -127,19 +130,20 @@ MeshIterator &MultiVectorIterator::operator+=( int n )
 /********************************************************
  * Compare two iterators                                 *
  ********************************************************/
-bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
+template<class TYPE>
+bool MeshElementVectorIterator<TYPE>::operator==( const MeshIterator &rhs ) const
 {
-    const MultiVectorIterator *rhs2 = nullptr;
-    // Convert rhs to a MultiVectorIterator* so we can access the base class members
-    const auto *tmp = reinterpret_cast<const MultiVectorIterator *>( &rhs );
-    if ( tmp->d_typeHash == MeshIteratorType ) {
-        rhs2 = tmp; // We can safely cast rhs.iterator to a MultiVectorIterator
+    const MeshElementVectorIterator *rhs2 = nullptr;
+    // Convert rhs to a MeshElementVectorIterator* so we can access the base class members
+    const auto *tmp = reinterpret_cast<const MeshElementVectorIterator *>( &rhs );
+    if ( tmp->d_typeHash == MeshIteratorType() ) {
+        rhs2 = tmp; // We can safely cast rhs.iterator to a MeshElementVectorIterator
     } else if ( tmp->d_iterator != nullptr ) {
-        tmp = reinterpret_cast<const MultiVectorIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeHash == MeshIteratorType )
-            rhs2 = tmp; // We can safely cast rhs.iterator to a MultiVectorIterator
+        tmp = reinterpret_cast<const MeshElementVectorIterator *>( tmp->d_iterator );
+        if ( tmp->d_typeHash == MeshIteratorType() )
+            rhs2 = tmp; // We can safely cast rhs.iterator to a MeshElementVectorIterator
     }
-    // Perform direct comparisions if we are dealing with two MultiVectorIterators
+    // Perform direct comparisions if we are dealing with two MeshElementVectorIterators
     if ( rhs2 != nullptr ) {
         // Check that we are at the same position
         if ( d_pos != rhs2->d_pos )
@@ -157,7 +161,7 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
         }
         return elements_match;
     }
-    /* We are comparing a MultiVectorIterator to an arbitrary iterator
+    /* We are comparing a MeshElementVectorIterator to an arbitrary iterator
      * The iterators are the same if they point to the same position and iterate
      * over the same elements in the same order
      */
@@ -177,10 +181,13 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
     }
     return elements_match;
 }
-bool MultiVectorIterator::operator!=( const MeshIterator &rhs ) const
+template<class TYPE>
+bool MeshElementVectorIterator<TYPE>::operator!=( const MeshIterator &rhs ) const
 {
     return !( ( *this ) == rhs );
 }
 
 
 } // namespace AMP::Mesh
+
+#endif

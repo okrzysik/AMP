@@ -166,7 +166,9 @@ void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParamet
     for ( size_t i = 0; i < d_numSubchannels; i++ ) {
         if ( !d_ownSubChannel[i] )
             continue;
-        auto localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
+        std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elemPtr( &d_subchannelElem[i],
+                                                                      []( auto ) {} );
+        auto localSubchannelIt = AMP::Mesh::MeshElementVectorIterator( elemPtr );
         auto localSubchannel   = d_Mesh->Subset( localSubchannelIt, false );
         auto face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
         for ( size_t j = 0; j < face.size(); j++ ) {
@@ -202,7 +204,9 @@ void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParamet
             continue;
 
         // Get the iterator over the faces in the local subchannel
-        auto localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
+        std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elemPtr( &d_subchannelFace[isub],
+                                                                      []( auto ) {} );
+        auto localSubchannelIt = AMP::Mesh::MeshElementVectorIterator( elemPtr );
         AMP_ASSERT( localSubchannelIt.size() == d_z.size() );
 
         std::vector<size_t> dofs_minus;

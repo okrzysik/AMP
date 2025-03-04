@@ -175,12 +175,11 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
     for ( size_t i = 0; i < d_numSubchannels; i++ ) {
         if ( !d_ownSubChannel[i] )
             continue;
-        AMP::Mesh::MeshIterator localSubchannelIt =
-            AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
-        std::shared_ptr<AMP::Mesh::Mesh> localSubchannel =
-            d_Mesh->Subset( localSubchannelIt, false );
-        AMP::Mesh::MeshIterator face =
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
+        std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elemPtr( &d_subchannelElem[i],
+                                                                      []( auto ) {} );
+        auto localSubchannelIt = AMP::Mesh::MeshElementVectorIterator( elemPtr );
+        auto localSubchannel   = d_Mesh->Subset( localSubchannelIt, false );
+        auto face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
         for ( size_t j = 0; j < face.size(); j++ ) {
             d_subchannelFace[i].push_back( *face );
             ++face;
@@ -190,8 +189,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
     // check to ensure frozen vector isn't null
     d_frozenVec = myparams->d_frozenSolution;
     AMP_INSIST( d_frozenVec, "Null Frozen Vector inside Jacobian" );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_manager =
-        myparams->d_frozenSolution->getDOFManager();
+    auto dof_manager = myparams->d_frozenSolution->getDOFManager();
 
     // Create the matrix
     d_matrix = AMP::LinearAlgebra::createMatrix( d_frozenVec, d_frozenVec );
@@ -212,10 +210,8 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
     const double w_scale = 1.0 / Subchannel::scaleLateralMassFlowRate;
 
     // get DoF manager
-    std::shared_ptr<AMP::Discretization::DOFManager> left_DOFManager =
-        d_matrix->getLeftDOFManager();
-    std::shared_ptr<AMP::Discretization::DOFManager> right_DOFManager =
-        d_matrix->getRightDOFManager();
+    auto left_DOFManager         = d_matrix->getLeftDOFManager();
+    auto right_DOFManager        = d_matrix->getRightDOFManager();
     bool equal_to_leftDOFManager = false, equal_to_rightDOFManager = false;
     if ( *left_DOFManager == *dof_manager )
         equal_to_leftDOFManager = true;
@@ -271,7 +267,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
         for ( const auto &ielem : d_elem[isub] ) {
             subchannelElements->push_back( ielem );
         }
-        AMP::Mesh::MeshIterator localSubchannelCell = AMP::Mesh::MultiVectorIterator(
+        auto localSubchannelCell = AMP::Mesh::MeshElementVectorIterator(
             subchannelElements ); // iterator over elements of current subchannel
         // get subchannel index
         auto subchannelCentroid = localSubchannelCell->centroid();
@@ -281,10 +277,11 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
         // compute flux
         std::vector<double> flux( d_z.size() - 1 );
         if ( d_source == "averageCladdingTemperature" ) {
-            AMP::Mesh::MeshIterator localSubchannelFace =
-                AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
+            std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elemPtr( &d_subchannelFace[isub],
+                                                                          []( auto ) {} );
+            auto localSubchannelFace = AMP::Mesh::MeshElementVectorIterator( elemPtr );
             AMP_ASSERT( localSubchannelFace.size() == d_z.size() );
-            AMP::Mesh::MeshIterator face = localSubchannelFace.begin();
+            auto face = localSubchannelFace.begin();
             std::vector<AMP::Mesh::MeshElementID> face_ids( face.size() );
             for ( size_t j = 0; j < face.size(); j++ ) {
                 auto center = face->centroid();
@@ -453,8 +450,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
             double turbulence_sum_axial  = 0.0;
 
             // loop over gap faces
-            std::vector<AMP::Mesh::MeshElement> cellFaces =
-                localSubchannelCell->getElements( AMP::Mesh::GeomType::Face );
+            auto cellFaces = localSubchannelCell->getElements( AMP::Mesh::GeomType::Face );
             for ( auto &cellFace : cellFaces ) {
                 auto faceCentroid        = cellFace.centroid();
                 auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
@@ -679,7 +675,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                         minusDofs[2], gapDofs[0], dz * crossflowSign * u_lateralDonor );
 
                 } // end if (lateralFaceIterator != interiorLateralFaceMap.end()) {
-            }     // end loop over gap faces
+            } // end loop over gap faces
 
             // add Jacobian entries
             // =================================================================
@@ -734,7 +730,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                 d_matrix->addValueByGlobalID( minusDofs[1], minusDofs[1], 1.0 );
             }
         } // end loop over cells of current subchannel
-    }     // end loop over subchannels
+    } // end loop over subchannels
 
     // loop over lateral faces
     AMP::Mesh::MeshIterator face =
@@ -935,10 +931,10 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                         d_Mesh->getElementParents( cell1PlusFace, AMP::Mesh::GeomType::Cell );
                     AMP_INSIST( cell1PlusFaceAdjacentCells.size() == 2,
                                 "There were not 2 adjacent cells to an axial gap face" );
-                    AMP::Mesh::MeshElement axialCell1 = cell1PlusFaceAdjacentCells[0];
-                    AMP::Mesh::MeshElement axialCell2 = cell1PlusFaceAdjacentCells[1];
-                    auto axialCell1Centroid           = axialCell1.centroid();
-                    auto axialCell2Centroid           = axialCell2.centroid();
+                    auto axialCell1         = cell1PlusFaceAdjacentCells[0];
+                    auto axialCell2         = cell1PlusFaceAdjacentCells[1];
+                    auto axialCell1Centroid = axialCell1.centroid();
+                    auto axialCell2Centroid = axialCell2.centroid();
                     // determine which cell is top cell
                     AMP::Mesh::MeshElement *topCell;
                     if ( axialCell1Centroid[2] > cell1PlusFaceCentroid[2] ) {
@@ -954,7 +950,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                                     "Both adjacent cells are above axial face parent" );
                         topCell = &axialCell2;
                     }
-                    AMP::Mesh::MeshElement aboveLateralFace = getAxiallyAdjacentLateralFace(
+                    auto aboveLateralFace = getAxiallyAdjacentLateralFace(
                         topCell, lateralFace, interiorLateralFaceMap );
                     dof_manager->getDOFs( aboveLateralFace.globalID(), gapPlusDofs );
                     w_plus = w_scale * d_frozenVec->getValueByGlobalID( gapPlusDofs[0] );
@@ -1500,8 +1496,8 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
             // adjacent to the current
             // lateral face
             double knownCentroid[3]           = { parentLateralFaceCentroid[0],
-                                        parentLateralFaceCentroid[1],
-                                        daughterCellCentroid[2] };
+                                                  parentLateralFaceCentroid[1],
+                                                  daughterCellCentroid[2] };
             bool isAxiallyAdjacentLateralFace = true;
             for ( size_t i = 0; i < 3; i++ ) {
                 if ( !AMP::Utilities::approx_equal_abs(

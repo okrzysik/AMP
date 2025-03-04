@@ -305,13 +305,12 @@ bool libmeshMeshElement::containsPoint( const Point &pos, double TOL ) const
 }
 bool libmeshMeshElement::isOnSurface() const
 {
-    auto type          = static_cast<int>( d_globalID.type() );
-    MeshElement search = MeshElement( *this );
+    auto type = static_cast<int>( d_globalID.type() );
     if ( d_globalID.is_local() ) {
         const auto &data = *( d_mesh->d_localSurfaceElements[type] );
         if ( data.empty() )
             return false; // There are no elements on the surface for this processor
-        size_t index = AMP::Utilities::findfirst( data, search );
+        size_t index = AMP::Utilities::findfirst( data, *this );
         if ( index < data.size() ) {
             if ( d_mesh->d_localSurfaceElements[type]->operator[]( index ).globalID() ==
                  d_globalID )
@@ -321,7 +320,7 @@ bool libmeshMeshElement::isOnSurface() const
         const auto &data = *( d_mesh->d_ghostSurfaceElements[type] );
         if ( data.empty() )
             return false; // There are no elements on the surface for this processor
-        size_t index = AMP::Utilities::findfirst( data, search );
+        size_t index = AMP::Utilities::findfirst( data, *this );
         if ( index < data.size() ) {
             if ( d_mesh->d_ghostSurfaceElements[type]->operator[]( index ).globalID() ==
                  d_globalID )
