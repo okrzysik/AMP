@@ -114,7 +114,9 @@ void checkEqualEntries( AMP::UnitTest *ut,
         Y->getRowByGlobalID( i, cols_Y, vals_Y );
         for ( size_t j = 0; j != cols_X.size(); j++ ) {
             if ( std::abs( vals_X[j] - vals_Y[j] ) > tol ) {
-                ut->failure( test_name + ": Fails to " + task );
+                ut->failure( test_name + ": Fails to " + task +
+                             AMP::Utilities::stringf( ". Difference of %e found between entries",
+                                                      std::abs( vals_X[j] - vals_Y[j] ) ) );
                 return;
             }
         }
