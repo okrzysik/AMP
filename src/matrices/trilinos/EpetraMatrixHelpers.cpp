@@ -48,6 +48,7 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
             epetraMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), vals.data() );
         }
         epetraMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+        //        epetraMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         return epetraMat;
     }
 }
