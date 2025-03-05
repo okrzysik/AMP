@@ -1,5 +1,6 @@
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
@@ -7,6 +8,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
+
 #include "ProfilerApp.h"
 
 #include <string>

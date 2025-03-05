@@ -3,7 +3,6 @@
 
 #include "AMP/mesh/MeshIterator.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/typeid.h"
 
 #include <iterator>
 #include <memory>
@@ -70,10 +69,7 @@ protected:
     std::shared_ptr<std::vector<TYPE>> d_elements;
 
 protected:
-    static constexpr auto MeshIteratorType()
-    {
-        return AMP::getTypeID<MeshElementVectorIterator<TYPE>>().hash;
-    }
+    static constexpr size_t MeshIteratorType();
 };
 } // namespace AMP::Mesh
 
