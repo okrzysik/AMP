@@ -365,10 +365,7 @@ int main( int argc, char **argv )
 
     // Print the results and return
     int num_failed = ut.NumFailGlobal();
-    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 )
-        ut.report( 2 );
-    else
-        ut.report( 1 );
+    ut.report( 1 );
     ut.reset();
     AMP::AMPManager::shutdown();
     return num_failed;
