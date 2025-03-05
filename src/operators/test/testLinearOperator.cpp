@@ -135,7 +135,6 @@ static void myTest( AMP::UnitTest *ut )
 
 int testLinearOperator( int argc, char *argv[] )
 {
-    AMP_ERROR( "MADE IT" );
     AMP::AMPManagerProperties startup_properties;
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup( argc, argv, startup_properties );

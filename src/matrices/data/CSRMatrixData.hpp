@@ -203,13 +203,21 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::resetDOFManagers()
     // hand must contain only the minimal set of remote DOFs to avoid useless
     // communication
     bool need_right_dm = !d_rightDOFManager;
+    if ( d_rightDOFManager ) {
+        auto dm_rdofs = d_rightDOFManager->getRemoteDOFs();
+        if ( static_cast<size_t>( d_offd_matrix->numUniqueColumns() ) > dm_rdofs.size() ) {
+            // too few rdofs, must remake it
+            need_right_dm = true;
+        } else {
+            // test if needed DOFs contained in DOFManagers remotes?
+        }
+    }
     bool need_right_cl = !d_rightCommList;
     if ( d_rightCommList ) {
         // right CL does exist, get remote dofs and test them
         auto cl_rdofs = d_rightCommList->getGhostIDList();
         if ( static_cast<size_t>( d_offd_matrix->numUniqueColumns() ) != cl_rdofs.size() ) {
             // wrong number of rdofs, no further testing needed
-            std::cout << "Need new rCL on rank " << comm.getRank() << std::endl;
             need_right_cl = true;
         } else {
             // test if individual DOFs match?
@@ -217,17 +225,14 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::resetDOFManagers()
     }
 
     if ( comm.anyReduce( need_right_cl ) ) {
-        std::cout << "Replacing right CommunicationList" << std::endl;
         auto cl_params         = std::make_shared<CommunicationListParameters>();
         cl_params->d_comm      = comm;
         cl_params->d_localsize = d_last_col - d_first_col;
         d_offd_matrix->getColumnMap( cl_params->d_remote_DOFs );
         d_rightCommList = std::make_shared<CommunicationList>( cl_params );
-        comm.barrier();
     }
 
     if ( comm.anyReduce( need_right_dm ) ) {
-        std::cout << "Replacing right DOFManager" << std::endl;
         d_rightDOFManager = std::make_shared<Discretization::DOFManager>(
             d_last_col - d_first_col, comm, d_rightCommList->getGhostIDList() );
     }
