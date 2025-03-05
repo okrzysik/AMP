@@ -123,7 +123,9 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::CSRMatrixData(
     d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
 
     // determine if DOFManagers and CommLists need to be (re)created
-    resetDOFManagers();
+    if ( d_nnz > 0 ) {
+        resetDOFManagers();
+    }
 
     d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
 }
@@ -178,45 +180,56 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::globalToLocalColumns()
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData>::resetDOFManagers()
 {
+    auto comm = getComm();
+
     // There is no easy way to determine the remote DOFs and comm pattern
     // for the left vector. This side's DOFManager/CommList are rarely used
     // so we only create them if they don't exist
-    bool need_left = !d_leftDOFManager || !d_leftCommList;
-    if ( getComm().anyReduce( need_left ) ) {
+    bool need_left_dm = !d_leftDOFManager;
+    bool need_left_cl = !d_leftCommList;
+    if ( comm.anyReduce( need_left_cl ) ) {
         auto cl_params         = std::make_shared<CommunicationListParameters>();
-        cl_params->d_comm      = getComm();
+        cl_params->d_comm      = comm;
         cl_params->d_localsize = d_last_row - d_first_row;
         d_leftCommList         = std::make_shared<CommunicationList>( cl_params );
-        d_leftDOFManager = std::make_shared<Discretization::DOFManager>( cl_params->d_localsize,
-                                                                         cl_params->d_comm );
+    }
+    if ( comm.anyReduce( need_left_dm ) ) {
+        d_leftDOFManager =
+            std::make_shared<Discretization::DOFManager>( d_last_row - d_first_row, comm );
     }
 
-    // The right DOFManager and CommList are used extensively, and having the remote
-    // DOFs be correct is important to minimize communications.
-    // (Re)create these if they don't exist or have excess remote DOFs
-    bool need_right = false;
-    if ( !d_rightDOFManager || !d_rightCommList ) {
-        need_right = true;
-    } else {
-        // right DOF does exist, get remote dofs and test them
-        auto dm_rdofs = d_rightDOFManager->getRemoteDOFs();
-        if ( static_cast<size_t>( d_offd_matrix->numUniqueColumns() ) != dm_rdofs.size() ) {
+    // Right DOFManager and CommList used mre often. Replacing DOFManager has
+    // poor side effects and is only done if necessary. The CommList on the other
+    // hand must contain only the minimal set of remote DOFs to avoid useless
+    // communication
+    bool need_right_dm = !d_rightDOFManager;
+    bool need_right_cl = !d_rightCommList;
+    if ( d_rightCommList ) {
+        // right CL does exist, get remote dofs and test them
+        auto cl_rdofs = d_rightCommList->getGhostIDList();
+        if ( static_cast<size_t>( d_offd_matrix->numUniqueColumns() ) != cl_rdofs.size() ) {
             // wrong number of rdofs, no further testing needed
-            need_right = true;
+            std::cout << "Need new rCL on rank " << comm.getRank() << std::endl;
+            need_right_cl = true;
         } else {
             // test if individual DOFs match?
         }
     }
 
-    if ( getComm().anyReduce( need_right ) ) {
-        std::cout << "Replacing right DOFManager and CommunicationList" << std::endl;
+    if ( comm.anyReduce( need_right_cl ) ) {
+        std::cout << "Replacing right CommunicationList" << std::endl;
         auto cl_params         = std::make_shared<CommunicationListParameters>();
-        cl_params->d_comm      = getComm();
+        cl_params->d_comm      = comm;
         cl_params->d_localsize = d_last_col - d_first_col;
         d_offd_matrix->getColumnMap( cl_params->d_remote_DOFs );
-        d_rightCommList   = std::make_shared<CommunicationList>( cl_params );
+        d_rightCommList = std::make_shared<CommunicationList>( cl_params );
+        comm.barrier();
+    }
+
+    if ( comm.anyReduce( need_right_dm ) ) {
+        std::cout << "Replacing right DOFManager" << std::endl;
         d_rightDOFManager = std::make_shared<Discretization::DOFManager>(
-            cl_params->d_localsize, cl_params->d_comm, cl_params->d_remote_DOFs );
+            d_last_col - d_first_col, comm, d_rightCommList->getGhostIDList() );
     }
 }
 
