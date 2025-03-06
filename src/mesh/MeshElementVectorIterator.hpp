@@ -3,9 +3,19 @@
 
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
-
+#include "AMP/utils/typeid.h"
 
 namespace AMP::Mesh {
+
+
+/********************************************************
+ * Get the typeid hash for the class                     *
+ ********************************************************/
+template<class TYPE>
+constexpr size_t MeshElementVectorIterator<TYPE>::MeshIteratorType()
+{
+    return AMP::getTypeID<MeshElementVectorIterator<TYPE>>().hash;
+}
 
 
 /********************************************************
