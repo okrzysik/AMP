@@ -25,6 +25,9 @@
 #if defined( __NVCC__ )
     #define CONSTEXPR HOST_DEVICE constexpr
     #define CONSTEXPR_IF
+#elif defined( __HIPCC__ )
+    #define CONSTEXPR HOST_DEVICE constexpr
+    #define CONSTEXPR_IF
 #else
     #define CONSTEXPR HOST_DEVICE constexpr
     #define CONSTEXPR_IF constexpr
