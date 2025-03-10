@@ -152,12 +152,6 @@ void testCopyCast( AMP::UnitTest *ut,
 
     B->copyCast( A );
     C->copyCast( B );
-#ifdef USE_DEVICE
-    if constexpr ( std::is_same_v<Allocator, AMP::ManagedAllocator<void>> ) {
-        if ( backend == AMP::Utilities::Backend::kokkos )
-            Kokkos::fence();
-    }
-#endif
     checkEqualEntries<PolicyD, Allocator>( ut,
                                            test_name,
                                            "copyCast double->float->double",

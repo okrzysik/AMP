@@ -70,6 +70,7 @@ struct copyCast_<T1, T2, AMP::Utilities::PortabilityBackend::Kokkos, AMP::Manage
             "Copy cast", dev_range_policy( 0, len ), KOKKOS_LAMBDA( const int &i ) {
                 vec_out[i] = static_cast<T2>( vec_in[i] );
             } );
+        Kokkos::fence();
     }
 };
 
@@ -93,6 +94,8 @@ struct copyCast_<T1, T2, AMP::Utilities::PortabilityBackend::Kokkos, AMP::Device
             "Copy cast", dev_range_policy( 0, len ), KOKKOS_LAMBDA( const int &i ) {
                 vec_out[i] = static_cast<T2>( vec_in[i] );
             } );
+        // Might not be needed for device memory
+        Kokkos::fence();
     }
 };
 #endif
