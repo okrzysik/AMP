@@ -16,6 +16,9 @@
 #if defined( __CUDA_ARCH__ )
     #include <cuda.h>
     #define HOST_DEVICE __host__ __device__
+#elif defined( __HIP_DEVICE_COMPILE__ )
+    #include "hip/hip_runtime.h"
+    #define HOST_DEVICE __host__ __device__
 #else
     #define HOST_DEVICE
 #endif
