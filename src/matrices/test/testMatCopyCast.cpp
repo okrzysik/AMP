@@ -17,6 +17,9 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+    #include "Kokkos_Core.hpp"
+#endif
 #if defined( AMP_USE_HYPRE )
     #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
 #endif
@@ -149,6 +152,10 @@ void testCopyCast( AMP::UnitTest *ut,
 
     B->copyCast( A );
     C->copyCast( B );
+    if constexpr ( std::is_same_v<Allocator, AMP::ManagedAllocator<void>> ) {
+        if ( backend == AMP::Utilities::Backend::kokkos )
+            Kokkos::fence();
+    }
     checkEqualEntries<PolicyD, Allocator>( ut,
                                            test_name,
                                            "copyCast double->float->double",
