@@ -17,6 +17,9 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+    #include "Kokkos_Core.hpp"
+#endif
 #if defined( AMP_USE_HYPRE )
     #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
 #endif
@@ -98,6 +101,32 @@ void createMatrixAndVectors(
     y = matrix->getLeftVector();
 }
 
+template<class Policy, class Allocator>
+void checkEqualEntries( AMP::UnitTest *ut,
+                        std::string test_name,
+                        std::string task,
+                        std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
+                        std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> &X,
+                        std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> &Y,
+                        double tol )
+{
+    for ( size_t i = dofManager->beginDOF(); i != dofManager->endDOF(); i++ ) {
+        std::vector<size_t> cols_X, cols_Y;
+        std::vector<double> vals_X, vals_Y;
+        X->getRowByGlobalID( i, cols_X, vals_X );
+        Y->getRowByGlobalID( i, cols_Y, vals_Y );
+        for ( size_t j = 0; j != cols_X.size(); j++ ) {
+            if ( std::abs( vals_X[j] - vals_Y[j] ) > tol ) {
+                ut->failure( test_name + ": Fails to " + task +
+                             AMP::Utilities::stringf( ". Difference of %e found between entries",
+                                                      std::abs( vals_X[j] - vals_Y[j] ) ) );
+                return;
+            }
+        }
+    }
+    ut->passes( test_name + ": Able to " + task );
+}
+
 template<class Allocator>
 void testCopyCast( AMP::UnitTest *ut,
                    std::string test_name,
@@ -123,51 +152,21 @@ void testCopyCast( AMP::UnitTest *ut,
 
     B->copyCast( A );
     C->copyCast( B );
-
-    for ( size_t i = dofManager->beginDOF(); i != dofManager->endDOF(); i++ ) {
-        std::vector<size_t> cols_A, cols_C;
-        std::vector<double> vals_A, vals_C;
-        A->getRowByGlobalID( i, cols_A, vals_A );
-        C->getRowByGlobalID( i, cols_C, vals_C );
-        for ( size_t j = 0; j != cols_A.size(); j++ ) {
-            if ( std::abs( vals_A[j] - vals_C[j] ) > std::numeric_limits<float>::epsilon() ) {
-                ut->failure( test_name + ": Fails to copyCast double->float->double" );
-                return;
-            }
-        }
-    }
-    ut->passes( test_name + ": Able to copyCast double->float->double" );
+    checkEqualEntries<PolicyD, Allocator>( ut,
+                                           test_name,
+                                           "copyCast double->float->double",
+                                           dofManager,
+                                           A,
+                                           C,
+                                           std::numeric_limits<float>::epsilon() );
 
     C->copyCast( A );
-    for ( size_t i = dofManager->beginDOF(); i != dofManager->endDOF(); i++ ) {
-        std::vector<size_t> cols_A, cols_C;
-        std::vector<double> vals_A, vals_C;
-        A->getRowByGlobalID( i, cols_A, vals_A );
-        C->getRowByGlobalID( i, cols_C, vals_C );
-        for ( size_t j = 0; j != cols_A.size(); j++ ) {
-            if ( std::abs( vals_A[j] - vals_C[j] ) > std::numeric_limits<double>::epsilon() ) {
-                ut->failure( test_name + ": Fails to copy doubles" );
-                return;
-            }
-        }
-    }
-    ut->passes( test_name + ": Able to copy doubles" );
+    checkEqualEntries<PolicyD, Allocator>(
+        ut, test_name, "copy doubles", dofManager, A, C, std::numeric_limits<double>::epsilon() );
 
     D->copyCast( B );
-    for ( size_t i = dofManager->beginDOF(); i != dofManager->endDOF(); i++ ) {
-        std::vector<size_t> cols_B, cols_D;
-        // getRowByGlobalID always returns doubles
-        std::vector<double> vals_B, vals_D;
-        B->getRowByGlobalID( i, cols_B, vals_B );
-        D->getRowByGlobalID( i, cols_D, vals_D );
-        for ( size_t j = 0; j != cols_B.size(); j++ ) {
-            if ( std::abs( vals_B[j] - vals_D[j] ) > std::numeric_limits<float>::epsilon() ) {
-                ut->failure( test_name + ": Fails to copy floats" );
-                return;
-            }
-        }
-    }
-    ut->passes( test_name + ": Able to copy floats" );
+    checkEqualEntries<PolicyF, Allocator>(
+        ut, test_name, "copy floats", dofManager, B, D, std::numeric_limits<float>::epsilon() );
 }
 
 void matDeviceOperationsTest( AMP::UnitTest *ut, std::string input_file )

@@ -133,8 +133,27 @@ void VectorOperationsDevice<TYPE>::copy( const VectorData &x, VectorData &y )
 template<typename TYPE>
 void VectorOperationsDevice<TYPE>::copyCast( const VectorData &x, VectorData &y )
 {
-    // Default copyCast already supports device
-    getDefaultOps()->copyCast( x, y );
+    using Hip_Cuda = AMP::Utilities::PortabilityBackend::Hip_Cuda;
+    if ( x.numberOfDataBlocks() == y.numberOfDataBlocks() ) {
+        for ( size_t block_id = 0; block_id < y.numberOfDataBlocks(); block_id++ ) {
+            auto ydata = y.getRawDataBlock<TYPE>( block_id );
+            auto N     = y.sizeOfDataBlock( block_id );
+            AMP_ASSERT( N == x.sizeOfDataBlock( block_id ) );
+            if ( x.getType( 0 ) == getTypeID<float>() ) {
+                auto xdata = x.getRawDataBlock<float>( block_id );
+                AMP::Utilities::copyCast<float, TYPE, Hip_Cuda>( N, xdata, ydata );
+            } else if ( x.getType( 0 ) == getTypeID<double>() ) {
+                auto xdata = x.getRawDataBlock<double>( block_id );
+                AMP::Utilities::copyCast<double, TYPE, Hip_Cuda>( N, xdata, ydata );
+            } else {
+                AMP_ERROR( "CopyCast only implemented for float or doubles." );
+            }
+        }
+    } else {
+        AMP_ERROR( "Different number of blocks; CopyCast not implemented for non-matching "
+                   "multiblock data." );
+    }
+    y.copyGhostValues( x );
 }
 
 template<typename TYPE>
