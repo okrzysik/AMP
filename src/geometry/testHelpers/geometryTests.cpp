@@ -290,7 +290,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         PROFILE( "testGeometry-distance" );
         auto box        = geom.box();
         auto length     = box.second - box.first;
-        const double d0 = 0.2 * std::max( { length.x(), length.y(), length.z() } );
+        const double d0 = 0.1 * std::max( { length.x(), length.y(), length.z() } );
         int N_failed    = 0;
         int N_repeat    = 10;
         for ( const auto &tmp : surfacePoints ) {

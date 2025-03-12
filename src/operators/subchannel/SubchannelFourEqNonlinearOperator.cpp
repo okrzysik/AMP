@@ -1,4 +1,5 @@
 #include "AMP/operators/subchannel/SubchannelFourEqNonlinearOperator.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
@@ -6,6 +7,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorSelector.h"
+
 #include "ProfilerApp.h"
 
 #include <string>
@@ -171,7 +173,9 @@ void SubchannelFourEqNonlinearOperator::reset( std::shared_ptr<const OperatorPar
     for ( size_t i = 0; i < d_numSubchannels; i++ ) {
         if ( !d_ownSubChannel[i] )
             continue;
-        auto localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
+        std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elemPtr( &d_subchannelElem[i],
+                                                                      []( auto ) {} );
+        auto localSubchannelIt = AMP::Mesh::MeshElementVectorIterator( elemPtr );
         auto localSubchannel   = d_Mesh->Subset( localSubchannelIt, false );
         auto face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
         for ( size_t j = 0; j < face.size(); j++ ) {
@@ -536,7 +540,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
         for ( const auto &ielem : d_elem[isub] ) {
             subchannelElements->push_back( ielem );
         }
-        auto localSubchannelCell = AMP::Mesh::MultiVectorIterator(
+        auto localSubchannelCell = AMP::Mesh::MeshElementVectorIterator(
             subchannelElements ); // iterator over elements of current subchannel
         // get subchannel index
         auto subchannelCentroid = localSubchannelCell->centroid();
@@ -546,7 +550,9 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
         // compute flux
         std::vector<double> flux( d_z.size() - 1 );
         if ( d_source == "averageCladdingTemperature" ) {
-            auto localSubchannelFace = AMP::Mesh::MultiVectorIterator( d_subchannelFace[isub] );
+            std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> elemPtr( &d_subchannelFace[isub],
+                                                                          []( auto ) {} );
+            auto localSubchannelFace = AMP::Mesh::MeshElementVectorIterator( elemPtr );
             AMP_ASSERT( localSubchannelFace.size() == d_z.size() );
             auto face = localSubchannelFace.begin();
             std::vector<AMP::Mesh::MeshElementID> face_ids( face.size() );
