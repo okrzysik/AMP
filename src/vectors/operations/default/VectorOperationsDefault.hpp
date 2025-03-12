@@ -117,6 +117,7 @@ void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &y )
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::copyCast( const VectorData &x, VectorData &y )
 {
+    using DefaultBackend = AMP::Utilities::PortabilityBackend::Serial;
     if ( x.numberOfDataBlocks() == y.numberOfDataBlocks() ) {
         for ( size_t block_id = 0; block_id < y.numberOfDataBlocks(); block_id++ ) {
             auto ydata = y.getRawDataBlock<TYPE>( block_id );
@@ -124,10 +125,10 @@ void VectorOperationsDefault<TYPE>::copyCast( const VectorData &x, VectorData &y
             AMP_ASSERT( N == x.sizeOfDataBlock( block_id ) );
             if ( x.getType( 0 ) == getTypeID<float>() ) {
                 auto xdata = x.getRawDataBlock<float>( block_id );
-                AMP::Utilities::copyCast<float, TYPE>( N, xdata, ydata );
+                AMP::Utilities::copyCast<float, TYPE, DefaultBackend>( N, xdata, ydata );
             } else if ( x.getType( 0 ) == getTypeID<double>() ) {
                 auto xdata = x.getRawDataBlock<double>( block_id );
-                AMP::Utilities::copyCast<double, TYPE>( N, xdata, ydata );
+                AMP::Utilities::copyCast<double, TYPE, DefaultBackend>( N, xdata, ydata );
             } else {
                 AMP_ERROR( "CopyCast only implemented for float or doubles." );
             }
