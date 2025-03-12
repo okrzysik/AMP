@@ -214,7 +214,7 @@ MeshIterator Mesh::isMember( const MeshIterator &iterator ) const
         if ( isMember( elem.globalID() ) )
             elements->push_back( elem );
     }
-    return AMP::Mesh::MultiVectorIterator( elements, 0 );
+    return AMP::Mesh::MeshElementVectorIterator( elements, 0 );
 }
 
 
@@ -454,7 +454,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
         }
         AMP_ASSERT( N == elements->size() );
     }
-    return MultiVectorIterator( elements, 0 );
+    return MeshElementVectorIterator( elements, 0 );
 }
 
 

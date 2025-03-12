@@ -191,7 +191,7 @@ AMP::Mesh::MeshIterator StructuredMeshHelper::getFaceIterator(
         Utilities::quicksort( index, face_list );
         auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
         *elements     = face_list;
-        return AMP::Mesh::MultiVectorIterator( elements );
+        return AMP::Mesh::MeshElementVectorIterator( elements );
     }
 }
 

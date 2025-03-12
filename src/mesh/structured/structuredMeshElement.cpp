@@ -811,31 +811,7 @@ bool structuredMeshElement::containsPoint( const Point &, double ) const
     AMP_ERROR( "Not finsihed" );
     return false;
 }
-bool structuredMeshElement::isOnSurface() const
-{
-    const int *ijk = d_index.d_index.data();
-    auto surfaceId = d_mesh->d_surfaceId;
-    auto size      = d_mesh->d_globalSize;
-    if ( d_index.type() == d_mesh->GeomDim ) {
-        size[0]--;
-        size[1]--;
-        size[2]--;
-    }
-    if ( d_index.type() != d_mesh->GeomDim && d_index.type() > GeomType::Face )
-        AMP_ERROR( "Internal error (dim>3?)" );
-    for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
-        if ( ( ijk[d] > 0 || ijk[d] < size[d] ) || ( ijk[d] == 0 && surfaceId[2 * d] < 0 ) ||
-             ( ijk[d] == size[d] && surfaceId[2 * d + 1] < 0 ) ) {
-            continue;
-        }
-        if ( d_index.type() == GeomType::Edge || d_index.type() == GeomType::Face ) {
-            if ( d_index.d_side == d )
-                return true;
-        }
-        return true;
-    }
-    return false;
-}
+bool structuredMeshElement::isOnSurface() const { return d_mesh->isOnSurface( d_index ); }
 bool structuredMeshElement::isOnBoundary( int id ) const
 {
     return d_mesh->isOnBoundary( d_index, id );

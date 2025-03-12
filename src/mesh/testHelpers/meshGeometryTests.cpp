@@ -120,7 +120,10 @@ void meshTests::TestNormalGeometry( AMP::UnitTest &ut, std::shared_ptr<const AMP
     // Loop over the surface
     double error = 0.0;
     auto type    = static_cast<AMP::Mesh::GeomType>( mesh->getDim() - 1 );
+    [[maybe_unused]] std::vector<Point> vertices;
     for ( auto &elem : mesh->getSurfaceIterator( type, 0 ) ) {
+        // Get the verticies (useful for debugging)
+        elem.getVertices( vertices );
         // Get the normal from the geometry
         auto a  = elem.centroid();
         auto n1 = geom->surfaceNorm( a );
@@ -129,8 +132,9 @@ void meshTests::TestNormalGeometry( AMP::UnitTest &ut, std::shared_ptr<const AMP
         if ( dot( n1, n2 ) < 0 )
             n2 = -n2; // We do not always agree on direction (need to fix this)
         // Check the error
-        auto err = abs( n1 - n2 );
-        error    = std::max( error, err );
+        auto err                   = abs( n1 - n2 );
+        error                      = std::max( error, err );
+        [[maybe_unused]] bool test = elem.isOnSurface();
     }
     if ( error < 1e-6 ) {
         ut.passes( "mesh normal matches geom normal: " + mesh->getName() );

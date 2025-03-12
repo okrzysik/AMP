@@ -329,21 +329,15 @@ private: // Private data
           * \param[out] ut           Unit test class to report the results
           * \param[in] mesh          mesh for the iterator
           * \param[in] iterator      local iterator over elements
-          * \param[in] N_local       number of local elements for the iterator
-          * \param[in] N_ghost       number of ghost elements for the iterator
           * \param[in] type          Geometric type
+          * \param[in] name          Name of test
           */
-    static void ElementIteratorTest( AMP::UnitTest &ut,
-                                     std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                     const AMP::Mesh::MeshIterator &iterator,
-                                     const size_t N_local,
-                                     const size_t N_ghost,
-                                     const AMP::Mesh::GeomType type );
-
-    // Helper function to create a map from the base mesh communicator rank to the main mesh
-    // communicator
-    static std::map<AMP::Mesh::MeshID, std::vector<int>>
-    createRankMap( std::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static std::pair<size_t, size_t> ElementIteratorTest( AMP::UnitTest &ut,
+                                                          std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                                          const AMP::Mesh::MeshIterator &iterator,
+                                                          const AMP::Mesh::GeomType type,
+                                                          const std::vector<int> &blockIds,
+                                                          const std::string &name );
 
     static std::shared_ptr<AMP::Mesh::Mesh> globalMeshForMeshVectorFactory;
 };

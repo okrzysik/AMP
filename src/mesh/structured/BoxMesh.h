@@ -356,6 +356,9 @@ public:
      */
     virtual void coord( const MeshElementIndex &index, double *pos ) const = 0;
 
+    //! Check if the element is on the surface
+    virtual bool isOnSurface( const MeshElementIndex &index ) const;
+
     //! Check if the element is on the given boundary id
     virtual bool isOnBoundary( const MeshElementIndex &index, int id ) const;
 
@@ -462,24 +465,31 @@ protected:
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
 
+    // Helper function to check if an element is on a given side
+    bool onSide( const MeshElementIndex &index, int d, int s ) const;
 
 protected: // Write/read restart data
     void writeRestart( int64_t ) const override;
     BoxMesh( int64_t, AMP::IO::RestartManager * );
 
-protected:                                  // Internal data
-    const int d_rank, d_size;               // Cached values for the rank and size
-    const std::array<int, 3> d_globalSize;  // The size of the logical domain in each direction
-    const std::array<int, 3> d_numBlocks;   // The number of local box in each direction
-    const std::vector<int> d_startIndex[3]; // The first index for each block
-    const std::vector<int> d_endIndex[3];   // The end index (last=1) for each block
-    const std::array<int, 6> d_localIndex;  // Local index range (cached for performance)
-    const std::array<int, 3> d_indexSize;   // Local index size (local box + 2) (cached)
-    const std::array<int, 6> d_surfaceId;   // ID of each surface (if any, -1 if not)
 
 protected: // Friend functions to access protected functions
     friend class structuredMeshElement;
     friend class structuredMeshIterator;
+    typedef std::shared_ptr<std::vector<MeshElementIndex>> indexList;
+
+
+protected:                                       // Internal data
+    const int d_rank, d_size;                    // Cached values for the rank and size
+    const std::array<int, 3> d_globalSize;       // The size of the logical domain in each direction
+    const std::array<int, 3> d_numBlocks;        // The number of local box in each direction
+    const std::vector<int> d_startIndex[3];      // The first index for each block
+    const std::vector<int> d_endIndex[3];        // The end index (last=1) for each block
+    const std::array<int, 6> d_localIndex;       // Local index range (cached for performance)
+    const std::array<int, 3> d_indexSize;        // Local index size (local box + 2) (cached)
+    const std::array<int, 6> d_surfaceId;        // ID of each surface (if any, -1 if not)
+    mutable std::vector<indexList> d_surface[4]; // List of surface elements
+    mutable std::vector<indexList> d_boundary[4][6]; // List of boundary elements
 
 protected:
     BoxMesh();

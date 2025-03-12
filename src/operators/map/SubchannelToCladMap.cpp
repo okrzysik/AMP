@@ -1,8 +1,10 @@
 #include "AMP/operators/map/SubchannelToCladMap.h"
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/vectors/VectorSelector.h"
+
 #include "ProfilerApp.h"
 
 
@@ -172,7 +174,7 @@ SubchannelToCladMap::getSubchannelIterator( std::shared_ptr<AMP::Mesh::Mesh> mes
     elements->reserve( xyFace.size() );
     for ( auto &elem : xyFace )
         elements->push_back( elem.second );
-    return AMP::Mesh::MultiVectorIterator( elements );
+    return AMP::Mesh::MeshElementVectorIterator( elements );
 }
 
 
