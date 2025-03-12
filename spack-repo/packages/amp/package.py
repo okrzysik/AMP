@@ -74,6 +74,7 @@ class Amp(CMakePackage, CudaPackage, ROCmPackage):
         ]
 
         if "+rocm" in spec:
+            options.append(self.define("COMPILE_CXX_AS_HIP", True))
             # since there is no Spack compiler wrapper for HIP compiler, pass extra rpaths directly
             options.append(self.define("CMAKE_EXE_LINKER_FLAGS", " ".join([f"-Wl,-rpath={p}" for p in self.compiler.extra_rpaths])))
 
