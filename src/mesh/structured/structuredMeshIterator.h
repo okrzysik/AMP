@@ -15,7 +15,7 @@ namespace AMP::Mesh {
 class structuredMeshIterator final : public MeshIterator
 {
 public:
-    //! Empty MeshElementVectorIterator constructor
+    //! Empty structuredMeshIterator constructor
     structuredMeshIterator();
 
     //! Range base constructor

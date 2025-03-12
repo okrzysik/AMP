@@ -67,10 +67,8 @@ protected:
 
     // A pointer to a std::vector containing the desired mesh elements
     std::shared_ptr<std::vector<TYPE>> d_elements;
-
-protected:
-    static constexpr size_t MeshIteratorType();
 };
+
 } // namespace AMP::Mesh
 
 #endif
