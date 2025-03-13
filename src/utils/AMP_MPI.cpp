@@ -1534,30 +1534,39 @@ std::vector<int> AMP_MPI::waitSome( int count, const Request *request )
  *  Probe functions                                                      *
  ************************************************************************/
 #ifdef AMP_USE_MPI
-int AMP_MPI::Iprobe( int source, int tag ) const
+std::tuple<int, int, int> AMP_MPI::Iprobe( int source, int tag ) const
 {
     AMP_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    AMP_INSIST( tag >= 0, "tag must be >= 0" );
+    // set tag and source to wildcards if appropriate
+    source = source >= 0 ? source : MPI_ANY_SOURCE;
+    tag    = tag >= 0 ? tag : MPI_ANY_TAG;
     MPI_Status status;
     int flag = 0;
     MPI_Iprobe( source, tag, d_comm, &flag, &status );
-    if ( flag == 0 )
-        return -1;
+    if ( flag == 0 ) {
+        return std::make_tuple<int, int, int>( -1, -1, -1 );
+    }
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
     AMP_ASSERT( count >= 0 );
-    return count;
+    return std::make_tuple<int, int, int>( std::forward<int>( status.MPI_SOURCE ),
+                                           std::forward<int>( status.MPI_TAG ),
+                                           std::forward<int>( count ) );
 }
-int AMP_MPI::probe( int source, int tag ) const
+std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
 {
     AMP_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    AMP_INSIST( tag >= 0, "tag must be >= 0" );
+    // set tag and source to wildcards if appropriate
+    source = source >= 0 ? source : MPI_ANY_SOURCE;
+    tag    = tag >= 0 ? tag : MPI_ANY_TAG;
     MPI_Status status;
     MPI_Probe( source, tag, d_comm, &status );
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
     AMP_ASSERT( count >= 0 );
-    return count;
+    return std::make_tuple<int, int, int>( std::forward<int>( status.MPI_SOURCE ),
+                                           std::forward<int>( status.MPI_TAG ),
+                                           std::forward<int>( count ) );
 }
 #else
 int AMP_MPI::Iprobe( int source, int tag ) const

@@ -18,9 +18,11 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-// Forward declare CSRMatrixData to make it a friend
+// Forward declare CSRMatrix{Data.Communicator> to make them friends
 template<typename P, class A, class DIAG>
 class CSRMatrixData;
+template<typename P, class A, class DIAG>
+class CSRMatrixCommunicator;
 
 template<typename Policy, class Allocator>
 class CSRLocalMatrixData :
@@ -29,6 +31,8 @@ class CSRLocalMatrixData :
 public:
     template<typename P, class A, class DIAG>
     friend class CSRMatrixData;
+    template<typename P, class A, class DIAG>
+    friend class CSRMatrixCommunicator;
 
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
@@ -41,9 +45,13 @@ public:
         typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
 
     /** \brief Constructor
-     * \param[in] outer Containing CSRMatrixData object
-     * \param[in] params Description of the matrix
-     * \param[in] is_diag True if this is the diag block, influences which dofs are used/ignored
+     * \param[in] params           Description of the matrix
+     * \param[in] memory_location  Memory space where data is located
+     * \param[in] first_row        Global index of starting row (inclusive)
+     * \param[in] last_row         Global index of final row (exclusive)
+     * \param[in] first_col        Global index of starting column (inclusive)
+     * \param[in] last_col         Global index of final column (exclusive)
+     * \param[in] is_diag          True if this is the diag block, influences use of first/last col
      */
     explicit CSRLocalMatrixData( std::shared_ptr<MatrixParametersBase> params,
                                  AMP::Utilities::MemoryType memory_location,
@@ -175,6 +183,15 @@ public:
     }
 
 protected:
+    static std::shared_ptr<CSRLocalMatrixData>
+    ConcatHorizontal( std::vector<std::shared_ptr<CSRLocalMatrixData>> blocks );
+
+    static std::shared_ptr<CSRLocalMatrixData>
+    ConcatVertical( std::vector<std::shared_ptr<CSRLocalMatrixData>> blocks );
+
+    //! Internal setNNZ function that references d_row_starts and optionally does scan
+    void setNNZ( bool do_accum );
+
     //! Make a clone of this matrix data
     std::shared_ptr<CSRLocalMatrixData> cloneMatrixData();
 

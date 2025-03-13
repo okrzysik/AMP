@@ -11,6 +11,7 @@
 #include <functional>
 #include <map>
 #include <tuple>
+#include <vector>
 
 namespace AMP::Discretization {
 class DOFManager;

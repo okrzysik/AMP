@@ -174,6 +174,107 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
 }
 
 template<typename Policy, class Allocator>
+std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>
+CSRLocalMatrixData<Policy, Allocator>::ConcatHorizontal(
+    std::vector<std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
+{
+    AMP_INSIST( blocks.size() > 0, "Attempted to concatenate empty set of blocks" );
+
+    // Verify that all have matching row/col starts/stops
+    // Blocks must have valid global columns present
+    // Count total number of non-zeros in each row from combination.
+    const auto mem_loc   = blocks[0]->d_memory_location;
+    const auto first_row = blocks[0]->d_first_row;
+    const auto last_row  = blocks[0]->d_last_row;
+    const auto nrows     = static_cast<lidx_t>( last_row - first_row );
+    const auto first_col = blocks[0]->d_first_col;
+    const auto last_col  = blocks[0]->d_last_col;
+    std::vector<lidx_t> row_nnz( last_row - first_row, 0 );
+    for ( auto block : blocks ) {
+        AMP_INSIST( first_row == block->d_first_row && last_row == block->d_last_row &&
+                        first_col == block->d_first_col && last_col == block->d_last_col,
+                    "Blocks to concatenate must have compatible layouts" );
+        AMP_INSIST( block->d_cols.get(), "Blocks to concatenate must have global columns" );
+        AMP_INSIST( mem_loc == block->d_memory_location,
+                    "Blocks to concatenate must be in same memory space" );
+        for ( lidx_t row = 0; row < nrows; ++row ) {
+            row_nnz[row] += ( block->d_row_starts[row + 1] - block->d_row_starts[row] );
+        }
+    }
+
+    // Create empty matrix and trigger allocations to match
+    auto concat_matrix = std::make_shared<CSRLocalMatrixData<Policy, Allocator>>(
+        nullptr, mem_loc, first_row, last_row, first_col, last_col, false );
+    concat_matrix->setNNZ( row_nnz );
+
+    // set row_nnz back to zeros to use as counters while appending entries
+    std::fill( row_nnz.begin(), row_nnz.end(), 0 );
+
+    // loop back over blocks and write into new matrix
+    for ( auto block : blocks ) {
+        for ( lidx_t row = 0; row < nrows; ++row ) {
+            for ( auto n = block->d_row_starts[row]; n < block->d_row_starts[row + 1]; ++n ) {
+                const auto rs                     = concat_matrix->d_row_starts[row];
+                const auto ctr                    = row_nnz[row];
+                concat_matrix->d_cols[rs + ctr]   = block->d_cols[n];
+                concat_matrix->d_coeffs[rs + ctr] = block->d_coeffs[n];
+                row_nnz[row]++;
+            }
+        }
+    }
+
+    return concat_matrix;
+}
+
+template<typename Policy, class Allocator>
+std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>
+CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
+    std::vector<std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
+{
+    AMP_INSIST( blocks.size() > 0, "Attempted to concatenate empty set of blocks" );
+
+    // Verify that all have matching column starts/stops
+    // Blocks must have valid global columns present
+    // Count total number of non-zeros in each row from combination.
+    const auto mem_loc   = blocks[0]->d_memory_location;
+    const auto first_col = blocks[0]->d_first_col;
+    const auto last_col  = blocks[0]->d_last_col;
+    std::vector<lidx_t> row_nnz;
+    for ( auto block : blocks ) {
+        AMP_INSIST( first_col == block->d_first_col && last_col == block->d_last_col,
+                    "Blocks to concatenate must have compatible layouts" );
+        AMP_INSIST( block->d_cols.get(), "Blocks to concatenate must have global columns" );
+        AMP_INSIST( mem_loc == block->d_memory_location,
+                    "Blocks to concatenate must be in same memory space" );
+        for ( lidx_t row = 0; row < block->d_num_rows; ++row ) {
+            row_nnz.push_back( block->d_row_starts[row + 1] - block->d_row_starts[row] );
+        }
+    }
+
+    // Create empty matrix and trigger allocations to match
+    auto concat_matrix = std::make_shared<CSRLocalMatrixData<Policy, Allocator>>(
+        nullptr, mem_loc, 0, row_nnz.size(), first_col, last_col, false );
+    concat_matrix->setNNZ( row_nnz );
+
+    // loop over blocks again and write into new matrix
+    lidx_t cat_row = 0;
+    for ( auto block : blocks ) {
+        for ( lidx_t brow = 0; brow < block->d_num_rows; ++brow ) {
+            lidx_t cat_pos = concat_matrix->d_row_starts[cat_row];
+            for ( auto n = block->d_row_starts[brow]; n < block->d_row_starts[brow + 1]; ++n ) {
+                concat_matrix->d_cols[cat_pos]   = block->d_cols[n];
+                concat_matrix->d_coeffs[cat_pos] = block->d_coeffs[n];
+                cat_pos++;
+            }
+            cat_row++;
+        }
+    }
+
+
+    return concat_matrix;
+}
+
+template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
 {
     if ( d_is_empty ) {
@@ -321,14 +422,12 @@ CSRLocalMatrixData<Policy, Allocator>::cloneMatrixData()
 }
 
 template<typename Policy, class Allocator>
-void CSRLocalMatrixData<Policy, Allocator>::setNNZ( const std::vector<lidx_t> &nnz )
+void CSRLocalMatrixData<Policy, Allocator>::setNNZ( bool do_accum )
 {
-    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
-                "CSRLocalMatrixData::setNNZ not implemented on device yet" );
-
-    // fill rowstarts from scan of passed nnz vector
-    std::exclusive_scan( nnz.begin(), nnz.end(), d_row_starts.get(), 0 );
-    d_row_starts[d_num_rows] = d_row_starts[d_num_rows - 1] + nnz[d_num_rows - 1];
+    if ( do_accum ) {
+        std::exclusive_scan(
+            d_row_starts.get(), d_row_starts.get() + d_num_rows + 1, d_row_starts.get(), 0 );
+    }
 
     // total nnz in all rows of block is last entry
     d_nnz = d_row_starts[d_num_rows];
@@ -348,6 +447,17 @@ void CSRLocalMatrixData<Policy, Allocator>::setNNZ( const std::vector<lidx_t> &n
     std::fill( d_cols.get(), d_cols.get() + d_nnz, 0 );
     std::fill( d_cols_loc.get(), d_cols_loc.get() + d_nnz, 0 );
     std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, static_cast<scalar_t>( 0.0 ) );
+}
+
+template<typename Policy, class Allocator>
+void CSRLocalMatrixData<Policy, Allocator>::setNNZ( const std::vector<lidx_t> &nnz )
+{
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRLocalMatrixData::setNNZ not implemented on device yet" );
+
+    // copy passed nnz vector into row_starts and call internal setNNZ
+    std::copy( nnz.begin(), nnz.end(), d_row_starts.get() );
+    setNNZ( true );
 }
 
 template<typename Policy, class Allocator>

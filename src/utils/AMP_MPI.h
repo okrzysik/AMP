@@ -11,6 +11,7 @@
 #include <random>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 
@@ -1375,8 +1376,9 @@ public: // Member functions
      *    Otherwise it will return -1.
      * \param[in] source      source rank (-1: any source)
      * \param[in] tag         tag (-1: any tag)
+     * \return  Tuple of three ints: matched source, matched tag, number of bytes
      */
-    int Iprobe( int source = -1, int tag = -1 ) const;
+    std::tuple<int, int, int> Iprobe( int source = -1, int tag = -1 ) const;
 
 
     /*!
@@ -1386,8 +1388,9 @@ public: // Member functions
      *    the specified source and tag (on the current communicator) is available
      * \param[in] source      source rank (-1: any source)
      * \param[in] tag         tag (-1: any tag)
+     * \return  Tuple of three ints: matched source, matched tag, number of bytes
      */
-    int probe( int source = -1, int tag = -1 ) const;
+    std::tuple<int, int, int> probe( int source = -1, int tag = -1 ) const;
 
 
     /*!
