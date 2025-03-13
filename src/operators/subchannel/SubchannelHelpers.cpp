@@ -44,7 +44,7 @@ subsetForSubchannel( std::shared_ptr<AMP::Mesh::Mesh> subchannel, size_t i, size
         if ( coord[0] >= x[i] && coord[0] <= x[i + 1] && coord[1] >= y[j] && coord[1] <= y[j + 1] )
             elements->push_back( *el );
     }
-    return subchannel->Subset( AMP::Mesh::MultiVectorIterator( elements ) );
+    return subchannel->Subset( AMP::Mesh::MeshElementVectorIterator( elements ) );
 }
 
 

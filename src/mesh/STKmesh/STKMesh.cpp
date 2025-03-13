@@ -632,11 +632,11 @@ MeshIterator STKMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     if ( local.get() == NULL || ghost.get() == NULL )
         AMP_ERROR( "Surface iterator over the given geometry type is not supported" );
     if ( gcw == 0 ) {
-        return MultiVectorIterator( local, 0 );
+        return MeshElementVectorIterator( local, 0 );
     } else if ( gcw == 1 ) {
         std::vector<MeshIterator::shared_ptr> iterators( 2 );
-        iterators[0] = std::make_shared<MultiVectorIterator>( local, 0 );
-        iterators[1] = std::make_shared<MultiVectorIterator>( ghost, 0 );
+        iterators[0] = std::make_shared<MeshElementVectorIterator>( local, 0 );
+        iterators[1] = std::make_shared<MeshElementVectorIterator>( ghost, 0 );
         return MultiIterator( iterators, 0 );
     } else {
         AMP_ERROR( "STKmesh has maximum ghost width of 1" );
@@ -671,7 +671,7 @@ STKMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
     auto it    = d_boundarySets.find( mapid );
     if ( it != d_boundarySets.end() )
         list = it->second;
-    return MultiVectorIterator( list, 0 );
+    return MeshElementVectorIterator( list, 0 );
 }
 
 

@@ -3,14 +3,23 @@
 
 
 #include "AMP/mesh/MeshElement.h"
-#include "AMP/mesh/libmesh/libmeshElemIterator.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
-#include "AMP/mesh/libmesh/libmeshNodeIterator.h"
+
 #include <memory>
 #include <vector>
 
+// libMesh includes
+#include "libmesh/libmesh_config.h"
+#undef LIBMESH_ENABLE_REFERENCE_COUNTING
+#include "libmesh/elem.h"
+
 
 namespace AMP::Mesh {
+
+
+class libmeshMesh;
+class libmeshElemIterator;
+class libmeshNodeIterator;
 
 
 /**
@@ -20,7 +29,7 @@ namespace AMP::Mesh {
  * A mesh element can be thought of as the smallest unit of a mesh.  It is of a type
  * of GeomType.  This class is derived to store a libMesh element.
  */
-class libmeshMeshElement : public MeshElement
+class libmeshMeshElement final : public MeshElement
 {
 public:
     //! Empty constructor for a MeshElement
@@ -95,6 +104,8 @@ public:
     //! Return the owner rank according to AMP_COMM_WORLD
     unsigned int globalOwnerRank() const override;
 
+    //! Return the raw pointer to the element/node (if it exists)
+    const void *get() const { return ptr_element; }
 
 protected:
     /** Default constructors

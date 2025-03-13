@@ -498,33 +498,13 @@ MultiMesh::getBoundaryIDIterator( const GeomType type, const int id, const int g
 }
 std::vector<int> MultiMesh::getBlockIDs() const
 {
-    // Get all local id sets
-    std::set<int> ids_set;
+    std::set<int> ids;
     for ( auto &mesh : d_meshes ) {
-        std::vector<int> mesh_idSet = mesh->getBlockIDs();
-        ids_set.insert( mesh_idSet.begin(), mesh_idSet.end() );
+        auto ids2 = mesh->getBlockIDs();
+        ids.insert( ids2.begin(), ids2.end() );
     }
-    std::vector<int> local_ids( ids_set.begin(), ids_set.end() );
-    // Perform a global communication to syncronize the id sets across all processors
-    auto N_id_local = (int) local_ids.size();
-    std::vector<int> count( d_comm.getSize(), 0 );
-    std::vector<int> disp( d_comm.getSize(), 0 );
-    d_comm.allGather( N_id_local, &count[0] );
-    for ( int i = 1; i < d_comm.getSize(); i++ )
-        disp[i] = disp[i - 1] + count[i - 1];
-    int N_id_global = disp[d_comm.getSize() - 1] + count[d_comm.getSize() - 1];
-    if ( N_id_global == 0 )
-        return std::vector<int>();
-    std::vector<int> global_id_list( N_id_global, 0 );
-    int *ptr = nullptr;
-    if ( N_id_local > 0 )
-        ptr = &local_ids[0];
-    d_comm.allGather( ptr, N_id_local, &global_id_list[0], &count[0], &disp[0], true );
-    // Get the unique set
-    for ( auto &mesh : global_id_list )
-        ids_set.insert( mesh );
-    // Return the final vector of ids
-    return std::vector<int>( ids_set.begin(), ids_set.end() );
+    d_comm.setGather( ids );
+    return std::vector<int>( ids.begin(), ids.end() );
 }
 MeshIterator MultiMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
 {

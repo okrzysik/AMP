@@ -83,21 +83,19 @@ std::shared_ptr<DOFManager> simpleDOFManager::create( std::shared_ptr<const AMP:
                                                       int DOFsPerObject )
 {
     // Check the iterators
-    auto intersection = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, it1, it2 );
-    AMP_INSIST( intersection.size() == it2.size(), "it1 must include it2" );
-    auto tmp = it2.begin();
-    for ( size_t i = 0; i < tmp.size(); i++ ) {
-        auto id = tmp->globalID();
+    for ( auto &elem : it2 ) {
+        auto id = elem.globalID();
         AMP_INSIST( id.is_local(), "it2 may not contain any ghost elements" );
-        ++tmp;
     }
-    tmp       = it1.begin();
-    auto type = tmp->globalID().type();
-    for ( size_t i = 0; i < tmp.size(); i++ ) {
-        auto id = tmp->globalID();
+    auto type      = it1->globalID().type();
+    size_t N_local = 0;
+    for ( auto &elem : it1 ) {
+        auto id = elem.globalID();
         AMP_INSIST( id.type() == type, "All elements in the iterator must be the same type" );
-        ++tmp;
+        if ( id.is_local() )
+            N_local++;
     }
+    AMP_INSIST( N_local == it2.size(), "it1 must contain it2" );
     // Create the simpleDOFManager
     return std::make_shared<simpleDOFManager>( mesh, it2, it1, type, DOFsPerObject );
 }
@@ -105,12 +103,10 @@ std::shared_ptr<DOFManager> simpleDOFManager::create( const AMP::Mesh::MeshItera
                                                       int DOFsPerObject )
 {
     // Check the iterator
-    auto tmp  = it.begin();
-    auto type = tmp->globalID().type();
-    for ( size_t i = 0; i < tmp.size(); i++ ) {
-        auto id = tmp->globalID();
+    auto type = it->globalID().type();
+    for ( auto &elem : it ) {
+        auto id = elem.globalID();
         AMP_INSIST( id.type() == type, "All elements in the iterator must be the same type" );
-        ++tmp;
     }
     // Create the simpleDOFManager
     return std::make_shared<simpleDOFManager>( nullptr, it, it, type, DOFsPerObject );
