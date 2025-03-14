@@ -174,5 +174,4 @@ ENDIF()
 ADD_SUBDIRECTORY( mechanics )
 ADD_SUBDIRECTORY( flow )
 ADD_SUBDIRECTORY( subchannel )
-ADD_SUBDIRECTORY( meshWriters )
 
