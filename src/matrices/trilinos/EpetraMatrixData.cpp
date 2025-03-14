@@ -181,10 +181,10 @@ void EpetraMatrixData::setEpetraMaps( std::shared_ptr<Vector> range,
 void EpetraMatrixData::fillComplete()
 {
     if ( d_RangeMap ) {
-        //        if ( d_DomainMap )
-        //            d_epetraMatrix->FillComplete( *d_DomainMap, *d_RangeMap );
-        //        else
-        d_epetraMatrix->FillComplete( *d_RangeMap, *d_RangeMap );
+        if ( d_DomainMap )
+            d_epetraMatrix->FillComplete( *d_DomainMap, *d_RangeMap );
+        else
+            d_epetraMatrix->FillComplete( *d_RangeMap, *d_RangeMap );
     } else {
         d_epetraMatrix->FillComplete();
     }
