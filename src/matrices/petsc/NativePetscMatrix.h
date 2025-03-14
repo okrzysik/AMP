@@ -43,6 +43,8 @@ public:
      */
     static std::shared_ptr<Matrix> duplicateMat( Mat m );
 
+    void copy( std::shared_ptr<const Matrix> X ) override;
+
     /** \brief Copy data from a PETSc Mat
      * \param[in] m  The matrix with the data
      */

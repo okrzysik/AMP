@@ -1,5 +1,6 @@
 #include "AMP/matrices/petsc/NativePetscMatrix.h"
 #include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/operations/default/MatrixOperationsDefault.h"
 #include "AMP/matrices/petsc/NativePetscMatrixData.h"
 #include "AMP/matrices/petsc/NativePetscMatrixOperations.h"
 #include "AMP/vectors/Vector.h"
@@ -92,6 +93,20 @@ std::shared_ptr<Matrix> NativePetscMatrix::duplicateMat( Mat m )
 {
     auto data = NativePetscMatrixData::duplicateMat( m );
     return std::make_shared<NativePetscMatrix>( data );
+}
+
+void NativePetscMatrix::copy( std::shared_ptr<const Matrix> X )
+{
+    if ( this->type() == X->type() ) {
+        const auto xData =
+            std::dynamic_pointer_cast<const NativePetscMatrixData>( X->getMatrixData() );
+        AMP_ASSERT( xData );
+        copyFromMat( std::const_pointer_cast<NativePetscMatrixData>( xData )->getMat() );
+    } else {
+        MatrixOperationsDefault::copy( *X->getMatrixData(), *getMatrixData() );
+    }
+
+    makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 void NativePetscMatrix::copyFromMat( Mat m )

@@ -133,4 +133,10 @@ void EpetraMatrixOperations::matMultiply( MatrixData const &A, MatrixData const 
     AMP_ASSERT( ierr == 0 );
 }
 
+void EpetraMatrixOperations::copy( const MatrixData &X, MatrixData &Y )
+{
+    EpetraExt::MatrixMatrix::Add(
+        getEpetra_CrsMatrix( X ), false, 1.0, getEpetra_CrsMatrix( Y ), 0.0 );
+}
+
 } // namespace AMP::LinearAlgebra

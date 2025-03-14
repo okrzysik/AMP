@@ -83,6 +83,13 @@ class EpetraMatrixOperations : public MatrixOperations
      * \param[in] X Data for the input matrix
      */
     AMP::Scalar LinfNorm( const MatrixData &X ) const override;
+
+    /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
+     * as x and copy the coefficients
+     * \param[in] x matrix data to copy from
+     * \param[in] y matrix data to copy to
+     */
+    void copy( const MatrixData &X, MatrixData &Y ) override;
 };
 
 } // namespace AMP::LinearAlgebra
