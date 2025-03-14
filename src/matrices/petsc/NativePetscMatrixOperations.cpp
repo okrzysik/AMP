@@ -115,4 +115,11 @@ AMP::Scalar NativePetscMatrixOperations::LinfNorm( MatrixData const &A ) const
     return retVal;
 }
 
+void NativePetscMatrixOperations::copy( const MatrixData &X, MatrixData &Y )
+{
+    AMP_ASSERT( X.numGlobalRows() == Y.numGlobalRows() );
+    AMP_ASSERT( X.numGlobalColumns() == Y.numGlobalColumns() );
+    MatCopy( getMat( X ), getMat( Y ), SAME_NONZERO_PATTERN );
+}
+
 } // namespace AMP::LinearAlgebra

@@ -1,6 +1,7 @@
 #include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/trilinos/EpetraMatrixData.h"
+#include "AMP/matrices/trilinos/EpetraMatrixHelpers.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
@@ -124,10 +125,11 @@ Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>>
 TrilinosMueLuSolver::getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOperator> &op )
 {
     // wrap in a Xpetra matrix
-    auto ampMatrix = op->getMatrix();
-    auto epetraMatrix =
-        AMP::LinearAlgebra::EpetraMatrixData::createView( ampMatrix->getMatrixData() );
-    auto epA = Teuchos::rcpFromRef( epetraMatrix->getEpetra_CrsMatrix() );
+    auto ampMatrix    = op->getMatrix();
+    auto epetraMatrix = AMP::LinearAlgebra::getEpetraMatrix( ampMatrix );
+    auto epetraMatrixData =
+        AMP::LinearAlgebra::EpetraMatrixData::createView( epetraMatrix->getMatrixData() );
+    auto epA = Teuchos::rcpFromRef( epetraMatrixData->getEpetra_CrsMatrix() );
     Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> exA =
         Teuchos::rcp( new Xpetra::EpetraCrsMatrixT<GO, NO>( epA ) );
     auto crsWrapMat = Teuchos::rcp( new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>( exA ) );

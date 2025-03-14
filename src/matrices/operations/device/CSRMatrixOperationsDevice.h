@@ -52,18 +52,6 @@ class CSRMatrixOperationsDevice : public MatrixOperations
      */
     void axpy( AMP::Scalar alpha, const MatrixData &X, MatrixData &Y ) override;
 
-    /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
-     * as x and copy the coefficients after up/down casting
-     * \param[in] x matrix data to copy from
-     * \param[in] y matrix data to copy to after up/down casting the coefficients
-     */
-    void copyCast( const MatrixData &X, MatrixData &Y ) override;
-
-    template<typename PolicyIn>
-    static void
-    copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-              CSRMatrixData<Policy, Allocator, DiagMatrixData> *Y );
-
     /** \brief  Set the non-zeros of the matrix to a scalar
      * \param[in]  alpha  The value to set the non-zeros to
      */
@@ -95,6 +83,25 @@ class CSRMatrixOperationsDevice : public MatrixOperations
      * \param[in] X Data for the input matrix
      */
     AMP::Scalar LinfNorm( const MatrixData &X ) const override;
+
+    /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
+     * as x and copy the coefficients
+     * \param[in] x matrix data to copy from
+     * \param[in] y matrix data to copy to
+     */
+    void copy( const MatrixData &X, MatrixData &Y ) override;
+
+    /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
+     * as x and copy the coefficients after up/down casting
+     * \param[in] x matrix data to copy from
+     * \param[in] y matrix data to copy to after up/down casting the coefficients
+     */
+    void copyCast( const MatrixData &X, MatrixData &Y ) override;
+
+    template<typename PolicyIn>
+    static void
+    copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
+              CSRMatrixData<Policy, Allocator, DiagMatrixData> *Y );
 };
 
 } // namespace AMP::LinearAlgebra

@@ -126,6 +126,11 @@ public:
     virtual shared_ptr clone() const = 0;
 
     /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
+     * as x and copy the coefficients
+     */
+    virtual void copy( std::shared_ptr<const Matrix> X );
+
+    /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
      * as x and copy the coefficients after up/down casting
      */
     void copyCast( std::shared_ptr<const Matrix> X );
@@ -137,9 +142,8 @@ public:
     virtual Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const = 0;
 
-    /** \brief Get a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a right
-     * vector )
-     * \return  A newly created right vector
+    /** \brief Get a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a
+     * right vector ) \return  A newly created right vector
      */
     virtual Vector::shared_ptr getRightVector() const = 0;
 
@@ -211,8 +215,8 @@ public:
         d_matrixData->getRowByGlobalID( row, cols, values );
     }
 
-    /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
-     * \param[in]  row Which row
+    /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed
+     * format \param[in]  row Which row
      */
     std::vector<size_t> getColumnIDs( size_t row ) const
     {
@@ -270,10 +274,9 @@ public:
         return d_matrixData->getRightDOFManager();
     }
 
-    /** \brief Get the DOFManager associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$\mathbf{y}\f$ is
-     * a left vector )
-     * \return  The DOFManager associated with a left vector
+    /** \brief Get the DOFManager associated with a left vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{y}\f$ is a left vector ) \return  The
+     * DOFManager associated with a left vector
      */
     virtual std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const
     {

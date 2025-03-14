@@ -38,15 +38,7 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
                                                 getRow );
 
         auto epetraMat = std::make_shared<ManagedEpetraMatrix>( matParams );
-        auto data      = std::dynamic_pointer_cast<EpetraMatrixData>( epetraMat->getMatrixData() );
-        AMP_ASSERT( data );
-
-        std::vector<size_t> cols;
-        std::vector<double> vals;
-        for ( size_t row = mat->beginRow(); row != mat->endRow(); ++row ) {
-            mat->getRowByGlobalID( row, cols, vals );
-            epetraMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), vals.data() );
-        }
+        epetraMat->copy( mat );
         epetraMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
         //        epetraMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         return epetraMat;
