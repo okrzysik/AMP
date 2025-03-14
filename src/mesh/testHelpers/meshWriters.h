@@ -24,6 +24,7 @@ void write2elementMesh(
 void write7elementMesh( int NumberOfBoundaryNodeIds, const std::string &file );
 void writeConstrainedMesh(
     int nx, int ny, int nz, double Lx, double Ly, double Lz, const std::string &file );
+void writeCookMesh( int nx, int ny, int nz, const std::string &file );
 
 } // namespace AMP::Mesh::MeshWriters
 

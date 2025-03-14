@@ -64,6 +64,12 @@ void run( const std::string &exe, const std::vector<const char *> &args )
         double const c = atof( args[6] ); // Y-dimension
         double const r = atof( args[7] );
         AMP::Mesh::MeshWriters::writePlateWithHole( le, me, ne, pe, a, b, c, r, args[8] );
+    } else if ( exe == "writeCookMesh" ) {
+        CHECK_ARGS( 4, "Usage: <exe> writeCookMesh nx ny nz filename\n" );
+        int nx = atoi( args[0] );
+        int ny = atoi( args[1] );
+        int nz = atoi( args[2] );
+        AMP::Mesh::MeshWriters::writeCookMesh( nx, ny, nz, args[3] );
     } else {
         std::cerr << "Unknown mesh: " << exe << std::endl;
         exit( 1 );
@@ -78,6 +84,7 @@ int main( int argc, char **argv )
         run( "write7elementMesh-2", { "out7elementMesh-2" } );
         run( "writeDistortedElementMesh", { "outDistortedElementMesh" } );
         run( "writeDispValsForPatchTest-2", { "outDispValsForPatchTest-2" } );
+        run( "writeCookMesh", { "10", "10", "10", "test.dat" } );
         return 0;
     } else {
         std::string exe( argv[1] );
