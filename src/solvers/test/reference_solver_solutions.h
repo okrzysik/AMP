@@ -10,6 +10,8 @@
 std::map<std::string, std::tuple<int, double, double>> conv_map{
     { "input_testLinearSolvers-LinearThermalRobin-CG",
       std::make_tuple( 24, 1.68504e-10, 2.0e-10 ) },
+    { "input_testLinearSolvers-LinearThermalRobin-IPCG",
+      std::make_tuple( 24, 1.68504e-10, 2.0e-10 ) },
     { "input_testLinearSolvers-LinearThermalRobin-CylMesh-CG",
       std::make_tuple( 87, 2.4806061595639e-09, 3.0e-10 ) },
     { "input_testLinearSolvers-LinearThermalRobin-GMRES",
@@ -25,6 +27,8 @@ std::map<std::string, std::tuple<int, double, double>> conv_map{
     { "input_testLinearSolvers-LinearThermalRobin-ML",
       std::make_tuple( 14, 3.90003330750106e-13, 4.0e-13 ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-CG",
+      std::make_tuple( 0, 2.55995674768853e-09, 2.0e-09 ) },
+    { "input_testLinearSolvers-LinearThermalRobin-ML-IPCG",
       std::make_tuple( 0, 2.55995674768853e-09, 2.0e-09 ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-GMRES",
       std::make_tuple( 4, 2.56859864182836e-09, 7.0e-08 ) },
