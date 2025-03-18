@@ -134,6 +134,8 @@ AMP::Scalar Matrix::LinfNorm() const { return d_matrixOps->LinfNorm( *getMatrixD
 
 void Matrix::copy( std::shared_ptr<const Matrix> X )
 {
+    if ( X.get() == this )
+        return;
     // Verify that A and B have compatible dimensions
     const auto globalKa = this->numGlobalColumns();
     const auto globalKb = X->numGlobalRows();

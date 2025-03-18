@@ -125,10 +125,8 @@ Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>>
 TrilinosMueLuSolver::getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOperator> &op )
 {
     // wrap in a Xpetra matrix
-    auto ampMatrix    = op->getMatrix();
-    auto epetraMatrix = AMP::LinearAlgebra::getEpetraMatrix( ampMatrix );
     auto epetraMatrixData =
-        AMP::LinearAlgebra::EpetraMatrixData::createView( epetraMatrix->getMatrixData() );
+        AMP::LinearAlgebra::EpetraMatrixData::createView( d_matrix->getMatrixData() );
     auto epA = Teuchos::rcpFromRef( epetraMatrixData->getEpetra_CrsMatrix() );
     Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> exA =
         Teuchos::rcp( new Xpetra::EpetraCrsMatrixT<GO, NO>( epA ) );
@@ -426,6 +424,10 @@ void TrilinosMueLuSolver::registerOperator( std::shared_ptr<AMP::Operator::Opera
 {
     d_pOperator = op;
     AMP_INSIST( d_pOperator, "ERROR: TrilinosMueLuSolver::initialize() operator cannot be NULL" );
+    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
+    d_matrix = AMP::LinearAlgebra::getEpetraMatrix( linearOperator->getMatrix() );
+    AMP_INSIST( d_matrix, "d_matrix cannot be NULL" );
 
     if ( d_bUseEpetra ) {
 
@@ -441,14 +443,6 @@ void TrilinosMueLuSolver::registerOperator( std::shared_ptr<AMP::Operator::Opera
             }
 
         } else {
-
-            auto linearOperator =
-                std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-            AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
-
-            d_matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedEpetraMatrix>(
-                linearOperator->getMatrix() );
-            AMP_INSIST( d_matrix, "d_matrix cannot be NULL" );
 
             // MueLu expects a Teuchos ref pointer
             Teuchos::RCP<Epetra_CrsMatrix> fineLevelMatrixPtr =
