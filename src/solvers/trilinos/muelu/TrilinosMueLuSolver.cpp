@@ -118,11 +118,11 @@ TrilinosMueLuSolver::getSmootherFactory( const int level )
             new MueLu::Ifpack2Smoother<SC, LO, GO, NO>( ifpackType, smootherParams ) );
     }
 
+    //    smootherPrototype->SetDefaultVerbLevel( MueLu::High );
     return Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>( smootherPrototype ) );
 }
 
-Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>>
-TrilinosMueLuSolver::getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOperator> &op )
+Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> TrilinosMueLuSolver::getXpetraMatrix()
 {
     // wrap in a Xpetra matrix
     auto epetraMatrixData =
@@ -173,8 +173,7 @@ void TrilinosMueLuSolver::buildHierarchyFromDefaults( void )
     d_factoryManager.SetFactory( "CoarseSolver", coarseSolverFact );
 
     // extract the Xpetra matrix from AMP
-    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-    auto fineLevelA     = getXpetraMatrix( linearOperator );
+    auto fineLevelA = getXpetraMatrix();
 
     d_mueluHierarchy = Teuchos::rcp( new MueLu::Hierarchy<SC, LO, GO, NO>() );
     d_mueluHierarchy->SetDefaultVerbLevel( MueLu::Medium );
@@ -199,11 +198,10 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
     d_mueluHierarchy->SetMaxCoarseSize( d_MueLuParameterList.get<int>( "coarse: max size" ) );
     //    d_mueluHierarchyManager->SetupHierarchy( *d_mueluHierarchy);
 
-    d_mueluHierarchy->SetDefaultVerbLevel( MueLu::Medium );
+    //    d_mueluHierarchy->SetDefaultVerbLevel( MueLu::Medium );
     auto finestMGLevel = d_mueluHierarchy->GetLevel();
     // extract the Xpetra matrix from AMP
-    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-    auto fineLevelA     = getXpetraMatrix( linearOperator );
+    auto fineLevelA = getXpetraMatrix();
     finestMGLevel->Set( "A", fineLevelA );
 
     d_levelFactoryManager.resize( d_maxLevels );
@@ -464,7 +462,7 @@ void TrilinosMueLuSolver::registerOperator( std::shared_ptr<AMP::Operator::Opera
 void TrilinosMueLuSolver::resetOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    PROFILE( "resetOperator" );
+    PROFILE( "TrilinosMueLuSolver::resetOperator" );
     AMP_INSIST( ( d_pOperator ),
                 "ERROR: TrilinosMueLuSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
@@ -474,7 +472,7 @@ void TrilinosMueLuSolver::resetOperator(
 
 void TrilinosMueLuSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 {
-    PROFILE( "reset" );
+    PROFILE( "TrilinosMueLuSolver::reset" );
     d_mueluSolver.reset();
     d_matrix.reset(); // Need to keep a copy of the matrix alive until after the solver is destroyed
     registerOperator( d_pOperator );
@@ -483,7 +481,7 @@ void TrilinosMueLuSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 void TrilinosMueLuSolver::solveWithHierarchy( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                               std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE( "solveWithHierarchy" );
+    PROFILE( "TrilinosMueLuSolver::solveWithHierarchy" );
 
     if ( d_bUseEpetra ) {
 
@@ -511,11 +509,14 @@ void TrilinosMueLuSolver::solveWithHierarchy( std::shared_ptr<const AMP::LinearA
 void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                  std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE( "solve" );
+    PROFILE( "TrilinosMueLuSolver::solve" );
 
-    AMP_ASSERT( f != nullptr );
-    AMP_ASSERT( u != nullptr );
+    AMP_ASSERT( f && u );
 
+    // Check input vector states
+    if ( u->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED ) {
+        u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    }
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator, "ERROR: TrilinosMueLuSolver::apply() operator cannot be NULL" );
 
@@ -592,11 +593,22 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
     u->getVectorData()->fireDataChange();
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         double solution_norm = static_cast<double>( u->L2Norm() );
-        AMP::pout << "TrilinosMueLuSolver : after solve solution norm: " << std::setprecision( 15 )
+        AMP::pout << "TrilinosMueLuSolver : after solve solution norm: " << std::setprecision( 24 )
                   << solution_norm << std::endl;
+    }
+    if ( d_iDebugPrintInfoLevel > 4 ) {
+        AMP::pout << "TrilinosMueLuSolver : after solve solution: " << std::setprecision( 24 )
+                  << std::endl;
+        AMP::pout << *u << std::endl;
+        d_pOperator->apply( u, r );
+        auto rNorm = static_cast<double>( r->L2Norm() );
+
+        AMP::pout << "TrilinosMueLuSolver::operator apply(u,r), L2 norm of r "
+                  << std::setprecision( 24 ) << rNorm << std::endl;
     }
 
     if ( computeResidual ) {
@@ -605,7 +617,7 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "TrilinosMueLuSolver::apply(), L2 norm of residual after solve "
-                      << std::setprecision( 15 ) << finalResNorm << std::endl;
+                      << std::setprecision( 24 ) << finalResNorm << std::endl;
         }
     }
 
@@ -623,7 +635,7 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
 void TrilinosMueLuSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                          std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    PROFILE( "reSolveWithLU" );
+    PROFILE( "TrilinosMueLuSolver::reSolveWithLU" );
 
     if ( !d_bUseEpetra ) {
         AMP_ERROR( "Robust mode can only be used with Epetra matrices." );

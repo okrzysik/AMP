@@ -29,11 +29,10 @@
 #include <string>
 
 
-void linearThermalTest( AMP::UnitTest *ut, const std::string &exeName )
+void linearThermalTest( AMP::UnitTest *ut,
+                        const std::string &input_file,
+                        const std::string &log_file )
 {
-    // Input and output file names
-    std::string input_file = "input_" + exeName;
-    std::string log_file   = "output_" + exeName;
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -154,9 +153,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        ut->failure( "exeName" );
+        ut->failure( input_file );
     } else {
-        ut->passes( exeName );
+        ut->passes( input_file );
     }
 
     input_db.reset();
@@ -168,17 +167,25 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    exeNames.push_back( "testTrilinosMueLuSolver-LinearThermalRobin" );
-#if 0
-    exeNames.push_back( "testTrilinosMueLuSolver-LinearThermalOperator-2" );
-    exeNames.push_back( "testTrilinosMueLuSolver-LinearThermalOperator-3" );
-    //    exeNames.push_back( "testTrilinosMueLuSolver-LinearThermalOperator-2" );
-    exeNames.push_back( "testTrilinosMueLuSolver-LinearFickOperator-bar" );
-#endif
-    for ( auto &exeName : exeNames )
-        linearThermalTest( &ut, exeName );
+    std::vector<std::string> files;
 
+    if ( argc > 1 ) {
+
+        files.emplace_back( argv[1] );
+
+    } else {
+        files.push_back( "input_testTrilinosMueLuSolver-LinearThermalRobin" );
+#if 0
+    files.push_back( "input_testTrilinosMueLuSolver-LinearThermalOperator-2" );
+    files.push_back( "input_testTrilinosMueLuSolver-LinearThermalOperator-3" );
+    //    files.push_back( "input_testTrilinosMueLuSolver-LinearThermalOperator-2" );
+    files.push_back( "input_testTrilinosMueLuSolver-LinearFickOperator-bar" );
+#endif
+    }
+
+    for ( auto &fileName : files ) {
+        linearThermalTest( &ut, fileName, fileName + ".log" );
+    }
     ut.report();
 
     int num_failed = ut.NumFailGlobal();
