@@ -10,7 +10,14 @@
 namespace AMP::Solver {
 
 /**
- * The CGSolver class implements the Conjugate Gradient method
+ * The CGSolver class implements the Conjugate Gradient method namely the 2-term recurrence variant.
+ * M.R. Hestenes, E. Stiefel. "Methods of conjugate gradients for solving linear systems"
+ * J. Res. Natl. Bur. Stand., 49 (1952), pp. 409-436
+ *
+ * In addition it implements the IPCG variant  developed in
+ * Golub, Gene H.; Ye, Qiang (1999). "Inexact Preconditioned Conjugate Gradient Method with
+ * Inner-Outer Iteration". SIAM Journal on Scientific Computing 21 (4): 1305.
+ * doi:10.1137/S1064827597323415 (http://dx.doi.org/10.1137%2FS1064827597323415) .
  */
 
 template<typename T = double>
