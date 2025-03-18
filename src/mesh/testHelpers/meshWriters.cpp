@@ -583,8 +583,6 @@ void write2elementMesh(
         }     // end for yi
     }         // end for zi
 
-    fprintf( fp, "\n" );
-
     fprintf( fp, "NumberOfBoundaryNodeIds = 4 \n\n" );
 
     // x = 0, z = 0 edge
