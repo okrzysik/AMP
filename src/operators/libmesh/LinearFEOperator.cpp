@@ -41,11 +41,12 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
     auto lfeparams          = std::dynamic_pointer_cast<const LinearFEOperatorParameters>( params );
 
     if ( !d_matrix || !reuse_matrix ) {
-        auto inVec = AMP::LinearAlgebra::createVector(
+        auto matrix_type = params->d_db->getWithDefault<std::string>( "matrix_type", "auto" );
+        auto inVec       = AMP::LinearAlgebra::createVector(
             d_inDofMap, getInputVariable(), true, d_memory_location );
         auto outVec = AMP::LinearAlgebra::createVector(
             d_outDofMap, getOutputVariable(), true, d_memory_location );
-        d_matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec );
+        d_matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec, matrix_type );
         d_matrix->zero();
         d_matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     }

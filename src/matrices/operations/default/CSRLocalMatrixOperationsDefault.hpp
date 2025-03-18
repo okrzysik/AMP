@@ -94,56 +94,6 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::axpy(
 }
 
 template<typename Policy, class Allocator, class LocalMatrixData>
-template<typename PolicyIn>
-void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::copyCast(
-    std::shared_ptr<CSRLocalMatrixData<PolicyIn, Allocator>> X, std::shared_ptr<LocalMatrixData> Y )
-{
-    // Check compatibility
-    AMP_ASSERT( Y->getMemoryLocation() == X->getMemoryLocation() );
-    AMP_ASSERT( Y->beginRow() == X->beginRow() );
-    AMP_ASSERT( Y->endRow() == X->endRow() );
-    AMP_ASSERT( Y->beginCol() == X->beginCol() );
-    AMP_ASSERT( Y->endCol() == X->endCol() );
-
-    AMP_ASSERT( Y->numberOfNonZeros() == X->numberOfNonZeros() );
-
-    AMP_ASSERT( Y->numLocalRows() == X->numLocalRows() );
-    AMP_ASSERT( Y->numUniqueColumns() == X->numUniqueColumns() );
-
-    // ToDO: d_pParameters = x->d_pParameters;
-
-    // Shallow copy data structure
-    auto [X_row_starts, X_cols, X_cols_loc, X_coeffs] = X->getDataFields();
-    auto [Y_row_starts, Y_cols, Y_cols_loc, Y_coeffs] = Y->getDataFields();
-
-    // Copy column map only if off diag block
-    if ( !X->isDiag() ) {
-        auto X_col_map = X->getColumnMap();
-        auto Y_col_map = Y->getColumnMap();
-        Y_col_map      = X_col_map;
-        AMP_ASSERT( Y_col_map );
-    }
-
-    Y_row_starts = X_row_starts;
-    Y_cols       = X_cols;
-    Y_cols_loc   = X_cols_loc;
-
-    using scalar_t_in  = typename PolicyIn::scalar_t;
-    using scalar_t_out = typename Policy::scalar_t;
-    if constexpr ( std::is_same_v<scalar_t_in, scalar_t_out> ) {
-        std::copy( X_coeffs, X_coeffs + X->numberOfNonZeros(), Y_coeffs );
-    } else {
-#ifdef AMP_USE_OPENMP
-        using DefaultBcknd = AMP::Utilities::PortabilityBackend::OpenMP;
-#else
-        using DefaultBcknd = AMP::Utilities::PortabilityBackend::Serial;
-#endif
-        AMP::Utilities::copyCast<scalar_t_in, scalar_t_out, DefaultBcknd, Allocator>(
-            X->numberOfNonZeros(), X_coeffs, Y_coeffs );
-    }
-}
-
-template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::setScalar(
     typename Policy::scalar_t alpha, std::shared_ptr<LocalMatrixData> A )
 {
@@ -216,6 +166,72 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::LinfNo
         for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
             rowSums[row] += std::abs( coeffs[c] );
         }
+    }
+}
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::copy(
+    std::shared_ptr<const LocalMatrixData> X, std::shared_ptr<LocalMatrixData> Y )
+{
+
+    AMP_DEBUG_ASSERT( Y->numberOfNonZeros() == X->numberOfNonZeros() );
+    const auto tnnz = X->numberOfNonZeros();
+
+    // Shallow copy data structure
+    const auto [X_row_starts, X_cols, X_cols_loc, X_coeffs] =
+        std::const_pointer_cast<LocalMatrixData>( X )->getDataFields();
+    auto [Y_row_starts, Y_cols, Y_cols_loc, Y_coeffs] = Y->getDataFields();
+    std::copy( X_coeffs, X_coeffs + tnnz, Y_coeffs );
+}
+
+
+template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename PolicyIn>
+void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::copyCast(
+    std::shared_ptr<CSRLocalMatrixData<PolicyIn, Allocator>> X, std::shared_ptr<LocalMatrixData> Y )
+{
+    // Check compatibility
+    AMP_ASSERT( Y->getMemoryLocation() == X->getMemoryLocation() );
+    AMP_ASSERT( Y->beginRow() == X->beginRow() );
+    AMP_ASSERT( Y->endRow() == X->endRow() );
+    AMP_ASSERT( Y->beginCol() == X->beginCol() );
+    AMP_ASSERT( Y->endCol() == X->endCol() );
+
+    AMP_ASSERT( Y->numberOfNonZeros() == X->numberOfNonZeros() );
+
+    AMP_ASSERT( Y->numLocalRows() == X->numLocalRows() );
+    AMP_ASSERT( Y->numUniqueColumns() == X->numUniqueColumns() );
+
+    // ToDO: d_pParameters = x->d_pParameters;
+
+    // Shallow copy data structure
+    auto [X_row_starts, X_cols, X_cols_loc, X_coeffs] = X->getDataFields();
+    auto [Y_row_starts, Y_cols, Y_cols_loc, Y_coeffs] = Y->getDataFields();
+
+    // Copy column map only if off diag block
+    if ( !X->isDiag() ) {
+        auto X_col_map = X->getColumnMap();
+        auto Y_col_map = Y->getColumnMap();
+        Y_col_map      = X_col_map;
+        AMP_ASSERT( Y_col_map );
+    }
+
+    Y_row_starts = X_row_starts;
+    Y_cols       = X_cols;
+    Y_cols_loc   = X_cols_loc;
+
+    using scalar_t_in  = typename PolicyIn::scalar_t;
+    using scalar_t_out = typename Policy::scalar_t;
+    if constexpr ( std::is_same_v<scalar_t_in, scalar_t_out> ) {
+        std::copy( X_coeffs, X_coeffs + X->numberOfNonZeros(), Y_coeffs );
+    } else {
+#ifdef AMP_USE_OPENMP
+        using DefaultBcknd = AMP::Utilities::PortabilityBackend::OpenMP;
+#else
+        using DefaultBcknd = AMP::Utilities::PortabilityBackend::Serial;
+#endif
+        AMP::Utilities::copyCast<scalar_t_in, scalar_t_out, DefaultBcknd, Allocator>(
+            X->numberOfNonZeros(), X_coeffs, Y_coeffs );
     }
 }
 

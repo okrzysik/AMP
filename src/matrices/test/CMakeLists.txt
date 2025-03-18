@@ -29,6 +29,7 @@ FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D_hires" DESTIN
 
 # Add matrix tests
 ADD_AMP_TEST_1_2_4( test_Matrix )
+ADD_AMP_TEST_1_2_4( test_MatrixCopy )
 ADD_AMP_TEST_1_2_4( test_RectangularMatricesMultiplication )
 
 ADD_AMP_TEST( testMatConcatenate )

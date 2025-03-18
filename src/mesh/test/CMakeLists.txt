@@ -79,6 +79,10 @@ ADD_AMP_TEST_1_2_4( testMultiMeshOwnerRank )
 ADD_AMP_TEST( test_BoxMeshIndex )
 
 
+# Write some old meshes
+ADD_AMP_TEST( writeMesh )
+
+
 # Add Dendro tests
 ADD_AMP_TEST( testTriangleProjection )
 IF( USE_DENDRO AND USE_PETSC )

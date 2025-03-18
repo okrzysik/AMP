@@ -240,4 +240,31 @@ AMP::Scalar DenseSerialMatrixOperations::LinfNorm( MatrixData const &A ) const
     return norm;
 }
 
+void DenseSerialMatrixOperations::copy( const MatrixData &X, MatrixData &Y )
+{
+    auto m1Data      = getDenseSerialMatrixData( Y );
+    auto *m1RawData  = m1Data->d_M;
+    const auto nrows = m1Data->d_rows;
+    const auto ncols = m1Data->d_cols;
+
+    AMP_ASSERT( X.numGlobalRows() == m1Data->numGlobalRows() );
+    AMP_ASSERT( X.numGlobalColumns() == m1Data->numGlobalColumns() );
+    if ( X.type() != "DenseSerialMatrixData" ) {
+        // X is an unknown matrix type
+        std::vector<size_t> cols;
+        std::vector<double> values;
+        for ( size_t i = 0; i < nrows; i++ ) {
+            X.getRowByGlobalID( static_cast<int>( i ), cols, values );
+            for ( size_t j = 0; j < cols.size(); j++ )
+                m1RawData[i + cols[j] * nrows] = values[j];
+        }
+    } else {
+        // We are dealing with two DenseSerialMatrix classes
+        auto m2Data = getDenseSerialMatrixData( X );
+        AMP_ASSERT( m2Data );
+        auto *m2RawData = m2Data->d_M;
+        memcpy( m1RawData, m2RawData, ncols * nrows * sizeof( double ) );
+    }
+}
+
 } // namespace AMP::LinearAlgebra

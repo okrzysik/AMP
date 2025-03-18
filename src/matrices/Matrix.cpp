@@ -1,5 +1,6 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/matrices/operations/default/MatrixOperationsDefault.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/ParameterBase.h"
@@ -112,12 +113,10 @@ void Matrix::scale( AMP::Scalar alpha ) { d_matrixOps->scale( alpha, *getMatrixD
 
 void Matrix::axpy( AMP::Scalar alpha, const Matrix &X )
 {
-    d_matrixOps->axpy( alpha, *( X.getMatrixData() ), *getMatrixData() );
-}
-
-void Matrix::copyCast( std::shared_ptr<const Matrix> X )
-{
-    d_matrixOps->copyCast( *X->getMatrixData(), *getMatrixData() );
+    if ( this->type() == X.type() )
+        d_matrixOps->axpy( alpha, *( X.getMatrixData() ), *getMatrixData() );
+    else
+        MatrixOperationsDefault::axpy( alpha, *( X.getMatrixData() ), *getMatrixData() );
 }
 
 void Matrix::setScalar( AMP::Scalar alpha ) { d_matrixOps->setScalar( alpha, *getMatrixData() ); }
@@ -132,5 +131,27 @@ void Matrix::setDiagonal( Vector::const_shared_ptr in )
 void Matrix::setIdentity() { d_matrixOps->setIdentity( *getMatrixData() ); }
 
 AMP::Scalar Matrix::LinfNorm() const { return d_matrixOps->LinfNorm( *getMatrixData() ); }
+
+void Matrix::copy( std::shared_ptr<const Matrix> X )
+{
+    if ( X.get() == this )
+        return;
+    // Verify that A and B have compatible dimensions
+    const auto globalKa = this->numGlobalColumns();
+    const auto globalKb = X->numGlobalRows();
+    const auto localKa  = this->numLocalColumns();
+    const auto localKb  = X->numLocalRows();
+    AMP_INSIST( globalKa == globalKb, "Matrix::copy got incompatible global dimensions" );
+    AMP_INSIST( localKa == localKb, "Matrix::copy got incompatible local dimensions" );
+    if ( this->type() == X->type() )
+        d_matrixOps->copy( *X->getMatrixData(), *getMatrixData() );
+    else
+        MatrixOperationsDefault::copy( *X->getMatrixData(), *getMatrixData() );
+}
+
+void Matrix::copyCast( std::shared_ptr<const Matrix> X )
+{
+    d_matrixOps->copyCast( *X->getMatrixData(), *getMatrixData() );
+}
 
 } // namespace AMP::LinearAlgebra

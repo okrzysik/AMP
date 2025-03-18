@@ -17,6 +17,24 @@
 namespace AMP::LinearAlgebra {
 
 template<typename Policy, typename Allocator, class ViewSpace>
+auto wrapCSRDataKokkos( std::shared_ptr<const CSRLocalMatrixData<Policy, Allocator>> A )
+{
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    const lidx_t nrows   = static_cast<lidx_t>( A->numLocalRows() );
+    const lidx_t nnz_tot = A->numberOfNonZeros();
+    auto [rowstarts, cols, cols_loc, coeffs] =
+        std::const_pointer_cast<CSRLocalMatrixData<Policy, Allocator>>( A )->getDataFields();
+
+    // coeffs not marked const so that setScalar and similar will work
+    return std::make_tuple(
+        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, ViewSpace>( rowstarts, nrows + 1 ),
+        Kokkos::View<const lidx_t *, Kokkos::LayoutRight, ViewSpace>( cols_loc, nnz_tot ),
+        Kokkos::View<const scalar_t *, Kokkos::LayoutRight, ViewSpace>( coeffs, nnz_tot ) );
+}
+
+template<typename Policy, typename Allocator, class ViewSpace>
 auto wrapCSRDataKokkos( std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>> A )
 {
     using lidx_t   = typename Policy::lidx_t;
@@ -356,59 +374,6 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
 }
 
 template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, class LocalMatrixData>
-template<typename PolicyIn>
-void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
-    copyCast( std::shared_ptr<CSRLocalMatrixData<PolicyIn, Allocator>> X,
-              std::shared_ptr<LocalMatrixData> Y )
-{
-    // Check compatibility
-    AMP_ASSERT( Y->getMemoryLocation() == X->getMemoryLocation() );
-    AMP_ASSERT( Y->beginRow() == X->beginRow() );
-    AMP_ASSERT( Y->endRow() == X->endRow() );
-    AMP_ASSERT( Y->beginCol() == X->beginCol() );
-    AMP_ASSERT( Y->endCol() == X->endCol() );
-
-    AMP_ASSERT( Y->numberOfNonZeros() == X->numberOfNonZeros() );
-
-    AMP_ASSERT( Y->numLocalRows() == X->numLocalRows() );
-    AMP_ASSERT( Y->numUniqueColumns() == X->numUniqueColumns() );
-
-    // ToDO: d_pParameters = x->d_pParameters;
-
-    // Shallow copy data structure
-    auto [X_row_starts, X_cols, X_cols_loc, X_coeffs] = X->getDataFields();
-    auto [Y_row_starts, Y_cols, Y_cols_loc, Y_coeffs] = Y->getDataFields();
-
-    // Copy column map only if off diag block
-    if ( !X->isDiag() ) {
-        auto X_col_map = X->getColumnMap();
-        auto Y_col_map = Y->getColumnMap();
-        Y_col_map      = X_col_map;
-        AMP_ASSERT( Y_col_map );
-    }
-
-    Y_row_starts = X_row_starts;
-    Y_cols       = X_cols;
-    Y_cols_loc   = X_cols_loc;
-
-    using scalar_t_in  = typename PolicyIn::scalar_t;
-    using scalar_t_out = typename Policy::scalar_t;
-    if constexpr ( std::is_same_v<scalar_t_in, scalar_t_out> ) {
-        const auto X_v = Kokkos::View<scalar_t_in *, Kokkos::LayoutRight, ViewSpace>(
-            X_coeffs, X->numberOfNonZeros() );
-        auto Y_v = Kokkos::View<scalar_t_out *, Kokkos::LayoutRight, ViewSpace>(
-            Y_coeffs, Y->numberOfNonZeros() );
-
-        Kokkos::deep_copy( Y_v, X_v );
-    } else {
-        AMP::Utilities::copyCast<scalar_t_in,
-                                 scalar_t_out,
-                                 AMP::Utilities::PortabilityBackend::Kokkos,
-                                 Allocator>( X->numberOfNonZeros(), X_coeffs, Y_coeffs );
-    }
-}
-
-template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, class LocalMatrixData>
 void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
     setScalar( typename Policy::scalar_t alpha, std::shared_ptr<LocalMatrixData> A )
 {
@@ -525,6 +490,72 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
                 sums( row ) += Kokkos::fabs( coeffs( c ) );
             }
         } );
+}
+
+template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, class LocalMatrixData>
+void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::copy(
+    std::shared_ptr<const LocalMatrixData> X, std::shared_ptr<LocalMatrixData> Y )
+{
+    const auto vTplX = wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( X );
+    auto coeffsX     = std::get<2>( vTplX );
+
+    const auto vTplY = wrapCSRDataKokkos<Policy, Allocator, ViewSpace>( Y );
+    auto coeffsY     = std::get<2>( vTplY );
+
+    Kokkos::deep_copy( coeffsY, coeffsX );
+}
+
+template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, class LocalMatrixData>
+template<typename PolicyIn>
+void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
+    copyCast( std::shared_ptr<CSRLocalMatrixData<PolicyIn, Allocator>> X,
+              std::shared_ptr<LocalMatrixData> Y )
+{
+    // Check compatibility
+    AMP_ASSERT( Y->getMemoryLocation() == X->getMemoryLocation() );
+    AMP_ASSERT( Y->beginRow() == X->beginRow() );
+    AMP_ASSERT( Y->endRow() == X->endRow() );
+    AMP_ASSERT( Y->beginCol() == X->beginCol() );
+    AMP_ASSERT( Y->endCol() == X->endCol() );
+
+    AMP_ASSERT( Y->numberOfNonZeros() == X->numberOfNonZeros() );
+
+    AMP_ASSERT( Y->numLocalRows() == X->numLocalRows() );
+    AMP_ASSERT( Y->numUniqueColumns() == X->numUniqueColumns() );
+
+    // ToDO: d_pParameters = x->d_pParameters;
+
+    // Shallow copy data structure
+    auto [X_row_starts, X_cols, X_cols_loc, X_coeffs] = X->getDataFields();
+    auto [Y_row_starts, Y_cols, Y_cols_loc, Y_coeffs] = Y->getDataFields();
+
+    // Copy column map only if off diag block
+    if ( !X->isDiag() ) {
+        auto X_col_map = X->getColumnMap();
+        auto Y_col_map = Y->getColumnMap();
+        Y_col_map      = X_col_map;
+        AMP_ASSERT( Y_col_map );
+    }
+
+    Y_row_starts = X_row_starts;
+    Y_cols       = X_cols;
+    Y_cols_loc   = X_cols_loc;
+
+    using scalar_t_in  = typename PolicyIn::scalar_t;
+    using scalar_t_out = typename Policy::scalar_t;
+    if constexpr ( std::is_same_v<scalar_t_in, scalar_t_out> ) {
+        const auto X_v = Kokkos::View<scalar_t_in *, Kokkos::LayoutRight, ViewSpace>(
+            X_coeffs, X->numberOfNonZeros() );
+        auto Y_v = Kokkos::View<scalar_t_out *, Kokkos::LayoutRight, ViewSpace>(
+            Y_coeffs, Y->numberOfNonZeros() );
+
+        Kokkos::deep_copy( Y_v, X_v );
+    } else {
+        AMP::Utilities::copyCast<scalar_t_in,
+                                 scalar_t_out,
+                                 AMP::Utilities::PortabilityBackend::Kokkos,
+                                 Allocator>( X->numberOfNonZeros(), X_coeffs, Y_coeffs );
+    }
 }
 
 } // namespace AMP::LinearAlgebra

@@ -47,12 +47,18 @@ class MatrixTests
 {
 public:
     explicit MatrixTests( std::shared_ptr<const MatrixFactory> factory ) : d_factory( factory ) {}
+    explicit MatrixTests( std::shared_ptr<const MatrixFactory> factory,
+                          std::shared_ptr<const MatrixFactory> copy_factory )
+        : d_factory( factory ), d_copy_factory( copy_factory )
+    {
+    }
 
 public:
     void InstantiateMatrix( AMP::UnitTest *ut );
     void VerifyGetLeftRightVector( AMP::UnitTest *ut );
     void VerifyGetSetValuesMatrix( AMP::UnitTest *ut );
     void VerifyAXPYMatrix( AMP::UnitTest *ut );
+    void VerifyCopyMatrix( AMP::UnitTest *ut );
     void VerifyScaleMatrix( AMP::UnitTest *ut );
     void VerifyExtractDiagonal( AMP::UnitTest *ut );
     void VerifyMultMatrix( AMP::UnitTest *ut );
@@ -63,7 +69,10 @@ public:
     void VerifyAddElementNode( AMP::UnitTest *ut );
 
 private:
+    std::shared_ptr<AMP::LinearAlgebra::Matrix>
+    getCopyMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix );
     std::shared_ptr<const MatrixFactory> d_factory;
+    std::shared_ptr<const MatrixFactory> d_copy_factory;
 };
 
 

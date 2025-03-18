@@ -56,13 +56,6 @@ public:
      */
     virtual void axpy( AMP::Scalar alpha, const MatrixData &X, MatrixData &Y ) = 0;
 
-    /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
-     * as x and copy the coefficients after up/down casting
-     * \param[in] x matrix data to copy from
-     * \param[in] y matrix data to copy to after up/down casting the coefficients
-     */
-    virtual void copyCast( const MatrixData &, MatrixData & ) { AMP_ERROR( "NOT IMPLEMENTED" ); }
-
     /** \brief  Set the non-zeros of the matrix to a scalar
      * \param[in]  alpha  The value to set the non-zeros to
      * \param[out] A    Matrix to set
@@ -94,6 +87,20 @@ public:
      * \return  The L-infinity norm of the matrix
      */
     virtual AMP::Scalar LinfNorm( const MatrixData &X ) const = 0;
+
+    /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
+     * as x and copy the coefficients
+     * \param[in] x matrix data to copy from
+     * \param[in] y matrix data to copy to
+     */
+    virtual void copy( const MatrixData &x, MatrixData &y ) = 0;
+
+    /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
+     * as x and copy the coefficients after up/down casting
+     * \param[in] x matrix data to copy from
+     * \param[in] y matrix data to copy to after up/down casting the coefficients
+     */
+    virtual void copyCast( const MatrixData &, MatrixData & ) { AMP_ERROR( "NOT IMPLEMENTED" ); }
 };
 
 } // namespace AMP::LinearAlgebra
