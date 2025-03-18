@@ -5,6 +5,8 @@
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 
+#include <string>
+
 namespace AMP::Solver {
 
 /**
@@ -96,7 +98,20 @@ private:
 
     bool d_bUsesPreconditioner = false;
 
+    //! use flexible CG if true
+    bool d_bFlexibleCG = false;
+
+    //! maximum dimension of the stored search space for FCG
+    int d_max_dimension = 0;
+
+    //! variant being used, can be one of "pcg", "ipcg", or "fcg"
+    std::string d_sVariant = "pcg";
+
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+
+    //! stores the search directions for IPCG/FCG if needed
+    //! we do not preallocate by default
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vDirs;
 };
 } // namespace AMP::Solver
 

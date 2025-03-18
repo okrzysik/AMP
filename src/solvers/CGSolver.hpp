@@ -48,6 +48,9 @@ void CGSolver<T>::initialize(
             }
         }
     }
+
+    if ( d_sVariant != "pcg" )
+        d_vDirs.resize( d_max_dimension );
 }
 
 // Function to get values from input
@@ -56,6 +59,13 @@ void CGSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     d_dDivergenceTolerance = db->getWithDefault<T>( "divergence_tolerance", 1.0e+03 );
     d_bUsesPreconditioner  = db->getWithDefault<bool>( "uses_preconditioner", false );
+    d_sVariant             = db->getWithDefault<std::string>( "variant", "pcg" );
+
+    if ( d_sVariant == "fcg" ) {
+        d_max_dimension = db->getWithDefault<int>( "max_dimension", 10 );
+    } else if ( d_sVariant == "ipcg" ) {
+        d_max_dimension = 1;
+    }
 }
 
 /****************************************************************
@@ -117,6 +127,13 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     z = u->clone();
 
+    if ( d_sVariant == "ipcg" ) {
+        if ( !d_vDirs[0] ) {
+            d_vDirs[0] = r->clone();
+        }
+        d_vDirs[0]->copyVector( r );
+    }
+
     // apply the preconditioner if it exists
     if ( d_bUsesPreconditioner ) {
         d_pPreconditioner->apply( r, z );
@@ -148,7 +165,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         } else if ( alpha < 0.0 ) {
             // set diverged reason
             d_ConvergenceStatus = SolverStatus::DivergedOther;
-            AMP_WARNING( "CGSolver<T>::apply: negative curvature encoutered" );
+            AMP_WARNING( "CGSolver<T>::apply: negative curvature encountered" );
             break;
         }
 
@@ -177,7 +194,14 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         }
 
         rho_0 = rho_1;
-        rho_1 = static_cast<T>( r->dot( *z ) );
+
+        if ( d_sVariant == "ipcg " ) {
+            d_vDirs[0]->axpy( static_cast<T>( -1.0 ), *d_vDirs[0], *r );
+            rho_1 = static_cast<T>( d_vDirs[0]->dot( *z ) );
+            d_vDirs[0]->copyVector( r );
+        } else {
+            rho_1 = static_cast<T>( r->dot( *z ) );
+        }
 
         const T beta = rho_1 / rho_0;
         p->axpy( beta, *p, *z );
