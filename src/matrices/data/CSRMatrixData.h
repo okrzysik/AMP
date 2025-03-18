@@ -19,12 +19,18 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
+template<typename P, class A, class DIAG>
+class CSRMatrixSpGEMMDefault;
+
 template<typename Policy,
          class Allocator      = AMP::HostAllocator<void>,
          class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixData : public MatrixData
 {
 public:
+    template<typename P, class A, class DIAG>
+    friend class CSRMatrixSpGEMMDefault;
+
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -239,6 +245,25 @@ public:
         d_diag_matrix->printStats( show_zeros );
         d_offd_matrix->printStats( show_zeros );
     }
+
+    /** \brief  Extract subset of locally owned rows into new local matrix
+     * \param[in] rows  vector of global row indices to extract
+     * \return  shared_ptr to CSRLocalMatrixData holding the extracted rows
+     * \details  Returned matrix concatenates contributions for both diag and
+     * offd components. Row extents are set to [0,rows.size) and column extents
+     * are set to [0,numGlobalColumns).
+     */
+    std::shared_ptr<DiagMatrixData> subsetRows( const std::vector<gidx_t> &rows ) const;
+
+    /** \brief  Extract subset of each row containing global columns in some range
+     * \param[in] idx_lo  Lower global column index (inclusive)
+     * \param[in] idx_up  Upper global column index (exclusive)
+     * \return  shared_ptr to CSRLocalMatrixData holding the extracted nonzeros
+     * \details  Returned matrix concatenates contributions for both diag and
+     * offd components. Row and column extents are inherited from this matrix,
+     * but are neither sorted nor converted to local indices.
+     */
+    std::shared_ptr<DiagMatrixData> subsetCols( const gidx_t idx_lo, const gidx_t idx_up ) const;
 
 protected:
     bool d_is_square = true;

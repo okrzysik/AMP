@@ -239,6 +239,136 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::resetDOFManagers()
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
+std::shared_ptr<DiagMatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>::subsetRows(
+    const std::vector<gidx_t> &rows ) const
+{
+    auto sub_matrix = std::make_shared<DiagMatrixData>( nullptr,
+                                                        d_memory_location,
+                                                        0,
+                                                        static_cast<gidx_t>( rows.size() ),
+                                                        0,
+                                                        numGlobalColumns(),
+                                                        true );
+
+    // count nnz per row and write into sub matrix directly
+    // also check that passed in rows are in ascending order and owned here
+    gidx_t row_prev = rows[0];
+    for ( size_t n = 0; n < rows.size(); ++n ) {
+        AMP_DEBUG_ASSERT( n == 0 || rows[n] > row_prev );
+        AMP_DEBUG_ASSERT( d_first_row <= rows[n] && rows[n] < d_last_row );
+        const auto row_loc = static_cast<lidx_t>( rows[n] - d_first_row );
+        sub_matrix->d_row_starts[n] +=
+            ( d_diag_matrix->d_row_starts[row_loc + 1] - d_diag_matrix->d_row_starts[row_loc] );
+        if ( !d_offd_matrix->d_is_empty ) {
+            sub_matrix->d_row_starts[n] +=
+                ( d_offd_matrix->d_row_starts[row_loc + 1] - d_offd_matrix->d_row_starts[row_loc] );
+        }
+        row_prev = rows[n];
+    }
+
+    // call setNNZ with accumulation on to convert counts and allocate internally
+    sub_matrix->setNNZ( true );
+
+    // Loop back over diag/offd and copy in marked rows
+    for ( size_t n = 0; n < rows.size(); ++n ) {
+        const auto row_loc = static_cast<lidx_t>( rows[n] - d_first_row );
+        lidx_t pos         = 0;
+        for ( lidx_t k = d_diag_matrix->d_row_starts[row_loc];
+              k < d_diag_matrix->d_row_starts[row_loc + 1];
+              ++k ) {
+            sub_matrix->d_cols[k + pos] =
+                d_diag_matrix->localToGlobal( d_diag_matrix->d_cols_loc[k] );
+            sub_matrix->d_coeffs[k + pos] = d_diag_matrix->d_coeffs[k];
+            ++pos;
+        }
+        if ( !d_offd_matrix->d_is_empty ) {
+            for ( lidx_t k = d_offd_matrix->d_row_starts[row_loc];
+                  k < d_offd_matrix->d_row_starts[row_loc + 1];
+                  ++k ) {
+                sub_matrix->d_cols[k + pos] =
+                    d_offd_matrix->localToGlobal( d_offd_matrix->d_cols_loc[k] );
+                sub_matrix->d_coeffs[k + pos] = d_offd_matrix->d_coeffs[k];
+                ++pos;
+            }
+        }
+    }
+
+    return sub_matrix;
+}
+
+/** \brief  Extract subset of each row containing global columns in some range
+ * \param[in] idx_lo  Lower global column index (inclusive)
+ * \param[in] idx_up  Upper global column index (exclusive)
+ * \return  shared_ptr to CSRLocalMatrixData holding the extracted nonzeros
+ * \details  Returned matrix concatenates contributions for both diag and
+ * offd components. Row and column extents are inherited from this matrix,
+ * but are neither sorted nor converted to local indices.
+ */
+template<typename Policy, class Allocator, class DiagMatrixData>
+std::shared_ptr<DiagMatrixData>
+CSRMatrixData<Policy, Allocator, DiagMatrixData>::subsetCols( const gidx_t idx_lo,
+                                                              const gidx_t idx_up ) const
+{
+    AMP_DEBUG_ASSERT( idx_up > idx_lo );
+
+    auto sub_matrix = std::make_shared<DiagMatrixData>(
+        nullptr, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, true );
+
+    // count nnz within each row that lie in the given range
+    const auto nrows = static_cast<lidx_t>( d_last_row - d_first_row );
+    for ( lidx_t row = 0; row < nrows; ++row ) {
+        for ( lidx_t k = d_diag_matrix->d_row_starts[row]; k < d_diag_matrix->d_row_starts[row + 1];
+              ++k ) {
+            const auto col = d_diag_matrix->localToGlobal( d_diag_matrix->d_cols_loc[k] );
+            if ( idx_lo <= col && col < idx_up ) {
+                sub_matrix->d_row_starts[row]++;
+            }
+        }
+        if ( !d_offd_matrix->d_is_empty ) {
+            for ( lidx_t k = d_offd_matrix->d_row_starts[row];
+                  k < d_offd_matrix->d_row_starts[row + 1];
+                  ++k ) {
+                const auto col = d_offd_matrix->localToGlobal( d_offd_matrix->d_cols_loc[k] );
+                if ( idx_lo <= col && col < idx_up ) {
+                    sub_matrix->d_row_starts[row]++;
+                }
+            }
+        }
+    }
+
+    // call setNNZ with accumulation on to convert counts and allocate internally
+    sub_matrix->setNNZ( true );
+
+    // loop back over rows and write desired entries into sub matrix
+    for ( lidx_t row = 0; row < nrows; ++row ) {
+        lidx_t pos = 0;
+        for ( lidx_t k = d_diag_matrix->d_row_starts[row]; k < d_diag_matrix->d_row_starts[row + 1];
+              ++k ) {
+            const auto col = d_diag_matrix->localToGlobal( d_diag_matrix->d_cols_loc[k] );
+            if ( idx_lo <= col && col < idx_up ) {
+                sub_matrix->d_cols[k + pos]   = col;
+                sub_matrix->d_coeffs[k + pos] = d_diag_matrix->d_coeffs[k];
+                ++pos;
+            }
+        }
+        if ( !d_offd_matrix->d_is_empty ) {
+            for ( lidx_t k = d_offd_matrix->d_row_starts[row];
+                  k < d_offd_matrix->d_row_starts[row + 1];
+                  ++k ) {
+                const auto col = d_offd_matrix->localToGlobal( d_offd_matrix->d_cols_loc[k] );
+                if ( idx_lo <= col && col < idx_up ) {
+                    sub_matrix->d_cols[k + pos]   = col;
+                    sub_matrix->d_coeffs[k + pos] = d_offd_matrix->d_coeffs[k];
+                    ++pos;
+                }
+            }
+        }
+    }
+
+    return sub_matrix;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
 std::shared_ptr<MatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>::transpose() const
 {
     AMP_ERROR( "Not implemented" );

@@ -23,6 +23,8 @@ template<typename P, class A, class DIAG>
 class CSRMatrixData;
 template<typename P, class A, class DIAG>
 class CSRMatrixCommunicator;
+template<typename P, class A, class DIAG>
+class CSRMatrixSpGEMMDefault;
 
 template<typename Policy, class Allocator>
 class CSRLocalMatrixData :
@@ -33,6 +35,8 @@ public:
     friend class CSRMatrixData;
     template<typename P, class A, class DIAG>
     friend class CSRMatrixCommunicator;
+    template<typename P, class A, class DIAG>
+    friend class CSRMatrixSpGEMMDefault;
 
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
@@ -70,6 +74,9 @@ public:
         return std::make_tuple(
             d_row_starts.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
     }
+
+    //! Get row pointers
+    lidx_t *getRowStarts() { return d_row_starts.get(); }
 
     //! Get the memory space where data is stored
     auto getMemoryLocation() const { return d_memory_location; }
@@ -150,6 +157,9 @@ public:
     //! Set number of nonzeros in each row and allocate space accordingly
     void setNNZ( const std::vector<lidx_t> &nnz );
 
+    //! setNNZ function that references d_row_starts and optionally does scan
+    void setNNZ( bool do_accum );
+
     //! Get pointers into d_cols at start of each row
     void getColPtrs( std::vector<gidx_t *> &col_ptrs );
 
@@ -182,15 +192,15 @@ public:
         std::cout << std::endl << std::endl;
     }
 
+    static std::shared_ptr<CSRLocalMatrixData>
+    ConcatHorizontal( std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks );
+
+    static std::shared_ptr<CSRLocalMatrixData>
+    ConcatVertical( std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks );
+
 protected:
-    static std::shared_ptr<CSRLocalMatrixData>
-    ConcatHorizontal( std::vector<std::shared_ptr<CSRLocalMatrixData>> blocks );
-
-    static std::shared_ptr<CSRLocalMatrixData>
-    ConcatVertical( std::vector<std::shared_ptr<CSRLocalMatrixData>> blocks );
-
-    //! Internal setNNZ function that references d_row_starts and optionally does scan
-    void setNNZ( bool do_accum );
+    //! Helper function for getting a global col idx from local depending on diag/offd case
+    gidx_t localToGlobal( const lidx_t loc_id ) const;
 
     //! Make a clone of this matrix data
     std::shared_ptr<CSRLocalMatrixData> cloneMatrixData();

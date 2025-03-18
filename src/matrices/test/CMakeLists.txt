@@ -27,12 +27,13 @@ FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D" DESTINATION 
 FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D_hires" DESTINATION . )
 
 
-# Add matrix test
+# Add matrix tests
 ADD_AMP_TEST_1_2_4( test_Matrix )
 ADD_AMP_TEST_1_2_4( test_RectangularMatricesMultiplication )
 
-ADD_AMP_TEST_124_MATRIX( testMatMultCoarsen )
+ADD_AMP_TEST( testMatConcatenate )
 
+ADD_AMP_TEST_124_MATRIX( testMatMultCoarsen )
 ADD_AMP_TEST_124_MATRIX( testMatVecPerf )
 COPY_TEST_FILE( input_testMatVecPerf-1 )
 COPY_TEST_FILE( input_testMatVecPerf-2 )

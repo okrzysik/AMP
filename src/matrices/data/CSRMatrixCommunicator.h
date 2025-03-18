@@ -26,7 +26,7 @@ public:
     using scalarAllocator_t =
         typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
 
-    CSRMatrixCommunicator() = delete;
+    CSRMatrixCommunicator() = default;
     CSRMatrixCommunicator( AMP_MPI &comm )
         : d_comm( comm ), d_send_called( false ), d_num_sources( 0 )
     {
@@ -49,7 +49,6 @@ protected:
     static constexpr int COL_TAG   = 5601;
     static constexpr int COEFF_TAG = 5602;
 };
-
 }
 
 #endif

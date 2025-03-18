@@ -17,14 +17,16 @@ void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::sendMatrices(
         auto matrix        = it.second;
         const auto num_rs  = matrix->d_num_rows + 1;
         const auto num_nnz = matrix->d_nnz;
-        d_send_requests.push_back(
+        d_send_requests.emplace_back(
             d_comm.Isend( matrix->d_row_starts.get(), num_rs, dest, ROW_TAG ) );
-        d_send_requests.push_back( d_comm.Isend( matrix->d_cols.get(), num_nnz, dest, COL_TAG ) );
-        d_send_requests.push_back(
+        d_send_requests.emplace_back(
+            d_comm.Isend( matrix->d_cols.get(), num_nnz, dest, COL_TAG ) );
+        d_send_requests.emplace_back(
             d_comm.Isend( matrix->d_coeffs.get(), num_nnz, dest, COEFF_TAG ) );
     }
     auto all_sources = d_comm.allToAll( all_dests );
     d_num_sources    = std::reduce( all_sources.begin(), all_sources.end() );
+    d_send_called    = true;
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
@@ -77,6 +79,9 @@ CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::recvMatrices(
         d_comm.recv( block->d_cols.get(), block->d_nnz, source, COL_TAG );
         d_comm.recv( block->d_coeffs.get(), block->d_nnz, source, COEFF_TAG );
     }
+
+    // enaure that any outstanding sends complete
+    d_comm.waitAll( static_cast<int>( d_send_requests.size() ), d_send_requests.data() );
 
     // comm done, reset send flag in case this gets re-used
     d_send_called = false;

@@ -176,21 +176,23 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
 template<typename Policy, class Allocator>
 std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>
 CSRLocalMatrixData<Policy, Allocator>::ConcatHorizontal(
-    std::vector<std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
+    std::map<int, std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
 {
     AMP_INSIST( blocks.size() > 0, "Attempted to concatenate empty set of blocks" );
 
     // Verify that all have matching row/col starts/stops
     // Blocks must have valid global columns present
     // Count total number of non-zeros in each row from combination.
-    const auto mem_loc   = blocks[0]->d_memory_location;
-    const auto first_row = blocks[0]->d_first_row;
-    const auto last_row  = blocks[0]->d_last_row;
+    auto block           = ( *blocks.begin() ).second;
+    const auto mem_loc   = block->d_memory_location;
+    const auto first_row = block->d_first_row;
+    const auto last_row  = block->d_last_row;
     const auto nrows     = static_cast<lidx_t>( last_row - first_row );
-    const auto first_col = blocks[0]->d_first_col;
-    const auto last_col  = blocks[0]->d_last_col;
+    const auto first_col = block->d_first_col;
+    const auto last_col  = block->d_last_col;
     std::vector<lidx_t> row_nnz( last_row - first_row, 0 );
-    for ( auto block : blocks ) {
+    for ( auto it : blocks ) {
+        block = it.second;
         AMP_INSIST( first_row == block->d_first_row && last_row == block->d_last_row &&
                         first_col == block->d_first_col && last_col == block->d_last_col,
                     "Blocks to concatenate must have compatible layouts" );
@@ -211,7 +213,8 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatHorizontal(
     std::fill( row_nnz.begin(), row_nnz.end(), 0 );
 
     // loop back over blocks and write into new matrix
-    for ( auto block : blocks ) {
+    for ( auto it : blocks ) {
+        block = it.second;
         for ( lidx_t row = 0; row < nrows; ++row ) {
             for ( auto n = block->d_row_starts[row]; n < block->d_row_starts[row + 1]; ++n ) {
                 const auto rs                     = concat_matrix->d_row_starts[row];
@@ -229,18 +232,20 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatHorizontal(
 template<typename Policy, class Allocator>
 std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>
 CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
-    std::vector<std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
+    std::map<int, std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
 {
     AMP_INSIST( blocks.size() > 0, "Attempted to concatenate empty set of blocks" );
 
     // Verify that all have matching column starts/stops
     // Blocks must have valid global columns present
     // Count total number of non-zeros in each row from combination.
-    const auto mem_loc   = blocks[0]->d_memory_location;
-    const auto first_col = blocks[0]->d_first_col;
-    const auto last_col  = blocks[0]->d_last_col;
+    auto block           = ( *blocks.begin() ).second;
+    const auto mem_loc   = block->d_memory_location;
+    const auto first_col = block->d_first_col;
+    const auto last_col  = block->d_last_col;
     std::vector<lidx_t> row_nnz;
-    for ( auto block : blocks ) {
+    for ( auto it : blocks ) {
+        block = it.second;
         AMP_INSIST( first_col == block->d_first_col && last_col == block->d_last_col,
                     "Blocks to concatenate must have compatible layouts" );
         AMP_INSIST( block->d_cols.get(), "Blocks to concatenate must have global columns" );
@@ -253,12 +258,13 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
 
     // Create empty matrix and trigger allocations to match
     auto concat_matrix = std::make_shared<CSRLocalMatrixData<Policy, Allocator>>(
-        nullptr, mem_loc, 0, row_nnz.size(), first_col, last_col, false );
+        nullptr, mem_loc, 0, row_nnz.size(), first_col, last_col, true );
     concat_matrix->setNNZ( row_nnz );
 
     // loop over blocks again and write into new matrix
     lidx_t cat_row = 0;
-    for ( auto block : blocks ) {
+    for ( auto it : blocks ) {
+        block = it.second;
         for ( lidx_t brow = 0; brow < block->d_num_rows; ++brow ) {
             lidx_t cat_pos = concat_matrix->d_row_starts[cat_row];
             for ( auto n = block->d_row_starts[brow]; n < block->d_row_starts[brow + 1]; ++n ) {
@@ -269,7 +275,6 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
             cat_row++;
         }
     }
-
 
     return concat_matrix;
 }
@@ -315,6 +320,17 @@ void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
 
     // free global cols as they should not be used from here on out
     d_cols.reset();
+}
+
+template<typename Policy, class Allocator>
+typename Policy::gidx_t
+CSRLocalMatrixData<Policy, Allocator>::localToGlobal( const typename Policy::lidx_t loc_id ) const
+{
+    if ( d_is_diag ) {
+        return static_cast<typename Policy::gidx_t>( loc_id ) + d_first_col;
+    } else {
+        return d_cols_unq[loc_id];
+    }
 }
 
 template<typename Policy, class Allocator>
