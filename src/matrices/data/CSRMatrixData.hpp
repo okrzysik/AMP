@@ -257,7 +257,7 @@ std::shared_ptr<DiagMatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>
         AMP_DEBUG_ASSERT( n == 0 || rows[n] > row_prev );
         AMP_DEBUG_ASSERT( d_first_row <= rows[n] && rows[n] < d_last_row );
         const auto row_loc = static_cast<lidx_t>( rows[n] - d_first_row );
-        sub_matrix->d_row_starts[n] +=
+        sub_matrix->d_row_starts[n] =
             ( d_diag_matrix->d_row_starts[row_loc + 1] - d_diag_matrix->d_row_starts[row_loc] );
         if ( !d_offd_matrix->d_is_empty ) {
             sub_matrix->d_row_starts[n] +=
@@ -272,22 +272,21 @@ std::shared_ptr<DiagMatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>
     // Loop back over diag/offd and copy in marked rows
     for ( size_t n = 0; n < rows.size(); ++n ) {
         const auto row_loc = static_cast<lidx_t>( rows[n] - d_first_row );
-        lidx_t pos         = 0;
+        lidx_t pos         = sub_matrix->d_row_starts[n];
         for ( lidx_t k = d_diag_matrix->d_row_starts[row_loc];
               k < d_diag_matrix->d_row_starts[row_loc + 1];
               ++k ) {
-            sub_matrix->d_cols[k + pos] =
-                d_diag_matrix->localToGlobal( d_diag_matrix->d_cols_loc[k] );
-            sub_matrix->d_coeffs[k + pos] = d_diag_matrix->d_coeffs[k];
+            sub_matrix->d_cols[pos] = d_diag_matrix->localToGlobal( d_diag_matrix->d_cols_loc[k] );
+            sub_matrix->d_coeffs[pos] = d_diag_matrix->d_coeffs[k];
             ++pos;
         }
         if ( !d_offd_matrix->d_is_empty ) {
             for ( lidx_t k = d_offd_matrix->d_row_starts[row_loc];
                   k < d_offd_matrix->d_row_starts[row_loc + 1];
                   ++k ) {
-                sub_matrix->d_cols[k + pos] =
+                sub_matrix->d_cols[pos] =
                     d_offd_matrix->localToGlobal( d_offd_matrix->d_cols_loc[k] );
-                sub_matrix->d_coeffs[k + pos] = d_offd_matrix->d_coeffs[k];
+                sub_matrix->d_coeffs[pos] = d_offd_matrix->d_coeffs[k];
                 ++pos;
             }
         }
@@ -317,6 +316,7 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::subsetCols( const gidx_t idx_l
     // count nnz within each row that lie in the given range
     const auto nrows = static_cast<lidx_t>( d_last_row - d_first_row );
     for ( lidx_t row = 0; row < nrows; ++row ) {
+        sub_matrix->d_row_starts[row] = 0;
         for ( lidx_t k = d_diag_matrix->d_row_starts[row]; k < d_diag_matrix->d_row_starts[row + 1];
               ++k ) {
             const auto col = d_diag_matrix->localToGlobal( d_diag_matrix->d_cols_loc[k] );
