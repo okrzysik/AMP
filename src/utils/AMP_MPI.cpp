@@ -1569,21 +1569,21 @@ std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
                                            std::forward<int>( count ) );
 }
 #else
-int AMP_MPI::Iprobe( int source, int tag ) const
+std::tuple<int, int, int> AMP_MPI::Iprobe( int source, int tag ) const
 {
     AMP_ASSERT( source == 0 || source < -1 );
     for ( const auto &tmp : global_isendrecv_list ) {
         const auto &data = tmp.second;
         if ( data.comm == d_comm && ( data.tag == tag || tag == -1 ) && data.status == 1 )
-            return data.bytes;
+            return std::make_tuple<int, int, int>( source, tag, std::forward<int>( data.bytes ) );
     }
-    return -1;
+    return std::make_tuple<int, int, int>( source, tag, -1 );
 }
-int AMP_MPI::probe( int source, int tag ) const
+std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
 {
-    int bytes = Iprobe( source, tag );
-    AMP_INSIST( bytes >= 0, "probe called before message started in serial" );
-    return bytes;
+    auto tpl = Iprobe( source, tag );
+    AMP_INSIST( std::get<2>( tpl ) >= 0, "probe called before message started in serial" );
+    return tpl;
 }
 #endif
 
