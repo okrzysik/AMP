@@ -195,30 +195,33 @@ void MatrixTests::VerifyCopyMatrix( AMP::UnitTest *utils )
 {
     PROFILE( "VerifyCopyMatrix" );
 
-    // Only verifies copies between the same types
     // Create vectors/matrices from the factory
     auto matrix1 = d_factory->getMatrix();
-    auto matrix2 = d_factory->getMatrix();
     fillWithPseudoLaplacian( matrix1, d_factory );
+    auto matrix2 = getCopyMatrix( matrix1 );
 
-    // Test copy
-    matrix2->copy( matrix1 ); // matrix2 = matrix1
+    auto u1 = matrix1->getRightVector();
+    auto v1 = matrix1->getRightVector();
 
-    auto vector1lhs   = matrix1->getRightVector();
-    auto vector2lhs   = matrix2->getRightVector();
-    auto vector1rhs   = matrix1->getRightVector();
-    auto vector2rhs   = matrix2->getRightVector();
+    auto u2           = matrix2->getRightVector();
+    auto v2           = matrix2->getRightVector();
     auto vectorresult = matrix2->getRightVector();
-    vector1lhs->setRandomValues();
-    vector2lhs->copyVector( vector1lhs );
-    matrix1->mult( vector1lhs, vector1rhs );
-    matrix2->mult( vector2lhs, vector2rhs ); // vector2rhs = vector1rhs
-    vectorresult->subtract( *vector1rhs, *vector2rhs );
+
+    u1->setRandomValues();
+    u1->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    u2->copyVector( u1 );
+    u2->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
+    matrix1->mult( u1, v1 );
+    matrix2->mult( u2, v2 ); // v2 = v1
+    vectorresult->copyVector( v1 );
+    vectorresult->subtract( *vectorresult, *v2 );
     if ( vectorresult->L1Norm() < 0.000001 )
         utils->passes( "matrices are not equal after copy " + matrix1->type() );
     else
         utils->failure( "matrices are not equal after copy " + matrix1->type() );
-    if ( vector1rhs->L1Norm() > 0.00001 )
+    if ( v1->L1Norm() > 0.00001 )
         utils->passes( "non-trivial vector " + matrix1->type() );
     else
         utils->passes( "trivial vector " + matrix1->type() );
@@ -229,7 +232,7 @@ void MatrixTests::VerifyCopyMatrix( AMP::UnitTest *utils )
     std::vector<size_t> row( 7 );
     for ( size_t i = 0; i < row.size(); i++ )
         row[i] = i;
-    auto smallVec = AMP::LinearAlgebra::createSimpleVector<double>( 7, vector1lhs->getVariable() );
+    auto smallVec = AMP::LinearAlgebra::createSimpleVector<double>( 7, u1->getVariable() );
     auto smallMat = AMP::LinearAlgebra::createMatrix(
         smallVec, smallVec, d_factory->type(), [row]( size_t ) { return row; } );
     try {

@@ -4,6 +4,7 @@
 #include "AMP/matrices/trilinos/EpetraMatrixData.h"
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
+#include <algorithm>
 #include <functional>
 
 namespace AMP::LinearAlgebra {
@@ -36,11 +37,8 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
                                                 mat->getMatrixData()->getLeftVariable(),
                                                 mat->getMatrixData()->getRightVariable(),
                                                 getRow );
-
         auto epetraMat = std::make_shared<ManagedEpetraMatrix>( matParams );
         epetraMat->copy( mat );
-        epetraMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
-        //        epetraMat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         return epetraMat;
     }
 }
