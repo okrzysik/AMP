@@ -49,6 +49,6 @@ protected:
     static constexpr int COL_TAG   = 5601;
     static constexpr int COEFF_TAG = 5602;
 };
-}
+} // namespace AMP::LinearAlgebra
 
 #endif
