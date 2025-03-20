@@ -687,7 +687,7 @@ void PetscSNESSolver::printConvergenceStatus( SolverStrategy::SolverStatus statu
         case SolverStrategy::SolverStatus::DivergedOnNan:
             os << offset << type() << " diverged on NaNs" << std::endl;
             break;
-        case SolverStrategy::SolverStatus::DivergedMaxIterations:
+        case SolverStrategy::SolverStatus::MaxIterations:
             os << offset << type() << " diverged on max iterations" << std::endl;
             break;
         case SolverStrategy::SolverStatus::DivergedNestedSolver:
@@ -730,7 +730,7 @@ void PetscSNESSolver::setConvergenceStatus( void )
         d_ConvergenceStatus = SolverStatus::DivergedOnNan;
         break;
     case SNES_DIVERGED_MAX_IT:
-        d_ConvergenceStatus = SolverStatus::DivergedMaxIterations;
+        d_ConvergenceStatus = SolverStatus::MaxIterations;
         break;
     case SNES_DIVERGED_LINEAR_SOLVE:
         d_ConvergenceStatus = SolverStatus::DivergedNestedSolver;

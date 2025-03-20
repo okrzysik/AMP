@@ -137,12 +137,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     y[0]->zero();
     y[1]->zero();
 
-    // z is allocated only if the preconditioner is used
-    AMP::LinearAlgebra::Vector::shared_ptr z;
-    if ( d_bUsesPreconditioner ) {
-        z = f->clone();
-        z->zero();
-    }
+    AMP::LinearAlgebra::Vector::shared_ptr z = x->clone();
+    z->zero();
 
     auto delta = f->clone();
     delta->zero();
@@ -160,7 +156,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
         d_pPreconditioner->apply( y[0], z );
     } else {
-        z = y[0];
+        z->copyVector( y[0] );
     }
 
     z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
@@ -193,14 +189,14 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
                     d_pPreconditioner->apply( y[1], z );
                 } else {
-                    z = y[1];
+                    z->copyVector( y[1] );
                 }
 
                 z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                 d_pOperator->apply( z, u[1] );
             }
 
-            const int m = 2 * d_iNumberIterations - 1 + j;
+            const int m = 2 * d_iNumberIterations - 2 + j;
             w->axpy( -alpha, *u[j], *w );
             d->axpy( ( theta * theta * eta / alpha ), *d, *y[j] );
 
@@ -212,6 +208,10 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
             // update the increment to the solution
             delta->axpy( eta, *d, *delta );
+            if ( d_iDebugPrintInfoLevel > 1 ) {
+                AMP::pout << "TFQMR: outer/inner iteration " << ( d_iNumberIterations ) << "/" << j
+                          << ", solution update norm " << delta->L2Norm() << std::endl;
+            }
 
             // Use upper bound on residual norm to test convergence cheaply
             res_bound = tau * std::sqrt( static_cast<T>( m + 1.0 ) );
@@ -228,13 +228,6 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         }
 
         if ( converged ) {
-            // unwind the preconditioner if necessary
-            if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-                d_pPreconditioner->apply( delta, z );
-            } else {
-                z = delta;
-            }
-            x->axpy( 1.0, *z, *x );
             break;
         }
 
@@ -255,7 +248,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
             d_pPreconditioner->apply( y[0], z );
         } else {
-            z = y[0];
+            z->copyVector( y[0] );
         }
 
         z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
@@ -270,6 +263,15 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                       << res_bound << std::endl;
         }
     }
+
+    // unwind the preconditioner if necessary
+    if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
+        d_pPreconditioner->apply( delta, z );
+    } else {
+        z->copyVector( delta );
+    }
+
+    x->add( *z, *x );
 
     x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 

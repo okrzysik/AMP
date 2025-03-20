@@ -110,12 +110,35 @@ VolumeIntegralOperator{
 }
 
 LinearSolver{
-  name = "TFQMRSolver"
-  uses_preconditioner = FALSE
-  max_iterations = 25
-  absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-11
-  print_info_level = 0
+  name = "GMRESRSolver"
+  variant = "gmresr"
+  nested_solver = "GMRES"
+  absolute_tolerance = 1.0e-14
+  relative_tolerance = 1.0e-12
+  print_info_level = 2
+  max_iterations = 30
+  max_dimension = 100
+}
+
+GMRES{
+  name = "GMRESSolver"
+  uses_preconditioner = TRUE
+  flexible_gmres = TRUE
+  print_info_level = 2
+  max_iterations = 100
+  max_dimension = 100
+  relative_tolerance = 1.0e-6
+}
+
+Preconditioner{
+  name = "BoomerAMGSolver"
+  max_iterations = 1
+  min_coarse_size = 10
+  strong_threshold = 0.5
+  relax_type = 16
+  coarsen_type = 10
+  interp_type = 17
+  relax_order = 0
 }
 
 SourcePhysicsModel {
