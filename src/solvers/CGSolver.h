@@ -18,6 +18,19 @@ namespace AMP::Solver {
  * Golub, Gene H.; Ye, Qiang (1999). "Inexact Preconditioned Conjugate Gradient Method with
  * Inner-Outer Iteration". SIAM Journal on Scientific Computing 21 (4): 1305.
  * doi:10.1137/S1064827597323415 (http://dx.doi.org/10.1137%2FS1064827597323415) .
+ *
+ * and in addition the FCG method developed in
+ * Axelsson, O.; Vassilevski, P.S. "Variable‐step multilevel preconditioning methods, I:
+ * Self‐adjoint and positive definite elliptic problems." Numer. Linear Algebra Appl. 1994, 1,
+ * 75–101, https://doi.org/10.1002/nla.1680010108.
+ *
+ * Note that the FCG implementation orthogonalizes against the last d_max_dimension search direction
+ * vectors as described in
+ * Notay, Y. "Flexible Conjugate Gradients", SIAM J. Sc. Comput 22(4), 2000
+ * https://doi.org/10.1137/S1064827599362314
+ *
+ * By specifying the input string variant = "pcg", "ipcg" or "fcg" a user can switch between
+ * the methods
  */
 
 template<typename T = double>
@@ -102,6 +115,8 @@ protected:
 
 private:
     T d_dDivergenceTolerance = 1e3;
+
+    std::vector<T> d_gamma;
 
     bool d_bUsesPreconditioner = false;
 

@@ -59,8 +59,18 @@ IF( USE_LIBMESH AND AMP_DATA )
   ADD_AMP_TEST_1_2_4( testMatMultiply )
 ENDIF()
 
+IF ( USE_PETSC ) 
+    ADD_AMP_TEST_1_2_4( test_MatrixCopyPetscAndCSR )
+ENDIF()
+
 IF ( USE_TRILINOS ) 
     ADD_AMP_TEST( test_Epetra_FECrsMatrix_bug PROCS 2 )
+    ADD_AMP_TEST_1_2_4( test_MatrixCopyEpetraAndCSR )
 ENDIF()
+
+IF ( USE_TRILINOS AND USE_PETSC ) 
+    ADD_AMP_TEST_1_2_4( test_MatrixCopyEpetraAndPetsc )
+ENDIF()
+
 
 
