@@ -257,11 +257,12 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                       << v_norm << std::endl;
         }
 
+        ++k;
+
         if ( checkStoppingCriteria( v_norm ) ) {
             break;
         }
 
-        ++k;
         if ( k == d_iMaxKrylovDimension ) {
             if ( d_bRestart ) {
                 // with restarts, you start over with the last solution as new initial guess to
