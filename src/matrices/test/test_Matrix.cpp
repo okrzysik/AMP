@@ -9,30 +9,6 @@
 using namespace AMP::LinearAlgebra;
 
 
-void test_matrix_loop( AMP::UnitTest &ut, std::shared_ptr<MatrixTests> tests )
-{
-    tests->InstantiateMatrix( &ut );
-    tests->VerifyGetSetValuesMatrix( &ut );
-    tests->VerifyAXPYMatrix( &ut );
-    tests->VerifyCopyMatrix( &ut );
-    tests->VerifyScaleMatrix( &ut );
-    tests->VerifyGetLeftRightVector( &ut );
-    tests->VerifyExtractDiagonal( &ut );
-    tests->VerifyMultMatrix( &ut );
-    tests->VerifyMatMultMatrix( &ut );
-    tests->VerifyAddElementNode( &ut );
-}
-
-template<typename FACTORY>
-void test_matrix_loop( AMP::UnitTest &ut )
-{
-    auto factory     = std::make_shared<FACTORY>();
-    std::string name = factory->name();
-    PROFILE2( name );
-    auto tests = std::make_shared<MatrixTests>( factory );
-    test_matrix_loop( ut, tests );
-}
-
 template<typename FACTORY>
 void test_petsc_matrix_loop( [[maybe_unused]] AMP::UnitTest &ut )
 {

@@ -174,6 +174,9 @@ int main( int argc, char *argv[] )
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-IPCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG-FCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );

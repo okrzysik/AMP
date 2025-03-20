@@ -601,4 +601,18 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
 }
 
 
+void test_matrix_loop( AMP::UnitTest &ut, std::shared_ptr<MatrixTests> tests )
+{
+    tests->InstantiateMatrix( &ut );
+    tests->VerifyGetSetValuesMatrix( &ut );
+    tests->VerifyAXPYMatrix( &ut );
+    tests->VerifyCopyMatrix( &ut );
+    tests->VerifyScaleMatrix( &ut );
+    tests->VerifyGetLeftRightVector( &ut );
+    tests->VerifyExtractDiagonal( &ut );
+    tests->VerifyMultMatrix( &ut );
+    tests->VerifyMatMultMatrix( &ut );
+    tests->VerifyAddElementNode( &ut );
+}
+
 } // namespace AMP::LinearAlgebra
