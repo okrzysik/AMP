@@ -1549,9 +1549,8 @@ std::tuple<int, int, int> AMP_MPI::Iprobe( int source, int tag ) const
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
     AMP_ASSERT( count >= 0 );
-    return std::make_tuple<int, int, int>( std::forward<int>( status.MPI_SOURCE ),
-                                           std::forward<int>( status.MPI_TAG ),
-                                           std::forward<int>( count ) );
+    return std::make_tuple<int, int, int>(
+        int( status.MPI_SOURCE ), int( status.MPI_TAG ), int( count ) );
 }
 std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
 {
@@ -1564,9 +1563,8 @@ std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
     AMP_ASSERT( count >= 0 );
-    return std::make_tuple<int, int, int>( std::forward<int>( status.MPI_SOURCE ),
-                                           std::forward<int>( status.MPI_TAG ),
-                                           std::forward<int>( count ) );
+    return std::make_tuple<int, int, int>(
+        int( status.MPI_SOURCE ), int( status.MPI_TAG ), int( count ) );
 }
 #else
 std::tuple<int, int, int> AMP_MPI::Iprobe( int source, int tag ) const
@@ -1575,9 +1573,9 @@ std::tuple<int, int, int> AMP_MPI::Iprobe( int source, int tag ) const
     for ( const auto &tmp : global_isendrecv_list ) {
         const auto &data = tmp.second;
         if ( data.comm == d_comm && ( data.tag == tag || tag == -1 ) && data.status == 1 )
-            return std::make_tuple<int, int, int>( source, tag, std::forward<int>( data.bytes ) );
+            return std::make_tuple<int, int, int>( int( source ), int( tag ), int( data.bytes ) );
     }
-    return std::make_tuple<int, int, int>( source, tag, -1 );
+    return std::make_tuple<int, int, int>( int( source ), int( tag ), -1 );
 }
 std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
 {

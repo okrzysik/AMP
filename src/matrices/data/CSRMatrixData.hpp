@@ -252,7 +252,7 @@ std::shared_ptr<DiagMatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>
 
     // count nnz per row and write into sub matrix directly
     // also check that passed in rows are in ascending order and owned here
-    gidx_t row_prev = rows[0];
+    [[maybe_unused]] gidx_t row_prev = rows[0];
     for ( size_t n = 0; n < rows.size(); ++n ) {
         AMP_DEBUG_ASSERT( n == 0 || rows[n] > row_prev );
         AMP_DEBUG_ASSERT( d_first_row <= rows[n] && rows[n] < d_last_row );
