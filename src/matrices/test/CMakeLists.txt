@@ -44,6 +44,8 @@ ADD_AMP_TEST_124_MATRIX( testMatOpDev )
 ADD_AMP_TEST_124_MATRIX( testMatCopyCast )
 IF ( USE_DEVICE )
     SET_DEVICE_COMPILER( testMatCopyCast )
+    ADD_AMP_TEST_1_2_4( testCompareCSRMatOps )
+    SET_DEVICE_COMPILER( testMatCopyCast )
 ENDIF()
 
 ADD_AMP_TEST( test_getRow input_AMP_mesh_zoo_3D )
@@ -60,8 +62,18 @@ IF( USE_LIBMESH AND AMP_DATA )
   ADD_AMP_TEST_1_2_4( testMatMultiply )
 ENDIF()
 
+IF ( USE_PETSC ) 
+    ADD_AMP_TEST_1_2_4( test_MatrixCopyPetscAndCSR )
+ENDIF()
+
 IF ( USE_TRILINOS ) 
     ADD_AMP_TEST( test_Epetra_FECrsMatrix_bug PROCS 2 )
+    ADD_AMP_TEST_1_2_4( test_MatrixCopyEpetraAndCSR )
 ENDIF()
+
+IF ( USE_TRILINOS AND USE_PETSC ) 
+    ADD_AMP_TEST_1_2_4( test_MatrixCopyEpetraAndPetsc )
+ENDIF()
+
 
 

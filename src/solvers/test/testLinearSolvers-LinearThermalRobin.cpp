@@ -172,6 +172,8 @@ int main( int argc, char *argv[] )
 
     } else {
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-IPCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
@@ -185,6 +187,8 @@ int main( int argc, char *argv[] )
 #ifdef AMP_USE_TRILINOS_ML
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-CG" );
+        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-IPCG" );
+        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FCG" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );

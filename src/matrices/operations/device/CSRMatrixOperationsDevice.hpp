@@ -71,19 +71,20 @@ void CSRMatrixOperationsDevice<Policy, Allocator, DiagMatrixData>::mult(
 
     if ( csrData->hasOffDiag() ) {
         PROFILE( "CSRMatrixOperationsDevice::mult(ghost)" );
-
+        using scalarAllocator_t =
+            typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
         // Possible mismatch between Policy::gidx_t and size_t forces a deep copy
         // of the colMap from inside offdMatrix
         std::vector<size_t> colMap;
         offdMatrix->getColumnMap( colMap );
-        std::vector<scalar_t> ghosts_h( colMap.size() );
-        in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts_h.data() );
+        std::vector<scalar_t, scalarAllocator_t> ghosts( colMap.size() );
+        in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts.data() );
 
-        AMP_DEBUG_ASSERT( static_cast<typename Policy::lidx_t>( ghosts_h.size() ) ==
+        AMP_DEBUG_ASSERT( static_cast<typename Policy::lidx_t>( ghosts.size() ) ==
                           offdMatrix->numUniqueColumns() );
 
         CSRLocalMatrixOperationsDevice<Policy, Allocator>::mult(
-            ghosts_h.data(), offdMatrix, outDataBlock );
+            ghosts.data(), offdMatrix, outDataBlock );
     }
 }
 

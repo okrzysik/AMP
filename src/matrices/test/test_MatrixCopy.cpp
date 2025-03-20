@@ -9,32 +9,6 @@
 using namespace AMP::LinearAlgebra;
 
 
-void test_matrix_loop( AMP::UnitTest &ut, std::shared_ptr<MatrixTests> tests )
-{
-    tests->InstantiateMatrix( &ut );
-    tests->VerifyGetSetValuesMatrix( &ut );
-    tests->VerifyAXPYMatrix( &ut );
-    tests->VerifyCopyMatrix( &ut );
-    tests->VerifyScaleMatrix( &ut );
-    tests->VerifyGetLeftRightVector( &ut );
-    tests->VerifyExtractDiagonal( &ut );
-    tests->VerifyMultMatrix( &ut );
-    tests->VerifyMatMultMatrix( &ut );
-    tests->VerifyAddElementNode( &ut );
-}
-
-template<typename FACTORY1, typename FACTORY2>
-void test_matrix_loop( AMP::UnitTest &ut )
-{
-    auto factory          = std::make_shared<FACTORY1>();
-    std::string name      = factory->name();
-    auto copy_factory     = std::make_shared<FACTORY2>();
-    std::string copy_name = copy_factory->name();
-    PROFILE2( name + copy_name );
-    auto tests = std::make_shared<MatrixTests>( factory, copy_factory );
-    test_matrix_loop( ut, tests );
-}
-
 int main( int argc, char **argv )
 {
 
@@ -65,20 +39,10 @@ int main( int argc, char **argv )
 #if defined( AMP_USE_TRILINOS )
     using EpetraFactory = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 1>;
     test_matrix_loop<EpetraFactory, EpetraFactory>( ut );
-    test_matrix_loop<CSRFactoryDOF1, EpetraFactory>( ut );
-    test_matrix_loop<EpetraFactory, CSRFactoryDOF1>( ut );
 
     #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
     using EpetraLibmeshFactory = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 1>;
     test_matrix_loop<EpetraLibmeshFactory, EpetraLibmeshFactory>( ut );
-    test_matrix_loop<EpetraLibmeshFactory, CSRLibmeshFactoryDOF3>( ut );
-    test_matrix_loop<CSRLibmeshFactoryDOF3, EpetraLibmeshFactory>( ut );
-    #endif
-
-    #if defined( AMP_USE_PETSC )
-    test_matrix_loop<NativePetscFactoryDOF1, EpetraFactory>( ut );
-    test_matrix_loop<EpetraFactory, NativePetscFactoryDOF1>( ut );
-    // Test the ManagedPetscMatrix -- TODO
     #endif
 #endif
 
@@ -95,16 +59,10 @@ int main( int argc, char **argv )
 
     test_matrix_loop<NativePetscFactoryDOF1, NativePetscFactoryDOF1>( ut );
     test_matrix_loop<NativePetscFactoryDOF3, NativePetscFactoryDOF3>( ut );
-    test_matrix_loop<CSRFactoryDOF1, NativePetscFactoryDOF1>( ut );
-    test_matrix_loop<CSRFactoryDOF3, NativePetscFactoryDOF3>( ut );
-    test_matrix_loop<NativePetscFactoryDOF1, CSRFactoryDOF1>( ut );
-    test_matrix_loop<NativePetscFactoryDOF3, CSRFactoryDOF3>( ut );
 
     #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
     using NativePetscLibmeshFactoryDOF3 = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 3>;
     test_matrix_loop<NativePetscLibmeshFactoryDOF3, NativePetscLibmeshFactoryDOF3>( ut );
-    test_matrix_loop<CSRLibmeshFactoryDOF3, NativePetscLibmeshFactoryDOF3>( ut );
-    test_matrix_loop<NativePetscLibmeshFactoryDOF3, CSRLibmeshFactoryDOF3>( ut );
     #endif
 #endif
 

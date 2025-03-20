@@ -40,7 +40,9 @@
 
 #include "reference_solver_solutions.h"
 
-void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
+void linearThermalTest( AMP::UnitTest *ut,
+                        const std::string &inputFileName,
+                        AMP::Utilities::Backend backend )
 {
     // Input and output file names
     std::string input_file = inputFileName;
@@ -176,6 +178,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto csrParams = std::make_shared<AMP::LinearAlgebra::RawCSRMatrixParameters<Policy>>(
         startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
 
+    csrParams->d_backend = backend;
+
 #ifdef USE_DEVICE
     using Alloc = AMP::ManagedAllocator<void>;
 #else
@@ -258,8 +262,18 @@ int main( int argc, char *argv[] )
 #endif
     }
 
-    for ( auto &file : files )
-        linearThermalTest( &ut, file );
+    std::vector<AMP::Utilities::Backend> backends;
+    backends.emplace_back( AMP::Utilities::Backend::kokkos );
+#ifdef USE_DEVICE
+    backends.emplace_back( AMP::Utilities::Backend::hip_cuda );
+#else
+    backends.emplace_back( AMP::Utilities::Backend::serial );
+#endif
+
+    for ( auto &backend : backends ) {
+        for ( auto &file : files )
+            linearThermalTest( &ut, file, backend );
+    }
 
     ut.report();
 
