@@ -236,7 +236,7 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
 
 #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );

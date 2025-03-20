@@ -23,6 +23,7 @@ responsibility for the use of this software.
 #include "AMP/solvers/BiCGSTABSolver.h"
 #include "AMP/solvers/CGSolver.h"
 #include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/GMRESRSolver.h"
 #include "AMP/solvers/GMRESSolver.h"
 #include "AMP/solvers/NonlinearKrylovAccelerator.h"
 #include "AMP/solvers/QMRCGSTABSolver.h"
@@ -94,6 +95,7 @@ void AMP::FactoryStrategy<AMP::Solver::SolverStrategy,
 
     d_factories["CGSolver"]        = CGSolver<double>::createSolver;
     d_factories["GMRESSolver"]     = GMRESSolver<double>::createSolver;
+    d_factories["GMRESRSolver"]    = GMRESRSolver<double>::createSolver;
     d_factories["BiCGSTABSolver"]  = BiCGSTABSolver<double>::createSolver;
     d_factories["TFQMRSolver"]     = TFQMRSolver<double>::createSolver;
     d_factories["QMRCGSTABSolver"] = QMRCGSTABSolver<double>::createSolver;
@@ -102,6 +104,7 @@ void AMP::FactoryStrategy<AMP::Solver::SolverStrategy,
 
     d_factories["CGSolver<double>"]        = CGSolver<double>::createSolver;
     d_factories["GMRESSolver<double>"]     = GMRESSolver<double>::createSolver;
+    d_factories["GMRESRSolver<double>"]    = GMRESRSolver<double>::createSolver;
     d_factories["BiCGSTABSolver<double>"]  = BiCGSTABSolver<double>::createSolver;
     d_factories["TFQMRSolver<double>"]     = TFQMRSolver<double>::createSolver;
     d_factories["QMRCGSTABSolver<double>"] = QMRCGSTABSolver<double>::createSolver;
@@ -110,6 +113,7 @@ void AMP::FactoryStrategy<AMP::Solver::SolverStrategy,
 
     d_factories["CGSolver<float>"]        = CGSolver<float>::createSolver;
     d_factories["GMRESSolver<float>"]     = GMRESSolver<float>::createSolver;
+    d_factories["GMRESRSolver<float>"]    = GMRESRSolver<float>::createSolver;
     d_factories["BiCGSTABSolver<float>"]  = BiCGSTABSolver<float>::createSolver;
     d_factories["TFQMRSolver<float>"]     = TFQMRSolver<float>::createSolver;
     d_factories["QMRCGSTABSolver<float>"] = QMRCGSTABSolver<float>::createSolver;
