@@ -75,6 +75,30 @@ private:
     std::shared_ptr<const MatrixFactory> d_copy_factory;
 };
 
+void test_matrix_loop( AMP::UnitTest &ut, std::shared_ptr<MatrixTests> tests );
+
+
+template<typename FACTORY>
+void test_matrix_loop( AMP::UnitTest &ut )
+{
+    auto factory     = std::make_shared<FACTORY>();
+    std::string name = factory->name();
+    PROFILE2( name );
+    auto tests = std::make_shared<MatrixTests>( factory );
+    test_matrix_loop( ut, tests );
+}
+
+template<typename FACTORY1, typename FACTORY2>
+void test_matrix_loop( AMP::UnitTest &ut )
+{
+    auto factory          = std::make_shared<FACTORY1>();
+    std::string name      = factory->name();
+    auto copy_factory     = std::make_shared<FACTORY2>();
+    std::string copy_name = copy_factory->name();
+    PROFILE2( name + copy_name );
+    auto tests = std::make_shared<MatrixTests>( factory, copy_factory );
+    test_matrix_loop( ut, tests );
+}
 
 } // namespace AMP::LinearAlgebra
 
