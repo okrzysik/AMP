@@ -180,6 +180,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::startBRemo
 
     // 2. the above rows per rank lists generally include lots of zeros
     // trim down to the ranks that actually need to communicate
+    int total_send = 0, total_recv = 0;
     for ( int r = 0; r < comm_size; ++r ) {
         const auto nsend = rows_per_rank_send[r];
         if ( nsend > 0 ) {
@@ -189,6 +190,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::startBRemo
         if ( nrecv > 0 ) {
             d_src_info.insert( std::make_pair( r, SpGEMMCommInfo( nrecv ) ) );
         }
+        total_send += nsend;
+        total_recv += nrecv;
     }
 
     // 3. Scan over column map now writing into the trimmed down src list
@@ -211,21 +214,20 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::startBRemo
 
     // 4. send rowids to their owners
     // start by posting the irecvs
-    {
-        const int TAG = 0;
-        std::vector<AMP_MPI::Request> irecvs;
-        for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
-            it->second.rowids.resize( it->second.numrow );
-            irecvs.push_back(
-                comm.Irecv( it->second.rowids.data(), it->second.numrow, it->first, TAG ) );
-        }
-        // now send all the rows we want from other ranks
-        for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
-            comm.send( it->second.rowids.data(), it->second.numrow, it->first, TAG );
-        }
-        // wait for receives to finish
-        comm.waitAll( static_cast<int>( irecvs.size() ), irecvs.data() );
+    const int TAG = 7800;
+    std::vector<AMP_MPI::Request> irecvs;
+    for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
+        it->second.rowids.resize( it->second.numrow );
+        irecvs.push_back(
+            comm.Irecv( it->second.rowids.data(), it->second.numrow, it->first, TAG ) );
     }
+    // now send all the rows we want from other ranks
+    for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
+        comm.send( it->second.rowids.data(), it->second.numrow, it->first, TAG );
+    }
+    // wait for receives to finish
+    comm.waitAll( static_cast<int>( irecvs.size() ), irecvs.data() );
+
 
     // 5. We now have all global rowids this rank owns and needs to send out
     // use them to form subset matrices
@@ -241,10 +243,23 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::startBRemo
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::endBRemoteComm()
 {
+    using lidx_t = typename Policy::lidx_t;
+
     PROFILE( "CSRMatrixSpGEMMDefault::endBRemoteComm" );
 
     d_recv_matrices = d_csr_comm.recvMatrices( 0, 0, 0, B->numGlobalColumns() );
     BRemote         = CSRLocalMatrixData<Policy, Allocator>::ConcatVertical( d_recv_matrices );
+    const auto A_col_map_size = A->getOffdMatrix()->numUniqueColumns();
+    if ( A_col_map_size != static_cast<lidx_t>( BRemote->endRow() ) ) {
+        int num_reqd = 0;
+        for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
+            num_reqd += it->second.numrow;
+        }
+        std::cout << "Expected last row " << A_col_map_size << " got " << BRemote->endRow()
+                  << " requested " << num_reqd << std::endl;
+
+        AMP_ERROR( "BRemote has wrong ending row" );
+    }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>

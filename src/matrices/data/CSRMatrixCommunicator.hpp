@@ -7,13 +7,17 @@ namespace AMP::LinearAlgebra {
 
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::sendMatrices(
-    std::map<int, std::shared_ptr<DiagMatrixData>> matrices )
+    const std::map<int, std::shared_ptr<DiagMatrixData>> &matrices )
 {
+    // At present we allow that the held communication list refer to a
+    // super-set of the communications that need to be sent. First count
+    // how many sources we actually expect
+    countSources( matrices );
+
+    // post all of the sends for the matrices
     AMP_ASSERT( d_send_requests.size() == 0 );
-    std::vector<int> all_dests( d_comm.getSize(), 0 );
     for ( auto it : matrices ) {
         const int dest     = it.first;
-        all_dests[dest]    = 1;
         auto matrix        = it.second;
         const auto num_rs  = matrix->d_num_rows + 1;
         const auto num_nnz = matrix->d_nnz;
@@ -24,9 +28,48 @@ void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::sendMatrices(
         d_send_requests.emplace_back(
             d_comm.Isend( matrix->d_coeffs.get(), num_nnz, dest, COEFF_TAG ) );
     }
-    auto all_sources = d_comm.allToAll( all_dests );
-    d_num_sources    = std::reduce( all_sources.begin(), all_sources.end() );
-    d_send_called    = true;
+    d_send_called = true;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
+void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::countSources(
+    const std::map<int, std::shared_ptr<DiagMatrixData>> &matrices )
+{
+    // verify that send list actually contains all destinations
+    for ( const auto &it : matrices ) {
+        AMP_INSIST( d_allowed_dest.count( it.first ) > 0,
+                    "CSRMatrixCommunicator invalid destination" );
+    }
+
+    // to count sources send an empty message to every rank in our
+    // send-list with tag COMM_USED if we will actually communicate
+    // with them later and tag COMM_UNUSED otherwise
+    std::vector<AMP_MPI::Request> count_dest_reqs;
+    for ( auto r : d_allowed_dest ) {
+        if ( matrices.count( r ) > 0 ) {
+            count_dest_reqs.push_back( d_comm.Isend<char>( nullptr, 0, r, COMM_USED ) );
+        } else {
+            count_dest_reqs.push_back( d_comm.Isend<char>( nullptr, 0, r, COMM_UNUSED ) );
+        }
+    }
+
+    // Similarly, look for messages from all in our recv-list to tell
+    // us what comms will happen.
+    d_num_sources = 0;
+    for ( size_t n = 0; n < d_allowed_source.size(); ++n ) {
+        auto [source, tag, num_bytes] = d_comm.probe( -1, -1 );
+        // test tag and increment num sources if appropriate
+        // don't recv messages that don't have one of these tags
+        if ( tag == COMM_USED ) {
+            d_num_sources++;
+            d_comm.recv<char>( nullptr, 0, source, tag );
+        } else if ( tag == COMM_UNUSED ) {
+            d_comm.recv<char>( nullptr, 0, source, tag );
+        }
+    }
+
+    // wait out the sends and return
+    d_comm.waitAll( static_cast<int>( count_dest_reqs.size() ), count_dest_reqs.data() );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>

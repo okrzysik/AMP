@@ -185,15 +185,13 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::resetDOFManagers()
     // There is no easy way to determine the remote DOFs and comm pattern
     // for the left vector. This side's DOFManager/CommList are rarely used
     // so we only create them if they don't exist
-    bool need_left_dm = !d_leftDOFManager;
-    bool need_left_cl = !d_leftCommList;
-    if ( comm.anyReduce( need_left_cl ) ) {
+    if ( !d_leftCommList ) {
         auto cl_params         = std::make_shared<CommunicationListParameters>();
         cl_params->d_comm      = comm;
         cl_params->d_localsize = d_last_row - d_first_row;
         d_leftCommList         = std::make_shared<CommunicationList>( cl_params );
     }
-    if ( comm.anyReduce( need_left_dm ) ) {
+    if ( !d_leftDOFManager ) {
         d_leftDOFManager =
             std::make_shared<Discretization::DOFManager>( d_last_row - d_first_row, comm );
     }

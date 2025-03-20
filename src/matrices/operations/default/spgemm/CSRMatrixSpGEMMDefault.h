@@ -22,7 +22,7 @@ class CSRMatrixSpGEMMHelperDefault
 public:
     CSRMatrixSpGEMMHelperDefault() = default;
     CSRMatrixSpGEMMHelperDefault( CSRData *A_, CSRData *B_, CSRData *C_ )
-        : A( A_ ), B( B_ ), C( C_ ), comm( A->getComm() ), d_csr_comm( comm )
+        : A( A_ ), B( B_ ), C( C_ ), comm( A->getComm() ), d_csr_comm( A->getRightCommList() )
     {
         AMP_DEBUG_INSIST(
             comm == B->getComm() && comm == C->getComm(),
