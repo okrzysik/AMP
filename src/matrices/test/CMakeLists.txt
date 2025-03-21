@@ -2,9 +2,15 @@
 #  Configure tests
 ############################################################################
 
+# Function to add a serial or 1,2,4 processor test dependent on the existence of a parallel matrix
 FUNCTION( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
-    # We have a parallel matrix
-    ADD_AMP_TEST_1_2_4( ${EXEFILE} ${ARGN} )
+    IF ( USE_TRILINOS )
+        # We have a parallel matrix
+        ADD_AMP_TEST_1_2_4( ${EXEFILE} ${ARGN} )
+    ELSE()
+        # We do not have a parallel matrix
+        ADD_AMP_TEST( ${EXEFILE} ${ARGN} )
+    ENDIF()
 ENDFUNCTION()
 
 
@@ -21,14 +27,13 @@ FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D" DESTINATION 
 FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D_hires" DESTINATION . )
 
 
-# Add matrix tests
+# Add matrix test
 ADD_AMP_TEST_1_2_4( test_Matrix )
 ADD_AMP_TEST_1_2_4( test_MatrixCopy )
 ADD_AMP_TEST_1_2_4( test_RectangularMatricesMultiplication )
 
-ADD_AMP_TEST( testMatConcatenate )
-
 ADD_AMP_TEST_124_MATRIX( testMatMultCoarsen )
+
 ADD_AMP_TEST_124_MATRIX( testMatVecPerf )
 COPY_TEST_FILE( input_testMatVecPerf-1 )
 COPY_TEST_FILE( input_testMatVecPerf-2 )
