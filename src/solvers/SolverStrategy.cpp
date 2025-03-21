@@ -97,7 +97,7 @@ bool SolverStrategy::checkStoppingCriteria( AMP::Scalar res_norm, bool check_ite
     } else if ( check_iters && d_iNumberIterations == d_iMaxIterations ) {
         // allow this check to be ignored if used early in an update step
         // to avoid breaking before a full iteration has been performed
-        d_ConvergenceStatus = SolverStatus::DivergedMaxIterations;
+        d_ConvergenceStatus = SolverStatus::MaxIterations;
         return true;
     } else if ( std::isnan( res_norm_d ) ) {
         d_ConvergenceStatus = SolverStatus::DivergedOnNan;

@@ -16,6 +16,10 @@ std::map<std::string, int> conv_map{
       28 }, // max is 18 looking just at GPU runs...
     { "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG-CG", 11 },
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES", 8 },
+    { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-TFQMR", 5 },
+    { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-BiCGSTAB", 4 },
+    { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-GCR", 24 },
+    //    { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-GMRES", 8 },
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES", 8 },
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB", 4 },
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR", 6 },
