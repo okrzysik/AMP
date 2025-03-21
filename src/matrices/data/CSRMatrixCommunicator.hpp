@@ -36,35 +36,33 @@ void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::countSources(
     const std::map<int, std::shared_ptr<DiagMatrixData>> &matrices )
 {
     // verify that send list actually contains all destinations
-    for ( const auto &it : matrices ) {
-        AMP_INSIST( d_allowed_dest.count( it.first ) > 0,
-                    "CSRMatrixCommunicator invalid destination" );
+    for ( [[maybe_unused]] const auto &it : matrices ) {
+        AMP_DEBUG_INSIST( std::find( d_allowed_dest.begin(), d_allowed_dest.end(), it.first ) !=
+                              d_allowed_dest.end(),
+                          "CSRMatrixCommunicator invalid destination" );
     }
 
     // to count sources send an empty message to every rank in our
     // send-list with tag COMM_USED if we will actually communicate
     // with them later and tag COMM_UNUSED otherwise
     std::vector<AMP_MPI::Request> count_dest_reqs;
-    for ( auto r : d_allowed_dest ) {
-        if ( matrices.count( r ) > 0 ) {
-            count_dest_reqs.push_back( d_comm.Isend<char>( nullptr, 0, r, COMM_USED ) );
-        } else {
-            count_dest_reqs.push_back( d_comm.Isend<char>( nullptr, 0, r, COMM_UNUSED ) );
-        }
+    std::vector<int> dest_used( d_allowed_dest.size() );
+    for ( size_t n = 0; n < d_allowed_dest.size(); ++n ) {
+        const auto r = d_allowed_dest[n];
+        dest_used[n] = matrices.count( r ) > 0 ? 1 : 0;
+        count_dest_reqs.push_back( d_comm.Isend( &dest_used[n], 1, r, COMM_TEST ) );
     }
 
     // Similarly, look for messages from all in our recv-list to tell
     // us what comms will happen.
     d_num_sources = 0;
-    for ( size_t n = 0; n < d_allowed_source.size(); ++n ) {
-        auto [source, tag, num_bytes] = d_comm.probe( -1, -1 );
-        // test tag and increment num sources if appropriate
-        // don't recv messages that don't have one of these tags
-        if ( tag == COMM_USED ) {
+    for ( int n = 0; n < d_num_allowed_sources; ++n ) {
+        auto [source, tag, num_bytes] = d_comm.probe( -1, COMM_TEST );
+        AMP_DEBUG_ASSERT( tag == COMM_TEST );
+        int result = 0;
+        d_comm.recv( &result, 1, source, COMM_TEST );
+        if ( result == 1 ) {
             d_num_sources++;
-            d_comm.recv<char>( nullptr, 0, source, tag );
-        } else if ( tag == COMM_UNUSED ) {
-            d_comm.recv<char>( nullptr, 0, source, tag );
         }
     }
 

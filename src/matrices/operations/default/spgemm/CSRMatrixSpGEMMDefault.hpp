@@ -255,8 +255,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::endBRemote
         for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
             num_reqd += it->second.numrow;
         }
-        std::cout << "Expected last row " << A_col_map_size << " got " << BRemote->endRow()
-                  << " requested " << num_reqd << std::endl;
+        std::cout << "Rank " << comm.getRank() << " expected last row " << A_col_map_size << " got "
+                  << BRemote->endRow() << " requested " << num_reqd << std::endl;
 
         AMP_ERROR( "BRemote has wrong ending row" );
     }

@@ -30,18 +30,21 @@ public:
 
     CSRMatrixCommunicator() = default;
     CSRMatrixCommunicator( std::shared_ptr<CommunicationList> comm_list )
-        : d_comm( comm_list->getComm() ), d_send_called( false ), d_num_sources( 0 )
+        : d_comm( comm_list->getComm() ),
+          d_send_called( false ),
+          d_num_sources( 0 ),
+          d_num_allowed_sources( 0 )
     {
         auto send_sizes = comm_list->getSendSizes();
         for ( int n = 0; n < d_comm.getSize(); ++n ) {
             if ( send_sizes[n] > 0 ) {
-                d_allowed_dest.insert( n );
+                d_allowed_dest.push_back( n );
             }
         }
         auto recv_sizes = comm_list->getReceiveSizes();
         for ( int n = 0; n < d_comm.getSize(); ++n ) {
             if ( recv_sizes[n] > 0 ) {
-                d_allowed_source.insert( n );
+                d_num_allowed_sources++;
             }
         }
     }
@@ -56,18 +59,17 @@ protected:
     AMP_MPI d_comm;
     bool d_send_called;
     int d_num_sources;
-    std::set<int> d_allowed_dest;
-    std::set<int> d_allowed_source;
+    int d_num_allowed_sources;
+    std::vector<int> d_allowed_dest;
 
     std::vector<AMP_MPI::Request> d_send_requests;
     std::vector<AMP_MPI::Request> d_recv_requests;
 
     // tags for each type of message to send/recv
-    static constexpr int COMM_USED   = 5600;
-    static constexpr int COMM_UNUSED = 5601;
-    static constexpr int ROW_TAG     = 5602;
-    static constexpr int COL_TAG     = 5603;
-    static constexpr int COEFF_TAG   = 5604;
+    static constexpr int COMM_TEST = 5600;
+    static constexpr int ROW_TAG   = 5601;
+    static constexpr int COL_TAG   = 5602;
+    static constexpr int COEFF_TAG = 5603;
 };
 } // namespace AMP::LinearAlgebra
 

@@ -123,9 +123,7 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::CSRMatrixData(
     d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
 
     // determine if DOFManagers and CommLists need to be (re)created
-    if ( d_nnz > 0 ) {
-        resetDOFManagers();
-    }
+    resetDOFManagers();
 
     d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
 }
