@@ -223,15 +223,31 @@ void testAXPY( AMP::UnitTest *ut,
 
     xX->setToScalar( 1.0 );
     xX->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+#if 1
+    auto xr = xX->cloneVector();
+    xr - zero();
+    X->mult( xX, xr );
+#else
     yX->zero();
-    xY->copyVector( xX );
-    yY->zero();
     X->mult( xX, yX );
+#endif
+
+    xY->copyVector( xX );
+
+#if 1
+    auto yr = xY->cloneVector();
+    yr->zero();
+    Y->mult( xY, yr );
+#else
+    yY->zero();
     Y->mult( xY, yY );
+#endif
+
     // Check pL * one + (-pL*one) = 0
-    auto z = X->getLeftVector();
+    //    auto z = X->getLeftVector();
+    auto z = X->getRightVector();
     z->zero();
-    z->add( *yX, *yY );
+    z->add( *xr, *yr );
     auto norm = static_cast<double>( z->L1Norm() );
     if ( norm < std::numeric_limits<scalar_t>::epsilon() )
         ut->passes( type + ": AXPY succeeded" );
