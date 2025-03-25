@@ -1,5 +1,6 @@
 #include "test_Matrix.h"
 
+#include "AMP/AMP_TPLs.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/testHelpers/MatrixTests.h"
 #include "AMP/utils/AMPManager.h"
