@@ -264,11 +264,12 @@ int main( int argc, char *argv[] )
     }
 
     std::vector<AMP::Utilities::Backend> backends;
+    backends.emplace_back( AMP::Utilities::Backend::serial );
+#if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     backends.emplace_back( AMP::Utilities::Backend::kokkos );
+#endif
 #ifdef USE_DEVICE
     backends.emplace_back( AMP::Utilities::Backend::hip_cuda );
-#else
-    backends.emplace_back( AMP::Utilities::Backend::serial );
 #endif
 
     for ( auto &backend : backends ) {

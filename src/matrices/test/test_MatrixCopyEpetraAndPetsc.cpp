@@ -9,6 +9,26 @@
 using namespace AMP::LinearAlgebra;
 
 
+void test_MatricCopyEpetraAndPetsc( AMP::UnitTest &ut )
+{
+    using DOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>>;
+
+#if defined( AMP_USE_PETSC )
+    auto NativePetscFactoryDOF1 = std::make_shared<DOF1>( "NativePetscMatrix" );
+#endif
+
+#if defined( AMP_USE_TRILINOS )
+    auto EpetraFactory = std::make_shared<DOF1>( "ManagedEpetraMatrix" );
+
+    #if defined( AMP_USE_PETSC )
+    test_matrix_loop( ut, NativePetscFactoryDOF1, EpetraFactory );
+    test_matrix_loop( ut, EpetraFactory, NativePetscFactoryDOF1 );
+    // Test the ManagedPetscMatrix -- TODO
+    #endif
+#endif
+}
+
+
 int main( int argc, char **argv )
 {
 
@@ -18,22 +38,10 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE();
 
-#if defined( AMP_USE_PETSC )
-    using NativePetscFactoryDOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 3>;
-#endif
-
-#if defined( AMP_USE_TRILINOS )
-    using EpetraFactory = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 1>;
-
-    #if defined( AMP_USE_PETSC )
-    test_matrix_loop<NativePetscFactoryDOF1, EpetraFactory>( ut );
-    test_matrix_loop<EpetraFactory, NativePetscFactoryDOF1>( ut );
-    // Test the ManagedPetscMatrix -- TODO
-    #endif
-#endif
+    test_MatricCopyEpetraAndPetsc( ut );
 
     ut.report();
-    PROFILE_SAVE( "test_MatrixCopy" );
+    PROFILE_SAVE( "test_MatrixCopyPetscAndCSR" );
     int num_failed = ut.NumFailGlobal();
     ut.reset();
     AMP::AMPManager::shutdown();

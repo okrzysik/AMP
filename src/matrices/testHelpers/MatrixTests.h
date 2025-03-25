@@ -19,7 +19,7 @@ void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix
 
 /**
  * \class MatrixFactory
- * \brief A helper class to generate vectors
+ * \brief A helper class to generate matricies
  */
 class MatrixFactory
 {
@@ -31,11 +31,14 @@ public:
     virtual std::shared_ptr<AMP::Discretization::DOFManager> getDOFMap() const  = 0;
     virtual std::shared_ptr<AMP::Discretization::DOFManager> getDOFMapL() const = 0;
     virtual std::string name() const                                            = 0;
-    virtual std::string type() const                                            = 0;
+    std::string type() const { return d_type; }
 
 protected:
-    MatrixFactory() {}
+    MatrixFactory( const std::string &type ) : d_type( type ) {}
     MatrixFactory( const MatrixFactory & );
+
+protected:
+    const std::string d_type;
 };
 
 
@@ -46,9 +49,8 @@ protected:
 class MatrixTests
 {
 public:
-    explicit MatrixTests( std::shared_ptr<const MatrixFactory> factory ) : d_factory( factory ) {}
     explicit MatrixTests( std::shared_ptr<const MatrixFactory> factory,
-                          std::shared_ptr<const MatrixFactory> copy_factory )
+                          std::shared_ptr<const MatrixFactory> copy_factory = nullptr )
         : d_factory( factory ), d_copy_factory( copy_factory )
     {
     }
@@ -78,27 +80,13 @@ private:
 void test_matrix_loop( AMP::UnitTest &ut, std::shared_ptr<MatrixTests> tests );
 
 
-template<typename FACTORY>
-void test_matrix_loop( AMP::UnitTest &ut )
-{
-    auto factory     = std::make_shared<FACTORY>();
-    std::string name = factory->name();
-    PROFILE2( name );
-    auto tests = std::make_shared<MatrixTests>( factory );
-    test_matrix_loop( ut, tests );
-}
+void test_matrix_loop( AMP::UnitTest &ut,
+                       std::shared_ptr<MatrixFactory> factory,
+                       std::shared_ptr<MatrixFactory> copy_factory = nullptr );
 
-template<typename FACTORY1, typename FACTORY2>
-void test_matrix_loop( AMP::UnitTest &ut )
-{
-    auto factory          = std::make_shared<FACTORY1>();
-    std::string name      = factory->name();
-    auto copy_factory     = std::make_shared<FACTORY2>();
-    std::string copy_name = copy_factory->name();
-    PROFILE2( name + copy_name );
-    auto tests = std::make_shared<MatrixTests>( factory, copy_factory );
-    test_matrix_loop( ut, tests );
-}
+
+void testBasics( AMP::UnitTest &ut, const std::string &type );
+
 
 } // namespace AMP::LinearAlgebra
 

@@ -9,6 +9,29 @@
 using namespace AMP::LinearAlgebra;
 
 
+void test_MatricCopyEpetraAndCSR( AMP::UnitTest &ut )
+{
+    using DOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>>;
+
+    auto CSRFactoryDOF1 = std::make_shared<DOF1>( "CSRMatrix" );
+
+#if defined( AMP_USE_TRILINOS )
+    auto EpetraFactory = std::make_shared<DOF1>( "ManagedEpetraMatrix" );
+    test_matrix_loop( ut, CSRFactoryDOF1, EpetraFactory );
+    test_matrix_loop( ut, EpetraFactory, CSRFactoryDOF1 );
+
+    #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
+    using libmeshFactory       = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>>;
+    auto EpetraLibmeshFactory  = std::make_shared<libmeshFactory>( "ManagedEpetraMatrix" );
+    auto CSRLibmeshFactoryDOF3 = std::make_shared<libmeshFactory>( "CSRMatrix" );
+    test_matrix_loop( ut, EpetraLibmeshFactory, CSRLibmeshFactoryDOF3 );
+    test_matrix_loop( ut, CSRLibmeshFactoryDOF3, EpetraLibmeshFactory );
+    #endif
+
+#endif
+}
+
+
 int main( int argc, char **argv )
 {
 
@@ -18,24 +41,10 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE();
 
-    using CSRFactoryDOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 4>;
-
-#if defined( AMP_USE_TRILINOS )
-    using EpetraFactory = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 1>;
-    test_matrix_loop<CSRFactoryDOF1, EpetraFactory>( ut );
-    test_matrix_loop<EpetraFactory, CSRFactoryDOF1>( ut );
-
-    #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
-    using EpetraLibmeshFactory  = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 1>;
-    using CSRLibmeshFactoryDOF3 = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 4>;
-    test_matrix_loop<EpetraLibmeshFactory, CSRLibmeshFactoryDOF3>( ut );
-    test_matrix_loop<CSRLibmeshFactoryDOF3, EpetraLibmeshFactory>( ut );
-    #endif
-
-#endif
+    test_MatricCopyEpetraAndCSR( ut );
 
     ut.report();
-    PROFILE_SAVE( "test_MatrixCopyEpetraAndCSR" );
+    PROFILE_SAVE( "test_MatrixCopyPetscAndCSR" );
     int num_failed = ut.NumFailGlobal();
     ut.reset();
     AMP::AMPManager::shutdown();
