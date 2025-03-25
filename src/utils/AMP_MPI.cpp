@@ -1534,47 +1534,54 @@ std::vector<int> AMP_MPI::waitSome( int count, const Request *request )
  *  Probe functions                                                      *
  ************************************************************************/
 #ifdef AMP_USE_MPI
-int AMP_MPI::Iprobe( int source, int tag ) const
+std::tuple<int, int, int> AMP_MPI::Iprobe( int source, int tag ) const
 {
     AMP_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    AMP_INSIST( tag >= 0, "tag must be >= 0" );
+    // set tag and source to wildcards if appropriate
+    source = source >= 0 ? source : MPI_ANY_SOURCE;
+    tag    = tag >= 0 ? tag : MPI_ANY_TAG;
     MPI_Status status;
     int flag = 0;
     MPI_Iprobe( source, tag, d_comm, &flag, &status );
-    if ( flag == 0 )
-        return -1;
+    if ( flag == 0 ) {
+        return std::make_tuple<int, int, int>( -1, -1, -1 );
+    }
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
     AMP_ASSERT( count >= 0 );
-    return count;
+    return std::make_tuple<int, int, int>(
+        int( status.MPI_SOURCE ), int( status.MPI_TAG ), int( count ) );
 }
-int AMP_MPI::probe( int source, int tag ) const
+std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
 {
     AMP_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    AMP_INSIST( tag >= 0, "tag must be >= 0" );
+    // set tag and source to wildcards if appropriate
+    source = source >= 0 ? source : MPI_ANY_SOURCE;
+    tag    = tag >= 0 ? tag : MPI_ANY_TAG;
     MPI_Status status;
     MPI_Probe( source, tag, d_comm, &status );
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
     AMP_ASSERT( count >= 0 );
-    return count;
+    return std::make_tuple<int, int, int>(
+        int( status.MPI_SOURCE ), int( status.MPI_TAG ), int( count ) );
 }
 #else
-int AMP_MPI::Iprobe( int source, int tag ) const
+std::tuple<int, int, int> AMP_MPI::Iprobe( int source, int tag ) const
 {
     AMP_ASSERT( source == 0 || source < -1 );
     for ( const auto &tmp : global_isendrecv_list ) {
         const auto &data = tmp.second;
         if ( data.comm == d_comm && ( data.tag == tag || tag == -1 ) && data.status == 1 )
-            return data.bytes;
+            return std::make_tuple<int, int, int>( int( source ), int( tag ), int( data.bytes ) );
     }
-    return -1;
+    return std::make_tuple<int, int, int>( int( source ), int( tag ), -1 );
 }
-int AMP_MPI::probe( int source, int tag ) const
+std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
 {
-    int bytes = Iprobe( source, tag );
-    AMP_INSIST( bytes >= 0, "probe called before message started in serial" );
-    return bytes;
+    auto tpl = Iprobe( source, tag );
+    AMP_INSIST( std::get<2>( tpl ) >= 0, "probe called before message started in serial" );
+    return tpl;
 }
 #endif
 

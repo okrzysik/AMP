@@ -711,9 +711,9 @@ void AMP_MPI::recv( TYPE *buf, int &length, int send_proc, bool get_length, int 
     PROFILE( "recv", profile_level );
     // Get the receive length if necessary
     if ( get_length ) {
-        int bytes       = probe( send_proc, tag );
+        int bytes       = std::get<2>( probe( send_proc, tag ) );
         int recv_length = bytes / sizeof( TYPE );
-        AMP_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
+        AMP_INSIST( length >= recv_length, "Received length is larger than allocated array" );
         length = recv_length;
     }
     // Receive the data
@@ -730,8 +730,8 @@ void AMP_MPI::recv( TYPE *buf, int &length, int send_proc, bool get_length, int 
         buf->reset( new TYPE2() );
         recv( buf->get(), length, send_proc, false, tag );
     } else {
-        size_t bytes = probe( send_proc, tag );
-        auto buf2    = new std::byte[bytes];
+        auto bytes = static_cast<size_t>( std::get<2>( probe( send_proc, tag ) ) );
+        auto buf2  = new std::byte[bytes];
         MPI_Recv2( buf2, bytes, AMP_MPI_BYTE, send_proc, tag, d_comm );
         size_t N = unpackArray( buf, length, buf2 );
         delete[] buf2;

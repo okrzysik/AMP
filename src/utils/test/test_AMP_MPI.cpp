@@ -604,7 +604,7 @@ int testSendRecv( MPI_CLASS comm, UnitTest &ut, type v1, type v2 )
                 comm.send( &x, 0, j, tag );
             } else if ( j == comm.getRank() ) {
                 // We are recieving
-                int size = comm.probe( i, tag );
+                int size = std::get<2>( comm.probe( i, tag ) );
                 comm.recv( &x, size, i, false, tag );
                 record( ut, size == 0, msg );
             }
