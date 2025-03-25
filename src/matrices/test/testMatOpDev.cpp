@@ -218,13 +218,14 @@ void testAXPY( AMP::UnitTest *ut,
 
     // X = Y = pL
     // X = -2Y + X = -pL
-    double alpha = -2.;
+    scalar_t alpha = -2.;
     X->axpy( alpha, Y );
 
     xX->setToScalar( 1.0 );
     xX->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     yX->zero();
     xY->copyVector( xX );
+    xY->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     yY->zero();
     X->mult( xX, yX );
     Y->mult( xY, yY );
