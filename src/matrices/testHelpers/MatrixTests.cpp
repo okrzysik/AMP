@@ -10,6 +10,22 @@
 namespace AMP::LinearAlgebra {
 
 
+void testBasics( AMP::UnitTest &ut, const std::string &type )
+{
+    // Test creating a non-square matrix and ensure it is the proper size
+    auto left  = AMP::LinearAlgebra::createSimpleVector<double>( 5, "left" );
+    auto right = AMP::LinearAlgebra::createSimpleVector<double>( 10, "right" );
+    auto mat   = AMP::LinearAlgebra::createMatrix(
+        right, left, type, []( size_t row ) { return std::vector<size_t>( 1, row ); } );
+    int rows = mat->numGlobalRows();
+    int cols = mat->numGlobalColumns();
+    if ( rows == 5 && cols == 10 )
+        ut.passes( "Created non-square matrix (" + type + ")" );
+    else
+        ut.failure( "Failed non-square matrix (" + type + ")" );
+}
+
+
 void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
                               std::shared_ptr<AMP::Discretization::DOFManager> dofmap )
 {
@@ -78,6 +94,7 @@ MatrixTests::getCopyMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
     // if the copy factory does not exist return the input matrix
     if ( d_copy_factory ) {
         auto copyMatrix = d_copy_factory->getMatrix();
+        copyMatrix->zero(); // src and dst matricies may store zeros differently
         copyMatrix->copy( matrix );
         return copyMatrix;
     } else {
@@ -614,5 +631,19 @@ void test_matrix_loop( AMP::UnitTest &ut, std::shared_ptr<MatrixTests> tests )
     tests->VerifyMatMultMatrix( &ut );
     tests->VerifyAddElementNode( &ut );
 }
+
+
+void test_matrix_loop( AMP::UnitTest &ut,
+                       std::shared_ptr<MatrixFactory> factory,
+                       std::shared_ptr<MatrixFactory> copy_factory )
+{
+    std::string name = factory->name();
+    if ( copy_factory )
+        name += "->" + copy_factory->name();
+    PROFILE2( name );
+    auto tests = std::make_shared<MatrixTests>( factory, copy_factory );
+    test_matrix_loop( ut, tests );
+}
+
 
 } // namespace AMP::LinearAlgebra
