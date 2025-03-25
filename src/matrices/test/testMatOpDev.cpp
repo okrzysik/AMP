@@ -224,7 +224,7 @@ void testAXPY( AMP::UnitTest *ut,
     xX->setToScalar( 1.0 );
     xX->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 #if 1
-    auto xr = xX->cloneVector();
+    auto xr = xX->clone();
     xr->zero();
     X->mult( xX, xr );
 #else
@@ -235,7 +235,7 @@ void testAXPY( AMP::UnitTest *ut,
     xY->copyVector( xX );
 
 #if 1
-    auto yr = xY->cloneVector();
+    auto yr = xY->clone();
     yr->zero();
     Y->mult( xY, yr );
 #else
