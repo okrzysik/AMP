@@ -127,6 +127,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
 
     // for each row in A block
     for ( lidx_t row = 0; row < nRows; ++row ) {
+        auto &C_row = C_cols[row];
         // get rows in B block from the A column indices
         for ( lidx_t j = A_rs[row]; j < A_rs[row + 1]; ++j ) {
             auto Acl = A_cols_loc[j];
@@ -134,7 +135,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
             for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
                 const auto bc = B_to_global( k );
                 if ( idx_test( bc ) ) {
-                    C_cols[row].insert( bc );
+                    C_row.insert( bc );
                 }
             }
         }
