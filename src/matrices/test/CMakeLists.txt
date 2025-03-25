@@ -40,5 +40,5 @@ ENDIF()
 IF ( USE_TRILINOS ) 
     ADD_AMP_TEST( test_Epetra_FECrsMatrix_bug PROCS 2 )
 ENDIF()
-
+ADD_AMP_PROVISIONAL_TEST( test_MatMultNonZeros )
 
