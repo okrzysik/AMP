@@ -218,7 +218,7 @@ void testAXPY( AMP::UnitTest *ut,
 
     // X = Y = pL
     // X = -2Y + X = -pL
-    double alpha = -2.;
+    scalar_t alpha = -2.;
     X->axpy( alpha, Y );
 
     rX->setToScalar( 1.0 );
@@ -235,6 +235,7 @@ void testAXPY( AMP::UnitTest *ut,
     auto z = X->getLeftVector();
     z->zero();
     z->add( *lX, *lY );
+
     auto norm = static_cast<double>( z->L1Norm() );
     if ( norm < std::numeric_limits<scalar_t>::epsilon() )
         ut->passes( type + ": AXPY succeeded" );
