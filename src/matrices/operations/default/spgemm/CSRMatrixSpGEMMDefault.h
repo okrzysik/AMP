@@ -1,6 +1,7 @@
 #ifndef included_AMP_CSRMatrixSpGEMMDefault
 #define included_AMP_CSRMatrixSpGEMMDefault
 
+#include "AMP/matrices/data/CSRMatrixCommunicator.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/utils/AMP_MPI.h"
 
@@ -21,7 +22,7 @@ class CSRMatrixSpGEMMHelperDefault
 public:
     CSRMatrixSpGEMMHelperDefault() = default;
     CSRMatrixSpGEMMHelperDefault( CSRData *A_, CSRData *B_, CSRData *C_ )
-        : A( A_ ), B( B_ ), C( C_ ), comm( A->getComm() )
+        : A( A_ ), B( B_ ), C( C_ ), comm( A->getComm() ), d_csr_comm( A->getRightCommList() )
     {
         AMP_DEBUG_INSIST(
             comm == B->getComm() && comm == C->getComm(),
@@ -51,12 +52,8 @@ protected:
                           std::shared_ptr<BMatrixData> B_data,
                           std::shared_ptr<CMatrixData> C_data );
 
-    // This plans all communication needed for BRemote creation
-    void createBRemoteCommInfo();
-
-    // This uses comm info from createBRemoteCommInfo to
-    // set pattern of BRemote and trigger all internal allocations
-    void createBRemoteSymbolic();
+    void startBRemoteComm();
+    void endBRemoteComm();
 
     // This only (re-)fills the coefficients in BRemote
     // the comm info and symbolic creation must have already happened
@@ -70,6 +67,7 @@ protected:
 
     // Communicator
     AMP_MPI comm;
+    CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData> d_csr_comm;
 
     // Matrix data formed from remote rows of B that get pulled to each process
     // This is a single block for all columns in remote rows. It is much easier
@@ -88,12 +86,9 @@ protected:
         // number of rows to send or receive
         int numrow;
         // ids of rows to send/receive
-        std::vector<lidx_t> rowids;
+        std::vector<gidx_t> rowids;
         // number of non-zeros in those rows
         std::vector<lidx_t> rownnz;
-        // where to put each row in BRemote
-        // only used by d_src_info
-        std::vector<lidx_t> brow;
     };
 
     // Source information, things expected from other ranks
@@ -101,6 +96,9 @@ protected:
 
     // Destination information, things sent to other ranks
     std::map<int, SpGEMMCommInfo> d_dest_info;
+
+    std::map<int, std::shared_ptr<DiagMatrixData>> d_send_matrices;
+    std::map<int, std::shared_ptr<DiagMatrixData>> d_recv_matrices;
 };
 
 } // namespace AMP::LinearAlgebra
