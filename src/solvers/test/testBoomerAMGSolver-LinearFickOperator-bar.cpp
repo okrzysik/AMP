@@ -49,16 +49,12 @@ void linearFickTest( AMP::UnitTest *ut )
     // Print from all cores into the output files
     AMP::logAllNodes( log_file );
 
-    AMP::pout << "POS 1" << std::endl;
-
     //   Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
-
-    AMP::pout << "POS 2" << std::endl;
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
@@ -67,15 +63,11 @@ void linearFickTest( AMP::UnitTest *ut )
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
-    AMP::pout << "POS 3" << std::endl;
-
     // CREATE THE DIFFUSION OPERATOR
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
-
-    AMP::pout << "POS 4" << std::endl;
 
     auto SolutionVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
@@ -84,18 +76,12 @@ void linearFickTest( AMP::UnitTest *ut )
     auto ResidualVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
-    AMP::pout << "POS 5" << std::endl;
-
     RightHandSideVec->setToScalar( 0. );
 
     auto boundaryOp = diffusionOperator->getBoundaryOperator();
 
-    AMP::pout << "POS 6" << std::endl;
-
     boundaryOp->addRHScorrection( RightHandSideVec );
     boundaryOp->setRHScorrection( RightHandSideVec );
-
-    AMP::pout << "POS 7" << std::endl;
 
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
