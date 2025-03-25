@@ -110,12 +110,14 @@ VolumeIntegralOperator{
 }
 
 LinearSolver{
-  name = "TFQMRSolver"
+  name = "CGSolver"
+  variant = "fcg"
+  max_dimension = 3
   uses_preconditioner = FALSE
-  max_iterations = 25
   absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-11
-  print_info_level = 0
+  relative_tolerance = 1.0e-12
+  print_info_level = 2
+  max_iterations = 100
 }
 
 SourcePhysicsModel {

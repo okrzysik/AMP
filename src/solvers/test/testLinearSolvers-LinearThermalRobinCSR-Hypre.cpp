@@ -43,7 +43,9 @@
 
 #include "reference_solver_solutions_hypre.h"
 
-void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
+void linearThermalTest( AMP::UnitTest *ut,
+                        const std::string &inputFileName,
+                        AMP::Utilities::Backend backend )
 {
     // Input and output file names
     std::string input_file = inputFileName;
@@ -182,6 +184,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto csrParams = std::make_shared<AMP::LinearAlgebra::RawCSRMatrixParameters<Policy>>(
         startRow, endRow, startCol, endCol, pars_d, pars_od, comm );
 
+    csrParams->d_backend = backend;
+
 #ifdef USE_DEVICE
     using Alloc = AMP::ManagedAllocator<void>;
 #else
@@ -235,10 +239,19 @@ int main( int argc, char *argv[] )
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-IPCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG-FCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-GCR" );
+        //        files.emplace_back(
+        //        "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-GMRES" );
+        files.emplace_back(
+            "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-TFQMR" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
@@ -250,8 +263,18 @@ int main( int argc, char *argv[] )
 #endif
     }
 
-    for ( auto &file : files )
-        linearThermalTest( &ut, file );
+    std::vector<AMP::Utilities::Backend> backends;
+    backends.emplace_back( AMP::Utilities::Backend::kokkos );
+#ifdef USE_DEVICE
+    backends.emplace_back( AMP::Utilities::Backend::hip_cuda );
+#else
+    backends.emplace_back( AMP::Utilities::Backend::serial );
+#endif
+
+    for ( auto &backend : backends ) {
+        for ( auto &file : files )
+            linearThermalTest( &ut, file, backend );
+    }
 
     ut.report();
 

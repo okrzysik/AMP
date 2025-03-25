@@ -84,7 +84,7 @@ DiffusionTransportModel1 {
      name="DiffusionTransportModel"
      Material = "Independent"
      Property = "ThermalConductivity"
-        Default_Concentration = .1
+     Default_Concentration = .1
      Default_Temperature   = 300.
      Default_Burnup   = 0.0
    }
@@ -102,7 +102,7 @@ VolumeIntegralOperator{
   LocalModel = "SourcePhysicsModel"
   SourceElement {
     name="SourceNonlinearElement"
-      FE_ORDER = "FIRST"  
+    FE_ORDER = "FIRST"  
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"
@@ -110,12 +110,23 @@ VolumeIntegralOperator{
 }
 
 LinearSolver{
-  name = "TFQMRSolver"
-  uses_preconditioner = FALSE
-  max_iterations = 25
-  absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-11
+  name = "CGSolver"
+  variant = "fcg"
+  max_dimension = 3
+  uses_preconditioner = TRUE
+  print_info_level = 2
+  max_iterations = 10
+  max_error = 1e-10
+}
+
+Preconditioner{
+  name = "TrilinosMLSolver"
   print_info_level = 0
+  max_iterations = 1
+  problem_symmetric =TRUE
+  smoother_preorpost = "both"
+  smoother_sweeps = 2
+  coarse_maxsize = 10  
 }
 
 SourcePhysicsModel {

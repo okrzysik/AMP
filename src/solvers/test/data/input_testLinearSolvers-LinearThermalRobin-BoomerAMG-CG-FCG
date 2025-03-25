@@ -110,12 +110,37 @@ VolumeIntegralOperator{
 }
 
 LinearSolver{
-  name = "TFQMRSolver"
-  uses_preconditioner = FALSE
-  max_iterations = 25
+  name = "CGSolver"
+  variant = "fcg"
+  max_dimension = 3
+  uses_preconditioner = TRUE
+  pc_solver_name = "CG"
   absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-11
+  relative_tolerance = 1.0e-12
+  max_iterations = 25
+  print_info_level = 2
+}
+
+CG{
+  name = "CGSolver"
+  variant = "pcg"
+  uses_preconditioner = TRUE
+  relative_tolerance = 1.0e-02
+  max_iterations = 3
   print_info_level = 0
+}
+
+Preconditioner{
+  name = "BoomerAMGSolver"
+  max_iterations = 1
+  max_error = 1e-10
+  min_coarse_size = 10
+  strong_threshold = 0.5
+  cycle_type = 1
+  relax_type = 16
+  coarsen_type = 10
+  interp_type = 17
+  relax_order = 0
 }
 
 SourcePhysicsModel {

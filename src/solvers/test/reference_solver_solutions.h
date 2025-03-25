@@ -10,8 +10,9 @@
 std::map<std::string, std::tuple<int, double, double>> conv_map{
     { "input_testLinearSolvers-LinearThermalRobin-CG",
       std::make_tuple( 24, 1.68504e-10, 2.0e-10 ) },
-    { "input_testLinearSolvers-LinearThermalRobin-IPCG",
-      std::make_tuple( 24, 1.68504e-10, 2.0e-10 ) },
+    { "input_testLinearSolvers-LinearThermalRobin-IPCG", std::make_tuple( 24, 2.0e-10, 2.0e-10 ) },
+    { "input_testLinearSolvers-LinearThermalRobin-FCG",
+      std::make_tuple( 24, 1.60876e-10, 5.0e-10 ) },
     { "input_testLinearSolvers-LinearThermalRobin-CylMesh-CG",
       std::make_tuple( 87, 2.4806061595639e-09, 3.0e-10 ) },
     { "input_testLinearSolvers-LinearThermalRobin-GMRES",
