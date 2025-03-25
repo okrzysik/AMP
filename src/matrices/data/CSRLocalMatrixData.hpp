@@ -349,6 +349,8 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
     for ( lidx_t row = 0; row < d_num_rows; ++row ) {
         const auto rs      = d_row_starts[row];
         const auto row_len = d_row_starts[row + 1] - rs;
+        if ( row_len == 0 )
+            continue;
 
         // enlarge temp vector of tuples if needed
         if ( row_len > static_cast<lidx_t>( rTpl.size() ) ) {
@@ -363,16 +365,16 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
         // slightly different sorting criteria for on and off diagonal blocks
         if ( d_is_diag ) {
             // diag block puts diag entry first, then ascending order on local col
-            std::sort( rTpl.begin(),
-                       rTpl.begin() + row_len,
+            std::sort( rTpl.data(),
+                       rTpl.data() + row_len,
                        [row]( const tuple_t &a, const tuple_t &b ) -> bool {
                            const lidx_t lca = std::get<0>( a ), lcb = std::get<0>( b );
                            return row != lcb && ( lca < lcb || lca == row );
                        } );
         } else {
             // offd block is plain ascending order on local col
-            std::sort( rTpl.begin(),
-                       rTpl.begin() + row_len,
+            std::sort( rTpl.data(),
+                       rTpl.data() + row_len,
                        []( const tuple_t &a, const tuple_t &b ) -> bool {
                            return std::get<0>( a ) < std::get<0>( b );
                        } );
