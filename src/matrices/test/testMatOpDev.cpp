@@ -232,10 +232,13 @@ void testAXPY( AMP::UnitTest *ut,
     auto z = X->getLeftVector();
     z->zero();
     z->add( *yX, *yY );
-    if ( z->L1Norm() < std::numeric_limits<scalar_t>::epsilon() )
+    auto norm = static_cast<double>( z->L1Norm() );
+    if ( norm < std::numeric_limits<scalar_t>::epsilon() )
         ut->passes( type + ": AXPY succeeded" );
-    else
+    else {
+        AMP::pout << "L1 norm of difference is  " << norm << std::endl;
         ut->failure( type + ": AXPY failed" );
+    }
 }
 
 template<typename Policy, class Allocator>
