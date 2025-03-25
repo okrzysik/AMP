@@ -246,11 +246,14 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
     std::vector<lidx_t> row_nnz;
     for ( auto it : blocks ) {
         block = it.second;
-        AMP_INSIST( first_col == block->d_first_col && last_col == block->d_last_col,
-                    "Blocks to concatenate must have compatible layouts" );
-        AMP_INSIST( block->d_cols.get(), "Blocks to concatenate must have global columns" );
         AMP_INSIST( mem_loc == block->d_memory_location,
                     "Blocks to concatenate must be in same memory space" );
+        AMP_INSIST( first_col == block->d_first_col && last_col == block->d_last_col,
+                    "Blocks to concatenate must have compatible layouts" );
+        if ( !block->d_is_empty ) {
+            AMP_INSIST( block->d_cols.get(),
+                        "Non-empty blocks to concatenate must have accessible global columns" );
+        }
         for ( lidx_t row = 0; row < block->d_num_rows; ++row ) {
             row_nnz.push_back( block->d_row_starts[row + 1] - block->d_row_starts[row] );
         }
@@ -265,14 +268,16 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
     lidx_t cat_row = 0;
     for ( auto it : blocks ) {
         block = it.second;
-        for ( lidx_t brow = 0; brow < block->d_num_rows; ++brow ) {
-            lidx_t cat_pos = concat_matrix->d_row_starts[cat_row];
-            for ( auto n = block->d_row_starts[brow]; n < block->d_row_starts[brow + 1]; ++n ) {
-                concat_matrix->d_cols[cat_pos]   = block->d_cols[n];
-                concat_matrix->d_coeffs[cat_pos] = block->d_coeffs[n];
-                cat_pos++;
+        if ( !block->d_is_empty ) {
+            for ( lidx_t brow = 0; brow < block->d_num_rows; ++brow ) {
+                lidx_t cat_pos = concat_matrix->d_row_starts[cat_row];
+                for ( auto n = block->d_row_starts[brow]; n < block->d_row_starts[brow + 1]; ++n ) {
+                    concat_matrix->d_cols[cat_pos]   = block->d_cols[n];
+                    concat_matrix->d_coeffs[cat_pos] = block->d_coeffs[n];
+                    cat_pos++;
+                }
+                cat_row++;
             }
-            cat_row++;
         }
     }
 
