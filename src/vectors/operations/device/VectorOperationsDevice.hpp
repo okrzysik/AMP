@@ -124,11 +124,11 @@ void VectorOperationsDevice<TYPE>::copy( const VectorData &x, VectorData &y )
         auto N     = y.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::copy( N, xdata, ydata );
         deviceSynchronize();
+        y.copyGhostValues( x );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->copy( x, y );
     }
-    y.copyGhostValues( x );
 }
 
 template<typename TYPE>
