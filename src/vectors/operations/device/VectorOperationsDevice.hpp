@@ -128,6 +128,7 @@ void VectorOperationsDevice<TYPE>::copy( const VectorData &x, VectorData &y )
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->copy( x, y );
     }
+    y.copyGhostValues( x );
 }
 
 template<typename TYPE>

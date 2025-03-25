@@ -203,13 +203,13 @@ void testAXPY( AMP::UnitTest *ut,
     using scalar_t = typename Policy::scalar_t;
 
     std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> X = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> xX                      = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> yX                      = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, X, xX, yX );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> rX                      = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> lX                      = nullptr;
+    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, X, rX, lX );
     std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> Y = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> xY                      = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> yY                      = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, Y, xY, yY );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> rY                      = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> lY                      = nullptr;
+    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, Y, rY, lY );
 
     fillWithPseudoLaplacian( X, dofManager );
     X->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -221,33 +221,20 @@ void testAXPY( AMP::UnitTest *ut,
     double alpha = -2.;
     X->axpy( alpha, Y );
 
-    xX->setToScalar( 1.0 );
-    xX->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-#if 1
-    auto xr = xX->clone();
-    xr->zero();
-    X->mult( xX, xr );
-#else
-    yX->zero();
-    X->mult( xX, yX );
-#endif
+    rX->setToScalar( 1.0 );
+    rX->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    lX->zero();
+    X->mult( rX, lX );
 
-    xY->copyVector( xX );
+    rY->copyVector( rX );
 
-#if 1
-    auto yr = xY->clone();
-    yr->zero();
-    Y->mult( xY, yr );
-#else
-    yY->zero();
-    Y->mult( xY, yY );
-#endif
+    lY->zero();
+    Y->mult( rY, lY );
 
     // Check pL * one + (-pL*one) = 0
-    //    auto z = X->getLeftVector();
-    auto z = X->getRightVector();
+    auto z = X->getLeftVector();
     z->zero();
-    z->add( *xr, *yr );
+    z->add( *lX, *lY );
     auto norm = static_cast<double>( z->L1Norm() );
     if ( norm < std::numeric_limits<scalar_t>::epsilon() )
         ut->passes( type + ": AXPY succeeded" );
