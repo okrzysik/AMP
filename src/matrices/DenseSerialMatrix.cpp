@@ -74,6 +74,7 @@ void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
     d_matrixOps->matMultiply( *getMatrixData(), *other_op->getMatrixData(), *newData );
 }
 
+
 /********************************************************
  * Get/Set the diagonal                                  *
  ********************************************************/
