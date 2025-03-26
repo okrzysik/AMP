@@ -67,7 +67,9 @@ void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::countSources(
     }
 
     // wait out the sends and return
-    d_comm.waitAll( static_cast<int>( count_dest_reqs.size() ), count_dest_reqs.data() );
+    if ( count_dest_reqs.size() > 0 ) {
+        d_comm.waitAll( static_cast<int>( count_dest_reqs.size() ), count_dest_reqs.data() );
+    }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
@@ -122,7 +124,9 @@ CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::recvMatrices(
     }
 
     // enaure that any outstanding sends complete
-    d_comm.waitAll( static_cast<int>( d_send_requests.size() ), d_send_requests.data() );
+    if ( d_send_requests.size() > 0 ) {
+        d_comm.waitAll( static_cast<int>( d_send_requests.size() ), d_send_requests.data() );
+    }
 
     // comm done, reset send flag in case this gets re-used
     d_send_called = false;

@@ -309,6 +309,9 @@ protected:
     //!  Update matrix data off-core
     void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &,
                        AMP::LinearAlgebra::ScatterType );
+
+    std::shared_ptr<DiagMatrixData>
+    transposeOffd( std::shared_ptr<MatrixParametersBase> params ) const;
 };
 
 template<typename Policy, class Allocator, class DiagMatrixData>
