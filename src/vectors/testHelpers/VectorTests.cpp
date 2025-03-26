@@ -33,7 +33,7 @@ namespace AMP::LinearAlgebra {
 static double getTol( const Vector &x )
 {
     double tol = 0;
-    for ( size_t i=0; i<x.numberOfDataBlocks(); i++ ) {
+    for ( size_t i = 0; i < x.numberOfDataBlocks(); i++ ) {
         if ( x.isType<double>( i ) )
             tol = std::max<double>( tol, std::numeric_limits<double>::epsilon() );
         if ( x.isType<float>( i ) )
@@ -227,15 +227,15 @@ void VectorTests::L2NormVector( AMP::UnitTest *ut )
 {
     auto vector = d_factory->getVector();
     vector->setToScalar( 1. );
-    //    auto norm  = static_cast<double>( vector->L2Norm() );
-    //    auto norm2 = static_cast<double>( vector->dot( *vector ) );
-    auto norm   = vector->L2Norm();
-    auto norm2  = vector->dot( *vector );
-    double tol = 10 * sqrt( vector->getGlobalSize() ) * getTol( *vector );
+    auto norm  = static_cast<double>( vector->L2Norm() );
+    auto norm2 = static_cast<double>( vector->dot( *vector ) );
+    double tol = 0.000001;
+    if ( vector->getVectorData()->isType<float>() )
+        tol = 0.00001;
     PASS_FAIL( fabs( static_cast<double>( norm * norm - norm2 ) ) < tol, "L2 norm 1" );
     vector->setRandomValues();
-    norm  = vector->L2Norm();
-    norm2 = vector->dot( *vector );
+    norm  = static_cast<double>( vector->L2Norm() );
+    norm2 = static_cast<double>( vector->dot( *vector ) );
     PASS_FAIL( fabs( static_cast<double>( norm * norm - norm2 ) ) < tol, "L2 norm 2" );
 }
 
@@ -387,8 +387,7 @@ void VectorTests::Bug_491( [[maybe_unused]] AMP::UnitTest *ut )
         double tol = 0.00000001 * n1;
         PASS_FAIL( fabs( n1 - sp_n1 ) < tol, "L1 norm -- Petsc interface begin/end" );
         PASS_FAIL( fabs( n2 - sp_n2 ) < tol, "L2 norm -- Petsc interface begin/end" );
-        PASS_FAIL( fabs( ninf - sp_inf ) < tol,
-                   "Linf norm -- Petsc interface begin/end" );
+        PASS_FAIL( fabs( ninf - sp_inf ) < tol, "Linf norm -- Petsc interface begin/end" );
 
         VecNorm( managed_vec, NORM_1, &n1 );
         VecNorm( managed_vec, NORM_2, &n2 );
@@ -399,8 +398,7 @@ void VectorTests::Bug_491( [[maybe_unused]] AMP::UnitTest *ut )
         double maxNorm( vector1->maxNorm() );
         PASS_FAIL( fabs( n1 - L1Norm ) < tol, "L1 norm -- Petsc interface begin/end " );
         PASS_FAIL( fabs( n2 - L2Norm ) < tol, "L2 norm -- Petsc interface begin/end " );
-        PASS_FAIL( fabs( ninf - maxNorm ) < tol,
-                   "inf norm -- Petsc interface begin/end " );
+        PASS_FAIL( fabs( ninf - maxNorm ) < tol, "inf norm -- Petsc interface begin/end " );
     }
 #endif
 }
@@ -783,7 +781,7 @@ static void AxpbyVectorRun( std::shared_ptr<const VectorFactory> d_factory,
     }
 
     auto maxNorm = vectord->maxNorm();
-    double tol = 10 * getTol( *vectora );
+    double tol   = 10 * getTol( *vectora );
     PASS_FAIL( maxNorm < tol, msg );
     vectord->subtract( *vectorc, *vectorb );
     maxNorm = vectord->maxNorm();
