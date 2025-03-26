@@ -773,7 +773,7 @@ AMP_MPI AMP_MPI::dup( bool manage ) const
     MPI_Comm_dup( d_comm, &new_MPI_comm );
 #else
     static AMP_MPI::Comm uniqueGlobalComm = 11;
-    new_MPI_comm = uniqueGlobalComm;
+    new_MPI_comm                          = uniqueGlobalComm;
     uniqueGlobalComm++;
 #endif
     // Create the new comm object
@@ -1292,11 +1292,11 @@ AMP_MPI::Request AMP_MPI::IsendBytes( const void *buf, int bytes, int, int tag )
     if ( it == global_isendrecv_list.end() ) {
         // We are calling isend first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 1;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request2, Isendrecv_struct>( id, data ) );
     } else {
         // We called irecv first
@@ -1317,11 +1317,11 @@ AMP_MPI::Request AMP_MPI::IrecvBytes( void *buf, const int bytes, const int, con
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 2;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
@@ -1460,7 +1460,7 @@ int AMP_MPI::waitAny( int count, Request2 *request )
         for ( int i = 0; i < count; i++ ) {
             if ( global_isendrecv_list.find( request[i] ) == global_isendrecv_list.end() ) {
                 found_any = true;
-                index = i;
+                index     = i;
             }
         }
         if ( found_any )
@@ -1543,14 +1543,12 @@ std::tuple<int, int, int> AMP_MPI::Iprobe( int source, int tag ) const
     MPI_Status status;
     int flag = 0;
     MPI_Iprobe( source, tag, d_comm, &flag, &status );
-    if ( flag == 0 ) {
-        return std::make_tuple<int, int, int>( -1, -1, -1 );
-    }
+    if ( flag == 0 )
+        return std::tuple<int, int, int>( -1, -1, -1 );
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
     AMP_ASSERT( count >= 0 );
-    return std::make_tuple<int, int, int>(
-        int( status.MPI_SOURCE ), int( status.MPI_TAG ), int( count ) );
+    return std::tuple<int, int, int>( status.MPI_SOURCE, status.MPI_TAG, count );
 }
 std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
 {
@@ -1563,19 +1561,18 @@ std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
     AMP_ASSERT( count >= 0 );
-    return std::make_tuple<int, int, int>(
-        int( status.MPI_SOURCE ), int( status.MPI_TAG ), int( count ) );
+    return std::tuple<int, int, int>( status.MPI_SOURCE, status.MPI_TAG, count );
 }
 #else
 std::tuple<int, int, int> AMP_MPI::Iprobe( int source, int tag ) const
 {
-    AMP_ASSERT( source == 0 || source < -1 );
+    AMP_ASSERT( source == 0 || source == -1 );
     for ( const auto &tmp : global_isendrecv_list ) {
         const auto &data = tmp.second;
         if ( data.comm == d_comm && ( data.tag == tag || tag == -1 ) && data.status == 1 )
-            return std::make_tuple<int, int, int>( int( source ), int( tag ), int( data.bytes ) );
+            return std::tuple<int, int, int>( 0, data.tag, data.bytes );
     }
-    return std::make_tuple<int, int, int>( int( source ), int( tag ), -1 );
+    return std::tuple<int, int, int>( -1, -1, -1 );
 }
 std::tuple<int, int, int> AMP_MPI::probe( int source, int tag ) const
 {
@@ -1595,7 +1592,7 @@ double AMP_MPI::tick() { return MPI_Wtick(); }
 #else
 double AMP_MPI::time()
 {
-    auto t = std::chrono::system_clock::now();
+    auto t  = std::chrono::system_clock::now();
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t.time_since_epoch() );
     return 1e-9 * ns.count();
 }
