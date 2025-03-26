@@ -11,6 +11,7 @@
 #include <map>
 #include <numeric>
 #include <tuple>
+#include <unordered_map>
 
 namespace AMP::Discretization {
 class DOFManager;
@@ -193,10 +194,12 @@ public:
     }
 
     static std::shared_ptr<CSRLocalMatrixData>
-    ConcatHorizontal( std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks );
+    ConcatHorizontal( std::shared_ptr<MatrixParametersBase> params,
+                      std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks );
 
     static std::shared_ptr<CSRLocalMatrixData>
-    ConcatVertical( std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks );
+    ConcatVertical( std::shared_ptr<MatrixParametersBase> params,
+                    std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks );
 
 protected:
     //! Helper function for getting a global col idx from local depending on diag/offd case
@@ -204,6 +207,10 @@ protected:
 
     //! Make a clone of this matrix data
     std::shared_ptr<CSRLocalMatrixData> cloneMatrixData();
+
+    //! Make matrix data for transpose
+    std::shared_ptr<CSRLocalMatrixData>
+    transpose( std::shared_ptr<MatrixParametersBase> params ) const;
 
     /** \brief  Get columns and values from one row
      * \param[in]  local_row  Local index of desired row

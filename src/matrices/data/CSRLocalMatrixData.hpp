@@ -97,6 +97,7 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
 
         // can always allocate row starts without external information
         d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
+        AMP::Utilities::Algorithms<lidx_t>::fill_n( d_row_starts.get(), d_num_rows + 1, 0 );
 
         const auto &getRow = matParams->getRowFunction();
 
@@ -158,11 +159,12 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
     } else {
         // The parameters object is allowed to be null
         // In this case matrices will stay purely local (e.g. not parts of
-        // an encasing CSRMatrixData object). This is used for remote blocks
+        // an enclosing CSRMatrixData object). This is used for remote blocks
         // in SpGEMM
         d_nnz        = 0;
         d_is_empty   = true;
         d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
+        AMP::Utilities::Algorithms<lidx_t>::fill_n( d_row_starts.get(), d_num_rows + 1, 0 );
         return;
     }
 
@@ -176,6 +178,7 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
 template<typename Policy, class Allocator>
 std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>
 CSRLocalMatrixData<Policy, Allocator>::ConcatHorizontal(
+    std::shared_ptr<MatrixParametersBase> params,
     std::map<int, std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
 {
     AMP_INSIST( blocks.size() > 0, "Attempted to concatenate empty set of blocks" );
@@ -206,7 +209,7 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatHorizontal(
 
     // Create empty matrix and trigger allocations to match
     auto concat_matrix = std::make_shared<CSRLocalMatrixData<Policy, Allocator>>(
-        nullptr, mem_loc, first_row, last_row, first_col, last_col, false );
+        params, mem_loc, first_row, last_row, first_col, last_col, false );
     concat_matrix->setNNZ( row_nnz );
 
     // set row_nnz back to zeros to use as counters while appending entries
@@ -232,6 +235,7 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatHorizontal(
 template<typename Policy, class Allocator>
 std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>
 CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
+    std::shared_ptr<MatrixParametersBase> params,
     std::map<int, std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
 {
     AMP_INSIST( blocks.size() > 0, "Attempted to concatenate empty set of blocks" );
@@ -261,7 +265,7 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
 
     // Create empty matrix and trigger allocations to match
     auto concat_matrix = std::make_shared<CSRLocalMatrixData<Policy, Allocator>>(
-        nullptr, mem_loc, 0, row_nnz.size(), first_col, last_col, true );
+        params, mem_loc, 0, row_nnz.size(), first_col, last_col, true );
     concat_matrix->setNNZ( row_nnz );
 
     // loop over blocks again and write into new matrix
@@ -412,15 +416,13 @@ CSRLocalMatrixData<Policy, Allocator>::cloneMatrixData()
     cloneData->d_is_empty = d_is_empty;
     cloneData->d_nnz      = d_nnz;
 
-    cloneData->d_row_starts = nullptr;
-    cloneData->d_cols       = nullptr;
-    cloneData->d_cols_loc   = nullptr;
-    cloneData->d_coeffs     = nullptr;
+    cloneData->d_cols     = nullptr;
+    cloneData->d_cols_loc = nullptr;
+    cloneData->d_coeffs   = nullptr;
 
     if ( !d_is_empty ) {
-        cloneData->d_row_starts = sharedArrayBuilder( d_num_rows + 1, d_lidxAllocator );
-        cloneData->d_cols_loc   = sharedArrayBuilder( d_nnz, d_lidxAllocator );
-        cloneData->d_coeffs     = sharedArrayBuilder( d_nnz, d_scalarAllocator );
+        cloneData->d_cols_loc = sharedArrayBuilder( d_nnz, d_lidxAllocator );
+        cloneData->d_coeffs   = sharedArrayBuilder( d_nnz, d_scalarAllocator );
 
         AMP::Utilities::Algorithms<lidx_t>::copy_n(
             d_row_starts.get(), d_num_rows + 1, cloneData->d_row_starts.get() );
@@ -436,12 +438,70 @@ CSRLocalMatrixData<Policy, Allocator>::cloneMatrixData()
         if ( d_cols_unq.get() != nullptr ) {
             cloneData->d_ncols_unq = d_ncols_unq;
             cloneData->d_cols_unq  = sharedArrayBuilder( d_ncols_unq, d_gidxAllocator );
-            std::copy(
-                d_cols_unq.get(), d_cols_unq.get() + d_ncols_unq, cloneData->d_cols_unq.get() );
+            AMP::Utilities::Algorithms<gidx_t>::copy_n(
+                d_cols_unq.get(), d_ncols_unq, cloneData->d_cols_unq.get() );
         }
     }
 
     return cloneData;
+}
+
+template<typename Policy, class Allocator>
+std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>
+CSRLocalMatrixData<Policy, Allocator>::transpose(
+    std::shared_ptr<MatrixParametersBase> params ) const
+{
+    // create new data, note swapped rows and cols
+    auto transposeData = std::make_shared<CSRLocalMatrixData>(
+        params, d_memory_location, d_first_col, d_last_col, d_first_row, d_last_row, d_is_diag );
+
+    // handle rare edge case of empty diagonal block
+    if ( d_is_empty ) {
+        return transposeData;
+    }
+
+    auto trans_row = [is_diag   = d_is_diag,
+                      first_col = d_first_col,
+                      cols      = d_cols,
+                      cols_loc  = d_cols_loc,
+                      cols_unq  = d_cols_unq]( const lidx_t c ) -> lidx_t {
+        gidx_t col_g = 0;
+        if ( cols.get() ) {
+            col_g = cols[c];
+        } else if ( is_diag ) {
+            return cols_loc[c];
+        } else {
+            col_g = cols_unq[cols_loc[c]];
+        }
+        return col_g - first_col;
+    };
+
+    // count nnz per column and store in transpose's rowstarts array
+    for ( lidx_t row = 0; row < d_num_rows; ++row ) {
+        for ( lidx_t c = d_row_starts[row]; c < d_row_starts[row + 1]; ++c ) {
+            const auto t_row = trans_row( c );
+            transposeData->d_row_starts[t_row]++;
+        }
+    }
+
+    transposeData->setNNZ( true );
+
+    // count nnz per column again and append into each row of transpose
+    // create temporary vector of counters to hold position in each row
+    std::vector<lidx_t> row_ctr( transposeData->d_num_rows, 0 );
+    for ( lidx_t row = 0; row < d_num_rows; ++row ) {
+        for ( lidx_t c = d_row_starts[row]; c < d_row_starts[row + 1]; ++c ) {
+            const auto t_row = trans_row( c );
+            const auto pos   = transposeData->d_row_starts[t_row] + row_ctr[t_row];
+            // local transpose only fills global cols and coeffs
+            // caller responsible for creation of local columns if desired
+            transposeData->d_cols[pos]   = static_cast<gidx_t>( row ) + d_first_row;
+            transposeData->d_coeffs[pos] = d_coeffs[c];
+            row_ctr[t_row]++;
+        }
+    }
+
+    return transposeData;
 }
 
 template<typename Policy, class Allocator>

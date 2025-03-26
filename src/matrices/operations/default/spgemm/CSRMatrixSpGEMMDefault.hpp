@@ -249,7 +249,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::endBRemote
     PROFILE( "CSRMatrixSpGEMMDefault::endBRemoteComm" );
 
     d_recv_matrices = d_csr_comm.recvMatrices( 0, 0, 0, B->numGlobalColumns() );
-    BRemote         = CSRLocalMatrixData<Policy, Allocator>::ConcatVertical( d_recv_matrices );
+    // BRemote does not need any particular parameters object internally
+    BRemote = CSRLocalMatrixData<Policy, Allocator>::ConcatVertical( nullptr, d_recv_matrices );
     const auto A_col_map_size = A->getOffdMatrix()->numUniqueColumns();
     if ( A_col_map_size != static_cast<lidx_t>( BRemote->endRow() ) ) {
         int num_reqd = 0;
