@@ -57,7 +57,7 @@ protected:
 
     // This only (re-)fills the coefficients in BRemote
     // the comm info and symbolic creation must have already happened
-    void fillBRemoteNumeric();
+    // void fillBRemoteNumeric();
 
     // Matrix data of operands and output
     // these are non-owning pointers
