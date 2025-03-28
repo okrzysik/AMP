@@ -37,9 +37,9 @@ double readValue<double>( std::string_view str )
     double data = 0;
     if ( strcmpi( str, "inf" ) || strcmpi( str, "infinity" ) ) {
         data = std::numeric_limits<double>::infinity();
-    } else if ( strcmpi( str, "inf" ) || strcmpi( str, "infinity" ) ) {
+    } else if ( strcmpi( str, "-inf" ) || strcmpi( str, "-infinity" ) ) {
         data = -std::numeric_limits<double>::infinity();
-    } else if ( strcmpi( str, "nan" ) ) {
+    } else if ( strcmpi( str, "nan" ) || strcmpi( str, "-nan" ) ) {
         data = std::numeric_limits<double>::quiet_NaN();
     } else if ( str.find( '/' ) != std::string::npos ) {
         AMP_ERROR( "Error reading value (double): " + std::string( str ) );

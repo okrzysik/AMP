@@ -76,8 +76,9 @@ int testDecimal( const std::string &x )
     eint1024 y( x.data() );
     auto z = y.decimal();
     if ( x != z ) {
-        std::cout << x << std::endl;
-        std::cout << z << std::endl;
+        std::cout << "testDecimal failed:\n";
+        std::cout << "   " << x << std::endl;
+        std::cout << "   " << z << std::endl;
         return 1;
     }
     return 0;
