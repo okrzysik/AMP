@@ -65,6 +65,10 @@ public:
     //! Conversion to long double
     constexpr operator long double() const;
 
+    //! Conversion to floating point type
+    template<class TYPE>
+    constexpr TYPE convert() const;
+
     //! Conversion to bool
     constexpr operator bool() const;
 

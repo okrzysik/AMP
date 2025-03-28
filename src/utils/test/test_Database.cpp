@@ -127,7 +127,8 @@ void runBasicTests( UnitTest &ut )
     addType<int64_t>( db, ut );
     addType<float>( db, ut );
     addType<double>( db, ut );
-    addType<long double>( db, ut );
+    if constexpr ( sizeof( long double ) > 8 )
+        addType<long double>( db, ut );
     addType<std::complex<double>>( db, ut );
 
     // Try to read/add a database that ends in a comment and has units

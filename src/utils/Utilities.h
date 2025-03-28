@@ -68,11 +68,13 @@ bool running_valgrind();
 
 
 //! Check if a number infinity
-bool isInf( double x );
+template<class TYPE>
+bool isInf( TYPE x );
 
 
 //! Check if a number NaN
-bool isNaN( double x );
+template<class TYPE>
+bool isNaN( TYPE x );
 
 
 /*!

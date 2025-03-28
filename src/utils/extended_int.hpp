@@ -109,11 +109,11 @@ constexpr int64N<N>::int64N( const char *str ) : data{ 0 }
 template<uint8_t N>
 constexpr std::array<char, 16 * N + 3> int64N<N>::hex( bool fixedWidth ) const
 {
-    constexpr char hexmap[]         = "0123456789abcdef";
-    std::array<char, 16 *N + 3> hex = { 0 };
-    hex[0]                          = '0';
-    hex[1]                          = 'x';
-    size_t k                        = 2;
+    constexpr char hexmap[]          = "0123456789abcdef";
+    std::array<char, 16 * N + 3> hex = { 0 };
+    hex[0]                           = '0';
+    hex[1]                           = 'x';
+    size_t k                         = 2;
     for ( int i = N - 1; i >= 0; i-- ) {
         for ( int j = 60; j >= 0; j -= 4 ) {
             char c = hexmap[( data[i] >> j ) & 0x0F];
@@ -191,7 +191,8 @@ constexpr int64N<N>::operator int() const
     return static_cast<int>( static_cast<int64_t>( data[0] ) );
 }
 template<uint8_t N>
-constexpr int64N<N>::operator long double() const
+template<class TYPE>
+constexpr TYPE int64N<N>::convert() const
 {
     // Split the data into sets of unsigned 64-bit numbers
     uint64_t data2[N] = { 0 };
@@ -208,26 +209,31 @@ constexpr int64N<N>::operator long double() const
             i++;
         }
     }
-    // Convert to long double
-    long double pow64  = 1.8446744073709551616e19; // 2^64
-    long double result = data2[0];
-    long double scale  = pow64;
+    // Convert to desired type
+    TYPE pow64  = 1.8446744073709551616e19; // 2^64
+    TYPE result = data2[0];
+    TYPE scale  = pow64;
     for ( size_t i = 1; i < N; i++ ) {
         if ( data2[i] != 0 )
-            result += scale * static_cast<long double>( data2[i] );
+            result += scale * static_cast<TYPE>( data2[i] );
         scale *= pow64;
     }
     return s * result;
 }
 template<uint8_t N>
+constexpr int64N<N>::operator long double() const
+{
+    return convert<long double>();
+}
+template<uint8_t N>
 constexpr int64N<N>::operator double() const
 {
-    return static_cast<long double>( *this );
+    return convert<double>();
 }
 template<uint8_t N>
 constexpr int64N<N>::operator float() const
 {
-    return static_cast<long double>( *this );
+    return convert<float>();
 }
 template<uint8_t N>
 constexpr int64N<N>::operator bool() const
@@ -507,7 +513,7 @@ double int64N<N>::log2() const
     if ( i == 0 )
         return std::log2( data[i] );
     return 64 * i + std::log2( data[i] ) +
-           std::log2( 1.0 + 5.421010862427522170037264e-20L * data[i - 1] / data[i] );
+           std::log2( 1.0 + 5.421010862427522170037264e-20 * data[i - 1] / data[i] );
 }
 
 
