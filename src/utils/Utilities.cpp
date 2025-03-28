@@ -88,25 +88,49 @@ bool running_valgrind()
  *  Check if a number is nan or infinity                                     *
  *  Note this routine needs to be robust in case -ffast_math is set          *
  ****************************************************************************/
-bool isInf( double x )
+/*template<class TYPE>
+static std::string getHex( const TYPE& x )
 {
-    double y = std::numeric_limits<double>::infinity();
+    auto data = reinterpret_cast<const uint8_t*>( &x );
+    std::string str;
+    str.resize( 2 * ( sizeof(TYPE) + 1 ), '0' );
+    str[0] = '0';
+    str[1] = 'x';
+    for ( size_t i = 0, j = 2*sizeof(TYPE); i < sizeof(TYPE); i++, j-=2) {
+        char tmp[8];
+        snprintf( tmp, 8, "%02x", data[i] );
+        str[j+0] = tmp[0];
+        str[j+1] = tmp[1];
+    }
+    return str;
+}*/
+template<class TYPE>
+bool isInf( TYPE x )
+{
+    auto y = std::numeric_limits<TYPE>::infinity();
     if ( x == y )
         return true;
     if ( std::memcmp( &x, &y, sizeof( x ) ) == 0 )
         return true;
     return false;
 }
-bool isNaN( double x )
+template<class TYPE>
+bool isNaN( TYPE x )
 {
     if ( x != x )
         return true;
-    double y1 = std::numeric_limits<double>::quiet_NaN();
-    double y2 = -std::numeric_limits<double>::quiet_NaN();
+    auto y1 = std::numeric_limits<TYPE>::quiet_NaN();
+    auto y2 = -std::numeric_limits<TYPE>::quiet_NaN();
     if ( std::memcmp( &x, &y1, sizeof( x ) ) == 0 || std::memcmp( &x, &y2, sizeof( x ) ) == 0 )
         return true;
     return false;
 }
+template bool isInf<float>( float );
+template bool isNaN<float>( float );
+template bool isInf<double>( double );
+template bool isNaN<double>( double );
+template bool isInf<long double>( long double );
+template bool isNaN<long double>( long double );
 
 
 /****************************************************************************

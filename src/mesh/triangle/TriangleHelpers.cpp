@@ -864,7 +864,7 @@ createTessellation( const Point &lb, const Point &ub, const std::vector<Point> &
     auto dx = ub - lb;
     int N   = points.size();
     AMP::Array<double> x1( NDIM, points.size() );
-    AMP::Array<double> x2( NDIM, points.size() );
+    AMP::Array<int> x2( NDIM, points.size() );
     for ( int i = 0; i < N; i++ ) {
         for ( int d = 0; d < NDIM; d++ ) {
             double x   = points[i][d];
@@ -877,7 +877,7 @@ createTessellation( const Point &lb, const Point &ub, const std::vector<Point> &
     // Tessellate
     AMP::Array<int> tri, nab;
     try {
-        // Try to tessellate with the acutal points
+        // Try to tessellate with the actual points
         std::tie( tri, nab ) = DelaunayTessellation::create_tessellation( x1 );
     } catch ( ... ) {
         try {
