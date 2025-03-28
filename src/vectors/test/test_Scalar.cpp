@@ -1,9 +1,20 @@
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/Scalar.h"
 
 #include <chrono>
 #include <iostream>
 #include <string_view>
+
+
+#define RECORD( X )                                     \
+    do {                                                \
+        bool test = X;                                  \
+        if ( !test ) {                                  \
+            std::cout << "Failed: " << #X << std::endl; \
+            pass = false;                               \
+        }                                               \
+    } while ( 0 )
 
 
 // Test auto creation of a Scalar
@@ -57,28 +68,36 @@ bool testArithmetic()
     pass = pass && std::abs( ( a + b ) - ( x + y ).get<TYPE>() ) < 1e-8;
     pass = pass && std::abs( ( a * b ) - ( x * y ).get<TYPE>() ) < 1e-8;
     pass = pass && std::abs( ( a / b ) - ( x / y ).get<TYPE>() ) < 1e-8;
-    // Test NaNs/Inf
+    return pass;
+}
+// Test NaNs/Inf
+bool testInf()
+{
+    bool pass = true;
 #ifndef _MSC_VER
-    if ( std::numeric_limits<TYPE>::has_infinity ) {
-        x       = (TYPE) 1;
-        y       = (TYPE) 0;
-        auto z1 = x / y;
-        AMP::Scalar z2( std::numeric_limits<TYPE>::infinity() );
-        auto v1 = z1.get<double>();
-        auto v2 = z2.get<double>();
-        pass    = pass && v1 == std::numeric_limits<double>::infinity();
-        pass    = pass && v2 == std::numeric_limits<double>::infinity();
-    }
-    if ( std::numeric_limits<TYPE>::has_quiet_NaN ) {
-        x       = (TYPE) 0;
-        y       = (TYPE) 0;
-        auto z1 = x / y;
-        AMP::Scalar z2( std::numeric_limits<TYPE>::quiet_NaN() );
-        auto v1 = z1.get<double>();
-        auto v2 = z2.get<double>();
-        pass    = pass && v1 != v1;
-        pass    = pass && v2 != v2;
-    }
+    AMP::Scalar x = 1.0;
+    AMP::Scalar y = 0.0;
+    auto z1       = x / y;
+    AMP::Scalar z2( std::numeric_limits<double>::infinity() );
+    auto v1 = z1.get<double>();
+    auto v2 = z2.get<double>();
+    pass    = pass && AMP::Utilities::isInf( v1 );
+    pass    = pass && AMP::Utilities::isInf( v2 );
+#endif
+    return pass;
+}
+bool testNaN()
+{
+    bool pass = true;
+#ifndef _MSC_VER
+    AMP::Scalar x = 0.0;
+    AMP::Scalar y = 0.0;
+    auto z1       = x / y;
+    AMP::Scalar z2( std::numeric_limits<double>::quiet_NaN() );
+    auto v1 = z1.get<double>();
+    auto v2 = z2.get<double>();
+    pass    = pass && AMP::Utilities::isNaN( v1 );
+    pass    = pass && AMP::Utilities::isNaN( v2 );
 #endif
     return pass;
 }
@@ -119,37 +138,39 @@ int main( int, char ** )
     bool pass = true;
 
     // Test some basic types
-    pass = pass && testGet<char>( 'x' );
-    pass = pass && testGet<int>( 1 );
-    pass = pass && testGet<int64_t>( 2 );
-    pass = pass && testGet<uint64_t>( 3 );
-    pass = pass && testGet<float>( 4 );
-    pass = pass && testGet<double>( 5 );
-    pass = pass && testGet<long double>( 6 );
-    pass = pass && testGet( std::complex<float>( 8.0, 0.0 ) );
-    pass = pass && testGet( std::complex<double>( 9.0, 0.0 ) );
+    RECORD( testGet<char>( 'x' ) );
+    RECORD( testGet<int>( 1 ) );
+    RECORD( testGet<int64_t>( 2 ) );
+    RECORD( testGet<uint64_t>( 3 ) );
+    RECORD( testGet<float>( 4 ) );
+    RECORD( testGet<double>( 5 ) );
+    RECORD( testGet<long double>( 6 ) );
+    RECORD( testGet( std::complex<float>( 8.0, 0.0 ) ) );
+    RECORD( testGet( std::complex<double>( 9.0, 0.0 ) ) );
 
     // Test create
-    pass = pass && testCreate();
+    RECORD( testCreate() );
 
     // Test passing values
-    pass = pass && fun( 1 );
-    pass = pass && fun( 2u );
-    pass = pass && fun( 3.0f );
-    pass = pass && fun( 4.0 );
+    RECORD( fun( 1 ) );
+    RECORD( fun( 2u ) );
+    RECORD( fun( 3.0f ) );
+    RECORD( fun( 4.0 ) );
 
     // Test complex
     auto c1 = AMP::Scalar( std::complex<float>( 3.0, 1.0 ) );
-    pass    = pass && c1.get<std::complex<float>>() == std::complex<float>( 3.0, 1.0 );
+    RECORD( c1.get<std::complex<float>>() == std::complex<float>( 3.0, 1.0 ) );
 
     // Test copy
     auto c2 = c1;
-    pass    = pass && c1.get<std::complex<float>>() == c2.get<std::complex<float>>();
+    RECORD( c1.get<std::complex<float>>() == c2.get<std::complex<float>>() );
 
     // Test arithmetic
-    pass = pass && testArithmetic<double>();
-    pass = pass && testArithmetic<int64_t>();
-    pass = pass && testArithmetic<std::complex<double>>();
+    RECORD( testArithmetic<double>() );
+    RECORD( testArithmetic<int64_t>() );
+    RECORD( testArithmetic<std::complex<double>>() );
+    RECORD( testInf() );
+    RECORD( testNaN() );
 
     // Test the performance
     testPerformance();

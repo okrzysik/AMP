@@ -85,6 +85,31 @@ bool running_valgrind()
 
 
 /****************************************************************************
+ *  Check if a number is nan or infinity                                     *
+ *  Note this routine needs to be robust in case -ffast_math is set          *
+ ****************************************************************************/
+bool isInf( double x )
+{
+    double y = std::numeric_limits<double>::infinity();
+    if ( x == y )
+        return true;
+    if ( std::memcmp( &x, &y, sizeof( x ) ) == 0 )
+        return true;
+    return false;
+}
+bool isNaN( double x )
+{
+    if ( x != x )
+        return true;
+    double y1 = std::numeric_limits<double>::quiet_NaN();
+    double y2 = -std::numeric_limits<double>::quiet_NaN();
+    if ( std::memcmp( &x, &y1, sizeof( x ) ) == 0 || std::memcmp( &x, &y2, sizeof( x ) ) == 0 )
+        return true;
+    return false;
+}
+
+
+/****************************************************************************
  *  Basic string functions                                                   *
  ****************************************************************************/
 std::string intToString( int num, int min_width )
