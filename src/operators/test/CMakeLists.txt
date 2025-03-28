@@ -2,27 +2,6 @@
 #  Configure tests
 ############################################################################
 
-# Function to add a serial or 1,2,4 processor test dependent on the existence of a parallel matrix
-MACRO( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
-    IF ( USE_TRILINOS OR USE_PETSC )
-        # We have a parallel matrix
-        ADD_AMP_TEST_1_2_4( ${EXEFILE} ${ARGN} )
-    ELSE()
-        # We do not have a parallel matrix
-        ADD_AMP_TEST( ${EXEFILE} ${ARGN} )
-    ENDIF()
-ENDMACRO()
-MACRO( ADD_TB_TEST_124_MATRIX EXEFILE ${ARGN} )
-    IF ( USE_TRILINOS OR USE_PETSC )
-        # We have a parallel matrix
-        ADD_TB_TEST_1_2_4( ${EXEFILE} ${ARGN} )
-    ELSE()
-        # We do not have a parallel matrix
-        ADD_TB_TEST( ${EXEFILE} ${ARGN} )
-    ENDIF()
-ENDMACRO()
-
-
 # Copy test inputs
 COPY_TEST_FILE( input_testNonlinear_MatproDensificationMaterialModel-1 )
 COPY_TEST_FILE( input_testMultiBlockMatrix )
@@ -164,16 +143,16 @@ IF ( USE_LIBMESH AND AMP_DATA )
     ADD_TB_TEST_1_2_4( testPowerShapeToVolIntOperator )
     ADD_TB_TEST_1_2_4( testPowerShape )
     ADD_TB_TEST_1_2_4( testPowerShape_Zr )
-    ADD_TB_TEST_124_MATRIX( testLinearOperator )
-    ADD_TB_TEST_124_MATRIX( testLinearRobin )
-    ADD_TB_TEST_124_MATRIX( testNonlinearRobin )
+    ADD_TB_TEST_1_2_4( testLinearOperator )
+    ADD_TB_TEST_1_2_4( testLinearRobin )
+    ADD_TB_TEST_1_2_4( testNonlinearRobin )
     ADD_TB_TEST_1_2_4( testVolumeIntegral )
     ADD_TB_TEST_1_2_4( testNonlinearFickSoret )
-    ADD_TB_TEST_124_MATRIX( testFickSoretBVP )
-    ADD_TB_TEST_124_MATRIX( testLinearColumnOperator )
+    ADD_TB_TEST_1_2_4( testFickSoretBVP )
+    ADD_TB_TEST_1_2_4( testLinearColumnOperator )
     ADD_TB_TEST_1_2_4( testNeutronicsRhs )
-    ADD_TB_TEST_124_MATRIX( testConsistentTangent )
-    ADD_TB_TEST_124_MATRIX( testConsistentTangentBVP )
+    ADD_TB_TEST_1_2_4( testConsistentTangent )
+    ADD_TB_TEST_1_2_4( testConsistentTangentBVP )
     ADD_TB_PROVISIONAL_TEST( testDiscreteOperatorParameters )
 ENDIF()
 FINALIZE_TESTBUILDER()
