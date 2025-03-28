@@ -67,6 +67,14 @@ std::string_view getLastErrnoString();
 bool running_valgrind();
 
 
+//! Check if a number infinity
+bool isInf( double x );
+
+
+//! Check if a number NaN
+bool isNaN( double x );
+
+
 /*!
  * Set an environmental variable
  * @param name              The name of the environmental variable
