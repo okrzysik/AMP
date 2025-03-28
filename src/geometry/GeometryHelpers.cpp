@@ -380,12 +380,18 @@ distanceToLine( const Point2D &pos, const Point2D &ang, const Point2D &p1, const
     Point2D v2 = p2 - p1;
     Point2D v3 = { -ang[1], ang[0] };
     double d23 = dot( v2, v3 );
-    if ( fabs( d23 ) < 1e-12 )
+    int sign   = d23 >= 0 ? 1 : -1;
+    d23        = fabs( d23 );
+    double tol = 1e-12;
+    if ( d23 < tol )
         return std::numeric_limits<double>::infinity();
-    double t1 = cross( v2, v1 ) / d23;
-    double t2 = dot( v1, v3 ) / d23;
-    if ( t1 >= -1e-12 && t2 >= -1e-10 && t2 <= 1.0 + 1e-10 )
-        return t1;
+    double t1 = sign * cross( v2, v1 );
+    double t2 = sign * dot( v1, v3 );
+    double x  = -tol * d23;
+    double y1 = -1e-10 * d23;
+    double y2 = ( 1.0 + 1e-10 ) * d23;
+    if ( t1 >= x && t2 >= y1 && t2 <= y2 )
+        return t1 / d23;
     return std::numeric_limits<double>::infinity();
 }
 double
@@ -628,6 +634,8 @@ distanceToTube( double r_min, double r_max, double h, const Point3D &pos, const 
         if ( ang[0] == 0 && ang[1] == 0 )
             return std::numeric_limits<double>::infinity();
         double d = std::abs( distanceToCircle( r, { pos[0], pos[1] }, { ang[0], ang[1] } ) );
+        if ( fabs( d ) > 1e200 )
+            return std::numeric_limits<double>::infinity();
         double z = pos[2] + d * ang[2];
         // We did not intersect with the surface, check for a second intersection
         if ( fabs( z ) > 0.5 * h ) {

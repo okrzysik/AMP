@@ -186,9 +186,9 @@ void runBasicTests( UnitTest &ut )
         ut.failure( "i3" );
     if ( !isType<double>( db2, "x" ) )
         ut.failure( "x" );
-    if ( db2->getScalar<double>( "inf" ) != std::numeric_limits<double>::infinity() )
+    if ( !AMP::Utilities::isInf( db2->getScalar<double>( "inf" ) ) )
         ut.failure( "inf" );
-    if ( db2->getScalar<double>( "nan" ) == db2->getScalar<double>( "nan" ) )
+    if ( !AMP::Utilities::isNaN( db2->getScalar<double>( "nan" ) ) )
         ut.failure( "nan" );
     if ( !equal( db2->getScalar<double>( "x1", "m" ), 0.015 ) ||
          !equal( db2->getScalar<double>( "x2", "m" ), 0.0025 ) ||
