@@ -59,6 +59,23 @@
    fun:_ZN3AMP7AMP_MPI9start_MPIERiPPci
    ...
 }
+{
+   orte_finalize
+   Memcheck:Leak
+   ...
+   fun:orte_finalize
+   fun:ompi_mpi_finalize
+   ...
+}
+{
+   clone_event
+   Memcheck:Leak
+   ...
+   fun:event_base_loop
+   ...
+   fun:start_thread
+   fun:clone
+}
 
 
 #### Supress nvidia errors
