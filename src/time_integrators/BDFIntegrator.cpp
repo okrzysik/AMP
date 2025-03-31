@@ -1905,8 +1905,9 @@ void BDFIntegrator::reset(
 {
     PROFILE( "BDFIntegrator::reset" );
     ImplicitIntegrator::reset( params );
-
-    BDFIntegrator::getFromInput( params->d_db, true );
+    
+    if (params)
+        BDFIntegrator::getFromInput( params->d_db, true );
 
     registerVectorsForMemoryManagement();
 
@@ -1915,35 +1916,35 @@ void BDFIntegrator::reset(
         d_timesteps_after_regrid = 0;
     }
 
-    d_scratch_vector->getVectorData()->reset();
-    d_scratch_function_vector->getVectorData()->reset();
+    d_scratch_vector->reset();
+    d_scratch_function_vector->reset();
 
     if ( d_implicit_integrator != "BE" ) {
-        d_prev_function_vector->getVectorData()->reset();
+        d_prev_function_vector->reset();
     }
 
-    d_integrator_source_vector->getVectorData()->reset();
+    d_integrator_source_vector->reset();
 
     if ( d_use_predictor ) {
-        d_current_function_vector->getVectorData()->reset();
+        d_current_function_vector->reset();
 
         if ( d_predictor_type == "ab2" ) {
-            d_old_td_vector->getVectorData()->reset();
+            d_old_td_vector->reset();
         }
     }
 
     if ( d_integrator_step > 0 ) {
-        d_solution_vector->getVectorData()->reset();
+        d_solution_vector->reset();
     }
 
     for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
-        d_prev_solutions[i]->getVectorData()->reset();
+        d_prev_solutions[i]->reset();
     }
 
     if ( d_use_predictor ) {
 
-        d_predictor_vector->getVectorData()->reset();
-        d_timederivative_vector->getVectorData()->reset();
+        d_predictor_vector->reset();
+        d_timederivative_vector->reset();
     }
 
     if ( d_operator ) {
@@ -2077,7 +2078,7 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     d_current_dt = dt;
 
-    d_solution_vector->getVectorData()->reset();
+    d_solution_vector->reset();
 
     d_prev_solutions[0]->copyVector( in );
 

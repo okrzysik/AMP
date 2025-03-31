@@ -336,6 +336,12 @@ void Vector::rename( const std::string &src, const std::string &dst )
     }
 }
 
+void Vector::reset()
+{
+    if ( d_VectorData ) {
+        d_VectorData->reset();
+    }
+}
 
 /****************************************************************
  * Misc                                                          *

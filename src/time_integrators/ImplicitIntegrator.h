@@ -115,7 +115,7 @@ public:
 
     // The following are not implemented:
     ImplicitIntegrator( const ImplicitIntegrator & ) = delete;
-    void operator=( const ImplicitIntegrator & ) = delete;
+    void operator=( const ImplicitIntegrator & )     = delete;
 
     /**
      * Empty destructor for ImplicitIntegrator
@@ -225,6 +225,7 @@ public:
     const std::string &getObjectName() const { return d_object_name; }
 
     std::shared_ptr<AMP::Solver::SolverStrategy> getSolver( void ) { return d_solver; }
+    void freeSolver( void ) { d_solver = nullptr; }
 
     using TimeIntegrator::initialize;
 
