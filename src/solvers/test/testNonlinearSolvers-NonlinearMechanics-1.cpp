@@ -19,12 +19,16 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include "ProfilerApp.h"
+
 #include <iostream>
 #include <string>
 
 
 void myTest( AMP::UnitTest *ut, const std::string &fileName )
 {
+    PROFILE2( fileName );
+
     std::string input_file = fileName;
     std::string log_file   = "output_" + fileName;
 
@@ -125,6 +129,7 @@ int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    PROFILE_ENABLE( 8 );
 
     std::vector<std::string> inputNames;
 
@@ -150,6 +155,8 @@ int main( int argc, char *argv[] )
         myTest( &ut, inputName );
 
     ut.report();
+
+    PROFILE_SAVE( "testNonlinearSolvers-NonlinearMechanics-1" );
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
