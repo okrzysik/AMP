@@ -121,9 +121,6 @@ public:
     void resetMultiVectorData( AMP::Discretization::DOFManager *manager,
                                const std::vector<VectorData *> &data );
 
-    void reset() override;
-
-
 public: // Write/read restart data
     /**
      * \brief    Register any child objects
@@ -153,8 +150,6 @@ protected:
     AMP::AMP_MPI d_comm;
     std::vector<VectorData *> d_data;
     AMP::Discretization::DOFManager *d_globalDOFManager = nullptr;
-    std::vector<AMP::Discretization::DOFManager *> d_subDOFManager;
-
 
 protected:
     /** A method that will translate an array of global ids relative to the multivector
