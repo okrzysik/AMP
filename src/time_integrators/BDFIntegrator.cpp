@@ -161,152 +161,160 @@ void BDFIntegrator::integratorSpecificInitialize( void )
 
 void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool )
 {
-    if ( db->keyExists( "variable_names" ) ) {
-        d_var_names = db->getVector<std::string>( "variable_names" );
-    } else {
-        //        AMP_ERROR( "For now variable names MUST be specified in input" );
-    }
-
-    if ( db->keyExists( "implicit_integrator" ) ) {
-
-        d_implicit_integrator = db->getString( "implicit_integrator" );
-        if ( ( d_implicit_integrator == "BDF1" ) || ( d_implicit_integrator == "Backward Euler" ) )
-            d_implicit_integrator = "BE";
-
-    } else {
-        AMP_ERROR( d_object_name + " -- Key data `implicit_integrator' missing in input." );
-    }
-
-    if ( d_implicit_integrator == "BE" ) {
-        // start with BE itself
-        d_bdf_starting_integrator = "BE";
-    } else {
-        // when BDF2 starts up another one step time integration scheme is required for the first
-        // step
-        // the options are BE and CN
-        d_bdf_starting_integrator =
-            db->getWithDefault<std::string>( "bdf_starting_integrator", "CN" );
-        //  d_bdf_starting_integrator = db->getStringWithDefault("bdf_starting_integrator", "BE");
-    }
-
-    if ( ( d_bdf_starting_integrator != "BE" ) && ( d_bdf_starting_integrator != "CN" ) ) {
-        AMP_ERROR( d_object_name +
-                   " -- Key data `d_bdf_starting_integrator' valid values are BE and CN" );
-    }
-
-    if ( db->keyExists( "timestep_selection_strategy" ) ) {
-        d_timestep_strategy = db->getString( "timestep_selection_strategy" );
-    } else {
-        AMP_ERROR( d_object_name + " -- Key data `timestep_selection_strategy' missing in input." );
-    }
-
-    d_use_predictor = db->getWithDefault<bool>( "use_predictor", true );
-    //        d_use_initial_predictor = db->getWithDefault<bool>( "use_initial_predictor", true );
-    d_use_initial_predictor = db->getWithDefault<bool>( "use_initial_predictor", d_use_predictor );
-
-    if ( d_use_predictor ) {
-        if ( db->keyExists( "predictor_type" ) ) {
-            d_predictor_type = db->getString( "predictor_type" );
+    if ( db ) {
+        if ( db->keyExists( "variable_names" ) ) {
+            d_var_names = db->getVector<std::string>( "variable_names" );
         } else {
-            AMP_ERROR(
-                "Time integrator parameters:: -- Required key `predictor_type' missing in input." );
+            //        AMP_ERROR( "For now variable names MUST be specified in input" );
         }
 
-        // override and set to true if we are using the predictor
-        d_calculateTimeTruncError = true;
-    }
+        if ( db->keyExists( "implicit_integrator" ) ) {
 
-    d_time_rtol = db->getWithDefault<double>( "truncation_error_rtol", 1e-09 );
-    d_time_atol = db->getWithDefault<double>( "truncation_error_atol", 1e-15 );
+            d_implicit_integrator = db->getString( "implicit_integrator" );
+            if ( ( d_implicit_integrator == "BDF1" ) ||
+                 ( d_implicit_integrator == "Backward Euler" ) )
+                d_implicit_integrator = "BE";
 
-    d_auto_component_scaling = db->getWithDefault<bool>( "auto_component_scaling", true );
+        } else {
+            AMP_ERROR( d_object_name + " -- Key data `implicit_integrator' missing in input." );
+        }
 
-    if ( d_timestep_strategy != "constant" ) {
+        if ( d_implicit_integrator == "BE" ) {
+            // start with BE itself
+            d_bdf_starting_integrator = "BE";
+        } else {
+            // when BDF2 starts up another one step time integration scheme is required for the
+            // first step the options are BE and CN
+            d_bdf_starting_integrator =
+                db->getWithDefault<std::string>( "bdf_starting_integrator", "CN" );
+            //  d_bdf_starting_integrator = db->getStringWithDefault("bdf_starting_integrator",
+            //  "BE");
+        }
 
+        if ( ( d_bdf_starting_integrator != "BE" ) && ( d_bdf_starting_integrator != "CN" ) ) {
+            AMP_ERROR( d_object_name +
+                       " -- Key data `d_bdf_starting_integrator' valid values are BE and CN" );
+        }
 
-        if ( d_timestep_strategy == "truncationErrorStrategy" ) {
+        if ( db->keyExists( "timestep_selection_strategy" ) ) {
+            d_timestep_strategy = db->getString( "timestep_selection_strategy" );
+        } else {
+            AMP_ERROR( d_object_name +
+                       " -- Key data `timestep_selection_strategy' missing in input." );
+        }
 
-            d_use_bdf1_estimator_on_regrid =
-                db->getWithDefault<bool>( "use_bdf1_estimator_on_regrid", true );
+        d_use_predictor = db->getWithDefault<bool>( "use_predictor", true );
+        //        d_use_initial_predictor = db->getWithDefault<bool>( "use_initial_predictor", true
+        //        );
+        d_use_initial_predictor =
+            db->getWithDefault<bool>( "use_initial_predictor", d_use_predictor );
 
-            d_enable_picontrol_regrid_steps =
-                db->getWithDefault<int>( "enable_picontrol_regrid_steps", 3 );
-
-            d_bdf1_eps_regrid_steps = db->getWithDefault<int>( "bdf1_eps_regrid_steps", 10 );
-
-            d_combine_timestep_estimators =
-                db->getWithDefault<bool>( "combine_timestep_estimators", false );
-            d_control_timestep_variation =
-                db->getWithDefault<bool>( "control_timestep_variation", false );
-
-            // these bounds are based on the paper by Emmrich, 2008 for nonlinear evolution
-            // equations //
-            d_DtCutLowerBound    = db->getWithDefault<double>( "dt_cut_lower_bound", 0.58754407 );
-            d_DtGrowthUpperBound = db->getWithDefault<double>( "dt_growth_upper_bound", 1.702 );
-
-            d_use_pi_controller = db->getWithDefault<bool>( "use_pi_controller", true );
-
-            if ( d_use_pi_controller ) {
-                d_pi_controller_type =
-                    db->getWithDefault<std::string>( "pi_controller_type", "PC.4.7" );
+        if ( d_use_predictor ) {
+            if ( db->keyExists( "predictor_type" ) ) {
+                d_predictor_type = db->getString( "predictor_type" );
             } else {
-                d_pi_controller_type = "";
+                AMP_ERROR( "Time integrator parameters:: -- Required key `predictor_type' missing "
+                           "in input." );
             }
 
-            // override and set to true if we are using the truncation error strategy
+            // override and set to true if we are using the predictor
             d_calculateTimeTruncError = true;
-            d_use_predictor           = true;
-        }
-        if ( d_timestep_strategy == "final constant" ) {
-
-            // these bounds are based on the paper by Emmrich, 2008 for nonlinear evolution
-            // equations //
-            //            d_DtCutLowerBound    = db->getWithDefault<double>( "dt_cut_lower_bound",
-            //            0.58754407 );
-            d_DtCutLowerBound =
-                db->getWithDefault<double>( "dt_cut_lower_bound", 0.9 ); // to match old for now
-            d_DtGrowthUpperBound = db->getWithDefault<double>( "dt_growth_upper_bound", 1.702 );
-            d_final_constant_timestep_current_step =
-                db->getWithDefault<int>( "final_constant_timestep_current_step", 1 );
         }
 
-        if ( !d_calculateTimeTruncError ) {
-            // keep the next line above the choice of truncation error strategy so overriding
-            // can happen if the truncation error strategy is chosen
-            d_calculateTimeTruncError =
-                db->getWithDefault<bool>( "calculate_time_trunc_error", false );
-        }
+        d_time_rtol = db->getWithDefault<double>( "truncation_error_rtol", 1e-09 );
+        d_time_atol = db->getWithDefault<double>( "truncation_error_atol", 1e-15 );
 
-        if ( ( d_timestep_strategy == "limit relative change" ) ||
-             ( d_combine_timestep_estimators ) ) {
-            if ( db->keyExists( "target_relative_change" ) ) {
-                d_target_relative_change = db->getScalar<double>( "target_relative_change" );
-            } else {
-                AMP_ERROR( d_object_name +
-                           " -- Key data `target_relative_change' missing in input." );
+        d_auto_component_scaling = db->getWithDefault<bool>( "auto_component_scaling", true );
+
+        if ( d_timestep_strategy != "constant" ) {
+
+
+            if ( d_timestep_strategy == "truncationErrorStrategy" ) {
+
+                d_use_bdf1_estimator_on_regrid =
+                    db->getWithDefault<bool>( "use_bdf1_estimator_on_regrid", true );
+
+                d_enable_picontrol_regrid_steps =
+                    db->getWithDefault<int>( "enable_picontrol_regrid_steps", 3 );
+
+                d_bdf1_eps_regrid_steps = db->getWithDefault<int>( "bdf1_eps_regrid_steps", 10 );
+
+                d_combine_timestep_estimators =
+                    db->getWithDefault<bool>( "combine_timestep_estimators", false );
+                d_control_timestep_variation =
+                    db->getWithDefault<bool>( "control_timestep_variation", false );
+
+                // these bounds are based on the paper by Emmrich, 2008 for nonlinear evolution
+                // equations //
+                d_DtCutLowerBound = db->getWithDefault<double>( "dt_cut_lower_bound", 0.58754407 );
+                d_DtGrowthUpperBound = db->getWithDefault<double>( "dt_growth_upper_bound", 1.702 );
+
+                d_use_pi_controller = db->getWithDefault<bool>( "use_pi_controller", true );
+
+                if ( d_use_pi_controller ) {
+                    d_pi_controller_type =
+                        db->getWithDefault<std::string>( "pi_controller_type", "PC.4.7" );
+                } else {
+                    d_pi_controller_type = "";
+                }
+
+                // override and set to true if we are using the truncation error strategy
+                d_calculateTimeTruncError = true;
+                d_use_predictor           = true;
+            }
+            if ( d_timestep_strategy == "final constant" ) {
+
+                // these bounds are based on the paper by Emmrich, 2008 for nonlinear evolution
+                // equations //
+                //            d_DtCutLowerBound    = db->getWithDefault<double>(
+                //            "dt_cut_lower_bound", 0.58754407 );
+                d_DtCutLowerBound =
+                    db->getWithDefault<double>( "dt_cut_lower_bound", 0.9 ); // to match old for now
+                d_DtGrowthUpperBound = db->getWithDefault<double>( "dt_growth_upper_bound", 1.702 );
+                d_final_constant_timestep_current_step =
+                    db->getWithDefault<int>( "final_constant_timestep_current_step", 1 );
+            }
+
+            if ( !d_calculateTimeTruncError ) {
+                // keep the next line above the choice of truncation error strategy so overriding
+                // can happen if the truncation error strategy is chosen
+                d_calculateTimeTruncError =
+                    db->getWithDefault<bool>( "calculate_time_trunc_error", false );
+            }
+
+            if ( ( d_timestep_strategy == "limit relative change" ) ||
+                 ( d_combine_timestep_estimators ) ) {
+                if ( db->keyExists( "target_relative_change" ) ) {
+                    d_target_relative_change = db->getScalar<double>( "target_relative_change" );
+                } else {
+                    AMP_ERROR( d_object_name +
+                               " -- Key data `target_relative_change' missing in input." );
+                }
             }
         }
-    }
 
-    if ( d_timestep_strategy == "final constant" ) {
-        d_number_of_time_intervals   = db->getWithDefault<int>( "number_of_time_intervals", 100 );
-        d_number_initial_fixed_steps = db->getWithDefault<int>( "number_initial_fixed_steps", 0 );
-    }
+        if ( d_timestep_strategy == "final constant" ) {
+            d_number_of_time_intervals = db->getWithDefault<int>( "number_of_time_intervals", 100 );
+            d_number_initial_fixed_steps =
+                db->getWithDefault<int>( "number_initial_fixed_steps", 0 );
+        }
 
-    // keep this towards the end so if the d_calculateTimeTruncError has to be overridden it is done
-    if ( d_calculateTimeTruncError ) {
-        // we have to use a predictor if we are going to calculate truncation errors
-        d_use_predictor = true;
-        d_timeTruncationErrorNormType =
-            db->getWithDefault<std::string>( "timeTruncationErrorNormType", "maxNorm" );
-        d_time_error_scaling =
-            db->getWithDefault<std::string>( "time_error_scaling", "fixed_scaling" );
-        if ( d_time_error_scaling == "fixed_scaling" ) {
-            if ( db->keyExists( "problem_fixed_scaling" ) ) {
-                d_problem_scales = db->getVector<double>( "problem_fixed_scaling" );
-            } else {
-                AMP_ERROR( d_object_name +
-                           " -- Key data `problem_fixed_scaling' missing in input." );
+        // keep this towards the end so if the d_calculateTimeTruncError has to be overridden it is
+        // done
+        if ( d_calculateTimeTruncError ) {
+            // we have to use a predictor if we are going to calculate truncation errors
+            d_use_predictor = true;
+            d_timeTruncationErrorNormType =
+                db->getWithDefault<std::string>( "timeTruncationErrorNormType", "maxNorm" );
+            d_time_error_scaling =
+                db->getWithDefault<std::string>( "time_error_scaling", "fixed_scaling" );
+            if ( d_time_error_scaling == "fixed_scaling" ) {
+                if ( db->keyExists( "problem_fixed_scaling" ) ) {
+                    d_problem_scales = db->getVector<double>( "problem_fixed_scaling" );
+                } else {
+                    AMP_ERROR( d_object_name +
+                               " -- Key data `problem_fixed_scaling' missing in input." );
+                }
             }
         }
     }
@@ -1915,35 +1923,35 @@ void BDFIntegrator::reset(
         d_timesteps_after_regrid = 0;
     }
 
-    d_scratch_vector->getVectorData()->reset();
-    d_scratch_function_vector->getVectorData()->reset();
+    d_scratch_vector->reset();
+    d_scratch_function_vector->reset();
 
     if ( d_implicit_integrator != "BE" ) {
-        d_prev_function_vector->getVectorData()->reset();
+        d_prev_function_vector->reset();
     }
 
-    d_integrator_source_vector->getVectorData()->reset();
+    d_integrator_source_vector->reset();
 
     if ( d_use_predictor ) {
-        d_current_function_vector->getVectorData()->reset();
+        d_current_function_vector->reset();
 
         if ( d_predictor_type == "ab2" ) {
-            d_old_td_vector->getVectorData()->reset();
+            d_old_td_vector->reset();
         }
     }
 
     if ( d_integrator_step > 0 ) {
-        d_solution_vector->getVectorData()->reset();
+        d_solution_vector->reset();
     }
 
     for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
-        d_prev_solutions[i]->getVectorData()->reset();
+        d_prev_solutions[i]->reset();
     }
 
     if ( d_use_predictor ) {
 
-        d_predictor_vector->getVectorData()->reset();
-        d_timederivative_vector->getVectorData()->reset();
+        d_predictor_vector->reset();
+        d_timederivative_vector->reset();
     }
 
     if ( d_operator ) {
@@ -2077,7 +2085,7 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     d_current_dt = dt;
 
-    d_solution_vector->getVectorData()->reset();
+    d_solution_vector->reset();
 
     d_prev_solutions[0]->copyVector( in );
 

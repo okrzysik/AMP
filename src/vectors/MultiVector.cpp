@@ -301,6 +301,14 @@ bool MultiVector::containsPointer( const Vector::shared_ptr p ) const
 /****************************************************************
  * Misc functions                                                *
  ****************************************************************/
+void MultiVector::reset()
+{
+    for ( size_t i = 0; i != d_vVectors.size(); i++ )
+        d_vVectors[i]->reset();
+    // reset multivector dof manager
+    resetVectorData();
+}
+
 void MultiVector::swapVectors( Vector &other )
 {
     for ( size_t i = 0; i != d_vVectors.size(); i++ )

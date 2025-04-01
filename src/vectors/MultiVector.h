@@ -150,6 +150,7 @@ public:
 
     void swapVectors( Vector &other ) override;
 
+    void reset() override;
 
 public: // Write/read restart data
     /**
