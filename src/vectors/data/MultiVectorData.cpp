@@ -22,10 +22,6 @@ void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *man
     d_globalDOFManager = manager;
     auto globalMgr     = dynamic_cast<AMP::Discretization::multiDOFManager *>( d_globalDOFManager );
     AMP_ASSERT( globalMgr );
-    auto subManagers = globalMgr->getDOFManagers();
-    d_subDOFManager.resize( subManagers.size() );
-    for ( size_t i = 0; i < subManagers.size(); i++ )
-        d_subDOFManager[i] = subManagers[i].get();
 
     // Create a new communication list
     auto remote_DOFs = globalMgr->getRemoteDOFs();
@@ -45,12 +41,6 @@ void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *man
     d_localSize  = d_globalDOFManager->numLocalDOF();
     d_globalSize = d_globalDOFManager->numGlobalDOF();
     d_localStart = d_CommList->getStartGID();
-}
-
-void MultiVectorData::reset()
-{
-    for ( auto &vdata : d_data )
-        vdata->reset();
 }
 
 /****************************************************************
@@ -454,13 +444,15 @@ void MultiVectorData::partitionLocalValues( const int num,
     }
     // Partition based on the global ids
     partitionGlobalValues( num, &global_indices[0], vals, bytes, out_indices, out_vals, remap );
+    auto *manager = (AMP::Discretization::multiDOFManager *) d_globalDOFManager;
     // Convert the new global ids back to local ids
     const size_t neg_one = ~( (size_t) 0 );
     for ( size_t i = 0; i < d_data.size(); i++ ) {
         if ( out_indices[i].size() == 0 )
             continue;
-        begin_DOF = d_subDOFManager[i]->beginDOF();
-        end_DOF   = d_subDOFManager[i]->endDOF();
+        auto mgr  = manager->getDOFManager( i );
+        begin_DOF = mgr->beginDOF();
+        end_DOF   = mgr->endDOF();
         for ( auto &elem : out_indices[i] ) {
             AMP_ASSERT( elem != neg_one );
             elem -= begin_DOF;
@@ -502,9 +494,9 @@ void MultiVectorData::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t
 {
     size_t localOffset = 0;
     auto *manager      = (AMP::Discretization::multiDOFManager *) d_globalDOFManager;
-    AMP_ASSERT( manager->getDOFManagers().size() == d_subDOFManager.size() );
-    for ( size_t i = 0; i != d_subDOFManager.size(); i++ ) {
-        auto subManager = d_subDOFManager[i];
+    auto subManagers   = manager->getDOFManagers();
+    for ( size_t i = 0; i != subManagers.size(); i++ ) {
+        auto subManager = subManagers[i];
         std::vector<size_t> subStartDOF( 1, subManager->beginDOF() );
         auto globalStartDOF = manager->getGlobalDOF( i, subStartDOF );
         size_t globalOffset = globalStartDOF[0] - subStartDOF[0];
@@ -514,10 +506,10 @@ void MultiVectorData::dumpOwnedData( std::ostream &out, size_t GIDoffset, size_t
 }
 void MultiVectorData::dumpGhostedData( std::ostream &out, size_t offset ) const
 {
-    auto manager = (AMP::Discretization::multiDOFManager *) d_globalDOFManager;
-    AMP_ASSERT( manager->getDOFManagers().size() == d_subDOFManager.size() );
+    auto manager     = (AMP::Discretization::multiDOFManager *) d_globalDOFManager;
+    auto subManagers = manager->getDOFManagers();
     for ( size_t i = 0; i != d_data.size(); i++ ) {
-        auto subManager = d_subDOFManager[i];
+        auto subManager = subManagers[i];
         std::vector<size_t> subStartDOF( 1, subManager->beginDOF() );
         auto globalStartDOF = manager->getGlobalDOF( i, subStartDOF );
         size_t globalOffset = globalStartDOF[0] - subStartDOF[0];
@@ -536,22 +528,16 @@ void MultiVectorData::registerChildObjects( AMP::IO::RestartManager *manager ) c
     for ( auto data : d_data )
         manager->registerObject( data->shared_from_this() );
     manager->registerObject( d_globalDOFManager->shared_from_this() );
-    for ( auto dofs : d_subDOFManager )
-        manager->registerObject( dofs->shared_from_this() );
 }
 void MultiVectorData::writeRestart( int64_t fid ) const
 {
     VectorData::writeRestart( fid );
     std::vector<uint64_t> dataHash( d_data.size() );
-    std::vector<uint64_t> dofsHash( d_subDOFManager.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         dataHash[i] = d_data[i]->getID();
-    for ( size_t i = 0; i < d_subDOFManager.size(); i++ )
-        dofsHash[i] = d_subDOFManager[i]->getID();
     IO::writeHDF5( fid, "CommHash", d_comm.hash() );
     IO::writeHDF5( fid, "globalDOFsHash", d_globalDOFManager->getID() );
     IO::writeHDF5( fid, "VectorDataHash", dataHash );
-    IO::writeHDF5( fid, "DOFManagerHash", dofsHash );
 }
 MultiVectorData::MultiVectorData( int64_t fid, AMP::IO::RestartManager *manager )
     : VectorData( fid, manager )
@@ -561,16 +547,11 @@ MultiVectorData::MultiVectorData( int64_t fid, AMP::IO::RestartManager *manager 
     IO::readHDF5( fid, "CommHash", commHash );
     IO::readHDF5( fid, "globalDOFsHash", globalDOFsHash );
     IO::readHDF5( fid, "VectorDataHash", vectorDataHash );
-    IO::readHDF5( fid, "DOFManagerHash", DOFManagerHash );
     d_comm = manager->getComm( commHash );
     d_data.resize( vectorDataHash.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         d_data[i] = manager->getData<VectorData>( vectorDataHash[i] ).get();
     d_globalDOFManager = manager->getData<AMP::Discretization::DOFManager>( globalDOFsHash ).get();
-    d_subDOFManager.resize( DOFManagerHash.size() );
-    for ( size_t i = 0; i < d_subDOFManager.size(); i++ )
-        d_subDOFManager[i] =
-            manager->getData<AMP::Discretization::DOFManager>( DOFManagerHash[i] ).get();
 }
 
 

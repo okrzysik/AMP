@@ -95,6 +95,9 @@ public:
     //! Get the DOFManagers that compose the multiDOFManager
     std::vector<std::shared_ptr<DOFManager>> getDOFManagers() const;
 
+    //! get the i-th dof manager
+    std::shared_ptr<DOFManager> getDOFManager( const size_t i ) const { return d_managers[i]; }
+
 
     /** \brief   Function to convert DOFs from a sub-manager DOF to the global DOF
      * \details  This function returns the global DOF given the local DOF.  Note that
@@ -187,6 +190,8 @@ private:
 
 
 private:
+    multiDOFManager() = delete;
+
     std::vector<std::shared_ptr<DOFManager>> d_managers;
     std::vector<size_t> d_ids;
     std::vector<size_t> d_localSize;
