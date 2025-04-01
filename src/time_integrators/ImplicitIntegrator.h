@@ -225,7 +225,10 @@ public:
     const std::string &getObjectName() const { return d_object_name; }
 
     std::shared_ptr<AMP::Solver::SolverStrategy> getSolver( void ) { return d_solver; }
-    void freeSolver( void ) { d_solver = nullptr; }
+    void resetSolver( std::shared_ptr<AMP::Solver::SolverStrategy> solver = nullptr )
+    {
+        d_solver = solver;
+    }
 
     using TimeIntegrator::initialize;
 
