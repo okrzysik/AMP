@@ -457,7 +457,7 @@ public: // Get/Set data/variables/operations
     virtual void rename( const std::string &src, const std::string &dst );
 
     //! Reset
-    virtual void reset ();
+    virtual void reset();
 
 public: // Subset/Select
     /** \brief  Selects a portion of this vector and creates a view.

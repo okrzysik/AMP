@@ -115,7 +115,7 @@ public:
 
     // The following are not implemented:
     ImplicitIntegrator( const ImplicitIntegrator & ) = delete;
-    void operator=( const ImplicitIntegrator & )     = delete;
+    void operator=( const ImplicitIntegrator & ) = delete;
 
     /**
      * Empty destructor for ImplicitIntegrator
