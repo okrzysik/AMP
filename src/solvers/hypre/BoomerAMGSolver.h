@@ -74,6 +74,16 @@ public:
      */
     void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
 
+    /**
+     * Resets the solver internally with new parameters if necessary
+     * @param [in] params
+     *        SolverStrategyParameters object that is NULL by default
+     * Currently every call to reset destroys the HyprePCG solver object
+     * and recreates it based on the parameters object. See constructor for
+     * fields required for parameter object.
+     */
+    void reset( std::shared_ptr<SolverStrategyParameters> ) override;
+
     void getFromInput( std::shared_ptr<const AMP::Database> db );
 
 private:
