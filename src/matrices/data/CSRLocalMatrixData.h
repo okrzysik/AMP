@@ -11,6 +11,7 @@
 #include <map>
 #include <numeric>
 #include <tuple>
+#include <unordered_map>
 
 namespace AMP::Discretization {
 class DOFManager;
@@ -18,9 +19,13 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-// Forward declare CSRMatrixData to make it a friend
+// Forward declare CSRMatrix{Data.Communicator> to make them friends
 template<typename P, class A, class DIAG>
 class CSRMatrixData;
+template<typename P, class A, class DIAG>
+class CSRMatrixCommunicator;
+template<typename P, class A, class DIAG>
+class CSRMatrixSpGEMMDefault;
 
 template<typename Policy, class Allocator>
 class CSRLocalMatrixData :
@@ -29,6 +34,10 @@ class CSRLocalMatrixData :
 public:
     template<typename P, class A, class DIAG>
     friend class CSRMatrixData;
+    template<typename P, class A, class DIAG>
+    friend class CSRMatrixCommunicator;
+    template<typename P, class A, class DIAG>
+    friend class CSRMatrixSpGEMMDefault;
 
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
@@ -41,9 +50,13 @@ public:
         typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
 
     /** \brief Constructor
-     * \param[in] outer Containing CSRMatrixData object
-     * \param[in] params Description of the matrix
-     * \param[in] is_diag True if this is the diag block, influences which dofs are used/ignored
+     * \param[in] params           Description of the matrix
+     * \param[in] memory_location  Memory space where data is located
+     * \param[in] first_row        Global index of starting row (inclusive)
+     * \param[in] last_row         Global index of final row (exclusive)
+     * \param[in] first_col        Global index of starting column (inclusive)
+     * \param[in] last_col         Global index of final column (exclusive)
+     * \param[in] is_diag          True if this is the diag block, influences use of first/last col
      */
     explicit CSRLocalMatrixData( std::shared_ptr<MatrixParametersBase> params,
                                  AMP::Utilities::MemoryType memory_location,
@@ -62,6 +75,9 @@ public:
         return std::make_tuple(
             d_row_starts.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
     }
+
+    //! Get row pointers
+    lidx_t *getRowStarts() { return d_row_starts.get(); }
 
     //! Get the memory space where data is stored
     auto getMemoryLocation() const { return d_memory_location; }
@@ -142,6 +158,9 @@ public:
     //! Set number of nonzeros in each row and allocate space accordingly
     void setNNZ( const std::vector<lidx_t> &nnz );
 
+    //! setNNZ function that references d_row_starts and optionally does scan
+    void setNNZ( bool do_accum );
+
     //! Get pointers into d_cols at start of each row
     void getColPtrs( std::vector<gidx_t *> &col_ptrs );
 
@@ -174,9 +193,24 @@ public:
         std::cout << std::endl << std::endl;
     }
 
+    static std::shared_ptr<CSRLocalMatrixData>
+    ConcatHorizontal( std::shared_ptr<MatrixParametersBase> params,
+                      std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks );
+
+    static std::shared_ptr<CSRLocalMatrixData>
+    ConcatVertical( std::shared_ptr<MatrixParametersBase> params,
+                    std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks );
+
 protected:
+    //! Helper function for getting a global col idx from local depending on diag/offd case
+    gidx_t localToGlobal( const lidx_t loc_id ) const;
+
     //! Make a clone of this matrix data
     std::shared_ptr<CSRLocalMatrixData> cloneMatrixData();
+
+    //! Make matrix data for transpose
+    std::shared_ptr<CSRLocalMatrixData>
+    transpose( std::shared_ptr<MatrixParametersBase> params ) const;
 
     /** \brief  Get columns and values from one row
      * \param[in]  local_row  Local index of desired row

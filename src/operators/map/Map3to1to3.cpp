@@ -209,7 +209,8 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                 continue; // We already copied the local data
             if ( d_own_mesh2[i] ) {
                 // Get the received data
-                int inSize = d_MapComm.probe( i, d_commTag + 1 ) / sizeof( comm_data );
+                int num_bytes = std::get<2>( d_MapComm.probe( i, d_commTag + 1 ) );
+                int inSize    = num_bytes / sizeof( comm_data );
                 recvBuf.resize( inSize );
                 d_MapComm.recv( recvBuf.data(), inSize, i, false, d_commTag + 1 );
                 // Add it to the map
@@ -227,7 +228,8 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                 continue; // We already copied the local data
             if ( d_own_mesh1[i] ) {
                 // Get the received data
-                int inSize = d_MapComm.probe( i, d_commTag + 0 ) / sizeof( comm_data );
+                int num_bytes = std::get<2>( d_MapComm.probe( i, d_commTag + 0 ) );
+                int inSize    = num_bytes / sizeof( comm_data );
                 recvBuf.resize( inSize );
                 d_MapComm.recv( recvBuf.data(), inSize, i, false, d_commTag + 0 );
                 // Add it to the map

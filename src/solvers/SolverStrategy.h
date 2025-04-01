@@ -60,9 +60,8 @@ public:
     enum class SolverStatus {
         ConvergedOnAbsTol,
         ConvergedOnRelTol,
-        ConvergedIterations,
         ConvergedUserCondition,
-        DivergedMaxIterations,
+        MaxIterations,
         DivergedLineSearch,
         DivergedStepSize,
         DivergedFunctionCount,
@@ -78,12 +77,10 @@ public:
             return "ConvergedOnAbsTol";
         case SolverStatus::ConvergedOnRelTol:
             return "ConvergedOnRelTol";
-        case SolverStatus::ConvergedIterations:
-            return "ConvergedIterations";
         case SolverStatus::ConvergedUserCondition:
             return "ConvergedUserCondition";
-        case SolverStatus::DivergedMaxIterations:
-            return "DivergedMaxIterations";
+        case SolverStatus::MaxIterations:
+            return "MaxIterations";
         case SolverStatus::DivergedLineSearch:
             return "DivergedLineSearch";
         case SolverStatus::DivergedStepSize:

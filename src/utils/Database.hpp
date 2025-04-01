@@ -4,6 +4,7 @@
 #include "AMP/IO/HDF5.h"
 #include "AMP/utils/AMP_MPI_pack.hpp"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/UtilityMacros.h"
 
 #include <cstddef>
@@ -136,11 +137,11 @@ template<class TYPE>
 inline void printValue( std::ostream &os, const TYPE &value )
 {
     if constexpr ( std::is_floating_point_v<TYPE> ) {
-        if ( value != value ) {
+        if ( AMP::Utilities::isNaN( value ) ) {
             os << "nan";
-        } else if ( value == std::numeric_limits<TYPE>::infinity() ) {
+        } else if ( AMP::Utilities::isInf( value ) ) {
             os << "inf";
-        } else if ( value == -std::numeric_limits<TYPE>::infinity() ) {
+        } else if ( AMP::Utilities::isInf( -value ) ) {
             os << "-inf";
         } else {
             os << std::setprecision( 14 ) << value;

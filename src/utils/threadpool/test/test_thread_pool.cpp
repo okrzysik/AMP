@@ -397,10 +397,12 @@ void test_work_dependency( UnitTest &ut, ThreadPool &tpool )
  ******************************************************************/
 void test_FIFO( UnitTest &ut, ThreadPool &tpool )
 {
-    const int N = 4000;
+    int N = 4000;
+    if ( AMP::Utilities::running_valgrind() )
+        N = 200;
     std::vector<ThreadPoolID> ids;
     ids.reserve( N );
-    for ( size_t i = 0; i < N; i++ )
+    for ( int i = 0; i < N; i++ )
         ids.emplace_back( TPOOL_ADD_WORK( &tpool, sleep_inc2, ( 0.001 ) ) );
     bool pass = true;
     while ( tpool.N_queued() > 0 ) {
@@ -417,6 +419,7 @@ void test_FIFO( UnitTest &ut, ThreadPool &tpool )
             printf( "%i %i %i\n", i1, i2, diff );
             pass = pass && abs( i2 - i1 - 1 ) <= 2;
         }
+        std::this_thread::yield();
     }
     ids.clear();
     tpool.wait_pool_finished();
@@ -575,8 +578,10 @@ void testThreadAffinity( ThreadPool &tpool, UnitTest &ut )
 void testThreadPoolPerformance( ThreadPool &tpool )
 {
     constexpr int N_work    = 2000; // Number of work items
-    constexpr int N_it      = 10;   // Number of cycles to run
     constexpr int N_problem = 5;    // Problem size
+    int N_it                = 10;   // Number of cycles to run
+    if ( AMP::Utilities::running_valgrind() )
+        N_it = 1;
 
     const int N_threads = tpool.getNumThreads();
     printp( "\nTesting ThreadPool performance with %i threads:\n", N_threads );
@@ -716,9 +721,12 @@ void run_tests( UnitTest &ut )
     if ( size > 1 ) {
         if ( rank == 0 )
             std::cerr << "test_thread_pool is now a single rank test\n\n";
-        else
-            return;
+        return;
     }
+
+    // Check if we are running valgrind
+    if ( AMP::Utilities::running_valgrind() )
+        std::cout << "Using valgrind\n";
 
     // Test the atomics
     if ( test_atomics() )
@@ -748,7 +756,6 @@ void run_tests( UnitTest &ut )
         ut.passes( "Created thread pool" );
     else
         ut.failure( "Failed to create tpool with desired number of threads" );
-
 
     // Test setting the thread affinities
     testThreadAffinity( tpool, ut );

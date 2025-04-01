@@ -203,13 +203,13 @@ void testAXPY( AMP::UnitTest *ut,
     using scalar_t = typename Policy::scalar_t;
 
     std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> X = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> xX                      = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> yX                      = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, X, xX, yX );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> rX                      = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> lX                      = nullptr;
+    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, X, rX, lX );
     std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> Y = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> xY                      = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> yY                      = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, Y, xY, yY );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> rY                      = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> lY                      = nullptr;
+    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, Y, rY, lY );
 
     fillWithPseudoLaplacian( X, dofManager );
     X->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -218,24 +218,31 @@ void testAXPY( AMP::UnitTest *ut,
 
     // X = Y = pL
     // X = -2Y + X = -pL
-    double alpha = -2.;
+    scalar_t alpha = -2.;
     X->axpy( alpha, Y );
 
-    xX->setToScalar( 1.0 );
-    xX->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    yX->zero();
-    xY->copyVector( xX );
-    yY->zero();
-    X->mult( xX, yX );
-    Y->mult( xY, yY );
+    rX->setToScalar( 1.0 );
+    rX->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    lX->zero();
+    X->mult( rX, lX );
+
+    rY->copyVector( rX );
+
+    lY->zero();
+    Y->mult( rY, lY );
+
     // Check pL * one + (-pL*one) = 0
     auto z = X->getLeftVector();
     z->zero();
-    z->add( *yX, *yY );
-    if ( z->L1Norm() < std::numeric_limits<scalar_t>::epsilon() )
+    z->add( *lX, *lY );
+
+    auto norm = static_cast<double>( z->L1Norm() );
+    if ( norm < std::numeric_limits<scalar_t>::epsilon() )
         ut->passes( type + ": AXPY succeeded" );
-    else
+    else {
+        AMP::pout << "L1 norm of difference is  " << norm << std::endl;
         ut->failure( type + ": AXPY failed" );
+    }
 }
 
 template<typename Policy, class Allocator>

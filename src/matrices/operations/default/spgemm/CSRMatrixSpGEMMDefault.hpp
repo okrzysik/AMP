@@ -16,6 +16,11 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
     using lidx_t = typename Policy::lidx_t;
     using gidx_t = typename Policy::gidx_t;
 
+    // start communication to build BRemote before doing anything
+    if ( A->hasOffDiag() ) {
+        startBRemoteComm();
+    }
+
     const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
 
     auto A_diag = A->getDiagMatrix();
@@ -40,9 +45,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
         }
     }
 
-    // off-diagonal block requires fetching non-local rows of B
+    // process off-diagonal block of A
     if ( A->hasOffDiag() ) {
-        createBRemoteSymbolic();
+        // finalize BRemote communication before continuing
+        endBRemoteComm();
         symbolicMultiply( A_offd, BRemote, col_diag_start, col_diag_end, true, C_cols_diag );
         symbolicMultiply( A_offd, BRemote, col_diag_start, col_diag_end, false, C_cols_offd );
     }
@@ -127,6 +133,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
 
     // for each row in A block
     for ( lidx_t row = 0; row < nRows; ++row ) {
+        auto &C_row = C_cols[row];
         // get rows in B block from the A column indices
         for ( lidx_t j = A_rs[row]; j < A_rs[row + 1]; ++j ) {
             auto Acl = A_cols_loc[j];
@@ -134,7 +141,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
             for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
                 const auto bc = B_to_global( k );
                 if ( idx_test( bc ) ) {
-                    C_cols[row].insert( bc );
+                    C_row.insert( bc );
                 }
             }
         }
@@ -142,94 +149,53 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::createBRemoteCommInfo()
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::startBRemoteComm()
 {
     /*
      * Setting up the comms is somewhat involved. A high level overview
      * of the steps involved is:
-     * 1. Gather final row of B from each rank so that we know who owns what
-     * 2. Get column map for A offd, these indices are the rows of B needed
-     * 3. Count # rows needed from each rank, >0 implies dependency on that rank
-     * 4. Do all-to-all of count from step 3 to # rows to send to each rank
-     * 5. Trim down lists from steps 3 and 4 to ranks that are actually needed
-     * 6. Record which specific rows are needed from each process
-     * 7. Send row ids from 6 to owners of those rows
-     * 8. Record total number of non-zeros from the row ids we need to send out
-     * 9. Send row lengths from 7 to requestors of those rows
+     * 1. Collect comm list info and needed remote rows
+     * 2. Trim down lists from steps 3 and 4 to ranks that are actually needed
+     * 3. Record which specific rows are needed from each process
+     * 4. Send row ids from 6 to owners of those rows
+     * 5. Use recv'd row ids to subset the matrix into pieces needed by others
+     * 6. Initiate send of all subsetted matrices
 
      * NOTES:
-     *  Steps 1 and 4 involve global blocking communication and should be
-     *  considered for improvement in the future.
-     *
-     *  Steps 7 and 9 use non-blocking recvs and blocking sends. Locations
-     *  for irecvs, sends, waits should be examined more closely
+     *  Step 4 uses non-blocking recvs and blocking sends.
      */
 
-    PROFILE( "CSRMatrixSpGEMMDefault::createBRemoteCommInfo" );
+    PROFILE( "CSRMatrixSpGEMMDefault::startBRemoteComm" );
 
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
-    auto B_diag                                       = B->getDiagMatrix();
-    auto [B_rs_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
-
-    lidx_t *B_rs_od = nullptr, *B_cols_loc_od = nullptr;
-    gidx_t *B_cols_od     = nullptr;
-    scalar_t *B_coeffs_od = nullptr;
-    if ( B->hasOffDiag() ) {
-        auto B_offd                                                = B->getOffdMatrix();
-        std::tie( B_rs_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
-    }
+    using lidx_t = typename Policy::lidx_t;
 
     auto comm_size = comm.getSize();
 
-    // 1. gather last row of B from each process
-    auto B_last_rows = comm.allGather( B->endRow() );
-
-    // 2. get the column map of A_offd
+    // 1. Query comm list info and get offd colmap
+    auto comm_list            = A->getRightCommList();
+    auto rows_per_rank_recv   = comm_list->getReceiveSizes();
+    auto rows_per_rank_send   = comm_list->getSendSizes();
+    auto B_last_rows          = comm_list->getPartition();
     const auto A_col_map_size = A->getOffdMatrix()->numUniqueColumns();
     const auto A_col_map      = A->getOffdMatrix()->getColumnMap();
 
-    // 3. record how many rows needed from each rank
-    std::vector<int> rows_per_rank_recv( comm_size, 0 );
-    for ( lidx_t n = 0; n < A_col_map_size; ++n ) {
-        const auto col = static_cast<std::size_t>( A_col_map[n] );
-        if ( col < B_last_rows[0] ) {
-            rows_per_rank_recv[0]++;
-            continue;
-        }
-        for ( int r = 1; r < comm_size; ++r ) {
-            auto rs = B_last_rows[r - 1], re = B_last_rows[r];
-            if ( rs <= col && col < re ) {
-                rows_per_rank_recv[r]++;
-                break;
-            }
-        }
-    }
-
-    // 4. find how many rows need to get sent to each rank
-    std::vector<int> rows_per_rank_send( comm_size, 0 );
-    comm.allToAll( 1, rows_per_rank_recv.data(), rows_per_rank_send.data() );
-
-    // 5. the above rows per rank lists (should) include lots of zeros
+    // 2. the above rows per rank lists generally include lots of zeros
     // trim down to the ranks that actually need to communicate
+    int total_send = 0, total_recv = 0;
     for ( int r = 0; r < comm_size; ++r ) {
         const auto nsend = rows_per_rank_send[r];
         if ( nsend > 0 ) {
-            // ensure that rowids vector has space to recieve that list
-            // from requesters
             d_dest_info.insert( std::make_pair( r, SpGEMMCommInfo( nsend ) ) );
         }
         const auto nrecv = rows_per_rank_recv[r];
         if ( nrecv > 0 ) {
-            // do not pre-set the size of the rowids vector since it is easier
-            // to fill it via push_back
             d_src_info.insert( std::make_pair( r, SpGEMMCommInfo( nrecv ) ) );
         }
+        total_send += nsend;
+        total_recv += nrecv;
     }
 
-    // 6. repeat scan over column map now writing into the trimmed down src list
+    // 3. Scan over column map now writing into the trimmed down src list
     for ( lidx_t n = 0; n < A_col_map_size; ++n ) {
         const auto col = static_cast<std::size_t>( A_col_map[n] );
         int owner      = -1;
@@ -245,196 +211,58 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::createBRem
             }
         }
         d_src_info[owner].rowids.push_back( col );
-        d_src_info[owner].brow.push_back( n );
     }
 
-    // 7. send rowids to their owners
+    // 4. send rowids to their owners
     // start by posting the irecvs
-    {
-        const int TAG = 0;
-        std::vector<AMP_MPI::Request> irecvs;
-        for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
-            it->second.rowids.resize( it->second.numrow );
-            irecvs.push_back(
-                comm.Irecv( it->second.rowids.data(), it->second.numrow, it->first, TAG ) );
-        }
-        // now send all the rows we want from other ranks
-        for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
-            comm.send( it->second.rowids.data(), it->second.numrow, it->first, TAG );
-        }
-        // wait for receives to finish
-        comm.waitAll( static_cast<int>( irecvs.size() ), irecvs.data() );
-    }
-
-    // 8. We now have all global rowids this rank owns and needs to send out
-    //    Convert them to local rowids and record the nnz for all rows
-    const auto B_first_row = B->beginRow();
+    const int TAG = 7800;
+    std::vector<AMP_MPI::Request> irecvs;
     for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
-        for ( auto &row : it->second.rowids ) {
-            row -= B_first_row;
-            const auto nnzd = B_rs_d[row + 1] - B_rs_d[row];
-            lidx_t rnnz     = B_rs_od != nullptr ? nnzd + B_rs_od[row + 1] - B_rs_od[row] : nnzd;
-            it->second.rownnz.push_back( rnnz );
-        }
+        it->second.rowids.resize( it->second.numrow );
+        irecvs.push_back(
+            comm.Irecv( it->second.rowids.data(), it->second.numrow, it->first, TAG ) );
+    }
+    // now send all the rows we want from other ranks
+    for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
+        comm.send( it->second.rowids.data(), it->second.numrow, it->first, TAG );
+    }
+    // wait for receives to finish
+    comm.waitAll( static_cast<int>( irecvs.size() ), irecvs.data() );
+
+
+    // 5. We now have all global rowids this rank owns and needs to send out
+    // use them to form subset matrices
+    for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
+        auto block = B->subsetRows( it->second.rowids );
+        d_send_matrices.insert( { it->first, block } );
     }
 
-    // 9. Reverse the pattern of step 7 to send row sizes back to
-    //    the reqestors
-    {
-        const int TAG = 0;
-        std::vector<AMP_MPI::Request> irecvs;
-        for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
-            it->second.rownnz.resize( it->second.numrow );
-            irecvs.push_back(
-                comm.Irecv( it->second.rownnz.data(), it->second.numrow, it->first, TAG ) );
-        }
-        // now send all the rows we want from other ranks
-        for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
-            comm.send( it->second.rownnz.data(), it->second.numrow, it->first, TAG );
-        }
-        // wait for receives to finish
-        comm.waitAll( static_cast<int>( irecvs.size() ), irecvs.data() );
-    }
+    // 6. Initiate exchange
+    d_csr_comm.sendMatrices( d_send_matrices );
 }
-
 
 template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::createBRemoteSymbolic()
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::endBRemoteComm()
 {
-    PROFILE( "CSRMatrixSpGEMMDefault::createBRemoteSymbolic" );
+    using lidx_t = typename Policy::lidx_t;
 
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
+    PROFILE( "CSRMatrixSpGEMMDefault::endBRemoteComm" );
 
-    auto B_diag                                       = B->getDiagMatrix();
-    auto [B_rs_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
-    const auto B_first_col_d                          = B_diag->beginCol();
-
-    lidx_t *B_rs_od = nullptr, *B_cols_loc_od = nullptr;
-    gidx_t *B_cols_od     = nullptr;
-    gidx_t *B_colmap_od   = nullptr;
-    scalar_t *B_coeffs_od = nullptr;
-    if ( B->hasOffDiag() ) {
-        auto B_offd                                                = B->getOffdMatrix();
-        std::tie( B_rs_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
-        B_colmap_od                                                = B_offd->getColumnMap();
-    }
-
-    // First set up all of the comm information
-    createBRemoteCommInfo();
-
-    // Accumulate num rows from all source ranks to find size of BRemote blocks
-    lidx_t BR_nrows = 0;
-    {
-        // count up number of rows to expect from all other ranks
+    d_recv_matrices = d_csr_comm.recvMatrices( 0, 0, 0, B->numGlobalColumns() );
+    // BRemote does not need any particular parameters object internally
+    BRemote = CSRLocalMatrixData<Policy, Allocator>::ConcatVertical( nullptr, d_recv_matrices );
+    const auto A_col_map_size = A->getOffdMatrix()->numUniqueColumns();
+    if ( A_col_map_size != static_cast<lidx_t>( BRemote->endRow() ) ) {
+        int num_reqd = 0;
         for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
-            BR_nrows += it->second.numrow;
+            num_reqd += it->second.numrow;
         }
+        std::cout << "Rank " << comm.getRank() << " expected last row " << A_col_map_size << " got "
+                  << BRemote->endRow() << " requested " << num_reqd << std::endl;
 
-        // count total non-zeros and record nnz per row
-        std::vector<lidx_t> BR_nnz( BR_nrows, 0 );
-        for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
-            for ( lidx_t r = 0; r < it->second.numrow; ++r ) {
-                BR_nnz[it->second.brow[r]] = it->second.rownnz[r];
-            }
-        }
-
-        BRemote = std::make_shared<DiagMatrixData>(
-            nullptr, B->d_memory_location, 0, BR_nrows, 0, B->numGlobalColumns(), true );
-        BRemote->setNNZ( BR_nnz );
-    }
-
-    auto [BR_rs, BR_cols, BR_cols_loc, BR_coeffs] = BRemote->getDataFields();
-
-    // setup non-zero structure
-    {
-        const int TAG = 0;
-        std::vector<AMP_MPI::Request> irecvs;
-        for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
-            for ( lidx_t r = 0; r < it->second.numrow; ++r ) {
-                const auto in_idx = BR_rs[it->second.brow[r]];
-                irecvs.push_back(
-                    comm.Irecv( &BR_cols[in_idx], it->second.rownnz[r], it->first, TAG ) );
-            }
-        }
-        // then send all NZ structures to ranks that need them
-        for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
-            for ( lidx_t r = 0; r < it->second.numrow; ++r ) {
-                const auto rid = it->second.rowids[r];
-                std::vector<gidx_t> send_cols;
-                for ( lidx_t n = B_rs_d[rid]; n < B_rs_d[rid + 1]; ++n ) {
-                    send_cols.push_back( B_first_col_d + B_cols_loc_d[n] );
-                }
-                if ( B_rs_od != nullptr ) {
-                    for ( lidx_t n = B_rs_od[rid]; n < B_rs_od[rid + 1]; ++n ) {
-                        send_cols.push_back( B_colmap_od[B_cols_loc_od[n]] );
-                    }
-                }
-                comm.send( send_cols.data(), it->second.rownnz[r], it->first, TAG );
-            }
-        }
-        // wait for receives to finish
-        comm.waitAll( static_cast<int>( irecvs.size() ), irecvs.data() );
+        AMP_ERROR( "BRemote has wrong ending row" );
     }
 }
-
-// TODO: this is redundant with the last step of the symbolic phase
-//       abstract the comms pattern to work for cols or coeffs
-template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::fillBRemoteNumeric()
-{
-    PROFILE( "CSRMatrixSpGEMMDefault::fillBRemoteNumeric" );
-
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
-    auto B_diag                                       = B->getDiagMatrix();
-    auto [B_rs_d, B_cols_d, B_cols_loc_d, B_coeffs_d] = B_diag->getDataFields();
-
-    lidx_t *B_rs_od = nullptr, *B_cols_loc_od = nullptr;
-    gidx_t *B_cols_od     = nullptr;
-    scalar_t *B_coeffs_od = nullptr;
-    if ( B->hasOffDiag() ) {
-        auto B_offd                                                = B->getOffdMatrix();
-        std::tie( B_rs_od, B_cols_od, B_cols_loc_od, B_coeffs_od ) = B_offd->getDataFields();
-    }
-
-    auto [BR_rs, BR_cols, BR_cols_loc, BR_coeffs] = BRemote->getDataFields();
-
-    // setup non-zero structure
-    {
-        const int TAG = 0;
-        std::vector<AMP_MPI::Request> irecvs;
-        for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
-            for ( lidx_t r = 0; r < it->second.numrow; ++r ) {
-                const auto in_idx = BR_rs[it->second.brow[r]];
-                irecvs.push_back(
-                    comm.Irecv( &BR_coeffs[in_idx], it->second.rownnz[r], it->first, TAG ) );
-            }
-        }
-        // then send all NZ values to ranks that need them
-        for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
-            for ( lidx_t r = 0; r < it->second.numrow; ++r ) {
-                const auto rid = it->second.rowids[r];
-                std::vector<scalar_t> send_coeffs;
-                for ( lidx_t n = B_rs_d[rid]; n < B_rs_d[rid + 1]; ++n ) {
-                    send_coeffs.push_back( B_coeffs_d[n] );
-                }
-                if ( B_rs_od != nullptr ) {
-                    for ( lidx_t n = B_rs_od[rid]; n < B_rs_od[rid + 1]; ++n ) {
-                        send_coeffs.push_back( B_coeffs_od[n] );
-                    }
-                }
-                comm.send( send_coeffs.data(), it->second.rownnz[r], it->first, TAG );
-            }
-        }
-        // wait for receives to finish
-        comm.waitAll( static_cast<int>( irecvs.size() ), irecvs.data() );
-    }
-}
-
 
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMultiply()
@@ -460,7 +288,6 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMul
     // off-diagonal block requires fetching non-local rows of B
     if ( A->hasOffDiag() ) {
         PROFILE( "CSRMatrixSpGEMMDefault::numericMultiply (remote)" );
-        fillBRemoteNumeric();
         numericMultiply( A_offd, BRemote, C_diag );
         numericMultiply( A_offd, BRemote, C_offd );
     }

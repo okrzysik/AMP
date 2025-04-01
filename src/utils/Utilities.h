@@ -67,6 +67,16 @@ std::string_view getLastErrnoString();
 bool running_valgrind();
 
 
+//! Check if a number infinity
+template<class TYPE>
+bool isInf( TYPE x );
+
+
+//! Check if a number NaN
+template<class TYPE>
+bool isNaN( TYPE x );
+
+
 /*!
  * Set an environmental variable
  * @param name              The name of the environmental variable

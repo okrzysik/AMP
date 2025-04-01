@@ -56,18 +56,22 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::CSRMatrixData(
         d_offd_matrix = std::make_shared<DiagMatrixData>(
             params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
 
-        // Only special item, raw data doesn't come with DOFManagers so need to make some
-        resetDOFManagers();
+        d_leftDOFManager  = nullptr;
+        d_rightDOFManager = nullptr;
+        d_leftCommList    = nullptr;
+        d_rightCommList   = nullptr;
 
     } else if ( matParams ) {
-        // get row/column bounds from DOFManagers
+        // Pull out DOFManagers and CommunicationLists, set row/col bounds
         d_leftDOFManager  = matParams->getLeftDOFManager();
         d_rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
-        d_first_row = d_leftDOFManager->beginDOF();
-        d_last_row  = d_leftDOFManager->endDOF();
-        d_first_col = d_rightDOFManager->beginDOF();
-        d_last_col  = d_rightDOFManager->endDOF();
+        d_first_row     = d_leftDOFManager->beginDOF();
+        d_last_row      = d_leftDOFManager->endDOF();
+        d_first_col     = d_rightDOFManager->beginDOF();
+        d_last_col      = d_rightDOFManager->endDOF();
+        d_leftCommList  = matParams->getLeftCommList();
+        d_rightCommList = matParams->getRightCommList();
 
         // Construct on/off diag blocks
         d_diag_matrix = std::make_shared<DiagMatrixData>(
@@ -118,6 +122,9 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::CSRMatrixData(
     // get total nnz count
     d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
 
+    // determine if DOFManagers and CommLists need to be (re)created
+    resetDOFManagers();
+
     d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
 }
 
@@ -152,6 +159,124 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::cloneMatrixData() const
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
+std::shared_ptr<MatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>::transpose() const
+{
+    std::shared_ptr<CSRMatrixData> transposeData;
+
+    transposeData = std::make_shared<CSRMatrixData<Policy, Allocator, DiagMatrixData>>();
+
+    // copy fields from current, take care to swap L/R and rows/cols
+    transposeData->d_is_square       = d_is_square;
+    transposeData->d_first_row       = d_first_col;
+    transposeData->d_last_row        = d_last_col;
+    transposeData->d_first_col       = d_first_row;
+    transposeData->d_last_col        = d_last_row;
+    transposeData->d_leftDOFManager  = d_rightDOFManager;
+    transposeData->d_rightDOFManager = d_leftDOFManager;
+    transposeData->d_leftCommList    = d_rightCommList;
+    transposeData->d_rightCommList   = d_leftCommList;
+
+    // Parameters object is touchier, should also swap its internal L/R fields
+    // Matrix can be built from many different MatrixParameters classes
+    // There is no need to explicitly match the same type of parameters class
+    // that was used initially
+    transposeData->d_pParameters =
+        std::make_shared<MatrixParameters>( d_rightDOFManager,
+                                            d_leftDOFManager,
+                                            getComm(),
+                                            d_pParameters->getRightVariable(),
+                                            d_pParameters->getLeftVariable(),
+                                            d_rightCommList,
+                                            d_leftCommList );
+
+    transposeData->d_diag_matrix = d_diag_matrix->transpose( transposeData->d_pParameters );
+    if ( getComm().getSize() > 1 ) {
+        transposeData->d_offd_matrix = transposeOffd( transposeData->d_pParameters );
+    } else {
+        transposeData->d_offd_matrix =
+            std::make_shared<DiagMatrixData>( transposeData->d_pParameters,
+                                              d_memory_location,
+                                              d_first_col,
+                                              d_last_col,
+                                              d_first_row,
+                                              d_last_row,
+                                              false );
+    }
+
+    // total number of local non-zeros not the same, offd block can change
+    transposeData->d_nnz =
+        transposeData->d_diag_matrix->d_nnz + transposeData->d_offd_matrix->d_nnz;
+
+    // matrix blocks will not have correct ordering within rows and still
+    // have their global indices present. Call g2l to fix that.
+    transposeData->globalToLocalColumns();
+
+    return transposeData;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
+std::shared_ptr<DiagMatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>::transposeOffd(
+    std::shared_ptr<MatrixParametersBase> params ) const
+{
+    // make a matrix communicator based on right comm list
+    CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData> mat_comm( d_rightCommList );
+
+    // extract info from offd block
+    auto col_map = d_offd_matrix->getColumnMap();
+    auto num_unq = d_offd_matrix->numUniqueColumns();
+
+    // Get the partition from right comm list and test
+    // which blocks need to be created
+    // use the fact that partitions and col_map are sorted
+    auto partition = d_rightCommList->getPartition();
+    std::vector<int> dest_ranks;
+    int rd = 0;
+    for ( lidx_t n = 0; n < num_unq && rd < static_cast<int>( partition.size() ); ++n ) {
+        const auto col  = col_map[n];
+        auto part_start = static_cast<gidx_t>( rd == 0 ? 0 : partition[rd - 1] );
+        auto part_end   = static_cast<gidx_t>( partition[rd] );
+        if ( col < part_start ) {
+            // by sorting the partition containing this index should
+            // already be flagged
+            continue;
+        } else if ( col < part_end ) {
+            // Found column in current partition, flag it and increment
+            dest_ranks.push_back( rd );
+            ++rd;
+        } else {
+            // Found column past current partition
+            // increment partition until it is contained
+            while ( col >= part_end ) {
+                ++rd;
+                AMP_DEBUG_ASSERT( rd < static_cast<int>( partition.size() ) );
+                part_start = part_end;
+                part_end   = partition[rd];
+            }
+            // insert and increment again
+            dest_ranks.push_back( rd );
+            ++rd;
+        }
+    }
+
+    // Create blocks by subsetting on columns and send to owners
+    std::map<int, std::shared_ptr<DiagMatrixData>> send_blocks;
+    for ( const auto rd : dest_ranks ) {
+        const auto part_start = static_cast<gidx_t>( rd == 0 ? 0 : partition[rd - 1] );
+        const auto part_end   = static_cast<gidx_t>( partition[rd] );
+        auto block            = subsetCols( part_start, part_end );
+        send_blocks.insert( { rd, block->transpose( params ) } );
+    }
+    mat_comm.sendMatrices( send_blocks );
+
+    // receive all blocks needed here
+    // swap this ranks row/col extents to get transpose's extents
+    auto recv_blocks = mat_comm.recvMatrices( d_first_col, d_last_col, d_first_row, d_last_row );
+
+    // return horizontal concatenation of recv'd blocks
+    return DiagMatrixData::ConcatHorizontal( params, recv_blocks );
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData>::setNNZ( const std::vector<lidx_t> &nnz_diag,
                                                                const std::vector<lidx_t> &nnz_offd )
 {
@@ -171,22 +296,191 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::globalToLocalColumns()
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData>::resetDOFManagers()
 {
-    std::vector<size_t> remoteDOFsRight;
-    d_offd_matrix->getColumnMap( remoteDOFsRight );
-    d_rightDOFManager = std::make_shared<Discretization::DOFManager>(
-        d_last_col - d_first_col, getComm(), remoteDOFsRight );
-    // Finding ghosts for leftDM hard to do and not currently needed
-    // should think about how to approach it though
+    auto comm = getComm();
+
+    // There is no easy way to determine the remote DOFs and comm pattern
+    // for the left vector. This side's DOFManager/CommList are rarely used
+    // so we only create them if they don't exist
+    if ( !d_leftCommList ) {
+        auto cl_params         = std::make_shared<CommunicationListParameters>();
+        cl_params->d_comm      = comm;
+        cl_params->d_localsize = d_last_row - d_first_row;
+        d_leftCommList         = std::make_shared<CommunicationList>( cl_params );
+    }
     if ( !d_leftDOFManager ) {
         d_leftDOFManager =
-            std::make_shared<Discretization::DOFManager>( d_last_row - d_first_row, getComm() );
+            std::make_shared<Discretization::DOFManager>( d_last_row - d_first_row, comm );
+    }
+
+    // Right DOFManager and CommList used mre often. Replacing DOFManager has
+    // poor side effects and is only done if necessary. The CommList on the other
+    // hand must contain only the minimal set of remote DOFs to avoid useless
+    // communication
+    bool need_right_dm = !d_rightDOFManager;
+    if ( d_rightDOFManager ) {
+        auto dm_rdofs = d_rightDOFManager->getRemoteDOFs();
+        if ( static_cast<size_t>( d_offd_matrix->numUniqueColumns() ) > dm_rdofs.size() ) {
+            // too few rdofs, must remake it
+            need_right_dm = true;
+        } else {
+            // test if needed DOFs contained in DOFManagers remotes?
+        }
+    }
+    bool need_right_cl = !d_rightCommList;
+    if ( d_rightCommList ) {
+        // right CL does exist, get remote dofs and test them
+        auto cl_rdofs = d_rightCommList->getGhostIDList();
+        if ( static_cast<size_t>( d_offd_matrix->numUniqueColumns() ) != cl_rdofs.size() ) {
+            // wrong number of rdofs, no further testing needed
+            need_right_cl = true;
+        } else {
+            // test if individual DOFs match?
+        }
+    }
+
+    if ( comm.anyReduce( need_right_cl ) ) {
+        auto cl_params         = std::make_shared<CommunicationListParameters>();
+        cl_params->d_comm      = comm;
+        cl_params->d_localsize = d_last_col - d_first_col;
+        d_offd_matrix->getColumnMap( cl_params->d_remote_DOFs );
+        d_rightCommList = std::make_shared<CommunicationList>( cl_params );
+    }
+
+    if ( comm.anyReduce( need_right_dm ) ) {
+        d_rightDOFManager = std::make_shared<Discretization::DOFManager>(
+            d_last_col - d_first_col, comm, d_rightCommList->getGhostIDList() );
     }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
-std::shared_ptr<MatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>::transpose() const
+std::shared_ptr<DiagMatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>::subsetRows(
+    const std::vector<gidx_t> &rows ) const
 {
-    AMP_ERROR( "Not implemented" );
+    auto sub_matrix = std::make_shared<DiagMatrixData>( nullptr,
+                                                        d_memory_location,
+                                                        0,
+                                                        static_cast<gidx_t>( rows.size() ),
+                                                        0,
+                                                        numGlobalColumns(),
+                                                        true );
+
+    // count nnz per row and write into sub matrix directly
+    // also check that passed in rows are in ascending order and owned here
+    [[maybe_unused]] gidx_t row_prev = rows[0];
+    for ( size_t n = 0; n < rows.size(); ++n ) {
+        AMP_DEBUG_ASSERT( n == 0 || rows[n] > row_prev );
+        AMP_DEBUG_ASSERT( d_first_row <= rows[n] && rows[n] < d_last_row );
+        const auto row_loc = static_cast<lidx_t>( rows[n] - d_first_row );
+        sub_matrix->d_row_starts[n] =
+            ( d_diag_matrix->d_row_starts[row_loc + 1] - d_diag_matrix->d_row_starts[row_loc] );
+        if ( !d_offd_matrix->d_is_empty ) {
+            sub_matrix->d_row_starts[n] +=
+                ( d_offd_matrix->d_row_starts[row_loc + 1] - d_offd_matrix->d_row_starts[row_loc] );
+        }
+        row_prev = rows[n];
+    }
+
+    // call setNNZ with accumulation on to convert counts and allocate internally
+    sub_matrix->setNNZ( true );
+
+    // Loop back over diag/offd and copy in marked rows
+    for ( size_t n = 0; n < rows.size(); ++n ) {
+        const auto row_loc = static_cast<lidx_t>( rows[n] - d_first_row );
+        lidx_t pos         = sub_matrix->d_row_starts[n];
+        for ( lidx_t k = d_diag_matrix->d_row_starts[row_loc];
+              k < d_diag_matrix->d_row_starts[row_loc + 1];
+              ++k ) {
+            sub_matrix->d_cols[pos] = d_diag_matrix->localToGlobal( d_diag_matrix->d_cols_loc[k] );
+            sub_matrix->d_coeffs[pos] = d_diag_matrix->d_coeffs[k];
+            ++pos;
+        }
+        if ( !d_offd_matrix->d_is_empty ) {
+            for ( lidx_t k = d_offd_matrix->d_row_starts[row_loc];
+                  k < d_offd_matrix->d_row_starts[row_loc + 1];
+                  ++k ) {
+                sub_matrix->d_cols[pos] =
+                    d_offd_matrix->localToGlobal( d_offd_matrix->d_cols_loc[k] );
+                sub_matrix->d_coeffs[pos] = d_offd_matrix->d_coeffs[k];
+                ++pos;
+            }
+        }
+    }
+
+    return sub_matrix;
+}
+
+/** \brief  Extract subset of each row containing global columns in some range
+ * \param[in] idx_lo  Lower global column index (inclusive)
+ * \param[in] idx_up  Upper global column index (exclusive)
+ * \return  shared_ptr to CSRLocalMatrixData holding the extracted nonzeros
+ * \details  Returned matrix concatenates contributions for both diag and
+ * offd components. Row and column extents are inherited from this matrix,
+ * but are neither sorted nor converted to local indices.
+ */
+template<typename Policy, class Allocator, class DiagMatrixData>
+std::shared_ptr<DiagMatrixData>
+CSRMatrixData<Policy, Allocator, DiagMatrixData>::subsetCols( const gidx_t idx_lo,
+                                                              const gidx_t idx_up ) const
+{
+    AMP_DEBUG_ASSERT( idx_up > idx_lo );
+
+    auto sub_matrix = std::make_shared<DiagMatrixData>(
+        nullptr, d_memory_location, d_first_row, d_last_row, idx_lo, idx_up, true );
+
+    // count nnz within each row that lie in the given range
+    const auto nrows = static_cast<lidx_t>( d_last_row - d_first_row );
+    for ( lidx_t row = 0; row < nrows; ++row ) {
+        sub_matrix->d_row_starts[row] = 0;
+        for ( lidx_t k = d_diag_matrix->d_row_starts[row]; k < d_diag_matrix->d_row_starts[row + 1];
+              ++k ) {
+            const auto col = d_diag_matrix->localToGlobal( d_diag_matrix->d_cols_loc[k] );
+            if ( idx_lo <= col && col < idx_up ) {
+                sub_matrix->d_row_starts[row]++;
+            }
+        }
+        if ( !d_offd_matrix->d_is_empty ) {
+            for ( lidx_t k = d_offd_matrix->d_row_starts[row];
+                  k < d_offd_matrix->d_row_starts[row + 1];
+                  ++k ) {
+                const auto col = d_offd_matrix->localToGlobal( d_offd_matrix->d_cols_loc[k] );
+                if ( idx_lo <= col && col < idx_up ) {
+                    sub_matrix->d_row_starts[row]++;
+                }
+            }
+        }
+    }
+
+    // call setNNZ with accumulation on to convert counts and allocate internally
+    sub_matrix->setNNZ( true );
+
+    // loop back over rows and write desired entries into sub matrix
+    for ( lidx_t row = 0; row < nrows; ++row ) {
+        lidx_t pos = sub_matrix->d_row_starts[row];
+        for ( lidx_t k = d_diag_matrix->d_row_starts[row]; k < d_diag_matrix->d_row_starts[row + 1];
+              ++k ) {
+            const auto col = d_diag_matrix->localToGlobal( d_diag_matrix->d_cols_loc[k] );
+            if ( idx_lo <= col && col < idx_up ) {
+                sub_matrix->d_cols[pos]   = col;
+                sub_matrix->d_coeffs[pos] = d_diag_matrix->d_coeffs[k];
+                ++pos;
+            }
+        }
+        if ( !d_offd_matrix->d_is_empty ) {
+            for ( lidx_t k = d_offd_matrix->d_row_starts[row];
+                  k < d_offd_matrix->d_row_starts[row + 1];
+                  ++k ) {
+                const auto col = d_offd_matrix->localToGlobal( d_offd_matrix->d_cols_loc[k] );
+                if ( idx_lo <= col && col < idx_up ) {
+                    sub_matrix->d_cols[pos]   = col;
+                    sub_matrix->d_coeffs[pos] = d_offd_matrix->d_coeffs[k];
+                    ++pos;
+                }
+            }
+        }
+        AMP_DEBUG_ASSERT( pos == sub_matrix->d_row_starts[row + 1] );
+    }
+
+    return sub_matrix;
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
@@ -450,6 +744,20 @@ std::shared_ptr<Discretization::DOFManager>
 CSRMatrixData<Policy, Allocator, DiagMatrixData>::getLeftDOFManager() const
 {
     return d_leftDOFManager;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
+std::shared_ptr<CommunicationList>
+CSRMatrixData<Policy, Allocator, DiagMatrixData>::getRightCommList() const
+{
+    return d_rightCommList;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
+std::shared_ptr<CommunicationList>
+CSRMatrixData<Policy, Allocator, DiagMatrixData>::getLeftCommList() const
+{
+    return d_leftCommList;
 }
 
 /********************************************************

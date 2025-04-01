@@ -39,7 +39,7 @@
 template<typename Policy, class Allocator>
 void createMatrixAndVectors(
     AMP::UnitTest *ut,
-    std::string test_name,
+    const std::string &test_name,
     AMP::Utilities::Backend backend,
     std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
     std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> &matrix,
@@ -103,8 +103,8 @@ void createMatrixAndVectors(
 
 template<class Policy, class Allocator>
 void checkEqualEntries( AMP::UnitTest *ut,
-                        std::string test_name,
-                        std::string task,
+                        const std::string &test_name,
+                        const std::string &task,
                         std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
                         std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> &X,
                         std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> &Y,
@@ -129,7 +129,7 @@ void checkEqualEntries( AMP::UnitTest *ut,
 
 template<class Allocator>
 void testCopyCast( AMP::UnitTest *ut,
-                   std::string test_name,
+                   const std::string &test_name,
                    AMP::Utilities::Backend backend,
                    std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {

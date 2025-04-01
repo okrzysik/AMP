@@ -11,6 +11,7 @@
 #include <functional>
 #include <map>
 #include <tuple>
+#include <vector>
 
 namespace AMP::Discretization {
 class DOFManager;
@@ -18,12 +19,18 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
+template<typename P, class A, class DIAG>
+class CSRMatrixSpGEMMDefault;
+
 template<typename Policy,
          class Allocator      = AMP::HostAllocator<void>,
          class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixData : public MatrixData
 {
 public:
+    template<typename P, class A, class DIAG>
+    friend class CSRMatrixSpGEMMDefault;
+
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
@@ -127,6 +134,13 @@ public:
     //!  Perform communication to ensure values in the matrix are the same across cores
     void makeConsistent( AMP::LinearAlgebra::ScatterType t ) override;
 
+    /** \brief Get the DOFManager associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$\mathbf{y}\f$ is
+     * a left vector )
+     * \return  The DOFManager associated with a left vector
+     */
+    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
+
     /** \brief Get the DOFManager associated with a right vector ( For
      * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$
      * is a right vector )
@@ -134,12 +148,19 @@ public:
      */
     std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
 
-    /** \brief Get the DOFManager associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+    /** \brief Get the CommList associated with a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$\mathbf{y}\f$ is
      * a left vector )
-     * \return  The DOFManager associated with a left vector
+     * \return  The CommList associated with a left vector
      */
-    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
+    std::shared_ptr<CommunicationList> getLeftCommList() const;
+
+    /** \brief Get the CommList associated with a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$\mathbf{y}\f$ is
+     * a right vector )
+     * \return  The CommList associated with a right vector
+     */
+    std::shared_ptr<CommunicationList> getRightCommList() const;
 
     //!  Get the number of local rows in the matrix
     size_t numLocalRows() const override;
@@ -211,7 +232,7 @@ public:
     //! Convert global columns in blocks to local columns and free global columns
     void globalToLocalColumns();
 
-    /** \brief  Replace left and right DOFManagers with ones matching nnz structure
+    /** \brief  Replace left/right DOFManagers and CommunicationLists to match NNZ structure
      * \details  This is necessary for matrices not created from pairs of vectors,
      * e.g. result matrices from SpGEMM and prolongators in AMG
      */
@@ -224,6 +245,25 @@ public:
         d_diag_matrix->printStats( show_zeros );
         d_offd_matrix->printStats( show_zeros );
     }
+
+    /** \brief  Extract subset of locally owned rows into new local matrix
+     * \param[in] rows  vector of global row indices to extract
+     * \return  shared_ptr to CSRLocalMatrixData holding the extracted rows
+     * \details  Returned matrix concatenates contributions for both diag and
+     * offd components. Row extents are set to [0,rows.size) and column extents
+     * are set to [0,numGlobalColumns).
+     */
+    std::shared_ptr<DiagMatrixData> subsetRows( const std::vector<gidx_t> &rows ) const;
+
+    /** \brief  Extract subset of each row containing global columns in some range
+     * \param[in] idx_lo  Lower global column index (inclusive)
+     * \param[in] idx_up  Upper global column index (exclusive)
+     * \return  shared_ptr to CSRLocalMatrixData holding the extracted nonzeros
+     * \details  Returned matrix concatenates contributions for both diag and
+     * offd components. Row and column extents are inherited from this matrix,
+     * but are neither sorted nor converted to local indices.
+     */
+    std::shared_ptr<DiagMatrixData> subsetCols( const gidx_t idx_lo, const gidx_t idx_up ) const;
 
 protected:
     bool d_is_square = true;
@@ -255,6 +295,11 @@ protected:
     //! DOFManager for right vectors
     std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;
 
+    //! CommunicationList for left vectors
+    std::shared_ptr<CommunicationList> d_leftCommList;
+    //! CommunicationList for right vectors
+    std::shared_ptr<CommunicationList> d_rightCommList;
+
     //!  \f$A_{i,j}\f$ storage of off core matrix data
     std::map<gidx_t, std::map<gidx_t, scalar_t>> d_other_data;
 
@@ -264,6 +309,9 @@ protected:
     //!  Update matrix data off-core
     void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &,
                        AMP::LinearAlgebra::ScatterType );
+
+    std::shared_ptr<DiagMatrixData>
+    transposeOffd( std::shared_ptr<MatrixParametersBase> params ) const;
 };
 
 template<typename Policy, class Allocator, class DiagMatrixData>

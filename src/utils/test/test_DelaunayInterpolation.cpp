@@ -4,6 +4,7 @@
 #include "AMP/utils/DelaunayTessellation.h"
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/typeid.h"
 
 #include "test_DelaunayInterpolation.h"
@@ -623,7 +624,7 @@ void testInterpolation( AMP::UnitTest &ut, const AMP::Array<TYPE> &x, bool check
         std::tie( fi2, std::ignore ) = data->interp_linear( f, x2, index2, false );
         std::tie( fi3, std::ignore ) = data->interp_linear( f, x2, index2, true );
         for ( unsigned int i = 0; i < N2; i++ ) {
-            f_mask[i] = fi2( i ) == fi2( i );
+            f_mask[i] = !AMP::Utilities::isNaN( fi2( i ) );
             for ( int d = 0; d < ndim; d++ )
                 g_mask[d + i * ndim] = f_mask[i];
         }

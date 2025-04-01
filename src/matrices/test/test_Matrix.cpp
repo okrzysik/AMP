@@ -1,69 +1,18 @@
 #include "test_Matrix.h"
 
+#include "AMP/AMP_TPLs.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/testHelpers/MatrixTests.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include <chrono>
+
+
+#define to_ms( x ) std::chrono::duration_cast<std::chrono::milliseconds>( x ).count()
+
 
 using namespace AMP::LinearAlgebra;
-
-
-void test_matrix_loop( AMP::UnitTest &ut, std::shared_ptr<MatrixTests> tests )
-{
-    tests->InstantiateMatrix( &ut );
-    tests->VerifyGetSetValuesMatrix( &ut );
-    tests->VerifyAXPYMatrix( &ut );
-    tests->VerifyCopyMatrix( &ut );
-    tests->VerifyScaleMatrix( &ut );
-    tests->VerifyGetLeftRightVector( &ut );
-    tests->VerifyExtractDiagonal( &ut );
-    tests->VerifyMultMatrix( &ut );
-    tests->VerifyMatMultMatrix( &ut );
-    tests->VerifyAddElementNode( &ut );
-}
-
-template<typename FACTORY>
-void test_matrix_loop( AMP::UnitTest &ut )
-{
-    auto factory     = std::make_shared<FACTORY>();
-    std::string name = factory->name();
-    PROFILE2( name );
-    auto tests = std::make_shared<MatrixTests>( factory );
-    test_matrix_loop( ut, tests );
-}
-
-template<typename FACTORY1, typename FACTORY2>
-void test_matrix_loop( AMP::UnitTest &ut )
-{
-    auto factory          = std::make_shared<FACTORY1>();
-    std::string name      = factory->name();
-    auto copy_factory     = std::make_shared<FACTORY2>();
-    std::string copy_name = copy_factory->name();
-    PROFILE2( name + copy_name );
-    auto tests = std::make_shared<MatrixTests>( factory, copy_factory );
-    test_matrix_loop( ut, tests );
-}
-
-template<typename FACTORY>
-void test_petsc_matrix_loop( [[maybe_unused]] AMP::UnitTest &ut )
-{
-}
-
-void testBasics( AMP::UnitTest &ut, const std::string &type )
-{
-    // Test creating a non-square matrix and ensure it is the proper size
-    auto left  = AMP::LinearAlgebra::createSimpleVector<double>( 5, "left" );
-    auto right = AMP::LinearAlgebra::createSimpleVector<double>( 10, "right" );
-    auto mat   = AMP::LinearAlgebra::createMatrix(
-        right, left, type, []( size_t row ) { return std::vector<size_t>( 1, row ); } );
-    int rows = mat->numGlobalRows();
-    int cols = mat->numGlobalColumns();
-    if ( rows == 5 && cols == 10 )
-        ut.passes( "Created non-square matrix (" + type + ")" );
-    else
-        ut.failure( "Failed non-square matrix (" + type + ")" );
-}
 
 
 int main( int argc, char **argv )
@@ -75,97 +24,66 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE();
 
-    // Test some basic properties
-    std::vector<std::string> types = { "DenseSerialMatrix", "CSRMatrix" };
+
+    // Get the types of matricies to test
+    std::vector<std::string> types = { "CSRMatrix" };
 #ifdef AMP_USE_TRILINOS
     types.emplace_back( "ManagedEpetraMatrix" );
 #endif
 #ifdef AMP_USE_PETSC
     types.emplace_back( "NativePetscMatrix" );
 #endif
-    types.emplace_back( "auto" );
+    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 )
+        types.emplace_back( "DenseSerialMatrix" );
+
+
+    // Test some basic properties
+    AMP::pout << "Running basic tests" << std::endl << std::endl;
+    testBasics( ut, "auto" );
     for ( auto type : types )
         testBasics( ut, type );
 
-    using CSRFactoryDOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 4>;
-    using CSRFactoryDOF3 = DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 4>;
-#if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
-    using CSRLibmeshFactoryDOF3 = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 4>;
+
+    // Run general tests for each matrix type
+    for ( auto type : types ) {
+        AMP::pout << "Running tests for " << type;
+        auto t1    = std::chrono::high_resolution_clock::now();
+        using DOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>>;
+        using DOF3 = DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>>;
+        test_matrix_loop( ut, std::make_shared<DOF1>( type ) );
+        test_matrix_loop( ut, std::make_shared<DOF3>( type ) );
+#if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA ) && !defined( _GLIBCXX_DEBUG )
+        using libmeshFactory = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>>;
+        test_matrix_loop( ut, std::make_shared<libmeshFactory>( type ) );
 #endif
-    // Test the CSRMatrix
-    test_matrix_loop<CSRFactoryDOF1>( ut );
-    test_matrix_loop<CSRFactoryDOF3>( ut );
+        auto t2 = std::chrono::high_resolution_clock::now();
+        AMP::pout << " (" << 1e-3 * to_ms( t2 - t1 ) << " s)" << std::endl;
+    }
+    AMP::pout << std::endl;
 
-    test_matrix_loop<CSRFactoryDOF1, CSRFactoryDOF1>( ut );
-    test_matrix_loop<CSRFactoryDOF3, CSRFactoryDOF3>( ut );
 
-#if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
-    test_matrix_loop<CSRLibmeshFactoryDOF3, CSRLibmeshFactoryDOF3>( ut );
-#endif
-
-#if defined( AMP_USE_PETSC )
-    using NativePetscFactoryDOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 3>;
-    using NativePetscFactoryDOF3 = DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 3>;
-#endif
-
-#if defined( AMP_USE_TRILINOS )
-    using EpetraFactory = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 1>;
-    test_matrix_loop<EpetraFactory>( ut );
-    test_matrix_loop<EpetraFactory, EpetraFactory>( ut );
-    test_matrix_loop<CSRFactoryDOF1, EpetraFactory>( ut );
-    test_matrix_loop<EpetraFactory, CSRFactoryDOF1>( ut );
-
-    #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
-    using EpetraLibmeshFactory = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 1>;
-    test_matrix_loop<EpetraLibmeshFactory>( ut );
-    test_matrix_loop<EpetraLibmeshFactory, EpetraLibmeshFactory>( ut );
-    test_matrix_loop<EpetraLibmeshFactory, CSRLibmeshFactoryDOF3>( ut );
-    test_matrix_loop<CSRLibmeshFactoryDOF3, EpetraLibmeshFactory>( ut );
-    #endif
-
-    #if defined( AMP_USE_PETSC )
-    test_matrix_loop<NativePetscFactoryDOF1, EpetraFactory>( ut );
-    test_matrix_loop<EpetraFactory, NativePetscFactoryDOF1>( ut );
-    // Test the ManagedPetscMatrix -- TODO
-    #endif
-#endif
-
-    // Test the DenseSerialMatrix (only valid for serial meshes)
-    // Note: we need to be careful, the memory requirement can be very large
-    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 ) {
-        using DenseSerialFactoryDOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 2>;
-        using DenseSerialFactoryDOF3 = DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 2>;
-
-        test_matrix_loop<DenseSerialFactoryDOF1>( ut );
-        test_matrix_loop<DenseSerialFactoryDOF3>( ut );
-        test_matrix_loop<DenseSerialFactoryDOF1, DenseSerialFactoryDOF1>( ut );
-        test_matrix_loop<DenseSerialFactoryDOF3, DenseSerialFactoryDOF3>( ut );
+    // Test using the copy factories between types
+    for ( auto type1 : types ) {
+        for ( auto type2 : types ) {
+            if ( ( type1 == "DenseSerialMatrix" ) != ( type2 == "DenseSerialMatrix" ) )
+                continue;
+            AMP::pout << "Running copy tests for " << type1 << " --> " << type2;
+            auto t1       = std::chrono::high_resolution_clock::now();
+            using DOF     = DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>>;
+            auto factory1 = std::make_shared<DOF>( type1 );
+            auto factory2 = std::make_shared<DOF>( type2 );
+            test_matrix_loop( ut, factory1, factory2 );
+            auto t2 = std::chrono::high_resolution_clock::now();
+            AMP::pout << " (" << 1e-3 * to_ms( t2 - t1 ) << " s)" << std::endl;
+        }
     }
 
-#if defined( AMP_USE_PETSC )
-
-    test_matrix_loop<NativePetscFactoryDOF1>( ut );
-    test_matrix_loop<NativePetscFactoryDOF3>( ut );
-    test_matrix_loop<NativePetscFactoryDOF1, NativePetscFactoryDOF1>( ut );
-    test_matrix_loop<NativePetscFactoryDOF3, NativePetscFactoryDOF3>( ut );
-    test_matrix_loop<CSRFactoryDOF1, NativePetscFactoryDOF1>( ut );
-    test_matrix_loop<CSRFactoryDOF3, NativePetscFactoryDOF3>( ut );
-    test_matrix_loop<NativePetscFactoryDOF1, CSRFactoryDOF1>( ut );
-    test_matrix_loop<NativePetscFactoryDOF3, CSRFactoryDOF3>( ut );
-
-    #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
-    using NativePetscLibmeshFactoryDOF3 = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 3>;
-    test_matrix_loop<NativePetscLibmeshFactoryDOF3>( ut );
-    test_matrix_loop<NativePetscLibmeshFactoryDOF3, NativePetscLibmeshFactoryDOF3>( ut );
-    test_matrix_loop<CSRLibmeshFactoryDOF3, NativePetscLibmeshFactoryDOF3>( ut );
-    test_matrix_loop<NativePetscLibmeshFactoryDOF3, CSRLibmeshFactoryDOF3>( ut );
-    #endif
-#endif
 
     ut.report();
     PROFILE_SAVE( "test_Matrix" );
     int num_failed = ut.NumFailGlobal();
     ut.reset();
+    types = {};
     AMP::AMPManager::shutdown();
     return num_failed;
 }

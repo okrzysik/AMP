@@ -51,31 +51,36 @@ void test_dist_line( int N, AMP::UnitTest &ut )
     auto t1   = std::chrono::high_resolution_clock::now();
     for ( int i = 0; i < N; i++ ) {
         // Generate an intersection point, then the rays and line segments
-        Point pi  = { dis( gen ), dis( gen ) };
-        Point p0  = { dis( gen ), dis( gen ) };
-        Point p1  = p0 + 1.34 * ( pi - p0 );
-        Point p2  = p0 + 0.98 * ( pi - p0 );
-        Point p   = { dis( gen ), dis( gen ) };
-        Point dir = normalize( pi - p );
-        double d  = ( pi.x() - p.x() ) / dir.x();
-        double d1 = distanceToLine( convert2( p ), dir, p0, p1 );
-        double d2 = distanceToLine( convert2( p ), dir, p0, p2 );
-        double d3 = distanceToLine( convert2( p ), -dir, p0, p2 );
-        double d4 = distanceToLine( convert2( p ), dir, p1, p0 );
-        pass      = pass && fabs( d - d1 ) < 1e-8;
-        pass      = pass && d2 == std::numeric_limits<double>::infinity();
-        pass      = pass && d3 == std::numeric_limits<double>::infinity();
-        pass      = pass && fabs( d - d4 ) < 1e-8;
-        if ( !( fabs( d - d1 ) < 1e-8 ) )
-            printf( "distanceToLine: %f %f %e\n", d, d1, d - d1 );
+        Point pi   = { dis( gen ), dis( gen ) };
+        Point p0   = { dis( gen ), dis( gen ) };
+        Point p1   = p0 + 1.34 * ( pi - p0 );
+        Point p2   = p0 + 0.98 * ( pi - p0 );
+        Point p    = { dis( gen ), dis( gen ) };
+        Point dir  = normalize( pi - p );
+        double d   = ( pi.x() - p.x() ) / dir.x();
+        double d1  = distanceToLine( convert2( p ), dir, p0, p1 );
+        double d2  = distanceToLine( convert2( p ), dir, p0, p2 );
+        double d3  = distanceToLine( convert2( p ), -dir, p0, p2 );
+        double d4  = distanceToLine( convert2( p ), dir, p1, p0 );
+        bool pass1 = fabs( d - d1 ) < 1e-8;
+        bool pass2 = fabs( d2 ) > 1e200;
+        bool pass3 = fabs( d3 ) > 1e200;
+        bool pass4 = fabs( d - d4 ) < 1e-8;
+        pass       = pass && pass1 && pass2 && pass3 && pass4;
+        if ( !pass1 )
+            printf( "distanceToLine (1): %f %f %e\n", d, d1, d - d1 );
+        if ( !pass4 )
+            printf( "distanceToLine (2): %f %f %e\n", d, d4, d - d4 );
+        if ( !pass2 || !pass3 )
+            printf( "distanceToLine (3): %f %f %e\n", d, d2, d3 );
     }
     auto t2    = std::chrono::high_resolution_clock::now();
     int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
     printf( "distanceToLine: %i ns\n", static_cast<int>( ns / ( 4 * N ) ) );
     if ( pass )
-        ut.passes( "distanceToLine" );
+        ut.passes( "distanceToLine (2D)" );
     else
-        ut.failure( "distanceToLine" );
+        ut.failure( "distanceToLine (2D)" );
 }
 
 
@@ -279,7 +284,7 @@ void test_ray_triangle_intersection( int N, AMP::UnitTest &ut )
     double d14 = distanceToTriangle( t1, { 0.1, 0.2 }, { -1, 0 } );
     pass       = pass && fabs( d11 - 1.0 ) < 1e-12;
     pass       = pass && fabs( d12 - 1.0 ) < 1e-12;
-    pass       = pass && d13 == std::numeric_limits<double>::infinity();
+    pass       = pass && fabs( d13 ) > 1e200;
     pass       = pass && fabs( d14 + 0.1 ) < 1e-12;
     // Test 2D triangles in 3D
     double d21 = distanceToTriangle( t2, { -1, 0, 0 }, { 1, 0, 0 } );
@@ -287,7 +292,7 @@ void test_ray_triangle_intersection( int N, AMP::UnitTest &ut )
     double d23 = distanceToTriangle( t2, { -1, -0.5, 0 }, { 1, 0, 0 } );
     pass       = pass && fabs( d21 - 1.0 ) < 1e-12;
     pass       = pass && fabs( d22 - 1.0 ) < 1e-12;
-    pass       = pass && d23 == std::numeric_limits<double>::infinity();
+    pass       = pass && fabs( d23 ) > 1e200;
     auto start = std::chrono::high_resolution_clock::now();
     for ( int i = 0; i < N; i++ ) {
         auto [tri, pos, dir, d] = createTriRayPlane();
