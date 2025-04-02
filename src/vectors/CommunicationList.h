@@ -72,6 +72,22 @@ public:
     CommunicationList( size_t local, const AMP_MPI &comm );
 
     /**
+     * \brief reset a CommunicationList with no comunication
+     * \param[in]  local  The number of local elements in the vector
+     * \details  Create a communication list with no communication.
+     */
+    void reset( size_t local );
+
+    /**
+     * \brief reset a communication list
+     * \param[in] params  A shared pointer to parameters for constructing the list
+     * \details It will not
+     * compute the communication lists.  Derived classes are expected to call
+     * buildCommunicationArrays with appropriate data to compute the communication list
+     */
+    void reset( std::shared_ptr<const CommunicationListParameters> params );
+
+    /**
      * \brief Subset a communication list based on a VectorIndexer
      * \param[in] sub  A VectorIndexer pointer that describes a subset
      */

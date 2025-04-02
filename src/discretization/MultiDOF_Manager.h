@@ -91,6 +91,11 @@ public:
     std::shared_ptr<DOFManager> subset( const AMP::Mesh::MeshIterator &iterator,
                                         const AMP_MPI &comm ) override;
 
+    /** reset a dof manager based on component dof managers
+     * \param managers  List of the DOFManagers on the current processor
+     **/
+    void reset( std::vector<std::shared_ptr<DOFManager>> managers );
+
 public:
     //! Get the DOFManagers that compose the multiDOFManager
     std::vector<std::shared_ptr<DOFManager>> getDOFManagers() const;
@@ -145,6 +150,8 @@ public: // Advanced interfaces
                        size_t index,
                        size_t capacity ) const override;
 
+protected:
+    void initialize();
 
 private:
     // Convert the local to global dof
