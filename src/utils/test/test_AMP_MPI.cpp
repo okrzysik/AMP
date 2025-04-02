@@ -34,7 +34,7 @@ using AMP::Utilities::stringf;
 #ifdef AMP_USE_MPI
 bool useMPI = true;
 #else
-bool useMPI = false;
+bool useMPI   = false;
 #endif
 #ifdef __APPLE__
 bool useApple = true;
