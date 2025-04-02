@@ -23,18 +23,24 @@ void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *man
     auto globalMgr     = dynamic_cast<AMP::Discretization::multiDOFManager *>( d_globalDOFManager );
     AMP_ASSERT( globalMgr );
 
-    // Create a new communication list
+    // reset communication list
     auto remote_DOFs = globalMgr->getRemoteDOFs();
     bool ghosts      = globalMgr->getComm().anyReduce( !remote_DOFs.empty() );
     if ( !ghosts ) {
-        d_CommList =
-            std::make_shared<CommunicationList>( globalMgr->numLocalDOF(), globalMgr->getComm() );
+        const auto nLocal = globalMgr->numLocalDOF();
+        if ( d_CommList )
+            d_CommList->reset( nLocal );
+        else
+            d_CommList = std::make_shared<CommunicationList>( nLocal, globalMgr->getComm() );
     } else {
         auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
         params->d_comm        = globalMgr->getComm();
         params->d_localsize   = globalMgr->numLocalDOF();
         params->d_remote_DOFs = remote_DOFs;
-        d_CommList            = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
+        if ( d_CommList )
+            d_CommList->reset( params );
+        else
+            d_CommList = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
     }
 
     // Initialize local/global size

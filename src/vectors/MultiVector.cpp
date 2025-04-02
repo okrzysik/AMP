@@ -147,7 +147,16 @@ void MultiVector::resetVectorData()
         AMP_ASSERT( managers[i]->numGlobalDOF() == d_vVectors[i]->getGlobalSize() );
         AMP_ASSERT( managers[i]->numLocalDOF() == d_vVectors[i]->getLocalSize() );
     }
-    d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
+
+    auto dofManager =
+        std::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( d_DOFManager );
+    if ( dofManager ) {
+        dofManager->reset( managers );
+    } else {
+        // this only occurs when add vector gets called
+        d_DOFManager =
+            std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
+    }
 
     auto data   = Vector::getVectorData();
     auto mvData = std::dynamic_pointer_cast<MultiVectorData>( data );

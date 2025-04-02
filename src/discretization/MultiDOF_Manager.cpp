@@ -20,24 +20,40 @@ multiDOFManager::multiDOFManager( const AMP_MPI &globalComm,
 {
     d_comm = globalComm;
     AMP_ASSERT( !d_comm.isNull() );
+    initialize();
+}
+
+void multiDOFManager::reset( std::vector<std::shared_ptr<DOFManager>> managers )
+{
+    d_managers   = managers;
+    const auto N = managers.size();
+    d_ids.resize( N, 0 );
+    d_localSize.resize( N, 0 );
+    d_globalSize.resize( N, 0 );
+
+    initialize();
+}
+
+void multiDOFManager::initialize()
+{
     // Compute the total begin, end, and global size
     size_t local_size = 0;
-    for ( size_t i = 0; i < managers.size(); i++ ) {
-        d_ids[i]        = managers[i]->getComm().rand();
-        d_globalSize[i] = managers[i]->numGlobalDOF();
-        d_localSize[i]  = managers[i]->numLocalDOF();
+    for ( size_t i = 0; i < d_managers.size(); i++ ) {
+        d_ids[i]        = d_managers[i]->getComm().rand();
+        d_globalSize[i] = d_managers[i]->numGlobalDOF();
+        d_localSize[i]  = d_managers[i]->numLocalDOF();
         local_size += d_localSize[i];
     }
     d_comm.sumScan( &local_size, &d_end, 1 );
     d_begin  = d_end - local_size;
     d_global = d_comm.bcast( d_end, d_comm.getSize() - 1 );
     // Compute the relationships between the DOFs
-    d_dofMap.resize( managers.size() );
+    d_dofMap.resize( d_managers.size() );
     size_t begin = d_begin;
-    for ( size_t i = 0; i < managers.size(); i++ ) {
+    for ( size_t i = 0; i < d_managers.size(); i++ ) {
         d_dofMap[i] =
-            DOFMapStruct( managers[i]->beginDOF(), managers[i]->endDOF(), begin, d_ids[i] );
-        begin += managers[i]->numLocalDOF();
+            DOFMapStruct( d_managers[i]->beginDOF(), d_managers[i]->endDOF(), begin, d_ids[i] );
+        begin += d_managers[i]->numLocalDOF();
     }
     d_dofMap = d_comm.allGather( d_dofMap );
 }
