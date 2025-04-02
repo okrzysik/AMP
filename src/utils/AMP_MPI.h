@@ -135,7 +135,7 @@ public: // Constructors
 
     /*!
      * Move constructor
-     * @param[in] rhs       Communicator to copy
+     * \param[in] rhs       Communicator to copy
      */
     AMP_MPI( AMP_MPI &&rhs );
 
@@ -150,7 +150,7 @@ public: // Constructors
 
     /*!
      * Move assignment operator
-     * @param[in] rhs       Communicator to copy
+     * \param[in] rhs       Communicator to copy
      */
     AMP_MPI &operator=( AMP_MPI &&rhs );
 
@@ -779,12 +779,12 @@ public: // Member functions
     /**
      * \brief   Perform a global barrier putting idle processors to sleep
      * \details  This function uses an MPI_Ibarrier to start the barrier then
-     *    waits for completion using sleep.  Note: this version will sleep in
-     *    increments of 10 ms and should not be used in performance critical
-     *    regions.  It's primary use is to allow the CPU to go idle if unused
-     *    for a long time.
+     *    waits for completion using sleep.
+     * \param[in] ms        Number of ms to sleep between checks for the barrier.
+     *                      Larger waits will allow the CPU to go idle if unused
+     *                      for a long time.
      */
-    void sleepBarrier() const;
+    void sleepBarrier( int ms = 10 ) const;
 
 
     /*!
@@ -796,9 +796,9 @@ public: // Member functions
      * then send the data.  This call must be paired with a
      * matching call to recv.
      *
-     * @param[in] data      Data to send
-     * @param[in] recv      Receiving processor number.
-     * @param[in] tag       Optional integer argument specifying an integer tag
+     * \param[in] data      Data to send
+     * \param[in] recv      Receiving processor number.
+     * \param[in] tag       Optional integer argument specifying an integer tag
      *                      to be sent with this message.  Default tag is 0.
      *                      The matching recv must share this tag.
      */
@@ -815,10 +815,10 @@ public: // Member functions
      * then send the data.  This call must be paired with a
      * matching call to recv.
      *
-     * @param[in] buf       Pointer to array buffer with length integers.
-     * @param[in] length    Number of integers in buf that we want to send.
-     * @param[in] recv      Receiving processor number.
-     * @param[in] tag       Optional integer argument specifying an integer tag
+     * \param[in] buf       Pointer to array buffer with length integers.
+     * \param[in] length    Number of integers in buf that we want to send.
+     * \param[in] recv      Receiving processor number.
+     * \param[in] tag       Optional integer argument specifying an integer tag
      *                      to be sent with this message.  Default tag is 0.
      *                      The matching recv must share this tag.
      */
@@ -832,10 +832,10 @@ public: // Member functions
      *
      * This call must be paired with a matching call to recvBytes.
      *
-     * @param[in] buf       Void pointer to an array of number_bytes bytes to send.
-     * @param[in] N_bytes   Integer number of bytes to send.
-     * @param[in] recv      Receiving processor number.
-     * @param[in] tag       Optional integer argument specifying an integer tag
+     * \param[in] buf       Void pointer to an array of number_bytes bytes to send.
+     * \param[in] N_bytes   Integer number of bytes to send.
+     * \param[in] recv      Receiving processor number.
+     * \param[in] tag       Optional integer argument specifying an integer tag
      *                      to be sent with this message.  Default tag is 0.
      *                      The matching recv must share this tag.
      */
@@ -848,9 +848,9 @@ public: // Member functions
      *   The receiving processor must know the length of the array.
      *   This call must be paired  with a matching call to Irecv.
      *
-     * @param[in] data      Data to send
-     * @param[in] recv_proc Receiving processor number.
-     * @param[in] tag       Integer argument specifying an integer tag
+     * \param[in] data      Data to send
+     * \param[in] recv_proc Receiving processor number.
+     * \param[in] tag       Integer argument specifying an integer tag
      *                      to be sent with this message.
      */
     template<class type>
@@ -863,10 +863,10 @@ public: // Member functions
      *   The receiving processor must know the length of the array.
      *   This call must be paired  with a matching call to Irecv.
      *
-     * @param[in] buf       Pointer to array buffer with length integers.
-     * @param[in] length    Number of integers in buf that we want to send.
-     * @param[in] recv_proc Receiving processor number.
-     * @param[in] tag       Integer argument specifying an integer tag
+     * \param[in] buf       Pointer to array buffer with length integers.
+     * \param[in] length    Number of integers in buf that we want to send.
+     * \param[in] recv_proc Receiving processor number.
+     * \param[in] tag       Integer argument specifying an integer tag
      *                      to be sent with this message.
      */
     template<class type>
@@ -879,10 +879,10 @@ public: // Member functions
      *   The receiving processor must know the number of bytes to receive.
      *   This call must be paired with a matching call to IrecvBytes.
      *
-     * @param[in] buf       Void pointer to an array of number_bytes bytes to send.
-     * @param[in] N_bytes   Integer number of bytes to send.
-     * @param[in] recv_proc Receiving processor number.
-     * @param[in] tag       Integer argument specifying an integer tag
+     * \param[in] buf       Void pointer to an array of number_bytes bytes to send.
+     * \param[in] N_bytes   Integer number of bytes to send.
+     * \param[in] recv_proc Receiving processor number.
+     * \param[in] tag       Integer argument specifying an integer tag
      *                  to be sent with this message.
      */
     Request IsendBytes( const void *buf, int N_bytes, int recv_proc, int tag ) const;
@@ -892,8 +892,8 @@ public: // Member functions
      * @brief This function receives an MPI message with a data array from another processor.
      *    This call must be paired with a matching call to send.
      *
-     * @param[in] send      Processor number of sender.
-     * @param[in] tag       Optional integer argument specifying a tag which must be matched
+     * \param[in] send      Processor number of sender.
+     * \param[in] tag       Optional integer argument specifying a tag which must be matched
      *                      by the tag of the incoming message. Default tag is 0.
      */
     template<class type>
@@ -904,10 +904,10 @@ public: // Member functions
      * @brief This function receives an MPI message with a data array from another processor.
      *    This call must be paired with a matching call to send.
      *
-     * @param[in] buf       Pointer to integer array buffer with capacity of length integers.
-     * @param[in] length    The number of elements to be received.
-     * @param[in] send      Processor number of sender.
-     * @param[in] tag       Optional integer argument specifying a tag which must be matched
+     * \param[in] buf       Pointer to integer array buffer with capacity of length integers.
+     * \param[in] length    The number of elements to be received.
+     * \param[in] send      Processor number of sender.
+     * \param[in] tag       Optional integer argument specifying a tag which must be matched
      *                      by the tag of the incoming message. Default tag is 0.
      */
     template<class type>
@@ -922,15 +922,15 @@ public: // Member functions
      * use "get_length = false;" otherwise we will get the return size.
      * This call must be paired with a matching call to send.
      *
-     * @param[in] buf       Pointer to integer array buffer with capacity of length integers.
-     * @param[in] length    If get_length==true: The number of elements to be received, otherwise
+     * \param[in] buf       Pointer to integer array buffer with capacity of length integers.
+     * \param[in] length    If get_length==true: The number of elements to be received, otherwise
      *                      the maximum number of values that can be stored in buf.
      *                      On output the number of received elements.
-     * @param[in] send      Processor number of sender.
-     * @param[in] get_length Optional boolean argument specifying if we first
+     * \param[in] send      Processor number of sender.
+     * \param[in] get_length Optional boolean argument specifying if we first
      *                      need to check the message size to get the size of the array.
      *                      Default value is false.
-     * @param[in] tag       Optional integer argument specifying a tag which must be matched
+     * \param[in] tag       Optional integer argument specifying a tag which must be matched
      *                      by the tag of the incoming message. Default tag is 0.
      */
     template<class type>
@@ -943,10 +943,10 @@ public: // Member functions
      *
      * This call must be paired with a matching call to sendBytes.
      *
-     * @param[in] buf       Void pointer to a buffer of size number_bytes bytes.
-     * @param[in] N_bytes   Integer number specifying size of buf in bytes.
-     * @param[in] send      Integer number specifying size of buf in bytes.
-     * @param[in] tag       Optional integer argument specifying a tag which
+     * \param[in] buf       Void pointer to a buffer of size number_bytes bytes.
+     * \param[in] N_bytes   Integer number specifying size of buf in bytes.
+     * \param[in] send      Integer number specifying size of buf in bytes.
+     * \param[in] tag       Optional integer argument specifying a tag which
      *   must be matched by the tag of the incoming message. Default
      *   tag is 0.
      */
@@ -957,9 +957,9 @@ public: // Member functions
      * @brief This function receives an MPI message with a data
      * array from another processor using a non-blocking call.
      *
-     * @param[in] data       Data to receive
-     * @param[in] send_proc  Processor number of sender.
-     * @param[in] tag        Optional integer argument specifying a tag which must
+     * \param[in] data       Data to receive
+     * \param[in] send_proc  Processor number of sender.
+     * \param[in] tag        Optional integer argument specifying a tag which must
      *                      be matched by the tag of the incoming message.
      */
     template<class type>
@@ -970,10 +970,10 @@ public: // Member functions
      * @brief This function receives an MPI message with a data
      * array from another processor using a non-blocking call.
      *
-     * @param[in] buf        Recieve buffer
-     * @param[in] length     Maximum number of values that can be stored in buf.
-     * @param[in] send_proc  Processor number of sender.
-     * @param[in] tag        Optional integer argument specifying a tag which must
+     * \param[in] buf        Recieve buffer
+     * \param[in] length     Maximum number of values that can be stored in buf.
+     * \param[in] send_proc  Processor number of sender.
+     * \param[in] tag        Optional integer argument specifying a tag which must
      *                      be matched by the tag of the incoming message.
      */
     template<class type>
@@ -986,10 +986,10 @@ public: // Member functions
      *
      * This call must be paired with a matching call to sendBytes.
      *
-     * @param[in] buf       Void pointer to a buffer of size number_bytes bytes.
-     * @param[in] N_bytes   Integer number specifying size of buf in bytes.
-     * @param[in] send_proc Processor number of sender.
-     * @param[in] tag       Integer argument specifying a tag which must
+     * \param[in] buf       Void pointer to a buffer of size number_bytes bytes.
+     * \param[in] N_bytes   Integer number specifying size of buf in bytes.
+     * \param[in] send_proc Processor number of sender.
+     * \param[in] tag       Integer argument specifying a tag which must
      *                      be matched by the tag of the incoming message.
      */
     Request IrecvBytes( void *buf, int N_bytes, int send_proc, int tag ) const;
@@ -998,14 +998,14 @@ public: // Member functions
     /*!
      * @brief This function sends and recieves data using a blocking call
      *
-     * @param[in] sendbuf   Initial address of send buffer (choice).
-     * @param[in] sendcount Number of elements to send (integer).
-     * @param[in] dest      Rank of destination (integer).
-     * @param[in] sendtag   Send tag (integer).
-     * @param[out] recvbuf  Initial address of recv buffer (choice).
-     * @param[in] recvcount Maximum number of elements to receive (integer).
-     * @param[in] source    Rank of source (integer).
-     * @param[in] recvtag   Receive tag (integer).
+     * \param[in] sendbuf   Initial address of send buffer (choice).
+     * \param[in] sendcount Number of elements to send (integer).
+     * \param[in] dest      Rank of destination (integer).
+     * \param[in] sendtag   Send tag (integer).
+     * \param[out] recvbuf  Initial address of recv buffer (choice).
+     * \param[in] recvcount Maximum number of elements to receive (integer).
+     * \param[in] source    Rank of source (integer).
+     * \param[in] recvtag   Receive tag (integer).
      */
     template<class type>
     void sendrecv( const type *sendbuf,
@@ -1020,7 +1020,7 @@ public: // Member functions
 
     /*!
      * Each processor sends every other processor a single value.
-     * @param[in] x      Input value for allGather
+     * \param[in] x      Input value for allGather
      * @return           Output array for allGather
      */
     template<class type>
@@ -1029,7 +1029,7 @@ public: // Member functions
 
     /*!
      * Each processor sends every other processor an array
-     * @param[in] x      Input array for allGather
+     * \param[in] x      Input array for allGather
      * @return           Output array for allGather
      */
     template<class type>
@@ -1040,8 +1040,8 @@ public: // Member functions
      * Each processor sends every other processor a single value.
      * The x_out array should be preallocated to a length equal
      * to the number of processors.
-     * @param[in] x_in      Input value for allGather
-     * @param[in] x_out     Output array for allGather (must be preallocated to the size of the
+     * \param[in] x_in      Input value for allGather
+     * \param[in] x_out     Output array for allGather (must be preallocated to the size of the
      * communicator)
      */
     template<class type>
@@ -1053,25 +1053,24 @@ public: // Member functions
      * Each processor receives the values from all processors and gathers them
      * to a single array.  If successful, the total number of received
      * elements will be returned.
-     * @param[in] send_data     Input array
-     * @param[in] send_cnt      The number of values to send
-     * @param[in] recv_data     Output array of received values
-     * @param[in] recv_cnt      The number of values to receive from each processor (N).
+     * \param[in] send_data     Input array
+     * \param[in] send_cnt      The number of values to send
+     * \param[in] recv_data     Output array of received values
+     * \param[in] recv_cnt      The number of values to receive from each processor (N).
      *                          If known, this should be provided as an input.  Otherwise
      *                          it is an optional output that will return the number of
      *                          received values from each processor.
-     * @param[in] recv_disp     The displacement (relative to the start of the array)
+     * \param[in] recv_disp     The displacement (relative to the start of the array)
      *                          from which to store the data received from processor i.
      *                          If known, this should be provided as an input.  Otherwise
      *                          it is an optional output that will return the starting location
      *                          (relative to the start of the array) for the received data from
      *                          processor i.
-     * @param[in] known_recv    Are the received counts and displacements known.
+     * \param[in] known_recv    Are the received counts and displacements known.
      *                          If the received sizes are known, then they must be provided,
      *                          and an extra communication step is not necessary.  If the received
      *                          sizes are not known, then an extra communication step will occur
-     *                          internally and the sizes and displacements will be returned (if
-     * desired).
+     *                          and the sizes and displacements will be returned (if desired).
      */
     template<class type>
     int allGather( const type *send_data,
@@ -1084,7 +1083,7 @@ public: // Member functions
 
     /*!
      * This function combines sets from different processors to create a single master set
-     * @param[in] set       Input/Output std::set for the gather.
+     * \param[in] set       Input/Output std::set for the gather.
      */
     template<class type>
     void setGather( std::set<type> &set ) const;
@@ -1093,7 +1092,7 @@ public: // Member functions
     /*!
      * This function combines std::maps from different processors to create a single master std::map
      * If two or more ranks share the same key, the lowest rank will be used
-     * @param[in] map       Input/Output std::map for the gather.
+     * \param[in] map       Input/Output std::map for the gather.
      */
     template<class KEY, class DATA>
     void mapGather( std::map<KEY, DATA> &map ) const;
@@ -1101,8 +1100,8 @@ public: // Member functions
 
     /*!
      * Each processor sends a value to root
-     * @param[in] x      Input value to send
-     * @param[in] root   The processor receiving the data
+     * \param[in] x      Input value to send
+     * \param[in] root   The processor receiving the data
      * @return           Output array for gather (empty if not root)
      */
     template<class type>
@@ -1111,8 +1110,8 @@ public: // Member functions
 
     /*!
      * Each processor sends every other processor an array
-     * @param[in] x      Input array to send
-     * @param[in] root   The processor receiving the data
+     * \param[in] x      Input array to send
+     * \param[in] root   The processor receiving the data
      * @return           Output array for gather (empty if not root)
      */
     template<class type>
@@ -1121,15 +1120,15 @@ public: // Member functions
 
     /*!
      * Each processor sends multiple values to root
-     * @param[in] send_data     Input array
-     * @param[in] send_cnt      The number of values to send
-     * @param[out] recv_data    Array of received values
-     * @param[in] recv_cnt      The number of values to receive from each processor (N).
+     * \param[in] send_data     Input array
+     * \param[in] send_cnt      The number of values to send
+     * \param[out] recv_data    Array of received values
+     * \param[in] recv_cnt      The number of values to receive from each processor (N).
      *                          If known, this should be provided as an input.
-     * @param[in] recv_disp     The displacement (relative to the start of the array)
+     * \param[in] recv_disp     The displacement (relative to the start of the array)
      *                          from which to store the data received from processor i.
      *                          If known, this should be provided as an input.
-     * @param[in] root          The root processor
+     * \param[in] root          The root processor
      */
     template<class type>
     void gather( const type *send_data,
@@ -1146,9 +1145,9 @@ public: // Member functions
      * in the ith block on the receiving processor.  In the variable
      * description, N is the size of the communicator.  Note that this is a
      * blocking global communication.
-     * @param[in] n             The number of elements in each data block to send.
-     * @param[in] send_data     Input array (nxN)
-     * @param[in] recv_data     Output array of received values (nxN)
+     * \param[in] n             The number of elements in each data block to send.
+     * \param[in] send_data     Input array (nxN)
+     * \param[in] recv_data     Output array of received values (nxN)
      */
     template<class type>
     void allToAll( int n, const type *send_data, type *recv_data ) const;
@@ -1157,8 +1156,8 @@ public: // Member functions
      * Each processor sends a single value to each processor.
      * Each processor sends a single value to each processor.
      * Note that this is a blocking global communication.
-     * @param[in] send_data     Input array (nxN)
-     * @param[in] recv_data     Output array of received values (nxN)
+     * \param[in] send          Input array (nxN)
+     * @return                  Output array of received values (nxN)
      */
     template<class type>
     std::vector<type> allToAll( const std::vector<type> &send ) const;
@@ -1170,22 +1169,22 @@ public: // Member functions
      * description, N is the size of the communicator.  Note that this is a
      * blocking global communication.  If successful, the total number of received
      * elements will be returned.
-     * @param[in] send_data     Input array
-     * @param[in] send_cnt      The number of values to send to each processor (N)
-     * @param[in] send_disp     The displacement (relative to the start of the array)
+     * \param[in] send_data     Input array
+     * \param[in] send_cnt      The number of values to send to each processor (N)
+     * \param[in] send_disp     The displacement (relative to the start of the array)
      *                          from which to send to processor i
-     * @param[in] recv_data     Output array of received values
-     * @param[in] recv_cnt      The number of values to receive from each processor (N).
+     * \param[in] recv_data     Output array of received values
+     * \param[in] recv_cnt      The number of values to receive from each processor (N).
      *                          If known, this should be provided as an input.  Otherwise
      *                          it is an optional output that will return the number of
      *                          received values from each processor.
-     * @param[in] recv_disp     The displacement (relative to the start of the array)
+     * \param[in] recv_disp     The displacement (relative to the start of the array)
      *                          from which to send to processor i.
      *                          If known, this should be provided as an input.  Otherwise
      *                          it is an optional output that will return the starting location
      *                          (relative to the start of the array) for the received data from
      *                          processor i.
-     * @param[in] known_recv    Are the received counts and displacements known.
+     * \param[in] known_recv    Are the received counts and displacements known.
      *                          If the received sizes are known, then they must be provided,
      *                          and an extra communication step is not necessary.
      *                          If the received sizes are not know, then an extra communication
@@ -1207,21 +1206,21 @@ public: // Member functions
      * Each processor may send any size array to any processor.  In the variable
      * description, N is the size of the communicator.  Note that this is a
      * blocking global communication.
-     * @param[in] send_data     Input array
-     * @param[in] send_cnt      The number of values to send to each processor (N)
-     * @param[in] send_disp     The displacement (relative to the start of the array)
+     * \param[in] send_data     Input array
+     * \param[in] send_cnt      The number of values to send to each processor (N)
+     * \param[in] send_disp     The displacement (relative to the start of the array)
      *                          from which to send to processor i
-     * @param[in] recv_cnt      The number of values to receive from each processor (N).
+     * \param[in] recv_cnt      The number of values to receive from each processor (N).
      *                          If known, this should be provided as an input.  Otherwise
      *                          it is an optional output that will return the number of
      *                          received values from each processor.
-     * @param[in] recv_disp     The displacement (relative to the start of the array)
+     * \param[in] recv_disp     The displacement (relative to the start of the array)
      *                          from which to send to processor i.
      *                          If known, this should be provided as an input.  Otherwise
      *                          it is an optional output that will return the starting location
      *                          (relative to the start of the array) for the received data from
      *                          processor i.
-     * @param[in] known_recv    Are the received counts and displacements known.
+     * \param[in] known_recv    Are the received counts and displacements known.
      *                          If the received sizes are known, then they must be provided,
      *                          and an extra communication step is not necessary.
      *                          If the received sizes are not know, then an extra communication
@@ -1238,14 +1237,14 @@ public: // Member functions
 
     /*!
      * Compute the number of values to recieve and the appropriate send/recv offests for AllToAll
-     * @param[in] send_cnt      The number of values to send to each processor
-     * @param[out] send_disp     The displacement (relative to the start of the array)
+     * \param[in] send_cnt      The number of values to send to each processor
+     * \param[out] send_disp     The displacement (relative to the start of the array)
      *                          from which to send to processor i
-     * @param[out] recv_cnt      The number of values to receive from each processor.
+     * \param[out] recv_cnt      The number of values to receive from each processor.
      *                          If known, this should be provided as an input.  Otherwise
      *                          it is an optional output that will return the number of
      *                          received values from each processor.
-     * @param[out] recv_disp     The displacement (relative to the start of the array)
+     * \param[out] recv_disp     The displacement (relative to the start of the array)
      *                          from which to send to processor i.
      */
     int
@@ -1254,14 +1253,14 @@ public: // Member functions
 
     /*!
      * Compute the number of values to recieve and the appropriate send/recv offests for AllToAll
-     * @param[in] send_cnt      The number of values to send to each processor
-     * @param[out] send_disp     The displacement (relative to the start of the array)
+     * \param[in] send_cnt      The number of values to send to each processor
+     * \param[out] send_disp     The displacement (relative to the start of the array)
      *                          from which to send to processor i
-     * @param[out] recv_cnt      The number of values to receive from each processor.
+     * \param[out] recv_cnt      The number of values to receive from each processor.
      *                          If known, this should be provided as an input.  Otherwise
      *                          it is an optional output that will return the number of
      *                          received values from each processor.
-     * @param[out] recv_disp     The displacement (relative to the start of the array)
+     * \param[out] recv_disp     The displacement (relative to the start of the array)
      *                          from which to send to processor i.
      */
     int calcAllToAllDisp( const std::vector<int> &send_cnt,

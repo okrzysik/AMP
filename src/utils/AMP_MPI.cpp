@@ -773,7 +773,7 @@ AMP_MPI AMP_MPI::dup( bool manage ) const
     MPI_Comm_dup( d_comm, &new_MPI_comm );
 #else
     static AMP_MPI::Comm uniqueGlobalComm = 11;
-    new_MPI_comm = uniqueGlobalComm;
+    new_MPI_comm                          = uniqueGlobalComm;
     uniqueGlobalComm++;
 #endif
     // Create the new comm object
@@ -1210,7 +1210,7 @@ void AMP_MPI::barrier() const
     MPI_Barrier( d_comm );
 #endif
 }
-void AMP_MPI::sleepBarrier() const
+void AMP_MPI::sleepBarrier( int ms ) const
 {
 #ifdef AMP_USE_MPI
     if ( d_size <= 1 )
@@ -1222,9 +1222,13 @@ void AMP_MPI::sleepBarrier() const
     MPI_Ibarrier( d_comm, &request );
     int err = MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
     AMP_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
+    std::chrono::milliseconds time( ms );
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
-        std::this_thread::sleep_for( 10ms );
+        if ( ms > 0 )
+            std::this_thread::sleep_for( time );
+        else
+            std::this_thread::yield();
         // Check if the request has finished
         MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
     }
@@ -1292,11 +1296,11 @@ AMP_MPI::Request AMP_MPI::IsendBytes( const void *buf, int bytes, int, int tag )
     if ( it == global_isendrecv_list.end() ) {
         // We are calling isend first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 1;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request2, Isendrecv_struct>( id, data ) );
     } else {
         // We called irecv first
@@ -1317,11 +1321,11 @@ AMP_MPI::Request AMP_MPI::IrecvBytes( void *buf, const int bytes, const int, con
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 2;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
@@ -1460,7 +1464,7 @@ int AMP_MPI::waitAny( int count, Request2 *request )
         for ( int i = 0; i < count; i++ ) {
             if ( global_isendrecv_list.find( request[i] ) == global_isendrecv_list.end() ) {
                 found_any = true;
-                index = i;
+                index     = i;
             }
         }
         if ( found_any )
@@ -1592,7 +1596,7 @@ double AMP_MPI::tick() { return MPI_Wtick(); }
 #else
 double AMP_MPI::time()
 {
-    auto t = std::chrono::system_clock::now();
+    auto t  = std::chrono::system_clock::now();
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t.time_since_epoch() );
     return 1e-9 * ns.count();
 }
@@ -1609,6 +1613,7 @@ double AMP_MPI::tick()
  ************************************************************************/
 void AMP_MPI::serializeStart()
 {
+    PROFILE( "serializeStart", profile_level );
 #ifdef AMP_USE_MPI
     // Wait for a message from the previous rank
     if ( d_rank > 0 ) {
@@ -1624,13 +1629,14 @@ void AMP_MPI::serializeStart()
 }
 void AMP_MPI::serializeStop()
 {
+    PROFILE( "serializeStop", profile_level );
 #ifdef AMP_USE_MPI
     // Send flag to next rank
     if ( d_rank < d_size - 1 )
         MPI_Send( &d_rank, 1, MPI_INT, d_rank + 1, 5627, d_comm );
-    // Final barrier to sync all threads
-    MPI_Barrier( d_comm );
 #endif
+    // Final barrier to sync all threads
+    sleepBarrier( 0 );
 }
 
 
