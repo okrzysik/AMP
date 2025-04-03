@@ -71,6 +71,7 @@ BoxMesh::BoxMesh()
     : Mesh(),
       d_rank( -1 ),
       d_size( 0 ),
+      d_blockID( 1 ),
       d_globalSize{ 1 },
       d_numBlocks{ 1 },
       d_localIndex{ 0 },
@@ -82,17 +83,24 @@ BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params )
     : Mesh( params ),
       d_rank( -1 ),
       d_size( 0 ),
+      d_blockID( 1 ),
       d_globalSize{ 1 },
       d_numBlocks{ 1 },
       d_localIndex{ 0 },
       d_indexSize{ 0 },
       d_surfaceId{ -3 }
 {
+    auto db = params->getDatabase();
+    if ( db ) {
+        if ( db->keyExists( "blockID" ) )
+            d_blockID = db->getScalar<int>( "blockID" );
+    }
 }
 BoxMesh::BoxMesh( const BoxMesh &mesh )
     : Mesh( mesh ),
       d_rank( mesh.d_rank ),
       d_size( mesh.d_size ),
+      d_blockID( mesh.d_blockID ),
       d_globalSize( mesh.d_globalSize ),
       d_numBlocks( mesh.d_numBlocks ),
       d_startIndex{ mesh.d_startIndex[0], mesh.d_startIndex[1], mesh.d_startIndex[2] },
@@ -123,6 +131,7 @@ void BoxMesh::writeRestart( int64_t fid ) const
     IO::writeHDF5( fid, "localIndex", d_localIndex );
     IO::writeHDF5( fid, "indexSize", d_indexSize );
     IO::writeHDF5( fid, "surfaceId", d_surfaceId );
+    IO::writeHDF5( fid, "blockID", d_blockID );
 }
 template<class TYPE>
 static inline TYPE read( int64_t fid, const std::string &name )
@@ -135,6 +144,7 @@ BoxMesh::BoxMesh( int64_t fid, AMP::IO::RestartManager *manager )
     : Mesh( fid, manager ),
       d_rank( read<int>( fid, "rank" ) ),
       d_size( read<int>( fid, "size" ) ),
+      d_blockID( read<int>( fid, "blockID" ) ),
       d_globalSize( read<std::array<int, 3>>( fid, "globalSize" ) ),
       d_numBlocks( read<std::array<int, 3>>( fid, "numBlocks" ) ),
       d_localIndex( read<std::array<int, 6>>( fid, "localIndex" ) ),
@@ -843,10 +853,10 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
     // Create the iterator
     return structuredMeshIterator( d_boundary[type2][index][gcw], this, 0 );
 }
-std::vector<int> BoxMesh::getBlockIDs() const { return std::vector<int>( 1, 0 ); }
+std::vector<int> BoxMesh::getBlockIDs() const { return { d_blockID }; }
 MeshIterator BoxMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    if ( id == 0 )
+    if ( id == d_blockID )
         return getIterator( type, gcw );
     return MeshIterator();
 }
