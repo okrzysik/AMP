@@ -818,7 +818,7 @@ bool structuredMeshElement::isOnBoundary( int id ) const
 }
 bool structuredMeshElement::isInBlock( int id ) const
 {
-    if ( id == 0 )
+    if ( id == d_mesh->d_blockID )
         return true;
     return false;
 }

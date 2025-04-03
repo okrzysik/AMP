@@ -1,0 +1,20 @@
+Mesh_1 {
+    FileName = "cube64.with.boundary.labels.e"
+    MeshName = "bar"
+    MeshType = "libMesh"
+    dim      = 3
+}
+
+Mesh_2 {
+    MeshName = "cube_3d"
+    MeshType = "AMP"
+    dim = 3
+    Generator = "cube"
+    Size = 4, 4, 4
+    Range = -5.12, 5.12, -5.12, 5.12, -5.12, 5.12
+    static = TRUE
+}
+
+
+//ans = [ [ 1, 2, 2, 3, 0 ],  [ 2, 1, 2, 3, 0 ],  [ 2, 2, 1, 3, 0 ],  [ 3, 3, 3, 1, 0 ],  [ 0, 0, 0, 0, 1 ] ]
+

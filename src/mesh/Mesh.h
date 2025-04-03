@@ -350,23 +350,6 @@ public:
 
 
     /**
-     * \brief    Compare two meshes
-     * \details  This function compares two meshes.
-     * \param[in] a     First mesh to compare
-     * \param[in] b     Second mesh to compare
-     * \return          Result of comparison
-     *                  0 - The meshes are different
-     *                  1 - The meshes are equal (a == b)
-     *                  2 - The meshes are equivalent:
-     *                      Nodes match, elements match, block/surface ids match
-     *                  3 - The meshes are similar:
-     *                      Nodes do not match but map the same domain
-     *                      within tolerance, block/surface ids match
-     */
-    static int compare( const Mesh &a, const Mesh &b );
-
-
-    /**
      *  Get the meshIDs of all meshes that compose the current mesh (including its self)
      *  Note: This function may require global communication depending on the implementation
      */
@@ -487,6 +470,35 @@ public:
     static void printMeshHierarchy( const Mesh &mesh,
                                     std::ostream &out         = std::cout,
                                     const std::string &prefix = "" );
+
+
+public:
+    //! Structure used to compare matricies
+    struct CompareResult {
+        bool equal;         //!< Meshes are equal (operator==)
+        bool nodes;         //!< Nodes match
+        bool surface;       //!< surface ids match
+        bool block;         //!< block ids match
+        bool domain;        //!< domain matches
+        bool geometry;      //!< geometries match
+        int result() const; //!< 0 - The meshes are different
+                            //!< 1 - The meshes are equal (a == b)
+                            //!< 2 - The meshes are equivalent:
+                            //!<     Nodes match, elements match, block/surface ids match
+                            //!< 3 - The meshes are similar: Nodes do not match but map the
+                            //!<     same domain within tolerance, block/surface ids match
+        CompareResult( int state = 0 );
+        bool operator==( const CompareResult & );
+    };
+
+    /**
+     * \brief    Compare two meshes
+     * \details  This function compares two meshes.
+     * \param[in] a     First mesh to compare
+     * \param[in] b     Second mesh to compare
+     * \return          Result of comparison
+     */
+    static CompareResult compare( const Mesh &a, const Mesh &b );
 
 
 public: // Write/read restart data
