@@ -481,6 +481,7 @@ protected: // Friend functions to access protected functions
 
 protected:                                       // Internal data
     const int d_rank, d_size;                    // Cached values for the rank and size
+    int d_blockID;                               // Block id for the mesh
     const std::array<int, 3> d_globalSize;       // The size of the logical domain in each direction
     const std::array<int, 3> d_numBlocks;        // The number of local box in each direction
     const std::vector<int> d_startIndex[3];      // The first index for each block
