@@ -276,6 +276,41 @@ size_t Mesh::numGhostElements( const GeomType, int ) const
 /********************************************************
  * Compare two meshes                                    *
  ********************************************************/
+int Mesh::CompareResult::result() const
+{
+    if ( equal )
+        return 1;
+    if ( nodes && surface && block && domain )
+        return 2;
+    if ( surface && block && domain )
+        return 3;
+    return 0;
+}
+Mesh::CompareResult::CompareResult( int state )
+    : equal( state == 1 ),
+      nodes( state > 0 && state < 3 ),
+      surface( state > 0 ),
+      block( state > 0 ),
+      domain( state > 0 ),
+      geometry( state == 1 )
+{
+}
+bool Mesh::CompareResult::operator==( const Mesh::CompareResult &rhs )
+{
+    return equal == rhs.equal && nodes == rhs.nodes && surface == rhs.surface &&
+           block == rhs.block && domain == rhs.domain && geometry == rhs.geometry;
+}
+Mesh::CompareResult operator&&( const Mesh::CompareResult &a, const Mesh::CompareResult &b )
+{
+    Mesh::CompareResult c;
+    c.equal    = a.equal && b.equal;
+    c.nodes    = a.nodes && b.nodes;
+    c.surface  = a.surface && b.surface;
+    c.block    = a.block && b.block;
+    c.domain   = a.domain && b.domain;
+    c.geometry = a.geometry && b.geometry;
+    return c;
+}
 static double getTol( const std::vector<double> &box, size_t N )
 {
     int ndim     = box.size();
@@ -292,7 +327,7 @@ static inline std::vector<Point> getPoints( MeshIterator it )
         p[i] = it->centroid();
     return p;
 }
-int Mesh::compare( const Mesh &a, const Mesh &b )
+Mesh::CompareResult Mesh::compare( const Mesh &a, const Mesh &b )
 {
     // Check if the meshes are equal
     if ( a == b )
@@ -302,40 +337,41 @@ int Mesh::compare( const Mesh &a, const Mesh &b )
     auto b2 = dynamic_cast<const MultiMesh *>( &b );
     if ( a2 || b2 ) {
         if ( !a2 || !b2 )
-            return false;
+            return 0;
         auto list1 = a2->getMeshes();
         auto list2 = b2->getMeshes();
         if ( list1.size() != list2.size() )
-            return false;
-        int result = 1;
+            return 0;
+        CompareResult result( 1 );
         for ( size_t i = 0; i < list1.size(); i++ ) {
-            int test = compare( *list1[i], *list2[i] );
-            if ( test == 0 )
-                return 0;
-            result = std::max( result, test );
+            auto test = compare( *list1[i], *list2[i] );
+            result    = result && test;
         }
         return result;
     }
-    // Default comparison
-    // Perform simple comparisons
+    // Check dimensions and comm
     if ( a.GeomDim != b.GeomDim || a.PhysicalDim != b.PhysicalDim ||
          a.d_comm.compare( b.d_comm ) == 0 )
         return 0;
-    if ( a.getBoundaryIDs() != b.getBoundaryIDs() || a.getBlockIDs() != b.getBlockIDs() )
-        return 0;
+    // Default comparison
+    Mesh::CompareResult result( 0 );
+    // Perform simple comparisons
+    result.surface = a.getBoundaryIDs() == b.getBoundaryIDs();
+    result.block   = a.getBlockIDs() == b.getBlockIDs();
     // Compare domains
-    size_t N1  = a.numLocalElements( a.GeomDim );
-    size_t N2  = b.numLocalElements( b.GeomDim );
-    auto box1  = a.getBoundingBox();
-    auto box2  = b.getBoundingBox();
-    double tol = getTol( box1, std::min( N1, N2 ) );
+    size_t N1     = a.numLocalElements( a.GeomDim );
+    size_t N2     = b.numLocalElements( b.GeomDim );
+    auto box1     = a.getBoundingBox();
+    auto box2     = b.getBoundingBox();
+    double tol    = getTol( box1, std::min( N1, N2 ) );
+    result.domain = true;
     for ( size_t i = 0; i < box1.size(); i++ ) {
         if ( fabs( box1[i] - box2[i] ) > tol )
-            return 0;
+            result.domain = false;
     }
     // Compare the coordinates
     if ( N1 == N2 ) {
-        bool test    = true;
+        result.nodes = true;
         auto nodes_a = getPoints( a.getIterator( GeomType::Vertex ) );
         auto nodes_b = getPoints( b.getIterator( GeomType::Vertex ) );
         auto elems_a = getPoints( a.getIterator( a.GeomDim ) );
@@ -343,32 +379,21 @@ int Mesh::compare( const Mesh &a, const Mesh &b )
         kdtree tree_a_node( nodes_a );
         kdtree tree_a_elem( elems_a );
         for ( const auto &p : nodes_b ) {
-            auto p2 = tree_a_node.find_nearest( p );
-            test    = test && ( p - p2 ).norm() < tol * tol;
+            auto p2      = tree_a_node.find_nearest( p );
+            result.nodes = result.nodes && ( p - p2 ).norm() < tol * tol;
         }
         for ( const auto &p : elems_b ) {
-            auto p2 = tree_a_elem.find_nearest( p );
-            test    = test && ( p - p2 ).norm() < tol * tol;
+            auto p2      = tree_a_elem.find_nearest( p );
+            result.nodes = result.nodes && ( p - p2 ).norm() < tol * tol;
         }
-        if ( test )
-            return 2;
     }
     // Get the geometries
     auto geom1 = a.getGeometry();
     auto geom2 = b.getGeometry();
-    if ( !geom1 ) {
-        auto ptr = std::const_pointer_cast<Mesh>( a.shared_from_this() );
-        geom1    = std::make_shared<AMP::Geometry::MeshGeometry>( ptr );
+    if ( geom1 && geom2 ) {
+        result.geometry = ( *geom1 == *geom2 );
     }
-    if ( !geom2 ) {
-        auto ptr = std::const_pointer_cast<Mesh>( b.shared_from_this() );
-        geom2    = std::make_shared<AMP::Geometry::MeshGeometry>( ptr );
-    }
-    if ( *geom1 == *geom2 )
-        return 3;
-
-    AMP_WARNING( "Not finished" );
-    return -1;
+    return result;
 }
 
 

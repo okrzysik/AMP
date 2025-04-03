@@ -1210,7 +1210,7 @@ void AMP_MPI::barrier() const
     MPI_Barrier( d_comm );
 #endif
 }
-void AMP_MPI::sleepBarrier( int ms ) const
+void AMP_MPI::sleepBarrier( [[maybe_unused]] int ms ) const
 {
 #ifdef AMP_USE_MPI
     if ( d_size <= 1 )
