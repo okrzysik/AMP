@@ -90,13 +90,15 @@ public:
 
     void getFromInput( std::shared_ptr<const AMP::Database> db );
 
+    void reset( std::shared_ptr<SolverStrategyParameters> params ) override;
+
 private:
+    void setupHypreSolver( std::shared_ptr<const SolverStrategyParameters> parameters );
+
     bool d_bUsesPreconditioner = false;
     bool d_bDiagScalePC        = false; //! use diagonal scaled preconditioner
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
-
-    bool d_bCreationPhase = true; /**< set to true if the PC is not ready and false otherwise. */
 };
 } // namespace AMP::Solver
 

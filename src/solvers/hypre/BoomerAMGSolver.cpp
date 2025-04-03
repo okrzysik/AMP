@@ -25,7 +25,7 @@ namespace AMP::Solver {
 /****************************************************************
  * Constructors / Destructor                                     *
  ****************************************************************/
-BoomerAMGSolver::BoomerAMGSolver() : HypreSolver() { d_bCreationPhase = true; }
+BoomerAMGSolver::BoomerAMGSolver() : HypreSolver() {}
 BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : HypreSolver( parameters )
 {
@@ -37,7 +37,8 @@ BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> para
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
     hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
-    HYPRE_BoomerAMGSetup( d_solver, parcsr_A, nullptr, nullptr );
+    if ( d_bSetupSolver )
+        HYPRE_BoomerAMGSetup( d_solver, parcsr_A, nullptr, nullptr );
 }
 
 BoomerAMGSolver::~BoomerAMGSolver() { HYPRE_BoomerAMGDestroy( d_solver ); }
@@ -53,6 +54,9 @@ void BoomerAMGSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     if ( db ) {
+
+        d_bSetupSolver = db->getWithDefault<bool>( "setup_solver", true );
+
         d_bComputeResidual = db->getWithDefault<bool>( "compute_residual", false );
 
         d_num_functions = db->getWithDefault<int>( "num_functions", 1 );
@@ -314,7 +318,6 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     HYPRE_SetMemoryLocation( d_memory_location );
     HYPRE_SetExecutionPolicy( d_exec_policy );
-    d_bCreationPhase = false;
 
     const auto f_norm = static_cast<HYPRE_Real>( f->L2Norm() );
 
@@ -431,7 +434,8 @@ void BoomerAMGSolver::reset( std::shared_ptr<SolverStrategyParameters> params )
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
     hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
-    HYPRE_BoomerAMGSetup( d_solver, parcsr_A, nullptr, nullptr );
+    if ( d_bSetupSolver )
+        HYPRE_BoomerAMGSetup( d_solver, parcsr_A, nullptr, nullptr );
 }
 
 } // namespace AMP::Solver

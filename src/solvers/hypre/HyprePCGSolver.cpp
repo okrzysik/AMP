@@ -26,17 +26,70 @@ namespace AMP::Solver {
 /****************************************************************
  * Constructors / Destructor                                     *
  ****************************************************************/
-HyprePCGSolver::HyprePCGSolver() : HypreSolver() { d_bCreationPhase = true; }
+HyprePCGSolver::HyprePCGSolver() : HypreSolver() {}
 HyprePCGSolver::HyprePCGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : HypreSolver( parameters )
 {
     HYPRE_ParCSRPCGCreate( d_comm.getCommunicator(), &d_solver );
-
-    AMP_ASSERT( parameters );
-    HyprePCGSolver::initialize( parameters );
+    setupHypreSolver( parameters );
 }
 
 HyprePCGSolver::~HyprePCGSolver() { HYPRE_ParCSRPCGDestroy( d_solver ); }
+
+void HyprePCGSolver::setupHypreSolver( std::shared_ptr<const SolverStrategyParameters> parameters )
+{
+    // this routine should assume that the solver, matrix and vectors have been created
+    // so that it can be used both in the constructor and in reset
+    if ( parameters ) {
+
+        HyprePCGSolver::initialize( parameters );
+    }
+
+    HYPRE_ParCSRMatrix parcsr_A;
+    HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
+    hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
+
+    auto op = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    AMP_ASSERT( op );
+    auto matrix = op->getMatrix();
+    AMP_ASSERT( matrix );
+    auto f = matrix->getRightVector();
+    f->zero(); // just to be safe
+    AMP_ASSERT( f );
+    copyToHypre( f, d_hypre_rhs );
+    HYPRE_ParVector par_x;
+    HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_x );
+
+    if ( d_bUsesPreconditioner ) {
+        if ( d_bDiagScalePC ) {
+            HYPRE_Solver pcg_precond = NULL;
+            HYPRE_PCGSetPrecond( d_solver,
+                                 (HYPRE_PtrToSolverFcn) HYPRE_ParCSRDiagScale,
+                                 (HYPRE_PtrToSolverFcn) HYPRE_ParCSRDiagScaleSetup,
+                                 pcg_precond );
+        } else {
+            auto pc = std::dynamic_pointer_cast<HypreSolver>( d_pPreconditioner );
+            if ( pc ) {
+
+                auto pcg_precond = pc->getHYPRESolver();
+                AMP_ASSERT( pcg_precond );
+
+                if ( pc->type() == "BoomerAMGSolver" ) {
+                    HYPRE_PCGSetPreconditioner( d_solver, pcg_precond );
+                } else {
+                    AMP_ERROR( "Currently only diagonal scaling and Boomer AMG preconditioners are "
+                               "supported" );
+                }
+
+            } else {
+                AMP_ERROR(
+                    "Currently only native hypre preconditioners are supported for hypre solvers" );
+            }
+        }
+    }
+
+    HYPRE_PCGSetup( d_solver, (HYPRE_Matrix) parcsr_A, (HYPRE_Vector) par_x, (HYPRE_Vector) par_x );
+}
 
 void HyprePCGSolver::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
@@ -53,7 +106,14 @@ void HyprePCGSolver::initialize( std::shared_ptr<const SolverStrategyParameters>
             auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
             auto outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
             if ( outerDB ) {
-                auto pcDB       = outerDB->getDatabase( pcName );
+                auto pcDB   = outerDB->getDatabase( pcName );
+                auto pcName = pcDB->getString( "name" );
+                if ( pcName == "BoomerAMGSolver" ) {
+                    pcDB->putScalar<bool>( "setup_solver", false );
+                } else {
+                    AMP_ERROR( "Currently only diagonal scaling and Boomer AMG preconditioners are "
+                               "supported" );
+                }
                 auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
                 parameters->d_pOperator = d_pOperator;
                 d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
@@ -100,7 +160,6 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     HYPRE_SetMemoryLocation( d_memory_location );
     HYPRE_SetExecutionPolicy( d_exec_policy );
-    d_bCreationPhase = false;
 
     const auto f_norm = static_cast<HYPRE_Real>( f->L2Norm() );
 
@@ -150,49 +209,15 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     copyToHypre( u, d_hypre_sol );
     copyToHypre( f, d_hypre_rhs );
 
-    if ( d_bUsesPreconditioner ) {
-        if ( d_bDiagScalePC ) {
-            HYPRE_Solver pcg_precond = NULL;
-            HYPRE_PCGSetPrecond( d_solver,
-                                 (HYPRE_PtrToSolverFcn) HYPRE_ParCSRDiagScale,
-                                 (HYPRE_PtrToSolverFcn) HYPRE_ParCSRDiagScaleSetup,
-                                 pcg_precond );
-        } else {
-            auto pc = std::dynamic_pointer_cast<HypreSolver>( d_pPreconditioner );
-            if ( pc ) {
-
-                auto pcg_precond = pc->getHYPRESolver();
-                AMP_ASSERT( pcg_precond );
-
-                if ( pc->type() == "BoomerAMGSolver" ) {
-                    HYPRE_PCGSetPrecond( d_solver,
-                                         (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
-                                         (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup,
-                                         pcg_precond );
-
-                } else {
-                    AMP_ERROR( "Currently only diagonal scaling and Boomer AMG preconditioners are "
-                               "supported" );
-                }
-
-            } else {
-                AMP_ERROR(
-                    "Currently only native hypre preconditioners are supported for hypre solvers" );
-            }
-        }
-    }
-
     HYPRE_ParCSRMatrix parcsr_A;
     HYPRE_ParVector par_b;
     HYPRE_ParVector par_x;
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
-    hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
 
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );
 
-    HYPRE_PCGSetup( d_solver, (HYPRE_Matrix) parcsr_A, (HYPRE_Vector) par_b, (HYPRE_Vector) par_x );
     HYPRE_PCGSolve( d_solver, (HYPRE_Matrix) parcsr_A, (HYPRE_Vector) par_b, (HYPRE_Vector) par_x );
 
     copyFromHypre( d_hypre_sol, u );
@@ -237,6 +262,15 @@ void HyprePCGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         AMP::pout << "HyprePCGSolver::apply: convergence reason: "
                   << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
+}
+
+void HyprePCGSolver::reset( std::shared_ptr<SolverStrategyParameters> params )
+{
+    HYPRE_ParCSRPCGDestroy( d_solver );
+    HYPRE_ParCSRPCGCreate( d_comm.getCommunicator(), &d_solver );
+
+    HypreSolver::reset( params );
+    setupHypreSolver( params );
 }
 
 } // namespace AMP::Solver
