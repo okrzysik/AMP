@@ -24,7 +24,7 @@ class HypreMatrixAdaptor;
 namespace AMP::Solver {
 
 
-typedef SolverStrategyParameters HypreSolverParameters;
+using HypreSolverParameters = SolverStrategyParameters;
 
 
 /**

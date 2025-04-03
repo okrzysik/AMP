@@ -139,7 +139,7 @@ private:
     double d_chebyshev_fraction    = 0.3;
     double d_schwarz_weight        = 0.0;
 
-    bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
+    bool d_bSetupSolver = true; //! whether to call the setup for the BoomerAMG solver
 };
 } // namespace AMP::Solver
 
