@@ -1,5 +1,6 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/IO/RestartManager.h"
+#include "AMP/discretization/DOFManagerFactory.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
@@ -316,17 +317,7 @@ AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::read(
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
     hid_t gid = openGroup( fid, name );
-    std::string type;
-    readHDF5( gid, "ClassType", type );
-    // Need to replace with a factory
-    std::shared_ptr<AMP::Discretization::DOFManager> dofs;
-    if ( type == "DOFManager" ) {
-        dofs = std::make_shared<AMP::Discretization::DOFManager>( gid, manager );
-    } else if ( type == "simpleDOFManager" ) {
-        dofs = std::make_shared<AMP::Discretization::simpleDOFManager>( gid, manager );
-    } else {
-        AMP_ERROR( "Unknown DOFManager: " + type );
-    }
+    auto dofs = AMP::Discretization::DOFManagerFactory::create( gid, manager );
     closeGroup( gid );
     return dofs;
 }
