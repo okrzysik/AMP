@@ -120,9 +120,8 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
     // Add the vectors
     for ( auto &elem : v )
         addVectorHelper( elem );
-    // Set the vector data and operations
-    resetVectorData();
-    resetVectorOperations();
+
+    reset();
 }
 void MultiVector::resetVectorOperations()
 {
@@ -240,8 +239,7 @@ void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_pt
     AMP_INSIST( pos != -1, "oldVec was not found" );
     if ( pos >= 0 )
         d_vVectors[pos] = newVec;
-    resetVectorData();
-    resetVectorOperations();
+    reset();
 }
 
 
@@ -316,6 +314,7 @@ void MultiVector::reset()
         vec->reset();
     // reset multivector dof manager
     resetVectorData();
+    resetVectorOperations();
 }
 
 void MultiVector::swapVectors( Vector &other )
