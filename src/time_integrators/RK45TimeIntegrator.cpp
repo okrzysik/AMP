@@ -119,7 +119,7 @@ int RK45TimeIntegrator::advanceSolution( const double dt,
     PROFILE( "advanceSolution" );
 
     d_solution_vector->copyVector( in );
-    d_current_dt      = dt;
+    d_current_dt = dt;
 
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
