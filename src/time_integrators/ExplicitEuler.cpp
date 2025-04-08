@@ -63,9 +63,13 @@ void ExplicitEuler::initialize(
 void ExplicitEuler::reset(
     std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters != nullptr );
-
-    abort();
+    if ( parameters ) {
+        TimeIntegrator::getFromInput( parameters->d_db, true );
+        d_pParameters =
+            std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( parameters );
+        AMP_ASSERT( parameters->d_db );
+        getFromInput( parameters->d_db );
+    }
 }
 
 void ExplicitEuler::setupVectors()
@@ -88,7 +92,7 @@ int ExplicitEuler::advanceSolution( const double dt,
                                     std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
     PROFILE( "ExplicitEuler::advanceSolution1" );
-    d_solution_vector = in;
+    d_solution_vector->copyVector( in );
     if ( first_step ) {
         d_current_dt = d_initial_dt;
     } else {
@@ -150,7 +154,13 @@ bool ExplicitEuler::checkNewSolution()
 */
 void ExplicitEuler::updateSolution()
 {
-    d_solution_vector->swapVectors( d_new_solution );
+    // instead of swap we are doing this manually so that the d_solution_vector
+    // object is not changed, which otherwise leads to the wrong vector being
+    // written at restart
+    d_f_vec->copyVector( d_solution_vector );
+    d_solution_vector->copyVector( d_new_solution );
+    d_new_solution->copyVector( d_f_vec );
+
     d_current_time += d_current_dt;
     ++d_integrator_step;
 

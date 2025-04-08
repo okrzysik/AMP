@@ -120,9 +120,8 @@ void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
     // Add the vectors
     for ( auto &elem : v )
         addVectorHelper( elem );
-    // Set the vector data and operations
-    resetVectorData();
-    resetVectorOperations();
+
+    reset();
 }
 void MultiVector::resetVectorOperations()
 {
@@ -147,7 +146,16 @@ void MultiVector::resetVectorData()
         AMP_ASSERT( managers[i]->numGlobalDOF() == d_vVectors[i]->getGlobalSize() );
         AMP_ASSERT( managers[i]->numLocalDOF() == d_vVectors[i]->getLocalSize() );
     }
-    d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
+
+    auto dofManager =
+        std::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( d_DOFManager );
+    if ( dofManager ) {
+        dofManager->reset( managers );
+    } else {
+        // this only occurs when add vector gets called
+        d_DOFManager =
+            std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
+    }
 
     auto data   = Vector::getVectorData();
     auto mvData = std::dynamic_pointer_cast<MultiVectorData>( data );
@@ -231,8 +239,7 @@ void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_pt
     AMP_INSIST( pos != -1, "oldVec was not found" );
     if ( pos >= 0 )
         d_vVectors[pos] = newVec;
-    resetVectorData();
-    resetVectorOperations();
+    reset();
 }
 
 
@@ -307,6 +314,7 @@ void MultiVector::reset()
         vec->reset();
     // reset multivector dof manager
     resetVectorData();
+    resetVectorOperations();
 }
 
 void MultiVector::swapVectors( Vector &other )

@@ -961,22 +961,35 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest &ut )
     for ( int i = 0; i < rank; i++ )
         pass = pass && any[i] && !all[i];
     record( ut, pass, "anyReduce/allReduce" );
-    // Test serializeStart()
-    if ( size < 64 ) {
-        double start = MPI_CLASS::time();
-        comm.serializeStart();
-        std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
-        comm.serializeStop();
-        double stop = MPI_CLASS::time();
-        double avg  = 1e3 * ( stop - start ) / size;
-        if ( avg > 98 && avg < 130 )
-            ut.passes( "serialize" );
-        else
-            ut.failure( "serialize: " + std::to_string( avg ) );
-    }
     // Test commRanks
     testCommRanks( comm, ut );
     return timer;
+}
+
+
+// Test serialize
+void testSerialize( UnitTest &ut )
+{
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
+    const int size = comm.getSize();
+    if ( size > 64 )
+        return;
+    constexpr int ms   = 100;
+    constexpr int N_it = 3;
+    const double start = MPI_CLASS::time();
+    for ( int i = 0; i < N_it; i++ ) {
+        comm.serializeStart();
+        std::this_thread::sleep_for( std::chrono::milliseconds( ms ) );
+        comm.serializeStop();
+    }
+    double time     = ( MPI_CLASS::time() - start ) / N_it;
+    double avg      = 1e3 * time / size;
+    double overhead = time - 1e-3 * size * ms;
+    AMP::printp( "serialize overhead: %i us\n", static_cast<int>( 1e6 * overhead ) );
+    if ( avg > 95 && avg < 130 )
+        ut.passes( "serialize" );
+    else
+        ut.failure( "serialize: " + std::to_string( avg ) );
 }
 
 
@@ -1184,6 +1197,9 @@ int main( int argc, char *argv[] )
                 "Communicator == MPI_COMM_NULL",
                 !useMPI );
 #endif
+
+        // Test serialize
+        testSerialize( ut );
 
         // Test dup
 #if !defined( AMP_USE_MPI ) && defined( AMP_USE_PETSC )

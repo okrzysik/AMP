@@ -1210,7 +1210,7 @@ void AMP_MPI::barrier() const
     MPI_Barrier( d_comm );
 #endif
 }
-void AMP_MPI::sleepBarrier() const
+void AMP_MPI::sleepBarrier( [[maybe_unused]] int ms ) const
 {
 #ifdef AMP_USE_MPI
     if ( d_size <= 1 )
@@ -1222,9 +1222,13 @@ void AMP_MPI::sleepBarrier() const
     MPI_Ibarrier( d_comm, &request );
     int err = MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
     AMP_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
+    std::chrono::milliseconds time( ms );
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
-        std::this_thread::sleep_for( 10ms );
+        if ( ms > 0 )
+            std::this_thread::sleep_for( time );
+        else
+            std::this_thread::yield();
         // Check if the request has finished
         MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
     }
@@ -1609,6 +1613,7 @@ double AMP_MPI::tick()
  ************************************************************************/
 void AMP_MPI::serializeStart()
 {
+    PROFILE( "serializeStart", profile_level );
 #ifdef AMP_USE_MPI
     // Wait for a message from the previous rank
     if ( d_rank > 0 ) {
@@ -1624,13 +1629,14 @@ void AMP_MPI::serializeStart()
 }
 void AMP_MPI::serializeStop()
 {
+    PROFILE( "serializeStop", profile_level );
 #ifdef AMP_USE_MPI
     // Send flag to next rank
     if ( d_rank < d_size - 1 )
         MPI_Send( &d_rank, 1, MPI_INT, d_rank + 1, 5627, d_comm );
-    // Final barrier to sync all threads
-    MPI_Barrier( d_comm );
 #endif
+    // Final barrier to sync all threads
+    sleepBarrier( 0 );
 }
 
 

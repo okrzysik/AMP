@@ -34,17 +34,29 @@ CommunicationList::CommunicationList() { d_partition = { 0 }; }
 CommunicationList::CommunicationList( std::shared_ptr<const CommunicationListParameters> params )
     : d_comm( params->d_comm )
 {
+    AMP_ASSERT( d_comm != AMP_MPI( AMP_COMM_NULL ) );
+    reset( params );
+}
+CommunicationList::CommunicationList( size_t local, const AMP_MPI &comm ) : d_comm( comm )
+{
+    reset( local );
+}
+
+/************************************************************************
+ * resets                                                               *
+ ************************************************************************/
+void CommunicationList::reset( std::shared_ptr<const CommunicationListParameters> params )
+{
     // Check the input parameters
     AMP_ASSERT( ( params->d_localsize >> 48 ) == 0 );
-    AMP_ASSERT( params->d_comm != AMP_MPI( AMP_COMM_NULL ) );
     // Get the partition (the total number of DOFs for all ranks <= current rank)
     d_partition = buildPartition( d_comm, params->d_localsize );
     // Construct the communication arrays
     buildCommunicationArrays( params->d_remote_DOFs );
 }
-CommunicationList::CommunicationList( size_t local, const AMP_MPI &comm ) : d_comm( comm )
+void CommunicationList::reset( size_t local )
 {
-    size_t size = comm.getSize();
+    size_t size = d_comm.getSize();
     d_partition = buildPartition( d_comm, local );
     d_ReceiveSizes.resize( size, 0 );
     d_ReceiveDisp.resize( size, 0 );

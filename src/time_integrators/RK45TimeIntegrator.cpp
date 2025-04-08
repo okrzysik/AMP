@@ -65,19 +65,24 @@ void RK45TimeIntegrator::initialize(
 }
 
 void RK45TimeIntegrator::reset(
-    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> )
+    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
-    //    AMP_ASSERT( parameters != nullptr );
-    d_new_solution->getVectorData()->reset();
-    d_k1_vec->getVectorData()->reset();
-    d_k2_vec->getVectorData()->reset();
-    d_k3_vec->getVectorData()->reset();
-    d_k4_vec->getVectorData()->reset();
-    d_k5_vec->getVectorData()->reset();
-    d_k6_vec->getVectorData()->reset();
-    d_z_vec->getVectorData()->reset();
+    if ( parameters ) {
+        TimeIntegrator::getFromInput( parameters->d_db, true );
+        d_pParameters =
+            std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( parameters );
+        AMP_ASSERT( parameters->d_db );
+        getFromInput( parameters->d_db );
+    }
 
-    abort();
+    d_new_solution->reset();
+    d_k1_vec->reset();
+    d_k2_vec->reset();
+    d_k3_vec->reset();
+    d_k4_vec->reset();
+    d_k5_vec->reset();
+    d_k6_vec->reset();
+    d_z_vec->reset();
 }
 
 void RK45TimeIntegrator::setupVectors()
@@ -113,8 +118,8 @@ int RK45TimeIntegrator::advanceSolution( const double dt,
 {
     PROFILE( "advanceSolution" );
 
-    d_solution_vector = in;
-    d_current_dt      = dt;
+    d_solution_vector->copyVector( in );
+    d_current_dt = dt;
 
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
@@ -238,7 +243,13 @@ bool RK45TimeIntegrator::checkNewSolution()
 */
 void RK45TimeIntegrator::updateSolution()
 {
-    d_solution_vector->swapVectors( d_new_solution );
+    // instead of swap we are doing this manually so that the d_solution_vector
+    // object is not changed, which otherwise leads to the wrong vector being
+    // written at restart
+    d_k1_vec->copyVector( d_solution_vector );
+    d_solution_vector->copyVector( d_new_solution );
+    d_new_solution->copyVector( d_k1_vec );
+
     d_current_time += d_current_dt;
     ++d_integrator_step;
 
@@ -315,5 +326,6 @@ void RK45TimeIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::wri
 RK45TimeIntegrator::RK45TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : TimeIntegrator( fid, manager )
 {
+    RK45TimeIntegrator::initialize( d_pParameters );
 }
 } // namespace AMP::TimeIntegrator

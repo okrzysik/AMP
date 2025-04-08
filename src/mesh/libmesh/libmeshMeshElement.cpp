@@ -239,12 +239,12 @@ void libmeshMeshElement::getNeighbors( std::vector<std::unique_ptr<MeshElement>>
         // Return the neighbors of the current element
         auto *elem      = (libMesh::Elem *) ptr_element;
         int n_neighbors = elem->n_neighbors();
-        neighbors.reserve( n_neighbors );
+        neighbors.resize( n_neighbors );
         for ( int i = 0; i < n_neighbors; i++ ) {
             auto *neighbor_elem = (void *) elem->neighbor_ptr( i );
             if ( neighbor_elem == nullptr )
                 continue;
-            neighbors.emplace_back( new libmeshMeshElement(
+            neighbors[i] = std::unique_ptr<MeshElement>( new libmeshMeshElement(
                 d_dim, d_globalID.type(), neighbor_elem, d_rank, d_meshID, d_mesh ) );
         }
     } else {
