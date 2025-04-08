@@ -339,6 +339,19 @@ inline void sleep_ms( int N ) { std::this_thread::sleep_for( std::chrono::millis
  */
 inline void sleep_s( int N ) { std::this_thread::sleep_for( std::chrono::seconds( N ) ); }
 
+/*!
+ * Busy wait for X ms
+ * @param N         Time to wait (ms)
+ */
+void busy_ms( int N );
+
+/*!
+ * Busy wait for X s
+ * @param N         Time to wait (s)
+ */
+inline void busy_s( int N ) { busy_ms( 1000 * N ); }
+
+
 //! Print AMP Banner
 void printBanner();
 
