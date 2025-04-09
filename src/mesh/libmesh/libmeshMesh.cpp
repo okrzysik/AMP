@@ -565,6 +565,8 @@ void libmeshMesh::fillBoundaryElements()
                     list->push_back( *dynamic_cast<libmeshMeshElement *>( elem.getRawElement() ) );
                 }
             }
+            if ( list->empty() )
+                continue;
             // Store the list
             auto mapid = std::pair<int, GeomType>( id, type );
             auto entry = std::make_pair( mapid, list );

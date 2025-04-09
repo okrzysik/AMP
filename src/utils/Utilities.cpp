@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <random>
 #include <sstream>
 #include <stdexcept>
 #include <sys/stat.h>
@@ -465,6 +466,29 @@ double trilinear( const std::vector<double> &x,
  *  Dummy function to prevent compiler from optimizing away variable         *
  ****************************************************************************/
 void nullUse( const void * ) {}
+
+
+/****************************************************************************
+ *  Busy wait functions                                                      *
+ ****************************************************************************/
+void busy_ms( int N )
+{
+    auto t0 = std::chrono::high_resolution_clock::now();
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<double> dis;
+    auto duration = [t0]() {
+        auto t1 = std::chrono::high_resolution_clock::now();
+        return std::chrono::duration_cast<std::chrono::milliseconds>( t1 - t0 ).count();
+    };
+    size_t it = 0;
+    while ( duration() < N ) {
+        [[maybe_unused]] double x = dis( gen );
+        for ( int i = 0; i < 1000; i++ )
+            x = sqrt( x );
+        it++;
+    }
+}
 
 
 /****************************************************************************

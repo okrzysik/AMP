@@ -35,6 +35,15 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     AMP_ASSERT( size.ndim() == static_cast<size_t>( GeomDim ) );
     std::array<int, 3> size2 = { (int) size[0], (int) size[1], (int) size[2] };
     auto surfaceIds          = d_geometry2->getLogicalSurfaceIds();
+    if ( db->keyExists( "surfaceIds" ) ) {
+        auto ids2 = db->getVector<int>( "surfaceIds" );
+        for ( size_t i = 0; i < std::min( ids2.size(), surfaceIds.size() ); i++ ) {
+            if ( surfaceIds[i] >= 0 )
+                surfaceIds[i] = ids2[i];
+            else
+                AMP_INSIST( surfaceIds[i] == ids2[i], "Warning surface ids are not set correctly" );
+        }
+    }
     // Initialize the logical mesh
     BoxMesh::initialize(
         size2, surfaceIds, db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", {} ) );

@@ -299,7 +299,11 @@ void readHDF5( hid_t fid, const std::string &name, size_t N_bytes, void *data )
 
 #else // No HDF5
 // Dummy implementations for no HDF5
-hid_t openHDF5( const std::string &, const char *, AMP::IO::Compression ) { return 0; }
+hid_t openHDF5( const std::string &, const char *, AMP::IO::Compression )
+{
+    AMP_ERROR( "Attempting to open HDF5 file without enabling HDF5" );
+    return 0;
+}
 void closeHDF5( hid_t, bool ) {}
 bool H5Gexists( hid_t, const std::string & ) { return false; }
 bool H5Dexists( hid_t, const std::string & ) { return false; }
