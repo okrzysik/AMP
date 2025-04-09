@@ -62,13 +62,20 @@ void RK12TimeIntegrator::initialize(
 }
 
 void RK12TimeIntegrator::reset(
-    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> )
+    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
-    // AMP_ASSERT(parameters!=nullptr);
-    d_new_solution->getVectorData()->reset();
-    d_k1_vec->getVectorData()->reset();
-    d_k2_vec->getVectorData()->reset();
-    d_z_vec->getVectorData()->reset();
+    if ( parameters ) {
+        TimeIntegrator::getFromInput( parameters->d_db, true );
+        d_pParameters =
+            std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( parameters );
+        AMP_ASSERT( parameters->d_db );
+        getFromInput( parameters->d_db );
+    }
+
+    d_new_solution->reset();
+    d_k1_vec->reset();
+    d_k2_vec->reset();
+    d_z_vec->reset();
 }
 
 void RK12TimeIntegrator::setupVectors()
@@ -96,8 +103,8 @@ int RK12TimeIntegrator::advanceSolution( const double dt,
 {
     PROFILE( "advanceSolution" );
 
-    d_solution_vector = in;
-    d_current_dt      = dt;
+    d_solution_vector->copyVector( in );
+    d_current_dt = dt;
 
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "*****************************************" << std::endl;
@@ -273,6 +280,7 @@ void RK12TimeIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::wri
 RK12TimeIntegrator::RK12TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : TimeIntegrator( fid, manager )
 {
+    RK12TimeIntegrator::initialize( d_pParameters );
 }
 
 } // namespace AMP::TimeIntegrator

@@ -62,15 +62,22 @@ void RK23TimeIntegrator::initialize(
 }
 
 void RK23TimeIntegrator::reset(
-    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> )
+    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
-    // AMP_ASSERT(parameters!=nullptr);
-    d_new_solution->getVectorData()->reset();
-    d_k1_vec->getVectorData()->reset();
-    d_k2_vec->getVectorData()->reset();
-    d_k3_vec->getVectorData()->reset();
-    d_k4_vec->getVectorData()->reset();
-    d_z_vec->getVectorData()->reset();
+    if ( parameters ) {
+        TimeIntegrator::getFromInput( parameters->d_db, true );
+        d_pParameters =
+            std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( parameters );
+        AMP_ASSERT( parameters->d_db );
+        getFromInput( parameters->d_db );
+    }
+
+    d_new_solution->reset();
+    d_k1_vec->reset();
+    d_k2_vec->reset();
+    d_k3_vec->reset();
+    d_k4_vec->reset();
+    d_z_vec->reset();
 }
 
 void RK23TimeIntegrator::setupVectors()
@@ -101,8 +108,8 @@ int RK23TimeIntegrator::advanceSolution( const double dt,
 {
     PROFILE( "advanceSolution" );
 
-    d_solution_vector = in;
-    d_current_dt      = dt;
+    d_solution_vector->copyVector( in );
+    d_current_dt = dt;
 
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "*****************************************" << std::endl;
@@ -206,7 +213,13 @@ bool RK23TimeIntegrator::checkNewSolution()
 */
 void RK23TimeIntegrator::updateSolution()
 {
-    d_solution_vector->swapVectors( d_new_solution );
+    // instead of swap we are doing this manually so that the d_solution_vector
+    // object is not changed, which otherwise leads to the wrong vector being
+    // written at restart
+    d_k1_vec->copyVector( d_solution_vector );
+    d_solution_vector->copyVector( d_new_solution );
+    d_new_solution->copyVector( d_k1_vec );
+
     d_current_time += d_current_dt;
     ++d_integrator_step;
 
@@ -283,6 +296,7 @@ void RK23TimeIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::wri
 RK23TimeIntegrator::RK23TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : TimeIntegrator( fid, manager )
 {
+    RK23TimeIntegrator::initialize( d_pParameters );
 }
 
 } // namespace AMP::TimeIntegrator

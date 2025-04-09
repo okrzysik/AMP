@@ -237,8 +237,9 @@ void TimeIntegrator::writeRestart( int64_t fid ) const
     d_pParameters->d_db->putScalar<double>(
         "integrator_step", d_integrator_step, {}, AMP::Database::Check::Overwrite );
     IO::writeHDF5( fid, "ti_db", *( d_pParameters->d_db ) );
-    IO::writeHDF5( fid, "ic_vec", d_solution_vector->getID() );
     IO::writeHDF5( fid, "global_db", *( d_pParameters->d_global_db ) );
+    uint64_t vecID = d_solution_vector->getID();
+    IO::writeHDF5( fid, "ic_vec", vecID );
 }
 TimeIntegrator::TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
 {

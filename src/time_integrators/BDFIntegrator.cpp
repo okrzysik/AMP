@@ -2085,8 +2085,6 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     d_current_dt = dt;
 
-    d_solution_vector->reset();
-
     d_prev_solutions[0]->copyVector( in );
 
     setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
