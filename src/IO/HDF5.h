@@ -32,6 +32,13 @@ enum class Compression : uint8_t { None, GZIP, SZIP };
 
 
 /**
+ * \brief Is HDF5 enabled
+ * \details This function returns true if HDF5 support is enabled (AMP was compiled with HDF5)
+ */
+bool HDF5enabled();
+
+
+/**
  * \brief Open an HDF5 file
  * \details This function opens and HDF5 file for reading/writing.
  *     Once complete, we must close the file using closeHDF5
