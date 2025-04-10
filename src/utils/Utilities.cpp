@@ -481,12 +481,10 @@ void busy_ms( int N )
         auto t1 = std::chrono::high_resolution_clock::now();
         return std::chrono::duration_cast<std::chrono::milliseconds>( t1 - t0 ).count();
     };
-    size_t it = 0;
     while ( duration() < N ) {
         [[maybe_unused]] double x = dis( gen );
-        for ( int i = 0; i < 1000; i++ )
+        for ( int i = 0; i < 500; i++ )
             x = sqrt( x );
-        it++;
     }
 }
 
