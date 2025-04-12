@@ -7,12 +7,8 @@ COPY_TEST_FILE( input_testIDA-LinearBVPOperator-1 )
 COPY_TEST_FILE( input_testIDA-NonlinearBVPOperator-1 )
 COPY_TEST_FILE( input_testIDA-NonlinearColumnOperator-1 )
 COPY_TEST_FILE( input_testIDA-TO-Preprocessor )
-COPY_TEST_FILE( input_testIDA-NonlinearOperator-short )
-COPY_TEST_FILE( input_testIDA-NonlinearOperator-long )
 COPY_TEST_FILE( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
 COPY_TEST_FILE( inputIDATimeIntegrator )
-COPY_TEST_FILE( input-LinearIDA-1 )
-COPY_TEST_FILE( input-NonlinearIDA-1 )
 COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
 
 
