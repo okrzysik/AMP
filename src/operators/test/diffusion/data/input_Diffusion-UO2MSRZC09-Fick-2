@@ -1,10 +1,12 @@
 // Database for the mesh
-Mesh{
-    MeshName = "mesh"
-    MeshType = "libMesh"
-    FileName = "cube64.with.boundary.labels.e"
-    dim = 3
-    NumberOfElements = 100
+Mesh {
+MeshName = "cube_3d"
+MeshType = "AMP"
+dim = 3
+Generator = "cube"
+Size = 4, 4, 4
+Range = -5.12, 5.12, -5.12, 5.12, -5.12, 5.12
+static = TRUE
 }
 
 ThermalNonlinearBVPOperator {

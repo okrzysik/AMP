@@ -182,7 +182,7 @@ static void flowTest( AMP::UnitTest *ut )
 
     // Create the meshes from the input database
     auto manager     = AMP::Mesh::MeshFactory::create( params );
-    auto meshAdapter = manager->Subset( "bar" );
+    auto meshAdapter = manager->Subset( "cube_3d" );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
