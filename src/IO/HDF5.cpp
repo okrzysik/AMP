@@ -20,6 +20,7 @@ namespace AMP::IO {
 /******************************************************************
  * Open/close HDF5 files                                           *
  ******************************************************************/
+bool HDF5enabled() { return true; }
 hid_t openHDF5( const std::string &filename, const char *mode, Compression compress )
 {
     // Set cache size to 3MBs and instruct the cache to discard the fully read chunk
@@ -299,6 +300,7 @@ void readHDF5( hid_t fid, const std::string &name, size_t N_bytes, void *data )
 
 #else // No HDF5
 // Dummy implementations for no HDF5
+bool HDF5enabled() { return false; }
 hid_t openHDF5( const std::string &, const char *, AMP::IO::Compression )
 {
     AMP_ERROR( "Attempting to open HDF5 file without enabling HDF5" );
