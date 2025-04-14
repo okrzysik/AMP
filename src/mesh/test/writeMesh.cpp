@@ -14,7 +14,7 @@ void run( const std::string &exe, const std::vector<const char *> &args )
         }
     };
 
-    if ( exe == "write2elmenetMesh" ) {
+    if ( exe == "write2elementMesh" ) {
         CHECK_ARGS( 7, "Usage: <exe> write2elmenetMesh a ny nz Lx Ly Lz output_file\n" );
         double a  = atof( args[0] );
         int ny    = atoi( args[1] );
@@ -53,8 +53,8 @@ void run( const std::string &exe, const std::vector<const char *> &args )
     } else if ( exe == "writeDistortedElementMesh" ) {
         CHECK_ARGS( 1, "Usage: <exe> writeDistortedElementMesh output_file\n" );
         AMP::Mesh::MeshWriters::writeDistortedElement( args[0] );
-    } else if ( exe == "writePlateWithHoleMesh" ) {
-        CHECK_ARGS( 9, "Usage: <exe> writePlateWithHoleMesh le me ne pe a b c r output_file\n" );
+    } else if ( exe == "writePlateWithHole" ) {
+        CHECK_ARGS( 9, "Usage: <exe> writePlateWithHole le me ne pe a b c r output_file\n" );
         int const le   = atoi( args[0] );
         int const me   = atoi( args[1] );
         int const ne   = atoi( args[2] );
@@ -80,12 +80,18 @@ void run( const std::string &exe, const std::vector<const char *> &args )
 int main( int argc, char **argv )
 {
     if ( argc == 1 ) {
+        // clang-format off
+        run( "write2elementMesh", { "0.5", "5", "10", "1.0", "2.0", "3.0", "outWrite2elementMesh" } );
+        run( "write3pointConstrainedBox", { "4", "7", "10", "1.0", "2.0", "3.0", "outWrite3pointConstrainedBox" } );
+        run( "writeBox", { "4", "7", "10", "1.0", "2.0", "3.0", "outWriteBox" } );
         run( "write7elementMesh-1", { "out7elementMesh-1" } );
         run( "write7elementMesh-2", { "out7elementMesh-2" } );
         run( "writeDistortedElementMesh", { "outDistortedElementMesh" } );
         run( "writeDispValsForPatchTest-2", { "outDispValsForPatchTest-2" } );
         run( "writeCookMesh", { "10", "10", "10", "test.dat" } );
+        run( "writePlateWithHole", { "4", "4", "4", "4", "1", "1", "1", "1", "outWritePlateWithHole" } );
         return 0;
+        // clang-format on
     } else {
         std::string exe( argv[1] );
         std::vector<const char *> args2( &argv[2], &argv[2] + ( argc - 2 ) );

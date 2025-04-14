@@ -225,7 +225,8 @@ OperatorBuilder::createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
     AMP_INSIST( operator_db,
                 "Error:: OperatorBuilder::createOperator(): No operator database entry with "
-                "given name exists in input database" );
+                "given name exists in input database: " +
+                    operatorName );
 
     // we create the element physics model if a database entry exists
     // and the incoming element physics model pointer is NULL

@@ -189,13 +189,16 @@ DirichletVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::co
     db->putScalar( "setResidual", true );
     db->putScalar( "isAttachedToVolumeOperator", true );
     db->putScalar( "number_of_ids", d_boundaryIds.size() );
-    for ( int i = 0; i < (int) d_boundaryIds.size(); i++ ) {
+    for ( int i = 0; i < (int) d_boundaryIds.size(); i++ )
         db->putScalar( stringf( "id_%i", i ), d_boundaryIds[i] );
+    for ( int i = 0; i < (int) d_dofIds.size(); i++ ) {
         db->putScalar( stringf( "number_of_dofs_%i", i ), d_dofIds[i].size() );
-        for ( int j = 0; j < (int) d_dofIds[i].size(); j++ ) {
+        for ( int j = 0; j < (int) d_dofIds[i].size(); j++ )
             db->putScalar( stringf( "dof_%i_%i", i, j ), d_dofIds[i][j] );
+    }
+    for ( int i = 0; i < (int) d_dirichletValues1.size(); i++ ) {
+        for ( int j = 0; j < (int) d_dirichletValues1[i].size(); j++ )
             db->putScalar( stringf( "value_%i_%i", i, j ), d_dirichletValues1[i][j] );
-        }
     }
 
     auto outParams = std::make_shared<DirichletMatrixCorrectionParameters>( db );
