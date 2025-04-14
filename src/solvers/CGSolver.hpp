@@ -93,7 +93,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // when a preconditioner is present
     auto z = u->clone();
     auto p = z->clone();
-    auto w = r->clone();
+    auto w = f->clone();
 
     // residual vector
     AMP::LinearAlgebra::Vector::shared_ptr r = f->clone();
