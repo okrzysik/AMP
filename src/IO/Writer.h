@@ -57,6 +57,7 @@ public:
      *                        otherwise an empty writer will be created.
      *               "Ascii" - A simple ascii writer
      *               "HDF5"  - A simple HDF5 writer
+     *               "auto"  - Choose the writer based on the comm size and compiled packages
      * \param comm   Communicator to use
      */
     static std::shared_ptr<AMP::IO::Writer> buildWriter( std::string type,
