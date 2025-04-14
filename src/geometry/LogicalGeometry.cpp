@@ -33,6 +33,15 @@ LogicalGeometry::LogicalGeometry( int physical, int logical, std::array<int, 6> 
 
 
 /********************************************************
+ * Get geometric type                                    *
+ ********************************************************/
+AMP::Mesh::GeomType LogicalGeometry::getGeomType() const
+{
+    return static_cast<AMP::Mesh::GeomType>( d_logicalDim );
+}
+
+
+/********************************************************
  * Get periodic boundaries                               *
  ********************************************************/
 std::array<bool, 3> LogicalGeometry::getPeriodicDim() const

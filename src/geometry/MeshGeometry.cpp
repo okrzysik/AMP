@@ -67,16 +67,21 @@ void MeshGeometry::updateCache() const
         std::uniform_real_distribution<double> dis( 0, 1 );
         std::array<double, 3> dir = { dis( gen ), dis( gen ), dis( gen ) };
         dir                       = normalize( dir );
-        // Add points on each side of the surface to identify if we we are inside/outside
+        // Get the points associated with each mesh element
         const auto &tree = d_find.getTree();
+        std::map<AMP::Mesh::MeshElementID, std::vector<std::array<double, 3>>> map;
+        for ( auto &[p, id] : tree.getPointsAndData() )
+            map[id].push_back( p );
+        // Add points on each side of the surface to identify if we we are inside/outside
         std::vector<std::array<double, 3>> points;
         points.emplace_back( centroid );
-        for ( auto p : tree.getPoints() ) {
-            AMP::Mesh::MeshElementID id;
-            std::tie( std::ignore, id ) = tree.findNearest( p );
-            std::array<double, 3> n     = d_mesh->getElement( id ).norm();
-            points.push_back( p + 1e-6 * n );
-            points.push_back( p - 1e-6 * n );
+        for ( auto &[id, elemPoints] : map ) {
+            auto elem               = d_mesh->getElement( id );
+            std::array<double, 3> n = elem.norm();
+            for ( auto &p : elemPoints ) {
+                points.push_back( p + 1e-6 * n );
+                points.push_back( p - 1e-6 * n );
+            }
         }
         std::vector<bool> data( points.size() );
         for ( size_t i = 0; i < points.size(); i++ )

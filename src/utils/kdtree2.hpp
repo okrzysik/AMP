@@ -231,6 +231,13 @@ std::vector<std::array<double, NDIM>> kdtree2<NDIM, TYPE>::getPoints() const
     return x;
 }
 template<uint8_t NDIM, class TYPE>
+std::vector<std::pair<std::array<double, NDIM>, TYPE>> kdtree2<NDIM, TYPE>::getPointsAndData() const
+{
+    std::vector<std::pair<Point, TYPE>> x;
+    getPoints( x );
+    return x;
+}
+template<uint8_t NDIM, class TYPE>
 void kdtree2<NDIM, TYPE>::getPoints( std::vector<Point> &x ) const
 {
     if ( d_left ) {
@@ -238,6 +245,18 @@ void kdtree2<NDIM, TYPE>::getPoints( std::vector<Point> &x ) const
         d_right->getPoints( x );
     } else {
         x.insert( x.end(), d_data->x, d_data->x + d_data->N );
+    }
+}
+template<uint8_t NDIM, class TYPE>
+void kdtree2<NDIM, TYPE>::getPoints( std::vector<std::pair<Point, TYPE>> &x ) const
+{
+    if ( d_left ) {
+        d_left->getPoints( x );
+        d_right->getPoints( x );
+    } else {
+        x.reserve( x.size() + d_data->N );
+        for ( size_t i = 0; i < d_data->N; i++ )
+            x.emplace_back( d_data->x[i], d_data->data[i] );
     }
 }
 

@@ -150,9 +150,10 @@ enum class token_type {
     define,
     bracket,
     end_bracket,
-    end
+    end,
+    import_data
 };
-static inline size_t length( token_type type )
+static constexpr size_t length( token_type type )
 {
     size_t len = 0;
     if ( type == token_type::newline || type == token_type::quote || type == token_type::equal ||
@@ -162,6 +163,8 @@ static inline size_t length( token_type type )
     } else if ( type == token_type::line_comment || type == token_type::block_start ||
                 type == token_type::block_stop || type == token_type::define ) {
         len = 2;
+    } else if ( type == token_type::import_data ) {
+        len = 3;
     }
     return len;
 }
@@ -197,6 +200,8 @@ static inline std::tuple<size_t, token_type> find_next_token( const char *buffer
         } else if ( buffer[i] == '*' ) {
             if ( buffer[i + 1] == '/' )
                 return std::make_tuple( i + 2, token_type::block_stop );
+        } else if ( std::string_view( &buffer[i], 3 ) == "<<<" ) {
+            return std::make_tuple( i + 3, token_type::import_data );
         }
         i++;
         if ( i >= 10000000 ) {
@@ -851,7 +856,6 @@ loadDatabase( const std::string &errMsgPrefix,
             line0 + std::count_if( &buffer[0], &buffer[pos], []( char c ) { return c == '\n'; } );
         if ( type == token_type::line_comment || type == token_type::block_start ) {
             // Comment
-            AMP_INSIST( key.empty(), generateMsg( errMsgPrefix, "Error reading comment", line ) );
             size_t k = skip_comment( &buffer[pos] );
             pos += k;
         } else if ( type == token_type::newline ) {
@@ -911,6 +915,19 @@ loadDatabase( const std::string &errMsgPrefix,
             // Finished with the database
             pos += i;
             break;
+        } else if ( type == token_type::import_data ) {
+            // Import another file into the current database
+            auto pos2 = buffer.substr( pos ).find( ">>>" );
+            AMP_INSIST( pos2 != std::string::npos,
+                        generateMsg( errMsgPrefix, "Error reading line:", line ) );
+            auto filename = deblank( buffer.substr( pos + 3, pos2 - 3 ) );
+            pos += pos2 + 3;
+            if ( ( filename[0] == '"' && filename.back() == '"' ) ||
+                 ( filename[0] == '\'' && filename.back() == '\'' ) )
+                filename = filename.substr( 1, filename.size() - 2 );
+            auto db2 = Database::parseInputFile( std::string( filename ) );
+            for ( auto &key : db2->getAllKeys() )
+                db.putData( key, db2->getData( key )->clone() );
         } else {
             throw std::logic_error( "Error loading data" );
         }
