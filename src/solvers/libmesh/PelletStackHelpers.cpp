@@ -47,9 +47,8 @@ void helperCreateColumnOperatorsForPelletMechanics(
     std::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearColumnOperator,
     std::shared_ptr<AMP::Operator::ColumnOperator> &linearColumnOperator )
 {
-    std::shared_ptr<AMP::Operator::OperatorParameters> emptyParams;
-    nonlinearColumnOperator.reset( new AMP::Operator::ColumnOperator( emptyParams ) );
-    linearColumnOperator.reset( new AMP::Operator::ColumnOperator( emptyParams ) );
+    nonlinearColumnOperator.reset( new AMP::Operator::ColumnOperator() );
+    linearColumnOperator.reset( new AMP::Operator::ColumnOperator() );
     for ( unsigned int id = 0; id < localPelletIds.size(); id++ ) {
         std::string prefix = "";
         if ( localPelletIds[id] == 0 ) {
@@ -82,7 +81,7 @@ void helperCreateCoupledOperatorForPelletMechanics(
     std::shared_ptr<AMP::Operator::ColumnOperator> nonlinearColumnOperator,
     std::shared_ptr<AMP::Operator::CoupledOperator> &coupledOp )
 {
-    std::shared_ptr<AMP::Database> emptyDb;
+    std::shared_ptr<AMP::Database> emptyDb( new AMP::Database );
     auto coupledOpParams = std::make_shared<AMP::Operator::CoupledOperatorParameters>( emptyDb );
     coupledOpParams->d_MapOperator = n2nmaps;
     coupledOpParams->d_BVPOperator = nonlinearColumnOperator;
