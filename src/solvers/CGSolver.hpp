@@ -91,7 +91,9 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // z will store r when a preconditioner is not present
     // and will store the result of a preconditioner solve
     // when a preconditioner is present
-    std::shared_ptr<AMP::LinearAlgebra::Vector> z;
+    auto z = u->clone();
+    auto p = z->clone();
+    auto w = r->clone();
 
     // residual vector
     AMP::LinearAlgebra::Vector::shared_ptr r = f->clone();
@@ -127,7 +129,6 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         return;
     }
 
-    z = u->clone();
 
     // apply the preconditioner if it exists
     if ( d_bUsesPreconditioner ) {
@@ -151,10 +152,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto rho_1 = static_cast<T>( z->dot( *r ) );
     auto rho_0 = rho_1;
 
-    auto p = z->clone();
     p->copyVector( z );
-
-    auto w = r->clone();
 
     auto k = -1;
 
