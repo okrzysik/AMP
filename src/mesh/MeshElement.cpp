@@ -163,6 +163,8 @@ void MeshElement::getNeighborVertices( std::vector<Point> &vertices ) const
     vertices.reserve( 24 );
     std::vector<Point> V1;
     for ( auto &elem : neighbors ) {
+        if ( !elem )
+            continue;
         elem->getVertices( V1 );
         for ( auto &p : V1 ) {
             bool found = false;

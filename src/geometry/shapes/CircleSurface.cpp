@@ -1,4 +1,4 @@
-#include "AMP/geometry/shapes/SphereSurface.h"
+#include "AMP/geometry/shapes/CircleSurface.h"
 #include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
@@ -11,56 +11,53 @@ namespace AMP::Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-SphereSurface::SphereSurface( std::shared_ptr<const AMP::Database> db )
-    : LogicalGeometry( 3, 2, { -1, -1, -2, -2, -3, -3 } )
+CircleSurface::CircleSurface( std::shared_ptr<const AMP::Database> db )
+    : LogicalGeometry( 2, 1, { -1, -1, -3, -3, -3, -3 } )
 {
     d_offset[0] = 0;
     d_offset[1] = 0;
-    d_offset[2] = 0;
     auto range  = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 1u, "Range must be an array of length 1" );
-    d_r = range[0];
+    d_R = range[0];
 }
-SphereSurface::SphereSurface( double r )
-    : LogicalGeometry( 3, 2, { -1, -1, -2, -2, -3, -3 } ), d_r( r )
+CircleSurface::CircleSurface( double R )
+    : LogicalGeometry( 2, 1, { -1, -1, -3, -3, -3, -3 } ), d_R( R )
 {
     d_offset[0] = 0;
     d_offset[1] = 0;
-    d_offset[2] = 0;
 }
 
 
 /********************************************************
  * Compute the nearest point on the surface              *
  ********************************************************/
-Point SphereSurface::nearest( const Point &pos ) const
+Point CircleSurface::nearest( const Point &pos ) const
 {
-    // Get the current point in the reference frame of the circle
+    // Get the current point in the reference frame of the CircleSurface
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
-    double z = pos.z() - d_offset[2];
     // Calculate the nearest point
-    double r = std::sqrt( x * x + y * y + z * z );
+    double r = std::sqrt( x * x + y * y );
     if ( r == 0 ) {
-        x = d_r;
+        return { d_R + d_offset[0], 0 };
     } else {
-        x *= d_r / r;
-        y *= d_r / r;
-        z *= d_r / r;
+        x *= d_R / r;
+        y *= d_R / r;
+        return { x + d_offset[0], y + d_offset[1] };
     }
-    return { x + d_offset[0], y + d_offset[1], z + d_offset[2] };
 }
 
 
 /********************************************************
  * Compute the distance to the object                    *
  ********************************************************/
-double SphereSurface::distance( const Point &pos, const Point &ang ) const
+double CircleSurface::distance( const Point &pos, const Point &ang ) const
 {
+    // Get the current point in the reference frame of the circle
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
-    double z = pos.z() - d_offset[2];
-    double d = GeometryHelpers::distanceToSphere( d_r, { x, y, z }, ang );
+    // Compute the distance to the circle
+    double d = GeometryHelpers::distanceToCircle( d_R, { x, y }, ang );
     return std::abs( d );
 }
 
@@ -68,65 +65,70 @@ double SphereSurface::distance( const Point &pos, const Point &ang ) const
 /********************************************************
  * Check if the ray is inside the geometry               *
  ********************************************************/
-bool SphereSurface::inside( const Point &pos ) const
+bool CircleSurface::inside( const Point &pos ) const
 {
-    double x  = pos.x() - d_offset[0];
-    double y  = pos.y() - d_offset[1];
-    double z  = pos.z() - d_offset[2];
-    double r2 = x * x + y * y + z * z;
-    return fabs( r2 - d_r * d_r ) <= 1e-12 * d_r * d_r;
+    double x = pos[0] - d_offset[0];
+    double y = pos[1] - d_offset[1];
+    double r = std::sqrt( x * x + y * y );
+    return std::abs( r - d_R ) < 1e-6 * d_R;
 }
 
 
 /********************************************************
  * Return the closest surface                            *
  ********************************************************/
-Point SphereSurface::surfaceNorm( const Point &pos ) const
+Point CircleSurface::surfaceNorm( const Point &pos ) const
 {
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
-    double z = pos.z() - d_offset[2];
-    double r = std::sqrt( x * x + y * y + z * z );
-    if ( r < d_r )
-        return { -x / r, -y / r, -z / r };
-    return { x / r, y / r, z / r };
+    double n = std::sqrt( x * x + y * y );
+    return { x / n, y / n, 0 };
 }
 
 
 /********************************************************
  * Return the physical coordinates                       *
  ********************************************************/
-Point SphereSurface::physical( const Point &pos ) const
+Point CircleSurface::physical( const Point &pos ) const
 {
-    auto point = GeometryHelpers::map_logical_sphere_surface( 1, d_r, pos[0], pos[1] );
-    point[0] += d_offset[0];
-    point[1] += d_offset[1];
-    point[2] += d_offset[2];
-    return point;
+    constexpr double pi = 3.141592653589793;
+    double phi          = 2 * pi * ( pos.x() + d_offset[0] );
+    return { d_R * cos( phi ), d_R * sin( phi ) };
 }
 
 
 /********************************************************
  * Return the logical coordinates                        *
  ********************************************************/
-Point SphereSurface::logical( const Point &pos ) const
+Point CircleSurface::logical( const Point &pos ) const
 {
-    double x0 = pos[0] - d_offset[0];
-    double y0 = pos[1] - d_offset[1];
-    double z0 = pos[2] - d_offset[2];
-    auto tmp  = GeometryHelpers::map_sphere_surface_logical( 1, d_r, x0, y0, z0 );
-    return Point( tmp[0], tmp[1] );
+    constexpr double pi = 3.141592653589793;
+    double x            = pos.x() - d_offset[0];
+    double y            = pos.y() - d_offset[1];
+    double phi          = 0;
+    if ( x == 0 && y == 0 ) {
+        phi = 0;
+    } else if ( x == 0 ) {
+        phi = y >= 0 ? ( 0.5 * pi ) : ( -0.5 * pi );
+    } else if ( x > 0 ) {
+        phi = atan( y / x );
+    } else if ( y >= 0 ) {
+        phi = atan( y / x ) + pi;
+    } else {
+        phi = atan( y / x ) - pi;
+    }
+    return { phi / ( 2 * pi ) };
 }
 
 
 /********************************************************
  * Return the centroid and bounding box                  *
  ********************************************************/
-Point SphereSurface::centroid() const { return { d_offset[0], d_offset[1], d_offset[2] }; }
-std::pair<Point, Point> SphereSurface::box() const
+Point CircleSurface::centroid() const { return { d_offset[0], d_offset[1] }; }
+std::pair<Point, Point> CircleSurface::box() const
 {
-    Point lb = { d_offset[0] - d_r, d_offset[1] - d_r, d_offset[2] - d_r };
-    Point ub = { d_offset[0] + d_r, d_offset[1] + d_r, d_offset[2] + d_r };
+    Point lb = { d_offset[0] - d_R, d_offset[1] - d_R };
+    Point ub = { d_offset[0] + d_R, d_offset[1] + d_R };
     return { lb, ub };
 }
 
@@ -134,76 +136,80 @@ std::pair<Point, Point> SphereSurface::box() const
 /********************************************************
  * Return the volume                                     *
  ********************************************************/
-double SphereSurface::volume() const
+double CircleSurface::volume() const
 {
     constexpr double pi = 3.141592653589793;
-    return 4 * pi * d_r * d_r;
+    return 2 * pi * d_R;
 }
 
 
 /********************************************************
  * Return the logical grid                               *
  ********************************************************/
-ArraySize SphereSurface::getLogicalGridSize( const ArraySize &x ) const
+ArraySize CircleSurface::getLogicalGridSize( const ArraySize &x ) const
 {
     AMP_INSIST( x.ndim() == 1u, "Size must be an array of length 1" );
-    return { x[0], x[0] / 2 };
+    return { x[0] };
 }
-ArraySize SphereSurface::getLogicalGridSize( const std::vector<double> &res ) const
+ArraySize CircleSurface::getLogicalGridSize( const std::vector<double> &res ) const
 {
-    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 2" );
-    int N = d_r / std::min( { res[0], res[1], res[2] } );
-    return { 2 * N, N };
+    constexpr double pi = 3.141592653589793;
+    if ( res.size() == 1 ) {
+        return { (size_t) ( 2 * pi * d_R / res[0] ) };
+    } else if ( res.size() == 2 ) {
+        return { (size_t) ( 2 * pi * d_R / std::min( res[0], res[1] ) ) };
+    } else {
+        AMP_ERROR( "Resolution must be an array of length 2" );
+    }
 }
 
 
 /********************************************************
  * Displace the mesh                                     *
  ********************************************************/
-void SphereSurface::displace( const double *x )
+void CircleSurface::displace( const double *x )
 {
     d_offset[0] += x[0];
     d_offset[1] += x[1];
-    d_offset[2] += x[2];
 }
 
 
 /********************************************************
  * Clone the object                                      *
  ********************************************************/
-std::unique_ptr<AMP::Geometry::Geometry> SphereSurface::clone() const
+std::unique_ptr<AMP::Geometry::Geometry> CircleSurface::clone() const
 {
-    return std::make_unique<SphereSurface>( *this );
+    return std::make_unique<CircleSurface>( *this );
 }
 
 
 /********************************************************
  * Compare the geometry                                  *
  ********************************************************/
-bool SphereSurface::operator==( const Geometry &rhs ) const
+bool CircleSurface::operator==( const Geometry &rhs ) const
 {
     if ( &rhs == this )
         return true;
-    auto geom = dynamic_cast<const SphereSurface *>( &rhs );
+    auto geom = dynamic_cast<const CircleSurface *>( &rhs );
     if ( !geom )
         return false;
-    return d_r == geom->d_r && d_offset == geom->d_offset;
+    return d_R == geom->d_R && d_offset == geom->d_offset;
 }
 
 
 /****************************************************************
  * Write/Read restart data                                       *
  ****************************************************************/
-void SphereSurface::writeRestart( int64_t fid ) const
+void CircleSurface::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
     AMP::IO::writeHDF5( fid, "offset", d_offset );
-    AMP::IO::writeHDF5( fid, "r", d_r );
+    AMP::IO::writeHDF5( fid, "R", d_R );
 }
-SphereSurface::SphereSurface( int64_t fid ) : LogicalGeometry( fid )
+CircleSurface::CircleSurface( int64_t fid ) : LogicalGeometry( fid )
 {
     AMP::IO::readHDF5( fid, "offset", d_offset );
-    AMP::IO::readHDF5( fid, "r", d_r );
+    AMP::IO::readHDF5( fid, "R", d_R );
 }
 
 

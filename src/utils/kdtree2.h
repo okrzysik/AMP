@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <tuple>
 #include <vector>
 
 
@@ -48,6 +49,9 @@ public:
 
     //! Return the points in the tree
     std::vector<Point> getPoints() const;
+
+    //! Return the points in the tree
+    std::vector<std::pair<Point, TYPE>> getPointsAndData() const;
 
     /**
      * \brief   Add a point
@@ -98,12 +102,12 @@ public:
 
 
 public: // Copy/assignment operators
-    kdtree2()                  = default;
-    ~kdtree2()                 = default;
-    kdtree2( const kdtree2 & ) = delete;
-    kdtree2( kdtree2 && )      = default;
+    kdtree2()                             = default;
+    ~kdtree2()                            = default;
+    kdtree2( const kdtree2 & )            = delete;
+    kdtree2( kdtree2 && )                 = default;
     kdtree2 &operator=( const kdtree2 & ) = delete;
-    kdtree2 &operator=( kdtree2 && ) = default;
+    kdtree2 &operator=( kdtree2 && )      = default;
 
 
 private: // Internal data
@@ -135,6 +139,7 @@ private: // Internal functions
     void splitData( size_t N, Point *x, TYPE *data );
     bool intersect( const Point &x, double dist2 ) const;
     void getPoints( std::vector<Point> &x ) const;
+    void getPoints( std::vector<std::pair<Point, TYPE>> &x ) const;
     void
     findNearest( const Point &x, size_t N, std::tuple<Point, TYPE> *nearest, double *dist ) const;
     void findNearest( const Point &x,

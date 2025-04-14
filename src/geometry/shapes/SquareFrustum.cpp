@@ -320,8 +320,11 @@ ArraySize SquareFrustum::getLogicalGridSize( const ArraySize &x ) const
 ArraySize SquareFrustum::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
-    AMP_ERROR( "Not finished" );
-    return {};
+    double dx[3] = { d_range[1] - d_range[0], d_range[3] - d_range[2], d_range[5] - d_range[4] };
+    int Nx       = dx[0] / res[0];
+    int Ny       = dx[1] / res[1];
+    int Nz       = dx[2] / res[2];
+    return { Nx, Ny, Nz };
 }
 
 
