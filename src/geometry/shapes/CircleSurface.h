@@ -1,5 +1,5 @@
-#ifndef included_AMP_Geometry_SphereSurface
-#define included_AMP_Geometry_SphereSurface
+#ifndef included_AMP_Geometry_CircleSurface
+#define included_AMP_Geometry_CircleSurface
 
 #include "AMP/geometry/LogicalGeometry.h"
 
@@ -15,26 +15,26 @@ namespace AMP::Geometry {
  * \brief A class used to abstract away geometry information from an application or mesh.
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
-class SphereSurface final : public LogicalGeometry
+class CircleSurface final : public LogicalGeometry
 {
 public:
     /**
-     * \brief Construct a SphereSurface geometry
+     * \brief Construct a CircleSurface geometry
      * \param db        Input database
      */
-    explicit SphereSurface( std::shared_ptr<const AMP::Database> db );
+    explicit CircleSurface( std::shared_ptr<const AMP::Database> db );
 
     /**
-     * \brief Construct a SphereSurface geometry
-     * \param R     The radius
+     * \brief Construct a CircleSurface geometry
+     * \param R         The CircleSurface radius
      */
-    explicit SphereSurface( double R );
+    explicit CircleSurface( double R );
 
     //! Construct from restart
-    SphereSurface( int64_t );
+    CircleSurface( int64_t );
 
 public: // Functions inherited from Geometry
-    std::string getName() const override final { return "SphereSurface"; }
+    std::string getName() const override final { return "CircleSurface"; }
     bool isConvex() const override final { return true; }
     Point nearest( const Point &pos ) const override final;
     double distance( const Point &pos, const Point &dir ) const override final;
@@ -56,12 +56,12 @@ public: // Functions inherited from Geometry
 
 protected:
     // Internal data
-    double d_r;
-    std::array<double, 3> d_offset;
+    double d_R;
+    std::array<double, 2> d_offset;
 
 private:
     // Private constructor
-    SphereSurface();
+    CircleSurface();
 };
 
 

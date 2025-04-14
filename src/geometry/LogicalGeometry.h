@@ -82,6 +82,13 @@ public:
      */
     inline std::array<int, 6> getLogicalSurfaceIds() const { return d_ids; }
 
+    /**
+     * \brief    Get the geometric type for the geometry
+     * \details  This function returns the largest geometric type supported by the geometry
+     * @return      Returns the geometric dimensions
+     */
+    AMP::Mesh::GeomType getGeomType() const override final;
+
 
 public: // Restart functions
     void writeRestart( int64_t fid ) const override;
@@ -93,9 +100,9 @@ protected:
     LogicalGeometry( int physical, int logical, std::array<int, 6> ids = { 1, 2, 3, 4, 5, 6 } );
 
     // Delete copy constructors
-    LogicalGeometry( LogicalGeometry && )      = delete;
-    LogicalGeometry( const LogicalGeometry & ) = default;
-    LogicalGeometry &operator=( LogicalGeometry && ) = delete;
+    LogicalGeometry( LogicalGeometry && )                 = delete;
+    LogicalGeometry( const LogicalGeometry & )            = default;
+    LogicalGeometry &operator=( LogicalGeometry && )      = delete;
     LogicalGeometry &operator=( const LogicalGeometry & ) = delete;
 
 
