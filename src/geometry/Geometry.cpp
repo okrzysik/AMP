@@ -6,6 +6,7 @@
 #include "AMP/geometry/shapes/Box.h"
 #include "AMP/geometry/shapes/Circle.h"
 #include "AMP/geometry/shapes/CircleFrustum.h"
+#include "AMP/geometry/shapes/CircleSurface.h"
 #include "AMP/geometry/shapes/Cylinder.h"
 #include "AMP/geometry/shapes/Parallelepiped.h"
 #include "AMP/geometry/shapes/RegularPolygon.h"
@@ -62,6 +63,8 @@ Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
         geom = std::make_shared<Tube>( db );
     } else if ( generator == "circle" ) {
         geom = std::make_shared<Circle>( db );
+    } else if ( generator == "circle_surface" ) {
+        geom = std::make_shared<CircleSurface>( db );
     } else if ( generator == "cylinder" ) {
         geom = std::make_shared<Cylinder>( db );
     } else if ( generator == "shell" ) {
@@ -184,6 +187,8 @@ AMP::IO::RestartManager::DataStoreType<AMP::Geometry::Geometry>::read(
         geom = std::make_shared<Tube>( gid );
     } else if ( type == "Circle" ) {
         geom = std::make_shared<Circle>( gid );
+    } else if ( type == "CircleSurface" ) {
+        geom = std::make_shared<CircleSurface>( gid );
     } else if ( type == "Cylinder" ) {
         geom = std::make_shared<Cylinder>( gid );
     } else if ( type == "Shell" ) {

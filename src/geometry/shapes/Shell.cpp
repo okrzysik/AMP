@@ -171,8 +171,10 @@ ArraySize Shell::getLogicalGridSize( const ArraySize &x ) const
 ArraySize Shell::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
-    AMP_ERROR( "Not finished" );
-    return {};
+    double res_min = std::min( { res[0], res[1], res[2] } );
+    int N1         = d_r_max / res_min;
+    int N2         = ( d_r_max - d_r_min ) / res_min;
+    return { 2 * N1, N1, N2 };
 }
 
 
