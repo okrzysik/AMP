@@ -38,6 +38,8 @@ HyprePCGSolver::~HyprePCGSolver() { HYPRE_ParCSRPCGDestroy( d_solver ); }
 
 void HyprePCGSolver::setupHypreSolver( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
+    PROFILE( "HyprePCGSolver::setupHypreSolver" );
+
     // this routine should assume that the solver, matrix and vectors have been created
     // so that it can be used both in the constructor and in reset
     if ( parameters ) {

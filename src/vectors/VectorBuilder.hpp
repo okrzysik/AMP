@@ -16,6 +16,7 @@
 
 #include "math.h"
 
+#include "ProfilerApp.h"
 
 namespace AMP::LinearAlgebra {
 
@@ -27,6 +28,8 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
                                  std::shared_ptr<Variable> variable,
                                  bool split )
 {
+    PROFILE( "createVector" );
+
     if ( !DOFs )
         return Vector::shared_ptr();
     AMP_ASSERT( variable );
@@ -116,6 +119,8 @@ createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
               bool split,
               AMP::Utilities::MemoryType memType )
 {
+    PROFILE( "createVector" );
+
     if ( memType <= AMP::Utilities::MemoryType::host ) {
         return createVector<TYPE>( DOFs, variable, split );
     } else if ( memType == AMP::Utilities::MemoryType::managed ) {

@@ -175,12 +175,6 @@ int main( int argc, char *argv[] )
 
     } else {
         files.push_back( "input_testTrilinosMueLuSolver-LinearThermalRobin" );
-#if 0
-    files.push_back( "input_testTrilinosMueLuSolver-LinearThermalOperator-2" );
-    files.push_back( "input_testTrilinosMueLuSolver-LinearThermalOperator-3" );
-    //    files.push_back( "input_testTrilinosMueLuSolver-LinearThermalOperator-2" );
-    files.push_back( "input_testTrilinosMueLuSolver-LinearFickOperator-bar" );
-#endif
     }
 
     for ( auto &fileName : files ) {
