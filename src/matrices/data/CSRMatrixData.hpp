@@ -11,6 +11,8 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
 
+#include "ProfilerApp.h"
+
 #include <type_traits>
 
 namespace AMP::LinearAlgebra {
@@ -30,6 +32,8 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::CSRMatrixData(
     std::shared_ptr<MatrixParametersBase> params )
     : MatrixData( params ), d_memory_location( AMP::Utilities::getAllocatorMemoryType<Allocator>() )
 {
+    PROFILE( "CSRMatrixData::CSRMatrixData" );
+
     AMPManager::incrementResource( "CSRMatrixData" );
 
     AMP_INSIST(
@@ -161,6 +165,8 @@ CSRMatrixData<Policy, Allocator, DiagMatrixData>::cloneMatrixData() const
 template<typename Policy, class Allocator, class DiagMatrixData>
 std::shared_ptr<MatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>::transpose() const
 {
+    PROFILE( "CSRMatrixData::transpose" );
+
     std::shared_ptr<CSRMatrixData> transposeData;
 
     transposeData = std::make_shared<CSRMatrixData<Policy, Allocator, DiagMatrixData>>();
@@ -218,6 +224,8 @@ template<typename Policy, class Allocator, class DiagMatrixData>
 std::shared_ptr<DiagMatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>::transposeOffd(
     std::shared_ptr<MatrixParametersBase> params ) const
 {
+    PROFILE( "CSRMatrixData::transposeOffd" );
+
     // make a matrix communicator based on right comm list
     CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData> mat_comm( d_rightCommList );
 
@@ -280,6 +288,8 @@ template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData>::setNNZ( const std::vector<lidx_t> &nnz_diag,
                                                                const std::vector<lidx_t> &nnz_offd )
 {
+    PROFILE( "CSRMatrixData::setNNZ" );
+
     // forward to internal blocks to get the internals allocated
     d_diag_matrix->setNNZ( nnz_diag );
     d_offd_matrix->setNNZ( nnz_offd );
@@ -289,6 +299,8 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::setNNZ( const std::vector
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData>::globalToLocalColumns()
 {
+    PROFILE( "CSRMatrixData::globalToLocalColumns" );
+
     d_diag_matrix->globalToLocalColumns();
     d_offd_matrix->globalToLocalColumns();
 }
@@ -296,6 +308,8 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::globalToLocalColumns()
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData>::resetDOFManagers()
 {
+    PROFILE( "CSRMatrixData::resetDOFManagers" );
+
     auto comm = getComm();
 
     // There is no easy way to determine the remote DOFs and comm pattern
@@ -356,6 +370,8 @@ template<typename Policy, class Allocator, class DiagMatrixData>
 std::shared_ptr<DiagMatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>::subsetRows(
     const std::vector<gidx_t> &rows ) const
 {
+    PROFILE( "CSRMatrixData::subsetRows" );
+
     auto sub_matrix = std::make_shared<DiagMatrixData>( nullptr,
                                                         d_memory_location,
                                                         0,
@@ -422,6 +438,8 @@ std::shared_ptr<DiagMatrixData>
 CSRMatrixData<Policy, Allocator, DiagMatrixData>::subsetCols( const gidx_t idx_lo,
                                                               const gidx_t idx_up ) const
 {
+    PROFILE( "CSRMatrixData::subsetCols" );
+
     AMP_DEBUG_ASSERT( idx_up > idx_lo );
 
     auto sub_matrix = std::make_shared<DiagMatrixData>(

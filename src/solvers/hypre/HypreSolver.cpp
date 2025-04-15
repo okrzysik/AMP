@@ -245,7 +245,25 @@ void HypreSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op 
     createHYPREVectors();
 }
 
-void HypreSolver::setParameters() {}
+void HypreSolver::setParameters()
+{
+    // int ierr;
+    // HYPRE_Int use_vendor = 0, spgemm_alg = 1, spgemm_binned = 0, spgemm_rowest_mtd = 3;
+    // ierr = HYPRE_SetSpGemmUseVendor( use_vendor );
+    // AMP_ASSERT( ierr == 0 );
+    // ierr = hypre_SetSpGemmAlgorithm( spgemm_alg );
+    // AMP_ASSERT( ierr == 0 );
+    // ierr = hypre_SetSpGemmAlgorithm( spgemm_alg );
+    // AMP_ASSERT( ierr == 0 );
+    // ierr = hypre_SetSpGemmBinned( spgemm_binned );
+    // AMP_ASSERT( ierr == 0 );
+    // ierr = hypre_SetSpGemmRownnzEstimateMethod( spgemm_rowest_mtd );
+    // AMP_ASSERT( ierr == 0 );
+    // ierr = HYPRE_SetSpGemmUseCusparse( false );
+    // AMP_ASSERT( ierr == 0 );
+    // ierr = HYPRE_SetUseGpuRand( true );
+    // AMP_ASSERT( ierr == 0 );
+}
 
 void HypreSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
