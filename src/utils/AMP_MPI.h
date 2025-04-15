@@ -1483,7 +1483,7 @@ private: // data members
     uint64_t d_hash         = hashNull;     //!< A unique hash for the comm (consistent across comm)
     int_ptr d_currentTag    = nullptr;      //!< The current tag
     mutable int_ptr d_ranks = nullptr;      //!< The ranks of the comm in the global comm
-    atomic_ptr d_count      = 0;            //!< How many objects share the communicator
+    atomic_ptr d_count      = nullptr;      //!< How many objects share the communicator
     mutable rand_ptr d_rand;                //!< Internal random number generator
     static short profile_level;             //!< The level for the profiles of MPI
     static atomic_int N_MPI_Comm_created;   //!< Number of MPI_Comm objects created over time

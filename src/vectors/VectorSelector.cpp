@@ -160,13 +160,25 @@ AMP_MPI VS_Comm::communicator( const Vector &p ) const
 }
 std::shared_ptr<Vector> VS_Comm::subset( std::shared_ptr<Vector> p ) const
 {
-    auto variable = std::make_shared<CommVariable>( p->getName(), communicator( *p ) );
+    auto vecComm = p->getComm();
+    if ( vecComm.getSize() == 1 )
+        return p;
+    auto comm = AMP_MPI::intersect( d_comm, vecComm );
+    if ( comm == vecComm )
+        return p;
+    auto variable = std::make_shared<CommVariable>( p->getName(), comm );
     auto vector   = SubsetVariable::view( p, variable );
     return vector;
 }
 std::shared_ptr<const Vector> VS_Comm::subset( std::shared_ptr<const Vector> p ) const
 {
-    auto variable = std::make_shared<CommVariable>( p->getName(), communicator( *p ) );
+    auto vecComm = p->getComm();
+    if ( vecComm.getSize() == 1 )
+        return p;
+    auto comm = AMP_MPI::intersect( d_comm, vecComm );
+    if ( comm == vecComm )
+        return p;
+    auto variable = std::make_shared<CommVariable>( p->getName(), comm );
     auto vector   = SubsetVariable::view( p, variable );
     return vector;
 }
