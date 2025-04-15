@@ -1115,6 +1115,30 @@ void testRand( UnitTest &ut )
     if ( pass )
         ut.passes( "rand()" );
 }
+void testBasicCommCreatePerformance()
+{
+    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() != 0 )
+        return;
+    int N_it = 5000;
+    auto t1  = MPI_CLASS::time();
+    for ( int i = 0; i < N_it; i++ )
+        [[maybe_unused]] AMP::AMP_MPI comm;
+    auto t2 = MPI_CLASS::time();
+    for ( int i = 0; i < N_it; i++ )
+        [[maybe_unused]] AMP::AMP_MPI comm( AMP_COMM_NULL );
+    auto t3 = MPI_CLASS::time();
+    for ( int i = 0; i < N_it; i++ )
+        [[maybe_unused]] AMP::AMP_MPI comm( AMP_COMM_SELF );
+    auto t4 = MPI_CLASS::time();
+    for ( int i = 0; i < N_it; i++ )
+        [[maybe_unused]] AMP::AMP_MPI comm( AMP_COMM_WORLD );
+    auto t5 = MPI_CLASS::time();
+    printf( "Time to create empty comm: %i ns\n", (int) ( 1e9 * ( t2 - t1 ) / N_it ) );
+    printf( "Time to create AMP_COMM_NULL: %i ns\n", (int) ( 1e9 * ( t3 - t2 ) / N_it ) );
+    printf( "Time to create AMP_COMM_SELF: %i ns\n", (int) ( 1e9 * ( t4 - t3 ) / N_it ) );
+    printf( "Time to create AMP_COMM_WORLD: %i ns\n", (int) ( 1e9 * ( t5 - t4 ) / N_it ) );
+    printf( "\n" );
+}
 
 
 //  This test will test the AMP::AMP_MPI class
@@ -1143,6 +1167,9 @@ int main( int argc, char *argv[] )
         global_size = 1;
 #endif
 
+        // Test performance of create
+        testBasicCommCreatePerformance();
+
         // Test the global communicator (AMP_COMM_WORLD)
         MPI_CLASS globalComm = MPI_CLASS( AMP_COMM_WORLD );
         record( ut, !globalComm.isNull(), "Global communicator created" );
@@ -1161,6 +1188,7 @@ int main( int argc, char *argv[] )
             commTimer.print();
             std::cout << std::endl;
         }
+
 
         // Test a call to sleepBarrier
         globalComm.sleepBarrier();
