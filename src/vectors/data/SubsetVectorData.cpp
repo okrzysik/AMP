@@ -11,8 +11,32 @@ namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
- * Constructors                                                   *
+ * Constructors                                                  *
  ****************************************************************/
+template<class T>
+static std::tuple<std::vector<void *>, std::vector<size_t>>
+getDataBlocks( const std::vector<T *> &data )
+{
+    if ( data.empty() )
+        return std::tuple<std::vector<void *>, std::vector<size_t>>();
+    std::vector<void *> ptr;
+    std::vector<size_t> size;
+    ptr.reserve( data.size() );
+    size.reserve( data.size() );
+    ptr.push_back( data[0] );
+    size.push_back( 1 );
+    T *last = data[0];
+    for ( size_t i = 1; i < data.size(); i++ ) {
+        if ( data[i] == ( ++last ) ) {
+            size.back()++;
+        } else {
+            last = data[i];
+            ptr.push_back( last );
+            size.push_back( 1 );
+        }
+    }
+    return std::tie( ptr, size );
+}
 SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> params )
     : VectorData( params->d_CommList ),
       d_ViewVector( params->d_ViewVector ),
@@ -32,11 +56,10 @@ SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> para
     } else {
         AMP_ERROR( "Internal error with SubsetVector" );
     }
-
+    // Get a pointer to every value in the subset
     if ( d_ViewVector->getVectorData()->isType<double>() ) {
         d_typeID = getTypeID<double>();
         std::vector<double *> data_ptr( d_SubsetLocalIDToViewGlobalID.size(), nullptr );
-        // Get a pointer to every value in the subset
         auto iterator   = d_ViewVector->constBegin();
         size_t last_pos = d_ViewVector->getCommunicationList()->getStartGID();
         for ( size_t i = 0; i < data_ptr.size(); i++ ) {
@@ -44,13 +67,8 @@ SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> para
             last_pos    = d_SubsetLocalIDToViewGlobalID[i];
             data_ptr[i] = const_cast<double *>( std::addressof( *iterator ) );
         }
-        // Create the data blocks
-        // For now use one datablock for each value, this needs to be changed
-        for ( auto &addr : data_ptr )
-            d_dataBlockPtr.push_back( addr );
-        d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
+        std::tie( d_dataBlockPtr, d_dataBlockSize ) = getDataBlocks<double>( data_ptr );
     } else if ( d_ViewVector->getVectorData()->isType<float>() ) {
-        // Get a pointer to every value in the subset
         d_typeID = getTypeID<float>();
         std::vector<float *> data_ptr( d_SubsetLocalIDToViewGlobalID.size(), nullptr );
         auto iterator   = d_ViewVector->constBegin<float>();
@@ -60,11 +78,7 @@ SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> para
             last_pos    = d_SubsetLocalIDToViewGlobalID[i];
             data_ptr[i] = const_cast<float *>( std::addressof( *iterator ) );
         }
-        // Create the data blocks
-        // For now use one datablock for each value, this needs to be changed
-        for ( auto &addr : data_ptr )
-            d_dataBlockPtr.push_back( addr );
-        d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
+        std::tie( d_dataBlockPtr, d_dataBlockSize ) = getDataBlocks<float>( data_ptr );
     } else {
         AMP_ERROR( "scalar data type no handled at present" );
     }

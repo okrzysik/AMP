@@ -9,6 +9,7 @@ inline bool compareVecSubset( AMP::LinearAlgebra::Vector::const_shared_ptr vec1,
 {
     return vec1->getLocalSize() == vec2->getLocalSize() &&
            vec1->getGlobalSize() == vec2->getGlobalSize() &&
+           vec1->numberOfDataBlocks() == vec2->numberOfDataBlocks() &&
            vec1->getComm().compare( vec2->getComm() ) > 0;
 }
 
@@ -51,6 +52,10 @@ void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
     testSelector( ut, "VS_Comm(self)", VS_Comm( self_comm ), vec );
     for ( int i = vec_comm.getRank(); i < vec_comm.getSize(); i++ )
         vec_comm.barrier();
+    if ( vec_comm.getSize() > 2 ) {
+        auto splitComm = vec_comm.split( vec_comm.getRank() % 2 );
+        testSelector( ut, "VS_Comm(split)", VS_Comm( splitComm ), vec );
+    }
     // testSelector( ut, "VS_Mesh", VS_Mesh(), vec );
     // testSelector( ut, "VS_MeshIterator", VS_MeshIterator(), vec );
 }
@@ -131,20 +136,25 @@ void AMP::LinearAlgebra::VectorTests::test_VS_Comm( AMP::UnitTest *ut )
     for ( int i = 0; i < vec_comm.getRank(); i++ )
         vec_comm.barrier();
     vec2 = AMP::LinearAlgebra::VS_Comm( self_comm ).subset( vec1 );
-    if ( vec1 != nullptr ) {
-        if ( vec2->getLocalSize() != vec1->getLocalSize() ||
-             vec2->getGlobalSize() != vec1->getLocalSize() || vec2->getComm().getSize() != 1 ) {
-            ut->failure( "Subset for AMP_COMM_SELF" );
-            pass = false;
-        }
-    } else {
-        if ( vec1->getLocalSize() != 0 ) {
-            ut->failure( "Subset for AMP_COMM_SELF" );
-            pass = false;
-        }
+    if ( vec2->getLocalSize() != vec1->getLocalSize() ||
+         vec2->getGlobalSize() != vec1->getLocalSize() ||
+         vec2->numberOfDataBlocks() != vec1->numberOfDataBlocks() ||
+         vec2->getComm().getSize() != 1 ) {
+        ut->failure( "Subset for AMP_COMM_SELF" );
+        pass = false;
     }
     for ( int i = vec_comm.getRank(); i < vec_comm.getSize(); i++ )
         vec_comm.barrier();
+    // Test subset for set of ranks
+    if ( vec_comm.getSize() > 2 ) {
+        auto splitComm = vec_comm.split( vec_comm.getRank() % 2 );
+        vec2           = AMP::LinearAlgebra::VS_Comm( splitComm ).subset( vec1 );
+        if ( vec2->getLocalSize() != vec1->getLocalSize() ||
+             vec2->numberOfDataBlocks() != vec1->numberOfDataBlocks() ) {
+            ut->failure( "Subset for splitComm" );
+            pass = false;
+        }
+    }
     if ( pass )
         ut->passes( "passed subset by comm" );
 }

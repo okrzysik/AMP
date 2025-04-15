@@ -699,10 +699,9 @@ protected:                   // Internal data
 
 
 public:
-    //! Default constructor
+    //! Default constructors
     VectorData();
     VectorData( const VectorData & ) = delete;
-
     VectorData( std::shared_ptr<CommunicationList> commList );
 };
 

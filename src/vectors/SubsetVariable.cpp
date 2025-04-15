@@ -1,7 +1,9 @@
 #include "AMP/vectors/SubsetVariable.h"
+#include "AMP/discretization/subsetCommSelfDOFManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/data/SubsetCommSelfVectorData.h"
 #include "AMP/vectors/data/SubsetVectorData.h"
 #include "AMP/vectors/data/VectorDataIterator.h"
 
@@ -55,6 +57,7 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
         return MultiVector::const_create( v->getName(), subsetDOF->getComm(), vec_list );
     }
     // Subset the DOFManager and create a new communication list
+    PROFILE( "view", 2 );
     auto parentDOF = v->getDOFManager();
     auto subsetDOF = var->getSubsetDOF( parentDOF );
     if ( !subsetDOF ) {
@@ -64,7 +67,16 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
     } else if ( subsetDOF == parentDOF ) {
         return v;
     }
-
+    /*if ( std::dynamic_pointer_cast<AMP::Discretization::subsetCommSelfDOFManager>( subsetDOF ) ) {
+        // Create the new subset vector
+        auto ops             = std::make_shared<VectorOperationsDefault<double>>();
+        auto params          = std::make_shared<SubsetVectorParameters>();
+        params->d_ViewVector = std::const_pointer_cast<Vector>( v );
+        params->d_DOFManager = subsetDOF;
+        auto data            = std::make_shared<SubsetCommSelfVectorData>( params );
+        auto retVal          = std::make_shared<Vector>( data, ops, var, subsetDOF );
+        return retVal;
+    } else {*/
     auto remote_DOFs = subsetDOF->getRemoteDOFs();
     bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
     std::shared_ptr<CommunicationList> commList;
@@ -88,6 +100,7 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
     auto data            = std::make_shared<SubsetVectorData>( params );
     auto retVal          = std::make_shared<Vector>( data, ops, var, subsetDOF );
     return retVal;
+    //}
 }
 
 
