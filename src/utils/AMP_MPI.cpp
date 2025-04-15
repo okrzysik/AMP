@@ -255,10 +255,9 @@ void AMP_MPI::balanceProcesses( const AMP_MPI &globalComm,
 /************************************************************************
  *  Empty constructor                                                    *
  ************************************************************************/
+static auto randNull = std::mt19937( std::random_device()() );
 AMP_MPI::AMP_MPI()
-    : d_comm( MPI_COMM_NULL ),
-      d_size( 0 ),
-      d_rand( std::make_shared<std::mt19937>( std::random_device()() ) )
+    : d_comm( MPI_COMM_NULL ), d_size( 0 ), d_rand( &randNull, []( std::mt19937 * ) {} )
 {
 }
 
@@ -271,7 +270,7 @@ void AMP_MPI::reset()
 {
     // Decrement the count if used
     int count = -1;
-    if ( d_count != nullptr )
+    if ( d_count )
         count = --( *d_count );
     if ( count == 0 ) {
         // We are holding that last reference to the MPI_Comm object, we need to free it
@@ -285,7 +284,7 @@ void AMP_MPI::reset()
             ++N_MPI_Comm_destroyed;
 #endif
         }
-        if ( d_ranks != nullptr )
+        if ( d_ranks )
             delete[] d_ranks;
         delete d_count;
     }
@@ -306,7 +305,7 @@ void AMP_MPI::reset()
     d_isNull     = true;
     d_currentTag = nullptr;
     d_call_abort = true;
-    d_rand       = std::make_shared<std::mt19937>( std::random_device()() );
+    d_rand.reset( &randNull, []( std::mt19937 * ) {} );
 }
 
 
@@ -550,7 +549,7 @@ AMP_MPI::AMP_MPI( Comm comm, bool manage )
     d_hash = hashComm( d_comm );
     // Initialize the random number generator
     if ( d_size < 2 ) {
-        d_rand = std::make_shared<std::mt19937>( std::random_device()() );
+        d_rand.reset( &randNull, []( std::mt19937 * ) {} );
     } else if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
         if ( !randWorld ) {
             auto seed = bcast<size_t>( std::random_device()(), 0 );
@@ -643,6 +642,22 @@ static inline void MPI_Group_free2( MPI_Group *group )
 }
 AMP_MPI AMP_MPI::intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 )
 {
+    // Deal with some special cases
+    if ( comm1.d_hash == hashMPI )
+        return comm2;
+    if ( comm2.d_hash == hashMPI )
+        return comm1;
+    if ( comm1.d_hash == hashWorld )
+        return comm2;
+    if ( comm2.d_hash == hashWorld )
+        return comm1;
+    if ( comm1.d_size <= 1 ) {
+        // We use comm1 for communication so this is safe
+        if ( comm1.isNull() || comm2.isNull() )
+            return {};
+        return comm1;
+    }
+    // Compare the groups
     MPI_Group group1 = MPI_GROUP_EMPTY, group2 = MPI_GROUP_EMPTY;
     if ( !comm1.isNull() ) {
         MPI_Group_free2( &group1 );
@@ -773,7 +788,7 @@ AMP_MPI AMP_MPI::dup( bool manage ) const
     MPI_Comm_dup( d_comm, &new_MPI_comm );
 #else
     static AMP_MPI::Comm uniqueGlobalComm = 11;
-    new_MPI_comm = uniqueGlobalComm;
+    new_MPI_comm                          = uniqueGlobalComm;
     uniqueGlobalComm++;
 #endif
     // Create the new comm object
@@ -1296,11 +1311,11 @@ AMP_MPI::Request AMP_MPI::IsendBytes( const void *buf, int bytes, int, int tag )
     if ( it == global_isendrecv_list.end() ) {
         // We are calling isend first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 1;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request2, Isendrecv_struct>( id, data ) );
     } else {
         // We called irecv first
@@ -1321,11 +1336,11 @@ AMP_MPI::Request AMP_MPI::IrecvBytes( void *buf, const int bytes, const int, con
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 2;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
@@ -1464,7 +1479,7 @@ int AMP_MPI::waitAny( int count, Request2 *request )
         for ( int i = 0; i < count; i++ ) {
             if ( global_isendrecv_list.find( request[i] ) == global_isendrecv_list.end() ) {
                 found_any = true;
-                index = i;
+                index     = i;
             }
         }
         if ( found_any )
@@ -1596,7 +1611,7 @@ double AMP_MPI::tick() { return MPI_Wtick(); }
 #else
 double AMP_MPI::time()
 {
-    auto t = std::chrono::system_clock::now();
+    auto t  = std::chrono::system_clock::now();
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t.time_since_epoch() );
     return 1e-9 * ns.count();
 }
