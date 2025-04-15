@@ -90,7 +90,7 @@ void PelletStackOperator::applyUnscaling( AMP::LinearAlgebra::Vector::shared_ptr
             val /= d_scalingFactor;
             subF->setLocalValuesByGlobalID( 1, &bndGlobalId, &val );
         } // end for j
-    } // end for bnd
+    }     // end for bnd
 }
 
 void PelletStackOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -156,7 +156,7 @@ void PelletStackOperator::applyXYZcorrection( AMP::LinearAlgebra::Vector::const_
             double val = subU->getLocalValueByGlobalID( bndGlobalId );
             subR->addLocalValuesByGlobalID( 1, &bndGlobalId, &val );
         } // end for j
-    } // end for bnd
+    }     // end for bnd
     std::vector<double> finalMaxZdispsList;
     computeZscan( u, finalMaxZdispsList );
     for ( size_t i = 0; i < d_pelletIds.size(); ++i ) {
@@ -244,7 +244,7 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
                 double val = subU->getLocalValueByGlobalID( bndGlobalId );
                 subR->addLocalValuesByGlobalID( 1, &bndGlobalId, &val );
             } // end for j
-        } // end for bnd
+        }     // end for bnd
     }
 }
 
@@ -265,7 +265,7 @@ void PelletStackOperator::computeZscan( AMP::LinearAlgebra::Vector::const_shared
                 myMaxZdisps[i] = val;
             }
         } // end for bnd
-    } // end for i
+    }     // end for i
 
     std::vector<int> recvCnts( d_pelletStackComm.getSize() );
     d_pelletStackComm.allGather<int>( d_pelletIds.size(), &( recvCnts[0] ) );

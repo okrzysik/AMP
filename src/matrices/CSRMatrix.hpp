@@ -17,6 +17,8 @@
 #include "AMP/utils/memory.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include "ProfilerApp.h"
+
 #include <cstdio>
 #include <cstring>
 #include <numeric>
@@ -52,6 +54,7 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
 
     // nothing above matched, fall back on default operations
     if ( !set_ops ) {
+        AMP::pout << "setting default" << std::endl;
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     }
 
@@ -84,6 +87,7 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Ma
 
     // nothing above matched, fall back on default operations
     if ( !set_ops ) {
+        AMP::pout << "setting default" << std::endl;
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     }
 }
@@ -105,6 +109,8 @@ std::shared_ptr<Matrix> CSRMatrix<Policy, Allocator>::clone() const
 template<typename Policy, typename Allocator>
 std::shared_ptr<Matrix> CSRMatrix<Policy, Allocator>::transpose() const
 {
+    PROFILE( "CSRMatrix<Policy, Allocator>::transpose" );
+
     auto data = d_matrixData->transpose();
     return std::make_shared<CSRMatrix<Policy, Allocator>>( data );
 }
@@ -118,6 +124,8 @@ template<typename Policy, typename Allocator>
 void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
                                              std::shared_ptr<Matrix> &result )
 {
+    PROFILE( "CSRMatrix<Policy, Allocator>::multiply" );
+
     // pull out matrix data objects and ensure they are of correct type
     auto thisData = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData );
     auto otherData =

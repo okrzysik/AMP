@@ -37,9 +37,13 @@
 
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
+    PROFILE( "DRIVER::linearThermalTest" );
+
     // Input and output file names
     std::string input_file = inputFileName;
-    std::string log_file   = "output_" + inputFileName;
+    std::ostringstream ss;
+    ss << "output_testLinSolveRobin_r" << std::setw( 3 ) << std::setfill( '0' )
+       << AMP::AMPManager::getCommWorld().getSize();
 
     AMP::pout << "Running linearThermalTest with input " << input_file << std::endl;
 
@@ -48,7 +52,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     input_db->print( AMP::plog );
 
     // Print from all cores into the output files
-    AMP::logAllNodes( log_file );
+    AMP::logAllNodes( ss.str() );
 
     // Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
@@ -68,6 +72,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
+
+    std::cout << "Rank " << comm.getRank() << " has " << nodalDofMap->numLocalDOF()
+              << " locally owned DOFs" << std::endl;
 
     // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
@@ -133,7 +140,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     auto boundaryOp = diffusionOperator->getBoundaryOperator();
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
-
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
     auto linearSolver =
@@ -152,7 +158,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     linearSolver->setZeroInitialGuess( false );
 
     // Solve the problem.
-    linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
+    {
+        PROFILE( "DRIVER::linearThermalTest(solve call)" );
+        linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
+    }
 
     checkConvergence( linearSolver.get(), inputFileName, *ut );
 }
@@ -178,7 +187,33 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
-        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+
+#ifdef AMP_USE_HYPRE
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-IPCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG-FCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CylMesh-BoomerAMG-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-GCR" );
+        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-GMRES"
+        // );
+        files.emplace_back(
+            "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRESR-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
+    #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
+    #endif
+#endif
 
 #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
@@ -192,9 +227,9 @@ int main( int argc, char *argv[] )
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
         // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
-        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
     #ifdef AMP_USE_PETSC
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
+            // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
     #endif
 #endif
 
@@ -206,8 +241,11 @@ int main( int argc, char *argv[] )
 #endif
     }
 
-    for ( auto &file : files ) {
-        linearThermalTest( &ut, file );
+    {
+        PROFILE( "DRIVER::main(test loop)" );
+        for ( auto &file : files ) {
+            linearThermalTest( &ut, file );
+        }
     }
 
     ut.report();
