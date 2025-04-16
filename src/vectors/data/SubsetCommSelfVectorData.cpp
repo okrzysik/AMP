@@ -79,7 +79,7 @@ void SubsetCommSelfVectorData::getValuesByLocalID( size_t N,
                                                    void *vals,
                                                    const typeID &id ) const
 {
-    return d_parentData->setValuesByLocalID( N, ndx, vals, id );
+    return d_parentData->getValuesByLocalID( N, ndx, vals, id );
 }
 void SubsetCommSelfVectorData::swapData( VectorData &rhs )
 {

@@ -35,7 +35,7 @@ size_t subsetCommSelfDOFManager::getSubsetDOF( size_t N, size_t *dofs ) const
     size_t N2 = 0;
     for ( size_t i = 0; i < N; i++ ) {
         if ( dofs[i] >= d_parentBegin && dofs[i] < d_parentEnd )
-            dofs[N2++] = dofs[i];
+            dofs[N2++] = dofs[i] - d_parentBegin;
     }
     return N2;
 }
@@ -50,21 +50,21 @@ size_t subsetCommSelfDOFManager::appendDOFs( const AMP::Mesh::MeshElementID &id,
                                              size_t capacity ) const
 {
     // Get the dofs from the parent
-    auto dofs2 = dofs;
-    size_t N   = d_parentDOFManager->appendDOFs( id, dofs2, index, capacity );
-    if ( N > capacity ) {
+    auto dofs2 = &dofs[index];
+    size_t N   = d_parentDOFManager->appendDOFs( id, dofs2, 0, capacity - index );
+    if ( N + index > capacity ) {
         dofs2 = new size_t[N];
-        N     = d_parentDOFManager->appendDOFs( id, dofs2, index, N );
+        N     = d_parentDOFManager->appendDOFs( id, dofs2, 0, N );
     }
     // Convert to local removing remote values
-    size_t N2 = subsetCommSelfDOFManager::getSubsetDOF( N, dofs2 );
+    size_t N2 = getSubsetDOF( N, dofs2 );
     // Copy and free temporary memory if needed
-    if ( dofs2 != dofs ) {
-        for ( size_t i = 0; i < std::min( N2, capacity ); i++ )
-            dofs[i] = dofs2[i];
+    if ( dofs2 != &dofs[index] ) {
+        for ( size_t i = 0; i < std::min( N2, capacity - index ); i++ )
+            dofs[index + i] = dofs2[i];
         delete[] dofs2;
     }
-    return N;
+    return N2;
 }
 
 
@@ -114,7 +114,7 @@ size_t subsetCommSelfDOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &id,
         N     = d_parentDOFManager->getRowDOFs( id, dofs, N, sort );
     }
     // Convert to local removing remote values
-    size_t N2 = subsetCommSelfDOFManager::getSubsetDOF( N, dofs2 );
+    size_t N2 = getSubsetDOF( N, dofs2 );
     // Copy and free temporary memory if needed
     if ( dofs2 != dofs ) {
         for ( size_t i = 0; i < std::min( N2, capacity ); i++ )
@@ -140,7 +140,7 @@ std::vector<size_t>
 subsetCommSelfDOFManager::getSubsetDOF( const std::vector<size_t> &parentDOFs ) const
 {
     auto subsetDOFs = parentDOFs;
-    size_t N2 = subsetCommSelfDOFManager::getSubsetDOF( subsetDOFs.size(), subsetDOFs.data() );
+    size_t N2       = getSubsetDOF( subsetDOFs.size(), subsetDOFs.data() );
     subsetDOFs.resize( N2 );
     return subsetDOFs;
 }

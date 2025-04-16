@@ -37,13 +37,37 @@ std::string MVFactory1 =
 #endif
 
 
-template<class FUN, class... Args>
-int testVectorSelectorPerformance( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, Args... ts )
+int testByVariableName( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 {
-    int N_it = 10;
-    auto t1  = AMP::Utilities::time();
+    int N_it  = 50;
+    auto name = vec->getName();
+    auto t1   = AMP::Utilities::time();
     for ( int i = 0; i < N_it; i++ ) {
-        FUN variable( ts... );
+        VS_ByVariableName variable( name );
+        AMP_ASSERT( variable.subset( vec ) );
+    }
+    auto t2 = AMP::Utilities::time();
+    return 1e9 * ( t2 - t1 ) / N_it;
+}
+int testByStride( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, size_t offset, size_t length )
+{
+    int N_it  = 50;
+    auto name = vec->getName();
+    auto t1   = AMP::Utilities::time();
+    for ( int i = 0; i < N_it; i++ ) {
+        VS_Stride variable( offset, length );
+        AMP_ASSERT( variable.subset( vec ) );
+    }
+    auto t2 = AMP::Utilities::time();
+    return 1e9 * ( t2 - t1 ) / N_it;
+}
+int testByComm( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, const AMP::AMP_MPI &comm )
+{
+    int N_it  = 50;
+    auto name = vec->getName();
+    auto t1   = AMP::Utilities::time();
+    for ( int i = 0; i < N_it; i++ ) {
+        VS_Comm variable( comm );
         AMP_ASSERT( variable.subset( vec ) );
     }
     auto t2 = AMP::Utilities::time();
@@ -62,11 +86,11 @@ void testVectorSelectorPerformance()
         auto vec      = factory->getVector();
         auto vec_comm = vec->getComm();
         world_comm.barrier();
-        auto t1 = testVectorSelectorPerformance<VS_ByVariableName>( vec, vec->getName() );
-        auto t2 = testVectorSelectorPerformance<VS_Stride>( vec, 0, 1 );
-        auto t3 = testVectorSelectorPerformance<VS_Comm>( vec, vec_comm );
-        auto t4 = testVectorSelectorPerformance<VS_Comm>( vec, world_comm );
-        auto t5 = testVectorSelectorPerformance<VS_Comm>( vec, self_comm );
+        auto t1 = testByVariableName( vec );
+        auto t2 = testByStride( vec, 0, 1 );
+        auto t3 = testByComm( vec, vec_comm );
+        auto t4 = testByComm( vec, world_comm );
+        auto t5 = testByComm( vec, self_comm );
         if ( world_comm.getRank() == 0 ) {
             auto name2 = name.substr( 0, 40 );
             printf( "  %40s  %8i %8i %8i %8i %8i\n", name2.data(), t1, t2, t3, t4, t5 );

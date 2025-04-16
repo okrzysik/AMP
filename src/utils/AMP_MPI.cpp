@@ -323,16 +323,12 @@ AMP_MPI::AMP_MPI( const AMP_MPI &comm )
       d_hash( comm.d_hash ),
       d_currentTag( comm.d_currentTag ),
       d_ranks( comm.d_ranks ),
-      d_count( nullptr ),
+      d_count( comm.d_count ),
       d_rand( comm.d_rand )
 {
-    // Initialize the data members to the existing comm object
-    if ( d_currentTag != nullptr )
+    if ( d_currentTag )
         ++d_currentTag[1];
-    d_call_abort = comm.d_call_abort;
-    // Set and increment the count
-    d_count = comm.d_count;
-    if ( d_count != nullptr )
+    if ( d_count )
         ++( *d_count );
 }
 AMP_MPI::AMP_MPI( AMP_MPI &&rhs ) : AMP_MPI()

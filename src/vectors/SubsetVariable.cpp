@@ -67,7 +67,7 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
     } else if ( subsetDOF == parentDOF ) {
         return v;
     }
-    /*if ( std::dynamic_pointer_cast<AMP::Discretization::subsetCommSelfDOFManager>( subsetDOF ) ) {
+    if ( std::dynamic_pointer_cast<AMP::Discretization::subsetCommSelfDOFManager>( subsetDOF ) ) {
         // Create the new subset vector
         auto ops             = std::make_shared<VectorOperationsDefault<double>>();
         auto params          = std::make_shared<SubsetVectorParameters>();
@@ -76,31 +76,31 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
         auto data            = std::make_shared<SubsetCommSelfVectorData>( params );
         auto retVal          = std::make_shared<Vector>( data, ops, var, subsetDOF );
         return retVal;
-    } else {*/
-    auto remote_DOFs = subsetDOF->getRemoteDOFs();
-    bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
-    std::shared_ptr<CommunicationList> commList;
-    if ( !ghosts ) {
-        commList =
-            std::make_shared<CommunicationList>( subsetDOF->numLocalDOF(), subsetDOF->getComm() );
     } else {
-        // Construct the communication list
-        auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
-        params->d_comm        = subsetDOF->getComm();
-        params->d_localsize   = subsetDOF->numLocalDOF();
-        params->d_remote_DOFs = remote_DOFs;
-        commList              = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
+        auto remote_DOFs = subsetDOF->getRemoteDOFs();
+        bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
+        std::shared_ptr<CommunicationList> commList;
+        if ( !ghosts ) {
+            commList = std::make_shared<CommunicationList>( subsetDOF->numLocalDOF(),
+                                                            subsetDOF->getComm() );
+        } else {
+            // Construct the communication list
+            auto params    = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
+            params->d_comm = subsetDOF->getComm();
+            params->d_localsize   = subsetDOF->numLocalDOF();
+            params->d_remote_DOFs = remote_DOFs;
+            commList = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
+        }
+        // Create the new subset vector
+        auto ops             = std::make_shared<VectorOperationsDefault<double>>();
+        auto params          = std::make_shared<SubsetVectorParameters>();
+        params->d_ViewVector = std::const_pointer_cast<Vector>( v );
+        params->d_DOFManager = subsetDOF;
+        params->d_CommList   = commList;
+        auto data            = std::make_shared<SubsetVectorData>( params );
+        auto retVal          = std::make_shared<Vector>( data, ops, var, subsetDOF );
+        return retVal;
     }
-    // Create the new subset vector
-    auto ops             = std::make_shared<VectorOperationsDefault<double>>();
-    auto params          = std::make_shared<SubsetVectorParameters>();
-    params->d_ViewVector = std::const_pointer_cast<Vector>( v );
-    params->d_DOFManager = subsetDOF;
-    params->d_CommList   = commList;
-    auto data            = std::make_shared<SubsetVectorData>( params );
-    auto retVal          = std::make_shared<Vector>( data, ops, var, subsetDOF );
-    return retVal;
-    //}
 }
 
 

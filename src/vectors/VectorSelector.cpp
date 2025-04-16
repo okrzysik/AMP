@@ -148,11 +148,7 @@ std::shared_ptr<const Vector> VS_Components::subset( std::shared_ptr<const Vecto
 /********************************************************
  * VS_Comm                                               *
  ********************************************************/
-VS_Comm::VS_Comm( const AMP_MPI &comm )
-{
-    AMP_ASSERT( !comm.isNull() );
-    d_comm = comm;
-}
+VS_Comm::VS_Comm( const AMP_MPI &comm ) : d_comm( comm ) { AMP_ASSERT( !d_comm.isNull() ); }
 bool VS_Comm::isSelected( const Vector & ) const { return true; }
 AMP_MPI VS_Comm::communicator( const Vector &p ) const
 {
