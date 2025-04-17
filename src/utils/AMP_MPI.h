@@ -1467,11 +1467,14 @@ public: // SAMRAI interfaces
 #endif
 
 
+private: // Helper functions
+    std::mt19937 *getRand() const;
+
 private: // data members
     using atomic_ptr = std::atomic_int *volatile;
     using atomic_int = volatile std::atomic_int64_t;
     using int_ptr    = int *volatile;
-    using rand_ptr   = std::shared_ptr<std::mt19937>;
+    using rand_ptr   = std::mt19937 *volatile;
 
     Comm d_comm             = commNull;     //!< The internal MPI communicator
     bool d_isNull           = true;         //!< Is the communicator NULL
@@ -1479,13 +1482,13 @@ private: // data members
     bool d_call_abort       = true;         //!< Do we want to call MPI_abort instead of exit
     int d_rank              = 0;            //!< The rank of the communicator
     int d_size              = 1;            //!< The size of the communicator
-    int d_maxTag            = 0x3FFFFFFF;   //!< The maximum valid tag
     uint64_t d_hash         = hashNull;     //!< A unique hash for the comm (consistent across comm)
     int_ptr d_currentTag    = nullptr;      //!< The current tag
     mutable int_ptr d_ranks = nullptr;      //!< The ranks of the comm in the global comm
     atomic_ptr d_count      = nullptr;      //!< How many objects share the communicator
-    mutable rand_ptr d_rand;                //!< Internal random number generator
+    mutable rand_ptr d_rand = nullptr;      //!< Internal random number generator
     static short profile_level;             //!< The level for the profiles of MPI
+    static int d_maxTag;                    //!< The maximum valid tag
     static atomic_int N_MPI_Comm_created;   //!< Number of MPI_Comm objects created over time
     static atomic_int N_MPI_Comm_destroyed; //!< Number of MPI_Comm objects destroyed over time
 };

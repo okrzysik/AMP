@@ -104,7 +104,7 @@ public: // Advanced virtual functions
 
     size_t getVectorDataSize() const { return d_data.size(); }
 
-    AMP_MPI getComm() const override { return d_comm; }
+    const AMP_MPI &getComm() const override { return d_comm; }
     bool hasComm() const override { return true; }
 
     void assemble() override;

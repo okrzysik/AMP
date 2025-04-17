@@ -55,7 +55,7 @@ ScalarN2GZAxisMap::ScalarN2GZAxisMap( std::shared_ptr<const AMP::Operator::Opera
             d_mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, params->d_BoundaryID2, 0 );
     }
 
-    AMP::Mesh::MeshIterator iterator =
+    auto iterator =
         AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Union, d_dstIterator1, d_dstIterator2 );
     libmeshElements.reinit( iterator );
 
@@ -96,14 +96,15 @@ ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
         return std::multimap<double, double>();
     PROFILE( "buildMap" );
     std::multimap<double, double> map;
-    std::shared_ptr<AMP::Discretization::DOFManager> dof = vec->getDOFManager();
-    size_t N                                             = iterator.size();
+    auto dof = vec->getDOFManager();
+    size_t N = iterator.size();
     std::vector<AMP::Mesh::MeshElementID> ids( N );
     std::vector<double> z( N, 0.0 );
-    AMP::Mesh::MeshIterator it = iterator.begin();
+    auto it = iterator.begin();
     for ( size_t i = 0; i < N; ++i, ++it ) {
         ids[i] = it->globalID();
         z[i]   = it->coord( 2 );
+        AMP_ASSERT( ids[i].is_local() );
     }
     std::vector<size_t> dofs( N );
     dof->getDOFs( ids, dofs );
@@ -128,12 +129,9 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
     if ( iterator == d_dstIterator2 && d_z_coord2 )
         return d_z_coord2;
     PROFILE( "getGaussPoints" );
-    std::shared_ptr<AMP::Discretization::DOFManager> GpDofMap =
-        AMP::Discretization::simpleDOFManager::create( iterator, 4 );
-    std::shared_ptr<AMP::LinearAlgebra::Variable> var(
-        new AMP::LinearAlgebra::Variable( "gauss_z" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr z_pos =
-        AMP::LinearAlgebra::createVector( GpDofMap, var );
+    auto GpDofMap               = AMP::Discretization::simpleDOFManager::create( iterator, 4 );
+    auto var                    = std::make_shared<AMP::LinearAlgebra::Variable>( "gauss_z" );
+    auto z_pos                  = AMP::LinearAlgebra::createVector( GpDofMap, var );
     AMP::Mesh::MeshIterator cur = iterator.begin();
     std::vector<size_t> ids;
     for ( size_t i = 0; i < cur.size(); i++ ) {
@@ -193,8 +191,8 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
     AMP_ASSERT( z_pos );
 
     // Get the DOF managers
-    std::shared_ptr<AMP::Discretization::DOFManager> DOFs      = vec->getDOFManager();
-    std::shared_ptr<AMP::Discretization::DOFManager> gaussDOFs = z_pos->getDOFManager();
+    auto DOFs      = vec->getDOFManager();
+    auto gaussDOFs = z_pos->getDOFManager();
 
     // Loop through the points in the output vector
     size_t N0 = iterator.size();
@@ -204,7 +202,7 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
     zi.reserve( N0 );
     std::vector<size_t> id1, id2;
     std::vector<double> zi2;
-    AMP::Mesh::MeshIterator it_mesh = iterator.begin();
+    auto it_mesh = iterator.begin();
     for ( size_t i = 0; i < N0; ++i, ++it_mesh ) {
         // Get the local DOFs
         DOFs->getDOFs( it_mesh->globalID(), id1 );
