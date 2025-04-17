@@ -1050,12 +1050,10 @@ void AMP_MPI::abort() const
 int AMP_MPI::newTag()
 {
 #ifdef AMP_USE_MPI
-    // Syncronize the processes to ensure all ranks enter this call
-    // Needed so the count will match
-    barrier();
-    // Return and increment the tag
+
     int tag = ( *d_currentTag )++;
     AMP_INSIST( tag <= d_maxTag, "Maximum number of tags exceeded\n" );
+    AMP_DEBUG_ASSERT( tag == bcast( tag, 0 ) );
     return tag;
 #else
     static int globalCurrentTag = 1;
