@@ -48,7 +48,6 @@ private:
 
     // Internal data
     std::shared_ptr<VectorData> d_parentData;          // VectorData for the subset
-    size_t d_parentLocalStartID;                       // Offset for the parent
     std::vector<size_t> d_SubsetLocalIDToViewGlobalID; // The list of global ID in the parent vector
 };
 
