@@ -158,7 +158,7 @@ void GMRESRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         d_pOperator->apply( z, c );
-        for ( int i = 0; i <= k - 1; ++i ) {
+        for ( int i = std::max( 0, k - d_iMaxKrylovDimension ); i <= k - 1; ++i ) {
             j = i % d_iMaxKrylovDimension;
 
             const auto alpha = d_c[j]->dot( *c );
