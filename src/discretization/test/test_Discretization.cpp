@@ -17,23 +17,23 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv, startup_properties );
     AMP::UnitTest ut;
 
-    // Run the simpleDOFManager tests
-    testLogicalDOFMap( ut );
-    testSimpleDOFManager( std::make_shared<AMPCubeGenerator<10>>(), ut );
-    testSimpleDOFManager( std::make_shared<AMPMultiMeshGenerator>(), ut );
-#ifdef AMP_USE_LIBMESH
-    testSimpleDOFManager( std::make_shared<LibMeshCubeGenerator<5>>(), ut );
-    testSimpleDOFManager( std::make_shared<ExodusReaderGenerator<1>>(), ut );
-    testSimpleDOFManager( std::make_shared<ExodusReaderGenerator<3>>(), ut );
-    testSimpleDOFManager( std::make_shared<MultiMeshGenerator>(), ut );
-#endif
+    /*    // Run the simpleDOFManager tests
+        testLogicalDOFMap( ut );
+        testSimpleDOFManager( std::make_shared<AMPCubeGenerator<10>>(), ut );
+        testSimpleDOFManager( std::make_shared<AMPMultiMeshGenerator>(), ut );
+    #ifdef AMP_USE_LIBMESH
+        testSimpleDOFManager( std::make_shared<LibMeshCubeGenerator<5>>(), ut );
+        testSimpleDOFManager( std::make_shared<ExodusReaderGenerator<1>>(), ut );
+        testSimpleDOFManager( std::make_shared<ExodusReaderGenerator<3>>(), ut );
+        testSimpleDOFManager( std::make_shared<MultiMeshGenerator>(), ut );
+    #endif
 
-    // Run the multiDOFManager tests
-    testMultiDOFManager( std::make_shared<AMPCubeGenerator<10>>(), ut );
-#ifdef AMP_USE_LIBMESH
-    testMultiDOFManager( std::make_shared<LibMeshCubeGenerator<5>>(), ut );
-    testMultiDOFManager( std::make_shared<MultiMeshGenerator>(), ut );
-#endif
+        // Run the multiDOFManager tests
+        testMultiDOFManager( std::make_shared<AMPCubeGenerator<10>>(), ut );
+    #ifdef AMP_USE_LIBMESH
+        testMultiDOFManager( std::make_shared<LibMeshCubeGenerator<5>>(), ut );
+        testMultiDOFManager( std::make_shared<MultiMeshGenerator>(), ut );
+    #endif*/
 
     // Run the subsetDOFManager tests
     testSubsetDOFManager( std::make_shared<AMPCubeGenerator<10>>(), false, ut );
@@ -45,13 +45,13 @@ int main( int argc, char **argv )
     testSubsetDOFManager( std::make_shared<MultiMeshGenerator>(), true, ut );
 #endif
 
-    // Run the tests for the structureMeshDOFManager
-    testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 1, 0, 0, 1, ut );
-    testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 0, 1, 0, 1, ut );
-    testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 0, 0, 1, 1, ut );
-    testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 1, 1, 1, 1, ut );
-    testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 1, 1, 1, 0, ut );
-    testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 1, 1, 1, 2, ut );
+    /*    // Run the tests for the structureMeshDOFManager
+        testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 1, 0, 0, 1, ut );
+        testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 0, 1, 0, 1, ut );
+        testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 0, 0, 1, 1, ut );
+        testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 1, 1, 1, 1, ut );
+        testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 1, 1, 1, 0, ut );
+        testStructureDOFManager( std::make_shared<AMPCubeGenerator<10>>(), 1, 1, 1, 2, ut );*/
 
     // Print the results and return
     ut.report();

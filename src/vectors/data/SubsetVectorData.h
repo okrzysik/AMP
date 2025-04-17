@@ -82,6 +82,7 @@ public:
     std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
     bool hasContiguousData() const override { return numberOfDataBlocks() > 1 ? false : true; }
     SubsetVectorData() {}
+    const AMP_MPI &getComm() const override;
     explicit SubsetVectorData( std::shared_ptr<SubsetVectorParameters> params );
 
 private:

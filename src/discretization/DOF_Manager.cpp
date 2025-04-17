@@ -2,6 +2,7 @@
 #include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/DOFManagerFactory.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/subsetCommSelfDOFManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/time_integrators/TimeIntegratorFactory.h"
@@ -179,6 +180,8 @@ std::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
 {
     if ( comm.compare( d_comm ) != 0 )
         return shared_from_this();
+    if ( comm.getSize() == 1 )
+        return subsetCommSelfDOFManager::create( shared_from_this() );
     std::vector<size_t> local_dofs( numLocalDOF(), beginDOF() );
     for ( size_t i = 0; i < numLocalDOF(); i++ )
         local_dofs[i] += i;

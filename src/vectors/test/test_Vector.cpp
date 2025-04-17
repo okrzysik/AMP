@@ -2,6 +2,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
@@ -14,6 +15,8 @@
 #ifdef AMP_USE_TRILINOS_THYRA
     #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 #endif
+
+#include "ProfilerApp.h"
 
 #include <iostream>
 
@@ -33,11 +36,79 @@ std::string MVFactory1 =
     "MultiVectorFactory<SimpleVectorFactory<15,false>,1," + SNEVFactory + ",1>";
 #endif
 
+
+int testByVariableName( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
+{
+    int N_it  = 50;
+    auto name = vec->getName();
+    auto t1   = AMP::Utilities::time();
+    for ( int i = 0; i < N_it; i++ ) {
+        VS_ByVariableName variable( name );
+        AMP_ASSERT( variable.subset( vec ) );
+    }
+    auto t2 = AMP::Utilities::time();
+    return 1e9 * ( t2 - t1 ) / N_it;
+}
+int testByStride( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, size_t offset, size_t length )
+{
+    int N_it  = 20;
+    auto name = vec->getName();
+    auto t1   = AMP::Utilities::time();
+    for ( int i = 0; i < N_it; i++ ) {
+        VS_Stride variable( offset, length );
+        AMP_ASSERT( variable.subset( vec ) );
+    }
+    auto t2 = AMP::Utilities::time();
+    return 1e9 * ( t2 - t1 ) / N_it;
+}
+int testByComm( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, const AMP::AMP_MPI &comm )
+{
+    int N_it  = 50;
+    auto name = vec->getName();
+    auto t1   = AMP::Utilities::time();
+    for ( int i = 0; i < N_it; i++ ) {
+        VS_Comm variable( comm );
+        AMP_ASSERT( variable.subset( vec ) );
+    }
+    auto t2 = AMP::Utilities::time();
+    return 1e9 * ( t2 - t1 ) / N_it;
+}
+void testVectorSelectorPerformance()
+{
+    PROFILE( "testVectorSelectorPerformance" );
+    AMP::AMP_MPI worldComm( AMP_COMM_WORLD );
+    AMP::AMP_MPI selfComm( AMP_COMM_SELF );
+    auto splitComm = worldComm.split( worldComm.getRank() % 2 );
+    if ( worldComm.getRank() == 0 )
+        printf( "       subset performance (ns):              "
+                " Variable  Stride  VecComm    World    Self    Split\n" );
+    for ( auto name : getAllFactories() ) {
+        auto factory = generateVectorFactory( name );
+        auto vec     = factory->getVector();
+        auto vecComm = vec->getComm();
+        worldComm.barrier();
+        auto t1 = testByVariableName( vec );
+        auto t2 = testByStride( vec, 0, 1 );
+        auto t3 = testByComm( vec, vecComm );
+        auto t4 = testByComm( vec, worldComm );
+        auto t5 = testByComm( vec, selfComm );
+        auto t6 = testByComm( vec, splitComm );
+        if ( worldComm.getRank() == 0 ) {
+            auto name2 = name.substr( 0, 40 );
+            printf( "  %40s  %8i %8i %8i %8i %8i %8i\n", name2.data(), t1, t2, t3, t4, t5, t6 );
+        }
+    }
+}
+
+
 int main( int argc, char **argv )
 {
 
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    PROFILE_ENABLE( 3 );
+
+#if 1
 
     // Test ArrayVector dimensions
     std::vector<size_t> dims{ 3, 3, 3, 3 };
@@ -101,6 +172,18 @@ int main( int argc, char **argv )
         tests.testSundials( &ut );
     }
 
+    // Run Belos tests of thyra vectors
+    #if defined( AMP_USE_TRILINOS_THYRA ) && defined( AMP_USE_TRILINOS_BELOS )
+    AMP::pout << std::endl << "Testing Belos interface to Thyra vectors" << std::endl;
+    testBelosThyraVector( ut, NativeThyraFactory() );
+    testBelosThyraVector( ut, ManagedThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );
+    testBelosThyraVector( ut,
+                          ManagedNativeThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );
+    testBelosThyraVector( ut, ManagedNativeThyraFactory( generateVectorFactory( MVFactory1 ) ) );
+    #endif
+
+#endif
+
     // Run the vector selector tests
     AMP::pout << std::endl << "Running vector selector tests:" << std::endl;
     for ( auto name : getAllFactories() ) {
@@ -109,16 +192,10 @@ int main( int argc, char **argv )
         tests.testVectorSelector( &ut );
     }
 
-// Run Belos tests of thyra vectors
-#if defined( AMP_USE_TRILINOS_THYRA ) && defined( AMP_USE_TRILINOS_BELOS )
-    AMP::pout << std::endl << "Testing Belos interface to Thyra vectors" << std::endl;
-    testBelosThyraVector( ut, NativeThyraFactory() );
-    testBelosThyraVector( ut, ManagedThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );
-    testBelosThyraVector( ut,
-                          ManagedNativeThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );
-    testBelosThyraVector( ut, ManagedNativeThyraFactory( generateVectorFactory( MVFactory1 ) ) );
-#endif
+    // Test vector selector performance
+    testVectorSelectorPerformance();
 
+    PROFILE_SAVE( "testVector" );
     ut.report();
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();

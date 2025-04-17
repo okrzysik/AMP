@@ -24,6 +24,7 @@ MeshVariable::getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> par
 {
     return parentDOF->subset( d_mesh, d_useMeshComm );
 }
+AMP::AMP_MPI MeshVariable::getComm( const AMP::AMP_MPI &comm ) const { return comm; }
 std::shared_ptr<VectorSelector> MeshVariable::createVectorSelector() const
 {
     return std::make_shared<VS_Mesh>( d_mesh, d_useMeshComm );
@@ -48,6 +49,7 @@ std::shared_ptr<AMP::Discretization::DOFManager> MeshIteratorVariable::getSubset
 {
     return parentDOF->subset( d_iterator, d_comm );
 }
+AMP::AMP_MPI MeshIteratorVariable::getComm( const AMP::AMP_MPI &comm ) const { return comm; }
 std::shared_ptr<VectorSelector> MeshIteratorVariable::createVectorSelector() const
 {
     return std::make_shared<VS_MeshIterator>( d_iterator, d_comm );

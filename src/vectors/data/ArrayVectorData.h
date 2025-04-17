@@ -57,7 +57,7 @@ public:
 
     /** \brief  Return the communicator this Vector spans
      */
-    AMP_MPI getComm() const override { return d_comm; }
+    const AMP_MPI &getComm() const override { return d_comm; }
 
     //! resize the ArrayVector and reset the internal data structures
     void resize( const ArraySize &localDims );

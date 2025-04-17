@@ -17,30 +17,39 @@
 
 namespace AMP::LinearAlgebra {
 
+
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-MultiVector::MultiVector( const std::string &name, const AMP_MPI &comm ) : Vector()
+MultiVector::MultiVector( const std::string &name,
+                          const AMP_MPI &comm,
+                          const std::vector<Vector::shared_ptr> &vecs )
+    : Vector()
 {
     d_VectorOps  = std::make_shared<MultiVectorOperations>();
     d_VectorData = std::make_shared<MultiVectorData>( comm );
     d_Variable.reset( new MultiVariable( name ) );
+    for ( auto &v : vecs )
+        addVectorHelper( v );
+    resetVectorData();
+    resetVectorOperations();
 }
 
+
+/****************************************************************
+ * create/view                                                   *
+ ****************************************************************/
 std::shared_ptr<MultiVector> MultiVector::create( std::shared_ptr<Variable> variable,
                                                   const AMP_MPI &comm,
                                                   const std::vector<Vector::shared_ptr> &vecs )
 {
-    std::shared_ptr<MultiVector> retval( new MultiVector( variable->getName(), comm ) );
-    retval->addVector( vecs );
-    return retval;
+    return std::make_shared<MultiVector>( variable->getName(), comm, vecs );
 }
 std::shared_ptr<MultiVector> MultiVector::create( const std::string &name,
                                                   const AMP_MPI &comm,
                                                   const std::vector<Vector::shared_ptr> &vecs )
 {
-    auto variable = std::make_shared<Variable>( name );
-    return MultiVector::create( variable, comm, vecs );
+    return std::make_shared<MultiVector>( name, comm, vecs );
 }
 std::shared_ptr<const MultiVector>
 MultiVector::const_create( std::shared_ptr<Variable> variable,
@@ -50,18 +59,17 @@ MultiVector::const_create( std::shared_ptr<Variable> variable,
     std::vector<Vector::shared_ptr> vecs2( vecs.size() );
     for ( size_t i = 0; i < vecs.size(); i++ )
         vecs2[i] = std::const_pointer_cast<Vector>( vecs[i] );
-    return MultiVector::create( variable, comm, vecs2 );
+    return std::make_shared<MultiVector>( variable->getName(), comm, vecs2 );
 }
 std::shared_ptr<const MultiVector>
 MultiVector::const_create( const std::string &name,
                            const AMP_MPI &comm,
                            const std::vector<Vector::const_shared_ptr> &vecs )
 {
-    auto variable = std::make_shared<Variable>( name );
     std::vector<Vector::shared_ptr> vecs2( vecs.size() );
     for ( size_t i = 0; i < vecs.size(); i++ )
         vecs2[i] = std::const_pointer_cast<Vector>( vecs[i] );
-    return MultiVector::create( variable, comm, vecs2 );
+    return std::make_shared<MultiVector>( name, comm, vecs2 );
 }
 std::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, const AMP_MPI &comm_in )
 {
@@ -117,10 +125,8 @@ void MultiVector::addVector( Vector::shared_ptr v )
 }
 void MultiVector::addVector( std::vector<Vector::shared_ptr> v )
 {
-    // Add the vectors
     for ( auto &elem : v )
         addVectorHelper( elem );
-
     reset();
 }
 void MultiVector::resetVectorOperations()
@@ -157,8 +163,7 @@ void MultiVector::resetVectorData()
             std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
     }
 
-    auto data   = Vector::getVectorData();
-    auto mvData = std::dynamic_pointer_cast<MultiVectorData>( data );
+    auto mvData = std::dynamic_pointer_cast<MultiVectorData>( d_VectorData );
     AMP_ASSERT( mvData );
     std::vector<VectorData *> dataComponents( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ )
