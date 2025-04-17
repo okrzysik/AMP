@@ -182,10 +182,10 @@ public: // public constructor/destructors
                           const std::vector<Vector::shared_ptr> &vecs = {} );
 
     //!  Move constructor
-    MultiVector( MultiVector && ) = default;
+    MultiVector( MultiVector && ) = delete;
 
     //!  Move operator
-    MultiVector &operator=( MultiVector && ) = default;
+    MultiVector &operator=( MultiVector && ) = delete;
 
     //!  Destructor
     virtual ~MultiVector();
