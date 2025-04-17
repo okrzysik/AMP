@@ -28,38 +28,27 @@ std::shared_ptr<VectorSelector> SubsetVariable::createVectorSelector() const
 /****************************************************************
  * view                                                          *
  ****************************************************************/
-Vector::shared_ptr SubsetVariable::view( Vector::shared_ptr v, std::shared_ptr<Variable> var_in )
+Vector::shared_ptr SubsetVariable::view( Vector::shared_ptr v ) const
 {
-    return std::const_pointer_cast<Vector>(
-        SubsetVariable::view( Vector::const_shared_ptr( v ), var_in ) );
-}
-Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
-                                               std::shared_ptr<Variable> var_in )
-{
-    PROFILE( "view", 2 );
-    auto var = std::dynamic_pointer_cast<SubsetVariable>( var_in );
-    AMP_ASSERT( var );
-    if ( std::dynamic_pointer_cast<const MultiVector>( v ) ) {
-        // We are dealing with a multivector, it is more efficient to subset the individual pieces,
-        // then create a new mulitvector
-        auto mv = std::dynamic_pointer_cast<const MultiVector>( v );
-        std::vector<Vector::const_shared_ptr> vec_list;
+    if ( std::dynamic_pointer_cast<MultiVector>( v ) ) {
+        // We are dealing with a multivector
+        // It is more efficient to subset the individual pieces, then create a new mulitvector
+        auto mv = std::dynamic_pointer_cast<MultiVector>( v );
+        std::vector<Vector::shared_ptr> vec_list;
         for ( size_t i = 0; i < mv->getNumberOfSubvectors(); i++ ) {
-            auto sub_vec = SubsetVariable::view( mv->getVector( i ), var_in );
+            auto sub_vec = SubsetVariable::view( mv->getVector( i ) );
             if ( sub_vec != nullptr )
                 vec_list.push_back( sub_vec );
         }
         if ( vec_list.empty() ) {
-            return Vector::const_shared_ptr();
+            return {};
         }
-        auto parentDOF = v->getDOFManager();
-        auto subsetDOF = var->getSubsetDOF( parentDOF );
-        return MultiVector::const_create( v->getName(), subsetDOF->getComm(), vec_list );
+        auto comm = getComm( v->getDOFManager()->getComm() );
+        return std::make_shared<MultiVector>( v->getName(), comm, vec_list );
     }
     // Subset the DOFManager and create a new communication list
-    PROFILE( "view", 2 );
     auto parentDOF = v->getDOFManager();
-    auto subsetDOF = var->getSubsetDOF( parentDOF );
+    auto subsetDOF = getSubsetDOF( parentDOF );
     if ( !subsetDOF ) {
         return Vector::shared_ptr();
     } else if ( subsetDOF->numGlobalDOF() == 0 ) {
@@ -67,14 +56,12 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
     } else if ( subsetDOF == parentDOF ) {
         return v;
     }
+    auto var = std::const_pointer_cast<Variable>( shared_from_this() );
     if ( std::dynamic_pointer_cast<AMP::Discretization::subsetCommSelfDOFManager>( subsetDOF ) ) {
         // Create the new subset vector
-        auto ops             = std::make_shared<VectorOperationsDefault<double>>();
-        auto params          = std::make_shared<SubsetVectorParameters>();
-        params->d_ViewVector = std::const_pointer_cast<Vector>( v );
-        params->d_DOFManager = subsetDOF;
-        auto data            = std::make_shared<SubsetCommSelfVectorData>( params );
-        auto retVal          = std::make_shared<Vector>( data, ops, var, subsetDOF );
+        auto ops    = v->getVectorOperations();
+        auto data   = std::make_shared<SubsetCommSelfVectorData>( v->getVectorData() );
+        auto retVal = std::make_shared<Vector>( data, ops, var, subsetDOF );
         return retVal;
     } else {
         auto remote_DOFs = subsetDOF->getRemoteDOFs();
@@ -101,6 +88,10 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
         auto retVal          = std::make_shared<Vector>( data, ops, var, subsetDOF );
         return retVal;
     }
+}
+Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v ) const
+{
+    return SubsetVariable::view( std::const_pointer_cast<Vector>( v ) );
 }
 
 

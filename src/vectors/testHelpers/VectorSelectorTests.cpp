@@ -18,13 +18,15 @@ inline bool compareVecSubset( AMP::LinearAlgebra::Vector::const_shared_ptr vec1,
 // and VectorSelector::constSubset return the same vectors
 inline void testSelector( AMP::UnitTest *ut,
                           const std::string &test_name,
+                          const std::string &factory_name,
                           const AMP::LinearAlgebra::VectorSelector &selector,
                           AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    auto vec1 = selector.subset( vec );
-    auto vec2 = selector.subset( AMP::LinearAlgebra::Vector::const_shared_ptr( vec ) );
-    auto vec3 = vec->select( selector, vec->getName() );
-    auto vec4 = vec->select( selector, vec->getName() );
+    AMP::LinearAlgebra::Vector::const_shared_ptr constVec = vec;
+    auto vec1                                             = selector.subset( vec );
+    auto vec2                                             = selector.subset( constVec );
+    auto vec3                                             = vec->select( selector, vec->getName() );
+    auto vec4 = constVec->select( selector, vec->getName() );
     if ( !vec1 || !vec2 || !vec3 || !vec4 ) {
         ut->failure( "Failed to select (" + test_name + ")" );
         return;
@@ -32,29 +34,30 @@ inline void testSelector( AMP::UnitTest *ut,
     bool equal = compareVecSubset( vec1, vec2 ) && compareVecSubset( vec1, vec3 ) &&
                  compareVecSubset( vec1, vec4 );
     if ( equal )
-        ut->passes( "select matches select and subset (" + test_name + ")" );
+        ut->passes( "select matches select and subset: " + test_name );
     else
-        ut->failure( "select matches select and subset (" + test_name + ")" );
+        ut->failure( "select matches select and subset: " + test_name + " " + factory_name );
 }
 void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 {
-    auto vec = d_factory->getVector();
+    auto vec  = d_factory->getVector();
+    auto name = d_factory->name();
     vec->setVariable( std::make_shared<Variable>( "test_selector" ) );
     AMP::AMP_MPI vec_comm = vec->getComm();
     AMP::AMP_MPI world_comm( AMP_COMM_WORLD );
     AMP::AMP_MPI self_comm( AMP_COMM_SELF );
-    testSelector( ut, "VS_ByVariableName", VS_ByVariableName( vec->getName() ), vec );
-    testSelector( ut, "VS_Stride", VS_Stride( 0, 1 ), vec );
-    testSelector( ut, "VS_Comm(vec)", VS_Comm( vec_comm ), vec );
-    testSelector( ut, "VS_Comm(world)", VS_Comm( world_comm ), vec );
+    testSelector( ut, "VS_ByVariableName", name, VS_ByVariableName( vec->getName() ), vec );
+    testSelector( ut, "VS_Stride", name, VS_Stride( 0, 1 ), vec );
+    testSelector( ut, "VS_Comm(vec)", name, VS_Comm( vec_comm ), vec );
+    testSelector( ut, "VS_Comm(world)", name, VS_Comm( world_comm ), vec );
     for ( int i = 0; i < vec_comm.getRank(); i++ )
         vec_comm.barrier();
-    testSelector( ut, "VS_Comm(self)", VS_Comm( self_comm ), vec );
+    testSelector( ut, "VS_Comm(self)", name, VS_Comm( self_comm ), vec );
     for ( int i = vec_comm.getRank(); i < vec_comm.getSize(); i++ )
         vec_comm.barrier();
     if ( vec_comm.getSize() > 2 ) {
         auto splitComm = vec_comm.split( vec_comm.getRank() % 2 );
-        testSelector( ut, "VS_Comm(split)", VS_Comm( splitComm ), vec );
+        testSelector( ut, "VS_Comm(split)", name, VS_Comm( splitComm ), vec );
     }
     // testSelector( ut, "VS_Mesh", VS_Mesh(), vec );
     // testSelector( ut, "VS_MeshIterator", VS_MeshIterator(), vec );

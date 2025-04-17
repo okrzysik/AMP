@@ -25,9 +25,9 @@ public:
     {
         return "SubsetCommSelfVectorData of " + d_parentData->VectorDataName();
     }
+    const AMP_MPI &getComm() const override;
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
-
     void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
     void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
     void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
@@ -40,7 +40,7 @@ public:
     std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
     bool hasContiguousData() const override { return numberOfDataBlocks() > 1 ? false : true; }
     SubsetCommSelfVectorData() {}
-    explicit SubsetCommSelfVectorData( std::shared_ptr<SubsetVectorParameters> params );
+    explicit SubsetCommSelfVectorData( std::shared_ptr<VectorData> data );
 
 private:
     void *getRawDataBlockAsVoid( size_t i ) override;
@@ -50,8 +50,6 @@ private:
     std::shared_ptr<VectorData> d_parentData;          // VectorData for the subset
     size_t d_parentLocalStartID;                       // Offset for the parent
     std::vector<size_t> d_SubsetLocalIDToViewGlobalID; // The list of global ID in the parent vector
-    std::shared_ptr<AMP::Discretization::subsetCommSelfDOFManager>
-        d_DOFManager; // this will contain the subset DOF
 };
 
 

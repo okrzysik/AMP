@@ -200,7 +200,7 @@ void VectorData::dataChanged()
 /****************************************************************
  * Default clone                                                 *
  ****************************************************************/
-AMP_MPI VectorData::getComm() const
+const AMP_MPI &VectorData::getComm() const
 {
     AMP_ASSERT( d_CommList );
     return d_CommList->getComm();

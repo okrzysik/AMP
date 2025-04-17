@@ -1,5 +1,5 @@
-#ifndef included_AMP_CommVariable_H
-#define included_AMP_CommVariable_H
+#ifndef included_AMP_CommSelfVariable_H
+#define included_AMP_CommSelfVariable_H
 
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/SubsetVariable.h"
@@ -11,14 +11,14 @@ namespace AMP::LinearAlgebra {
  * \brief An AMP Variable that describes how to subset a DOF for a mesh
  * \see SubsetVector
  */
-class CommVariable : public SubsetVariable
+class CommSelfVariable final : public SubsetVariable
 {
 public:
     /** \brief Constructor
      * \param[in] name  The name of the new variable
      * \param[in] comm  The AMP_MPI communicator of the new variable
      */
-    CommVariable( const std::string &name, const AMP_MPI &comm );
+    CommSelfVariable( const std::string &name );
 
     std::shared_ptr<AMP::Discretization::DOFManager>
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
@@ -27,15 +27,16 @@ public:
 
 
 public: // Functions inherited from Variable
-    std::string className() const override { return "CommVariable"; }
+    std::string className() const override { return "CommSelfVariable"; }
     uint64_t getID() const override;
     std::shared_ptr<VectorSelector> createVectorSelector() const override;
     void writeRestart( int64_t ) const override;
-    CommVariable( int64_t );
+    CommSelfVariable( int64_t );
+    Vector::shared_ptr view( Vector::shared_ptr ) const override;
+    using SubsetVariable::view;
 
 private:
-    CommVariable();
-    AMP_MPI d_comm;
+    CommSelfVariable();
 };
 } // namespace AMP::LinearAlgebra
 

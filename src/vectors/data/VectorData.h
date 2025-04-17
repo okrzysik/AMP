@@ -523,7 +523,7 @@ public: // Virtual functions dealing with the update status
     virtual void makeConsistent();
 
     //! Get the communicator
-    virtual AMP_MPI getComm() const;
+    virtual const AMP_MPI &getComm() const;
 
     virtual bool hasComm( void ) const { return ( d_CommList != nullptr ); }
 

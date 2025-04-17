@@ -89,6 +89,7 @@ AMP_MPI::atomic_int AMP_MPI::N_MPI_Comm_destroyed = 0;
 AMP_MPI::Comm AMP_MPI::commNull                   = ( (AMP_MPI::Comm) 0xF400F001 );
 AMP_MPI::Comm AMP_MPI::commSelf                   = ( (AMP_MPI::Comm) 0xF400F003 );
 AMP_MPI::Comm AMP_MPI::commWorld                  = ( (AMP_MPI::Comm) 0xF400F007 );
+int AMP_MPI::d_maxTag                             = 0x3FFFFFFF;
 
 
 // Static data for asyncronous communication without MPI
@@ -255,11 +256,7 @@ void AMP_MPI::balanceProcesses( const AMP_MPI &globalComm,
 /************************************************************************
  *  Empty constructor                                                    *
  ************************************************************************/
-static auto randNull = std::mt19937( std::random_device()() );
-AMP_MPI::AMP_MPI()
-    : d_comm( MPI_COMM_NULL ), d_size( 0 ), d_rand( &randNull, []( std::mt19937 * ) {} )
-{
-}
+AMP_MPI::AMP_MPI() : d_comm( MPI_COMM_NULL ), d_size( 0 ) {}
 
 
 /************************************************************************
@@ -294,6 +291,7 @@ void AMP_MPI::reset()
         --( d_currentTag[1] );
     } else {
         delete[] d_currentTag;
+        delete d_rand;
     }
     d_manage     = false;
     d_count      = nullptr;
@@ -301,11 +299,9 @@ void AMP_MPI::reset()
     d_rank       = 0;
     d_size       = 1;
     d_hash       = hashNull;
-    d_maxTag     = 0;
     d_isNull     = true;
     d_currentTag = nullptr;
     d_call_abort = true;
-    d_rand.reset( &randNull, []( std::mt19937 * ) {} );
 }
 
 
@@ -319,7 +315,6 @@ AMP_MPI::AMP_MPI( const AMP_MPI &comm )
       d_call_abort( comm.d_call_abort ),
       d_rank( comm.d_rank ),
       d_size( comm.d_size ),
-      d_maxTag( comm.d_maxTag ),
       d_hash( comm.d_hash ),
       d_currentTag( comm.d_currentTag ),
       d_ranks( comm.d_ranks ),
@@ -341,7 +336,6 @@ AMP_MPI::AMP_MPI( AMP_MPI &&rhs ) : AMP_MPI()
     std::swap( d_rank, rhs.d_rank );
     std::swap( d_size, rhs.d_size );
     std::swap( d_ranks, rhs.d_ranks );
-    std::swap( d_maxTag, rhs.d_maxTag );
     std::swap( d_hash, rhs.d_hash );
     std::swap( d_currentTag, rhs.d_currentTag );
     std::swap( d_count, rhs.d_count );
@@ -365,7 +359,6 @@ AMP_MPI &AMP_MPI::operator=( const AMP_MPI &comm )
     this->d_ranks      = comm.d_ranks;
     this->d_isNull     = comm.d_isNull;
     this->d_manage     = comm.d_manage;
-    this->d_maxTag     = comm.d_maxTag;
     this->d_hash       = comm.d_hash;
     this->d_rand       = comm.d_rand;
     this->d_call_abort = comm.d_call_abort;
@@ -390,7 +383,6 @@ AMP_MPI &AMP_MPI::operator=( AMP_MPI &&rhs )
     std::swap( d_rank, rhs.d_rank );
     std::swap( d_size, rhs.d_size );
     std::swap( d_ranks, rhs.d_ranks );
-    std::swap( d_maxTag, rhs.d_maxTag );
     std::swap( d_hash, rhs.d_hash );
     std::swap( d_currentTag, rhs.d_currentTag );
     std::swap( d_count, rhs.d_count );
@@ -401,8 +393,8 @@ AMP_MPI &AMP_MPI::operator=( AMP_MPI &&rhs )
 
 /************************************************************************
  *  Simple functions                                                     *
- *  Note: These are not inlined to prevent sybols from being defined in  *
- *  translation units that may not otherwise be needed.                  *
+ *  Note: These are not in-lined to prevent symbols from being defined   *
+ *     in translation units that may not otherwise be needed.            *
  ************************************************************************/
 bool AMP_MPI::isNull() const { return d_isNull; }
 int AMP_MPI::getRank() const { return d_rank; }
@@ -453,115 +445,86 @@ static inline uint64_t hashComm( AMP_MPI::Comm comm )
 /************************************************************************
  *  Constructor from existing MPI communicator                           *
  ************************************************************************/
-static int d_global_currentTag_world1[2]       = { 1, 1 };
-static int d_global_currentTag_world2[2]       = { 1, 1 };
-static int d_global_currentTag_self[2]         = { 1, 1 };
-static std::atomic_int d_global_count_world1   = { 1 };
-static std::atomic_int d_global_count_world2   = { 1 };
-static std::atomic_int d_global_count_self     = { 1 };
-static std::shared_ptr<std::mt19937> randWorld = nullptr;
-static std::shared_ptr<std::mt19937> randMPI   = nullptr;
+static int d_global_currentTag_world1[2] = { 1, 1 };
+static int d_global_currentTag_world2[2] = { 1, 1 };
+static int d_global_currentTag_self[2]   = { 1, 1 };
+static std::pair<int, int> getRankAndSize( [[maybe_unused]] AMP_MPI::Comm comm )
+{
+    int rank = 0;
+    int size = 1;
+#ifdef AMP_USE_MPI
+    MPI_Comm_rank( comm, &rank );
+    MPI_Comm_size( comm, &size );
+#endif
+    return { rank, size };
+}
 AMP_MPI::AMP_MPI( Comm comm, bool manage )
 {
     // Check if we are using our version of comm_world
     if ( comm == commWorld ) {
-        d_comm = AMP::AMPManager::getCommWorld().d_comm;
-    } else if ( comm == commSelf ) {
-        d_comm = MPI_COMM_SELF;
-    } else if ( comm == commNull ) {
-        d_comm = MPI_COMM_NULL;
+        // AMP_COMM_WORLD
+        static auto rankSize = getRankAndSize( AMP::AMPManager::getCommWorld().d_comm );
+        d_comm               = AMP::AMPManager::getCommWorld().d_comm;
+        d_hash               = hashWorld;
+        d_rank               = rankSize.first;
+        d_size               = rankSize.second;
+        d_currentTag         = d_global_currentTag_world1;
+        ++( this->d_currentTag[1] );
+    } else if ( comm == MPI_COMM_WORLD ) {
+        // MPI_COMM_WORLD
+        static auto rankSize = getRankAndSize( MPI_COMM_WORLD );
+        d_comm               = MPI_COMM_WORLD;
+        d_hash               = hashMPI;
+        d_rank               = rankSize.first;
+        d_size               = rankSize.second;
+        d_currentTag         = d_global_currentTag_world2;
+        ++( this->d_currentTag[1] );
+    } else if ( comm == commSelf || comm == MPI_COMM_SELF ) {
+        // MPI_COMM_SELF
+        d_comm       = MPI_COMM_SELF;
+        d_hash       = hashSelf;
+        d_rank       = 0;
+        d_size       = 1;
+        d_currentTag = d_global_currentTag_self;
+        ++( this->d_currentTag[1] );
+    } else if ( comm == commNull || comm == MPI_COMM_NULL ) {
+        // MPI_COMM_NULL
+        d_comm       = MPI_COMM_NULL;
+        d_hash       = hashNull;
+        d_rank       = 0;
+        d_size       = 0;
+        d_currentTag = nullptr;
     } else {
-        d_comm = comm;
-    }
-    // We are using MPI, use the MPI communicator to initialize the data
-    if ( d_comm == MPI_COMM_NULL ) {
-        d_rank = 0;
-        d_size = 0;
-    } else if ( d_comm == MPI_COMM_SELF && !MPI_Active() ) {
-        d_rank = 0;
-        d_size = 1;
-    } else {
+        // Default
+        auto rankSize              = getRankAndSize( comm );
+        d_comm                     = comm;
+        d_hash                     = hashComm( d_comm );
+        d_rank                     = rankSize.first;
+        d_size                     = rankSize.second;
+        std::tie( d_rank, d_size ) = getRankAndSize( d_comm );
 #ifdef AMP_USE_MPI
         // Attach the error handler
         StackTrace::setMPIErrorHandler( d_comm );
-        // Get the communicator properties
-        MPI_Comm_rank( d_comm, &d_rank );
-        MPI_Comm_size( d_comm, &d_size );
-        int flag, *val;
-        int ierr = MPI_Comm_get_attr( d_comm, MPI_TAG_UB, &val, &flag );
-        AMP_ASSERT( ierr == MPI_SUCCESS );
-        if ( flag != 0 ) {
-            d_maxTag = std::min<int>( *val, 0x7FFFFFFF );
-            AMP_INSIST( d_maxTag >= 0x7FFF, "maximum tag size is < MPI standard" );
-        }
-#else
-        d_rank = 0;
-        d_size = 1;
 #endif
-    }
-    d_isNull = d_comm == MPI_COMM_NULL;
-    if ( manage && d_comm != MPI_COMM_NULL && d_comm != MPI_COMM_SELF && d_comm != MPI_COMM_WORLD )
-        d_manage = true;
-    // Create the count (Note: we do not need to worry about thread safety)
-    if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
-        d_count = &d_global_count_world1;
-        ++( *d_count );
-    } else if ( d_comm == MPI_COMM_WORLD ) {
-        d_count = &d_global_count_world2;
-        ++( *d_count );
-    } else if ( d_comm == MPI_COMM_SELF ) {
-        d_count = &d_global_count_self;
-        ++( *d_count );
-    } else if ( d_comm == MPI_COMM_NULL ) {
-        d_count = nullptr;
-    } else {
+        d_manage = manage;
         d_count  = new std::atomic_int;
         *d_count = 1;
         if ( d_size > 1 ) {
             d_ranks    = new int[d_size];
             d_ranks[0] = -1;
         }
-    }
-    if ( d_manage )
-        ++N_MPI_Comm_created;
-    if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
-        d_currentTag = d_global_currentTag_world1;
-        ++( this->d_currentTag[1] );
-    } else if ( d_comm == MPI_COMM_WORLD ) {
-        d_currentTag = d_global_currentTag_world2;
-        ++( this->d_currentTag[1] );
-    } else if ( d_comm == MPI_COMM_SELF ) {
-        d_currentTag = d_global_currentTag_self;
-        ++( this->d_currentTag[1] );
-    } else if ( d_comm == MPI_COMM_NULL ) {
-        d_currentTag = nullptr;
-    } else {
+        if ( d_manage )
+            ++N_MPI_Comm_created;
         d_currentTag    = new int[2];
         d_currentTag[0] = ( d_maxTag <= 0x10000 ) ? 1 : 0x1FFF;
         d_currentTag[1] = 1;
+        if ( d_size > 1 ) {
+            auto seed = bcast<size_t>( std::random_device()(), 0 );
+            d_rand    = new std::mt19937( seed );
+        }
     }
+    d_isNull     = d_comm == MPI_COMM_NULL;
     d_call_abort = true;
-    // Create the hash
-    d_hash = hashComm( d_comm );
-    // Initialize the random number generator
-    if ( d_size < 2 ) {
-        d_rand.reset( &randNull, []( std::mt19937 * ) {} );
-    } else if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
-        if ( !randWorld ) {
-            auto seed = bcast<size_t>( std::random_device()(), 0 );
-            randWorld = std::make_shared<std::mt19937>( seed );
-        }
-        d_rand = randWorld;
-    } else if ( d_comm == MPI_COMM_WORLD ) {
-        if ( !randMPI ) {
-            auto seed = bcast<size_t>( std::random_device()(), 0 );
-            randMPI   = std::make_shared<std::mt19937>( seed );
-        }
-        d_rand = randMPI;
-    } else {
-        auto seed = bcast<size_t>( std::random_device()(), 0 );
-        d_rand    = std::make_shared<std::mt19937>( seed );
-    }
 }
 
 
@@ -569,6 +532,7 @@ AMP_MPI::AMP_MPI( Comm comm, bool manage )
  *  Return the ranks of the communicator in the global comm              *
  ************************************************************************/
 static std::vector<int> MPI_COMM_WORLD_ranks = std::vector<int>();
+static std::vector<int> AMP_COMM_WORLD_ranks = std::vector<int>();
 std::vector<int> AMP_MPI::globalRanks() const
 {
     // Get my global rank if it has not been set
@@ -589,10 +553,11 @@ std::vector<int> AMP_MPI::globalRanks() const
         }
         return MPI_COMM_WORLD_ranks;
     } else if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
-        std::vector<int> ranks( d_size );
-        for ( int i = 0; i < d_size; i++ )
-            ranks[i] = i;
-        return ranks;
+        if ( AMP_COMM_WORLD_ranks.empty() ) {
+            AMP_COMM_WORLD_ranks.resize( d_size, -1 );
+            this->allGather( myGlobalRank, AMP_COMM_WORLD_ranks.data() );
+        }
+        return AMP_COMM_WORLD_ranks;
     }
     // Fill d_ranks if necessary
     AMP_ASSERT( d_ranks );
@@ -616,10 +581,35 @@ uint64_t AMP_MPI::hashRanks() const
 /************************************************************************
  *  Generate a random number                                             *
  ************************************************************************/
+static auto randSerial = std::mt19937( std::random_device()() );
+std::unique_ptr<std::mt19937> randWorld;
+std::unique_ptr<std::mt19937> randMPI;
+std::mt19937 *AMP_MPI::getRand() const
+{
+    if ( d_size < 2 ) {
+        return &randSerial;
+    } else if ( d_hash == hashWorld ) {
+        if ( !randWorld ) {
+            auto seed = bcast<size_t>( randSerial(), 0 );
+            randWorld = std::make_unique<std::mt19937>( seed );
+        }
+        return randWorld.get();
+    } else if ( d_hash == hashMPI ) {
+        if ( !randMPI ) {
+            auto seed = bcast<size_t>( randSerial(), 0 );
+            randMPI   = std::make_unique<std::mt19937>( seed );
+        }
+        return randMPI.get();
+    } else {
+        AMP_DEBUG_ASSERT( d_rand );
+        return d_rand;
+    }
+}
 size_t AMP_MPI::rand() const
 {
-    std::uniform_int_distribution<size_t> dist;
-    size_t val = dist( *d_rand );
+    static std::uniform_int_distribution<size_t> dist;
+    auto randGen = getRand();
+    size_t val   = dist( *randGen );
     AMP_DEBUG_ASSERT( val == bcast( val, 0 ) );
     return val;
 }
@@ -1663,6 +1653,7 @@ void AMP_MPI::start_MPI( [[maybe_unused]] int &argc,
 {
     changeProfileLevel( profile_level );
 #ifdef AMP_USE_MPI
+    // Initialize MPI if needed
     if ( MPI_Active() ) {
         called_MPI_Init = false;
     } else {
@@ -1674,6 +1665,14 @@ void AMP_MPI::start_MPI( [[maybe_unused]] int &argc,
             AMP::perr << "Warning: Failed to start MPI with MPI_THREAD_MULTIPLE\n";
         called_MPI_Init = true;
         AMPManager::setCommWorld( MPI_COMM_WORLD );
+    }
+    // Set the maximum tag
+    int flag, *val;
+    int ierr = MPI_Comm_get_attr( MPI_COMM_WORLD, MPI_TAG_UB, &val, &flag );
+    AMP_ASSERT( ierr == MPI_SUCCESS );
+    if ( flag != 0 ) {
+        d_maxTag = std::min<int>( *val, 0x7FFFFFFF );
+        AMP_INSIST( d_maxTag >= 0x7FFF, "maximum tag size is < MPI standard" );
     }
 #else
     AMPManager::setCommWorld( MPI_COMM_SELF );

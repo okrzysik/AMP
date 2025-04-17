@@ -13,16 +13,11 @@ namespace AMP::LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-SubsetCommSelfVectorData::SubsetCommSelfVectorData( std::shared_ptr<SubsetVectorParameters> params )
-    : VectorData()
+SubsetCommSelfVectorData::SubsetCommSelfVectorData( std::shared_ptr<VectorData> data )
 {
-    d_parentData = params->d_ViewVector->getVectorData();
-    d_DOFManager = std::dynamic_pointer_cast<AMP::Discretization::subsetCommSelfDOFManager>(
-        params->d_DOFManager );
+    d_parentData = data;
     AMP_ASSERT( d_parentData );
-    AMP_ASSERT( d_DOFManager );
-    size_t N = d_DOFManager->numLocalDOF();
-    setCommunicationList( std::make_shared<CommunicationList>( N, AMP_COMM_SELF ) );
+    size_t N     = d_parentData->getLocalSize();
     d_localSize  = N;
     d_globalSize = N;
     d_localStart = 0;
@@ -86,11 +81,9 @@ void SubsetCommSelfVectorData::swapData( VectorData &rhs )
     auto s = dynamic_cast<SubsetCommSelfVectorData *>( &rhs );
     AMP_ASSERT( s != nullptr );
     std::swap( d_parentData, s->d_parentData );
-    std::swap( d_DOFManager, s->d_DOFManager );
     std::swap( d_localSize, s->d_localSize );
     std::swap( d_globalSize, s->d_globalSize );
     std::swap( d_localStart, s->d_localStart );
-    std::swap( d_CommList, s->d_CommList );
     std::swap( d_UpdateState, s->d_UpdateState );
 }
 
@@ -100,5 +93,11 @@ std::shared_ptr<VectorData> SubsetCommSelfVectorData::cloneData( const std::stri
     return std::shared_ptr<VectorData>();
 }
 
+
+const AMP_MPI &SubsetCommSelfVectorData::getComm() const
+{
+    static AMP_MPI comm( AMP_COMM_SELF );
+    return comm;
+}
 
 } // namespace AMP::LinearAlgebra

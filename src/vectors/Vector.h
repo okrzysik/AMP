@@ -668,7 +668,7 @@ public: // Iterators/Data
 
 public: // VectorData operations
     inline bool hasComm() const { return d_VectorData->hasComm(); }
-    inline AMP_MPI getComm() const { return d_VectorData->getComm(); }
+    inline const AMP_MPI &getComm() const { return d_VectorData->getComm(); }
     inline std::string VectorDataName() const { return d_VectorData->VectorDataName(); }
     inline size_t numberOfDataBlocks() const { return d_VectorData->numberOfDataBlocks(); }
     inline size_t sizeOfDataBlock( size_t i = 0 ) const

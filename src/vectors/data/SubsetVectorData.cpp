@@ -203,4 +203,7 @@ std::shared_ptr<VectorData> SubsetVectorData::cloneData( const std::string & ) c
 }
 
 
+const AMP_MPI &SubsetVectorData::getComm() const { return d_DOFManager->getComm(); }
+
+
 } // namespace AMP::LinearAlgebra
