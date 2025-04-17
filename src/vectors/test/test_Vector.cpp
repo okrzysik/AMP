@@ -73,6 +73,10 @@ int testByComm( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, const AMP::AMP_
     auto t2 = AMP::Utilities::time();
     return 1e9 * ( t2 - t1 ) / N_it;
 }
+int testByMesh( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, const AMP::AMP_MPI &comm )
+{
+    return 0;
+}
 void testVectorSelectorPerformance()
 {
     PROFILE( "testVectorSelectorPerformance" );
@@ -93,9 +97,11 @@ void testVectorSelectorPerformance()
         auto t4 = testByComm( vec, worldComm );
         auto t5 = testByComm( vec, selfComm );
         auto t6 = testByComm( vec, splitComm );
+        auto t7 = testByMesh( vec, splitComm );
         if ( worldComm.getRank() == 0 ) {
             auto name2 = name.substr( 0, 40 );
-            printf( "  %40s  %8i %8i %8i %8i %8i %8i\n", name2.data(), t1, t2, t3, t4, t5, t6 );
+            printf(
+                "  %40s  %8i %8i %8i %8i %8i %8i %8i\n", name2.data(), t1, t2, t3, t4, t5, t6, t7 );
         }
     }
 }
