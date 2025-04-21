@@ -174,7 +174,10 @@ void MatrixTests::VerifyAXPYMatrix( AMP::UnitTest *utils )
     auto vectorresult = matrix2->getRightVector();
 
     vector1lhs->setRandomValues();
+    vector1lhs->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
     vector2lhs->copyVector( vector1lhs );
+
     matrix1->mult( vector1lhs, vector1rhs );
     matrix2->mult( vector2lhs, vector2rhs ); // vector2rhs = - vector1rhs
     vectorresult->add( *vector1rhs, *vector2rhs );
@@ -285,6 +288,8 @@ void MatrixTests::VerifyScaleMatrix( AMP::UnitTest *utils )
     auto vectorresult = matrix2->getRightVector();
 
     vector1lhs->setRandomValues();
+    vector1lhs->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
     vector2lhs->copyVector( vector1lhs );
 
     matrix1->mult( vector1lhs, vector1rhs );
@@ -352,6 +357,8 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
     double normlhs, normrhs;
 
     vectorlhs->setRandomValues();
+    vectorlhs->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
     matrix->mult( vectorlhs, vectorrhs );
     normlhs = static_cast<double>( vectorlhs->L2Norm() );
     normrhs = static_cast<double>( vectorrhs->L2Norm() );
@@ -397,7 +404,6 @@ void MatrixTests::VerifyMatMultMatrix_IA( AMP::UnitTest *utils )
     auto y = matLap->getLeftVector();
 
     x->setToScalar( 1.0 );
-    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     const auto l1x = static_cast<double>( x->L1Norm() );
     AMP_ASSERT( l1x > 0.0 );
 
@@ -437,7 +443,6 @@ void MatrixTests::VerifyMatMultMatrix_AI( AMP::UnitTest *utils )
     auto y = matLap->getLeftVector();
 
     x->setToScalar( 1.0 );
-    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     const auto l1x = static_cast<double>( x->L1Norm() );
     AMP_ASSERT( l1x > 0.0 );
 
@@ -477,7 +482,6 @@ void MatrixTests::VerifyMatMultMatrix_AA( AMP::UnitTest *utils )
     auto y = matLap->getLeftVector();
 
     x->setToScalar( 1.0 );
-    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     const auto l1x = static_cast<double>( x->L1Norm() );
     AMP_ASSERT( l1x > 0.0 );
 

@@ -30,6 +30,7 @@ VectorData::VectorData( std::shared_ptr<CommunicationList> comm )
 void VectorData::setCommunicationList( std::shared_ptr<CommunicationList> comm )
 {
     AMP_ASSERT( comm );
+    AMP_DEBUG_ASSERT( *d_UpdateState != UpdateState::ADDING );
     d_CommList = comm;
     if ( comm ) {
         d_Ghosts =
@@ -37,6 +38,8 @@ void VectorData::setCommunicationList( std::shared_ptr<CommunicationList> comm )
         d_AddBuffer =
             std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
     }
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
 
 /****************************************************************
