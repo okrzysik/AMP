@@ -16,9 +16,9 @@ GMRES{
   uses_preconditioner = TRUE
   flexible_gmres = TRUE
   print_info_level = 2
-  max_iterations = 100
-  max_dimension = 100
-  relative_tolerance = 1.0e-6
+  max_iterations = 10
+  max_dimension = 10
+  relative_tolerance = 1.0e-2
 }
 
 Preconditioner{
