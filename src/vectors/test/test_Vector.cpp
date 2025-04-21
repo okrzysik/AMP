@@ -73,6 +73,22 @@ int testByComm( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, const AMP::AMP_
     auto t2 = AMP::Utilities::time();
     return 1e9 * ( t2 - t1 ) / N_it;
 }
+
+int testByMesh( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
+{
+    auto mesh = vec->getDOFManager()->getMesh();
+    if ( !mesh )
+        return 0;
+    int N_it  = 20;
+    auto name = vec->getName();
+    auto t1   = AMP::Utilities::time();
+    for ( int i = 0; i < N_it; i++ ) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector( mesh );
+        vec = vec->select( meshSelector, name );
+    }
+    auto t2 = AMP::Utilities::time();
+    return 1e9 * ( t2 - t1 ) / N_it;
+}
 void testVectorSelectorPerformance()
 {
     PROFILE( "testVectorSelectorPerformance" );
@@ -81,7 +97,7 @@ void testVectorSelectorPerformance()
     auto splitComm = worldComm.split( worldComm.getRank() % 2 );
     if ( worldComm.getRank() == 0 )
         printf( "       subset performance (ns):              "
-                " Variable  Stride  VecComm    World    Self    Split\n" );
+                " Variable  Stride  VecComm    World    Self    Split     Mesh\n" );
     for ( auto name : getAllFactories() ) {
         auto factory = generateVectorFactory( name );
         auto vec     = factory->getVector();
@@ -93,9 +109,11 @@ void testVectorSelectorPerformance()
         auto t4 = testByComm( vec, worldComm );
         auto t5 = testByComm( vec, selfComm );
         auto t6 = testByComm( vec, splitComm );
+        auto t7 = testByMesh( vec );
         if ( worldComm.getRank() == 0 ) {
             auto name2 = name.substr( 0, 40 );
-            printf( "  %40s  %8i %8i %8i %8i %8i %8i\n", name2.data(), t1, t2, t3, t4, t5, t6 );
+            printf(
+                "  %40s  %8i %8i %8i %8i %8i %8i %8i\n", name2.data(), t1, t2, t3, t4, t5, t6, t7 );
         }
     }
 }
@@ -182,8 +200,6 @@ int main( int argc, char **argv )
     testBelosThyraVector( ut, ManagedNativeThyraFactory( generateVectorFactory( MVFactory1 ) ) );
     #endif
 
-#endif
-
     // Run the vector selector tests
     AMP::pout << std::endl << "Running vector selector tests:" << std::endl;
     for ( auto name : getAllFactories() ) {
@@ -191,6 +207,8 @@ int main( int argc, char **argv )
         VectorTests tests( factory );
         tests.testVectorSelector( &ut );
     }
+
+#endif
 
     // Test vector selector performance
     testVectorSelectorPerformance();

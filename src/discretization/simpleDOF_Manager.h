@@ -105,6 +105,12 @@ public:
     AMP::Mesh::MeshElement getElement( size_t dof ) const override;
 
 
+    /** \brief   Get the underlying mesh
+     * \details  This will return the mesh(es) that underly the DOF manager (if they exist)
+     */
+    std::shared_ptr<const AMP::Mesh::Mesh> getMesh() const override;
+
+
     /** \brief   Get an entry over the mesh elements associated with the DOFs
      * \details  This will return an iterator over the mesh elements associated
      *  with the DOFs.  Each element in the iterator will have 1 or more DOFs
@@ -127,7 +133,7 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    std::shared_ptr<DOFManager> subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
+    std::shared_ptr<DOFManager> subset( const std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                                         bool useMeshComm = true ) override;
 
 

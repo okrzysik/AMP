@@ -21,7 +21,7 @@ public:
      * \param[in] useMeshComm  Use the comm of the mesh (otherwise use comm of parent)
      */
     MeshVariable( const std::string &name,
-                  std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                  std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                   bool useMeshComm = true );
 
     std::shared_ptr<AMP::Discretization::DOFManager>
@@ -39,7 +39,7 @@ public: // Functions inherited from Variable
 private:
     MeshVariable();
     bool d_useMeshComm = false;
-    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
+    std::shared_ptr<const AMP::Mesh::Mesh> d_mesh;
 };
 
 

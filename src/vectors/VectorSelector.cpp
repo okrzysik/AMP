@@ -190,7 +190,7 @@ std::shared_ptr<const Vector> VS_Comm::subset( std::shared_ptr<const Vector> p )
 /********************************************************
  * VS_Mesh                                               *
  ********************************************************/
-VS_Mesh::VS_Mesh( std::shared_ptr<AMP::Mesh::Mesh> mesh, bool useMeshComm )
+VS_Mesh::VS_Mesh( std::shared_ptr<const AMP::Mesh::Mesh> mesh, bool useMeshComm )
     : d_useMeshComm( useMeshComm ), d_mesh( mesh )
 {
 }
@@ -200,7 +200,7 @@ AMP_MPI VS_Mesh::communicator( const Vector &p ) const
     if ( d_useMeshComm ) {
         if ( d_mesh )
             return AMP_MPI::intersect( p.getComm(), d_mesh->getComm() );
-        return AMP_MPI( AMP_COMM_WORLD );
+        return AMP_COMM_WORLD;
     }
     return p.getComm();
 }

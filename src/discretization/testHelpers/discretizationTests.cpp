@@ -148,7 +148,7 @@ void testSubsetComm( std::shared_ptr<AMP::Discretization::DOFManager> DOF, AMP::
     subset[3] = DOF->subset( DOF->getComm().split( DOF->getComm().getRank() % 2 ) );
     subset[4] = AMP::Discretization::subsetDOFManager::create(
         DOF, localDofs, DOF->getIterator(), AMP_COMM_SELF );
-    subset[5] = AMP::Discretization::subsetCommSelfDOFManager::create( DOF );
+    subset[5] = std::make_shared<AMP::Discretization::subsetCommSelfDOFManager>( DOF );
     checkSubsetComm( DOF, subset[0], "AMP_COMM_WORLD", ut );
     checkSubsetComm( DOF, subset[1], "DOF comm", ut );
     checkSubsetComm( DOF, subset[2], "AMP_COMM_SELF", ut );
