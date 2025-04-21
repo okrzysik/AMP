@@ -28,6 +28,9 @@ NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI co
     params->d_comm      = comm;
     params->d_localsize = lsize;
     setCommunicationList( std::make_shared<CommunicationList>( params ) );
+    // set the state to be unchanged since setCommunicationList sets
+    // it to LOCAL_CHANGED
+    setUpdateStatus( UpdateState::UNCHANGED );
     // Cache vector sizes
     d_localStart = d_CommList->getStartGID();
     d_localSize  = lsize;
@@ -43,19 +46,20 @@ NativePetscVectorData::~NativePetscVectorData()
     }
 }
 
-void NativePetscVectorData::makeConsistent( ScatterType t )
+void NativePetscVectorData::makeConsistent( [[maybe_unused]] ScatterType t )
 {
-    (void) t;
     // resetArray ensures that any grabbed raw data is returned
     resetArray();
     // assemble inserts/adds any values that have changed
     assemble();
+    setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 void NativePetscVectorData::makeConsistent()
 {
     resetArray();
     assemble();
+    setUpdateStatus( UpdateState::UNCHANGED );
 }
 
 void NativePetscVectorData::putRawData( const void *in, const typeID &id )
