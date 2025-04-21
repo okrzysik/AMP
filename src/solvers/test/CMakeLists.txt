@@ -3,6 +3,9 @@
 #  Configure tests
 
 # Copy test inputs
+COPY_TEST_FILE( input_LinearElasticityOperator-1 )
+COPY_TEST_FILE( input_LinearFickOperator-bar )
+COPY_TEST_FILE( input_LinearThermalOperator-bar )
 COPY_TEST_FILE( input_testAMGuniform)
 COPY_TEST_FILE( input_testLinearRobinBoundaryOperator-1 )
 COPY_TEST_FILE( input_testLinearRobinBoundaryOperator-2 )
@@ -136,6 +139,18 @@ IF ( USE_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-2 PROCS 2 )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-2 PROCS 4 )
 
+    ADD_AMP_TEST( testLinearSolvers-LinearElasticityOperator-1 PROCS 1 )	
+    ADD_AMP_TEST( testLinearSolvers-LinearElasticityOperator-1 PROCS 2 )	
+    ADD_AMP_TEST( testLinearSolvers-LinearElasticityOperator-1 PROCS 4 )	
+
+    ADD_AMP_TEST( testLinearSolvers-LinearFickOperator-bar PROCS 1 )	
+    ADD_AMP_TEST( testLinearSolvers-LinearFickOperator-bar PROCS 2 )	
+    ADD_AMP_TEST( testLinearSolvers-LinearFickOperator-bar PROCS 4 )	
+
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-bar PROCS 1 )	
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-bar PROCS 2 )	
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-bar PROCS 4 )	
+
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearThermal-1 PROCS 1 )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearThermal-1 PROCS 2 )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearThermal-1 PROCS 4 )
@@ -146,21 +161,10 @@ IF ( USE_LIBMESH AND AMP_DATA )
 
     ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-NonlinearFickSoret-2 )
 
-IF ( USE_HYPRE )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearThermalOperator-bar )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearFickOperator-bar )
-    ADD_AMP_TEST_1_2_4( testBoomerAMGSolver-LinearElasticityOperator-1 )	
-ENDIF()
-  
 IF( USE_TRILINOS )
     ADD_AMP_TEST( testAMGuniform )
     ADD_AMP_TEST( testMatrixFreeML )
     ADD_AMP_TEST_1_2_4( testLinearRobinBoundaryOperator-1 )
-    IF ( USE_TRILINOS_MUELU )
-        ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearThermalOperator-bar )
-        ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearFickOperator-bar )
-        ADD_AMP_TEST_1_2_4( testTrilinosMueLuSolver-LinearElasticityOperator-1 )
-    ENDIF()
 ENDIF()
 
 IF( USE_PETSC AND USE_TRILINOS )
