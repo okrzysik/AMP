@@ -14,7 +14,8 @@
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
+#include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -22,7 +23,9 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include <fstream>
+#include "testSolverHelpers.h"
+
+#include <iomanip>
 #include <limits>
 #include <memory>
 #include <string>
@@ -32,17 +35,15 @@
     if ( !( a ) )      \
         ut.failure( __LINE__ );
 
-void linearThermalTest( AMP::UnitTest *ut )
+void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
     // Input and output file names
-    std::string exeName( "testTrilinosMueLuSolver-LinearThermalOperator-bar" );
-    std::string input_file = "input_" + exeName;
-    std::string log_file   = "output_" + exeName;
+    std::string input_file = inputFileName;
+    std::string log_file   = "output_" + inputFileName;
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
-
 
     // Print from all cores into the output files
     AMP::logAllNodes( log_file );
@@ -51,7 +52,8 @@ void linearThermalTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+    auto comm      = AMP::AMP_MPI( AMP_COMM_WORLD );
+    mgrParams->setComm( comm );
     auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
@@ -66,7 +68,7 @@ void linearThermalTest( AMP::UnitTest *ut )
         meshAdapter, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    //  CREATE THE NEUTRONICS SOURCE  //
+    // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> unusedModel;
@@ -81,9 +83,8 @@ void linearThermalTest( AMP::UnitTest *ut )
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    //  Integrate Nuclear Source over Desnity * Volume //
+    // Integrate Nuclear Source over Desnity * Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -102,7 +103,6 @@ void linearThermalTest( AMP::UnitTest *ut )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
 
-
     auto TemperatureInKelvinVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
     auto RightHandSideVec =
@@ -113,20 +113,9 @@ void linearThermalTest( AMP::UnitTest *ut )
     RightHandSideVec->copyVector( PowerInWattsVec );
 
     auto boundaryOp = diffusionOperator->getBoundaryOperator();
+
     boundaryOp->addRHScorrection( RightHandSideVec );
     boundaryOp->setRHScorrection( RightHandSideVec );
-
-    // make sure the database on theinput file exists for the linear solver
-    AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
-
-    // Read the input file onto a database.
-    auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
-
-    // Fill in the parameters fo the class with the info on the database.
-    auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
-
-    // Define the operature to be used by the Solver.
-    mlSolverParams->d_pOperator = diffusionOperator;
 
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );
@@ -138,13 +127,13 @@ void linearThermalTest( AMP::UnitTest *ut )
     double rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
-    // Create the ML Solver
-    auto mlSolver = std::make_shared<AMP::Solver::TrilinosMueLuSolver>( mlSolverParams );
+    auto mlSolver = AMP::Solver::Test::buildSolver(
+        "LinearSolver", input_db, comm, nullptr, diffusionOperator );
 
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess( false );
 
-    // Solve the problem
+    // Solve the prblem.
     mlSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
     // Compute the residual
@@ -155,13 +144,12 @@ void linearThermalTest( AMP::UnitTest *ut )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        ut->failure( "TrilinosMueLuSolver could NOT successfully solve a linear thermal problem "
-                     "with a nuclear "
-                     "source term." );
+        ut->failure( mlSolver->type() + " fails to solve a linear thermal problem with a nuclear "
+                                        "source term." );
     } else {
-        ut->passes(
-            "TrilinosMueLuSolver successfully solves a linear thermal problem with a nuclear "
-            "source term." );
+        ut->passes( mlSolver->type() +
+                    " successfully solves a linear thermal problem with a nuclear "
+                    "source term." );
     }
 
     // check the solution
@@ -171,78 +159,23 @@ void linearThermalTest( AMP::UnitTest *ut )
     //   c = -power/2
     //   b = -10*power
     //   a = 300 + 150*power
+    auto fun = []( double, double, double z ) {
+        double power = 1.;
+        double c     = -power / 2.;
+        double b     = -10. * power;
+        double a     = 300. + 150. * power;
+        return a + b * z + c * z * z;
+    };
 
-    double power = 1.;
-    double c     = -power / 2.;
-    double b     = -10. * power;
-    double a     = 300. + 150. * power;
-    bool passes  = 1;
-    double cal, zee, sol, err;
+    std::string exeName = inputFileName;
+    auto pos            = exeName.find( "input_" );
+    exeName.erase( pos, 6 );
 
-    // Serial execution
-    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    for ( int i = 0; i < globalComm.getSize(); i++ ) {
-        if ( globalComm.getRank() == i ) {
-            std::string filename = "data_" + exeName;
-            int rank             = globalComm.getRank();
-            int nranks           = globalComm.getSize();
-            auto omode           = std::ios_base::out;
-            if ( rank > 0 )
-                omode |= std::ios_base::app;
-            std::ofstream file( filename.c_str(), omode );
-            if ( rank == 0 ) {
-                file << "(* x y z analytic calculated relative-error *)" << std::endl;
-                file << "formula=" << a << " + " << b << "*z + " << c << "*z^2;" << std::endl;
-                file << "results={" << std::endl;
-            }
-            file.precision( 14 );
-
-            iterator        = iterator.begin();
-            size_t numNodes = 0, iNode = 0;
-            for ( ; iterator != iterator.end(); ++iterator )
-                numNodes++;
-
-            iterator   = iterator.end();
-            double mse = 0.0;
-            for ( ; iterator != iterator.end(); ++iterator ) {
-                std::vector<size_t> gid;
-                nodalDofMap->getDOFs( iterator->globalID(), gid );
-                cal = TemperatureInKelvinVec->getValueByGlobalID( gid[0] );
-                zee = ( iterator->coord() )[2];
-                sol = a + b * zee + c * zee * zee;
-                err =
-                    fabs( cal - sol ) * 2. / ( cal + sol + std::numeric_limits<double>::epsilon() );
-                double x, y, z;
-                x = ( iterator->coord() )[0];
-                y = ( iterator->coord() )[1];
-                z = ( iterator->coord() )[2];
-                mse += ( sol - cal ) * ( sol - cal );
-                file << "{" << x << "," << y << "," << z << "," << sol << "," << cal << "," << err
-                     << "}";
-                if ( iNode < numNodes - 1 )
-                    file << "," << std::endl;
-                if ( fabs( cal - sol ) > cal * 1e-3 ) {
-                    passes = 0;
-                    ut->failure( "Error" );
-                }
-                iNode++;
-            }
-
-            if ( rank == nranks - 1 ) {
-                file << "};" << std::endl;
-                mse /= ( 1. * iNode );
-                mse = std::sqrt( mse );
-                file << "l2err = {" << iNode << "," << mse << "};\n";
-            }
-            file.close();
-        }
-        globalComm.barrier();
-    }
+    bool passes = checkAnalyticalSolution( exeName, fun, iterator, TemperatureInKelvinVec );
     if ( passes )
-        ut->passes( "The linear thermal solve is verified." );
+        ut->passes( "The linear thermal solve is verified" );
 
     input_db.reset();
-
     ut->passes( exeName );
 }
 
@@ -252,9 +185,38 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    linearThermalTest( &ut );
+    std::vector<std::string> files;
+
+    PROFILE_ENABLE();
+
+    if ( argc > 1 ) {
+
+        files.emplace_back( argv[1] );
+
+    } else {
+#ifdef AMP_USE_HYPRE
+        files.emplace_back( "input_testBoomerAMGSolver-LinearThermalOperator-bar" );
+#endif
+#ifdef AMP_USE_TRILINOS_MUELU
+        files.emplace_back( "input_testTrilinosMueLuSolver-LinearThermalOperator-bar" );
+#endif
+    }
+
+    {
+        PROFILE( "DRIVER::main(test loop)" );
+        for ( auto &file : files ) {
+            linearThermalTest( &ut, file );
+        }
+    }
 
     ut.report();
+
+    // build unique profile name to avoid collisions
+    std::ostringstream ss;
+    ss << "testLinearFick_r" << std::setw( 3 ) << std::setfill( '0' )
+       << AMP::AMPManager::getCommWorld().getSize();
+
+    PROFILE_SAVE( ss.str() );
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
