@@ -102,6 +102,11 @@ public:
      */
     void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
+    /**
+     * Checks if the restart is allowed
+     */
+    bool restarted() { return d_bRestart; }
+
 protected:
     //! orthogonalize the vector against the existing vectors in the basis
     // stored internally. Store the coefficients of the Arnoldi

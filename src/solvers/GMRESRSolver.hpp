@@ -1,5 +1,6 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/solvers/GMRESRSolver.h"
+#include "AMP/solvers/GMRESSolver.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/utils/Utilities.h"
 
@@ -65,6 +66,15 @@ void GMRESRSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters
             if ( d_variant != "gcr" ) {
                 AMP_ERROR( "The variant must be gcr or a nested solver must be provided" );
             }
+        }
+    }
+
+    // Check if nested solver is GMRES and assert GMRES won't be restarted since it would
+    // breack GMRESR
+    if ( d_variant != "gcr" ) {
+        if ( d_pNestedSolver->type() == "GMRESSolver" ) {
+            auto gmres = std::dynamic_pointer_cast<AMP::Solver::GMRESSolver<T>>( d_pNestedSolver );
+            AMP_INSIST( !gmres->restarted(), "Restarted GMRES can not be used within GMRESR" );
         }
     }
 }
