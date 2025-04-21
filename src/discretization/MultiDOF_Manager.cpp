@@ -1,5 +1,6 @@
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/MultiMesh.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 
@@ -11,33 +12,25 @@ namespace AMP::Discretization {
  * Constructors                                                  *
  ****************************************************************/
 multiDOFManager::multiDOFManager( const AMP_MPI &globalComm,
-                                  std::vector<std::shared_ptr<DOFManager>> managers )
-    : DOFManager(),
-      d_managers( managers ),
-      d_ids( managers.size(), 0 ),
-      d_localSize( managers.size(), 0 ),
-      d_globalSize( managers.size(), 0 )
+                                  std::vector<std::shared_ptr<DOFManager>> managers,
+                                  std::shared_ptr<const AMP::Mesh::Mesh> mesh )
+    : DOFManager()
 {
     d_comm = globalComm;
     AMP_ASSERT( !d_comm.isNull() );
-    initialize();
+    reset( managers, mesh );
 }
 
-void multiDOFManager::reset( std::vector<std::shared_ptr<DOFManager>> managers )
+void multiDOFManager::reset( std::vector<std::shared_ptr<DOFManager>> managers,
+                             std::shared_ptr<const AMP::Mesh::Mesh> mesh )
 {
-    d_managers   = managers;
-    const auto N = managers.size();
-    d_ids.resize( N, 0 );
-    d_localSize.resize( N, 0 );
-    d_globalSize.resize( N, 0 );
-
-    initialize();
-}
-
-void multiDOFManager::initialize()
-{
+    d_managers = managers;
+    d_mesh     = mesh;
     // Compute the total begin, end, and global size
     size_t local_size = 0;
+    d_ids.resize( managers.size(), 0 );
+    d_localSize.resize( managers.size(), 0 );
+    d_globalSize.resize( managers.size(), 0 );
     for ( size_t i = 0; i < d_managers.size(); i++ ) {
         d_ids[i]        = d_managers[i]->getComm().rand();
         d_globalSize[i] = d_managers[i]->numGlobalDOF();
@@ -56,6 +49,18 @@ void multiDOFManager::initialize()
         begin += d_managers[i]->numLocalDOF();
     }
     d_dofMap = d_comm.allGather( d_dofMap );
+    // Check the multimesh if provided
+    if ( d_mesh ) {
+        auto meshIdList = d_mesh->getLocalMeshIDs();
+        std::set<AMP::Mesh::MeshID> ids( meshIdList.begin(), meshIdList.end() );
+        for ( auto &dof : d_managers ) {
+            auto mesh = dof->getMesh();
+            if ( mesh ) {
+                for ( auto &id : mesh->getLocalMeshIDs() )
+                    AMP_ASSERT( ids.find( id ) != ids.end() );
+            }
+        }
+    }
 }
 
 
@@ -133,6 +138,12 @@ AMP::Mesh::MeshElement multiDOFManager::getElement( size_t dof ) const
     AMP_ASSERT( map.second >= 0 );
     return d_managers[map.second]->getElement( map.first );
 }
+
+
+/****************************************************************
+ * Get the mesh                                                  *
+ ****************************************************************/
+std::shared_ptr<const AMP::Mesh::Mesh> multiDOFManager::getMesh() const { return d_mesh; }
 
 
 /****************************************************************
@@ -262,8 +273,8 @@ std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
     // Create the new multiDOFManager
     return std::make_shared<multiDOFManager>( comm, sub_managers );
 }
-std::shared_ptr<DOFManager> multiDOFManager::subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                                     bool useMeshComm )
+std::shared_ptr<DOFManager>
+multiDOFManager::subset( const std::shared_ptr<const AMP::Mesh::Mesh> mesh, bool useMeshComm )
 {
     // Get the comm for the new DOFManager
     AMP_MPI comm( AMP_COMM_NULL );

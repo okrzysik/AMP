@@ -137,10 +137,12 @@ AMP::Mesh::MeshElement subsetDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
- * Get an entry over the mesh elements associated with the DOFs  *
- * Note: if any sub-DOFManagers are the same, then this will     *
- * iterate over repeated elements.                               *
+ * Get the mesh / mesh iterator                                  *
  ****************************************************************/
+std::shared_ptr<const AMP::Mesh::Mesh> subsetDOFManager::getMesh() const
+{
+    return d_parentDOFManager->getMesh();
+}
 AMP::Mesh::MeshIterator subsetDOFManager::getIterator() const { return d_iterator; }
 
 
