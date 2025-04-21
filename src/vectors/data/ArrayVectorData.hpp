@@ -39,6 +39,9 @@ std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allo
                                   localSize[2] * N_blocks[2] };
     retVal->d_offset          = blockOffset * localSize.length();
     retVal->setCommunicationList( std::make_shared<CommunicationList>( localSize.length(), comm ) );
+    // set the state to be unchanged since setCommunicationList sets
+    // it to LOCAL_CHANGED
+    retVal->setUpdateStatus( UpdateState::UNCHANGED );
     retVal->d_localSize  = localSize.length();
     retVal->d_globalSize = retVal->d_globalArraySize.length();
     retVal->d_localStart = retVal->d_CommList->getStartGID();
@@ -52,6 +55,9 @@ std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allo
     AMP_ASSERT( localSize == commList->numLocalRows() );
     auto retVal = std::make_shared<ArrayVectorData<T, FUN, Allocator>>();
     retVal->setCommunicationList( commList );
+    // set the state to be unchanged since setCommunicationList sets
+    // it to LOCAL_CHANGED
+    retVal->setUpdateStatus( UpdateState::UNCHANGED );
     retVal->d_comm            = commList->getComm();
     retVal->d_localStart      = commList->getStartGID();
     retVal->d_localSize       = commList->numLocalRows();
@@ -80,6 +86,9 @@ ArrayVectorData<T, FUN, Allocator>::cloneData( const std::string & ) const
     retVal->d_globalSize      = d_globalSize;
     retVal->d_localStart      = d_localStart;
     retVal->setCommunicationList( getCommunicationList() );
+    // set the state to be unchanged since setCommunicationList sets
+    // it to LOCAL_CHANGED
+    retVal->setUpdateStatus( UpdateState::UNCHANGED );
     return retVal;
 }
 template<typename T, typename FUN, typename Allocator>
