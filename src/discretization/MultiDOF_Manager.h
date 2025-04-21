@@ -29,8 +29,11 @@ public:
      * \details  This is the standard constructor for creating a new multiDOFManager object.
      * \param comm  Comm over which the DOFManager will exist
      * \param managers  List of the DOFManagers on the current processor
+     * \param mesh  Optional mesh over which dof managers are defined (usually a multimesh)
      */
-    multiDOFManager( const AMP_MPI &comm, std::vector<std::shared_ptr<DOFManager>> managers );
+    multiDOFManager( const AMP_MPI &comm,
+                     std::vector<std::shared_ptr<DOFManager>> managers,
+                     std::shared_ptr<const AMP::Mesh::Mesh> mesh = {} );
 
     //! Deconstructor
     virtual ~multiDOFManager() override;
@@ -50,6 +53,12 @@ public:
      * @return              The element for the given DOF.
      */
     AMP::Mesh::MeshElement getElement( size_t dof ) const override;
+
+
+    /** \brief   Get the underlying mesh
+     * \details  This will return the mesh(es) that underly the DOF manager (if they exist)
+     */
+    std::shared_ptr<const AMP::Mesh::Mesh> getMesh() const override;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
@@ -78,7 +87,7 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    std::shared_ptr<DOFManager> subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
+    std::shared_ptr<DOFManager> subset( const std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                                         bool useMeshComm = true ) override;
 
 
@@ -93,8 +102,10 @@ public:
 
     /** reset a dof manager based on component dof managers
      * \param managers  List of the DOFManagers on the current processor
+     * \param mesh  Optional mesh over which dof managers are defined (usually a multimesh)
      **/
-    void reset( std::vector<std::shared_ptr<DOFManager>> managers );
+    void reset( std::vector<std::shared_ptr<DOFManager>> managers,
+                std::shared_ptr<const AMP::Mesh::Mesh> mesh = {} );
 
 public:
     //! Get the DOFManagers that compose the multiDOFManager
@@ -150,8 +161,6 @@ public: // Advanced interfaces
                        size_t index,
                        size_t capacity ) const override;
 
-protected:
-    void initialize();
 
 private:
     // Convert the local to global dof
@@ -199,6 +208,7 @@ private:
 private:
     multiDOFManager() = delete;
 
+    std::shared_ptr<const AMP::Mesh::Mesh> d_mesh;
     std::vector<std::shared_ptr<DOFManager>> d_managers;
     std::vector<size_t> d_ids;
     std::vector<size_t> d_localSize;

@@ -50,7 +50,7 @@ Vector::shared_ptr CommSelfVariable::view( Vector::shared_ptr v ) const
     }
     // Create the new subset vector
     auto parentDOF = v->getDOFManager();
-    auto subsetDOF = AMP::Discretization::subsetCommSelfDOFManager::create( parentDOF );
+    auto subsetDOF = std::make_shared<AMP::Discretization::subsetCommSelfDOFManager>( parentDOF );
     auto var       = std::const_pointer_cast<Variable>( shared_from_this() );
     auto ops       = v->getVectorOperations();
     auto data      = std::make_shared<SubsetCommSelfVectorData>( v->getVectorData() );

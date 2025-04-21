@@ -24,7 +24,6 @@ namespace AMP::LinearAlgebra {
         MultiVectorFactory<SimpleVectorFactory<15,false>,1,SMEVFactory,1> MVFactory1;
         MultiVectorFactory<SimpleVectorFactory<15,false>,3,SMEVFactory,2> MVFactory2;
         MultiVectorFactory<MVFactory1, 2, MVFactory2, 2> MVFactory3;
-  *
   */
 std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &factory );
 
@@ -48,6 +47,11 @@ std::vector<std::string> getArrayVectorFactories();
  * \details  This will generate a list of valid native factories to test
  */
 std::vector<std::string> getNativeVectorFactories();
+
+/** \brief Get the valid vector factories
+ * \details  This will generate a list of valid mesh vector factories to test
+ */
+std::vector<std::string> getMeshVectorFactories();
 
 /** \brief Get the valid vector factories
  * \details  This will generate a list of valid managed vector factories to test

@@ -11,19 +11,19 @@ namespace AMP::Discretization {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-std::shared_ptr<DOFManager>
-subsetCommSelfDOFManager::create( std::shared_ptr<const DOFManager> parentDOFManager )
+subsetCommSelfDOFManager::subsetCommSelfDOFManager() : d_parentBegin( 0 ), d_parentEnd( 0 )
 {
-    std::shared_ptr<subsetCommSelfDOFManager> subsetDOF( new subsetCommSelfDOFManager() );
-    subsetDOF->d_comm             = AMP_COMM_SELF;
-    subsetDOF->d_parentDOFManager = parentDOFManager;
-    subsetDOF->d_parentBegin      = parentDOFManager->beginDOF();
-    subsetDOF->d_parentEnd        = parentDOFManager->endDOF();
-    subsetDOF->d_parentGlobal     = parentDOFManager->numGlobalDOF();
-    subsetDOF->d_begin            = 0;
-    subsetDOF->d_end              = subsetDOF->d_parentEnd - subsetDOF->d_parentBegin;
-    subsetDOF->d_global           = subsetDOF->d_end;
-    return subsetDOF;
+    d_begin  = 0;
+    d_end    = 0;
+    d_global = 0;
+}
+subsetCommSelfDOFManager::subsetCommSelfDOFManager( std::shared_ptr<const DOFManager> DOF )
+    : d_parentDOFManager( DOF ), d_parentBegin( DOF->beginDOF() ), d_parentEnd( DOF->endDOF() )
+{
+    d_comm   = AMP_COMM_SELF;
+    d_begin  = 0;
+    d_end    = d_parentEnd - d_parentBegin;
+    d_global = d_end;
 }
 
 

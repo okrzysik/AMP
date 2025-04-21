@@ -68,7 +68,7 @@ std::shared_ptr<DOFManager> simpleDOFManager::create( std::shared_ptr<const AMP:
             if ( subMesh )
                 managers.push_back( create( subMesh, type, gcw, DOFsPerObject, false ) );
         }
-        auto rtn = std::make_shared<multiDOFManager>( mesh->getComm(), managers );
+        auto rtn = std::make_shared<multiDOFManager>( mesh->getComm(), managers, mesh );
         return rtn;
     }
     // Check if the mesh is a BoxMesh
@@ -216,8 +216,8 @@ static bool containsMesh( std::shared_ptr<const AMP::Mesh::Mesh> mesh, AMP::Mesh
     }
     return false;
 }
-std::shared_ptr<DOFManager> simpleDOFManager::subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                                      bool useMeshComm )
+std::shared_ptr<DOFManager>
+simpleDOFManager::subset( const std::shared_ptr<const AMP::Mesh::Mesh> mesh, bool useMeshComm )
 {
     // Check if we are dealing with a single mesh for both the internal and desired mesh
     if ( mesh->meshID() == d_meshID ) {
@@ -309,8 +309,9 @@ AMP::Mesh::MeshElement simpleDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
- * Get an entry over the mesh elements associated with the DOFs  *
+ * Get the mesh / mesh iterator                                  *
  ****************************************************************/
+std::shared_ptr<const AMP::Mesh::Mesh> simpleDOFManager::getMesh() const { return d_mesh; }
 AMP::Mesh::MeshIterator simpleDOFManager::getIterator() const { return d_localIterator.begin(); }
 
 
