@@ -155,6 +155,8 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     res->scale( static_cast<T>( 1.0 ) / beta );
 
     // push the residual as the first basis vector
+    d_vBasis.resize( 0 );
+    d_zBasis.resize( 0 );
     d_vBasis.push_back( res );
 
     // 'w*e_1' is the rhs for the least squares minimization problem
