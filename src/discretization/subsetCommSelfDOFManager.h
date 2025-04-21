@@ -20,6 +20,9 @@ class subsetCommSelfDOFManager : public DOFManager
 public:
     using DOFManager::subset;
 
+    //! Empty constructor
+    subsetCommSelfDOFManager();
+
     /** \brief Default constructor
      * \details  This is the default constructor for creating a subset DOF manager.
      * \param[in] parentDOFManager  The parent DOF manager
@@ -27,7 +30,7 @@ public:
      * \param[in] iterator  The iterator over the subset of elements in the subsetCommSelfDOFManager
      * \param[in] comm      The new comm for the subset DOF Manager
      */
-    static std::shared_ptr<DOFManager> create( std::shared_ptr<const DOFManager> parentDOFManager );
+    subsetCommSelfDOFManager( std::shared_ptr<const DOFManager> parentDOFManager );
 
 
     /** \brief Get the mesh element ID for a DOF
@@ -97,9 +100,6 @@ public: // Advanced interfaces
 
 
 protected:
-    // The constructor is protected
-    subsetCommSelfDOFManager() : d_parentBegin( 0 ), d_parentEnd( 0 ), d_parentGlobal( 0 ) {}
-
     // Convert dof indicies
     size_t getSubsetDOF( size_t N, size_t *dofs ) const;
 
@@ -108,7 +108,7 @@ private:
     std::shared_ptr<const DOFManager> d_parentDOFManager;
 
     //! The parent begin, end, and global DOFs
-    size_t d_parentBegin, d_parentEnd, d_parentGlobal;
+    size_t d_parentBegin, d_parentEnd;
 };
 } // namespace AMP::Discretization
 

@@ -11,7 +11,7 @@ namespace AMP::LinearAlgebra {
  * MeshVariable                                                  *
  ****************************************************************/
 MeshVariable::MeshVariable( const std::string &name,
-                            std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                            std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                             bool useMeshComm )
     : SubsetVariable( name )
 {
