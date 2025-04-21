@@ -90,9 +90,10 @@ AMP::Mesh::MeshElementID DOFManager::getElementID( size_t ) const
 
 
 /****************************************************************
- * Get an entry over the mesh elements associated with the DOFs  *
+ * Get the mesh / mesh iterator                                  *
  ****************************************************************/
-AMP::Mesh::MeshIterator DOFManager::getIterator() const { return AMP::Mesh::MeshIterator(); }
+std::shared_ptr<const AMP::Mesh::Mesh> DOFManager::getMesh() const { return {}; }
+AMP::Mesh::MeshIterator DOFManager::getIterator() const { return {}; }
 
 
 /****************************************************************
@@ -187,7 +188,7 @@ std::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
         local_dofs[i] += i;
     return subsetDOFManager::create( shared_from_this(), local_dofs, getIterator(), comm );
 }
-std::shared_ptr<DOFManager> DOFManager::subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
+std::shared_ptr<DOFManager> DOFManager::subset( const std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                                                 bool useMeshComm )
 {
     if ( mesh.get() == nullptr )

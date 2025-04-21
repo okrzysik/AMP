@@ -347,8 +347,8 @@ std::vector<std::string> getNativeVectorFactories()
 std::vector<std::string> getMeshVectorFactories()
 {
     std::vector<std::string> list;
-    list.emplace_back( "CubeMeshVectorFactory<8>" );
-    list.emplace_back( "CubeMeshVectorFactory<32>" );
+    list.emplace_back( "CubeMeshVectorFactory<4>" );
+    list.emplace_back( "CubeMeshVectorFactory<16>" );
     return list;
 }
 
