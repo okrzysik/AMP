@@ -72,10 +72,6 @@ inline void Vector::setVariable( const std::shared_ptr<Variable> name )
  * Wrappers for shared_ptr                                       *
  ****************************************************************/
 inline void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
-inline void Vector::aliasGhostBuffer( shared_ptr in )
-{
-    d_VectorData->aliasGhostBuffer( in->d_VectorData );
-}
 inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p )
 {
     return operator<<( out, *p );

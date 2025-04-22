@@ -54,7 +54,7 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
 
     // nothing above matched, fall back on default operations
     if ( !set_ops ) {
-        AMP::pout << "setting default" << std::endl;
+        AMP_WARN_ONCE( "setting default" );
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     }
 
@@ -87,7 +87,7 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Ma
 
     // nothing above matched, fall back on default operations
     if ( !set_ops ) {
-        AMP::pout << "setting default" << std::endl;
+        AMP_WARN_ONCE( "setting default" );
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     }
 }

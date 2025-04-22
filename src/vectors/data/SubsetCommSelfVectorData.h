@@ -41,6 +41,35 @@ public:
     bool hasContiguousData() const override { return numberOfDataBlocks() > 1 ? false : true; }
     SubsetCommSelfVectorData() {}
     explicit SubsetCommSelfVectorData( std::shared_ptr<VectorData> data );
+    UpdateState getLocalUpdateStatus() const override;
+    void setUpdateStatus( UpdateState state ) override;
+    void setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs ) override;
+    std::shared_ptr<UpdateState> getUpdateStatusPtr() const override;
+
+public: // Ghost data functions
+    bool hasGhosts() const override { return false; }
+    void zeroGhosts() override {}
+    std::vector<double> &getGhosts() const override;
+    std::shared_ptr<CommunicationList> getCommunicationList() const override { return nullptr; }
+    void setCommunicationList( std::shared_ptr<CommunicationList> ) override {}
+    void aliasGhostBuffer( std::shared_ptr<VectorData> ) override {}
+    size_t getGhostSize() const override { return 0; }
+    bool containsGlobalElement( size_t ) const override;
+    void setGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void
+    getGhostAddValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void makeConsistent( ScatterType ) override;
+    void makeConsistent() override;
+    void dataChanged() override;
+    void dumpGhostedData( std::ostream &, size_t ) const override {}
+    void copyGhostValues( const VectorData & ) override {}
+
+    using VectorData::addGhostValuesByGlobalID;
+    using VectorData::getGhostAddValuesByGlobalID;
+    using VectorData::getGhostValuesByGlobalID;
+    using VectorData::setGhostValuesByGlobalID;
 
 private:
     void *getRawDataBlockAsVoid( size_t i ) override;
@@ -49,6 +78,7 @@ private:
     // Internal data
     std::shared_ptr<VectorData> d_parentData;          // VectorData for the subset
     std::vector<size_t> d_SubsetLocalIDToViewGlobalID; // The list of global ID in the parent vector
+    std::shared_ptr<UpdateState> d_UpdateState;
 };
 
 

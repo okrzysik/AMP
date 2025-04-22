@@ -336,8 +336,6 @@ std::unique_ptr<Vector> MultiVector::rawClone( const std::shared_ptr<Variable> n
         vecs[i] = d_vVectors[i]->clone();
     retVec->addVector( vecs );
     retVec->d_DOFManager = d_DOFManager;
-    retVec->setCommunicationList( getCommunicationList() );
-
     retVec->resetVectorData();
     retVec->resetVectorOperations();
     return retVec;

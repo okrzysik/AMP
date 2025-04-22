@@ -2,6 +2,7 @@
 #define included_AMP_NativePetscVectorData
 
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/vectors/data/GhostDataHelper.h"
 #include "AMP/vectors/data/VectorData.h"
 
 #include "petscvec.h"
@@ -21,7 +22,7 @@ namespace AMP::LinearAlgebra {
  * \details  This is an AMP wrapper to PETSc.   Rather, it wraps these calls.
  * This class is used when PETSc is chosen as the default linear algebra engine.
  */
-class NativePetscVectorData : public VectorData
+class NativePetscVectorData : public GhostDataHelper<double>
 {
 public:
     /** \brief Construct a wrapper for a PETSc Vec from a set of parameters

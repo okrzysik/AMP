@@ -8,7 +8,8 @@
 
 namespace AMP::LinearAlgebra {
 
-NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm ) : VectorData()
+NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm )
+    : GhostDataHelper<double>()
 {
     // Set the vector
     d_petscVec   = v;

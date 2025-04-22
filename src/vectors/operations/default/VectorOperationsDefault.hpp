@@ -50,11 +50,7 @@ void VectorOperationsDefault<TYPE>::zero( VectorData &x )
         *curMe = 0;
         ++curMe;
     }
-    if ( x.hasGhosts() ) {
-        auto &ghosts = x.getGhosts();
-        for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i] = 0;
-    }
+    x.zeroGhosts();
     // Override the status state since we set the ghost values
     x.setUpdateStatus( UpdateState::UNCHANGED );
 }
@@ -69,11 +65,7 @@ void VectorOperationsDefault<TYPE>::setToScalar( const Scalar &alpha_in, VectorD
         *curMe = alpha;
         ++curMe;
     }
-    if ( x.hasGhosts() ) {
-        auto &ghosts = x.getGhosts();
-        for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i] = alpha;
-    }
+    x.zeroGhosts();
     // Override the status state since we set the ghost values
     x.setUpdateStatus( UpdateState::UNCHANGED );
 }

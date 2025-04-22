@@ -281,26 +281,23 @@ template<typename TYPE, class Allocator>
 void VectorDataDefault<TYPE, Allocator>::registerChildObjects(
     AMP::IO::RestartManager *manager ) const
 {
-    VectorData::registerChildObjects( manager );
+    GhostDataHelper<double>::registerChildObjects( manager );
 }
 template<typename TYPE, class Allocator>
 void VectorDataDefault<TYPE, Allocator>::writeRestart( int64_t fid ) const
 {
+    GhostDataHelper<double>::writeRestart( fid );
     AMP::Array<TYPE> data( d_localSize );
     getRawData( data.data(), getTypeID<TYPE>() );
     IO::writeHDF5( fid, "data", data );
-    IO::writeHDF5( fid, "localSize", d_localSize );
-    IO::writeHDF5( fid, "globalSize", d_globalSize );
-    IO::writeHDF5( fid, "localStart", d_localStart );
 }
 template<typename TYPE, class Allocator>
-VectorDataDefault<TYPE, Allocator>::VectorDataDefault( int64_t fid, AMP::IO::RestartManager * )
+VectorDataDefault<TYPE, Allocator>::VectorDataDefault( int64_t fid,
+                                                       AMP::IO::RestartManager *manager )
+    : GhostDataHelper<double>( fid, manager )
 {
     AMP::Array<TYPE> data;
     IO::readHDF5( fid, "data", data );
-    IO::readHDF5( fid, "localSize", d_localSize );
-    IO::readHDF5( fid, "globalSize", d_globalSize );
-    IO::readHDF5( fid, "localStart", d_localStart );
     d_data = d_alloc.allocate( d_localSize );
     putRawData( data.data(), getTypeID<TYPE>() );
 }
