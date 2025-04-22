@@ -1,6 +1,7 @@
 <<< "input_LinearThermalOperator-bar" >>>
 
 LinearSolver{
+  name = "TrilinosMueLuSolver"
   max_iterations = 10
   max_error = 1e-10
   problem_symmetric =TRUE
