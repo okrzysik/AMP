@@ -8,6 +8,8 @@
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
 #include "AMP/vectors/petsc/PetscVector.h"
 
+#include "ProfilerApp.h"
+
 #include "petscmat.h"
 
 namespace AMP::LinearAlgebra {
@@ -40,6 +42,8 @@ NativePetscMatrix::~NativePetscMatrix() {}
 
 void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 {
+    PROFILE( "NativePetscMatrix::multiply" );
+
     auto other = std::dynamic_pointer_cast<NativePetscMatrix>( other_op );
     AMP_INSIST( other != nullptr, "Incompatible matrix types" );
 

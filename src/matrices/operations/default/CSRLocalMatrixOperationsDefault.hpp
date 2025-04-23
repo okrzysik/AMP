@@ -16,10 +16,18 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::mult(
     std::shared_ptr<LocalMatrixData> A,
     typename Policy::scalar_t *out )
 {
-    using lidx_t = typename Policy::lidx_t;
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
 
-    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
-    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
+    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
+    lidx_t *rs, *cols_loc;
+    gidx_t *cols;
+    scalar_t *coeffs;
+    std::tie( rs, cols, cols_loc, coeffs ) = A->getDataFields();
+    AMP_DEBUG_ASSERT( rs != nullptr );
+    AMP_DEBUG_ASSERT( cols_loc != nullptr );
+    AMP_DEBUG_ASSERT( coeffs != nullptr );
 
     for ( lidx_t row = 0; row < nRows; ++row ) {
         for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {

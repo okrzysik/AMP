@@ -15,14 +15,20 @@ namespace AMP::LinearAlgebra {
 template<typename Policy, class Allocator, class DiagMatrixData>
 class CSRMatrixSpGEMMHelperDefault
 {
-    using CSRData = CSRMatrixData<Policy, Allocator, DiagMatrixData>;
-    using lidx_t  = typename Policy::lidx_t;
-    using gidx_t  = typename Policy::gidx_t;
+    using CSRData  = CSRMatrixData<Policy, Allocator, DiagMatrixData>;
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
 
 public:
     CSRMatrixSpGEMMHelperDefault() = default;
     CSRMatrixSpGEMMHelperDefault( CSRData *A_, CSRData *B_, CSRData *C_ )
-        : A( A_ ), B( B_ ), C( C_ ), comm( A->getComm() ), d_csr_comm( A->getRightCommList() )
+        : A( A_ ),
+          B( B_ ),
+          C( C_ ),
+          comm( A->getComm() ),
+          d_csr_comm( A->getRightCommList() ),
+          d_need_comms( true )
     {
         AMP_DEBUG_INSIST(
             comm == B->getComm() && comm == C->getComm(),
@@ -37,21 +43,28 @@ public:
 protected:
     // helper for main symbolicMultiply function that acts on specfic
     // pairs of blocks in A and B
-    template<class AMatrixData, class BMatrixData>
-    void symbolicMultiply( std::shared_ptr<AMatrixData> A_data,
-                           std::shared_ptr<BMatrixData> B_data,
+    void symbolicMultiply( std::shared_ptr<DiagMatrixData> A_data,
+                           std::shared_ptr<DiagMatrixData> B_data,
                            const gidx_t col_diag_start,
                            const gidx_t col_diag_end,
                            const bool is_diag,
                            std::vector<std::set<gidx_t>> &C_Cols );
 
+    void symbolicMultiplyLocal( std::shared_ptr<DiagMatrixData> A_data,
+                                std::shared_ptr<DiagMatrixData> B_data,
+                                std::vector<lidx_t> &nnz );
+
     // helper for main numericMultiply function that acts on specfic
     // pairs of blocks in A and B
-    template<class AMatrixData, class BMatrixData, class CMatrixData>
-    void numericMultiply( std::shared_ptr<AMatrixData> A_data,
-                          std::shared_ptr<BMatrixData> B_data,
-                          std::shared_ptr<CMatrixData> C_data );
+    void numericMultiply( std::shared_ptr<DiagMatrixData> A_data,
+                          std::shared_ptr<DiagMatrixData> B_data,
+                          std::shared_ptr<DiagMatrixData> C_data );
 
+    void numericMultiplyLocal( std::shared_ptr<DiagMatrixData> A_data,
+                               std::shared_ptr<DiagMatrixData> B_data,
+                               std::shared_ptr<DiagMatrixData> C_data );
+
+    void setupBRemoteComm();
     void startBRemoteComm();
     void endBRemoteComm();
 
@@ -68,6 +81,7 @@ protected:
     // Communicator
     AMP_MPI comm;
     CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData> d_csr_comm;
+    bool d_need_comms;
 
     // Matrix data formed from remote rows of B that get pulled to each process
     // This is a single block for all columns in remote rows. It is much easier
@@ -99,6 +113,63 @@ protected:
 
     std::map<int, std::shared_ptr<DiagMatrixData>> d_send_matrices;
     std::map<int, std::shared_ptr<DiagMatrixData>> d_recv_matrices;
+
+    // Internal row accumlator class
+    struct DenseAccumulator {
+        DenseAccumulator( int capacity_ )
+            : capacity( capacity_ ), num_inserted( 0 ), flags( capacity, -1 )
+        {
+        }
+
+        void insert_or_append( lidx_t loc, gidx_t gbl )
+        {
+            const auto k = flags[loc];
+            if ( k == -1 ) {
+                flags[loc] = num_inserted;
+                if ( num_inserted == static_cast<lidx_t>( flag_inv.size() ) ) {
+                    flag_inv.push_back( loc );
+                    cols.push_back( gbl );
+                } else {
+                    flag_inv[num_inserted] = loc;
+                    cols[num_inserted]     = gbl;
+                }
+                ++num_inserted;
+            }
+        }
+
+        void insert_or_append(
+            lidx_t loc, gidx_t gbl, scalar_t val, gidx_t *col_space, scalar_t *val_space )
+        {
+            const auto k = flags[loc];
+            if ( k == -1 ) {
+                flags[loc] = num_inserted;
+                if ( num_inserted == static_cast<lidx_t>( flag_inv.size() ) ) {
+                    flag_inv.push_back( loc );
+                } else {
+                    flag_inv[num_inserted] = loc;
+                }
+                col_space[num_inserted] = gbl;
+                val_space[num_inserted] = val;
+                ++num_inserted;
+            } else {
+                val_space[k] += val;
+            }
+        }
+
+        void clear()
+        {
+            for ( int n = 0; n < num_inserted; ++n ) {
+                flags[flag_inv[n]] = -1;
+            }
+            num_inserted = 0;
+        }
+
+        const lidx_t capacity;
+        lidx_t num_inserted;
+        std::vector<lidx_t> flags;
+        std::vector<lidx_t> flag_inv;
+        std::vector<gidx_t> cols;
+    };
 };
 
 } // namespace AMP::LinearAlgebra

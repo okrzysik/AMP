@@ -298,6 +298,9 @@ void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::globalToLocalColumns not implemented on device yet" );
 
+    AMP_INSIST( d_cols.get() != nullptr,
+                "CSRLocalMatrixData::globalToLocalColumns Global columns must exist" );
+
     if ( d_is_diag ) {
         for ( lidx_t n = 0; n < d_nnz; ++n ) {
             d_cols_loc[n] = static_cast<lidx_t>( d_cols[n] - d_first_col );
