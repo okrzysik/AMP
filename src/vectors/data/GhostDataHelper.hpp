@@ -125,11 +125,12 @@ void GhostDataHelper<TYPE, Allocator>::aliasGhostBuffer( std::shared_ptr<VectorD
  * Zero ghost buffers                                            *
  ****************************************************************/
 template<class TYPE, class Allocator>
-void GhostDataHelper<TYPE, Allocator>::zeroGhosts()
+void GhostDataHelper<TYPE, Allocator>::fillGhosts( const Scalar &scalar )
 {
     if ( d_Ghosts ) {
+        const auto y = static_cast<double>( scalar );
         for ( auto &x : *d_Ghosts )
-            x = 0;
+            x = y;
     }
     if ( d_AddBuffer ) {
         for ( auto &x : *d_AddBuffer )

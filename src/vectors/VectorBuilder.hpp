@@ -172,6 +172,9 @@ createSimpleVector( size_t localSize, std::shared_ptr<Variable> var, AMP_MPI com
     auto data =
         std::make_shared<DATA>( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
     data->setCommunicationList( std::make_shared<CommunicationList>( localSize, comm ) );
+    // set the state to be unchanged since
+    // setCommunicationList sets it to LOCAL_CHANGED
+    data->setUpdateStatus( UpdateState::UNCHANGED );
     return std::make_shared<Vector>( data, ops, var, DOFs );
 }
 template<typename TYPE, typename OPS, typename DATA>
@@ -183,6 +186,9 @@ Vector::shared_ptr createSimpleVector( std::shared_ptr<Variable> var,
     auto data =
         std::make_shared<DATA>( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
     data->setCommunicationList( commlist );
+    // set the state to be unchanged since
+    // setCommunicationList sets it to LOCAL_CHANGED
+    data->setUpdateStatus( UpdateState::UNCHANGED );
     return std::make_shared<Vector>( data, ops, var, DOFs );
 }
 

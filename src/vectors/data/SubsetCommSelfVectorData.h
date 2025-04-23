@@ -48,8 +48,7 @@ public:
 
 public: // Ghost data functions
     bool hasGhosts() const override { return false; }
-    void zeroGhosts() override {}
-    std::vector<double> &getGhosts() const override;
+    void fillGhosts( const Scalar & ) override {}
     std::shared_ptr<CommunicationList> getCommunicationList() const override { return nullptr; }
     void setCommunicationList( std::shared_ptr<CommunicationList> ) override {}
     void aliasGhostBuffer( std::shared_ptr<VectorData> ) override {}

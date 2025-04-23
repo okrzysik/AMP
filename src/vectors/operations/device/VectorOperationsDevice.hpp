@@ -96,11 +96,7 @@ void VectorOperationsDevice<TYPE>::setToScalar( const Scalar &alpha_in, VectorDa
             ++curMe;
         }
     }
-    if ( x.hasGhosts() ) {
-        auto &ghosts = x.getGhosts();
-        for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i] = alpha;
-    }
+    x.fillGhosts( alpha );
     // Override the status state since we set the ghost values
     x.setUpdateStatus( UpdateState::UNCHANGED );
     // Wait for cuda data to complete

@@ -4,6 +4,7 @@
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
 #include "AMP/vectors/CommunicationList.h"
+#include "AMP/vectors/Scalar.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/data/DataChangeFirer.h"
 
@@ -83,13 +84,8 @@ public: // Get basic information
      */
     virtual bool hasGhosts() const = 0;
 
-    /**\brief Gets vector of entries "owned" by other cores that are stored on this core
-     *\return Vector of entries "owned" by other cores that are stored on this core
-     */
-    virtual const std::vector<double> &getGhosts() const = 0;
-
     //! Zero all ghost data (does not modify consistent status)
-    virtual void zeroGhosts() = 0;
+    virtual void fillGhosts( const Scalar &x ) = 0;
 
     //! Return integer number of data components
     virtual size_t getNumberOfComponents() const;

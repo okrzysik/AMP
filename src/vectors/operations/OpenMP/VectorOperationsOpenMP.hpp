@@ -40,7 +40,7 @@ void VectorOperationsOpenMP<TYPE>::zero( VectorData &x )
         for ( size_t j = 0; j < size; j++ )
             data[j] = 0.0;
     }
-    x.zeroGhosts();
+    x.fillGhosts( 0 );
     // Override the status state since we set the ghost values
     x.setUpdateStatus( UpdateState::UNCHANGED );
 }
@@ -57,7 +57,7 @@ void VectorOperationsOpenMP<TYPE>::setToScalar( const Scalar &alpha_in, VectorDa
         for ( size_t j = 0; j < size; j++ )
             data[j] = alpha;
     }
-    x.zeroGhosts();
+    x.fillGhosts( alpha_in );
     // Override the status state since we set the ghost values
     x.setUpdateStatus( UpdateState::UNCHANGED );
 }

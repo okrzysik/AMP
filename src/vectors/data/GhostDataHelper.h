@@ -17,12 +17,11 @@ public:
 
 public: // Functions overloaded from VectorData
     bool hasGhosts() const override { return ( d_Ghosts != nullptr ); }
-    const std::vector<double> &getGhosts() const override { return *d_Ghosts; }
     std::shared_ptr<CommunicationList> getCommunicationList() const override;
     void setCommunicationList( std::shared_ptr<CommunicationList> comm ) override;
     void aliasGhostBuffer( std::shared_ptr<VectorData> in ) override;
     size_t getGhostSize() const override;
-    void zeroGhosts() override;
+    void fillGhosts( const Scalar & ) override;
     bool containsGlobalElement( size_t ) const override;
     void setGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
     void addGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;

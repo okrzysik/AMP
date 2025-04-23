@@ -41,8 +41,7 @@ public: // Functions inherited from VectorData
     inline void putRawData( const void *, const typeID & ) override {}
     inline void getRawData( void *, const typeID & ) const override {}
     bool hasGhosts() const { return false; }
-    void zeroGhosts() {}
-    std::vector<double> &getGhosts() const override;
+    void fillGhosts( const Scalar & ) override {}
     void getValuesByLocalID( size_t N, const size_t *, void *, const typeID & ) const override;
     void setValuesByLocalID( size_t N, const size_t *, const void *, const typeID & ) override;
     void addValuesByLocalID( size_t N, const size_t *, const void *, const typeID & ) override;

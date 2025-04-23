@@ -13,12 +13,6 @@ const AMP_MPI &VectorDataNull<TYPE>::getComm() const
     return comm;
 }
 template<typename TYPE>
-std::vector<double> &VectorDataNull<TYPE>::getGhosts() const
-{
-    static std::vector<double> ghosts;
-    return ghosts;
-}
-template<typename TYPE>
 void VectorDataNull<TYPE>::getValuesByLocalID( size_t N,
                                                const size_t *,
                                                void *,

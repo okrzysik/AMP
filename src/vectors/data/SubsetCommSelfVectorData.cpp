@@ -72,11 +72,6 @@ void SubsetCommSelfVectorData::dataChanged() {}
 /****************************************************************
  * Functions get/set/add values                                  *
  ****************************************************************/
-std::vector<double> &SubsetCommSelfVectorData::getGhosts() const
-{
-    static std::vector<double> ghosts;
-    return ghosts;
-}
 bool SubsetCommSelfVectorData::containsGlobalElement( size_t i ) const { return i < d_localSize; }
 void SubsetCommSelfVectorData::addValuesByLocalID( size_t N,
                                                    const size_t *ndx,

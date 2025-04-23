@@ -33,7 +33,7 @@ Scalar VectorOperations::min( const VectorData &x ) const
 {
     auto ans   = localMin( x );
     auto &comm = x.getComm();
-    if ( !comm.isNull() )
+    if ( comm.getSize() > 1 )
         ans = comm.minReduce( ans );
     return ans;
 }
@@ -41,7 +41,7 @@ Scalar VectorOperations::max( const VectorData &x ) const
 {
     auto ans   = localMax( x );
     auto &comm = x.getComm();
-    if ( !comm.isNull() )
+    if ( comm.getSize() > 1 )
         ans = comm.maxReduce( ans );
     return ans;
 }
@@ -49,7 +49,7 @@ Scalar VectorOperations::sum( const VectorData &x ) const
 {
     auto ans   = localSum( x );
     auto &comm = x.getComm();
-    if ( !comm.isNull() )
+    if ( comm.getSize() > 1 )
         ans = comm.sumReduce( ans );
     return ans;
 }
@@ -61,7 +61,7 @@ Scalar VectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     auto ans   = localDot( x, y );
     auto &comm = x.getComm();
-    if ( !comm.isNull() )
+    if ( comm.getSize() > 1 )
         ans = comm.sumReduce( ans );
     return ans;
 }
@@ -69,7 +69,7 @@ Scalar VectorOperations::L1Norm( const VectorData &x ) const
 {
     Scalar ans = localL1Norm( x );
     auto &comm = x.getComm();
-    if ( !comm.isNull() )
+    if ( comm.getSize() > 1 )
         ans = comm.sumReduce( ans );
     return ans;
 }
@@ -77,7 +77,7 @@ Scalar VectorOperations::maxNorm( const VectorData &x ) const
 {
     Scalar ans = localMaxNorm( x );
     auto &comm = x.getComm();
-    if ( !comm.isNull() )
+    if ( comm.getSize() > 1 )
         ans = comm.maxReduce( ans );
     return ans;
 }
@@ -85,7 +85,7 @@ Scalar VectorOperations::L2Norm( const VectorData &x ) const
 {
     auto ans   = localL2Norm( x );
     auto &comm = x.getComm();
-    if ( !comm.isNull() )
+    if ( comm.getSize() > 1 )
         ans = comm.sumReduce( ans * ans ).sqrt();
     return ans;
 }

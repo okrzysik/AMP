@@ -52,8 +52,7 @@ public: // Basic virtual functions
     void
     getGhostAddValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
     size_t getGhostSize() const override;
-    void zeroGhosts() override;
-    const std::vector<double> &getGhosts() const override;
+    void fillGhosts( const Scalar & ) override;
     void makeConsistent() override;
     void makeConsistent( ScatterType t ) override;
     UpdateState getLocalUpdateStatus() const override;
