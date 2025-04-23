@@ -1,3 +1,14 @@
+#ifndef included_testSolverHelpers_H_
+#define included_testSolverHelpers_H_
+
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
+#include "AMP/mesh/MeshParameters.h"
+#include "AMP/operators/NeutronicsRhs.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/utils/Database.h"
 #include "AMP/vectors/Vector.h"
 
 #include <fstream>
@@ -65,3 +76,74 @@ inline bool checkAnalyticalSolution( const std::string &exeName,
     }
     return passes;
 }
+
+std::shared_ptr<AMP::Mesh::Mesh> createMesh( std::shared_ptr<AMP::Database> input_db )
+{
+    AMP_INSIST( input_db && input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto comm      = AMP::AMP_MPI( AMP_COMM_WORLD );
+    mgrParams->setComm( comm );
+    return AMP::Mesh::MeshFactory::create( mgrParams );
+}
+
+std::pair<std::shared_ptr<AMP::Discretization::DOFManager>,
+          std::shared_ptr<AMP::Discretization::DOFManager>>
+getDofMaps( std::shared_ptr<const AMP::Mesh::Mesh> meshAdapter )
+{
+    // Create a DOF manager for a nodal vector
+    constexpr int DOFsPerNode          = 1;
+    constexpr int DOFsPerElement       = 8;
+    constexpr int nodalGhostWidth      = 1;
+    constexpr int gaussPointGhostWidth = 1;
+    bool split                         = true;
+    auto nodalDofMap                   = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
+    return std::make_pair( nodalDofMap, gaussPointDofMap );
+}
+
+std::shared_ptr<AMP::LinearAlgebra::Vector>
+constructNeutronicsPowerSource( std::shared_ptr<AMP::Database> input_db,
+                                std::shared_ptr<AMP::Mesh::Mesh> meshAdapter )
+{
+
+    auto [nodalDofMap, gaussPointDofMap] = getDofMaps( meshAdapter );
+
+    // CREATE THE NEUTRONICS SOURCE
+    AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
+                "Key ''NeutronicsOperator'' is missing!" );
+    auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
+    auto neutronicsParams =
+        std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
+    auto neutronicsOperator = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
+
+    auto SpecificPowerVec =
+        AMP::LinearAlgebra::createVector( gaussPointDofMap,
+                                          neutronicsOperator->getOutputVariable(),
+                                          true,
+                                          neutronicsOperator->getMemoryLocation() );
+
+    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
+    neutronicsOperator->apply( nullVec, SpecificPowerVec );
+
+    // Integrate Nuclear Source over Density * Volume
+    AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
+    auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "VolumeIntegralOperator", input_db ) );
+
+    // Create the power (heat source) vector.
+    auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap,
+                                                             sourceOperator->getOutputVariable(),
+                                                             true,
+                                                             sourceOperator->getMemoryLocation() );
+    PowerInWattsVec->zero();
+
+    // convert the vector of specific power to power for a given basis.
+    sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
+
+    return PowerInWattsVec;
+}
+#endif
