@@ -419,10 +419,13 @@ MultiVectorData::buildCommunicationList() const
     // Get the remote dofs
     std::vector<size_t> remoteDofs;
     for ( size_t i = 0; i < d_data.size(); i++ ) {
-        auto list = d_data[i]->getCommunicationList()->getGhostIDList();
-        remoteDofs.reserve( remoteDofs.size() + list.size() );
-        for ( size_t j = 0; j < list.size(); j++ )
-            remoteDofs.push_back( d_dofMap.subToGlobal( i, list[j] ) );
+        auto list = d_data[i]->getCommunicationList();
+        if ( list ) {
+            auto dofs = list->getGhostIDList();
+            remoteDofs.reserve( remoteDofs.size() + dofs.size() );
+            for ( size_t j = 0; j < dofs.size(); j++ )
+                remoteDofs.push_back( d_dofMap.subToGlobal( i, dofs[j] ) );
+        }
     }
     AMP::Utilities::quicksort( remoteDofs );
     // Create the communication list
