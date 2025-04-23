@@ -1,7 +1,7 @@
 #ifndef included_AMP_NativeThyraVectorData
 #define included_AMP_NativeThyraVectorData
 
-#include "AMP/vectors/data/GhostDataHelper.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 

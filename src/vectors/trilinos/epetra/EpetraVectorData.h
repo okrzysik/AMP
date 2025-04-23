@@ -1,7 +1,7 @@
 #ifndef included_AMP_EpetraVectorData
 #define included_AMP_EpetraVectorData
 
-#include "AMP/vectors/data/GhostDataHelper.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 
 DISABLE_WARNINGS
