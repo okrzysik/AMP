@@ -520,33 +520,24 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator, "ERROR: TrilinosMueLuSolver::apply() operator cannot be NULL" );
 
+    auto r = f->clone();
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
-    }
-
-
-    std::shared_ptr<AMP::LinearAlgebra::Vector> r;
-
-    bool computeResidual = false;
-    if ( d_bRobustMode || ( d_iDebugPrintInfoLevel > 1 ) ) {
-        computeResidual = true;
-    }
-
-    double initialResNorm = 0., finalResNorm = 0.;
-
-    if ( computeResidual ) {
-        r = f->clone();
+        r->copyVector( f );
+    } else {
         d_pOperator->residual( f, u, r );
-        initialResNorm = static_cast<double>( r->L2Norm() );
+    }
 
-        if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "TrilinosMueLuSolver::apply(), L2 norm of residual before solve "
-                      << std::setprecision( 15 ) << initialResNorm << std::endl;
-        }
+    d_dInitialResidual = d_dResidualNorm = r->L2Norm();
+    checkStoppingCriteria( d_dResidualNorm );
+
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "TrilinosMueLuSolver::apply(), L2 norm of residual before solve "
+                  << std::setprecision( 15 ) << d_dInitialResidual << std::endl;
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm = static_cast<double>( u->L2Norm() );
+        const auto solution_norm = static_cast<double>( u->L2Norm() );
         AMP::pout << "TrilinosMueLuSolver : before solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
@@ -604,26 +595,19 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
         AMP::pout << "TrilinosMueLuSolver : after solve solution: " << std::setprecision( 24 )
                   << std::endl;
         AMP::pout << *u << std::endl;
-        d_pOperator->apply( u, r );
-        auto rNorm = static_cast<double>( r->L2Norm() );
-
-        AMP::pout << "TrilinosMueLuSolver::operator apply(u,r), L2 norm of r "
-                  << std::setprecision( 24 ) << rNorm << std::endl;
     }
 
-    if ( computeResidual ) {
-        d_pOperator->residual( f, u, r );
-        finalResNorm = static_cast<double>( r->L2Norm() );
+    d_pOperator->residual( f, u, r );
+    d_dResidualNorm = r->L2Norm();
+    checkStoppingCriteria( d_dResidualNorm );
 
-        if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "TrilinosMueLuSolver::apply(), L2 norm of residual after solve "
-                      << std::setprecision( 24 ) << finalResNorm << std::endl;
-        }
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "TrilinosMueLuSolver::apply(), L2 norm of residual after solve "
+                  << std::setprecision( 24 ) << d_dResidualNorm << std::endl;
     }
-
 
     if ( d_bRobustMode ) {
-        if ( finalResNorm > initialResNorm ) {
+        if ( d_dResidualNorm > d_dInitialResidual ) {
             AMP::pout << "Warning: ML was not able to reduce the residual. Using LU instead."
                       << std::endl;
             reSolveWithLU( f, u );

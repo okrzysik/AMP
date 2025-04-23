@@ -1,4 +1,4 @@
-<<< "input_testLinearSolvers-LinearThermalRobin-Common" >>>
+<<< "input_LinearThermalRobinOperator" >>>
 
 LinearSolver{
   name = "CGSolver"

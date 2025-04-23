@@ -91,6 +91,8 @@ void GMRESSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
 
     if ( d_bUsesPreconditioner && d_preconditioner_side == "left" && d_bFlexibleGMRES )
         AMP_ERROR( "Flexible GMRES needs right preconditioning" );
+
+    d_iBasisAllocSize = db->getWithDefault<int>( "basis_allocation_size", 4 );
 }
 
 /****************************************************************
@@ -111,23 +113,24 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
-    // residual vector
-    AMP::LinearAlgebra::Vector::shared_ptr res = f->clone();
+    // allocate basis
+    if ( d_vBasis.empty() )
+        allocate_basis( u );
 
-    // z is only used if there is preconditioning
-    AMP::LinearAlgebra::Vector::shared_ptr z;
-    // z1 is only used if there is right preconditioning
-    AMP::LinearAlgebra::Vector::shared_ptr z1;
+    // residual vector
+    AMP::LinearAlgebra::Vector::shared_ptr res = d_vBasis[0];
 
     if ( d_bUsesPreconditioner ) {
-        z = f->clone();
+        if ( !d_z )
+            d_z = u->clone();
         if ( d_preconditioner_side == "right" ) {
-            z1 = f->clone();
+            if ( !d_z1 )
+                d_z1 = u->clone();
         }
     }
 
     // compute the initial residual
-    computeInitialResidual( d_bUseZeroInitialGuess, f, u, z, res );
+    computeInitialResidual( d_bUseZeroInitialGuess, f, u, d_z, res );
 
     // compute residual norm
     auto beta = static_cast<T>( res->L2Norm() );
@@ -154,11 +157,6 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // normalize the first basis vector
     res->scale( static_cast<T>( 1.0 ) / beta );
 
-    // push the residual as the first basis vector
-    d_vBasis.resize( 0 );
-    d_zBasis.resize( 0 );
-    d_vBasis.push_back( res );
-
     // 'w*e_1' is the rhs for the least squares minimization problem
     d_dw[0] = beta;
 
@@ -170,47 +168,40 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         AMP::LinearAlgebra::Vector::shared_ptr v;
         AMP::LinearAlgebra::Vector::shared_ptr zb;
 
-        if ( k + 1 < static_cast<int>( d_vBasis.size() ) ) {
-            // reuse basis vectors for restarts in order to avoid a clone
-            v = d_vBasis[k + 1];
-            if ( d_bFlexibleGMRES )
-                // z_Basis is increased in size one behind wrt d_vBasis
-                zb = d_zBasis[k];
-        } else {
-            // clone off of the rhs to create a new basis vector
-            v = f->clone();
-            d_vBasis.push_back( v );
-            if ( d_bFlexibleGMRES )
-                zb = f->clone();
-        }
+        // reuse basis vectors for restarts in order to avoid a clone
+        if ( static_cast<int>( d_vBasis.size() ) <= k + 1 )
+            allocate_basis( u );
+
+        v = d_vBasis[k + 1];
+        if ( d_bFlexibleGMRES )
+            zb = d_zBasis[k];
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
-            d_pOperator->apply( d_vBasis[k], z );
-            z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+            d_pOperator->apply( d_vBasis[k], d_z );
+            d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             // construct the Krylov vector
-            d_pPreconditioner->apply( z, v );
+            d_pPreconditioner->apply( d_z, v );
         } else {
             if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
                 // the makeConsistent calls below are there because the commented condition
                 // on status appears not to be working. They are required or we have to change
                 // policy on what the status of a vector is coming out of a solver.
                 if ( !d_bFlexibleGMRES ) {
-                    d_pPreconditioner->apply( d_vBasis[k], z );
+                    d_pPreconditioner->apply( d_vBasis[k], d_z );
                     //                    if ( z->getUpdateStatus() !=
                     //                         AMP::LinearAlgebra::UpdateState::UNCHANGED
                     //                         )
-                    z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-                    d_pOperator->apply( z, v );
+                    d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+                    d_pOperator->apply( d_z, v );
                 } else {
                     d_pPreconditioner->apply( d_vBasis[k], zb );
-                    d_zBasis.push_back( zb );
                     zb->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( zb, v );
                 }
             } else {
-                z = d_vBasis[k];
-                z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-                d_pOperator->apply( z, v );
+                d_z = d_vBasis[k];
+                d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+                d_pOperator->apply( d_z, v );
             }
         }
 
@@ -272,13 +263,13 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 if ( d_iDebugPrintInfoLevel > 2 ) {
                     AMP::pout << "GMRES: restarting" << std::endl;
                 }
-                // note: backwardSolve and addCorrection only go up to k - 1 because k has already
-                // been increased with ++k (so they really go up to k)
-                // compute y, the solution to the least squares minimization problem
+                // note: backwardSolve and addCorrection only go up to k - 1 because k has
+                // already been increased with ++k (so they really go up to k) compute y, the
+                // solution to the least squares minimization problem
                 backwardSolve( k - 1 );
                 // update the current approximation with the correction
-                addCorrection( k - 1, z, z1, u );
-                computeInitialResidual( false, f, u, z, d_vBasis[0] );
+                addCorrection( k - 1, d_z, d_z1, u );
+                computeInitialResidual( false, f, u, d_z, d_vBasis[0] );
                 v_norm = static_cast<T>( d_vBasis[0]->L2Norm() );
                 d_vBasis[0]->scale( static_cast<T>( 1.0 ) / v_norm );
                 d_dw[0] = v_norm;
@@ -303,7 +294,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         backwardSolve( k - 1 );
 
         // update the current approximation with the correction
-        addCorrection( k - 1, z, z1, u );
+        addCorrection( k - 1, d_z, d_z1, u );
     }
 
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
@@ -495,4 +486,16 @@ void GMRESSolver<T>::addCorrection( const int nr,
         }
     }
 }
+
+
+template<typename T>
+void GMRESSolver<T>::allocate_basis( const std::shared_ptr<AMP::LinearAlgebra::Vector> u )
+{
+    for ( auto i = 0; i < d_iBasisAllocSize; i++ ) {
+        d_vBasis.push_back( u->clone() );
+        if ( d_bFlexibleGMRES )
+            d_zBasis.push_back( u->clone() );
+    }
+}
+
 } // namespace AMP::Solver
