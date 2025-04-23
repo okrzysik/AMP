@@ -59,7 +59,7 @@ static inline std::shared_ptr<const VectorData> getEngineData( const VectorData 
  * Constructors                                          *
  ********************************************************/
 ManagedVectorData::ManagedVectorData( std::shared_ptr<Vector> vec )
-    : VectorData( vec->getVectorData()->getCommunicationList() ), d_Engine( vec )
+    : GhostDataHelper( vec->getVectorData()->getCommunicationList() ), d_Engine( vec )
 {
     d_Engine->getVectorData()->setUpdateStatusPtr( getUpdateStatusPtr() );
 
@@ -74,7 +74,7 @@ ManagedVectorData::ManagedVectorData( std::shared_ptr<Vector> vec )
 }
 
 ManagedVectorData::ManagedVectorData( std::shared_ptr<VectorData> alias )
-    : VectorData( alias->getCommunicationList() )
+    : GhostDataHelper( alias->getCommunicationList() )
 {
     auto vec = getManaged( alias );
     d_Engine = vec->d_Engine;
@@ -94,13 +94,12 @@ ManagedVectorData::ManagedVectorData( std::shared_ptr<VectorData> alias )
     d_globalSize = getEngineData( *this )->getGlobalSize();
     d_localStart = d_CommList->getStartGID();
 }
-
 ManagedVectorData::~ManagedVectorData() = default;
+
 
 /********************************************************
  * Subset                                                *
  ********************************************************/
-
 bool ManagedVectorData::isAnAliasOf( const VectorData &rhs ) const
 {
     auto other = dynamic_cast<const ManagedVectorData *>( &rhs );
@@ -110,7 +109,6 @@ bool ManagedVectorData::isAnAliasOf( const VectorData &rhs ) const
     }
     return false;
 }
-
 UpdateState ManagedVectorData::getLocalUpdateStatus() const
 {
     UpdateState state                 = *d_UpdateState;
@@ -183,7 +181,7 @@ void ManagedVectorData::getGhostValuesByGlobalID( size_t N,
 {
     auto vec = getVectorEngine();
     if ( !vec ) {
-        VectorData::getGhostValuesByGlobalID( N, ndx, vals, id );
+        GhostDataHelper<double>::getGhostValuesByGlobalID( N, ndx, vals, id );
     } else {
         vec->getVectorData()->getGhostValuesByGlobalID( N, ndx, vals, id );
     }
@@ -206,7 +204,7 @@ void ManagedVectorData::setGhostValuesByGlobalID( size_t N,
 {
     auto vec = getVectorEngine();
     if ( !vec ) {
-        VectorData::setGhostValuesByGlobalID( N, ndx, vals, id );
+        GhostDataHelper<double>::setGhostValuesByGlobalID( N, ndx, vals, id );
     } else {
         vec->getVectorData()->setGhostValuesByGlobalID( N, ndx, vals, id );
     }
@@ -229,7 +227,7 @@ void ManagedVectorData::addGhostValuesByGlobalID( size_t N,
 {
     auto vec = getVectorEngine();
     if ( !vec ) {
-        VectorData::addGhostValuesByGlobalID( N, ndx, vals, id );
+        GhostDataHelper<double>::addGhostValuesByGlobalID( N, ndx, vals, id );
     } else {
         vec->getVectorData()->addGhostValuesByGlobalID( N, ndx, vals, id );
     }
