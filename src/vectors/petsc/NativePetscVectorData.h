@@ -2,7 +2,7 @@
 #define included_AMP_NativePetscVectorData
 
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/vectors/data/GhostDataHelper.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 
 #include "petscvec.h"

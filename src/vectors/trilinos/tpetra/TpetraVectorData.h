@@ -2,7 +2,7 @@
 #define included_TpetraVectorData_H_
 
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/vectors/data/GhostDataHelper.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 
 #include <Teuchos_Comm.hpp>

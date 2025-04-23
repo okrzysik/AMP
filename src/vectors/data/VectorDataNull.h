@@ -40,7 +40,7 @@ public: // Functions inherited from VectorData
     inline size_t sizeOfDataBlock( size_t = 0 ) const override { return 0; }
     inline void putRawData( const void *, const typeID & ) override {}
     inline void getRawData( void *, const typeID & ) const override {}
-    bool hasGhosts() const { return false; }
+    bool hasGhosts() const override { return false; }
     void fillGhosts( const Scalar & ) override {}
     void getValuesByLocalID( size_t N, const size_t *, void *, const typeID & ) const override;
     void setValuesByLocalID( size_t N, const size_t *, const void *, const typeID & ) override;
