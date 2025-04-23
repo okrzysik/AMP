@@ -39,6 +39,7 @@ std::string MVFactory1 =
 
 int testByVariableName( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 {
+    PROFILE( "testByVariableName" );
     int N_it  = 50;
     auto name = vec->getName();
     auto t1   = AMP::Utilities::time();
@@ -51,6 +52,7 @@ int testByVariableName( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 }
 int testByStride( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, size_t offset, size_t length )
 {
+    PROFILE( "testByStride" );
     int N_it  = 20;
     auto name = vec->getName();
     auto t1   = AMP::Utilities::time();
@@ -63,6 +65,7 @@ int testByStride( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, size_t offset
 }
 int testByComm( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, const AMP::AMP_MPI &comm )
 {
+    PROFILE( "testByComm" );
     int N_it  = 50;
     auto name = vec->getName();
     auto t1   = AMP::Utilities::time();
@@ -76,6 +79,7 @@ int testByComm( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, const AMP::AMP_
 
 int testByMesh( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 {
+    PROFILE( "testByMesh" );
     auto mesh = vec->getDOFManager()->getMesh();
     if ( !mesh )
         return 0;

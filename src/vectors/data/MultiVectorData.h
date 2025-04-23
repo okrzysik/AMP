@@ -2,10 +2,16 @@
 #define included_AMP_MultiVectorData
 
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/MultiDOFHelper.h"
 #include "AMP/vectors/data/DataChangeListener.h"
 #include "AMP/vectors/data/VectorData.h"
 
 #include <cstddef>
+
+
+namespace AMP::Discretization {
+class multiDOFManager;
+}
 
 
 namespace AMP::LinearAlgebra {
@@ -43,8 +49,10 @@ public: // Basic virtual functions
     void setGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
     void addGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
     void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void
+    getGhostAddValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
     size_t getGhostSize() const override;
-    std::vector<double> &getGhosts() const override;
+    void fillGhosts( const Scalar & ) override;
     void makeConsistent() override;
     void makeConsistent( ScatterType t ) override;
     UpdateState getLocalUpdateStatus() const override;
@@ -54,6 +62,16 @@ public: // Basic virtual functions
     std::shared_ptr<const VectorData> getComponent( size_t i = 0 ) const override;
     bool hasContiguousData() const override { return ( numberOfDataBlocks() <= 1 ); }
 
+public:
+    void aliasGhostBuffer( std::shared_ptr<VectorData> in ) override;
+    std::shared_ptr<CommunicationList> getCommunicationList() const override;
+    void setCommunicationList( std::shared_ptr<CommunicationList> comm ) override;
+    void dataChanged() override;
+    void setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs ) override;
+    std::shared_ptr<UpdateState> getUpdateStatusPtr() const override;
+    bool containsGlobalElement( size_t ) const override;
+    void copyGhostValues( const VectorData &rhs ) override;
+    bool hasGhosts() const override;
 
 public: // Advanced virtual functions
     /**\brief  A unique id for the underlying data allocation
@@ -105,7 +123,6 @@ public: // Advanced virtual functions
     size_t getVectorDataSize() const { return d_data.size(); }
 
     const AMP_MPI &getComm() const override { return d_comm; }
-    bool hasComm() const override { return true; }
 
     void assemble() override;
 
@@ -113,12 +130,9 @@ public: // Advanced virtual functions
 public:
     void receiveDataChanged() override { fireDataChange(); }
 
-    explicit MultiVectorData( const AMP::AMP_MPI &comm )
-        : d_comm( comm ), d_globalDOFManager( nullptr )
-    {
-    }
+    explicit MultiVectorData( const AMP::AMP_MPI &comm ) : d_comm( comm ) {}
 
-    void resetMultiVectorData( AMP::Discretization::DOFManager *manager,
+    void resetMultiVectorData( const AMP::Discretization::DOFManager *manager,
                                const std::vector<VectorData *> &data );
 
 public: // Write/read restart data
@@ -144,12 +158,6 @@ public: // Write/read restart data
      */
     MultiVectorData( int64_t fid, AMP::IO::RestartManager *manager );
 
-
-protected:
-    // Internal data
-    AMP::AMP_MPI d_comm;
-    std::vector<VectorData *> d_data;
-    AMP::Discretization::DOFManager *d_globalDOFManager = nullptr;
 
 protected:
     /** A method that will translate an array of global ids relative to the multivector
@@ -191,6 +199,17 @@ protected:
                                std::vector<std::vector<size_t>> &out_indices,
                                std::vector<std::vector<std::byte>> &out_vals,
                                std::vector<std::vector<int>> *remap = nullptr ) const;
+
+private:
+    std::shared_ptr<CommunicationList> buildCommunicationList() const;
+
+protected:
+    // Internal data
+    AMP::AMP_MPI d_comm;
+    std::vector<VectorData *> d_data;
+    AMP::Discretization::multiDOFHelper d_dofMap;
+    std::shared_ptr<UpdateState> d_UpdateState;
+    std::shared_ptr<CommunicationList> d_commList;
 };
 
 

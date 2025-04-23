@@ -7,6 +7,7 @@
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/memory.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 
 
@@ -16,7 +17,7 @@ namespace AMP::LinearAlgebra {
  * \details This is a Vector that implements the Vector interface for an AMP::Array.
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<void>>
-class ArrayVectorData : public VectorData
+class ArrayVectorData : public GhostDataHelper<double>
 {
 private:
     AMP::Array<T, FUN, Allocator> d_array;
