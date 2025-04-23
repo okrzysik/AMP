@@ -3,7 +3,8 @@
 LinearSolver{
   name = "TrilinosMueLuSolver"
   max_iterations = 10
-  max_error = 1e-10
+  absolute_tolerance = 1e-10
+  relative_tolerance = 1e-8
   problem_symmetric =TRUE
   smoother_pre_or_post = "both"
   smoother_params{
