@@ -1,6 +1,7 @@
 #ifndef included_AMP_EpetraVectorData
 #define included_AMP_EpetraVectorData
 
+#include "AMP/vectors/data/GhostDataHelper.h"
 #include "AMP/vectors/data/VectorData.h"
 
 DISABLE_WARNINGS
@@ -65,7 +66,7 @@ private:
  * libraries, it is very difficult to separate the data from the engine.  For this
  * reason, the EpetraVectorEngine contains the Epetra_Vector to operate on.
  */
-class EpetraVectorData : public VectorData
+class EpetraVectorData : public GhostDataHelper<double>
 {
 
 public: // Virtual functions

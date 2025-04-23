@@ -3,6 +3,7 @@
 
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/memory.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 
 
@@ -19,7 +20,7 @@ class VectorDataIterator;
  * the local values as a single block of data on the CPU.
  */
 template<typename TYPE = double, class Allocator = AMP::HostAllocator<void>>
-class VectorDataDefault final : public VectorData
+class VectorDataDefault final : public GhostDataHelper<double>
 {
 public: // Member types
     using value_type = TYPE;

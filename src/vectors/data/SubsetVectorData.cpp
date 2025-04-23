@@ -38,7 +38,7 @@ getDataBlocks( const std::vector<T *> &data )
     return std::tie( ptr, size );
 }
 SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> params )
-    : VectorData( params->d_CommList ),
+    : GhostDataHelper<double>( params->d_CommList ),
       d_ViewVector( params->d_ViewVector ),
       d_DOFManager{ params->d_DOFManager }
 {

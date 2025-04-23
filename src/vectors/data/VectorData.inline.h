@@ -12,28 +12,6 @@ namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
- * Get the size of the vector                                    *
- ****************************************************************/
-inline std::shared_ptr<CommunicationList> VectorData::getCommunicationList() const
-{
-    return d_CommList;
-}
-inline void VectorData::aliasGhostBuffer( std::shared_ptr<VectorData> in )
-{
-    d_Ghosts = in->d_Ghosts;
-}
-inline bool VectorData::containsGlobalElement( size_t i )
-{
-    if ( ( i >= d_CommList->getStartGID() ) &&
-         ( i < d_CommList->getStartGID() + d_CommList->numLocalRows() ) )
-        return true;
-    return std::find( d_CommList->getGhostIDList().begin(),
-                      d_CommList->getGhostIDList().end(),
-                      i ) != d_CommList->getGhostIDList().end();
-}
-
-
-/****************************************************************
  * Get the type of data                                          *
  ****************************************************************/
 template<typename TYPE>
@@ -93,7 +71,6 @@ inline VectorDataIterator<const TYPE> VectorData::end() const
 {
     return VectorDataIterator<const TYPE>( const_cast<VectorData *>( this ), getLocalSize() );
 }
-inline size_t VectorData::getGhostSize() const { return d_Ghosts->size(); }
 
 
 /****************************************************************
