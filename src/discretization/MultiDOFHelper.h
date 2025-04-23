@@ -53,10 +53,10 @@ public:
 
 
 public: // Default constructors
-    multiDOFHelper()                                    = default;
-    multiDOFHelper( multiDOFHelper && )                 = default;
-    multiDOFHelper( const multiDOFHelper & )            = default;
-    multiDOFHelper &operator=( multiDOFHelper && )      = default;
+    multiDOFHelper()                         = default;
+    multiDOFHelper( multiDOFHelper && )      = default;
+    multiDOFHelper( const multiDOFHelper & ) = default;
+    multiDOFHelper &operator=( multiDOFHelper && ) = default;
     multiDOFHelper &operator=( const multiDOFHelper & ) = default;
 
 
