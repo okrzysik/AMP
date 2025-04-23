@@ -5,22 +5,22 @@
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
-#include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
+#include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include <iostream>
-#include <string>
+#include <iomanip>
 
-
-void linearElasticTest( AMP::UnitTest *ut )
+void linearElasticTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
-    std::string exeName( "testTrilinosMueLuSolver-LinearElasticityOperator-1" );
-    std::string input_file = "input_" + exeName;
-    std::string log_file   = "output_" + exeName;
+    std::string input_file = inputFileName;
+    AMP::pout << "Running linearElasticTest with input " << input_file << std::endl;
+
+    std::string log_file = "output_" + input_file;
 
     AMP::logOnlyNodeZero( log_file );
 
@@ -30,7 +30,8 @@ void linearElasticTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+    auto comm       = AMP::AMP_MPI( AMP_COMM_WORLD );
+    meshParams->setComm( comm );
     auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
@@ -62,6 +63,7 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
+
     std::cout << "RHS Norm: " << mechRhsVec->L2Norm() << std::endl;
     std::cout << "Initial Solution Norm: " << mechSolVec->L2Norm() << std::endl;
 
@@ -70,14 +72,8 @@ void linearElasticTest( AMP::UnitTest *ut )
     double initResidualNorm = static_cast<double>( mechResVec->L2Norm() );
     std::cout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
-    auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
-
-    auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
-
-    mlSolverParams->d_pOperator = bvpOperator;
-
-    // create the ML solver interface
-    auto mlSolver = std::make_shared<AMP::Solver::TrilinosMueLuSolver>( mlSolverParams );
+    auto mlSolver =
+        AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, bvpOperator );
 
     mlSolver->setZeroInitialGuess( false );
 
@@ -89,11 +85,11 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
-        ut->failure(
-            "TrilinosMueLuSolver could not solve a linear elasticity problem successfully" );
+    // BP: convergence assumes convergence rate of ~0.6 and 40 iterations
+    if ( finalResidualNorm > ( 1.0e-8 * initResidualNorm ) ) {
+        ut->failure( mlSolver->type() + " fails to solve a linear elasticity problem" );
     } else {
-        ut->passes( "TrilinosMueLuSolver successfully solves a linear elasticity problem" );
+        ut->passes( mlSolver->type() + " successfully solves a linear elasticity problem" );
     }
 
     input_db.reset();
@@ -104,9 +100,38 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    linearElasticTest( &ut );
+    std::vector<std::string> files;
+
+    PROFILE_ENABLE();
+
+    if ( argc > 1 ) {
+
+        files.emplace_back( argv[1] );
+
+    } else {
+#ifdef AMP_USE_HYPRE
+        files.emplace_back( "input_testBoomerAMGSolver-LinearElasticityOperator-1" );
+#endif
+#ifdef AMP_USE_TRILINOS_MUELU
+        files.emplace_back( "input_testTrilinosMueLuSolver-LinearElasticityOperator-1" );
+#endif
+    }
+
+    {
+        PROFILE( "DRIVER::main(test loop)" );
+        for ( auto &file : files ) {
+            linearElasticTest( &ut, file );
+        }
+    }
 
     ut.report();
+
+    // build unique profile name to avoid collisions
+    std::ostringstream ss;
+    ss << "testLinearElasticity_r" << std::setw( 3 ) << std::setfill( '0' )
+       << AMP::AMPManager::getCommWorld().getSize();
+
+    PROFILE_SAVE( ss.str() );
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();

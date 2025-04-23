@@ -14,7 +14,8 @@
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
+#include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -22,10 +23,10 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-
 #include "testSolverHelpers.h"
 
 #include <fstream>
+#include <iomanip>
 #include <limits>
 #include <memory>
 #include <string>
@@ -35,13 +36,12 @@
     if ( !( a ) )      \
         ut.failure( __LINE__ );
 
-void linearFickTest( AMP::UnitTest *ut )
+void linearFickTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
     // Input and output file names
-    std::string exeName( "testTrilinosMueLuSolver-LinearFickOperator-bar" );
-    std::string input_file  = "input_" + exeName;
-    std::string log_file    = "output_" + exeName;
-    AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
+    std::string input_file = inputFileName;
+    std::string log_file   = "output_" + inputFileName;
+    const auto globalComm  = AMP::AMP_MPI( AMP_COMM_WORLD );
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -50,11 +50,11 @@ void linearFickTest( AMP::UnitTest *ut )
     // Print from all cores into the output files
     AMP::logAllNodes( log_file );
 
-    // Create the Mesh.
+    //   Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+    mgrParams->setComm( globalComm );
     auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
@@ -80,22 +80,11 @@ void linearFickTest( AMP::UnitTest *ut )
     RightHandSideVec->setToScalar( 0. );
 
     auto boundaryOp = diffusionOperator->getBoundaryOperator();
+
     boundaryOp->addRHScorrection( RightHandSideVec );
     boundaryOp->setRHScorrection( RightHandSideVec );
 
-    // make sure the database on theinput file exists for the linear solver
-    AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
-
-    // Read the input file onto a database.
-    auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
-
-    // Fill in the parameters for the class with the info on the database.
-    auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
-
-    // Define the operator to be used by the Solver.
-    mlSolverParams->d_pOperator = diffusionOperator;
-
-    //   FIND THE SOLUTION
+    // FIND THE SOLUTION
 
     // Set initial guess
     SolutionVec->setToScalar( 1.0 );
@@ -107,8 +96,8 @@ void linearFickTest( AMP::UnitTest *ut )
     double rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
     std::cout << "RHS Norm: " << rhsNorm << std::endl;
 
-    // Create the ML Solver
-    auto mlSolver = std::make_shared<AMP::Solver::TrilinosMueLuSolver>( mlSolverParams );
+    auto mlSolver = AMP::Solver::Test::buildSolver(
+        "LinearSolver", input_db, globalComm, nullptr, diffusionOperator );
 
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess( false );
@@ -124,14 +113,13 @@ void linearFickTest( AMP::UnitTest *ut )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        ut->failure( "TrilinosMueLuSolver unsuccessfully solves a linear fick problem." );
+        ut->failure( mlSolver->type() + " fails to solve a linear Fick problem." );
     } else {
-        ut->passes( "TrilinosMueLuSolver successfully solves a linear fick problem." );
+        ut->passes( mlSolver->type() + " successfully solves a linear Fick problem." );
     }
 
-    //   CHECK THE SOLUTION
+    // CHECK THE SOLUTION
     auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-
 
     // The analytical solution is:  T = a + b*z + c*z*z
     //   c = -power/2
@@ -144,12 +132,15 @@ void linearFickTest( AMP::UnitTest *ut )
         double a     = 300. + 150. * power;
         return a + b * z + c * z * z;
     };
+
+    std::string exeName = inputFileName;
+    auto pos            = exeName.find( "input_" );
+    exeName.erase( pos, 6 );
     bool passes = checkAnalyticalSolution( exeName, fun, iterator, SolutionVec );
     if ( passes )
-        ut->passes( "The linear fick solve is verified" );
+        ut->passes( "The linear Fick solve is verified" );
 
     input_db.reset();
-
     ut->passes( exeName );
 }
 
@@ -159,9 +150,38 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    linearFickTest( &ut );
+    std::vector<std::string> files;
+
+    PROFILE_ENABLE();
+
+    if ( argc > 1 ) {
+
+        files.emplace_back( argv[1] );
+
+    } else {
+#ifdef AMP_USE_HYPRE
+        files.emplace_back( "input_testBoomerAMGSolver-LinearFickOperator-bar" );
+#endif
+#ifdef AMP_USE_TRILINOS_MUELU
+        files.emplace_back( "input_testTrilinosMueLuSolver-LinearFickOperator-bar" );
+#endif
+    }
+
+    {
+        PROFILE( "DRIVER::main(test loop)" );
+        for ( auto &file : files ) {
+            linearFickTest( &ut, file );
+        }
+    }
 
     ut.report();
+
+    // build unique profile name to avoid collisions
+    std::ostringstream ss;
+    ss << "testLinearFick_r" << std::setw( 3 ) << std::setfill( '0' )
+       << AMP::AMPManager::getCommWorld().getSize();
+
+    PROFILE_SAVE( ss.str() );
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
