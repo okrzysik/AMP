@@ -128,7 +128,7 @@ template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::fillGhosts( const Scalar &scalar )
 {
     if ( d_Ghosts ) {
-        const auto y = static_cast<double>( scalar );
+        const auto y = static_cast<TYPE>( scalar );
         for ( auto &x : *d_Ghosts )
             x = y;
     }
