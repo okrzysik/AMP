@@ -23,7 +23,7 @@ multiDOFHelper::multiDOFHelper( const std::vector<std::shared_ptr<DOFManager>> &
     for ( size_t i = 0; i < managers.size(); i++ ) {
         size_t begin = managers[i]->beginDOF();
         size_t end   = managers[i]->endDOF();
-        d_ids[i]     = managers[i]->getID();
+        d_ids[i]     = managers[i]->getComm().rand();
         d_dofMap[i]  = DOFMapStruct( begin, end, globalBegin, d_ids[i] );
         globalBegin += managers[i]->numLocalDOF();
     }
