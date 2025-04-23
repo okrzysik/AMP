@@ -41,27 +41,12 @@ public:
     void numericMultiply();
 
 protected:
-    // helper for main symbolicMultiply function that acts on specfic
-    // pairs of blocks in A and B
-    void symbolicMultiply( std::shared_ptr<DiagMatrixData> A_data,
-                           std::shared_ptr<DiagMatrixData> B_data,
-                           const gidx_t col_diag_start,
-                           const gidx_t col_diag_end,
-                           const bool is_diag,
-                           std::vector<std::set<gidx_t>> &C_Cols );
-
-    void symbolicMultiplyLocal( std::shared_ptr<DiagMatrixData> A_data,
-                                std::shared_ptr<DiagMatrixData> B_data,
-                                std::vector<lidx_t> &nnz );
-
-    // helper for main numericMultiply function that acts on specfic
-    // pairs of blocks in A and B
-    void numericMultiply( std::shared_ptr<DiagMatrixData> A_data,
-                          std::shared_ptr<DiagMatrixData> B_data,
-                          std::shared_ptr<DiagMatrixData> C_data );
-
-    void numericMultiplyLocal( std::shared_ptr<DiagMatrixData> A_data,
-                               std::shared_ptr<DiagMatrixData> B_data,
+    template<bool SYMBOLIC>
+    void multiplyLocal( std::shared_ptr<DiagMatrixData> B_data,
+                        std::shared_ptr<DiagMatrixData> C_data,
+                        lidx_t *nnz );
+    void symbolicMultiplyLocal( std::shared_ptr<DiagMatrixData> B_data, std::vector<lidx_t> &nnz );
+    void numericMultiplyLocal( std::shared_ptr<DiagMatrixData> B_data,
                                std::shared_ptr<DiagMatrixData> C_data );
 
     void setupBRemoteComm();

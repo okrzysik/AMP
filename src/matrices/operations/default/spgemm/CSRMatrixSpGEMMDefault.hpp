@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <set>
+#include <unordered_map>
 
 namespace AMP::LinearAlgebra {
 
@@ -14,99 +15,114 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
     PROFILE( "CSRMatrixSpGEMMDefault::symbolicMultiply" );
 
     using lidx_t = typename Policy::lidx_t;
-    using gidx_t = typename Policy::gidx_t;
 
     // start communication to build BRemote before doing anything
     if ( A->hasOffDiag() ) {
         startBRemoteComm();
+        endBRemoteComm();
     }
 
     const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
 
-    auto A_diag = A->getDiagMatrix();
-    auto A_offd = A->getOffdMatrix();
+    auto B_diag = B->getDiagMatrix();
+    auto B_offd = B->getOffdMatrix();
+
+    std::vector<lidx_t> nnz_diag( nRows, 0 ), nnz_offd( nRows, 0 );
+
+    multiplyLocal<true>( B_diag, nullptr, nnz_diag.data() );
+    if ( B->hasOffDiag() ) {
+        multiplyLocal<true>( B_offd, nullptr, nnz_offd.data() );
+    }
+
+    // Give C the nnz counts so that it can allocate space internally
+    C->setNNZ( nnz_diag, nnz_offd );
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMultiply()
+{
+    PROFILE( "CSRMatrixSpGEMMDefault::numericMultiply" );
+
+    // start communication to build BRemote before doing anything
+    if ( A->hasOffDiag() && d_need_comms ) {
+        startBRemoteComm();
+        endBRemoteComm();
+    }
+
     auto B_diag = B->getDiagMatrix();
     auto B_offd = B->getOffdMatrix();
     auto C_diag = C->getDiagMatrix();
     auto C_offd = C->getOffdMatrix();
 
-    // const auto col_diag_start = C->beginCol();
-    // const auto col_diag_end   = C->endCol();
-
-    // vector of sets for each row makes zipping on/off process patterns
-    // together easier. More memory intensive though...
-    // std::vector<std::set<gidx_t>> C_cols_diag( nRows, std::set<gidx_t>() );
-    // std::vector<std::set<gidx_t>> C_cols_offd( nRows, std::set<gidx_t>() );
-
-    std::vector<lidx_t> nnz_diag( nRows, 0 ), nnz_offd( nRows, 0 );
-
     // Process diagonal block of A acting on whole local part of B
-    symbolicMultiplyLocal( A_diag, B_diag, nnz_diag );
+    multiplyLocal<false>( B_diag, C_diag, nullptr );
     if ( B->hasOffDiag() ) {
-        symbolicMultiplyLocal( A_diag, B_offd, nnz_offd );
+        multiplyLocal<false>( B_offd, C_offd, nullptr );
     }
 
-    // process off-diagonal block of A
-    // if ( A->hasOffDiag() ) {
-    //     // finalize BRemote communication before continuing
-    //     endBRemoteComm();
-    //     { // block just for profiling call
-    //         PROFILE( "CSRMatrixSpGEMMDefault::symbolicMultiply (remote)" );
-    //         symbolicMultiply( A_offd, BRemote, col_diag_start, col_diag_end, true, C_cols_diag );
-    //         symbolicMultiply( A_offd, BRemote, col_diag_start, col_diag_end, false, C_cols_offd
-    //         );
-    //     }
-    // }
+    C->globalToLocalColumns();
+    C->resetDOFManagers();
 
-    // // count non-zeros per row
-    // lidx_t total_nnz_diag = 0, total_nnz_offd = 0;
-    // for ( lidx_t row = 0; row < nRows; ++row ) {
-    //     nnz_diag[row] = static_cast<lidx_t>( C_cols_diag[row].size() );
-    //     nnz_offd[row] = static_cast<lidx_t>( C_cols_offd[row].size() );
-    //     total_nnz_diag += nnz_diag[row];
-    //     total_nnz_offd += nnz_offd[row];
-    // }
-
-    // // Give C the nnz counts so that it can allocate space internally
-    C->setNNZ( nnz_diag, nnz_offd );
-
-    // // Finally, populate structure of C and find local column indices
-    // auto C_diag                                           = C->getDiagMatrix();
-    // auto [C_rs_d, C_cols_d, C_cols_loc_d, C_coeffs_d]     = C_diag->getDataFields();
-    // auto C_offd                                           = C->getOffdMatrix();
-    // auto [C_rs_od, C_cols_od, C_cols_loc_od, C_coeffs_od] = C_offd->getDataFields();
-
-    // lidx_t rp_d = 0, rp_od = 0;
-    // for ( lidx_t row = 0; row < nRows; ++row ) {
-    //     for ( auto it = C_cols_diag[row].begin(); it != C_cols_diag[row].end(); ++it ) {
-    //         C_cols_d[rp_d] = *it;
-    //         ++rp_d;
-    //     }
-
-    //     for ( auto it = C_cols_offd[row].begin(); it != C_cols_offd[row].end(); ++it ) {
-    //         C_cols_od[rp_od] = *it;
-    //         ++rp_od;
-    //     }
-    // }
-
-    // C->globalToLocalColumns();
-    // C->resetDOFManagers();
+    // set that comms need to be refreshed
+    // assumes that user will only call multiply again if they have changed
+    // the values in A and or B
+    d_need_comms = true;
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMultiplyLocal(
-    std::shared_ptr<DiagMatrixData> A_diag,
+template<bool SYMBOLIC>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiplyLocal(
     std::shared_ptr<DiagMatrixData> B_data,
-    std::vector<typename Policy::lidx_t> &nnz )
+    std::shared_ptr<DiagMatrixData> C_data,
+    typename Policy::lidx_t *nnz )
 {
-    PROFILE( "CSRMatrixSpGEMMDefault::symbolicMultiplyLocal" );
+    PROFILE( "CSRMatrixSpGEMMDefault::multiplyLocal" );
 
     using lidx_t   = typename Policy::lidx_t;
     using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
-    // this always takes in the diagonal block of A but either block of B
-    // The output is a block of C matching the type of the given B block
+    // need both blocks from A
+    auto A_diag            = A->getDiagMatrix();
+    auto A_offd            = A->getOffdMatrix();
+    const auto A_have_offd = A->hasOffDiag();
+    const auto nRows       = static_cast<lidx_t>( A->numLocalRows() );
+
+    // all fields from blocks involved
+    lidx_t *A_rs_d = nullptr, *A_cols_loc_d = nullptr;
+    gidx_t *A_cols_d     = nullptr;
+    scalar_t *A_coeffs_d = nullptr;
+
+    lidx_t *A_rs_od = nullptr, *A_cols_loc_od = nullptr;
+    gidx_t *A_cols_od     = nullptr;
+    scalar_t *A_coeffs_od = nullptr;
+
+    lidx_t *B_rs = nullptr, *B_cols_loc = nullptr;
+    gidx_t *B_cols     = nullptr;
+    scalar_t *B_coeffs = nullptr;
+
+    lidx_t *BR_rs = nullptr, *BR_cols_loc = nullptr;
+    gidx_t *BR_cols     = nullptr;
+    scalar_t *BR_coeffs = nullptr;
+
+    lidx_t *C_rs = nullptr, *C_cols_loc = nullptr;
+    gidx_t *C_cols     = nullptr;
+    scalar_t *C_coeffs = nullptr;
+
+    // Extract available fields
+    std::tie( A_rs_d, A_cols_d, A_cols_loc_d, A_coeffs_d ) = A_diag->getDataFields();
+    std::tie( B_rs, B_cols, B_cols_loc, B_coeffs )         = B_data->getDataFields();
+    if ( A_have_offd ) {
+        AMP_DEBUG_ASSERT( BRemote != nullptr );
+        std::tie( A_rs_od, A_cols_od, A_cols_loc_od, A_coeffs_od ) = A_offd->getDataFields();
+        std::tie( BR_rs, BR_cols, BR_cols_loc, BR_coeffs )         = BRemote->getDataFields();
+    }
+    if constexpr ( !SYMBOLIC ) {
+        AMP_DEBUG_ASSERT( C_data != nullptr );
+        std::tie( C_rs, C_cols, C_cols_loc, C_coeffs ) = C_data->getDataFields();
+    }
+
+    // The output is for a block of C matching the type of the given B block
     const bool B_is_diag = B_data->isDiag();
 
     // Column range of diagonal C block is row range of B
@@ -120,26 +136,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
                            ( col < col_start || col_end <= col );
     };
 
-    // create a dense accumulator based on the shape of B
-    // rows in C are unions of rows of B, so can't be larger than
-    // B span
-    DenseAccumulator acc( B_is_diag ? B_data->numLocalColumns() : B_data->numUniqueColumns() );
-    std::printf( "Built accumulator with capacity %d\n", acc.capacity );
-
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
-
-    auto [A_rs, A_cols, A_cols_loc, A_coeffs] = A_diag->getDataFields();
-
-    // can't capture structured bindings so pull out B fields via std::tie
-    lidx_t *B_rs = nullptr, *B_cols_loc = nullptr;
-    gidx_t *B_cols     = nullptr;
-    scalar_t *B_coeffs = nullptr;
-
-    std::tie( B_rs, B_cols, B_cols_loc, B_coeffs ) = B_data->getDataFields();
-
     // may or may not have access to B global column indices
     // set up conversion function from local indices
     auto B_colmap          = B_data->getColumnMap();
+    auto B_colmap_size     = B_data->numUniqueColumns();
     const auto B_first_col = B_data->beginCol();
     const bool have_B_cols = ( B_cols != nullptr );
 
@@ -149,84 +149,380 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
                              ( B_is_diag ? B_first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]] );
     };
 
-    // for each row in A block
-    for ( lidx_t row = 0; row < nRows; ++row ) {
-
-        // get rows in B block from the A column indices
-        for ( lidx_t j = A_rs[row]; j < A_rs[row + 1]; ++j ) {
-            auto Acl = A_cols_loc[j];
-            // then row of C is union of those B row nz patterns
-            for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
-                const auto bc = B_to_global( k );
-                if ( idx_test( bc ) ) {
-                    acc.insert_or_append( B_cols_loc[k], bc );
-                }
+    // In the opposite direction, BRemote does not have local indices
+    // create similar conversion. This needs a unified column map over
+    // both B_offd and BRemote when constructing C_offd.
+    std::unordered_map<gidx_t, lidx_t> joined_b_colmap;
+    if ( A_have_offd ) {
+        for ( lidx_t loc = 0; loc < B_colmap_size; ++loc ) {
+            joined_b_colmap[B_colmap[loc]] = loc;
+        }
+        for ( lidx_t n = 0; n < BRemote->numberOfNonZeros(); ++n ) {
+            joined_b_colmap.insert(
+                std::make_pair( BR_cols[n], static_cast<lidx_t>( joined_b_colmap.size() ) ) );
+        }
+    }
+    auto BR_to_local =
+        [B_first_col, &joined_b_colmap, B_is_diag, B_colmap_size]( const gidx_t k ) -> lidx_t {
+        if ( B_is_diag ) {
+            return static_cast<lidx_t>( k - B_first_col );
+        } else {
+            // this branch is expensive, though it is only called
+            // for positions coming from A_offd * BRemote_offd
+            // which is hopefully rare relatively speaking...
+            auto it = joined_b_colmap.find( k );
+            if ( it != joined_b_colmap.end() ) {
+                return it->second;
             }
         }
-        nnz[row] = acc.num_inserted;
-        acc.clear();
+        AMP_ERROR( "CSRMatrixSpGEMMDefault::symbolicMultiplyLocal BR_to_local failed" );
+        return -1;
+    };
+
+    // create a dense accumulator based on the shape of B
+    // rows in C are unions of rows of B, so can't be larger than
+    // B span
+    const lidx_t acc_capacity = B_is_diag ? B_data->numLocalColumns() : joined_b_colmap.size();
+    DenseAccumulator acc( acc_capacity );
+
+    // for each row in A
+    if constexpr ( SYMBOLIC ) {
+        for ( lidx_t row = 0; row < nRows; ++row ) {
+            // get rows in B block from the A_diag column indices
+            for ( lidx_t j = A_rs_d[row]; j < A_rs_d[row + 1]; ++j ) {
+                const auto Acl = A_cols_loc_d[j];
+                // then row of C is union of those B row nz patterns
+                for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
+                    const auto bc = B_to_global( k );
+                    if ( idx_test( bc ) ) {
+                        acc.insert_or_append( B_cols_loc[k], bc );
+                    }
+                }
+            }
+
+            // do same for A_offd acting on BRemote if needed
+            if ( A_have_offd ) {
+                for ( lidx_t j = A_rs_od[row]; j < A_rs_od[row + 1]; ++j ) {
+                    const auto Acl = A_cols_loc_od[j];
+                    // then row of C is union of those B row nz patterns
+                    for ( lidx_t k = BR_rs[Acl]; k < BR_rs[Acl + 1]; ++k ) {
+                        const auto bc = BR_cols[k];
+                        if ( idx_test( bc ) ) {
+                            const auto loc = BR_to_local( bc );
+                            acc.insert_or_append( loc, bc );
+                        }
+                    }
+                }
+            }
+
+            // write out row length and clear accumulator
+            nnz[row] = acc.num_inserted;
+            acc.clear();
+        }
+    } else {
+        // for each row in A block
+        for ( lidx_t row = 0; row < nRows; ++row ) {
+            auto cols = &C_cols[C_rs[row]];
+            auto vals = &C_coeffs[C_rs[row]];
+            // get rows in B block from the A column indices
+            for ( lidx_t j = A_rs_d[row]; j < A_rs_d[row + 1]; ++j ) {
+                const auto Acl  = A_cols_loc_d[j];
+                const auto Aval = A_coeffs_d[j];
+                // then row of C is union of those B row nz patterns
+                for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
+                    const auto bc = B_to_global( k );
+                    if ( idx_test( bc ) ) {
+                        acc.insert_or_append( B_cols_loc[k], bc, Aval * B_coeffs[k], cols, vals );
+                    }
+                }
+            }
+
+            // do same for A_offd acting on BRemote if needed
+            if ( A_have_offd ) {
+                for ( lidx_t j = A_rs_od[row]; j < A_rs_od[row + 1]; ++j ) {
+                    const auto Acl  = A_cols_loc_od[j];
+                    const auto Aval = A_coeffs_od[j];
+                    // then row of C is union of those B row nz patterns
+                    for ( lidx_t k = BR_rs[Acl]; k < BR_rs[Acl + 1]; ++k ) {
+                        const auto bc = BR_cols[k];
+                        if ( idx_test( bc ) ) {
+                            const auto loc = BR_to_local( bc );
+                            acc.insert_or_append( loc, bc, Aval * BR_coeffs[k], cols, vals );
+                        }
+                    }
+                }
+            }
+            acc.clear();
+        }
     }
 }
 
-template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMultiply(
-    std::shared_ptr<DiagMatrixData> A_data,
-    std::shared_ptr<DiagMatrixData> B_data,
-    const typename Policy::gidx_t col_diag_start,
-    const typename Policy::gidx_t col_diag_end,
-    const bool is_diag,
-    std::vector<std::set<typename Policy::gidx_t>> &C_cols )
-{
-    PROFILE( "CSRMatrixSpGEMMDefault::symbolicMultiply (block)" );
+// template<typename Policy, class Allocator, class DiagMatrixData>
+// void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMultiplyLocal(
+//     std::shared_ptr<DiagMatrixData> B_data, std::vector<typename Policy::lidx_t> &nnz )
+// {
+//     PROFILE( "CSRMatrixSpGEMMDefault::symbolicMultiplyLocal" );
 
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
+//     using lidx_t   = typename Policy::lidx_t;
+//     using gidx_t   = typename Policy::gidx_t;
+//     using scalar_t = typename Policy::scalar_t;
 
-    auto idx_test = [col_diag_start, col_diag_end, is_diag]( const gidx_t col ) -> bool {
-        return is_diag ? ( col_diag_start <= col && col < col_diag_end ) :
-                         ( col < col_diag_start || col_diag_end <= col );
-    };
+//     // need both blocks from A
+//     auto A_diag            = A->getDiagMatrix();
+//     auto A_offd            = A->getOffdMatrix();
+//     const auto A_have_offd = A->hasOffDiag();
+//     const auto nRows       = static_cast<lidx_t>( A->numLocalRows() );
 
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
+//     // all fields from blocks involved
+//     lidx_t *A_rs_d = nullptr, *A_cols_loc_d = nullptr;
+//     gidx_t *A_cols_d     = nullptr;
+//     scalar_t *A_coeffs_d = nullptr;
 
-    auto [A_rs, A_cols, A_cols_loc, A_coeffs] = A_data->getDataFields();
+//     lidx_t *A_rs_od = nullptr, *A_cols_loc_od = nullptr;
+//     gidx_t *A_cols_od     = nullptr;
+//     scalar_t *A_coeffs_od = nullptr;
 
-    // can't capture structured bindings so pull out B fields via std::tie
-    lidx_t *B_rs = nullptr, *B_cols_loc = nullptr;
-    gidx_t *B_cols     = nullptr;
-    scalar_t *B_coeffs = nullptr;
+//     lidx_t *B_rs = nullptr, *B_cols_loc = nullptr;
+//     gidx_t *B_cols     = nullptr;
+//     scalar_t *B_coeffs = nullptr;
 
-    std::tie( B_rs, B_cols, B_cols_loc, B_coeffs ) = B_data->getDataFields();
+//     lidx_t *BR_rs = nullptr, *BR_cols_loc = nullptr;
+//     gidx_t *BR_cols     = nullptr;
+//     scalar_t *BR_coeffs = nullptr;
 
-    // may or may not have access to B global column indices
-    // set up conversion function from local indices
-    auto B_colmap          = B_data->getColumnMap();
-    const auto B_first_col = B_data->beginCol();
-    const bool have_B_cols = ( B_cols != nullptr );
+//     // Extract available fields
+//     std::tie( A_rs_d, A_cols_d, A_cols_loc_d, A_coeffs_d ) = A_diag->getDataFields();
+//     std::tie( B_rs, B_cols, B_cols_loc, B_coeffs )         = B_data->getDataFields();
+//     if ( A_have_offd ) {
+//         AMP_DEBUG_ASSERT( BRemote != nullptr );
+//         std::tie( A_rs_od, A_cols_od, A_cols_loc_od, A_coeffs_od ) = A_offd->getDataFields();
+//         std::tie( BR_rs, BR_cols, BR_cols_loc, BR_coeffs )         = BRemote->getDataFields();
+//     }
 
-    auto B_to_global = [B_cols, B_cols_loc, B_first_col, B_colmap, is_diag, have_B_cols](
-                           const lidx_t k ) -> gidx_t {
-        return have_B_cols ? B_cols[k] :
-                             ( is_diag ? B_first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]] );
-    };
+//     // The output is for a block of C matching the type of the given B block
+//     const bool B_is_diag = B_data->isDiag();
 
-    // for each row in A block
-    for ( lidx_t row = 0; row < nRows; ++row ) {
-        auto &C_row = C_cols[row];
-        // get rows in B block from the A column indices
-        for ( lidx_t j = A_rs[row]; j < A_rs[row + 1]; ++j ) {
-            auto Acl = A_cols_loc[j];
-            // then row of C is union of those B row nz patterns
-            for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
-                const auto bc = B_to_global( k );
-                if ( idx_test( bc ) ) {
-                    C_row.insert( bc );
-                }
-            }
-        }
-    }
-}
+//     // Column range of diagonal C block is row range of B
+//     const auto col_start = B_data->beginRow();
+//     const auto col_end   = B_data->endRow();
+
+//     // test if a given global ID lands in/out of column range
+//     // depending on diag vs offd status
+//     auto idx_test = [col_start, col_end, B_is_diag]( const gidx_t col ) -> bool {
+//         return B_is_diag ? ( col_start <= col && col < col_end ) :
+//                            ( col < col_start || col_end <= col );
+//     };
+
+//     // create a dense accumulator based on the shape of B
+//     // rows in C are unions of rows of B, so can't be larger than
+//     // B span
+//     DenseAccumulator acc( B_is_diag ? B_data->numLocalColumns() : B_data->numUniqueColumns() );
+
+//     // may or may not have access to B global column indices
+//     // set up conversion function from local indices
+//     auto B_colmap          = B_data->getColumnMap();
+//     auto B_colmap_size     = B_data->numUniqueColumns();
+//     const auto B_first_col = B_data->beginCol();
+//     const bool have_B_cols = ( B_cols != nullptr );
+
+//     auto B_to_global = [B_cols, B_cols_loc, B_first_col, B_colmap, B_is_diag, have_B_cols](
+//                            const lidx_t k ) -> gidx_t {
+//         return have_B_cols ? B_cols[k] :
+//                              ( B_is_diag ? B_first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]]
+//                              );
+//     };
+
+//     // In the opposite direction, BRemote does not have local indices
+//     // create similar conversion
+//     // ******** This does not work... Need single colmap for both B and BR ********
+//     auto BR_to_local =
+//         [B_first_col, B_colmap, B_colmap_size, B_is_diag]( const gidx_t k ) -> lidx_t {
+//         if ( B_is_diag ) {
+//             return static_cast<lidx_t>( k - B_first_col );
+//         } else {
+//             // this branch is expensive, though it is only called
+//             // for positions coming from A_offd * BRemote_offd
+//             // which is hopefully rare relatively speaking...
+//             for ( lidx_t loc = 0; loc < B_colmap_size; ++loc ) {
+//                 if ( B_colmap[loc] == k ) {
+//                     return loc;
+//                 }
+//             }
+//         }
+//         AMP_ERROR( "CSRMatrixSpGEMMDefault::symbolicMultiplyLocal BR_to_local failed" );
+//         return -1;
+//     };
+
+//     // for each row in A
+//     for ( lidx_t row = 0; row < nRows; ++row ) {
+//         // get rows in B block from the A_diag column indices
+//         for ( lidx_t j = A_rs_d[row]; j < A_rs_d[row + 1]; ++j ) {
+//             auto Acl = A_cols_loc_d[j];
+//             // then row of C is union of those B row nz patterns
+//             for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
+//                 const auto bc = B_to_global( k );
+//                 if ( idx_test( bc ) ) {
+//                     acc.insert_or_append( B_cols_loc[k], bc );
+//                 }
+//             }
+//         }
+
+//         // do same for A_offd acting on BRemote if needed
+//         if ( A_have_offd ) {
+//             for ( lidx_t j = A_rs_od[row]; j < A_rs_od[row + 1]; ++j ) {
+//                 auto Acl = A_cols_loc_od[j];
+//                 // then row of C is union of those B row nz patterns
+//                 for ( lidx_t k = BR_rs[Acl]; k < BR_rs[Acl + 1]; ++k ) {
+//                     const auto bc = BR_cols[k];
+//                     if ( idx_test( bc ) ) {
+//                         const auto loc = BR_to_local( bc );
+//                         acc.insert_or_append( loc, bc );
+//                     }
+//                 }
+//             }
+//         }
+
+//         // write out row length and clear accumulator
+//         nnz[row] = acc.num_inserted;
+//         acc.clear();
+//     }
+// }
+
+// template<typename Policy, class Allocator, class DiagMatrixData>
+// void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMultiplyLocal(
+//     std::shared_ptr<DiagMatrixData> B_data, std::shared_ptr<DiagMatrixData> C_data )
+// {
+//     PROFILE( "CSRMatrixSpGEMMDefault::numericMultiplyLocal" );
+
+//     using lidx_t   = typename Policy::lidx_t;
+//     using gidx_t   = typename Policy::gidx_t;
+//     using scalar_t = typename Policy::scalar_t;
+
+//     // need both blocks from A
+//     auto A_diag            = A->getDiagMatrix();
+//     auto A_offd            = A->getOffdMatrix();
+//     const auto A_have_offd = A->hasOffDiag();
+//     const auto nRows       = static_cast<lidx_t>( A->numLocalRows() );
+
+//     // all fields from blocks involved
+//     lidx_t *A_rs_d = nullptr, *A_cols_loc_d = nullptr;
+//     gidx_t *A_cols_d     = nullptr;
+//     scalar_t *A_coeffs_d = nullptr;
+
+//     lidx_t *A_rs_od = nullptr, *A_cols_loc_od = nullptr;
+//     gidx_t *A_cols_od     = nullptr;
+//     scalar_t *A_coeffs_od = nullptr;
+
+//     lidx_t *B_rs = nullptr, *B_cols_loc = nullptr;
+//     gidx_t *B_cols     = nullptr;
+//     scalar_t *B_coeffs = nullptr;
+
+//     lidx_t *BR_rs = nullptr, *BR_cols_loc = nullptr;
+//     gidx_t *BR_cols     = nullptr;
+//     scalar_t *BR_coeffs = nullptr;
+
+//     lidx_t *C_rs = nullptr, *C_cols_loc = nullptr;
+//     gidx_t *C_cols     = nullptr;
+//     scalar_t *C_coeffs = nullptr;
+
+//     // Extract available fields
+//     std::tie( A_rs_d, A_cols_d, A_cols_loc_d, A_coeffs_d ) = A_diag->getDataFields();
+//     std::tie( B_rs, B_cols, B_cols_loc, B_coeffs )         = B_data->getDataFields();
+//     std::tie( C_rs, C_cols, C_cols_loc, C_coeffs )         = C_data->getDataFields();
+//     if ( A_have_offd ) {
+//         AMP_DEBUG_ASSERT( BRemote != nullptr );
+//         std::tie( A_rs_od, A_cols_od, A_cols_loc_od, A_coeffs_od ) = A_offd->getDataFields();
+//         std::tie( BR_rs, BR_cols, BR_cols_loc, BR_coeffs )         = BRemote->getDataFields();
+//     }
+
+//     // The output is for a block of C matching the type of the given B block
+//     const bool B_is_diag = B_data->isDiag();
+
+//     // Column range of diagonal C block is row range of B
+//     const auto col_start = B_data->beginRow();
+//     const auto col_end   = B_data->endRow();
+
+//     // test if a given global ID lands in/out of column range
+//     // depending on diag vs offd status
+//     auto idx_test = [col_start, col_end, B_is_diag]( const gidx_t col ) -> bool {
+//         return B_is_diag ? ( col_start <= col && col < col_end ) :
+//                            ( col < col_start || col_end <= col );
+//     };
+
+//     // create a dense accumulator based on the shape of B
+//     // rows in C are unions of rows of B, so can't be larger than
+//     // B span
+//     DenseAccumulator acc( B_is_diag ? B_data->numLocalColumns() : B_data->numUniqueColumns() );
+
+//     // may or may not have access to B global column indices
+//     // set up conversion function from local indices
+//     auto B_colmap          = B_data->getColumnMap();
+//     auto B_colmap_size     = B_data->numUniqueColumns();
+//     const auto B_first_col = B_data->beginCol();
+//     const bool have_B_cols = ( B_cols != nullptr );
+
+//     auto B_to_global = [B_cols, B_cols_loc, B_first_col, B_colmap, B_is_diag, have_B_cols](
+//                            const lidx_t k ) -> gidx_t {
+//         return have_B_cols ? B_cols[k] :
+//                              ( B_is_diag ? B_first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]]
+//                              );
+//     };
+
+//     // In the opposite direction, BRemote does not have local indices
+//     // create similar conversion
+//     auto BR_to_local =
+//         [B_first_col, B_colmap, B_colmap_size, B_is_diag]( const gidx_t k ) -> lidx_t {
+//         if ( B_is_diag ) {
+//             return static_cast<lidx_t>( k - B_first_col );
+//         } else {
+//             // this branch is expensive, though it is only called
+//             // for positions coming from A_offd * BRemote_offd
+//             // which is hopefully rare relatively speaking...
+//             for ( lidx_t loc = 0; loc < B_colmap_size; ++loc ) {
+//                 if ( B_colmap[loc] == k ) {
+//                     return loc;
+//                 }
+//             }
+//         }
+//         AMP_ERROR( "CSRMatrixSpGEMMDefault::symbolicMultiplyLocal BR_to_local failed" );
+//         return -1;
+//     };
+
+//     // for each row in A block
+//     for ( lidx_t row = 0; row < nRows; ++row ) {
+//         auto cols = &C_cols[C_rs[row]];
+//         auto vals = &C_coeffs[C_rs[row]];
+//         // get rows in B block from the A column indices
+//         for ( lidx_t j = A_rs_d[row]; j < A_rs_d[row + 1]; ++j ) {
+//             const auto Acl  = A_cols_loc_d[j];
+//             const auto Aval = A_coeffs_d[j];
+//             // then row of C is union of those B row nz patterns
+//             for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
+//                 const auto bc = B_to_global( k );
+//                 if ( idx_test( bc ) ) {
+//                     acc.insert_or_append( B_cols_loc[k], bc, Aval * B_coeffs[k], cols, vals );
+//                 }
+//             }
+//         }
+
+//         // do same for A_offd acting on BRemote if needed
+//         if ( A_have_offd ) {
+//             for ( lidx_t j = A_rs_od[row]; j < A_rs_od[row + 1]; ++j ) {
+//                 auto Acl        = A_cols_loc_od[j];
+//                 const auto Aval = A_coeffs_od[j];
+//                 // then row of C is union of those B row nz patterns
+//                 for ( lidx_t k = BR_rs[Acl]; k < BR_rs[Acl + 1]; ++k ) {
+//                     const auto bc = BR_cols[k];
+//                     if ( idx_test( bc ) ) {
+//                         const auto loc = BR_to_local( bc );
+//                         acc.insert_or_append( loc, bc, Aval * B_coeffs[k], cols, vals );
+//                     }
+//                 }
+//             }
+//         }
+//         acc.clear();
+//     }
+// }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::setupBRemoteComm()
@@ -349,210 +645,4 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::endBRemote
     // set flag that recv'd matrices are valid
     d_need_comms = false;
 }
-
-template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMultiply()
-{
-    PROFILE( "CSRMatrixSpGEMMDefault::numericMultiply" );
-
-    // start communication to build BRemote before doing anything
-    if ( A->hasOffDiag() && d_need_comms ) {
-        startBRemoteComm();
-    }
-
-    auto A_diag = A->getDiagMatrix();
-    auto A_offd = A->getOffdMatrix();
-    auto B_diag = B->getDiagMatrix();
-    auto B_offd = B->getOffdMatrix();
-    auto C_diag = C->getDiagMatrix();
-    auto C_offd = C->getOffdMatrix();
-
-    // Process diagonal block of A acting on whole local part of B
-    numericMultiplyLocal( A_diag, B_diag, C_diag );
-    if ( B->hasOffDiag() ) {
-        numericMultiplyLocal( A_diag, B_offd, C_offd );
-    }
-
-    // off-diagonal block requires fetching non-local rows of B
-    // if ( A->hasOffDiag() ) {
-    //     if ( d_need_comms ) {
-    //         // finalize communication if it was needed
-    //         endBRemoteComm();
-    //     }
-    //     {
-    //         // dedicated block for profiling
-    //         PROFILE( "CSRMatrixSpGEMMDefault::numericMultiply (remote)" );
-    //         numericMultiply( A_offd, BRemote, C_diag );
-    //         numericMultiply( A_offd, BRemote, C_offd );
-    //     }
-    // }
-
-    C->globalToLocalColumns();
-    C->resetDOFManagers();
-
-    // set that comms need to be refreshed
-    // assumes that user will only call multiply again if they have changed
-    // the values in A and or B
-    d_need_comms = true;
-}
-
-template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMultiplyLocal(
-    std::shared_ptr<DiagMatrixData> A_diag,
-    std::shared_ptr<DiagMatrixData> B_data,
-    std::shared_ptr<DiagMatrixData> C_data )
-{
-    PROFILE( "CSRMatrixSpGEMMDefault::numericMultiplyLocal" );
-
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
-    // this always takes in the diagonal block of A but either block of B
-    // The output is a block of C matching the type of the given B block
-    const bool B_is_diag = B_data->isDiag();
-
-    // Column range of diagonal C block is row range of B
-    const auto col_start = B_data->beginRow();
-    const auto col_end   = B_data->endRow();
-
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
-
-    auto [A_rs, A_cols, A_cols_loc, A_coeffs] = A_diag->getDataFields();
-
-    // can't capture structured bindings so pull out B fields via std::tie
-    lidx_t *B_rs = nullptr, *B_cols_loc = nullptr, *C_rs = nullptr, *C_cols_loc = nullptr;
-    gidx_t *B_cols = nullptr, *C_cols = nullptr;
-    scalar_t *B_coeffs = nullptr, *C_coeffs = nullptr;
-    std::tie( B_rs, B_cols, B_cols_loc, B_coeffs ) = B_data->getDataFields();
-    std::tie( C_rs, C_cols, C_cols_loc, C_coeffs ) = C_data->getDataFields();
-
-    // test if a given global ID lands in/out of column range
-    // depending on diag vs offd status
-    auto idx_test = [col_start, col_end, B_is_diag]( const gidx_t col ) -> bool {
-        return B_is_diag ? ( col_start <= col && col < col_end ) :
-                           ( col < col_start || col_end <= col );
-    };
-
-    // create a dense accumulator based on the shape of B
-    // rows in C are unions of rows of B, so can't be larger than
-    // B span
-    DenseAccumulator acc( B_is_diag ? B_data->numLocalColumns() : B_data->numUniqueColumns() );
-
-    // may or may not have access to B global column indices
-    // set up conversion function from local indices
-    auto B_colmap          = B_data->getColumnMap();
-    const auto B_first_col = B_data->beginCol();
-    const bool have_B_cols = ( B_cols != nullptr );
-
-    auto B_to_global = [B_cols, B_cols_loc, B_first_col, B_colmap, B_is_diag, have_B_cols](
-                           const lidx_t k ) -> gidx_t {
-        return have_B_cols ? B_cols[k] :
-                             ( B_is_diag ? B_first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]] );
-    };
-
-    // for each row in A block
-    for ( lidx_t row = 0; row < nRows; ++row ) {
-        auto cols = &C_cols[C_rs[row]];
-        auto vals = &C_coeffs[C_rs[row]];
-        // get rows in B block from the A column indices
-        for ( lidx_t j = A_rs[row]; j < A_rs[row + 1]; ++j ) {
-            const auto Acl  = A_cols_loc[j];
-            const auto Aval = A_coeffs[j];
-            // then row of C is union of those B row nz patterns
-            for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
-                const auto bc = B_to_global( k );
-                if ( idx_test( bc ) ) {
-                    acc.insert_or_append( B_cols_loc[k], bc, Aval * B_coeffs[k], cols, vals );
-                }
-            }
-        }
-        acc.clear();
-    }
-}
-
-template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMultiply(
-    std::shared_ptr<DiagMatrixData> A_data,
-    std::shared_ptr<DiagMatrixData> B_data,
-    std::shared_ptr<DiagMatrixData> C_data )
-{
-    PROFILE( "CSRMatrixSpGEMMDefault::numericMultiply (block)" );
-
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
-    const bool is_diag          = C_data->isDiag();
-    const gidx_t col_diag_start = C_data->beginCol();
-    const gidx_t col_diag_end   = C_data->endCol();
-
-    auto idx_test = [col_diag_start, col_diag_end, is_diag]( const gidx_t col ) -> bool {
-        return is_diag ? ( col_diag_start <= col && col < col_diag_end ) :
-                         ( col < col_diag_start || col_diag_end <= col );
-    };
-
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
-
-    auto [A_rs, A_cols, A_cols_loc, A_coeffs] = A_data->getDataFields();
-
-    // can't capture structured bindings so pull out B fields via std::tie
-    lidx_t *B_rs = nullptr, *B_cols_loc = nullptr;
-    gidx_t *B_cols     = nullptr;
-    scalar_t *B_coeffs = nullptr;
-
-    std::tie( B_rs, B_cols, B_cols_loc, B_coeffs ) = B_data->getDataFields();
-
-    // same for C fields
-    lidx_t *C_rs = nullptr, *C_cols_loc = nullptr;
-    gidx_t *C_cols     = nullptr;
-    scalar_t *C_coeffs = nullptr;
-
-    std::tie( C_rs, C_cols, C_cols_loc, C_coeffs ) = C_data->getDataFields();
-
-    // may or may not have access to B global column indices
-    // set up conversion function from local indices
-    auto B_colmap          = B_data->getColumnMap();
-    const auto B_first_col = B_data->beginCol();
-    const bool have_B_cols = ( B_cols != nullptr );
-
-    auto B_to_global = [B_cols, B_cols_loc, B_first_col, B_colmap, is_diag, have_B_cols](
-                           const lidx_t k ) -> gidx_t {
-        return have_B_cols ? B_cols[k] :
-                             ( is_diag ? B_first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]] );
-    };
-
-    // and similar for C, except never have access to global cols
-    auto C_colmap          = C_data->getColumnMap();
-    const auto C_first_col = C_data->beginCol();
-
-    auto C_to_global = [C_cols_loc, C_first_col, C_colmap, is_diag]( const lidx_t k ) -> gidx_t {
-        return is_diag ? C_first_col + C_cols_loc[k] : C_colmap[C_cols_loc[k]];
-    };
-
-    // for each row in A block
-    std::map<gidx_t, scalar_t> C_colval;
-    for ( lidx_t row = 0; row < nRows; ++row ) {
-        C_colval.clear();
-        for ( lidx_t j = A_rs[row]; j < A_rs[row + 1]; ++j ) {
-            const auto Acl = A_cols_loc[j];
-            const auto Av  = A_coeffs[j];
-            for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
-                const auto Bc = B_to_global( k );
-                if ( idx_test( Bc ) ) {
-                    const auto val = Av * B_coeffs[k];
-                    auto in        = C_colval.insert( { Bc, val } );
-                    if ( !in.second ) {
-                        C_colval[Bc] += val;
-                    }
-                }
-            }
-        }
-        // Unpack col<->val maps into coeffs of C
-        for ( lidx_t c = C_rs[row]; c < C_rs[row + 1]; ++c ) {
-            C_coeffs[c] += C_colval[C_to_global( c )];
-        }
-    }
-}
-
 } // namespace AMP::LinearAlgebra
