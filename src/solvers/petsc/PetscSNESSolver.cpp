@@ -509,18 +509,15 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
     auto sp_r = PETSC::getAMP( r );
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> sp_f;
-    if ( sp_f )
-        sp_f->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
     if ( sp_x )
         sp_x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    sp_r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     auto *pSNESSolver = reinterpret_cast<PetscSNESSolver *>( ctx );
     std::shared_ptr<AMP::Operator::Operator> op( pSNESSolver->getOperator() );
 
     op->residual( sp_f, sp_x, sp_r );
     sp_r->scale( -1.0 );
-    sp_r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     return ( ierr );
 }
@@ -546,10 +543,9 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     AMP_ASSERT( spSol );
 
     // Check input vector states
-    using UpdateState = AMP::LinearAlgebra::UpdateState;
-    AMP_ASSERT( ( f->getUpdateStatus() == UpdateState::UNCHANGED ) ||
-                ( f->getUpdateStatus() == UpdateState::LOCAL_CHANGED ) );
-    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    if ( u->getUpdateStatus() != AMP::LinearAlgebra::UpdateState::UNCHANGED ) {
+        u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    }
 
     if ( d_iDebugPrintInfoLevel > 2 )
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << u->L2Norm()
