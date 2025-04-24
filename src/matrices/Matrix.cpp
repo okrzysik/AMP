@@ -98,7 +98,6 @@ void Matrix::mult( AMP::LinearAlgebra::Vector::const_shared_ptr in,
 {
     AMP_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     d_matrixOps->mult( in, *getMatrixData(), out );
-    out->makeConsistent();
 }
 
 void Matrix::multTranspose( AMP::LinearAlgebra::Vector::const_shared_ptr in,
