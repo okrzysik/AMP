@@ -16,7 +16,7 @@ public:
     GhostDataHelper( std::shared_ptr<CommunicationList> );
 
 public: // Functions overloaded from VectorData
-    bool hasGhosts() const override { return ( d_Ghosts != nullptr ); }
+    bool hasGhosts() const override { return ( d_Ghosts.empty() ); }
     std::shared_ptr<CommunicationList> getCommunicationList() const override;
     void setCommunicationList( std::shared_ptr<CommunicationList> comm ) override;
     void aliasGhostBuffer( std::shared_ptr<VectorData> in ) override;
@@ -50,10 +50,10 @@ public: // Write/read restart data
     GhostDataHelper( int64_t fid, AMP::IO::RestartManager *manager );
 
 protected:
-    std::shared_ptr<CommunicationList> d_CommList    = nullptr;
-    std::shared_ptr<UpdateState> d_UpdateState       = nullptr;
-    std::shared_ptr<std::vector<double>> d_Ghosts    = nullptr;
-    std::shared_ptr<std::vector<double>> d_AddBuffer = nullptr;
+    std::shared_ptr<CommunicationList> d_CommList = nullptr;
+    std::shared_ptr<UpdateState> d_UpdateState    = nullptr;
+    std::vector<TYPE> d_Ghosts;
+    std::vector<TYPE> d_AddBuffer;
 };
 
 
