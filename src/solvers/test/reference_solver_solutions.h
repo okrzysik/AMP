@@ -33,7 +33,7 @@ std::map<std::string, std::tuple<int, double, double, bool>> conv_map{
     { "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB",
       std::make_tuple( 18, 3.686753e-09, 1.0e-09, true ) },
     { "input_testLinearSolvers-LinearThermalRobin-TFQMR",
-      std::make_tuple( 19, 5.57805369274078e-09, 5.0e-09, true ) },
+      std::make_tuple( 20, 1.0055226920754e-09, 5.0e-09, true ) },
     { "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES",
       std::make_tuple( 25, 6.62678786883557e-12, 6.0e-12, true ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML",
