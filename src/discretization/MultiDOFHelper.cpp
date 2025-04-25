@@ -8,8 +8,20 @@ namespace AMP::Discretization {
 
 
 /****************************************************************
- * Constructor                                                   *
+ * Constructors                                                  *
  ****************************************************************/
+multiDOFHelper::multiDOFHelper( const DOFManager &manager )
+{
+    PROFILE( "multiDOFHelper" );
+    auto comm = manager.getComm();
+    initialize( comm.getRank(), comm.allGather<size_t>( manager.numLocalDOF() ) );
+}
+multiDOFHelper::multiDOFHelper( const AMP::LinearAlgebra::VectorData &data )
+{
+    PROFILE( "multiDOFHelper" );
+    auto comm = data.getComm();
+    initialize( comm.getRank(), comm.allGather<size_t>( data.getLocalSize() ) );
+}
 multiDOFHelper::multiDOFHelper( const std::vector<std::shared_ptr<DOFManager>> &managers,
                                 const AMP::AMP_MPI &comm )
 {
@@ -117,6 +129,25 @@ void multiDOFHelper::initialize( const AMP::AMP_MPI &comm, const AMP::Array<size
         for ( size_t j = 0; j < d_localSize.size( 1 ); j++ )
             d_globalSize[i] += d_localSize( d_index[i], j );
     }
+}
+void multiDOFHelper::initialize( int rank, std::vector<size_t> &&data )
+{
+    d_rank  = rank;
+    d_index = { 0 };
+    d_local = std::move( data );
+    d_begin.resize( d_local.size(), 0 );
+    d_localSize.resize( 1, d_local.size() );
+    d_localOffset.resize( 1, d_local.size() );
+    d_globalOffset.resize( 1, d_local.size() );
+    d_localSize( 0 ) = d_local[0];
+    d_localOffset.fill( 0 );
+    for ( size_t i = 1; i < d_local.size(); i++ ) {
+        d_begin[i]         = d_begin[i - 1] + d_local[i - 1];
+        d_localSize( i )   = d_local[i];
+        d_localOffset( i ) = d_begin[i];
+    }
+    d_globalOffset = d_localOffset.view();
+    d_globalSize   = { d_localSize.sum() };
 }
 multiDOFHelper::multiDOFHelper( const multiDOFHelper &rhs )
     : d_rank( rhs.d_rank ),

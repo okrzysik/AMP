@@ -83,7 +83,7 @@ int testByMesh( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
     auto mesh = vec->getDOFManager()->getMesh();
     if ( !mesh )
         return 0;
-    int N_it  = 50;
+    int N_it  = 100;
     auto name = vec->getName();
     auto t1   = AMP::Utilities::time();
     for ( int i = 0; i < N_it; i++ ) {

@@ -20,6 +20,19 @@ multiDOFManager::multiDOFManager( const AMP_MPI &globalComm,
     AMP_ASSERT( !d_comm.isNull() );
     reset( managers, mesh );
 }
+multiDOFManager::multiDOFManager( std::shared_ptr<DOFManager> dof ) : DOFManager()
+{
+    AMP_ASSERT( dof );
+    d_comm       = dof->getComm();
+    d_managers   = { dof };
+    d_mesh       = dof->getMesh();
+    d_dofMap     = multiDOFHelper( *dof );
+    d_begin      = dof->beginDOF();
+    d_end        = dof->endDOF();
+    d_global     = dof->numGlobalDOF();
+    d_localSize  = { d_end - d_begin };
+    d_globalSize = { d_global };
+}
 
 void multiDOFManager::reset( std::vector<std::shared_ptr<DOFManager>> managers,
                              std::shared_ptr<const AMP::Mesh::Mesh> mesh )

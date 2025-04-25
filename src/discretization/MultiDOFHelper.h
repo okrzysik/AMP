@@ -22,6 +22,12 @@ class multiDOFHelper final
 {
 public:
     // Constructor
+    multiDOFHelper( const DOFManager &manager );
+
+    // Constructor
+    multiDOFHelper( const AMP::LinearAlgebra::VectorData &data );
+
+    // Constructor
     multiDOFHelper( const std::vector<std::shared_ptr<DOFManager>> &managers,
                     const AMP::AMP_MPI &comm );
 
@@ -69,6 +75,7 @@ public: // HDF5 interfaces
     multiDOFHelper( size_t );
 
 private:
+    void initialize( int rank, std::vector<size_t> &&data );
     void initialize( const AMP::AMP_MPI &comm, const AMP::Array<size_t> &data );
 
 private:

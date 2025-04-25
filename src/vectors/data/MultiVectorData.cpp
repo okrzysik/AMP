@@ -16,6 +16,19 @@
 
 namespace AMP::LinearAlgebra {
 
+
+/****************************************************************
+ * Constructors / reset                                          *
+ ****************************************************************/
+MultiVectorData::MultiVectorData( VectorData *data )
+{
+    d_comm       = data->getComm();
+    d_data       = { data };
+    d_dofMap     = AMP::Discretization::multiDOFHelper( *data );
+    d_localSize  = d_dofMap.numLocal();
+    d_globalSize = d_dofMap.numGlobal();
+    d_localStart = d_dofMap.begin();
+}
 void MultiVectorData::resetMultiVectorData( const AMP::Discretization::DOFManager *manager,
                                             const std::vector<VectorData *> &data )
 {
@@ -23,9 +36,7 @@ void MultiVectorData::resetMultiVectorData( const AMP::Discretization::DOFManage
     AMP_ASSERT( manager );
     auto multiDOFManager = dynamic_cast<const AMP::Discretization::multiDOFManager *>( manager );
     AMP_ASSERT( multiDOFManager );
-    d_dofMap = multiDOFManager->getMap();
-
-    // Initialize local/global size
+    d_dofMap     = multiDOFManager->getMap();
     d_localSize  = d_dofMap.numLocal();
     d_globalSize = d_dofMap.numGlobal();
     d_localStart = d_dofMap.begin();

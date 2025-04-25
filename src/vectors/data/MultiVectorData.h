@@ -132,6 +132,8 @@ public:
 
     explicit MultiVectorData( const AMP::AMP_MPI &comm ) : d_comm( comm ) {}
 
+    explicit MultiVectorData( VectorData *data );
+
     void resetMultiVectorData( const AMP::Discretization::DOFManager *manager,
                                const std::vector<VectorData *> &data );
 
@@ -207,7 +209,6 @@ protected:
     std::vector<VectorData *> d_data;
     AMP::Discretization::multiDOFHelper d_dofMap;
     std::shared_ptr<UpdateState> d_UpdateState;
-    std::shared_ptr<CommunicationList> d_commList;
 };
 
 
