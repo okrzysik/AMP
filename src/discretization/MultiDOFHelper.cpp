@@ -18,7 +18,13 @@ multiDOFHelper::multiDOFHelper( const std::vector<std::shared_ptr<DOFManager>> &
     d_N_local = 0;
     for ( auto &DOF : managers )
         d_N_local += DOF->numLocalDOF();
-    d_begin            = comm.sumScan( d_N_local ) - d_N_local;
+    d_local = comm.allGather( d_N_local );
+    d_begin = 0;
+    for ( int i = 0; i < comm.getRank(); i++ )
+        d_begin += d_local[i];
+    d_N_global = 0;
+    for ( int i = 0; i < comm.getSize(); i++ )
+        d_N_global += d_local[i];
     size_t globalBegin = d_begin;
     for ( size_t i = 0; i < managers.size(); i++ ) {
         size_t begin = managers[i]->beginDOF();
@@ -27,8 +33,7 @@ multiDOFHelper::multiDOFHelper( const std::vector<std::shared_ptr<DOFManager>> &
         d_dofMap[i]  = DOFMapStruct( begin, end, globalBegin, d_ids[i] );
         globalBegin += managers[i]->numLocalDOF();
     }
-    d_N_global = comm.sumReduce( d_N_local );
-    d_dofMap   = comm.allGather( d_dofMap );
+    d_dofMap = comm.allGather( d_dofMap );
 }
 multiDOFHelper::multiDOFHelper( const std::vector<AMP::LinearAlgebra::VectorData *> &data,
                                 const AMP::AMP_MPI &comm )
@@ -39,7 +44,12 @@ multiDOFHelper::multiDOFHelper( const std::vector<AMP::LinearAlgebra::VectorData
     d_N_local = 0;
     for ( auto &vec : data )
         d_N_local += vec->getLocalSize();
-    d_begin            = comm.sumScan( d_N_local ) - d_N_local;
+    d_local = comm.allGather( d_N_local );
+    for ( int i = 0; i < comm.getRank(); i++ )
+        d_begin += d_local[i];
+    d_N_global = 0;
+    for ( int i = 0; i < comm.getSize(); i++ )
+        d_N_global += d_local[i];
     size_t globalBegin = d_begin;
     for ( size_t i = 0; i < data.size(); i++ ) {
         size_t begin = data[i]->getLocalStartID();
@@ -48,8 +58,7 @@ multiDOFHelper::multiDOFHelper( const std::vector<AMP::LinearAlgebra::VectorData
         d_dofMap[i]  = DOFMapStruct( begin, end, globalBegin, d_ids[i] );
         globalBegin += data[i]->getLocalSize();
     }
-    d_N_global = comm.sumReduce( d_N_local );
-    d_dofMap   = comm.allGather( d_dofMap );
+    d_dofMap = comm.allGather( d_dofMap );
 }
 
 

@@ -51,6 +51,9 @@ public:
     // Get one past the last local dof
     inline size_t end() const { return d_begin + d_N_local; }
 
+    // Return the local size for each rank
+    inline auto &getLocalSize() const { return d_local; }
+
 
 public: // Default constructors
     multiDOFHelper()                                    = default;
@@ -109,6 +112,7 @@ private:
     size_t d_N_global = 0;
     size_t d_begin    = 0;
     std::vector<size_t> d_ids;
+    std::vector<size_t> d_local;
     std::vector<DOFMapStruct> d_dofMap;
 };
 

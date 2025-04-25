@@ -1,3 +1,4 @@
+#include "AMP/vectors/CommunicationList.h"
 #include "AMP/IO/RestartManager.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorIndexer.h"

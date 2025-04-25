@@ -5,6 +5,7 @@
 #include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/CommunicationList.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
 
