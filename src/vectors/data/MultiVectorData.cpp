@@ -29,9 +29,6 @@ void MultiVectorData::resetMultiVectorData( const AMP::Discretization::DOFManage
     d_localSize  = d_dofMap.numLocal();
     d_globalSize = d_dofMap.numGlobal();
     d_localStart = d_dofMap.begin();
-
-    // Build communication list (would like to remove eventually)
-    d_commList = buildCommunicationList();
 }
 
 
@@ -412,11 +409,6 @@ void MultiVectorData::setCommunicationList( std::shared_ptr<AMP::LinearAlgebra::
 }
 std::shared_ptr<AMP::LinearAlgebra::CommunicationList> MultiVectorData::getCommunicationList() const
 {
-    return d_commList;
-}
-std::shared_ptr<AMP::LinearAlgebra::CommunicationList>
-MultiVectorData::buildCommunicationList() const
-{
     // Get the remote dofs
     std::vector<size_t> remoteDofs;
     for ( size_t i = 0; i < d_data.size(); i++ ) {
@@ -430,11 +422,7 @@ MultiVectorData::buildCommunicationList() const
     }
     AMP::Utilities::quicksort( remoteDofs );
     // Create the communication list
-    auto params           = std::make_shared<CommunicationListParameters>();
-    params->d_comm        = d_comm;
-    params->d_localsize   = getLocalSize();
-    params->d_remote_DOFs = remoteDofs;
-    return std::make_shared<CommunicationList>( params );
+    return std::make_shared<CommunicationList>( d_comm, d_dofMap.getLocalSize(), remoteDofs );
 }
 
 

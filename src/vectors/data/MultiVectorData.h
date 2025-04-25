@@ -200,8 +200,6 @@ protected:
                                std::vector<std::vector<std::byte>> &out_vals,
                                std::vector<std::vector<int>> *remap = nullptr ) const;
 
-private:
-    std::shared_ptr<CommunicationList> buildCommunicationList() const;
 
 protected:
     // Internal data
