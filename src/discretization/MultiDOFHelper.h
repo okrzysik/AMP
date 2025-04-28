@@ -68,7 +68,7 @@ public: // Default constructors
     multiDOFHelper( const multiDOFHelper & );
 
     multiDOFHelper &operator=( multiDOFHelper && ) = default;
-    multiDOFHelper &operator=( const multiDOFHelper & );
+    multiDOFHelper &operator                       =( const multiDOFHelper                        &);
 
 public: // HDF5 interfaces
     void writeHDF5( size_t ) const;
