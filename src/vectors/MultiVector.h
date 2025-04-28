@@ -209,9 +209,9 @@ public: // private constructor/destructors
 
 
 public: // default constructor/destructors
-    MultiVector( MultiVector && )                 = default;
-    MultiVector( const MultiVector & )            = delete;
-    MultiVector &operator=( MultiVector && )      = default;
+    MultiVector( MultiVector && )      = default;
+    MultiVector( const MultiVector & ) = delete;
+    MultiVector &operator=( MultiVector && ) = default;
     MultiVector &operator=( const MultiVector & ) = delete;
     virtual ~MultiVector();
 

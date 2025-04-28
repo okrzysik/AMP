@@ -121,9 +121,9 @@ public:
 
 public: // Default constructors
     MultiVariable() : Variable() {}
-    MultiVariable( MultiVariable && )                 = default;
-    MultiVariable( const MultiVariable & )            = default;
-    MultiVariable &operator=( MultiVariable && )      = default;
+    MultiVariable( MultiVariable && )      = default;
+    MultiVariable( const MultiVariable & ) = default;
+    MultiVariable &operator=( MultiVariable && ) = default;
     MultiVariable &operator=( const MultiVariable & ) = default;
     virtual ~MultiVariable()                          = default;
 
