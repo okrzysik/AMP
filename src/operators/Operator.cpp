@@ -138,7 +138,8 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     // Subset for mesh (if set)
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        vec = vec->select( meshSelector, vec->getName() );
+        // vec = vec->select( meshSelector, vec->getName() );
+        vec = vec->select( meshSelector );
     }
     // Subset for variable (if set)
     auto var = getOutputVariable();
@@ -155,7 +156,8 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     // Subset for mesh (if set)
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        vec = vec->select( meshSelector, vec->getName() );
+        // vec = vec->select( meshSelector, vec->getName() );
+        vec = vec->select( meshSelector );
     }
     // Subset for variable (if set)
     auto var = getInputVariable();

@@ -147,34 +147,18 @@ public:
      */
     const std::vector<int> &getSendSizes() const;
 
+    //! Get the receive displacements
+    const std::vector<int> &getReceiveDisp() const;
+
+    //! Get the send displacements
+    const std::vector<int> &getSendDisp() const;
+
     /**
      * \brief Retrieve the partition of DOFs
      * \return A vector size of comm.getSize() containing the endDOF
      *        (getStartGID()+numLocalRows()) for each rank
      */
     const std::vector<size_t> &getPartition() const;
-
-    /**
-     * \brief Scatter data stored here to processors that share the data.
-     * \param[in,out] vec  Data to set
-     * \details  The convention is if data are set on different processes, then
-     *     the owner of the data has the correct value.  As such, in a scatter_set,
-     *     the owner of data scatters the data out which overwrites the data on cores
-     *     that share the data
-     *     This is a blocking call and must be called from all ranks.
-     */
-    void scatter_set( VectorData &vec ) const;
-
-    /**
-     * \brief Scatter data shared here to processors that own the data.
-     * \param[in,out] vec  Data to add
-     * \details  When adding data to a vector, any process that shares the data
-     *     can contribute to the value of the data.  Therefore, this will scatter data
-     *     that is shared to the core that owns it.  A call to scatter_add is generally
-     *     followed by a call to scatter_set to ensure parallel consistency.
-     *     This is a blocking call and must be called from all ranks.
-     */
-    void scatter_add( VectorData &vec ) const;
 
     /**
      * \brief  Return the first d.o.f. on this core

@@ -50,6 +50,10 @@ public: // Write/read restart data
     GhostDataHelper( int64_t fid, AMP::IO::RestartManager *manager );
 
 protected:
+    void scatter_set();
+    void scatter_add();
+
+protected:
     std::shared_ptr<CommunicationList> d_CommList = nullptr;
     std::shared_ptr<UpdateState> d_UpdateState    = nullptr;
     std::vector<TYPE> d_Ghosts;

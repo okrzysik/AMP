@@ -174,44 +174,6 @@ void CommunicationList::initialize() const
 }
 
 
-/************************************************************************
- * set/recv data                                                         *
- ************************************************************************/
-void CommunicationList::scatter_set( VectorData &vec ) const
-{
-    if ( !d_initialized )
-        initialize();
-    if ( d_SendSizes.empty() && d_ReceiveSizes.empty() )
-        return;
-    // Pack the set buffers
-    std::vector<double> send( getVectorSendBufferSize() );
-    if ( !send.empty() )
-        vec.getLocalValuesByGlobalID( send.size(), d_SendDOFList.data(), send.data() );
-    // Communicate
-    auto recv = d_comm.allToAll( send, d_SendSizes, d_SendDisp, d_ReceiveSizes, d_ReceiveDisp );
-    // Unpack the set buffers
-    if ( !recv.empty() )
-        vec.setGhostValuesByGlobalID( recv.size(), d_ReceiveDOFList.data(), recv.data() );
-}
-void CommunicationList::scatter_add( VectorData &vec ) const
-{
-    if ( !d_initialized )
-        initialize();
-    if ( d_SendSizes.empty() && d_ReceiveSizes.empty() )
-        return;
-    // Pack the add buffers
-    std::vector<double> send( getVectorReceiveBufferSize() );
-    if ( !send.empty() )
-        vec.getGhostAddValuesByGlobalID( send.size(), d_ReceiveDOFList.data(), send.data() );
-    // Communicate
-    auto recv =
-        d_comm.allToAll<double>( send, d_ReceiveSizes, d_ReceiveDisp, d_SendSizes, d_SendDisp );
-    // Unpack the add buffers
-    if ( !recv.empty() )
-        vec.addLocalValuesByGlobalID( recv.size(), d_SendDOFList.data(), recv.data() );
-}
-
-
 /****************************************************************
  * Get an id                                                     *
  ****************************************************************/
@@ -270,6 +232,18 @@ const std::vector<int> &CommunicationList::getSendSizes() const
     if ( !d_initialized )
         initialize();
     return d_SendSizes;
+}
+const std::vector<int> &CommunicationList::getReceiveDisp() const
+{
+    if ( !d_initialized )
+        initialize();
+    return d_ReceiveDisp;
+}
+const std::vector<int> &CommunicationList::getSendDisp() const
+{
+    if ( !d_initialized )
+        initialize();
+    return d_SendDisp;
 }
 const AMP_MPI &CommunicationList::getComm() const { return d_comm; }
 

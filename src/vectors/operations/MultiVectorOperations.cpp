@@ -29,16 +29,33 @@ MultiVectorOperations::MultiVectorOperations( std::shared_ptr<VectorOperations> 
 VectorData *MultiVectorOperations::getVectorDataComponent( VectorData &x, size_t i )
 {
     auto x2 = dynamic_cast<MultiVectorData *>( &x );
-    AMP_ASSERT( x2 && ( i < x2->getVectorDataSize() ) );
-    return x2->getVectorData( i );
+    if ( x2 ) {
+        AMP_ASSERT( i < x2->getVectorDataSize() );
+        return x2->getVectorData( i );
+    } else {
+        AMP_ASSERT( i == 0 );
+        return &x;
+    }
 }
 const VectorData *MultiVectorOperations::getVectorDataComponent( const VectorData &x, size_t i )
 {
     auto x2 = dynamic_cast<const MultiVectorData *>( &x );
-    AMP_ASSERT( x2 && ( i < x2->getVectorDataSize() ) );
-    return x2->getVectorData( i );
+    if ( x2 ) {
+        AMP_ASSERT( i < x2->getVectorDataSize() );
+        return x2->getVectorData( i );
+    } else {
+        AMP_ASSERT( i == 0 );
+        return &x;
+    }
 }
-
+size_t MultiVectorOperations::getVectorDataSize( const VectorData &x )
+{
+    auto x2 = dynamic_cast<const MultiVectorData *>( &x );
+    if ( x2 )
+        return x2->getVectorDataSize();
+    else
+        return 1;
+}
 const MultiVectorData *MultiVectorOperations::getMultiVectorData( const VectorData &x )
 {
     return dynamic_cast<const MultiVectorData *>( &x );
@@ -119,151 +136,96 @@ void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
 }
 void MultiVectorOperations::copyCast( const VectorData &x, VectorData &y )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->copyCast( *getVectorDataComponent( x, i ),
-                                       *getVectorDataComponent( y, i ) );
-
-    } else {
-        AMP_ERROR( "MultiVectorOperations::copyCast requires both x and y to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( y ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->copyCast( *getVectorDataComponent( x, i ),
+                                   *getVectorDataComponent( y, i ) );
 }
 
 void MultiVectorOperations::scale( const Scalar &alpha, VectorData &x )
 {
-    AMP_ASSERT( getMultiVectorData( x ) );
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
     for ( size_t i = 0; i != d_operations.size(); i++ )
         d_operations[i]->scale( alpha, *getVectorDataComponent( x, i ) );
 }
 
 void MultiVectorOperations::scale( const Scalar &alpha, const VectorData &x, VectorData &y )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->scale(
-                alpha, *getVectorDataComponent( x, i ), *getVectorDataComponent( y, i ) );
-
-    } else {
-        AMP_ERROR( "MultiVectorOperations::scale requires both x and y to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( y ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->scale(
+            alpha, *getVectorDataComponent( x, i ), *getVectorDataComponent( y, i ) );
 }
 
 void MultiVectorOperations::add( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        auto z2 = getMultiVectorData( y );
-        AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->add( *getVectorDataComponent( x, i ),
-                                  *getVectorDataComponent( y, i ),
-                                  *getVectorDataComponent( z, i ) );
-    } else {
-        AMP_ERROR( "MultiVectorOperations::add requires x, y, z to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( y ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( z ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->add( *getVectorDataComponent( x, i ),
+                              *getVectorDataComponent( y, i ),
+                              *getVectorDataComponent( z, i ) );
 }
 
 void MultiVectorOperations::subtract( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        auto z2 = getMultiVectorData( y );
-        AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->subtract( *getVectorDataComponent( x, i ),
-                                       *getVectorDataComponent( y, i ),
-                                       *getVectorDataComponent( z, i ) );
-    } else {
-        AMP_ERROR( "MultiVectorOperations::subtract requires x, y, z to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( y ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( z ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->subtract( *getVectorDataComponent( x, i ),
+                                   *getVectorDataComponent( y, i ),
+                                   *getVectorDataComponent( z, i ) );
 }
 
 void MultiVectorOperations::multiply( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        auto z2 = getMultiVectorData( y );
-        AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->multiply( *getVectorDataComponent( x, i ),
-                                       *getVectorDataComponent( y, i ),
-                                       *getVectorDataComponent( z, i ) );
-    } else {
-        AMP_ERROR( "MultiVectorOperations::multiply requires x, y, z to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( y ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( z ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->multiply( *getVectorDataComponent( x, i ),
+                                   *getVectorDataComponent( y, i ),
+                                   *getVectorDataComponent( z, i ) );
 }
 
 void MultiVectorOperations::divide( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        auto z2 = getMultiVectorData( y );
-        AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->divide( *getVectorDataComponent( x, i ),
-                                     *getVectorDataComponent( y, i ),
-                                     *getVectorDataComponent( z, i ) );
-    } else {
-        AMP_ERROR( "MultiVectorOperations::divide requires x, y, z to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( y ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( z ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->divide( *getVectorDataComponent( x, i ),
+                                 *getVectorDataComponent( y, i ),
+                                 *getVectorDataComponent( z, i ) );
 }
 
 void MultiVectorOperations::reciprocal( const VectorData &x, VectorData &y )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
-        AMP_ASSERT( x2->getVectorDataSize() == y2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->reciprocal( *getVectorDataComponent( x, i ),
-                                         *getVectorDataComponent( y, i ) );
-    } else {
-        AMP_ERROR(
-            "MultiVectorOperations::reciprocal requires both x and y to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( y ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->reciprocal( *getVectorDataComponent( x, i ),
+                                     *getVectorDataComponent( y, i ) );
 }
 
 void MultiVectorOperations::linearSum( const Scalar &alpha_in,
@@ -272,17 +234,12 @@ void MultiVectorOperations::linearSum( const Scalar &alpha_in,
                                        const VectorData &y,
                                        VectorData &z )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        auto z2 = getMultiVectorData( y );
-        AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
-        AMP_ASSERT( d_operations.size() == z2->getVectorDataSize() );
+    bool match = d_operations.size() == getVectorDataSize( x ) &&
+                 d_operations.size() == getVectorDataSize( y ) &&
+                 d_operations.size() == getVectorDataSize( z );
+    if ( match ) {
         for ( size_t i = 0; i != d_operations.size(); i++ )
             d_operations[i]->linearSum( alpha_in,
                                         *getVectorDataComponent( x, i ),
@@ -343,69 +300,41 @@ void MultiVectorOperations::axpby( const Scalar &alpha_in,
 
 void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ ) {
-            d_operations[i]->abs( *getVectorDataComponent( x, i ),
-                                  *getVectorDataComponent( y, i ) );
-        }
-    } else {
-        AMP_ERROR( "MultiVectorOperations::abs requires x, y to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( y ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->abs( *getVectorDataComponent( x, i ), *getVectorDataComponent( y, i ) );
 }
 
 void MultiVectorOperations::addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    auto y2 = getMultiVectorData( y );
-    if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->addScalar(
-                *getVectorDataComponent( x, i ), alpha_in, *getVectorDataComponent( y, i ) );
-    } else {
-        AMP_ERROR( "MultiVectorOperations::addScalar requires x, y to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( y ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->addScalar(
+            *getVectorDataComponent( x, i ), alpha_in, *getVectorDataComponent( y, i ) );
 }
 
 void MultiVectorOperations::setMax( const Scalar &alpha_in, VectorData &x )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    if ( x2 ) {
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->setMax( alpha_in, *getVectorDataComponent( x, i ) );
-    } else {
-        AMP_ERROR( "MultiVectorOperations::setMax requires x to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->setMax( alpha_in, *getVectorDataComponent( x, i ) );
 }
 
 void MultiVectorOperations::setMin( const Scalar &alpha_in, VectorData &x )
 {
-    if ( d_operations.empty() ) {
+    if ( d_operations.empty() )
         return;
-    }
-    auto x2 = getMultiVectorData( x );
-    if ( x2 ) {
-        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->setMin( alpha_in, *getVectorDataComponent( x, i ) );
-    } else {
-        AMP_ERROR( "MultiVectorOperations::setMax requires x to be MultiVectorData" );
-    }
+    AMP_ASSERT( d_operations.size() == getVectorDataSize( x ) );
+    for ( size_t i = 0; i != d_operations.size(); i++ )
+        d_operations[i]->setMin( alpha_in, *getVectorDataComponent( x, i ) );
 }
 
 Scalar MultiVectorOperations::localMin( const VectorData &x ) const
