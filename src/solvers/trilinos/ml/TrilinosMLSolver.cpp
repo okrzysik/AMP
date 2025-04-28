@@ -247,7 +247,6 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
 
     if ( computeResidual ) {
         r = f->clone();
-        AMP_ASSERT( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
         AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
         d_pOperator->residual( f, u, r );
         initialResNorm = static_cast<double>( r->L2Norm() );
