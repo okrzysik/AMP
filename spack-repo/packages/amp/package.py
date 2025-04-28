@@ -29,9 +29,11 @@ class Amp(CMakePackage, CudaPackage, ROCmPackage):
     variant("shared", default=False, description="Build shared libraries")
     variant("libmesh", default=False, description="Build with support for libmesh")
     variant("petsc", default=False, description="Build with support for petsc")
+    variant("timerutility", default=False, description="Build with support for TimerUtility")
 
     depends_on("cmake@3.26.0:")
     depends_on("tpl-builder+stacktrace")
+    depends_on("tpl-builder+stacktrace+timerutility", when="+timerutility")
 
     tpl_depends = ["hypre", "kokkos", "mpi", "openmp", "cuda", "rocm", "shared","libmesh", "petsc"]
 
