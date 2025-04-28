@@ -1,25 +1,3 @@
 <<< "input_LinearThermalRobinOperator" >>>
-
-LinearSolver{
-  name = "TFQMRSolver"
-  uses_preconditioner = TRUE
-  print_info_level = 1
-  max_iterations = 150
-  relative_tolerance = 1e-10
-  max_error = 1e-14
-}
-
-Preconditioner{
-  name = "TrilinosMueLuSolver"
-  print_info_level = 0
-  max_iterations = 1
-  max_error = 1e-10
-  problem_symmetric =TRUE
-  smoother_pre_or_post = "both"
-  smoother_params{
-    relaxation_type = "Gauss-Seidel"
-    relaxation_sweeps = 2
-  }
-  coarse_max_size = 100
-  
-}
+<<< "TFQMRParameters" >>>
+<<< "PC-MueLuParameters" >>>

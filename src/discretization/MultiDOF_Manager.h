@@ -187,7 +187,6 @@ private:
     std::vector<size_t> d_localSize;
     std::vector<size_t> d_globalSize;
     multiDOFHelper d_dofMap;
-    const size_t neg_one = ~( (size_t) 0 );
 };
 } // namespace AMP::Discretization
 

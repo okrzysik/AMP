@@ -40,10 +40,8 @@ void GhostDataHelper<TYPE, Allocator>::setCommunicationList(
     AMP_ASSERT( comm );
     d_CommList = comm;
     if ( d_CommList ) {
-        d_Ghosts =
-            std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
-        d_AddBuffer =
-            std::make_shared<std::vector<double>>( d_CommList->getVectorReceiveBufferSize() );
+        this->d_Ghosts.resize( d_CommList->getVectorReceiveBufferSize() );
+        this->d_AddBuffer.resize( d_CommList->getVectorReceiveBufferSize() );
     }
 }
 
@@ -86,7 +84,7 @@ void GhostDataHelper<TYPE, Allocator>::makeConsistent( ScatterType t )
         if ( t == ScatterType::CONSISTENT_ADD ) {
             AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
             d_CommList->scatter_add( *this );
-            for ( auto &elem : *d_AddBuffer )
+            for ( auto &elem : this->d_AddBuffer )
                 elem = 0.0;
         }
         *d_UpdateState = UpdateState::SETTING;
@@ -103,9 +101,7 @@ void GhostDataHelper<TYPE, Allocator>::makeConsistent( ScatterType t )
 template<class TYPE, class Allocator>
 size_t GhostDataHelper<TYPE, Allocator>::getGhostSize() const
 {
-    if ( d_Ghosts )
-        return d_Ghosts->size();
-    return 0;
+    return this->d_Ghosts.size();
 }
 
 
@@ -113,11 +109,15 @@ size_t GhostDataHelper<TYPE, Allocator>::getGhostSize() const
  * Alias ghost buffer                                            *
  ****************************************************************/
 template<class TYPE, class Allocator>
-void GhostDataHelper<TYPE, Allocator>::aliasGhostBuffer( std::shared_ptr<VectorData> in )
+void GhostDataHelper<TYPE, Allocator>::aliasGhostBuffer(
+    [[maybe_unused]] std::shared_ptr<VectorData> in )
 {
+    AMP_ERROR( "Not finished" );
+#if 0
     auto ghostData = std::dynamic_pointer_cast<GhostDataHelper<TYPE, Allocator>>( in );
     AMP_ASSERT( ghostData );
-    d_Ghosts = ghostData->d_Ghosts;
+    this->d_Ghosts = ghostData->d_Ghosts;
+#endif
 }
 
 
@@ -127,15 +127,9 @@ void GhostDataHelper<TYPE, Allocator>::aliasGhostBuffer( std::shared_ptr<VectorD
 template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::fillGhosts( const Scalar &scalar )
 {
-    if ( d_Ghosts ) {
-        const auto y = static_cast<TYPE>( scalar );
-        for ( auto &x : *d_Ghosts )
-            x = y;
-    }
-    if ( d_AddBuffer ) {
-        for ( auto &x : *d_AddBuffer )
-            x = 0;
-    }
+    const auto y = static_cast<TYPE>( scalar );
+    std::fill( this->d_Ghosts.begin(), this->d_Ghosts.end(), y );
+    std::fill( this->d_AddBuffer.begin(), this->d_AddBuffer.end(), static_cast<TYPE>( 0 ) );
 }
 
 
@@ -163,19 +157,19 @@ void GhostDataHelper<TYPE, Allocator>::setGhostValuesByGlobalID( size_t N,
                                                                  const void *vals,
                                                                  const typeID &id )
 {
-    if ( id == AMP::getTypeID<double>() ) {
-        auto data = reinterpret_cast<const double *>( vals );
+    if ( id == AMP::getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<const TYPE *>( vals );
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
         *d_UpdateState = UpdateState::SETTING;
         for ( size_t i = 0; i < N; i++ ) {
             if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                ( *d_Ghosts )[d_CommList->getLocalGhostID( ndx[i] )] = data[i];
+                this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] = data[i];
             } else {
                 AMP_ERROR( "Non ghost index" );
             }
         }
     } else {
-        AMP_ERROR( "Ghosts other than double are not supported yet" );
+        AMP_ERROR( "Ghosts other than same type are not supported yet" );
     }
 }
 template<class TYPE, class Allocator>
@@ -184,19 +178,19 @@ void GhostDataHelper<TYPE, Allocator>::addGhostValuesByGlobalID( size_t N,
                                                                  const void *vals,
                                                                  const typeID &id )
 {
-    if ( id == AMP::getTypeID<double>() ) {
-        auto data = reinterpret_cast<const double *>( vals );
+    if ( id == AMP::getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<const TYPE *>( vals );
         AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
         *d_UpdateState = UpdateState::ADDING;
         for ( size_t i = 0; i < N; i++ ) {
             if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )] += data[i];
+                this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )] += data[i];
             } else {
                 AMP_ERROR( "Non ghost index" );
             }
         }
     } else {
-        AMP_ERROR( "Ghosts other than double are not supported yet" );
+        AMP_ERROR( "Ghosts other than same type are not supported yet" );
     }
 }
 template<class TYPE, class Allocator>
@@ -205,18 +199,18 @@ void GhostDataHelper<TYPE, Allocator>::getGhostValuesByGlobalID( size_t N,
                                                                  void *vals,
                                                                  const typeID &id ) const
 {
-    if ( id == AMP::getTypeID<double>() ) {
-        auto data = reinterpret_cast<double *>( vals );
+    if ( id == AMP::getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
             if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                data[i] = ( *d_Ghosts )[d_CommList->getLocalGhostID( ndx[i] )] +
-                          ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )];
+                data[i] = this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] +
+                          this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
             } else {
                 AMP_ERROR( "Tried to get a non-ghost ghost value" );
             }
         }
     } else {
-        AMP_ERROR( "Ghosts other than double are not supported yet" );
+        AMP_ERROR( "Ghosts other than same type are not supported yet" );
     }
 }
 template<class TYPE, class Allocator>
@@ -225,17 +219,17 @@ void GhostDataHelper<TYPE, Allocator>::getGhostAddValuesByGlobalID( size_t N,
                                                                     void *vals,
                                                                     const typeID &id ) const
 {
-    if ( id == AMP::getTypeID<double>() ) {
-        auto data = reinterpret_cast<double *>( vals );
+    if ( id == AMP::getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
             if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                data[i] = ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )];
+                data[i] = this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
             } else {
                 AMP_ERROR( "Tried to get a non-ghost ghost value" );
             }
         }
     } else {
-        AMP_ERROR( "Ghosts other than double are not supported yet" );
+        AMP_ERROR( "Ghosts other than same type are not supported yet" );
     }
 }
 
@@ -249,7 +243,7 @@ void GhostDataHelper<TYPE, Allocator>::dumpGhostedData( std::ostream &out, size_
     if ( !getCommunicationList() )
         return;
     const std::vector<size_t> &ghosts = getCommunicationList()->getGhostIDList();
-    auto curVal                       = d_Ghosts->begin();
+    auto curVal                       = this->d_Ghosts.begin();
     for ( auto &ghost : ghosts ) {
         out << "  GID: " << ( ghost + offset ) << "  Value: " << ( *curVal ) << "\n";
         ++curVal;
@@ -281,9 +275,9 @@ void GhostDataHelper<TYPE, Allocator>::copyGhostValues( const VectorData &rhs )
         // The ghosts in the src vector match the current vector
         // Copy the ghosts from the rhs
         auto ghostIDs = getCommunicationList()->getGhostIDList();
-        std::vector<double> values( ghostIDs.size() );
-        rhs.getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
-        this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
+        std::vector<TYPE> values( ghostIDs.size() );
+        rhs.getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], values.data() );
+        this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], values.data() );
         // Copy the consistency state from the rhs
         *d_UpdateState = rhs.getLocalUpdateStatus();
     } else {
@@ -313,45 +307,32 @@ void GhostDataHelper<TYPE, Allocator>::registerChildObjects(
         auto id = manager->registerObject( d_UpdateState );
         AMP_ASSERT( id == reinterpret_cast<uint64_t>( d_UpdateState.get() ) );
     }
-    if ( d_Ghosts ) {
-        auto id = manager->registerObject( d_Ghosts );
-        AMP_ASSERT( id == reinterpret_cast<uint64_t>( d_Ghosts.get() ) );
-    }
-    if ( d_AddBuffer ) {
-        auto id = manager->registerObject( d_AddBuffer );
-        AMP_ASSERT( id == reinterpret_cast<uint64_t>( d_AddBuffer.get() ) );
-    }
 }
 template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::writeRestart( int64_t fid ) const
 {
     VectorData::writeRestart( fid );
-    uint64_t commListID  = d_CommList ? d_CommList->getID() : 0;
-    uint64_t updateID    = reinterpret_cast<uint64_t>( d_UpdateState.get() );
-    uint64_t ghostID     = reinterpret_cast<uint64_t>( d_Ghosts.get() );
-    uint64_t addBufferID = reinterpret_cast<uint64_t>( d_AddBuffer.get() );
+    uint64_t commListID = d_CommList ? d_CommList->getID() : 0;
+    uint64_t updateID   = reinterpret_cast<uint64_t>( d_UpdateState.get() );
     IO::writeHDF5( fid, "commListID", commListID );
     IO::writeHDF5( fid, "updateID", updateID );
-    IO::writeHDF5( fid, "ghostID", ghostID );
-    IO::writeHDF5( fid, "addBufferID", addBufferID );
+    IO::writeHDF5( fid, "ghosts", this->d_Ghosts );
+    IO::writeHDF5( fid, "addBuffer", this->d_AddBuffer );
 }
 template<class TYPE, class Allocator>
 GhostDataHelper<TYPE, Allocator>::GhostDataHelper( int64_t fid, AMP::IO::RestartManager *manager )
     : VectorData( fid, manager )
 {
-    uint64_t commListID, updateID, ghostID, addBufferID;
+    uint64_t commListID, updateID;
+    IO::readHDF5( fid, "ghosts", this->d_Ghosts );
+    IO::readHDF5( fid, "addBuffer", this->d_AddBuffer );
+
     IO::readHDF5( fid, "commListID", commListID );
     IO::readHDF5( fid, "updateID", updateID );
-    IO::readHDF5( fid, "ghostID", ghostID );
-    IO::readHDF5( fid, "addBufferID", addBufferID );
     if ( commListID != 0 )
         d_CommList = manager->getData<CommunicationList>( commListID );
     if ( updateID != 0 )
         d_UpdateState = manager->getData<UpdateState>( updateID );
-    if ( ghostID != 0 )
-        d_Ghosts = manager->getData<std::vector<double>>( ghostID );
-    if ( addBufferID != 0 )
-        d_AddBuffer = manager->getData<std::vector<double>>( addBufferID );
 }
 
 
