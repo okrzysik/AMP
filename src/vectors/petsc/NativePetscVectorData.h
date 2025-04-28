@@ -22,7 +22,7 @@ namespace AMP::LinearAlgebra {
  * \details  This is an AMP wrapper to PETSc.   Rather, it wraps these calls.
  * This class is used when PETSc is chosen as the default linear algebra engine.
  */
-class NativePetscVectorData : public GhostDataHelper<double>
+class NativePetscVectorData : public GhostDataHelper<PetscScalar>
 {
 public:
     /** \brief Construct a wrapper for a PETSc Vec from a set of parameters
@@ -81,8 +81,8 @@ private:
     friend class NativePetscVectorOperations;
     bool d_bDeleteMe                   = false;
     Vec d_petscVec                     = nullptr;
-    mutable double *d_pArray           = nullptr; // mutable so that we can cache the value
-    mutable const double *d_pArrayRead = nullptr;
+    mutable PetscScalar *d_pArray           = nullptr; // mutable so that we can cache the value
+    mutable const PetscScalar *d_pArrayRead = nullptr;
 };
 
 
