@@ -171,7 +171,7 @@ inline void VectorDataDefault<TYPE, Allocator>::setValuesByLocalID( size_t num,
 {
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     for ( size_t i = 0; i < num; i++ )
-        AMP_ASSERT( indices[i] < d_localSize );
+        AMP_ASSERT( indices[i] < this->d_localSize );
 #endif
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<const TYPE *>( vals );
@@ -195,7 +195,7 @@ inline void VectorDataDefault<TYPE, Allocator>::addValuesByLocalID( size_t num,
 {
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     for ( size_t i = 0; i < num; i++ )
-        AMP_ASSERT( indices[i] < d_localSize );
+        AMP_ASSERT( indices[i] < this->d_localSize );
 #endif
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<const TYPE *>( vals );
@@ -219,7 +219,7 @@ inline void VectorDataDefault<TYPE, Allocator>::getValuesByLocalID( size_t num,
 {
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     for ( size_t i = 0; i < num; i++ )
-        AMP_ASSERT( indices[i] < d_localSize );
+        AMP_ASSERT( indices[i] < this->d_localSize );
 #endif
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<TYPE *>( vals );
