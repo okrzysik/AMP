@@ -1,11 +1,7 @@
-<<< "input_LinearThermalRobinOperator" >>>
-
-LinearSolver{
+Preconditioner{
   name = "TrilinosMueLuSolver"
-  print_info_level = 1
-  max_iterations = 12
-  absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-12
+  print_info_level = 0
+  max_iterations = 1
   problem_symmetric =TRUE
   smoother_pre_or_post = "both"
   smoother_params{

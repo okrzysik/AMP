@@ -1,32 +1,3 @@
 <<< "input_LinearThermalRobinOperator" >>>
-
-LinearSolver{
-  name = "PetscKrylovSolver"
-  print_info_level = 0
-  max_iterations = 100
-  max_error = 1e-10
-  ksp_type = "fgmres"
-  absolute_tolerance = 1.0e-14
-  relative_tolerance = 1.0e-12
-  divergence_tolerance = 1.0e03
-  max_krylov_dimension = 40
-  uses_preconditioner=TRUE
-  pc_type = "shell"
-  pc_side = "RIGHT"
-  KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1.0e-12 -ksp_atol 1.0e-14"
-}
-
-Preconditioner{
-  name = "TrilinosMLSolver"
-  print_info_level = 0
-  max_iterations = 1
-  max_error = 1e-10
-  problem_symmetric =TRUE
-  smoother_pre_or_post = "both"
-  smoother_params{
-    relaxation_type = "Gauss-Seidel"
-    relaxation_sweeps = 2
-  }
-  coarse_max_size = 100
-  
-}
+<<< "PetscFGMRESParameters" >>>
+<<< "PC-MLParameters" >>>

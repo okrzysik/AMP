@@ -5,7 +5,7 @@ LinearSolver{
   variant = "gmresr"
   nested_solver = "TFQMR"
   absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-14
+  relative_tolerance = 1.0e-12
   print_info_level = 2
   max_iterations = 30
   max_dimension = 100
@@ -22,7 +22,7 @@ TFQMR{
 Preconditioner{
   name = "BoomerAMGSolver"
   max_iterations = 1
-  min_coarse_size = 10
+  max_coarse_size = 25
   strong_threshold = 0.5
   relax_type = 16
   coarsen_type = 10

@@ -2,12 +2,12 @@
 
 LinearSolver{
   name = "CGSolver"
-  variant = "fcg"
-  max_dimension = 3
+  variant = "ipcg"
   uses_preconditioner = TRUE
+  absolute_tolerance = 1.0e-12
+  relative_tolerance = 1.0e-12
   print_info_level = 2
-  max_iterations = 10
-  max_error = 1e-10
+  max_iterations = 25
 }
 
-<<< "PC-MLParameters" >>>
+<<< "PC-MueLuParameters" >>>
