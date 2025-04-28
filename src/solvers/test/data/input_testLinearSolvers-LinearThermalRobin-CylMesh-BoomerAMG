@@ -6,7 +6,7 @@ LinearSolver{
   absolute_tolerance = 1.0e-12
   max_levels             = 25
   max_coarse_size        = 32
-  min_coarse_size        = 16
+  max_coarse_size        = 16
   max_iterations         = 100
   measure_type           = 1
   coarsen_type           = 8
