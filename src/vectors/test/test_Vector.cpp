@@ -88,7 +88,7 @@ int testByMesh1( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
     auto t1   = AMP::Utilities::time();
     for ( int i = 0; i < N_it; i++ ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( mesh );
-        vec = vec->select( meshSelector );
+        AMP_ASSERT( vec->select( meshSelector ) );
     }
     auto t2 = AMP::Utilities::time();
     return 1e9 * ( t2 - t1 ) / N_it;
@@ -104,7 +104,7 @@ int testByMesh2( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
     auto t1   = AMP::Utilities::time();
     for ( int i = 0; i < N_it; i++ ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( mesh );
-        vec = vec->select( meshSelector, name );
+        AMP_ASSERT( vec->select( meshSelector, name ) );
     }
     auto t2 = AMP::Utilities::time();
     return 1e9 * ( t2 - t1 ) / N_it;
@@ -155,7 +155,7 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE( 3 );
 
-#if 1
+#if 0
 
     // Test ArrayVector dimensions
     std::vector<size_t> dims{ 3, 3, 3, 3 };
