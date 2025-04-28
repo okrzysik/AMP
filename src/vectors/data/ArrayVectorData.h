@@ -17,7 +17,7 @@ namespace AMP::LinearAlgebra {
  * \details This is a Vector that implements the Vector interface for an AMP::Array.
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<void>>
-class ArrayVectorData : public GhostDataHelper<double>
+class ArrayVectorData : public GhostDataHelper<T>
 {
 private:
     AMP::Array<T, FUN, Allocator> d_array;

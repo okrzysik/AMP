@@ -6,6 +6,7 @@
 
 #include <array>
 #include <cmath>
+#include <iomanip>
 #include <limits>
 
 namespace AMP::Solver {
@@ -102,12 +103,15 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     d_dInitialResidual = res_norm > std::numeric_limits<T>::epsilon() ? res_norm : 1.0;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        AMP::pout << "TFQMRSolver<T>::apply: initial L2Norm of solution vector: " << x->L2Norm()
+        AMP::pout << std::setw( 30 ) << "TFQMR: initial residual" << std::setw( 26 ) << res_norm
                   << std::endl;
-        AMP::pout << "TFQMRSolver<T>::apply: initial L2Norm of rhs vector: " << f->L2Norm()
-                  << std::endl;
-        AMP::pout << "TFQMRSolver<T>::apply: initial L2Norm of residual: " << res_norm << std::endl;
     }
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        AMP::pout << "TFQMRSolver<T>::apply: initial solution L2-norm: " << x->L2Norm()
+                  << std::endl;
+        AMP::pout << "TFQMRSolver<T>::apply: initial rhs L2-norm: " << f->L2Norm() << std::endl;
+    }
+
 
     // return if the residual is already low enough
     if ( checkStoppingCriteria( res_norm ) ) {
@@ -206,9 +210,10 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
             // update the increment to the solution
             delta->axpy( eta, *d, *delta );
-            if ( d_iDebugPrintInfoLevel > 1 ) {
-                AMP::pout << "TFQMR: outer/inner iteration " << ( d_iNumberIterations ) << "/" << j
-                          << ", solution update norm " << delta->L2Norm() << std::endl;
+            if ( d_iDebugPrintInfoLevel > 2 ) {
+                AMP::pout << std::setw( 30 ) << "TFQMR: outer/inner iteration " << std::setw( 6 )
+                          << d_iNumberIterations << "/" << j << ", solution update norm "
+                          << delta->L2Norm() << std::endl;
             }
 
             // Use upper bound on residual norm to test convergence cheaply
@@ -216,8 +221,9 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
             if ( checkStoppingCriteria( res_bound ) ) {
                 if ( d_iDebugPrintInfoLevel > 1 ) {
-                    AMP::pout << "TFQMR: outer/inner iteration " << ( d_iNumberIterations ) << "/"
-                              << j << ", residual " << res_bound << std::endl;
+                    AMP::pout << std::setw( 30 ) << "TFQMR: outer/inner iteration "
+                              << std::setw( 6 ) << d_iNumberIterations << "/" << j << ", residual "
+                              << res_bound << std::endl;
                 }
                 res_norm  = res_bound; // this is likely an over-estimate
                 converged = true;
@@ -257,8 +263,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v->axpy( beta, *v, *u[0] );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "TFQMR: outer iteration " << ( d_iNumberIterations ) << ", residual "
-                      << res_bound << std::endl;
+            AMP::pout << std::setw( 30 ) << "TFQMR: outer iteration " << std::setw( 8 )
+                      << d_iNumberIterations << ", residual " << res_bound << std::endl;
         }
     }
 
@@ -286,12 +292,14 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     d_dResidualNorm = res_norm;
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
+        AMP::pout << "TFQMRSolver<T>::apply: final residual L2-norm: " << res_norm
+                  << " iterations: " << d_iNumberIterations << " convergence reason: "
+                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
+    }
+
+    if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "TFQMRSolver<T>::apply: final L2Norm of solution: " << x->L2Norm()
                   << std::endl;
-        AMP::pout << "TFQMRSolver<T>::apply: final L2Norm of residual: " << res_norm << std::endl;
-        AMP::pout << "TFQMRSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
-        AMP::pout << "TFQMRSolver<T>::apply: convergence reason: "
-                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
 }
 

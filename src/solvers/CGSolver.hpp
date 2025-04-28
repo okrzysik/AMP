@@ -105,24 +105,26 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // Store initial residual
-    auto current_res = static_cast<T>( r->L2Norm() );
+    auto d_dResidualNorm = static_cast<T>( r->L2Norm() );
     // Override zero initial residual to force relative tolerance convergence
     // here to potentially handle singular systems
-    d_dInitialResidual = current_res > std::numeric_limits<T>::epsilon() ? current_res : 1.0;
+    d_dInitialResidual =
+        d_dResidualNorm > std::numeric_limits<T>::epsilon() ? d_dResidualNorm : 1.0;
+
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        AMP::pout << "CG: initial residual: " << d_dResidualNorm << std::endl;
+    }
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        AMP::pout << "CGSolver<T>::apply: initial L2Norm of solution vector: " << u->L2Norm()
-                  << std::endl;
-        AMP::pout << "CGSolver<T>::apply: initial L2Norm of rhs vector: " << f->L2Norm()
-                  << std::endl;
-        AMP::pout << "CGSolver<T>::apply: initial L2Norm of residual: " << current_res << std::endl;
+        AMP::pout << "CG: initial L2Norm of solution vector: " << u->L2Norm() << std::endl;
+        AMP::pout << "CG: initial L2Norm of rhs vector: " << f->L2Norm() << std::endl;
     }
 
     // return if the residual is already low enough
     // checkStoppingCriteria responsible for setting flags on convergence reason
-    if ( checkStoppingCriteria( current_res ) ) {
+    if ( checkStoppingCriteria( d_dResidualNorm ) ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "CGSolver<T>::apply: initial residual below tolerance" << std::endl;
+            AMP::pout << "CG: initial residual below tolerance" << std::endl;
         }
         return;
     }
@@ -169,13 +171,14 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         // sanity check, the curvature should be positive
         if ( gamma == 0.0 ) {
+            // the checkStoppingCriteria looks wrong!! check
             // at solution
-            checkStoppingCriteria( current_res );
+            checkStoppingCriteria( d_dResidualNorm );
             break;
         } else if ( gamma < 0.0 ) {
             // set diverged reason
             d_ConvergenceStatus = SolverStatus::DivergedOther;
-            AMP_WARNING( "CGSolver<T>::apply: negative curvature encountered" );
+            AMP_WARNING( "CG: negative curvature encountered" );
             break;
         }
 
@@ -185,14 +188,14 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         r->axpy( -alpha, *w, *r );
 
         // compute the current residual norm
-        current_res = static_cast<T>( r->L2Norm() );
+        d_dResidualNorm = static_cast<T>( r->L2Norm() );
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "CG: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
-                      << current_res << std::endl;
+                      << d_dResidualNorm << std::endl;
         }
 
         // check if converged
-        if ( checkStoppingCriteria( current_res ) ) {
+        if ( checkStoppingCriteria( d_dResidualNorm ) ) {
             break;
         }
 
@@ -255,22 +258,18 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    if ( d_bComputeResidual ) {
-        d_pOperator->residual( f, u, r );
-        current_res = static_cast<T>( r->L2Norm() );
-        // final check updates flags if needed
-        checkStoppingCriteria( current_res );
-    }
-
-    // Store final residual should it be queried elsewhere
-    d_dResidualNorm = current_res;
+    d_pOperator->residual( f, u, r );
+    d_dResidualNorm = static_cast<T>( r->L2Norm() );
+    // final check updates flags if needed
+    checkStoppingCriteria( d_dResidualNorm );
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
-        AMP::pout << "CGSolver<T>::apply: final L2Norm of solution: " << u->L2Norm() << std::endl;
-        AMP::pout << "CGSolver<T>::apply: final L2Norm of residual: " << current_res << std::endl;
-        AMP::pout << "CGSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
-        AMP::pout << "CGSolver<T>::apply: convergence reason: "
+        AMP::pout << "CG: final residual: " << d_dResidualNorm
+                  << ", iterations: " << d_iNumberIterations << ", convergence reason: "
                   << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
+    }
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "CG: final L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 }
 

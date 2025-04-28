@@ -2,6 +2,18 @@
 ############################################################################
 #  Configure tests
 
+# Copy solver parameter files
+COPY_TEST_FILE( CGParameters )
+COPY_TEST_FILE( GMRESParameters )
+COPY_TEST_FILE( FGMRESParameters )
+COPY_TEST_FILE( PetscFGMRESParameters )
+COPY_TEST_FILE( BiCGSTABParameters )
+COPY_TEST_FILE( TFQMRParameters )
+COPY_TEST_FILE( GMRESRParameters )
+COPY_TEST_FILE( PC-BoomerAMGParameters )
+COPY_TEST_FILE( PC-MLParameters )
+COPY_TEST_FILE( PC-MueLuParameters )
+
 # Copy test inputs
 COPY_TEST_FILE( input_LinearElasticityOperator-1 )
 COPY_TEST_FILE( input_LinearFickOperator-bar )
@@ -48,11 +60,6 @@ COPY_TEST_FILE( input_testBoomerAMGSolver-LinearElasticityOperator-1 )
 COPY_TEST_FILE( input_testSolversForUserMatrix-BoomerAMG )
 
 
-COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu )
-COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES )
-COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB )
-COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR )
-
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-CG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-IPCG )
@@ -62,6 +69,16 @@ COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-FGMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-TFQMR )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES )
+
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-CG )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-IPCG )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-FCG )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-FGMRES )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-PetscFGMRES )
 
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG )
