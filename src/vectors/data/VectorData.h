@@ -75,6 +75,11 @@ public: // Get basic information
      */
     inline size_t getLocalStartID() const { return d_localStart; }
 
+    /** \brief  The local sizes on each rank
+     * \return  The local sizes on each rank
+     */
+    virtual std::vector<size_t> getLocalSizes() const;
+
     /**\brief Number of entries "owned" by other cores stored on this
      * core.
      *\return Number of entries "owned" by other cores stored on this core

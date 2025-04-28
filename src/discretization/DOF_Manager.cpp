@@ -120,6 +120,12 @@ size_t DOFManager::endDOF() const { return d_end; }
  * Return the local number of D.O.F.s                           *
  ****************************************************************/
 size_t DOFManager::numLocalDOF() const { return ( d_end - d_begin ); }
+std::vector<size_t> DOFManager::getLocalSizes() const
+{
+    if ( d_localSize.empty() )
+        d_localSize = d_comm.allGather( d_end - d_begin );
+    return d_localSize;
+}
 
 
 /****************************************************************
@@ -135,7 +141,7 @@ std::vector<size_t> DOFManager::getRemoteDOFs() const { return d_remoteDOFs; }
 
 
 /****************************************************************
- * Return the global number of D.O.F.s                           *
+ * Return the row D.O.F.s                                        *
  ****************************************************************/
 size_t DOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &, size_t *, size_t, bool ) const
 {

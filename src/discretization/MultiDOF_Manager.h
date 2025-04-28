@@ -169,6 +169,9 @@ public: // Advanced interfaces
                        size_t index,
                        size_t capacity ) const override;
 
+    //! Get the local sizes on each rank
+    std::vector<size_t> getLocalSizes() const override;
+
     // Get the map
     inline const multiDOFHelper &getMap() const { return d_dofMap; }
 

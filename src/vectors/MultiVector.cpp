@@ -44,16 +44,14 @@ MultiVector::MultiVector( Vector::shared_ptr vec ) : Vector()
     // Add the vector
     d_vVectors.push_back( vec );
     // Create the MultiVariable
-    d_Variable = std::shared_ptr<MultiVariable>(
-        new MultiVariable( vec->getName(), { vec->getVariable() } ) );
+    d_Variable = std::make_shared<MultiVariable>( vec->getVariable() );
     // Create the MultiVectorOperations
-    auto mvOps = std::make_shared<MultiVectorOperations>();
-    mvOps->resetVectorOperations( { vec->getVectorOperations() } );
-    d_VectorOps = mvOps;
+    d_VectorOps = std::make_shared<MultiVectorOperations>( vec->getVectorOperations() );
     // Create the multiDOFManager
     d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( vec->getDOFManager() );
     // Create the MultiVectorData
-    d_VectorData  = std::make_shared<MultiVectorData>( vec->getVectorData().get() );
+    d_VectorData =
+        std::make_shared<MultiVectorData>( vec->getVectorData().get(), d_DOFManager.get() );
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( d_VectorData );
     vec->getVectorData()->registerListener( listener );
 }
@@ -118,7 +116,7 @@ std::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, const AM
     // If still don't have a multivector, make one
     if ( comm.isNull() || vec->getComm().compare( comm ) != 0 ) {
         // No change in the communicator, we should be able to create a view quickly
-        return std::shared_ptr<MultiVector>( new MultiVector( vec ) );
+        return std::make_shared<MultiVector>( vec );
     } else {
         return create( vec->getName(), comm, { vec } );
     }

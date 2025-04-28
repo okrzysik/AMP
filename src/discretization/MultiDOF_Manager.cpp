@@ -309,6 +309,12 @@ std::vector<size_t> multiDOFManager::getSubDOF( const int manager,
 }
 
 
+/****************************************************************
+ * Get the local sizes on each rank                              *
+ ****************************************************************/
+std::vector<size_t> multiDOFManager::getLocalSizes() const { return d_dofMap.getLocalSize(); }
+
+
 } // namespace AMP::Discretization
 
 

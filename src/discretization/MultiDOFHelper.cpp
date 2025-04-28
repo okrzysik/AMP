@@ -13,14 +13,12 @@ namespace AMP::Discretization {
 multiDOFHelper::multiDOFHelper( const DOFManager &manager )
 {
     PROFILE( "multiDOFHelper" );
-    auto comm = manager.getComm();
-    initialize( comm.getRank(), comm.allGather<size_t>( manager.numLocalDOF() ) );
+    initialize( manager.getComm().getRank(), manager.getLocalSizes() );
 }
 multiDOFHelper::multiDOFHelper( const AMP::LinearAlgebra::VectorData &data )
 {
     PROFILE( "multiDOFHelper" );
-    auto comm = data.getComm();
-    initialize( comm.getRank(), comm.allGather<size_t>( data.getLocalSize() ) );
+    initialize( data.getComm().getRank(), data.getLocalSizes() );
 }
 multiDOFHelper::multiDOFHelper( const std::vector<std::shared_ptr<DOFManager>> &managers,
                                 const AMP::AMP_MPI &comm )

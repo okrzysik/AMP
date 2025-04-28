@@ -20,6 +20,9 @@ public:
     // Constructor
     MultiVectorOperations() : VectorOperations() {}
 
+    // Create from a single vector operations
+    MultiVectorOperations( std::shared_ptr<VectorOperations> op );
+
     //! Destructor
     virtual ~MultiVectorOperations() {}
 
