@@ -61,6 +61,7 @@ public: // Basic virtual functions
     std::shared_ptr<VectorData> getComponent( size_t i = 0 ) override;
     std::shared_ptr<const VectorData> getComponent( size_t i = 0 ) const override;
     bool hasContiguousData() const override { return ( numberOfDataBlocks() <= 1 ); }
+    std::vector<size_t> getLocalSizes() const override;
 
 public:
     void aliasGhostBuffer( std::shared_ptr<VectorData> in ) override;
@@ -132,6 +133,9 @@ public:
 
     explicit MultiVectorData( const AMP::AMP_MPI &comm ) : d_comm( comm ) {}
 
+    explicit MultiVectorData( VectorData *data,
+                              const AMP::Discretization::DOFManager *manager = nullptr );
+
     void resetMultiVectorData( const AMP::Discretization::DOFManager *manager,
                                const std::vector<VectorData *> &data );
 
@@ -200,8 +204,6 @@ protected:
                                std::vector<std::vector<std::byte>> &out_vals,
                                std::vector<std::vector<int>> *remap = nullptr ) const;
 
-private:
-    std::shared_ptr<CommunicationList> buildCommunicationList() const;
 
 protected:
     // Internal data
@@ -209,7 +211,6 @@ protected:
     std::vector<VectorData *> d_data;
     AMP::Discretization::multiDOFHelper d_dofMap;
     std::shared_ptr<UpdateState> d_UpdateState;
-    std::shared_ptr<CommunicationList> d_commList;
 };
 
 

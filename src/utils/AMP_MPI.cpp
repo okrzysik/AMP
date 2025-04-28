@@ -520,7 +520,7 @@ AMP_MPI::AMP_MPI( Comm comm, bool manage )
         d_currentTag[1] = 1;
         if ( d_size > 1 ) {
             auto seed = bcast<size_t>( std::random_device()(), 0 );
-            d_rand    = new std::mt19937( seed );
+            d_rand    = new std::mt19937_64( seed );
         }
     }
     d_isNull     = d_comm == MPI_COMM_NULL;
@@ -581,23 +581,23 @@ uint64_t AMP_MPI::hashRanks() const
 /************************************************************************
  *  Generate a random number                                             *
  ************************************************************************/
-static auto randSerial = std::mt19937( std::random_device()() );
-std::unique_ptr<std::mt19937> randWorld;
-std::unique_ptr<std::mt19937> randMPI;
-std::mt19937 *AMP_MPI::getRand() const
+static auto randSerial = std::mt19937_64( std::random_device()() );
+std::unique_ptr<std::mt19937_64> randWorld;
+std::unique_ptr<std::mt19937_64> randMPI;
+std::mt19937_64 *AMP_MPI::getRand() const
 {
     if ( d_size < 2 ) {
         return &randSerial;
     } else if ( d_hash == hashWorld ) {
         if ( !randWorld ) {
             auto seed = bcast<size_t>( randSerial(), 0 );
-            randWorld = std::make_unique<std::mt19937>( seed );
+            randWorld = std::make_unique<std::mt19937_64>( seed );
         }
         return randWorld.get();
     } else if ( d_hash == hashMPI ) {
         if ( !randMPI ) {
             auto seed = bcast<size_t>( randSerial(), 0 );
-            randMPI   = std::make_unique<std::mt19937>( seed );
+            randMPI   = std::make_unique<std::mt19937_64>( seed );
         }
         return randMPI.get();
     } else {
@@ -991,7 +991,7 @@ bool AMP_MPI::operator>=( const AMP_MPI &comm ) const
  ************************************************************************/
 int AMP_MPI::compare( const AMP_MPI &comm ) const
 {
-    if ( d_comm == comm.d_comm )
+    if ( d_hash == comm.d_hash )
         return 1;
 #ifdef AMP_USE_MPI
     if ( d_isNull || comm.d_isNull )
