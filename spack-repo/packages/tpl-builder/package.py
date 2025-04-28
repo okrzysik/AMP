@@ -1,4 +1,5 @@
-# Copyright Spack Project Developers. See COPYRIGHT file for details.
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
@@ -19,6 +20,7 @@ class TplBuilder(CMakePackage, CudaPackage, ROCmPackage):
     version("2.1.0", tag="2.1.0", commit="f2018b32623ea4a2f61fd0e7f7087ecb9b955eb5")
 
     variant("stacktrace", default=False, description="Build with support for Stacktrace")
+    variant("timerutility", default=False, description="Build with support for TimerUtility")
     variant("lapack", default=False, description="Build with support for lapack")
     variant("hypre", default=False, description="Build with support for hypre")
     variant("kokkos", default=False, description="Build with support for Kokkos")
@@ -30,8 +32,15 @@ class TplBuilder(CMakePackage, CudaPackage, ROCmPackage):
 
     depends_on("git", type="build")
 
-    depends_on("stacktrace", when="+stacktrace")
-    depends_on("stacktrace+mpi", when="+stacktrace+mpi")
+    depends_on("stacktrace~shared", when="~shared+stacktrace")
+    depends_on("stacktrace+shared", when="+shared+stacktrace")
+    depends_on("stacktrace+mpi", when="+mpi+stacktrace")
+    depends_on("stacktrace~mpi", when="~mpi+stacktrace")
+
+    depends_on("timerutility~shared", when="~shared+timerutility")
+    depends_on("timerutility+shared", when="+shared+timerutility")
+    depends_on("timerutility+mpi", when="+mpi+timerutility")
+    depends_on("timerutility~mpi", when="~mpi+timerutility")
 
     depends_on("hypre+mixedint", when="+hypre")
     depends_on("kokkos", when="+kokkos")
@@ -152,10 +161,11 @@ class TplBuilder(CMakePackage, CudaPackage, ROCmPackage):
                 ]
             )
 
-        for vname in ("stacktrace", "hypre", "kokkos", "libmesh", "petsc"):
+        for vname in ("stacktrace", "hypre", "kokkos", "libmesh", "petsc", "timerutility"):
             if spec.satisfies(f"+{vname}"):
-                tpl_list.append(vname.upper())
-                options.append(self.define(f"{vname.upper()}_INSTALL_DIR", spec[vname].prefix))
+                tpl_name = "TIMER" if vname == "timerutility" else vname.upper()
+                tpl_list.append(tpl_name)
+                options.append(self.define(f"{tpl_name}_INSTALL_DIR", spec[vname].prefix))
 
         options.append(self.define("TPL_LIST", ";".join(tpl_list)))
         return options
