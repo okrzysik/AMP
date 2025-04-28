@@ -84,6 +84,10 @@ public:
     virtual std::shared_ptr<const DOFManager> getDOFManager() const;
 
 
+    //! Get the local sizes on each rank
+    std::vector<size_t> getLocalSizes() const override { return { d_end - d_begin }; }
+
+
 public: // Advanced interfaces
     //! Get the row DOFs given a mesh element
     size_t getRowDOFs( const AMP::Mesh::MeshElementID &id,

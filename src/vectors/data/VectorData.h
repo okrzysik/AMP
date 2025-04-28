@@ -1,9 +1,9 @@
 #ifndef included_AMP_VectorData
 #define included_AMP_VectorData
 
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
-#include "AMP/vectors/CommunicationList.h"
 #include "AMP/vectors/Scalar.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/data/DataChangeFirer.h"
@@ -19,6 +19,8 @@ class RestartManager;
 namespace AMP::LinearAlgebra {
 
 
+// Forward declares
+class CommunicationList;
 template<typename TYPE>
 class VectorDataIterator;
 
@@ -72,6 +74,11 @@ public: // Get basic information
      *\return The first entry "owned" by this core
      */
     inline size_t getLocalStartID() const { return d_localStart; }
+
+    /** \brief  The local sizes on each rank
+     * \return  The local sizes on each rank
+     */
+    virtual std::vector<size_t> getLocalSizes() const;
 
     /**\brief Number of entries "owned" by other cores stored on this
      * core.

@@ -461,35 +461,43 @@ public: // Get/Set data/variables/operations
 
 public: // Subset/Select
     /** \brief  Selects a portion of this vector and creates a view.
-      * \param[in]  criterion  The method for deciding inclusion in the view
-      * \param[in]  variable_name  The name of the vector to be created
-      * \details To use, we recommend the following pattern
-      \code
-      // Vector to be "view"ed
-      Vector::shared_ptr data;
+     * \details   Selects a portion of this vector and creates a view.
+     *    This function does NOT always return a multivector.
+     *    To use:
+     *        auto disp = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
+     * \param[in]  criterion  The method for deciding inclusion in the view
+     * \param[in]  name       The name of the vector to be created
+     */
+    shared_ptr select( const VectorSelector &criterion );
 
-      // .. set up all the data storage in data
+    /** \brief  Selects a portion of this vector and creates a view.
+     * \details   Selects a portion of this vector and creates a view.
+     *    This function does NOT always return a multivector.
+     *    To use:
+     *        auto disp = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
+     * \param[in]  criterion  The method for deciding inclusion in the view
+     * \param[in]  name       The name of the vector to be created
+     */
+    const_shared_ptr select( const VectorSelector &criterion ) const;
 
-      // Get a view on the data tagged displacement
-      auto displacement = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
-      \endcode
-      */
+    /** \brief  Selects a portion of this vector and creates a view.
+     * \details   Selects a portion of this vector and creates a view.
+     *    This function will always return a multivector.
+     *    To use:
+     *        auto disp = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
+     * \param[in]  criterion  The method for deciding inclusion in the view
+     * \param[in]  name       The name of the vector to be created
+     */
     shared_ptr select( const VectorSelector &criterion, const std::string &variable_name );
 
     /** \brief  Selects a portion of this vector and creates a view.
-      * \param[in]  criterion  The method for deciding inclusion in the view
-      * \param[in]  variable_name  The name of the vector to be created
-      * \details To use, we recommend the following pattern
-      \code
-      // Vector to be "view"ed
-      Vector::shared_ptr   data;
-
-      // .. set up all the data storage in data
-
-      // Get a view on the data tagged displacement
-      auto displacement = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
-      \endcode
-      */
+     * \details   Selects a portion of this vector and creates a view.
+     *    This function will always return a multivector.
+     *    To use:
+     *        auto disp = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
+     * \param[in]  criterion  The method for deciding inclusion in the view
+     * \param[in]  name       The name of the vector to be created
+     */
     const_shared_ptr select( const VectorSelector &criterion,
                              const std::string &variable_name ) const;
 
