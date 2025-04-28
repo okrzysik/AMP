@@ -146,13 +146,13 @@ makeConstraintsOnFuel( AMP::Mesh::MeshIterator it,
                 if ( std::abs( dishRadius - radius ) < epsilon ) {
                     tmp.insert( std::pair<size_t, double>( 2, 0.0 ) );
                 } // end if
-            }     // end if
+            } // end if
             if ( !tmp.empty() ) {
                 constraints.insert( std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double>>(
                     it->globalID(), tmp ) );
             } // end if
-        }     // end if
-    }         // end for
+        } // end if
+    } // end for
 }
 
 static void
@@ -181,17 +181,17 @@ makeConstraintsOnClad( AMP::Mesh::MeshIterator it,
                 } else if ( std::abs( coord[1] - 0.0 ) < epsilon ) {
                     tmp.insert( std::pair<size_t, double>( 1, 0.0 ) );
                 } // end if
-            }     // end if
+            } // end if
         } else if ( std::abs( coord[2] - 0.0 ) < epsilon ) {
             if ( std::abs( radius - cladOuterRadius ) < epsilon ) {
                 tmp.insert( std::pair<size_t, double>( 2, 0.0 ) );
             } // end if
-        }     // end if
+        } // end if
         if ( !tmp.empty() ) {
             constraints.insert( std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double>>(
                 it->globalID(), tmp ) );
         } // end if
-    }     // end for
+    } // end for
 }
 
 
@@ -219,7 +219,7 @@ static void applyCustomDirichletCondition(
                           << ") " << jt->second << "  " << xyz[jt->first] << "\n";
                 dir->setLocalValueByGlobalID( dofIndices[jt->first], jt->second );
             } // end for
-        }     // end for
+        } // end for
         dir->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         mat->mult( dir, cor );
         for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
@@ -232,8 +232,8 @@ static void applyCustomDirichletCondition(
                         mat->setValueByGlobalID( dofIndices[jt->first], dofIndices[k], 0.0 );
                         mat->setValueByGlobalID( dofIndices[k], dofIndices[jt->first], 0.0 );
                     } // end if
-                }     // end for k
-            }         // end for jt
+                } // end for k
+            } // end for jt
             auto neighbors = ( meshAdapter->getElement( it->first ) ).getNeighbors();
             std::vector<size_t> neighborsDofIndices;
             for ( size_t n = 0; n < neighbors.size(); ++n ) {
@@ -245,9 +245,9 @@ static void applyCustomDirichletCondition(
                         mat->setValueByGlobalID(
                             neighborsDofIndices[k], dofIndices[jt->first], 0.0 );
                     } // end for jt
-                }     // end for k
-            }         // end for n
-        }             // end for it
+                } // end for k
+            } // end for n
+        } // end for it
         mat->makeConsistent();
     } // end if
     rhs->subtract( rhs, cor );
@@ -256,7 +256,7 @@ static void applyCustomDirichletCondition(
         for ( auto jt = it->second.begin(); jt != it->second.end(); ++jt ) {
             rhs->setLocalValueByGlobalID( dofIndices[jt->first], jt->second );
         } // end for jt
-    }     // end for it
+    } // end for it
 }
 
 static void shrinkMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh, double const shrinkFactor )
@@ -398,7 +398,7 @@ static void computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                     strainTensor[i] -= ( thermalExpansionCoefficient *
                                          ( temperatureValues[v] - referenceTemperature ) );
                 } // end for i
-            }     // end if
+            } // end if
             compute_stress_tensor( constitutiveMatrix, strainTensor, stressTensor );
             double vonMisesStress = compute_von_mises_stress( stressTensor );
 
@@ -465,7 +465,7 @@ static void computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             } // end if
 
         } // end for v
-    }     // end for
+    } // end for
     AMP_ASSERT( verticesGlobalIDsAndCount.size() == numLocalVertices );
     AMP_ASSERT( countVertices == numLocalVertices );
     AMP_ASSERT( find( verticesInHowManyGeomType::CellElements.begin(),
@@ -504,7 +504,7 @@ static void computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                 sigma_eff->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
                     static_cast<double>( verticesInHowManyGeomType::CellElements[v] ) );
         } // end if
-    }     // end for v
+    } // end for v
 }
 
 
@@ -528,16 +528,14 @@ computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     AMP::LinearAlgebra::VS_Mesh vectorSelector( mesh );
     auto subsetDisplacementField = displacementField->select(
         vectorSelector, ( displacementField->getVariable() )->getName() );
-    auto subsetSigmaXX = sigmaXX->select( vectorSelector, ( sigmaXX->getVariable() )->getName() );
-    auto subsetSigmaYY = sigmaYY->select( vectorSelector, ( sigmaYY->getVariable() )->getName() );
-    auto subsetSigmaZZ = sigmaZZ->select( vectorSelector, ( sigmaZZ->getVariable() )->getName() );
-    auto subsetSigmaYZ = sigmaYZ->select( vectorSelector, ( sigmaYZ->getVariable() )->getName() );
-    auto subsetSigmaXZ = sigmaXZ->select( vectorSelector, ( sigmaXZ->getVariable() )->getName() );
-    auto subsetSigmaXY = sigmaXY->select( vectorSelector, ( sigmaXY->getVariable() )->getName() );
-    auto subsetSigmaEff =
-        sigmaEff->select( vectorSelector, ( sigmaEff->getVariable() )->getName() );
-    auto subsetTemperatureField =
-        temperatureField->select( vectorSelector, ( temperatureField->getVariable() )->getName() );
+    auto subsetSigmaXX          = sigmaXX->select( vectorSelector );
+    auto subsetSigmaYY          = sigmaYY->select( vectorSelector );
+    auto subsetSigmaZZ          = sigmaZZ->select( vectorSelector );
+    auto subsetSigmaYZ          = sigmaYZ->select( vectorSelector );
+    auto subsetSigmaXZ          = sigmaXZ->select( vectorSelector );
+    auto subsetSigmaXY          = sigmaXY->select( vectorSelector );
+    auto subsetSigmaEff         = sigmaEff->select( vectorSelector );
+    auto subsetTemperatureField = temperatureField->select( vectorSelector );
 
     double youngsModulus =
         std::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>( mechanicsMaterialModel )
@@ -616,7 +614,7 @@ static void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> me
             os << "\\draw[" << option << "]\n";
             write_face( faceDataPtr, os );
         } // end if
-    }     // end for
+    } // end for
 }
 
 static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,

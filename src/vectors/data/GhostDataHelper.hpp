@@ -83,15 +83,66 @@ void GhostDataHelper<TYPE, Allocator>::makeConsistent( ScatterType t )
     if ( d_CommList ) {
         if ( t == ScatterType::CONSISTENT_ADD ) {
             AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
-            d_CommList->scatter_add( *this );
+            scatter_add();
             for ( auto &elem : this->d_AddBuffer )
                 elem = 0.0;
         }
         *d_UpdateState = UpdateState::SETTING;
-        d_CommList->scatter_set( *this );
+        scatter_set();
         *d_UpdateState = UpdateState::UNCHANGED;
     }
     this->setUpdateStatus( UpdateState::UNCHANGED );
+}
+
+
+/************************************************************************
+ * set/recv data                                                         *
+ ************************************************************************/
+template<class TYPE, class Allocator>
+void GhostDataHelper<TYPE, Allocator>::scatter_set()
+{
+    AMP_ASSERT( d_CommList );
+    const auto &sendSizes = d_CommList->getSendSizes();
+    const auto &recvSizes = d_CommList->getReceiveSizes();
+    if ( sendSizes.empty() && recvSizes.empty() )
+        return;
+    const auto &comm     = d_CommList->getComm();
+    const auto &sendDisp = d_CommList->getSendDisp();
+    const auto &recvDisp = d_CommList->getReceiveDisp();
+    const auto &sendDOFs = d_CommList->getReplicatedIDList();
+    const auto &recvDOFs = d_CommList->getGhostIDList();
+    // Pack the set buffers
+    std::vector<TYPE> send( d_CommList->getVectorSendBufferSize() );
+    if ( !send.empty() )
+        getLocalValuesByGlobalID( send.size(), sendDOFs.data(), send.data() );
+    // Communicate
+    auto recv = comm.allToAll( send, sendSizes, sendDisp, recvSizes, recvDisp );
+    // Unpack the set buffers
+    if ( !recv.empty() )
+        setGhostValuesByGlobalID( recv.size(), recvDOFs.data(), recv.data() );
+}
+template<class TYPE, class Allocator>
+void GhostDataHelper<TYPE, Allocator>::scatter_add()
+{
+    AMP_ASSERT( d_CommList );
+    const auto &sendSizes = d_CommList->getSendSizes();
+    const auto &recvSizes = d_CommList->getReceiveSizes();
+    if ( sendSizes.empty() && recvSizes.empty() )
+        return;
+    const auto &comm     = d_CommList->getComm();
+    const auto &sendDisp = d_CommList->getSendDisp();
+    const auto &recvDisp = d_CommList->getReceiveDisp();
+    const auto &sendDOFs = d_CommList->getReplicatedIDList();
+    const auto &recvDOFs = d_CommList->getGhostIDList();
+    // Pack the add buffers
+    std::vector<TYPE> send( d_CommList->getVectorReceiveBufferSize() );
+    if ( !send.empty() )
+        getGhostAddValuesByGlobalID( send.size(), recvDOFs.data(), send.data() );
+    // Communicate
+    auto recv = comm.allToAll( send, recvSizes, recvDisp, sendSizes, sendDisp );
+    // Unpack the add buffers
+    if ( !recv.empty() )
+        addLocalValuesByGlobalID( recv.size(), sendDOFs.data(), recv.data() );
 }
 
 

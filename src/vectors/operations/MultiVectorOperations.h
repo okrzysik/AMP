@@ -35,6 +35,7 @@ private:
     static const VectorData *getVectorDataComponent( const VectorData &, size_t );
     static MultiVectorData *getMultiVectorData( VectorData & );
     static const MultiVectorData *getMultiVectorData( const VectorData & );
+    static size_t getVectorDataSize( const VectorData & );
 
 public:
     std::string VectorOpName() const override { return "MultiVectorOperations"; }
