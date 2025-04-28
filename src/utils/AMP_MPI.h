@@ -1468,13 +1468,13 @@ public: // SAMRAI interfaces
 
 
 private: // Helper functions
-    std::mt19937 *getRand() const;
+    std::mt19937_64 *getRand() const;
 
 private: // data members
     using atomic_ptr = std::atomic_int *volatile;
     using atomic_int = volatile std::atomic_int64_t;
     using int_ptr    = int *volatile;
-    using rand_ptr   = std::mt19937 *volatile;
+    using rand_ptr   = std::mt19937_64 *volatile;
 
     Comm d_comm             = commNull;     //!< The internal MPI communicator
     bool d_isNull           = true;         //!< Is the communicator NULL

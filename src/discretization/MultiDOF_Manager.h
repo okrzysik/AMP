@@ -36,6 +36,13 @@ public:
                      std::vector<std::shared_ptr<DOFManager>> managers,
                      std::shared_ptr<const AMP::Mesh::Mesh> mesh = {} );
 
+    /**
+     * \brief Create a new DOF manager object
+     * \details  Create a multiDOFManager that is a view of a single DOFManager
+     * \param manager  Original DOF Manager
+     */
+    multiDOFManager( std::shared_ptr<DOFManager> manager );
+
     //! Deconstructor
     virtual ~multiDOFManager() override;
 
@@ -161,6 +168,9 @@ public: // Advanced interfaces
                        size_t *dofs,
                        size_t index,
                        size_t capacity ) const override;
+
+    //! Get the local sizes on each rank
+    std::vector<size_t> getLocalSizes() const override;
 
     // Get the map
     inline const multiDOFHelper &getMap() const { return d_dofMap; }

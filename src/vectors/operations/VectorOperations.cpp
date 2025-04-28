@@ -1,5 +1,6 @@
 #include "AMP/vectors/operations/VectorOperations.h"
 #include "AMP/IO/RestartManager.h"
+#include "AMP/vectors/CommunicationList.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/MultiVectorOperations.h"

@@ -56,6 +56,7 @@ void VectorData::makeConsistent()
     }
 }
 
+
 /****************************************************************
  * Check if two data blocks are alias to each other              *
  ****************************************************************/
@@ -69,6 +70,23 @@ bool VectorData::isAnAliasOf( const VectorData &rhs ) const
             return false;
     }
     return true;
+}
+
+
+/****************************************************************
+ * Get the local sizes on each rank                              *
+ ****************************************************************/
+std::vector<size_t> VectorData::getLocalSizes() const
+{
+    auto commList = getCommunicationList();
+    if ( commList ) {
+        auto x = commList->getPartition();
+        for ( int i = ( (int) x.size() ) - 1; i > 0; i-- )
+            x[i] -= x[i - 1];
+        return x;
+    } else {
+        return getComm().allGather( d_localSize );
+    }
 }
 
 

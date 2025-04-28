@@ -45,6 +45,9 @@ class VectorSelector;
 class Variable : public AMP::enable_shared_from_this<Variable>
 {
 public:
+    // Empty constructor
+    Variable() = default;
+
     /** \brief  Construct a variable with a name
      * \details  At the very least, a variable must have a name.
      *    Since this class is virtual, this constructor is used by derived classes.

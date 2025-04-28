@@ -79,8 +79,8 @@ protected:
 
 private:
     friend class NativePetscVectorOperations;
-    bool d_bDeleteMe                   = false;
-    Vec d_petscVec                     = nullptr;
+    bool d_bDeleteMe                        = false;
+    Vec d_petscVec                          = nullptr;
     mutable PetscScalar *d_pArray           = nullptr; // mutable so that we can cache the value
     mutable const PetscScalar *d_pArrayRead = nullptr;
 };

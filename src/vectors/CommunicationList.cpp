@@ -1,3 +1,4 @@
+#include "AMP/vectors/CommunicationList.h"
 #include "AMP/IO/RestartManager.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorIndexer.h"
@@ -14,10 +15,7 @@ namespace AMP::LinearAlgebra {
 /************************************************************************
  * CommunicationListParameters                                           *
  ************************************************************************/
-CommunicationListParameters::CommunicationListParameters() : d_comm( AMP_COMM_NULL )
-{
-    d_localsize = (size_t) -1;
-}
+CommunicationListParameters::CommunicationListParameters() { d_localsize = (size_t) -1; }
 CommunicationListParameters::CommunicationListParameters( const CommunicationListParameters &rhs )
     : ParameterBase(),
       d_comm( rhs.d_comm ),
@@ -34,50 +32,35 @@ CommunicationList::CommunicationList() { d_partition = { 0 }; }
 CommunicationList::CommunicationList( std::shared_ptr<const CommunicationListParameters> params )
     : d_comm( params->d_comm )
 {
-    AMP_ASSERT( d_comm != AMP_MPI( AMP_COMM_NULL ) );
-    reset( params );
+    AMP_ASSERT( !d_comm.isNull() );
+    d_partition = d_comm.allGather( params->d_localsize );
+    for ( size_t i = 1; i < d_partition.size(); i++ )
+        d_partition[i] += d_partition[i - 1];
+    d_ReceiveDOFList = params->d_remote_DOFs;
+    AMP::Utilities::quicksort( d_ReceiveDOFList );
 }
 CommunicationList::CommunicationList( size_t local, const AMP_MPI &comm ) : d_comm( comm )
 {
-    reset( local );
+    d_partition = d_comm.allGather( local );
+    for ( size_t i = 1; i < d_partition.size(); i++ )
+        d_partition[i] += d_partition[i - 1];
+    const int size = std::max( d_comm.getSize(), 1 );
+    d_ReceiveSizes = std::vector<int>( size, 0 );
+    d_ReceiveDisp  = std::vector<int>( size, 0 );
+    d_SendSizes    = std::vector<int>( size, 0 );
+    d_SendDisp     = std::vector<int>( size, 0 );
+    d_SendDOFList  = {};
+    d_initialized  = true;
 }
-
-/************************************************************************
- * resets                                                               *
- ************************************************************************/
-void CommunicationList::reset( std::shared_ptr<const CommunicationListParameters> params )
+CommunicationList::CommunicationList( const AMP_MPI &comm,
+                                      std::vector<size_t> local,
+                                      std::vector<size_t> remote )
+    : d_comm( comm ), d_ReceiveDOFList( std::move( remote ) ), d_partition( std::move( local ) )
 {
-    // Check the input parameters
-    AMP_ASSERT( ( params->d_localsize >> 48 ) == 0 );
-    // Get the partition (the total number of DOFs for all ranks <= current rank)
-    d_partition = buildPartition( d_comm, params->d_localsize );
-    // Construct the communication arrays
-    buildCommunicationArrays( params->d_remote_DOFs );
-}
-void CommunicationList::reset( size_t local )
-{
-    size_t size = d_comm.getSize();
-    d_partition = buildPartition( d_comm, local );
-    d_ReceiveSizes.resize( size, 0 );
-    d_ReceiveDisp.resize( size, 0 );
-    d_ReceiveDOFList.resize( 0 );
-    d_SendSizes.resize( size, 0 );
-    d_SendDisp.resize( size, 0 );
-    d_SendDOFList.resize( 0 );
-}
-
-
-/************************************************************************
- * Create partition info                                                 *
- ************************************************************************/
-std::vector<size_t> CommunicationList::buildPartition( AMP_MPI &comm, size_t N_local )
-{
-    if ( comm.isNull() || comm.getSize() == 1 )
-        return { N_local };
-    auto partition = comm.allGather( N_local );
-    for ( int i = 1; i < comm.getSize(); i++ )
-        partition[i] += partition[i - 1];
-    return partition;
+    AMP_ASSERT( (int) d_partition.size() == d_comm.getSize() );
+    for ( size_t i = 1; i < d_partition.size(); i++ )
+        d_partition[i] += d_partition[i - 1];
+    AMP::Utilities::quicksort( d_ReceiveDOFList );
 }
 
 
@@ -86,6 +69,8 @@ std::vector<size_t> CommunicationList::buildPartition( AMP_MPI &comm, size_t N_l
  ************************************************************************/
 std::shared_ptr<CommunicationList> CommunicationList::subset( std::shared_ptr<VectorIndexer> ndx )
 {
+    if ( !d_initialized )
+        initialize();
     // Create the parameters for the subset
     auto params           = std::make_shared<CommunicationListParameters>();
     params->d_comm        = d_comm;
@@ -134,28 +119,34 @@ size_t CommunicationList::getLocalGhostID( size_t GID ) const
 /************************************************************************
  * Build the arrays                                                      *
  ************************************************************************/
-void CommunicationList::buildCommunicationArrays( const std::vector<size_t> &DOFs )
+void CommunicationList::initialize() const
 {
+    if ( d_initialized )
+        return;
+    d_initialized = true;
+
+    // Allocate initial data
     const int size = std::max( d_comm.getSize(), 1 );
     AMP_ASSERT( (int) d_partition.size() == size );
+    d_ReceiveSizes = std::vector<int>( size, 0 );
+    d_ReceiveDisp  = std::vector<int>( size, 0 );
+    d_SendSizes    = std::vector<int>( size, 0 );
+    d_SendDisp     = std::vector<int>( size, 0 );
+    d_SendDOFList  = {};
 
     // Check if we are working in serial
-    AMP_INSIST( size > 1 || DOFs.empty(),
-                "Error in communication list, remote DOFs are present for a serial vector" );
-    d_ReceiveSizes   = std::vector<int>( size, 0 );
-    d_ReceiveDisp    = std::vector<int>( size, 0 );
-    d_SendSizes      = std::vector<int>( size, 0 );
-    d_SendDisp       = std::vector<int>( size, 0 );
-    d_ReceiveDOFList = {};
-    d_SendDOFList    = {};
-    if ( size == 1 )
-        return;
+    if ( size <= 1 ) {
+        AMP_INSIST( d_ReceiveDOFList.empty(),
+                    "Error in communication list, remote DOFs are present for a serial vector" );
 
-    // Copy (and sort) the DOFs in d_ReceiveDOFList
-    d_ReceiveDOFList = DOFs;
-    AMP::Utilities::quicksort( d_ReceiveDOFList );
+        return;
+    }
+
+    // Check d_ReceiveDOFList
     if ( !d_ReceiveDOFList.empty() )
         AMP_ASSERT( d_ReceiveDOFList.back() < d_partition.back() );
+    for ( size_t i = 1; i < d_ReceiveDOFList.size(); i++ )
+        AMP_ASSERT( d_ReceiveDOFList[i] >= d_ReceiveDOFList[i - 1] );
 
     // Determine the number of DOFs received from each processor (requires DOFs to be sorted)
     for ( size_t i = 0, j = 0; i < d_ReceiveDOFList.size(); i++ ) {
@@ -188,6 +179,8 @@ void CommunicationList::buildCommunicationArrays( const std::vector<size_t> &DOF
  ************************************************************************/
 void CommunicationList::scatter_set( VectorData &vec ) const
 {
+    if ( !d_initialized )
+        initialize();
     if ( d_SendSizes.empty() && d_ReceiveSizes.empty() )
         return;
     // Pack the set buffers
@@ -202,6 +195,8 @@ void CommunicationList::scatter_set( VectorData &vec ) const
 }
 void CommunicationList::scatter_add( VectorData &vec ) const
 {
+    if ( !d_initialized )
+        initialize();
     if ( d_SendSizes.empty() && d_ReceiveSizes.empty() )
         return;
     // Pack the add buffers
@@ -249,13 +244,33 @@ size_t CommunicationList::getTotalSize() const { return d_partition.back(); }
 /************************************************************************
  * Misc. functions                                                       *
  ************************************************************************/
-size_t CommunicationList::getVectorSendBufferSize() const { return d_SendDOFList.size(); }
+size_t CommunicationList::getVectorSendBufferSize() const
+{
+    if ( !d_initialized )
+        initialize();
+    return d_SendDOFList.size();
+}
 size_t CommunicationList::getVectorReceiveBufferSize() const { return d_ReceiveDOFList.size(); }
 const std::vector<size_t> &CommunicationList::getPartition() const { return d_partition; }
 const std::vector<size_t> &CommunicationList::getGhostIDList() const { return d_ReceiveDOFList; }
-const std::vector<size_t> &CommunicationList::getReplicatedIDList() const { return d_SendDOFList; }
-const std::vector<int> &CommunicationList::getReceiveSizes() const { return d_ReceiveSizes; }
-const std::vector<int> &CommunicationList::getSendSizes() const { return d_SendSizes; }
+const std::vector<size_t> &CommunicationList::getReplicatedIDList() const
+{
+    if ( !d_initialized )
+        initialize();
+    return d_SendDOFList;
+}
+const std::vector<int> &CommunicationList::getReceiveSizes() const
+{
+    if ( !d_initialized )
+        initialize();
+    return d_ReceiveSizes;
+}
+const std::vector<int> &CommunicationList::getSendSizes() const
+{
+    if ( !d_initialized )
+        initialize();
+    return d_SendSizes;
+}
 const AMP_MPI &CommunicationList::getComm() const { return d_comm; }
 
 
