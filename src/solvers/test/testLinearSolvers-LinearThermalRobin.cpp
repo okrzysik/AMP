@@ -71,10 +71,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );
 
-    // Check the initial L2 norm of the solution
-    double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
-    AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
-    AMP::pout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
     AMP::pout << "System size: " << RightHandSideVec->getGlobalSize() << std::endl;
 
     // Use a random initial guess?
@@ -142,24 +138,31 @@ int main( int argc, char *argv[] )
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-CG" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-IPCG" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FCG" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-IPCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
     #ifdef AMP_USE_PETSC
-            // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
     #endif
 #endif
 
 #ifdef AMP_USE_TRILINOS_MUELU
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-IPCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-FCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-FGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
+    #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-PetscFGMRES" );
+    #endif
 #endif
     }
 

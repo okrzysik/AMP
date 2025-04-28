@@ -4,7 +4,7 @@ LinearSolver{
   name = "GMRESRSolver"
   variant = "gmresr"
   nested_solver = "GMRES"
-  absolute_tolerance = 1.0e-14
+  absolute_tolerance = 1.0e-12
   relative_tolerance = 1.0e-12
   print_info_level = 2
   max_iterations = 30
@@ -16,7 +16,7 @@ GMRES{
   uses_preconditioner = TRUE
   flexible_gmres = TRUE
   print_info_level = 2
-  max_iterations = 10
+  max_iterations = 3
   max_dimension = 10
   relative_tolerance = 1.0e-2
 }
@@ -24,7 +24,7 @@ GMRES{
 Preconditioner{
   name = "BoomerAMGSolver"
   max_iterations = 1
-  min_coarse_size = 10
+  max_coarse_size = 25
   strong_threshold = 0.5
   relax_type = 16
   coarsen_type = 10

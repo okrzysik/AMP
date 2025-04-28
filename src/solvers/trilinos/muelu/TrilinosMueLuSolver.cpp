@@ -118,7 +118,7 @@ TrilinosMueLuSolver::getSmootherFactory( const int level )
             new MueLu::Ifpack2Smoother<SC, LO, GO, NO>( ifpackType, smootherParams ) );
     }
 
-    //    smootherPrototype->SetDefaultVerbLevel( MueLu::High );
+    smootherPrototype->SetDefaultVerbLevel( getVerbosityLevel() );
     return Teuchos::rcp( new MueLu::SmootherFactory<SC, LO, GO, NO>( smootherPrototype ) );
 }
 
@@ -176,7 +176,7 @@ void TrilinosMueLuSolver::buildHierarchyFromDefaults( void )
     auto fineLevelA = getXpetraMatrix();
 
     d_mueluHierarchy = Teuchos::rcp( new MueLu::Hierarchy<SC, LO, GO, NO>() );
-    d_mueluHierarchy->SetDefaultVerbLevel( MueLu::Medium );
+    d_mueluHierarchy->SetDefaultVerbLevel( getVerbosityLevel() );
     auto finestMGLevel = d_mueluHierarchy->GetLevel();
     finestMGLevel->Set( "A", fineLevelA );
 
@@ -198,7 +198,7 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
     d_mueluHierarchy->SetMaxCoarseSize( d_MueLuParameterList.get<int>( "coarse: max size" ) );
     //    d_mueluHierarchyManager->SetupHierarchy( *d_mueluHierarchy);
 
-    //    d_mueluHierarchy->SetDefaultVerbLevel( MueLu::Medium );
+    d_mueluHierarchy->SetDefaultVerbLevel( getVerbosityLevel() );
     auto finestMGLevel = d_mueluHierarchy->GetLevel();
     // extract the Xpetra matrix from AMP
     auto fineLevelA = getXpetraMatrix();
@@ -654,6 +654,20 @@ void TrilinosMueLuSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebr
     mueluRCP.release();
 
     d_bCreationPhase = false;
+}
+
+MueLu::MsgType TrilinosMueLuSolver::getVerbosityLevel()
+{
+    MueLu::MsgType verbosityLevel = MueLu::MsgType::None;
+    if ( d_iDebugPrintInfoLevel == 1 )
+        verbosityLevel = MueLu::MsgType::Low;
+    else if ( d_iDebugPrintInfoLevel == 2 )
+        verbosityLevel = MueLu::MsgType::Medium;
+    else if ( d_iDebugPrintInfoLevel == 3 )
+        verbosityLevel = MueLu::MsgType::High;
+    else if ( d_iDebugPrintInfoLevel >= 4 )
+        verbosityLevel = MueLu::MsgType::Extreme;
+    return verbosityLevel;
 }
 
 } // namespace Solver

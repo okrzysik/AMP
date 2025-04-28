@@ -1,14 +1,3 @@
-<<< "input_LinearThermalRobinOperator" >>>
-
-LinearSolver{
-  name = "CGSolver"
-  uses_preconditioner = TRUE
-  absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-12
-  max_iterations = 25
-  print_info_level = 2
-}
-
 Preconditioner{
   name = "BoomerAMGSolver"
   max_iterations = 1
