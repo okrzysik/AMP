@@ -13,8 +13,13 @@ namespace AMP::LinearAlgebra {
  ****************************************************************/
 std::shared_ptr<VectorOperations> MultiVectorOperations::cloneOperations() const
 {
-    auto ptr = std::make_shared<MultiVectorOperations>();
+    auto ptr          = std::make_shared<MultiVectorOperations>();
+    ptr->d_operations = d_operations;
     return ptr;
+}
+MultiVectorOperations::MultiVectorOperations( std::shared_ptr<VectorOperations> op )
+    : VectorOperations(), d_operations( 1, op )
+{
 }
 
 

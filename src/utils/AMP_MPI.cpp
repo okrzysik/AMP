@@ -520,7 +520,7 @@ AMP_MPI::AMP_MPI( Comm comm, bool manage )
         d_currentTag[1] = 1;
         if ( d_size > 1 ) {
             auto seed = bcast<size_t>( std::random_device()(), 0 );
-            d_rand    = new std::mt19937( seed );
+            d_rand    = new std::mt19937_64( seed );
         }
     }
     d_isNull     = d_comm == MPI_COMM_NULL;
@@ -581,23 +581,23 @@ uint64_t AMP_MPI::hashRanks() const
 /************************************************************************
  *  Generate a random number                                             *
  ************************************************************************/
-static auto randSerial = std::mt19937( std::random_device()() );
-std::unique_ptr<std::mt19937> randWorld;
-std::unique_ptr<std::mt19937> randMPI;
-std::mt19937 *AMP_MPI::getRand() const
+static auto randSerial = std::mt19937_64( std::random_device()() );
+std::unique_ptr<std::mt19937_64> randWorld;
+std::unique_ptr<std::mt19937_64> randMPI;
+std::mt19937_64 *AMP_MPI::getRand() const
 {
     if ( d_size < 2 ) {
         return &randSerial;
     } else if ( d_hash == hashWorld ) {
         if ( !randWorld ) {
             auto seed = bcast<size_t>( randSerial(), 0 );
-            randWorld = std::make_unique<std::mt19937>( seed );
+            randWorld = std::make_unique<std::mt19937_64>( seed );
         }
         return randWorld.get();
     } else if ( d_hash == hashMPI ) {
         if ( !randMPI ) {
             auto seed = bcast<size_t>( randSerial(), 0 );
-            randMPI   = std::make_unique<std::mt19937>( seed );
+            randMPI   = std::make_unique<std::mt19937_64>( seed );
         }
         return randMPI.get();
     } else {
@@ -774,7 +774,7 @@ AMP_MPI AMP_MPI::dup( bool manage ) const
     MPI_Comm_dup( d_comm, &new_MPI_comm );
 #else
     static AMP_MPI::Comm uniqueGlobalComm = 11;
-    new_MPI_comm = uniqueGlobalComm;
+    new_MPI_comm                          = uniqueGlobalComm;
     uniqueGlobalComm++;
 #endif
     // Create the new comm object
@@ -991,7 +991,7 @@ bool AMP_MPI::operator>=( const AMP_MPI &comm ) const
  ************************************************************************/
 int AMP_MPI::compare( const AMP_MPI &comm ) const
 {
-    if ( d_comm == comm.d_comm )
+    if ( d_hash == comm.d_hash )
         return 1;
 #ifdef AMP_USE_MPI
     if ( d_isNull || comm.d_isNull )
@@ -1295,11 +1295,11 @@ AMP_MPI::Request AMP_MPI::IsendBytes( const void *buf, int bytes, int, int tag )
     if ( it == global_isendrecv_list.end() ) {
         // We are calling isend first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 1;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request2, Isendrecv_struct>( id, data ) );
     } else {
         // We called irecv first
@@ -1320,11 +1320,11 @@ AMP_MPI::Request AMP_MPI::IrecvBytes( void *buf, const int bytes, const int, con
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
-        data.bytes = bytes;
-        data.data = buf;
+        data.bytes  = bytes;
+        data.data   = buf;
         data.status = 2;
-        data.comm = d_comm;
-        data.tag = tag;
+        data.comm   = d_comm;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<AMP_MPI::Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
@@ -1463,7 +1463,7 @@ int AMP_MPI::waitAny( int count, Request2 *request )
         for ( int i = 0; i < count; i++ ) {
             if ( global_isendrecv_list.find( request[i] ) == global_isendrecv_list.end() ) {
                 found_any = true;
-                index = i;
+                index     = i;
             }
         }
         if ( found_any )
@@ -1595,7 +1595,7 @@ double AMP_MPI::tick() { return MPI_Wtick(); }
 #else
 double AMP_MPI::time()
 {
-    auto t = std::chrono::system_clock::now();
+    auto t  = std::chrono::system_clock::now();
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t.time_since_epoch() );
     return 1e-9 * ns.count();
 }

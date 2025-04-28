@@ -22,7 +22,7 @@ namespace AMP::Mesh {
 // Initialize static member variables
 volatile int initializeLibMesh::N_copies = 0;
 void *initializeLibMesh::lminit          = nullptr;
-AMP_MPI initializeLibMesh::d_comm        = AMP_MPI( AMP_COMM_NULL );
+AMP_MPI initializeLibMesh::d_comm        = AMP_COMM_NULL;
 
 
 /************************************************************

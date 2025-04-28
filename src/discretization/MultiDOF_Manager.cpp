@@ -20,6 +20,19 @@ multiDOFManager::multiDOFManager( const AMP_MPI &globalComm,
     AMP_ASSERT( !d_comm.isNull() );
     reset( managers, mesh );
 }
+multiDOFManager::multiDOFManager( std::shared_ptr<DOFManager> dof ) : DOFManager()
+{
+    AMP_ASSERT( dof );
+    d_comm       = dof->getComm();
+    d_managers   = { dof };
+    d_mesh       = dof->getMesh();
+    d_dofMap     = multiDOFHelper( *dof );
+    d_begin      = dof->beginDOF();
+    d_end        = dof->endDOF();
+    d_global     = dof->numGlobalDOF();
+    d_localSize  = { d_end - d_begin };
+    d_globalSize = { d_global };
+}
 
 void multiDOFManager::reset( std::vector<std::shared_ptr<DOFManager>> managers,
                              std::shared_ptr<const AMP::Mesh::Mesh> mesh )
@@ -28,17 +41,15 @@ void multiDOFManager::reset( std::vector<std::shared_ptr<DOFManager>> managers,
     d_mesh     = mesh;
     d_dofMap   = multiDOFHelper( managers, d_comm );
     // Compute the total begin, end, and global size
-    size_t local_size = 0;
+    d_begin  = d_dofMap.begin();
+    d_end    = d_dofMap.end();
+    d_global = d_dofMap.numGlobal();
     d_localSize.resize( managers.size(), 0 );
     d_globalSize.resize( managers.size(), 0 );
     for ( size_t i = 0; i < d_managers.size(); i++ ) {
         d_globalSize[i] = d_managers[i]->numGlobalDOF();
         d_localSize[i]  = d_managers[i]->numLocalDOF();
-        local_size += d_localSize[i];
     }
-    d_comm.sumScan( &local_size, &d_end, 1 );
-    d_begin  = d_end - local_size;
-    d_global = d_comm.bcast( d_end, d_comm.getSize() - 1 );
     // Check the multimesh if provided
     if ( d_mesh ) {
         auto meshIdList = d_mesh->getLocalMeshIDs();
@@ -296,6 +307,12 @@ std::vector<size_t> multiDOFManager::getSubDOF( const int manager,
 {
     return d_dofMap.getSubDOF( manager, dofs );
 }
+
+
+/****************************************************************
+ * Get the local sizes on each rank                              *
+ ****************************************************************/
+std::vector<size_t> multiDOFManager::getLocalSizes() const { return d_dofMap.getLocalSize(); }
 
 
 } // namespace AMP::Discretization
