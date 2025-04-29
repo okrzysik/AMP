@@ -297,6 +297,17 @@ void CSRMatrixData<Policy, Allocator, DiagMatrixData>::setNNZ( const std::vector
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
+void CSRMatrixData<Policy, Allocator, DiagMatrixData>::setNNZ()
+{
+    PROFILE( "CSRMatrixData::setNNZ" );
+
+    // forward to internal blocks to get the internals allocated
+    d_diag_matrix->setNNZ( true );
+    d_offd_matrix->setNNZ( true );
+    d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData>::globalToLocalColumns()
 {
     PROFILE( "CSRMatrixData::globalToLocalColumns" );

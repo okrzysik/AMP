@@ -25,9 +25,6 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>::mult(
     gidx_t *cols;
     scalar_t *coeffs;
     std::tie( rs, cols, cols_loc, coeffs ) = A->getDataFields();
-    AMP_DEBUG_ASSERT( rs != nullptr );
-    AMP_DEBUG_ASSERT( cols_loc != nullptr );
-    AMP_DEBUG_ASSERT( coeffs != nullptr );
 
     for ( lidx_t row = 0; row < nRows; ++row ) {
         for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {

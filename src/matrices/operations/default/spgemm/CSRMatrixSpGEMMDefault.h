@@ -41,13 +41,14 @@ public:
     void numericMultiply();
 
 protected:
+    template<class Accumulator, bool IsSymbolic>
+    void multiply( std::shared_ptr<DiagMatrixData> A_data,
+                   std::shared_ptr<DiagMatrixData> B_data,
+                   std::shared_ptr<DiagMatrixData> C_data );
     template<bool SYMBOLIC>
     void multiplyLocal( std::shared_ptr<DiagMatrixData> B_data,
                         std::shared_ptr<DiagMatrixData> C_data,
                         lidx_t *nnz );
-    void symbolicMultiplyLocal( std::shared_ptr<DiagMatrixData> B_data, std::vector<lidx_t> &nnz );
-    void numericMultiplyLocal( std::shared_ptr<DiagMatrixData> B_data,
-                               std::shared_ptr<DiagMatrixData> C_data );
 
     void setupBRemoteComm();
     void startBRemoteComm();
@@ -99,61 +100,44 @@ protected:
     std::map<int, std::shared_ptr<DiagMatrixData>> d_send_matrices;
     std::map<int, std::shared_ptr<DiagMatrixData>> d_recv_matrices;
 
-    // Internal row accumlator class
+    // Internal row accumlator classes
     struct DenseAccumulator {
         DenseAccumulator( int capacity_ )
             : capacity( capacity_ ), num_inserted( 0 ), flags( capacity, -1 )
         {
         }
 
-        void insert_or_append( lidx_t loc, gidx_t gbl )
-        {
-            const auto k = flags[loc];
-            if ( k == -1 ) {
-                flags[loc] = num_inserted;
-                if ( num_inserted == static_cast<lidx_t>( flag_inv.size() ) ) {
-                    flag_inv.push_back( loc );
-                    cols.push_back( gbl );
-                } else {
-                    flag_inv[num_inserted] = loc;
-                    cols[num_inserted]     = gbl;
-                }
-                ++num_inserted;
-            }
-        }
-
-        void insert_or_append(
-            lidx_t loc, gidx_t gbl, scalar_t val, gidx_t *col_space, scalar_t *val_space )
-        {
-            const auto k = flags[loc];
-            if ( k == -1 ) {
-                flags[loc] = num_inserted;
-                if ( num_inserted == static_cast<lidx_t>( flag_inv.size() ) ) {
-                    flag_inv.push_back( loc );
-                } else {
-                    flag_inv[num_inserted] = loc;
-                }
-                col_space[num_inserted] = gbl;
-                val_space[num_inserted] = val;
-                ++num_inserted;
-            } else {
-                val_space[k] += val;
-            }
-        }
-
-        void clear()
-        {
-            for ( int n = 0; n < num_inserted; ++n ) {
-                flags[flag_inv[n]] = -1;
-            }
-            num_inserted = 0;
-        }
+        void insert_or_append( lidx_t loc, gidx_t gbl );
+        void insert_or_append( lidx_t loc,
+                               gidx_t gbl,
+                               scalar_t val,
+                               gidx_t *col_space,
+                               scalar_t *val_space,
+                               lidx_t max_pos );
+        void clear();
 
         const lidx_t capacity;
         lidx_t num_inserted;
         std::vector<lidx_t> flags;
         std::vector<lidx_t> flag_inv;
         std::vector<gidx_t> cols;
+    };
+
+    struct SparseAccumulator {
+        SparseAccumulator( int capacity_ ) : capacity( capacity_ ), num_inserted( 0 ) {}
+
+        void insert_or_append( lidx_t loc, gidx_t gbl );
+        void insert_or_append( lidx_t loc,
+                               gidx_t gbl,
+                               scalar_t val,
+                               gidx_t *col_space,
+                               scalar_t *val_space,
+                               lidx_t max_pos );
+        void clear();
+
+        const lidx_t capacity;
+        lidx_t num_inserted;
+        std::unordered_map<gidx_t, lidx_t> kv;
     };
 };
 

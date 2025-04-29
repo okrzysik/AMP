@@ -229,6 +229,12 @@ public:
      */
     void setNNZ( const std::vector<lidx_t> &nnz_diag, const std::vector<lidx_t> &nnz_offd );
 
+    /** \brief  Set the number of nonzeros in each block and allocate space internally
+     * \details This version assumes that the nnz per row have been written into the
+     * row_pointer fields of the individual blocks
+     */
+    void setNNZ();
+
     //! Convert global columns in blocks to local columns and free global columns
     void globalToLocalColumns();
 
