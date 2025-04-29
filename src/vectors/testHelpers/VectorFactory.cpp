@@ -63,12 +63,12 @@ MultiVectorFactory::MultiVectorFactory( std::shared_ptr<const VectorFactory> fac
 AMP::LinearAlgebra::Vector::shared_ptr MultiVectorFactory::getVector() const
 {
     auto var    = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "var1" );
-    auto retVal = AMP::LinearAlgebra::MultiVector::create( var, AMP_COMM_WORLD );
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs;
     for ( int i = 0; i != NUM1; i++ )
-        retVal->addVector( FACTORY1->getVector() );
+        vecs.push_back( FACTORY1->getVector() );
     for ( int i = 0; i != NUM2; i++ )
-        retVal->addVector( FACTORY2->getVector() );
-    return retVal;
+        vecs.push_back( FACTORY2->getVector() );
+    return AMP::LinearAlgebra::MultiVector::create( var, AMP_COMM_WORLD, vecs );
 }
 std::string MultiVectorFactory::name() const
 {

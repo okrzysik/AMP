@@ -67,15 +67,12 @@ void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 // Test the behavior of VS_ByVariableName
 void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut )
 {
-    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
     auto vec1  = d_factory->getVector();
     auto vec2  = vec1->clone( "vec2" );
     auto vec3a = vec1->clone( "vec3" );
     auto vec3b = vec1->clone( "vec3" );
-    auto vec3  = AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
-    vec3->addVector( vec2 );
-    vec3->addVector( vec3a );
-    vec3->addVector( vec3b );
+    auto vec3 = AMP::LinearAlgebra::MultiVector::create( "multivec", comm, { vec2, vec3a, vec3b } );
 
     bool pass       = true;
     auto selection1 = vec2->select( AMP::LinearAlgebra::VS_ByVariableName( "None" ) );
@@ -95,7 +92,7 @@ void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut 
     }
 
     selection1    = vec3->select( AMP::LinearAlgebra::VS_ByVariableName( "vec3" ) );
-    auto vec3_sub = AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
+    auto vec3_sub = AMP::LinearAlgebra::MultiVector::create( "multivec", comm );
     vec3_sub->addVector( vec3a );
     vec3_sub->addVector( vec3b );
     if ( selection1 ) {
