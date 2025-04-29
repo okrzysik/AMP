@@ -127,11 +127,13 @@ bool checkCudaCapabilities( int major_version, int minor_version );
 
 static void inline setKernelDims( size_t n, dim3 &BlockDim, dim3 &GridDim )
 {
-    // Parameters for an NVIDIA k20x.  Consider using occupancy API
-    const int warpSize    = 32;
-    const int maxGridSize = 112; // 8 blocks per MP of tesla k20x,
-                                 //  this number might need to be tuned
-                                 //  consider querying for device info
+    // Parameters for an NVIDIA Volta.
+    // https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf
+    // We should move to using occupancy API
+    constexpr int warpSize    = 32;
+    constexpr int maxGridSize = 32 * 80; // max 32 blocks per SM of Volta, 80 SM's
+                                         //  this number might need to be tuned
+                                         //  consider querying for device info
     int warpCount    = ( n / warpSize ) + ( ( ( n % warpSize ) == 0 ) ? 0 : 1 );
     int warpPerBlock = std::max( 1, std::min( 4, warpCount ) );
     int threadCount  = warpSize * warpPerBlock;

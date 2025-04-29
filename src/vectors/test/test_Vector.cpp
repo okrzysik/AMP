@@ -39,6 +39,7 @@ std::string MVFactory1 =
 
 int testByVariableName( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 {
+    PROFILE( "testByVariableName" );
     int N_it  = 50;
     auto name = vec->getName();
     auto t1   = AMP::Utilities::time();
@@ -51,6 +52,7 @@ int testByVariableName( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 }
 int testByStride( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, size_t offset, size_t length )
 {
+    PROFILE( "testByStride" );
     int N_it  = 20;
     auto name = vec->getName();
     auto t1   = AMP::Utilities::time();
@@ -63,6 +65,7 @@ int testByStride( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, size_t offset
 }
 int testByComm( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, const AMP::AMP_MPI &comm )
 {
+    PROFILE( "testByComm" );
     int N_it  = 50;
     auto name = vec->getName();
     auto t1   = AMP::Utilities::time();
@@ -74,17 +77,34 @@ int testByComm( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, const AMP::AMP_
     return 1e9 * ( t2 - t1 ) / N_it;
 }
 
-int testByMesh( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
+int testByMesh1( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 {
+    PROFILE( "testByMesh 1" );
     auto mesh = vec->getDOFManager()->getMesh();
     if ( !mesh )
         return 0;
-    int N_it  = 20;
+    int N_it  = 100;
     auto name = vec->getName();
     auto t1   = AMP::Utilities::time();
     for ( int i = 0; i < N_it; i++ ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( mesh );
-        vec = vec->select( meshSelector, name );
+        AMP_ASSERT( vec->select( meshSelector ) );
+    }
+    auto t2 = AMP::Utilities::time();
+    return 1e9 * ( t2 - t1 ) / N_it;
+}
+int testByMesh2( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
+{
+    PROFILE( "testByMesh 2" );
+    auto mesh = vec->getDOFManager()->getMesh();
+    if ( !mesh )
+        return 0;
+    int N_it  = 100;
+    auto name = vec->getName();
+    auto t1   = AMP::Utilities::time();
+    for ( int i = 0; i < N_it; i++ ) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector( mesh );
+        AMP_ASSERT( vec->select( meshSelector, name ) );
     }
     auto t2 = AMP::Utilities::time();
     return 1e9 * ( t2 - t1 ) / N_it;
@@ -97,7 +117,7 @@ void testVectorSelectorPerformance()
     auto splitComm = worldComm.split( worldComm.getRank() % 2 );
     if ( worldComm.getRank() == 0 )
         printf( "       subset performance (ns):              "
-                " Variable  Stride  VecComm    World    Self    Split     Mesh\n" );
+                " Variable  Stride  VecComm    World    Self    Split     Mesh 1    Mesh 2\n" );
     for ( auto name : getAllFactories() ) {
         auto factory = generateVectorFactory( name );
         auto vec     = factory->getVector();
@@ -109,11 +129,20 @@ void testVectorSelectorPerformance()
         auto t4 = testByComm( vec, worldComm );
         auto t5 = testByComm( vec, selfComm );
         auto t6 = testByComm( vec, splitComm );
-        auto t7 = testByMesh( vec );
+        auto t7 = testByMesh1( vec );
+        auto t8 = testByMesh2( vec );
         if ( worldComm.getRank() == 0 ) {
             auto name2 = name.substr( 0, 40 );
-            printf(
-                "  %40s  %8i %8i %8i %8i %8i %8i %8i\n", name2.data(), t1, t2, t3, t4, t5, t6, t7 );
+            printf( "  %40s  %8i %8i %8i %8i %8i %8i %8i %8i\n",
+                    name2.data(),
+                    t1,
+                    t2,
+                    t3,
+                    t4,
+                    t5,
+                    t6,
+                    t7,
+                    t8 );
         }
     }
 }
@@ -126,7 +155,7 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE( 3 );
 
-#if 1
+#if 0
 
     // Test ArrayVector dimensions
     std::vector<size_t> dims{ 3, 3, 3, 3 };

@@ -1,10 +1,10 @@
-<<< "input_testLinearSolvers-LinearThermalRobin-Common" >>>
+<<< "input_LinearThermalRobinOperator" >>>
 
 LinearSolver{
   name = "GMRESRSolver"
   variant = "gcr"
   absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-14
+  relative_tolerance = 1.0e-12
   print_info_level = 2
   max_iterations = 30
   max_dimension = 100

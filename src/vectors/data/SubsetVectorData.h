@@ -3,6 +3,7 @@
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 
 #include <vector>
@@ -59,7 +60,7 @@ public:
       vec2.copyVector( vec3 );
     \endcode
   */
-class SubsetVectorData : public VectorData
+class SubsetVectorData : public GhostDataHelper<double>
 {
 
 public:

@@ -23,11 +23,11 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include "reference_solver_solutions.h"
 #include "testSolverHelpers.h"
 
 #include <iomanip>
 #include <limits>
-#include <memory>
 #include <string>
 
 #define ITFAILS ut.failure( __LINE__ );
@@ -48,109 +48,50 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Print from all cores into the output files
     AMP::logAllNodes( log_file );
 
-    //   Create the Mesh.
-    AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    auto mesh_db   = input_db->getDatabase( "Mesh" );
-    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    auto comm      = AMP::AMP_MPI( AMP_COMM_WORLD );
-    mgrParams->setComm( comm );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    // Create the Mesh
+    const auto meshAdapter = createMesh( input_db );
 
-    // Create a DOF manager for a nodal vector
-    int DOFsPerNode          = 1;
-    int DOFsPerElement       = 8;
-    int nodalGhostWidth      = 1;
-    int gaussPointGhostWidth = 1;
-    bool split               = true;
-    auto nodalDofMap         = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
-
-    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    // CREATE THE NEUTRONICS SOURCE
-    AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
-                "Key ''NeutronicsOperator'' is missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> unusedModel;
-    auto neutronicsOperator = std::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "NeutronicsOperator", input_db, unusedModel ) );
-
-    neutronicsOperator->setTimeStep( 0. );
-
-    auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
-    auto SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
-
-    neutronicsOperator->apply( nullVec, SpecificPowerVec );
-
-    // Integrate Nuclear Source over Desnity * Volume
-    AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
-    auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
-
-    // Create the power (heat source) vector.
-    auto PowerInWattsVar = sourceOperator->getOutputVariable();
-    auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
-
-    // convert the vector of specific power to power for a given basis.
-    sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
+    // Create the power source
+    auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, meshAdapter );
 
     // CREATE THE THERMAL OPERATOR
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
+            meshAdapter, "DiffusionBVPOperator", input_db ) );
+
+    auto nodalDofMap    = PowerInWattsVec->getDOFManager();
+    auto inputVariable  = diffusionOperator->getInputVariable();
+    auto outputVariable = diffusionOperator->getOutputVariable();
+    auto memoryLocation = diffusionOperator->getMemoryLocation();
 
     auto TemperatureInKelvinVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
+        AMP::LinearAlgebra::createVector( nodalDofMap, inputVariable, true, memoryLocation );
+
     auto RightHandSideVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
-    auto ResidualVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
+        AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable, true, memoryLocation );
 
     RightHandSideVec->copyVector( PowerInWattsVec );
-
-    auto boundaryOp = diffusionOperator->getBoundaryOperator();
-
-    boundaryOp->addRHScorrection( RightHandSideVec );
-    boundaryOp->setRHScorrection( RightHandSideVec );
+    diffusionOperator->modifyRHSvector( RightHandSideVec );
 
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    const auto initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
+    AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
-    double rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
-    std::cout << "RHS Norm: " << rhsNorm << std::endl;
+    const auto rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
+    AMP::pout << "RHS Norm: " << rhsNorm << std::endl;
 
+    auto &comm    = meshAdapter->getComm();
     auto mlSolver = AMP::Solver::Test::buildSolver(
         "LinearSolver", input_db, comm, nullptr, diffusionOperator );
 
-    // Use a random initial guess?
+    // Solve the problem.
     mlSolver->setZeroInitialGuess( false );
-
-    // Solve the prblem.
     mlSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    // Compute the residual
-    diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
-
-    // Check the L2 norm of the final residual.
-    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
-    std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
-
-    if ( finalResidualNorm > 10.0 ) {
-        ut->failure( mlSolver->type() + " fails to solve a linear thermal problem with a nuclear "
-                                        "source term." );
-    } else {
-        ut->passes( mlSolver->type() +
-                    " successfully solves a linear thermal problem with a nuclear "
-                    "source term." );
-    }
+    checkConvergence( mlSolver.get(), inputFileName, *ut );
 
     // check the solution
     auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
@@ -213,7 +154,7 @@ int main( int argc, char *argv[] )
 
     // build unique profile name to avoid collisions
     std::ostringstream ss;
-    ss << "testLinearFick_r" << std::setw( 3 ) << std::setfill( '0' )
+    ss << "testLinearThermalOperator-bar_r" << std::setw( 3 ) << std::setfill( '0' )
        << AMP::AMPManager::getCommWorld().getSize();
 
     PROFILE_SAVE( ss.str() );

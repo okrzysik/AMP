@@ -528,16 +528,14 @@ computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     AMP::LinearAlgebra::VS_Mesh vectorSelector( mesh );
     auto subsetDisplacementField = displacementField->select(
         vectorSelector, ( displacementField->getVariable() )->getName() );
-    auto subsetSigmaXX = sigmaXX->select( vectorSelector, ( sigmaXX->getVariable() )->getName() );
-    auto subsetSigmaYY = sigmaYY->select( vectorSelector, ( sigmaYY->getVariable() )->getName() );
-    auto subsetSigmaZZ = sigmaZZ->select( vectorSelector, ( sigmaZZ->getVariable() )->getName() );
-    auto subsetSigmaYZ = sigmaYZ->select( vectorSelector, ( sigmaYZ->getVariable() )->getName() );
-    auto subsetSigmaXZ = sigmaXZ->select( vectorSelector, ( sigmaXZ->getVariable() )->getName() );
-    auto subsetSigmaXY = sigmaXY->select( vectorSelector, ( sigmaXY->getVariable() )->getName() );
-    auto subsetSigmaEff =
-        sigmaEff->select( vectorSelector, ( sigmaEff->getVariable() )->getName() );
-    auto subsetTemperatureField =
-        temperatureField->select( vectorSelector, ( temperatureField->getVariable() )->getName() );
+    auto subsetSigmaXX          = sigmaXX->select( vectorSelector );
+    auto subsetSigmaYY          = sigmaYY->select( vectorSelector );
+    auto subsetSigmaZZ          = sigmaZZ->select( vectorSelector );
+    auto subsetSigmaYZ          = sigmaYZ->select( vectorSelector );
+    auto subsetSigmaXZ          = sigmaXZ->select( vectorSelector );
+    auto subsetSigmaXY          = sigmaXY->select( vectorSelector );
+    auto subsetSigmaEff         = sigmaEff->select( vectorSelector );
+    auto subsetTemperatureField = temperatureField->select( vectorSelector );
 
     double youngsModulus =
         std::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>( mechanicsMaterialModel )

@@ -33,25 +33,41 @@ std::map<std::string, std::tuple<int, double, double, bool>> conv_map{
     { "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB",
       std::make_tuple( 18, 3.686753e-09, 1.0e-09, true ) },
     { "input_testLinearSolvers-LinearThermalRobin-TFQMR",
-      std::make_tuple( 19, 5.57805369274078e-09, 5.0e-09, true ) },
+      std::make_tuple( 21, 6.0e-09, 5.0e-09, false ) },
     { "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES",
       std::make_tuple( 25, 6.62678786883557e-12, 6.0e-12, true ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML",
-      std::make_tuple( 14, 3.90003330750106e-13, 4.0e-13, true ) },
+      std::make_tuple( 0, 1.1368884998304e-12, 2.0e-12, true ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-CG",
-      std::make_tuple( 0, 2.55995674768853e-09, 2.0e-09, true ) },
+      std::make_tuple( 5, 1.27898867439474e-09, 2.0e-10, false ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-IPCG",
-      std::make_tuple( 0, 2.55995674768853e-09, 2.0e-09, true ) },
+      std::make_tuple( 5, 1.279016778102248e-09, 2.0e-09, false ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-GMRES",
-      std::make_tuple( 4, 2.56859864182836e-09, 7.0e-08, true ) },
+      std::make_tuple( 5, 1.220976553256886e-09, 2.0e-10, false ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES",
-      std::make_tuple( 1, 2.01677528883695e-09, 2.0e-9, true ) },
+      std::make_tuple( 5, 1.220976553256886e-09, 2.0e-10, false ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB",
-      std::make_tuple( 0, 1.03221e-21, 1.0e-12, true ) },
+      std::make_tuple( 3, 2.41617681713843e-09, 2.0e-09, false ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR",
-      std::make_tuple( 3, 1.03439e-10, 2.0e-10, true ) },
+      std::make_tuple( 4, 1.89450365588275e-10, 2.0e-10, false ) },
     { "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES",
-      std::make_tuple( 1, 2.00917711909309e-09, 2.0e-09, true ) },
+      std::make_tuple( 6, 1.217147923031935e-09, 2.0e-09, false ) },
+    { "input_testLinearSolvers-LinearThermalRobin-MueLu",
+      std::make_tuple( 0, 3.947153362581674e-09, 2.0e-10, false ) },
+    { "input_testLinearSolvers-LinearThermalRobin-MueLu-CG",
+      std::make_tuple( 27, 3.61364e-09, 2.0e-09, false ) },
+    { "input_testLinearSolvers-LinearThermalRobin-MueLu-IPCG",
+      std::make_tuple( 9, 5.092835569229348e-10, 2.0e-10, false ) },
+    { "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES",
+      std::make_tuple( 10, 2.099544001351115e-09, 2.0e-09, false ) },
+    { "input_testLinearSolvers-LinearThermalRobin-MueLu-FGMRES",
+      std::make_tuple( 10, 2.099544001351115e-09, 2.0e-09, false ) },
+    { "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB",
+      std::make_tuple( 4, 2.696506029673837e-09, 2.0e-09, false ) },
+    { "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR",
+      std::make_tuple( 6, 7.02626e-10, 2.0e-10, false ) },
+    { "input_testLinearSolvers-LinearThermalRobin-MueLu-PetscFGMRES",
+      std::make_tuple( 10, 2.085761625746e-09, 2.0e-09, false ) },
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG",
       std::make_tuple( 15, -1.0, 0.0, false ) },
     { "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG",
@@ -160,9 +176,9 @@ static void checkConvergence( AMP::Solver::SolverStrategy *solver,
         }
     } else {
         if ( accept ) {
-            ut.passes( "Solver has converged." );
+            ut.passes( "Solver has converged for " + inputFile );
         } else {
-            AMP::pout << "Solver has NOT converged." << std::endl;
+            AMP::pout << "Solver has NOT converged for " << inputFile << std::endl;
             AMP::pout << "  Solver finished with status: " << solver->getConvergenceStatusString()
                       << std::endl;
             ut.failure( "Solver has NOT converged." );

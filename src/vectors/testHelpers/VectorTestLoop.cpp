@@ -17,11 +17,15 @@
     #include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorTests.h"
 #endif
 
+#include "ProfilerApp.h"
+
+
 namespace AMP::LinearAlgebra {
 
 
 void VectorTests::testBasicVector( AMP::UnitTest *ut )
 {
+    PROFILE( "testBasicVector" );
     try {
         InstantiateVector( ut );
         SetToScalarVector( ut );
@@ -57,6 +61,7 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
         Bug_728( ut );
         VectorIteratorTests( ut );
         TestMultivectorDuplicate( ut );
+        TestContainsGlobalElement( ut );
     } catch ( const std::exception &err ) {
         ut->failure( "Caught std::exception testing " + d_factory->name() + ":\n" + err.what() );
     } catch ( ... ) {
@@ -71,6 +76,7 @@ void VectorTests::testManagedVector( AMP::UnitTest * ) {}
 void VectorTests::testPetsc( [[maybe_unused]] AMP::UnitTest *ut )
 {
 #ifdef AMP_USE_PETSC
+    PROFILE( "testPetsc" );
     auto petscViewFactory  = std::make_shared<PetscViewFactory>( d_factory );
     auto petscCloneFactory = std::make_shared<PetscCloneFactory>( petscViewFactory );
     PetscVectorTests test1( petscViewFactory );
@@ -87,6 +93,7 @@ void VectorTests::testPetsc( [[maybe_unused]] AMP::UnitTest *ut )
 void VectorTests::testEpetra( [[maybe_unused]] AMP::UnitTest *ut )
 {
 #ifdef AMP_USE_TRILINOS_EPETRA
+    PROFILE( "testEpetra" );
     if ( d_factory->getVector()->numberOfDataBlocks() <= 1 ) {
         // Epetra currently only supports one data block
         EpetraVectorTests test( d_factory );
@@ -99,6 +106,7 @@ void VectorTests::testEpetra( [[maybe_unused]] AMP::UnitTest *ut )
 void VectorTests::testSundials( [[maybe_unused]] AMP::UnitTest *ut )
 {
 #ifdef AMP_USE_SUNDIALS
+    PROFILE( "testSundials" );
     auto viewFactory =
         std::make_shared<ViewFactory<AMP::LinearAlgebra::SundialsVector>>( d_factory );
     auto viewVec = viewFactory->getVector();
@@ -123,6 +131,7 @@ void VectorTests::testSundials( [[maybe_unused]] AMP::UnitTest *ut )
 
 void VectorTests::testNullVector( AMP::UnitTest *ut )
 {
+    PROFILE( "testNullVector" );
     auto viewFactory = std::make_shared<NullVectorFactory>();
     VectorTests test( viewFactory );
     test.InstantiateVector( ut );
@@ -131,6 +140,7 @@ void VectorTests::testNullVector( AMP::UnitTest *ut )
 
 void VectorTests::testParallelVectors( AMP::UnitTest *ut )
 {
+    PROFILE( "testParallelVectors" );
     InstantiateVector( ut );
     // VerifyVectorGhostCreate( ut );
     VerifyVectorMakeConsistentSet( ut );
@@ -141,6 +151,7 @@ void VectorTests::testParallelVectors( AMP::UnitTest *ut )
 
 void VectorTests::testVectorSelector( AMP::UnitTest *ut )
 {
+    PROFILE( "testVectorSelector" );
     testAllSelectors( ut );
     test_VS_ByVariableName( ut );
     test_VS_Comm( ut );

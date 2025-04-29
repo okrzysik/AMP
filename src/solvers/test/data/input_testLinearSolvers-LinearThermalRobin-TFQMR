@@ -1,10 +1,10 @@
-<<< "input_testLinearSolvers-LinearThermalRobin-Common" >>>
+<<< "input_LinearThermalRobinOperator" >>>
 
 LinearSolver{
   name = "TFQMRSolver"
   uses_preconditioner = FALSE
   max_iterations = 25
   absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-11
-  print_info_level = 3
+  relative_tolerance = 1.0e-12
+  print_info_level = 2
 }

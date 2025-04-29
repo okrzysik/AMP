@@ -1,4 +1,4 @@
-<<< "input_testLinearSolvers-LinearThermalRobin-Common-CylMesh" >>>
+<<< "input_LinearThermalRobinOperator-CylMesh" >>>
 
 LinearSolver{
   name = "CGSolver"
@@ -15,7 +15,7 @@ Preconditioner{
   absolute_tolerance = 1.0e-12
   max_levels             = 25
   max_coarse_size        = 32
-  min_coarse_size        = 16
+  max_coarse_size        = 16
   max_iterations         = 1
   measure_type           = 1
   coarsen_type           = 8

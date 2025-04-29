@@ -8,7 +8,8 @@
 
 namespace AMP::LinearAlgebra {
 
-NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm ) : VectorData()
+NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm )
+    : GhostDataHelper<PetscScalar>()
 {
     // Set the vector
     d_petscVec   = v;
@@ -65,9 +66,9 @@ void NativePetscVectorData::makeConsistent()
 void NativePetscVectorData::putRawData( const void *in, const typeID &id )
 {
     resetArray();
-    constexpr auto type = getTypeID<double>();
+    constexpr auto type = getTypeID<PetscScalar>();
     AMP_ASSERT( id == type );
-    auto data = reinterpret_cast<const double *>( in );
+    auto data = reinterpret_cast<const PetscScalar *>( in );
     int a, b;
     VecGetOwnershipRange( d_petscVec, &a, &b );
     AMP_ASSERT( b - a == (int) getLocalSize() );
@@ -80,10 +81,12 @@ void NativePetscVectorData::putRawData( const void *in, const typeID &id )
 void NativePetscVectorData::getRawData( void *out, const typeID &id ) const
 {
     resetArray(); // return possibly outstanding raw data block
-    constexpr auto type = getTypeID<double>();
+    constexpr auto type = getTypeID<PetscScalar>();
     AMP_ASSERT( id == type );
-    auto data = reinterpret_cast<double *>( out );
-    std::copy( getRawDataBlock<double>( 0 ), getRawDataBlock<double>( 0 ) + getLocalSize(), data );
+    auto data = reinterpret_cast<PetscScalar *>( out );
+    std::copy( getRawDataBlock<PetscScalar>( 0 ),
+               getRawDataBlock<PetscScalar>( 0 ) + getLocalSize(),
+               data );
     resetArray(); // return block just requested
 }
 
@@ -143,8 +146,8 @@ void NativePetscVectorData::setValuesByLocalID( size_t N,
                                                 const typeID &id )
 {
     resetArray();
-    AMP_ASSERT( id == getTypeID<double>() );
-    auto data = reinterpret_cast<const double *>( vals );
+    AMP_ASSERT( id == getTypeID<PetscScalar>() );
+    auto data = reinterpret_cast<const PetscScalar *>( vals );
     std::vector<PetscInt> idx( N );
     for ( size_t i = 0; i < N; i++ ) {
         idx[i] = indices[i] + d_localStart;
@@ -159,8 +162,8 @@ void NativePetscVectorData::addValuesByLocalID( size_t N,
                                                 const typeID &id )
 {
     resetArray();
-    AMP_ASSERT( id == getTypeID<double>() );
-    auto data = reinterpret_cast<const double *>( vals );
+    AMP_ASSERT( id == getTypeID<PetscScalar>() );
+    auto data = reinterpret_cast<const PetscScalar *>( vals );
     std::vector<PetscInt> idx( N );
     for ( size_t i = 0; i < N; i++ ) {
         idx[i] = indices[i] + d_localStart;
@@ -174,8 +177,8 @@ void NativePetscVectorData::getValuesByLocalID( size_t N,
                                                 const typeID &id ) const
 {
     resetArray();
-    AMP_ASSERT( id == getTypeID<double>() );
-    auto data = reinterpret_cast<double *>( vals );
+    AMP_ASSERT( id == getTypeID<PetscScalar>() );
+    auto data = reinterpret_cast<PetscScalar *>( vals );
     std::vector<PetscInt> idx( N );
     for ( size_t i = 0; i < N; i++ ) {
         idx[i] = indices[i] + d_localStart;

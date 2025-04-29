@@ -53,8 +53,26 @@ void SubsetCommSelfVectorData::getRawData( void *out, const typeID &id ) const
 
 
 /****************************************************************
+ * makeConsistent / UpdateState                                  *
+ ****************************************************************/
+UpdateState SubsetCommSelfVectorData::getLocalUpdateStatus() const
+{
+    return UpdateState::UNCHANGED;
+}
+void SubsetCommSelfVectorData::setUpdateStatus( UpdateState ) {}
+void SubsetCommSelfVectorData::setUpdateStatusPtr( std::shared_ptr<UpdateState> ) {}
+std::shared_ptr<UpdateState> SubsetCommSelfVectorData::getUpdateStatusPtr() const
+{
+    return nullptr;
+}
+void SubsetCommSelfVectorData::makeConsistent( ScatterType ) {}
+void SubsetCommSelfVectorData::makeConsistent() {}
+void SubsetCommSelfVectorData::dataChanged() {}
+
+/****************************************************************
  * Functions get/set/add values                                  *
  ****************************************************************/
+bool SubsetCommSelfVectorData::containsGlobalElement( size_t i ) const { return i < d_localSize; }
 void SubsetCommSelfVectorData::addValuesByLocalID( size_t N,
                                                    const size_t *ndx,
                                                    const void *vals,
@@ -76,6 +94,30 @@ void SubsetCommSelfVectorData::getValuesByLocalID( size_t N,
 {
     return d_parentData->getValuesByLocalID( N, ndx, vals, id );
 }
+void SubsetCommSelfVectorData::setGhostValuesByGlobalID( size_t,
+                                                         const size_t *,
+                                                         const void *,
+                                                         const typeID & )
+{
+}
+void SubsetCommSelfVectorData::addGhostValuesByGlobalID( size_t,
+                                                         const size_t *,
+                                                         const void *,
+                                                         const typeID & )
+{
+}
+void SubsetCommSelfVectorData::getGhostValuesByGlobalID( size_t,
+                                                         const size_t *,
+                                                         void *,
+                                                         const typeID & ) const
+{
+}
+void SubsetCommSelfVectorData::getGhostAddValuesByGlobalID( size_t,
+                                                            const size_t *,
+                                                            void *,
+                                                            const typeID & ) const
+{
+}
 void SubsetCommSelfVectorData::swapData( VectorData &rhs )
 {
     auto s = dynamic_cast<SubsetCommSelfVectorData *>( &rhs );
@@ -84,7 +126,6 @@ void SubsetCommSelfVectorData::swapData( VectorData &rhs )
     std::swap( d_localSize, s->d_localSize );
     std::swap( d_globalSize, s->d_globalSize );
     std::swap( d_localStart, s->d_localStart );
-    std::swap( d_UpdateState, s->d_UpdateState );
 }
 
 std::shared_ptr<VectorData> SubsetCommSelfVectorData::cloneData( const std::string & ) const

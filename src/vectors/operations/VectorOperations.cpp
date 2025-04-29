@@ -1,5 +1,6 @@
 #include "AMP/vectors/operations/VectorOperations.h"
 #include "AMP/IO/RestartManager.h"
+#include "AMP/vectors/CommunicationList.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/MultiVectorOperations.h"
@@ -23,30 +24,34 @@ VectorOperations::VectorOperations() : d_hash( reinterpret_cast<uint64_t>( this 
 bool VectorOperations::equals( const VectorData &a, const VectorData &b, const Scalar &tol ) const
 {
     bool equal = localEquals( a, b, tol );
-    if ( b.hasComm() )
-        equal = b.getComm().allReduce( equal );
+    auto &comm = b.getComm();
+    if ( !comm.isNull() )
+        equal = comm.allReduce( equal );
     return equal;
 }
 
 Scalar VectorOperations::min( const VectorData &x ) const
 {
-    auto ans = localMin( x );
-    if ( x.hasComm() )
-        ans = x.getComm().minReduce( ans );
+    auto ans   = localMin( x );
+    auto &comm = x.getComm();
+    if ( comm.getSize() > 1 )
+        ans = comm.minReduce( ans );
     return ans;
 }
 Scalar VectorOperations::max( const VectorData &x ) const
 {
-    auto ans = localMax( x );
-    if ( x.hasComm() )
-        ans = x.getComm().maxReduce( ans );
+    auto ans   = localMax( x );
+    auto &comm = x.getComm();
+    if ( comm.getSize() > 1 )
+        ans = comm.maxReduce( ans );
     return ans;
 }
 Scalar VectorOperations::sum( const VectorData &x ) const
 {
-    auto ans = localSum( x );
-    if ( x.hasComm() )
-        ans = x.getComm().sumReduce( ans );
+    auto ans   = localSum( x );
+    auto &comm = x.getComm();
+    if ( comm.getSize() > 1 )
+        ans = comm.sumReduce( ans );
     return ans;
 }
 Scalar VectorOperations::mean( const VectorData &x ) const
@@ -55,30 +60,34 @@ Scalar VectorOperations::mean( const VectorData &x ) const
 }
 Scalar VectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
-    auto ans = localDot( x, y );
-    if ( x.hasComm() )
-        ans = x.getComm().sumReduce( ans );
+    auto ans   = localDot( x, y );
+    auto &comm = x.getComm();
+    if ( comm.getSize() > 1 )
+        ans = comm.sumReduce( ans );
     return ans;
 }
 Scalar VectorOperations::L1Norm( const VectorData &x ) const
 {
     Scalar ans = localL1Norm( x );
-    if ( x.hasComm() )
-        ans = x.getComm().sumReduce( ans );
+    auto &comm = x.getComm();
+    if ( comm.getSize() > 1 )
+        ans = comm.sumReduce( ans );
     return ans;
 }
 Scalar VectorOperations::maxNorm( const VectorData &x ) const
 {
     Scalar ans = localMaxNorm( x );
-    if ( x.hasComm() )
-        ans = x.getComm().maxReduce( ans );
+    auto &comm = x.getComm();
+    if ( comm.getSize() > 1 )
+        ans = comm.maxReduce( ans );
     return ans;
 }
 Scalar VectorOperations::L2Norm( const VectorData &x ) const
 {
-    auto ans = localL2Norm( x );
-    if ( x.hasComm() )
-        ans = x.getComm().sumReduce( ans * ans ).sqrt();
+    auto ans   = localL2Norm( x );
+    auto &comm = x.getComm();
+    if ( comm.getSize() > 1 )
+        ans = comm.sumReduce( ans * ans ).sqrt();
     return ans;
 }
 Scalar VectorOperations::minQuotient( const VectorData &x, const VectorData &y ) const

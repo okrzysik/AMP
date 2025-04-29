@@ -16,43 +16,56 @@ namespace AMP::LinearAlgebra {
 class MultiVector final : public Vector
 {
 public: // Create and view functions
+    /** \brief Create a new (empty) multivector
+     * \param[in] name  Variable describing the new vector
+     * \param[in] comm  Communicator to build the MultiVector on
+     */
+    static std::shared_ptr<MultiVector> create( std::shared_ptr<Variable> name,
+                                                const AMP_MPI &comm );
+
+    /** \brief Create a new (empty) multivector
+     * \param[in] name  Name of the new vector
+     * \param[in] comm  Communicator to build the MultiVector on
+     */
+    static std::shared_ptr<MultiVector> create( const std::string &name, const AMP_MPI &comm );
+
     /** \brief Create a new multivector in parallel
      * \param[in] name  Variable describing the new vector
      * \param[in] comm  Communicator to build the MultiVector on
-     * \param[in] vecs  Optional list of vectors in the MultiVector
+     * \param[in] vecs  List of vectors in the MultiVector (may be empty on some ranks)
      */
     static std::shared_ptr<MultiVector> create( std::shared_ptr<Variable> name,
                                                 const AMP_MPI &comm,
-                                                const std::vector<Vector::shared_ptr> &vecs = {} );
+                                                const std::vector<Vector::shared_ptr> &vecs );
 
     /** \brief Create a new multivector in parallel
      * \param[in] name  Name of the new vector
      * \param[in] comm  Communicator to build the MultiVector on
-     * \param[in] vecs  Optional list of vectors in the MultiVector
+     * \param[in] vecs  List of vectors in the MultiVector (may be empty on some ranks)
      */
     static std::shared_ptr<MultiVector> create( const std::string &name,
                                                 const AMP_MPI &comm,
-                                                const std::vector<Vector::shared_ptr> &vecs = {} );
+                                                const std::vector<Vector::shared_ptr> &vecs );
 
     /** \brief Create a new multivector in parallel
      * \param[in] name  Variable describing the new vector
      * \param[in] comm  Communicator to build the MultiVector on
-     * \param[in] vecs  Optional list of vectors in the MultiVector
+     * \param[in] vecs  List of vectors in the MultiVector (may be empty on some ranks)
      */
     static std::shared_ptr<const MultiVector>
     const_create( std::shared_ptr<Variable> name,
                   const AMP_MPI &comm,
-                  const std::vector<Vector::const_shared_ptr> &vecs = {} );
+                  const std::vector<Vector::const_shared_ptr> &vecs );
 
     /** \brief Create a new multivector in parallel
      * \param[in] name  Name of the new vector
      * \param[in] comm  Communicator to build the MultiVector on
-     * \param[in] vecs  Optional list of vectors in the MultiVector
+     * \param[in] vecs  List of vectors in the MultiVector (may be empty on some ranks)
      */
     static std::shared_ptr<const MultiVector>
     const_create( const std::string &name,
                   const AMP_MPI &comm,
-                  const std::vector<Vector::const_shared_ptr> &vecs = {} );
+                  const std::vector<Vector::const_shared_ptr> &vecs );
 
     /** \brief Create a multivector view of a vector
      * \param[in] vec  The vector to view
@@ -173,21 +186,33 @@ public: // Write/read restart data
 
 
 public: // public constructor/destructors
-    /** Constructor:  create a MultiVector with a particular variable
-     * \param[in]  name  The vector to create the MultiVector from
+    /** Constructor:  create an empty MultiVector
+     * \param[in]  name  The name of the multivector
+     * \param[in]  comm  The communicator over which the vector exists
+     */
+    explicit MultiVector( const std::string &name, const AMP_MPI &comm );
+
+    /** Constructor:  create a MultiVector
+     * \param[in]  name  The name of the multivector
      * \param[in]  comm  The communicator over which the vector exists
      */
     explicit MultiVector( const std::string &name,
                           const AMP_MPI &comm,
-                          const std::vector<Vector::shared_ptr> &vecs = {} );
+                          const std::vector<Vector::shared_ptr> &vecs );
 
-    //!  Move constructor
-    MultiVector( MultiVector && ) = delete;
 
-    //!  Move operator
+public: // private constructor/destructors
+    /** Constructor:  create a multivector containing a single vector only
+     * \param[in]  vec   The input vector
+     */
+    explicit MultiVector( std::shared_ptr<Vector> vec );
+
+
+public: // default constructor/destructors
+    MultiVector( MultiVector && )      = delete;
+    MultiVector( const MultiVector & ) = delete;
     MultiVector &operator=( MultiVector && ) = delete;
-
-    //!  Destructor
+    MultiVector &operator=( const MultiVector & ) = delete;
     virtual ~MultiVector();
 
 

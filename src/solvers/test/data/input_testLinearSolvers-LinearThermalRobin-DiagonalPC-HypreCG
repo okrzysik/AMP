@@ -1,4 +1,4 @@
-<<< "input_testLinearSolvers-LinearThermalRobin-Common" >>>
+<<< "input_LinearThermalRobinOperator" >>>
 
 LinearSolver{
   name = "HyprePCGSolver"
@@ -14,7 +14,7 @@ Preconditioner{
   name = "BoomerAMGSolver"
   max_iterations = 1
   max_error = 1e-10
-  min_coarse_size = 10
+  max_coarse_size = 25
   strong_threshold = 0.5
   cycle_type = 1
   relax_type = 16
