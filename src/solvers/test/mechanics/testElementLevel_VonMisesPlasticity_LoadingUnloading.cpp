@@ -215,9 +215,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         }
         AMP::pout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
 
-        auto mechUvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
-        auto mechVvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
-        auto mechWvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
+        auto mechUvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ) );
+        auto mechVvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ) );
+        auto mechWvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ) );
 
         AMP::pout << "Maximum U displacement: " << mechUvec->maxNorm() << std::endl;
         AMP::pout << "Maximum V displacement: " << mechVvec->maxNorm() << std::endl;
@@ -241,12 +241,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             fin             = fopen( fname.c_str(), "r" );
             double coord[3] = { 0, 0, 0 }, stress1[6] = { 0, 0, 0 }, strain1[6] = { 0, 0, 0 };
             for ( int ijk = 0; ijk < 8; ijk++ ) {
-                for ( auto &elem : coord )
-                    [[maybe_unused]] int err = fscanf( fin, "%lf", &elem );
-                for ( auto &elem : stress1 )
-                    [[maybe_unused]] int err = fscanf( fin, "%lf", &elem );
-                for ( auto &elem : strain1 )
-                    [[maybe_unused]] int err = fscanf( fin, "%lf", &elem );
+                for ( auto &elem : coord ) [[maybe_unused]]
+                    int err = fscanf( fin, "%lf", &elem );
+                for ( auto &elem : stress1 ) [[maybe_unused]]
+                    int err = fscanf( fin, "%lf", &elem );
+                for ( auto &elem : strain1 ) [[maybe_unused]]
+                    int err = fscanf( fin, "%lf", &elem );
                 if ( ijk == 7 ) {
                     const double prev_stress = 1.0, prev_strain = 1.0;
                     double slope = 1.0;

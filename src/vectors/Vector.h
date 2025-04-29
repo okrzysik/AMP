@@ -488,7 +488,8 @@ public: // Subset/Select
      * \param[in]  criterion  The method for deciding inclusion in the view
      * \param[in]  name       The name of the vector to be created
      */
-    shared_ptr select( const VectorSelector &criterion, const std::string &variable_name );
+    [[deprecated]] shared_ptr select( const VectorSelector &criterion,
+                                      const std::string &variable_name );
 
     /** \brief  Selects a portion of this vector and creates a view.
      * \details   Selects a portion of this vector and creates a view.
@@ -498,8 +499,8 @@ public: // Subset/Select
      * \param[in]  criterion  The method for deciding inclusion in the view
      * \param[in]  name       The name of the vector to be created
      */
-    const_shared_ptr select( const VectorSelector &criterion,
-                             const std::string &variable_name ) const;
+    [[deprecated]] const_shared_ptr select( const VectorSelector &criterion,
+                                            const std::string &variable_name ) const;
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] name  Variable by which to retrieve a subvector

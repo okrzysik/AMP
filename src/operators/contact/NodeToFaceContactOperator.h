@@ -62,8 +62,8 @@ public:
     size_t updateActiveSetWithALittleHelp( AMP::LinearAlgebra::Vector::shared_ptr helpVector )
     {
         AMP_ASSERT( d_ActiveSet.empty() ); // meant to be use as initial guess only!
-        AMP::LinearAlgebra::Vector::shared_ptr masterDisplacement = helpVector->select(
-            AMP::LinearAlgebra::VS_Mesh( d_Mesh->Subset( d_MasterMeshID ) ), "dummy" );
+        auto masterDisplacement =
+            helpVector->select( AMP::LinearAlgebra::VS_Mesh( d_Mesh->Subset( d_MasterMeshID ) ) );
         AMP_ASSERT( masterDisplacement->L2Norm() ==
                     0.0 ); // need to change slightly correction otherwise
         d_Mesh->displaceMesh( helpVector );

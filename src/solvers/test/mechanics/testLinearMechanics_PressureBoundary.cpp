@@ -127,9 +127,9 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         bvpOperator->getVolumeOperator() )
         ->printStressAndStrain( mechSolVec, fname );
 
-    auto mechUvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
-    auto mechVvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
-    auto mechWvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
+    auto mechUvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ) );
+    auto mechVvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ) );
+    auto mechWvec = mechSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ) );
 
     AMP::pout << "Maximum U displacement: " << mechUvec->maxNorm() << std::endl;
     AMP::pout << "Maximum V displacement: " << mechVvec->maxNorm() << std::endl;

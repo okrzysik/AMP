@@ -475,13 +475,6 @@ void myTest( AMP::UnitTest *ut,
                    &discretizationErrorNorm2 );
     TotalNorm2 += discretizationErrorNorm2;
     std::cout << "Discretized error norm ^2 for Mesh  1: " << discretizationErrorNorm2 << std::endl;
-    /*
-    AMP::LinearAlgebra::VS_Mesh meshSelector2("meshSelector", meshAdapter2 );
-    computeL2Norm( meshAdapter2 , globalComm,
-    TemperatureVec->select(meshSelector2),&discretizationErrorNorm2 ); TotalNorm2 +=
-    discretizationErrorNorm2; std::cout << "Discretized error norm ^2 for Mesh  2: "<<
-    discretizationErrorNorm2 << std::endl;
-    */
 
     std::cout << "Discretized error norm for ||U-Uh|| : " << std::sqrt( TotalNorm2 ) << std::endl;
 

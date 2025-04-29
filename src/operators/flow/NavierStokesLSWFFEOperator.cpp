@@ -140,7 +140,7 @@ void NavierStokesLSWFFEOperator::preElementOperation( const AMP::Mesh::MeshEleme
             elementInputVectors[( 10 * r ) + d] =
                 d_inVec->getValueByGlobalID( d_type0DofIndices[r][d] );
         } // end d
-    }     // end r
+    } // end r
 
     d_elementOutputVector.resize( 10 * numNodesInCurrElem );
     /*
@@ -193,7 +193,7 @@ void NavierStokesLSWFFEOperator::postElementOperation()
             d_outVec->addValuesByGlobalID(
                 1, &d_type0DofIndices[r][d], &d_elementOutputVector[( 10 * r ) + d] );
         } // end for d
-    }     // end for r
+    } // end for r
 }
 
 std::shared_ptr<OperatorParameters> NavierStokesLSWFFEOperator::getJacobianParameters(
@@ -231,8 +231,7 @@ NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_p
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
-            vec->select( meshSelector, var->getName() );
+        auto meshSubsetVec = vec->select( meshSelector );
         return meshSubsetVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -245,8 +244,7 @@ NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_sh
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
-            vec->select( meshSelector, var->getName() );
+        auto meshSubsetVec = vec->select( meshSelector );
         return meshSubsetVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );

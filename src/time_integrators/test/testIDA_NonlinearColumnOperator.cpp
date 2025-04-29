@@ -161,7 +161,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto end_node = node.end();
 
     AMP::LinearAlgebra::VS_Mesh vectorSelector( meshAdapter );
-    auto thermalIC = initialCondition->select( vectorSelector, outputVar->getName() );
+    auto thermalIC = initialCondition->select( vectorSelector );
     // int counter=0;
     for ( ; node != end_node; ++node ) {
         // counter+=1;
@@ -184,7 +184,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             // ** as this causes trouble with the boundary - BP, 07/16/2010
             initialConditionPrime->setValuesByGlobalID( 1, &elem, &zero );
         } // end for i
-    }     // end for node
+    } // end for node
 
     // create a copy of the rhs which can be modified at each time step (maybe)
     auto thermalRhs = f->select( vectorSelector, "temperature" );
