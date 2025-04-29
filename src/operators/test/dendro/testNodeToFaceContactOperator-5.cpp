@@ -214,7 +214,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::make_shared<AMP::Solver::TrilinosMLSolver>( bottomPelletSolverParams );
             columnPreconditioner->append( bottomPelletSolver );
         } // end if
-    }     // end if
+    } // end if
 
     auto topPelletMeshID = bottomPelletTopPelletContactOperator->getSlaveMeshID();
     AMP_ASSERT( topPelletMeshID == topPelletCladContactOperator->getMasterMeshID() );
@@ -246,7 +246,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::make_shared<AMP::Solver::TrilinosMLSolver>( topPelletSolverParams );
             columnPreconditioner->append( topPelletSolver );
         } // end if
-    }     // end if
+    } // end if
 
     auto cladMeshID = bottomPelletCladContactOperator->getSlaveMeshID();
     AMP_ASSERT( cladMeshID == topPelletCladContactOperator->getSlaveMeshID() );
@@ -504,7 +504,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     dispDofManager->getDOFs( it->globalID(), dofs );
                     columnSolVec->setValueByGlobalID( dofs[2], 0.0001 );
                 } // end if
-            }     // end for
+            } // end for
         }
         bottomPelletTopPelletContactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         columnSolVec->zero();
@@ -636,8 +636,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             // compute thermal load f
             {
                 AMP::LinearAlgebra::VS_Mesh bottomPelletVectorSelector( bottomPelletMeshAdapter );
-                auto bottomPelletRhsVec =
-                    columnRhsVec->select( bottomPelletVectorSelector, dispVar->getName() );
+                auto bottomPelletRhsVec = columnRhsVec->select( bottomPelletVectorSelector );
                 computeTemperatureRhsVector( bottomPelletMeshAdapter,
                                              fuelTemperatureRhs_db,
                                              tempVar,
@@ -647,8 +646,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                              bottomPelletRhsVec );
 
                 AMP::LinearAlgebra::VS_Mesh topPelletVectorSelector( topPelletMeshAdapter );
-                auto topPelletRhsVec =
-                    columnRhsVec->select( topPelletVectorSelector, dispVar->getName() );
+                auto topPelletRhsVec = columnRhsVec->select( topPelletVectorSelector );
                 computeTemperatureRhsVector( topPelletMeshAdapter,
                                              fuelTemperatureRhs_db,
                                              tempVar,
@@ -658,7 +656,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                              topPelletRhsVec );
 
                 AMP::LinearAlgebra::VS_Mesh cladVectorSelector( cladMeshAdapter );
-                auto cladRhsVec = columnRhsVec->select( cladVectorSelector, dispVar->getName() );
+                auto cladRhsVec = columnRhsVec->select( cladVectorSelector );
                 computeTemperatureRhsVector( cladMeshAdapter,
                                              cladTemperatureRhs_db,
                                              tempVar,
@@ -1096,7 +1094,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     std::cout << "!!!!!! ACTIVE SET ITERATIONS DID NOT CONVERGE !!!!!!!!\n";
                 }
             } // end if
-        }     // end for
+        } // end for
 
     } // end for
 

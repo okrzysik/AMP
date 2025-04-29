@@ -428,7 +428,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             manager, densityCladToSubchannelDb );
     if ( cladMesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( cladMesh->getComm() );
-        auto subsetTheramlVec = thermalMapVec->select( commSelector, thermalMapVec->getName() );
+        auto subsetTheramlVec = thermalMapVec->select( commSelector );
         thermalSubchannelToCladMap->setVector( subsetTheramlVec );
         densitySubchannelToCladMap->setVector( density_map_vec );
     }
@@ -516,7 +516,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         }
         if ( cladMesh ) {
             AMP::LinearAlgebra::VS_Mesh meshSelector( cladMesh );
-            auto cladPower = specificPowerGpVec->select( meshSelector, "cladPower" );
+            auto cladPower = specificPowerGpVec->select( meshSelector );
             cladPower->zero();
         }
         specificPowerGpVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
@@ -544,8 +544,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
         AMP::LinearAlgebra::VS_Mesh meshSelector( subchannelMesh );
         auto tmpVec             = flowSolVec->selectInto( meshSelector );
-        auto subchannelEnthalpy = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
-        auto subchannelPressure = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
+        auto subchannelEnthalpy = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ) );
+        auto subchannelPressure = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ) );
 
         subchannelEnthalpy->setToScalar( AMP::Operator::Subchannel::scaleEnthalpy * hin );
         subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * Pout );
@@ -789,16 +789,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             ut->failure( "Subchannel temperature to point map" );
     }
 
-
-    // Rescale the solution to get the correct units
-    const double h_scale = 1.0 / AMP::Operator::Subchannel::scaleEnthalpy;
-    const double P_scale = 1.0 / AMP::Operator::Subchannel::scalePressure;
-    auto enthalpy        = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
-    auto pressure        = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
-    if ( enthalpy  ) {
-        enthalpy->scale( h_scale );
-        pressure->scale( P_scale );
-    }
 #endif
     ut->passes( "test runs to completion" );
 

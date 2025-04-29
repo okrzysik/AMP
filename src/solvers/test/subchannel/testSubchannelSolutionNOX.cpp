@@ -311,16 +311,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Delta T: " << ToutSol - TinSol << std::endl << std::endl;
     std::cout << "L2 Norm of Absolute Error: " << absErrorNorm << std::endl;
     std::cout << "L2 Norm of Relative Error: " << relErrorNorm << std::endl;
-
-    // Rescale the solution to get the correct units
-    auto enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
-    auto pressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
-    enthalpy->scale( h_scale );
-    pressure->scale( P_scale );
-    enthalpy = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
-    pressure = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
-    enthalpy->scale( h_scale );
-    pressure->scale( P_scale );
 }
 
 int testSubchannelSolutionNOX( int argc, char *argv[] )

@@ -51,7 +51,7 @@ static void selectNodes( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             //      std::cout<<nodesGlobalIDs.size()<<"  ("<<coord[0]<<", "<<coord[1]<<",
             //      "<<coord[2]<<")"<<std::endl;
         } // end if
-    }     // end for
+    } // end for
 }
 
 static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
@@ -111,7 +111,7 @@ getConcentratedLoadAtNodes( double loadParameter,
                 //        ("<<vertexCoordinates[0]<<", "<<vertexCoordinates[1]<<"
                 //        ,"<<vertexCoordinates[2]<<")\n";
             } // end if
-        }     // end for
+        } // end for
         std::cout << "TOTAL load=" << totalLoad << "\n";
         AMP_ASSERT( loadValues.size() > 0 );
     } // end if
@@ -326,7 +326,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double>>( it->globalID(),
                                                                                    dummyTmp ) );
             } // end if
-        }     // end for
+        } // end for
     }
 
     //{
@@ -429,8 +429,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     double yDisplacementHelper = input_db->getWithDefault<double>( "yDisplacementHelper", 0.0 );
     if ( yDisplacementHelper != 0.0 ) {
-        auto yDispVec = columnSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "help" );
-        yDispVec      = yDispVec->select( AMP::LinearAlgebra::VS_Mesh( slaveMeshAdapter ), "help" );
+        auto yDispVec = columnSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ) );
+        yDispVec      = yDispVec->select( AMP::LinearAlgebra::VS_Mesh( slaveMeshAdapter ) );
         yDispVec->setToScalar( yDisplacementHelper );
         contactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         yDispVec->zero();

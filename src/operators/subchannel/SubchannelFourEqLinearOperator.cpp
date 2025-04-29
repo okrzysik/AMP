@@ -677,7 +677,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                         minusDofs[2], gapDofs[0], dz * crossflowSign * u_lateralDonor );
 
                 } // end if (lateralFaceIterator != interiorLateralFaceMap.end()) {
-            }     // end loop over gap faces
+            } // end loop over gap faces
 
             // add Jacobian entries
             // =================================================================
@@ -732,7 +732,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                 d_matrix->addValueByGlobalID( minusDofs[1], minusDofs[1], 1.0 );
             }
         } // end loop over cells of current subchannel
-    }     // end loop over subchannels
+    } // end loop over subchannels
 
     // loop over lateral faces
     AMP::Mesh::MeshIterator face =
@@ -1324,8 +1324,7 @@ SubchannelFourEqLinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector::s
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1340,8 +1339,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqLinearOperator::sub
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1356,8 +1354,7 @@ SubchannelFourEqLinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1372,8 +1369,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqLinearOperator::sub
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1498,8 +1494,8 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
             // adjacent to the current
             // lateral face
             double knownCentroid[3]           = { parentLateralFaceCentroid[0],
-                                        parentLateralFaceCentroid[1],
-                                        daughterCellCentroid[2] };
+                                                  parentLateralFaceCentroid[1],
+                                                  daughterCellCentroid[2] };
             bool isAxiallyAdjacentLateralFace = true;
             for ( size_t i = 0; i < 3; i++ ) {
                 if ( !AMP::Utilities::approx_equal_abs(

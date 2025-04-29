@@ -192,7 +192,7 @@ void computeL2Norm( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                 double computedAtNode = TemperatureVec->getValueByGlobalID( bndGlobalIds[j] );
                 computedAtGauss[qp] += computedAtNode * phi[j][qp];
             } // end for j
-        }     // end for qp
+        } // end for qp
 
         for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
             double px                  = coordinates[qp]( 0 );
@@ -471,16 +471,16 @@ void myTest( AMP::UnitTest *ut,
     AMP::LinearAlgebra::VS_Mesh meshSelector1( bottomAdapter );
     computeL2Norm( bottomAdapter,
                    globalComm,
-                   TemperatureVec->select( meshSelector1, "Temperature" ),
+                   TemperatureVec->select( meshSelector1 ),
                    &discretizationErrorNorm2 );
     TotalNorm2 += discretizationErrorNorm2;
     std::cout << "Discretized error norm ^2 for Mesh  1: " << discretizationErrorNorm2 << std::endl;
     /*
     AMP::LinearAlgebra::VS_Mesh meshSelector2("meshSelector", meshAdapter2 );
-    computeL2Norm( meshAdapter2 , globalComm, TemperatureVec->select(meshSelector2, "Temperature"),
-    &discretizationErrorNorm2 );
-    TotalNorm2 += discretizationErrorNorm2;
-    std::cout << "Discretized error norm ^2 for Mesh  2: "<< discretizationErrorNorm2 << std::endl;
+    computeL2Norm( meshAdapter2 , globalComm,
+    TemperatureVec->select(meshSelector2),&discretizationErrorNorm2 ); TotalNorm2 +=
+    discretizationErrorNorm2; std::cout << "Discretized error norm ^2 for Mesh  2: "<<
+    discretizationErrorNorm2 << std::endl;
     */
 
     std::cout << "Discretized error norm for ||U-Uh|| : " << std::sqrt( TotalNorm2 ) << std::endl;

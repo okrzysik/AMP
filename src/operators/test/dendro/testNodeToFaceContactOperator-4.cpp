@@ -175,7 +175,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::make_shared<AMP::Solver::TrilinosMLSolver>( masterSolverParams );
             columnPreconditioner->append( masterSolver );
         } // end if
-    }     // end if
+    } // end if
 
     std::shared_ptr<AMP::Operator::LinearBVPOperator> slaveBVPOperator;
     auto slaveMeshID      = contactOperator->getSlaveMeshID();
@@ -207,7 +207,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto slaveSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( slaveSolverParams );
             columnPreconditioner->append( slaveSolver );
         } // end if
-    }     // end if
+    } // end if
 
     auto contactPreconditioner_db = columnPreconditioner_db->getDatabase( "ContactPreconditioner" );
     auto contactPreconditionerParams =
@@ -377,7 +377,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // AMP::LinearAlgebra::VS_Mesh slaveVectorSelector(slaveMeshAdapter);
-    // auto slaveTempVec = tempVec->select(slaveVectorSelector, tempVar->getName());
+    // auto slaveTempVec = tempVec->select(slaveVectorSelector);
     // slaveTempVec->setToScalar(900.0);
     // auto tmp_db = masterTemperatureRhs_db->getDatabase("RhsMaterialModel");
     // double masterThermalExpansionCoefficient =
@@ -411,7 +411,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     if ( bis && useALittleHelp ) {
-        // auto zDispVec = columnSolVec->select(AMP::LinearAlgebra::VS_Stride(2,3), "help");
+        // auto zDispVec = columnSolVec->select(AMP::LinearAlgebra::VS_Stride(2,3));
         auto it       = slaveMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 );
         auto it_begin = it.begin();
         auto it_end   = it.end();
@@ -427,7 +427,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 //        zDispVec->setValueByGlobalID(dofs[2], 0.00005);
                 columnSolVec->setValueByGlobalID( dofs[2], 0.00005 );
             } // end if
-        }     // end for
+        } // end for
         contactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         //    zDispVec->zero();
         columnSolVec->zero();
@@ -503,7 +503,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             // compute thermal load f
             {
                 AMP::LinearAlgebra::VS_Mesh slaveVectorSelector( slaveMeshAdapter );
-                auto slaveRhsVec = columnRhsVec->select( slaveVectorSelector, dispVar->getName() );
+                auto slaveRhsVec = columnRhsVec->select( slaveVectorSelector );
                 computeTemperatureRhsVector( slaveMeshAdapter,
                                              slaveTemperatureRhs_db,
                                              tempVar,
@@ -514,8 +514,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             }
             {
                 AMP::LinearAlgebra::VS_Mesh masterVectorSelector( masterMeshAdapter );
-                auto masterRhsVec =
-                    columnRhsVec->select( masterVectorSelector, dispVar->getName() );
+                auto masterRhsVec = columnRhsVec->select( masterVectorSelector );
                 computeTemperatureRhsVector( masterMeshAdapter,
                                              masterTemperatureRhs_db,
                                              tempVar,
@@ -741,7 +740,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     std::cout << "!!!!!! ACTIVE SET ITERATIONS DID NOT CONVERGE !!!!!!!!\n";
                 }
             } // end if
-        }     // end for
+        } // end for
 
     } // end for
 

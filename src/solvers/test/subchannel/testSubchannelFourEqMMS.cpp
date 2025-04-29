@@ -21,6 +21,7 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include <memory>
 #include <string>
@@ -396,22 +397,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "L2 Norm of Relative Error: " << relErrorNorm << std::endl;
 
     input_db.reset();
-
-#if 0
-    // Rescale the solution to get the correct units
-    auto mass     = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "M" );
-    auto enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "H" );
-    auto pressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "P" );
-    mass->scale( m_scale );
-    enthalpy->scale( h_scale );
-    pressure->scale( P_scale );
-    mass     = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "M" );
-    enthalpy = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "H" );
-    pressure = manufacturedVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "P" );
-    mass->scale( m_scale );
-    enthalpy->scale( h_scale );
-    pressure->scale( P_scale );3
-#endif
 }
 
 int testSubchannelFourEqMMS( int argc, char *argv[] )

@@ -108,8 +108,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     // initialize the output variable
     auto outputVariable1 = thermalVolumeOperator1->getOutputVariable();
 
-    auto TemperatureInKelvinVec1 =
-        TemperatureInKelvin->select( vectorSelector1, TemperatureVar->getName() );
+    auto TemperatureInKelvinVec1 = TemperatureInKelvin->select( vectorSelector1 );
     auto RightHandSideVec1 = AMP::LinearAlgebra::createVector( nodalDofMap1, outputVariable1 );
     auto ResidualVec1      = AMP::LinearAlgebra::createVector( nodalDofMap1, outputVariable1 );
 
@@ -199,8 +198,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     // initialize the output variable
     auto outputVariable2 = thermalVolumeOperator2->getOutputVariable();
 
-    auto TemperatureInKelvinVec2 =
-        TemperatureInKelvin->select( vectorSelector2, TemperatureVar->getName() );
+    auto TemperatureInKelvinVec2 = TemperatureInKelvin->select( vectorSelector2 );
     auto RightHandSideVec2 = AMP::LinearAlgebra::createVector( nodalDofMap2, outputVariable2 );
     auto ResidualVec2      = AMP::LinearAlgebra::createVector( nodalDofMap2, outputVariable2 );
 
