@@ -125,12 +125,7 @@ Vector::const_shared_ptr Vector::select( const VectorSelector &s ) const
 }
 Vector::shared_ptr Vector::select( const VectorSelector &s, const std::string &variable_name )
 {
-    if ( dynamic_cast<const VS_ByVariableName *>( &s ) ) {
-        const std::string &name = dynamic_cast<const VS_ByVariableName *>( &s )->getName();
-        if ( name == this->getVariable()->getName() )
-            return shared_from_this();
-    }
-    auto vec = this->selectInto( s );
+    auto vec = select( s );
     if ( vec ) {
         vec      = MultiVector::view( vec );
         auto var = std::make_shared<Variable>( variable_name );
@@ -141,12 +136,7 @@ Vector::shared_ptr Vector::select( const VectorSelector &s, const std::string &v
 Vector::const_shared_ptr Vector::select( const VectorSelector &s,
                                          const std::string &variable_name ) const
 {
-    if ( dynamic_cast<const VS_ByVariableName *>( &s ) ) {
-        const std::string &name = dynamic_cast<const VS_ByVariableName *>( &s )->getName();
-        if ( name == this->getVariable()->getName() )
-            return shared_from_this();
-    }
-    auto vec = this->selectInto( s );
+    auto vec = select( s );
     if ( vec ) {
         vec      = MultiVector::constView( vec );
         auto var = std::make_shared<Variable>( variable_name );

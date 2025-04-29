@@ -85,17 +85,17 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
         for ( size_t i = 0; i < variableNames.size(); i++ ) {
             std::string cview = variableNames[i] + " view";
             if ( d_Frozen ) {
-                if ( d_Frozen->select( AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ),
-                                       cview ) ) {
+                if ( d_Frozen->select(
+                         AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ) ) ) {
                     d_elementInputVec[i + 1] = d_Frozen->select(
-                        AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
+                        AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ) );
                 } else {
                     d_elementInputVec[i + 1] = uInternal->select(
-                        AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
+                        AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ) );
                 }
             } else {
-                d_elementInputVec[i + 1] = uInternal->select(
-                    AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
+                d_elementInputVec[i + 1] =
+                    uInternal->select( AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ) );
             }
             AMP_INSIST( d_elementInputVec[i + 1],
                         "Did not find vector '" + variableNames[i] + "'" );
@@ -229,12 +229,12 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                         for ( unsigned int j = 0; j < numNodesInCurrElem; j++ )
                             addValues[j] -= JxW[qp] * phi[j][qp] * gamma[qp] * phi_val;
                     } // end for qp
-                }     // coupled
+                } // coupled
                 rInternal->addValuesByGlobalID( dofs.size(), &dofs[0], &addValues[0] );
 
             } // end for bnd
-        }     // end for dof ids
-    }         // end for nid
+        } // end for dof ids
+    } // end for nid
 
     rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }

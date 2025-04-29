@@ -200,8 +200,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     AMP::LinearAlgebra::VS_Mesh vectorSelector1( meshAdapter );
     AMP::LinearAlgebra::VS_Mesh vectorSelector2( meshAdapter );
 
-    auto thermalIC = initialCondition->select( vectorSelector1, "temperature" );
-    auto oxygenIC  = initialCondition->select( vectorSelector2, "concentration" );
+    auto thermalIC = initialCondition->select( vectorSelector1 );
+    auto oxygenIC  = initialCondition->select( vectorSelector2 );
     int counter    = 0;
     for ( ; node != end_node; ++node ) {
         counter++;
@@ -223,13 +223,13 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             thermalIC->setValuesByGlobalID( 1, &elem, &tval );
             oxygenIC->setValuesByGlobalID( 1, &elem, &oval );
         } // end for i
-    }     // end for node
+    } // end for node
 
     // ** please do not set the time derivative to be non-zero!!
     // ** as this causes trouble with the boundary - BP, 07/16/2010
     initialConditionPrime->zero();
 
-    auto thermalRhs = f->select( vectorSelector1, "temperature" );
+    auto thermalRhs = f->select( vectorSelector1 );
     // create a copy of the rhs which can be modified at each time step (maybe)
     thermalRhs->copyVector( powerInWattsVec );
     // modify the rhs to take into account boundary conditions

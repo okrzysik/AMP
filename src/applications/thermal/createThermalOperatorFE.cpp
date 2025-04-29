@@ -192,7 +192,7 @@ createOperators( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         nonlinearBoundaryOp->append( DirichletOp );
     } else {
         AMP_ASSERT( boundaryIds.size() == boundaryImpedance.size() );
-        auto boundaryVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
+        auto boundaryVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
         auto boundaryDOFs = AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
         for ( size_t i = 0; i < boundaryIds.size(); i++ ) {

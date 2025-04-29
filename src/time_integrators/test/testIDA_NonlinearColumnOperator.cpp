@@ -187,7 +187,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     } // end for node
 
     // create a copy of the rhs which can be modified at each time step (maybe)
-    auto thermalRhs = f->select( vectorSelector, "temperature" );
+    auto thermalRhs = f->select( vectorSelector );
     thermalRhs->copyVector( powerInWattsVec );
 
     // modify the rhs to take into account boundary conditions
