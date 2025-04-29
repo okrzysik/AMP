@@ -44,10 +44,12 @@ public:
      * \param name      Name of the new mesh
      * \param comm      Desired communicator for the multimesh
      * \param meshes    Meshes to be used as part of the multimesh
+     * \param checkComm Check that the comm spans all meshes (advanced option)
      */
     MultiMesh( const std::string &name,
                const AMP_MPI &comm,
-               const std::vector<std::shared_ptr<Mesh>> &meshes );
+               const std::vector<std::shared_ptr<Mesh>> &meshes,
+               bool checkComm = true );
 
 
     //! Deconstructor
@@ -336,7 +338,7 @@ public: // Default constructors
     MultiMesh()                           = delete;
     explicit MultiMesh( MultiMesh &&rhs ) = default;
     explicit MultiMesh( const MultiMesh &rhs );
-    MultiMesh &operator=( MultiMesh &&rhs ) = delete;
+    MultiMesh &operator=( MultiMesh &&rhs )      = delete;
     MultiMesh &operator=( const MultiMesh &rhs ) = delete;
 
 public: // Functions to help with load balancing
@@ -361,6 +363,9 @@ public: // Write/read restart data
     void writeRestart( int64_t ) const override;
     MultiMesh( int64_t, AMP::IO::RestartManager * );
 
+
+private:
+    void initialize();
 
 private:
     //! A list of all meshes in the multimesh

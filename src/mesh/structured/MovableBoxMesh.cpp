@@ -138,11 +138,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
             d_box_local[2 * d + 1] = std::max( d_box_local[2 * d + 1], d_coord( d, i ) );
         }
     }
-    d_box = std::vector<double>( PhysicalDim * 2 );
-    for ( int i = 0; i < PhysicalDim; i++ ) {
-        d_box[2 * i + 0] = d_comm.minReduce( d_box_local[2 * i + 0] );
-        d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
-    }
+    d_box = Mesh::reduceBox( d_box_local, d_comm );
     d_pos_hash++;
 }
 
