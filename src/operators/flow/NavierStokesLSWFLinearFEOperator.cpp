@@ -120,7 +120,7 @@ void NavierStokesLSWFLinearFEOperator::preElementOperation( const AMP::Mesh::Mes
                 elementInputVectors[( 10 * r ) + d] = 0.0;
             }
         } // end d
-    } // end r
+    }     // end r
 
     /*
           std::vector<std::vector<double> >
