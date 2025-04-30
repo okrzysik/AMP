@@ -214,7 +214,7 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::shared_pt
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, ( vec->getVariable() )->getName() );
+        auto meshSubsetVec = vec->select( meshSelector );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         return varSubsetVec;
     } else {
@@ -228,7 +228,7 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_sha
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, ( vec->getVariable() )->getName() );
+        auto meshSubsetVec = vec->select( meshSelector );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         return varSubsetVec;
     } else {

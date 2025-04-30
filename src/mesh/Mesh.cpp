@@ -73,11 +73,6 @@ Mesh::Mesh( const Mesh &rhs )
     if ( rhs.d_geometry )
         d_geometry = rhs.d_geometry->clone();
 }
-
-
-/********************************************************
- * De-constructor                                        *
- ********************************************************/
 Mesh::~Mesh() = default;
 
 
@@ -108,6 +103,30 @@ std::vector<MeshID> Mesh::getAllMeshIDs() const { return std::vector<MeshID>( 1,
 std::vector<MeshID> Mesh::getBaseMeshIDs() const { return std::vector<MeshID>( 1, d_meshID ); }
 std::vector<MeshID> Mesh::getLocalMeshIDs() const { return std::vector<MeshID>( 1, d_meshID ); }
 std::vector<MeshID> Mesh::getLocalBaseMeshIDs() const { return std::vector<MeshID>( 1, d_meshID ); }
+
+
+/********************************************************
+ * Fill the domain box from the local box                *
+ ********************************************************/
+std::vector<double> Mesh::reduceBox( const std::vector<double> &x, const AMP_MPI &comm )
+{
+    int ndim = x.size() / 2;
+    AMP_ASSERT( ndim && (int) x.size() == 2 * ndim );
+    double localMin[3], localMax[3], globalMin[3], globalMax[3];
+    for ( int d = 0; d < ndim; d++ ) {
+        localMin[d] = x[2 * d + 0];
+        localMax[d] = x[2 * d + 1];
+        AMP_ASSERT( fabs( localMax[d] ) < 1e100 && fabs( localMax[d] ) < 1e100 );
+    }
+    comm.minReduce( localMin, globalMin, ndim );
+    comm.maxReduce( localMax, globalMax, ndim );
+    std::vector<double> y( x.size() );
+    for ( int d = 0; d < ndim; d++ ) {
+        y[2 * d + 0] = globalMin[d];
+        y[2 * d + 1] = globalMax[d];
+    }
+    return y;
+}
 
 
 /********************************************************

@@ -82,6 +82,14 @@ AMP::Mesh::MeshElement subsetCommSelfDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
+ * Return the mesh                                               *
+ ****************************************************************/
+std::shared_ptr<const AMP::Mesh::Mesh> subsetCommSelfDOFManager::getMesh() const
+{
+    return d_parentDOFManager->getMesh();
+}
+
+/****************************************************************
  * Get an entry over the mesh elements associated with the DOFs  *
  * Note: if any sub-DOFManagers are the same, then this will     *
  * iterate over repeated elements.                               *

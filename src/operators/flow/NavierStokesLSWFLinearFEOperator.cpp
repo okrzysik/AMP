@@ -196,8 +196,7 @@ AMP::LinearAlgebra::Vector::shared_ptr NavierStokesLSWFLinearFEOperator::mySubse
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
-            vec->select( meshSelector, var->getName() );
+        auto meshSubsetVec = vec->select( meshSelector );
         return meshSubsetVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );

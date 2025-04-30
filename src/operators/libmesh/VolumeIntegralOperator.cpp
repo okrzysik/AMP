@@ -83,7 +83,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
     AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetPrimary, meshSubsetAuxillary;
 
     if ( d_inpVariables->numVariables() > 0 )
-        meshSubsetPrimary = u->select( meshSelector, d_inpVariables->getName() );
+        meshSubsetPrimary = u->select( meshSelector );
     for ( size_t var = 0; var < d_inpVariables->numVariables(); var++ ) {
         auto primaryVariable = d_inpVariables->getVariable( var );
         d_inVec[var]         = meshSubsetPrimary->subsetVectorForVariable( primaryVariable );
@@ -92,7 +92,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
     }
 
     if ( d_auxVariables->numVariables() > 0 )
-        meshSubsetAuxillary = d_multiAuxPtr->select( meshSelector, d_auxVariables->getName() );
+        meshSubsetAuxillary = d_multiAuxPtr->select( meshSelector );
     for ( size_t var = 0; var < d_auxVariables->numVariables(); var++ ) {
         auto auxillaryVariable = d_auxVariables->getVariable( var );
         d_auxVec[var]          = meshSubsetAuxillary->subsetVectorForVariable( auxillaryVariable );

@@ -111,7 +111,7 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     auto var = getInputVariable();
     //    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_COMM_SELF );
-    auto commSubsetVec = u->select( commSelector, u->getName() );
+    auto commSubsetVec = u->select( commSelector );
     auto curPhysics    = commSubsetVec->subsetVectorForVariable( var );
     AMP_INSIST( curPhysics, "apply received bogus stuff" );
 

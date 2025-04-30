@@ -349,6 +349,8 @@ std::vector<std::string> getMeshVectorFactories()
     std::vector<std::string> list;
     list.emplace_back( "CubeMeshVectorFactory<4>" );
     list.emplace_back( "CubeMeshVectorFactory<16>" );
+    list.emplace_back(
+        "MultiVectorFactory<CubeMeshVectorFactory<4>,1,SimpleVectorFactory<15,false,double>,1>" );
     return list;
 }
 

@@ -22,11 +22,11 @@ inline void testSelector( AMP::UnitTest *ut,
                           const AMP::LinearAlgebra::VectorSelector &selector,
                           AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Vector::const_shared_ptr constVec = vec;
-    auto vec1                                             = selector.subset( vec );
-    auto vec2                                             = selector.subset( constVec );
-    auto vec3                                             = vec->select( selector, vec->getName() );
-    auto vec4 = constVec->select( selector, vec->getName() );
+    auto constVec = std::const_pointer_cast<const AMP::LinearAlgebra::Vector>( vec );
+    auto vec1     = selector.subset( vec );
+    auto vec2     = selector.subset( constVec );
+    auto vec3     = vec->select( selector );
+    auto vec4     = constVec->select( selector );
     if ( !vec1 || !vec2 || !vec3 || !vec4 ) {
         ut->failure( "Failed to select (" + test_name + ")" );
         return;
@@ -67,24 +67,21 @@ void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 // Test the behavior of VS_ByVariableName
 void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut )
 {
-    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
     auto vec1  = d_factory->getVector();
     auto vec2  = vec1->clone( "vec2" );
     auto vec3a = vec1->clone( "vec3" );
     auto vec3b = vec1->clone( "vec3" );
-    auto vec3  = AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
-    vec3->addVector( vec2 );
-    vec3->addVector( vec3a );
-    vec3->addVector( vec3b );
+    auto vec3 = AMP::LinearAlgebra::MultiVector::create( "multivec", comm, { vec2, vec3a, vec3b } );
 
     bool pass       = true;
-    auto selection1 = vec2->select( AMP::LinearAlgebra::VS_ByVariableName( "None" ), "None" );
+    auto selection1 = vec2->select( AMP::LinearAlgebra::VS_ByVariableName( "None" ) );
     if ( selection1 ) {
         ut->failure( "Found vector where there should be none" );
         pass = false;
     }
 
-    selection1 = vec2->select( AMP::LinearAlgebra::VS_ByVariableName( "vec2" ), "subset" );
+    selection1 = vec2->select( AMP::LinearAlgebra::VS_ByVariableName( "vec2" ) );
     if ( selection1 ) {
         if ( !compareVecSubset( vec2, selection1 ) ) {
             ut->failure( "Could not find vector" );
@@ -94,8 +91,8 @@ void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut 
         ut->failure( "Did not find a vector" );
     }
 
-    selection1    = vec3->select( AMP::LinearAlgebra::VS_ByVariableName( "vec3" ), "subset" );
-    auto vec3_sub = AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
+    selection1    = vec3->select( AMP::LinearAlgebra::VS_ByVariableName( "vec3" ) );
+    auto vec3_sub = AMP::LinearAlgebra::MultiVector::create( "multivec", comm );
     vec3_sub->addVector( vec3a );
     vec3_sub->addVector( vec3b );
     if ( selection1 ) {

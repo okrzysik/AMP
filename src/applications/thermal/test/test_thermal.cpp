@@ -85,7 +85,7 @@ void addSouce( std::shared_ptr<AMP::Database> db,
     auto meshName = db->getString( "Mesh" );
     auto mesh2    = mesh->Subset( meshName );
     AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2 );
-    auto v2 = vec->select( meshSelector, vec->getVariable()->getName() );
+    auto v2 = vec->select( meshSelector );
     // Apply the source
     auto expr = db->getEquation( "Power", "W/cm^3" );
     auto DOFs = v2->getDOFManager();
