@@ -1261,7 +1261,7 @@ SubchannelFourEqNonlinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        auto commVec = vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1276,7 +1276,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        auto commVec = vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1291,7 +1291,7 @@ SubchannelFourEqNonlinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vecto
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        auto commVec = vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1306,7 +1306,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        auto commVec = vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );

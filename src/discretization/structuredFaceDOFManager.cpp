@@ -175,6 +175,12 @@ AMP::Mesh::MeshElement structuredFaceDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
+ * Return the mesh                                               *
+ ****************************************************************/
+std::shared_ptr<const AMP::Mesh::Mesh> structuredFaceDOFManager::getMesh() const { return d_mesh; }
+
+
+/****************************************************************
  * Get an entry over the mesh elements associated with the DOFs  *
  ****************************************************************/
 AMP::Mesh::MeshIterator structuredFaceDOFManager::getIterator() const

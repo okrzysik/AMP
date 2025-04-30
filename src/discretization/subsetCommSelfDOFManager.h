@@ -53,6 +53,12 @@ public:
     virtual ~subsetCommSelfDOFManager() = default;
 
 
+    /** \brief   Get the underlying mesh
+     * \details  This will return the mesh(es) that underly the DOF manager (if they exist)
+     */
+    std::shared_ptr<const AMP::Mesh::Mesh> getMesh() const override;
+
+
     /** \brief   Get an entry over the mesh elements associated with the DOFs
      * \details  This will return an iterator over the mesh elements associated with the DOFs.
      * Note: if any sub-DOFManagers are the same, then this will iterate over repeated elements.

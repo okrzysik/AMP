@@ -1324,8 +1324,7 @@ SubchannelFourEqLinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector::s
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1340,8 +1339,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqLinearOperator::sub
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1356,8 +1354,7 @@ SubchannelFourEqLinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1372,8 +1369,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqLinearOperator::sub
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
