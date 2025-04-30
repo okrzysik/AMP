@@ -1,10 +1,16 @@
-// Sample input file to test thermal solve
+referenceSolutionNorm = 4.561204386863e4
+
+InitialGuess = 900.0
 
 Mesh{
     FileName = "halden_1_pellet_9mil.e"
     MeshType = "libMesh"
     MeshName = "Pellet"
     dim      = 3
+    x_offset = 0
+    y_offset = 0
+    z_offset = 0
+    NumberOfElements = 5226
 }
 
 NeutronicsOperator{
@@ -14,7 +20,7 @@ NeutronicsOperator{
     numTimeSteps       = 1
     timeSteps          = .1
     useFixedValue      = TRUE
-    fixedValues        = 4045.83
+    fixedValues        = 4045.3147905 
     print_info_level   = 3
 }
 
@@ -47,7 +53,7 @@ SourcePhysicsModel {
     Equation = "ThermalSource"
     USE_MATERIALS_LIBRARY = TRUE 
     Default_Concentration = .1
-    Default_Temperature   = 557.2
+    Default_Temperature   = 557.
     Default_Burnup   = 0.0
 }
 
@@ -58,7 +64,7 @@ testNonlinearThermalOperator {
   name="NonlinearBVPOperator"
     print_info_level = 0
     VolumeOperator = "DiffusionNonlinearFEOperator1"
-    BoundaryOperator = "DirichletVectorCorrection1"
+    BoundaryOperator = "RobinVectorCorrection1"
 }
 
 DiffusionNonlinearFEOperator1 {
@@ -82,17 +88,22 @@ DiffusionNonlinearFEOperator1 {
   LocalModel = "DiffusionTransportModel1"
 }
 
-DirichletVectorCorrection1 {
-  name = "DirichletVectorCorrection"
-    print_info_level = 0
+RobinVectorCorrection1 {
+  name = "RobinVectorCorrection"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    alpha          = 1.0
+    beta           = 2920
+    gamma          = 1.0
+    print_info_level = 3
     skip_params = FALSE
-    setResidual = TRUE
-    isAttachedToVolumeOperator = TRUE
     number_of_ids = 1
-    id_0             = 4
+    id_0         =   4
     number_of_dofs_0 =   1
     dof_0_0          =   0
-    value_0_0        = 557.2
+    value_0_0        =  1516485.76
 }
 
 DiffusionTransportModel1{
@@ -100,7 +111,7 @@ DiffusionTransportModel1{
     Material = "UO2_MSRZC_09"
     Property = "ThermalConductivity"
     Default_Concentration = .1
-    Default_Temperature   = 557.2
+    Default_Temperature   = 900.
     Default_Burnup   = 0.0
 } 
 
@@ -108,7 +119,7 @@ testLinearThermalOperator {
   name = "LinearBVPOperator"
     print_info_level = 0
     VolumeOperator = "DiffusionLinearFEOperator2"
-    BoundaryOperator = "DirichletMatrixCorrection2"
+    BoundaryOperator = "RobinMatrixCorrection2"
 }
 
 DiffusionLinearFEOperator2 {
@@ -132,53 +143,61 @@ DiffusionLinearFEOperator2 {
   LocalModel = "DiffusionTransportModel1"
 }
 
-DirichletMatrixCorrection2 {
-  name = "DirichletMatrixCorrection"
-    print_info_level = 0
+RobinMatrixCorrection2 {
+  name="RobinMatrixCorrection"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    alpha          = 1.0
+    beta           = 2920
+    gamma          = 1.0
+    print_info_level = 3
     skip_params = FALSE
-    skip_rhs_correction = TRUE
     number_of_ids = 1
-    id_0          = 4
-    number_of_dofs_0 =  1
-    dof_0_0          =  0
+    id_0         =   4
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        = 1234567891234567.0 
 }
 
 NonlinearSolver{
+    name = "PetscSNESSolver"
     print_info_level = 7
-    //solver = "Anderson"
-    solver = "JFNK"
     max_iterations = 500
     max_error = 1e-10
-    absolute_tolerance = 1e-10
-    relative_tolerance = 1e-12
-    stepTolerance = 1e-10
-    maximumFunctionEvals = 100
+
+    absolute_tolerance = 1.0e-10
+    relative_tolerance = 1.0e-14
+    stepTolerance = 1.0e-16
+    maximumFunctionEvals = 10000
     usesJacobian=FALSE
 
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_maxstep 10000.0 -snes_ls_alpha 1.0e-4"
+
     LinearSolver{
-        print_info_level = 7
-        linearSolverType = "Belos"
-        linearSolver = "Pseudo Block GMRES"
-        //linearSolver = "Block CG"
+        name = "PetscKrylovSolver"
+        print_info_level = 0
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"
-        absolute_tolerance = 1e-9
-        relative_tolerance = 1e-03
-        divergence_tolerance = 1e03
+        absolute_tolerance = 1.0e-12
+        relative_tolerance = 1.0e-06
+        divergence_tolerance = 1.0e03
         max_krylov_dimension = 40
         uses_preconditioner=TRUE
         pc_type = "shell"
         pc_side = "RIGHT"
 
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1.0e-9 -ksp_atol 1.0e-9"
+
         Preconditioner{
+	    name = "BoomerAMGSolver"
             print_info_level = 0
-            max_iterations = 3
-            max_levels = 5
+            max_iterations = 1
             max_error = 1e-15
         }
     }
 }
-
 
 
