@@ -1,6 +1,8 @@
 #include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/solvers/SolverFactory.h"
-
+#ifdef AMP_USE_TRILINOS_NOX
+    #include "AMP/solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
+#endif
 #include <memory>
 #include <string>
 
@@ -197,11 +199,23 @@ buildSolver( const std::string &solver_name,
 
     auto db = input_db->getDatabase( solver_name );
     AMP_INSIST( db->keyExists( "name" ), "Key name does not exist in solver database" );
+    auto type_name = db->getScalar<std::string>( "name" );
+    // temporary hack for NOX since this is testing infrastructure
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters;
+    if ( type_name == "TrilinosNOXSolver" ) {
+#ifdef AMP_USE_TRILINOS_NOX
+        parameters = std::make_shared<AMP::Solver::TrilinosNOXSolverParameters>( db );
+#else
+        AMP_ERROR( "AMP built without support for Trilinos NOX" );
+#endif
+    } else {
+        parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+    }
 
-    auto parameters             = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
     parameters->d_pOperator     = op;
     parameters->d_comm          = comm;
     parameters->d_pInitialGuess = initialGuess;
+    parameters->d_db            = db;
     parameters->d_global_db     = input_db;
 
     return AMP::Solver::SolverFactory::create( parameters );
