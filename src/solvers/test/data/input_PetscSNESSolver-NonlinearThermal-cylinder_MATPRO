@@ -146,32 +146,34 @@ DirichletMatrixCorrection2 {
 }
 
 NonlinearSolver{
-  name = "NKASolver"
-  print_info_level = 1
-  max_iterations = 500
-  max_error = 1e-10
-  max_vectors = 3
-  angle_tolerance = 0.2
-  uses_preconditioner=TRUE
-  pc_solver_name = "Preconditioner"
-  freeze_pc = FALSE
-  zero_initial_guess = FALSE
-  absolute_tolerance = 1.0e-12
-  relative_tolerance = 1.0e-12
+    name = "PetscSNESSolver"
+    print_info_level = 7
+    max_iterations = 500
+    max_error = 1e-10
+    absolute_tolerance = 1.0e-10
+    relative_tolerance = 1e-14
+    stepTolerance = 1.0e-10
+    maximumFunctionEvals = 500
+    usesJacobian=FALSE
+    zero_initial_guess = FALSE
+    
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.0001"
+
+    LinearSolver{
+        name = "PetscKrylovSolver"
+        print_info_level = 0
+        max_iterations = 100
+        max_error = 1e-10
+        ksp_type = "fgmres"
+        absolute_tolerance = 1e-12
+        relative_tolerance = 1e-4
+        divergence_tolerance = 1e3
+        max_krylov_dimension = 40
+        uses_preconditioner=FALSE
+	
+        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1e-3 -ksp_atol 1e-13 "
+
+    }
 }
 
 
-Preconditioner{
-  name = "BoomerAMGSolver"
-  print_info_level = 0
-  max_iterations = 1
-  max_levels = 10
-  max_error = 1e-15
-  min_coarse_size = 10
-  strong_threshold = 0.5
-  cycle_type = 1
-  relax_type = 16
-  coarsen_type = 10
-  interp_type = 17
-  relax_order = 0
-}

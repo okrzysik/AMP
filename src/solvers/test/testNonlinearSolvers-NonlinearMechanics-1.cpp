@@ -24,6 +24,7 @@
 #include <iostream>
 #include <string>
 
+#include "testSolverHelpers.h"
 
 void myTest( AMP::UnitTest *ut, const std::string &fileName )
 {
@@ -38,11 +39,8 @@ void myTest( AMP::UnitTest *ut, const std::string &fileName )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    auto mesh_db    = input_db->getDatabase( "Mesh" );
-    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    // create the Mesh
+    const auto meshAdapter = createMesh( input_db );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
