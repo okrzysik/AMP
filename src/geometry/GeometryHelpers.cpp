@@ -325,6 +325,8 @@ map_sphere_surface_logical( int method, double R, double x, double y, double z )
         double pi    = 3.14159265358979323;
         double theta = acos( z / R );
         double phi   = sgn( y ) * acos( x / std::sqrt( x * x + y * y ) );
+        if ( phi < 0 )
+            phi += 2 * pi;
         return { theta / pi, phi / ( 2 * pi ) };
     } else {
         AMP_ERROR( "Unknown method" );

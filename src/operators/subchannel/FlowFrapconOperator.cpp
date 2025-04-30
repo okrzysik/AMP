@@ -155,8 +155,7 @@ FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr 
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -172,8 +171,7 @@ FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr v
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -189,8 +187,7 @@ FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_share
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -206,8 +203,7 @@ FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );

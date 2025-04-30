@@ -213,9 +213,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    auto mechUvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
-    auto mechVvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
-    auto mechWvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
+    auto mechUvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ) );
+    auto mechVvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ) );
+    auto mechWvec = displacementVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ) );
 
     double finalMaxU = static_cast<double>( mechUvec->maxNorm() );
     double finalMaxV = static_cast<double>( mechVvec->maxNorm() );

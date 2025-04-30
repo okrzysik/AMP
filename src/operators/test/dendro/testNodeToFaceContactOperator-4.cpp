@@ -377,7 +377,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // AMP::LinearAlgebra::VS_Mesh slaveVectorSelector(slaveMeshAdapter);
-    // auto slaveTempVec = tempVec->select(slaveVectorSelector, tempVar->getName());
+    // auto slaveTempVec = tempVec->select(slaveVectorSelector);
     // slaveTempVec->setToScalar(900.0);
     // auto tmp_db = masterTemperatureRhs_db->getDatabase("RhsMaterialModel");
     // double masterThermalExpansionCoefficient =
@@ -411,7 +411,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     if ( bis && useALittleHelp ) {
-        // auto zDispVec = columnSolVec->select(AMP::LinearAlgebra::VS_Stride(2,3), "help");
+        // auto zDispVec = columnSolVec->select(AMP::LinearAlgebra::VS_Stride(2,3));
         auto it       = slaveMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 );
         auto it_begin = it.begin();
         auto it_end   = it.end();
@@ -503,7 +503,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             // compute thermal load f
             {
                 AMP::LinearAlgebra::VS_Mesh slaveVectorSelector( slaveMeshAdapter );
-                auto slaveRhsVec = columnRhsVec->select( slaveVectorSelector, dispVar->getName() );
+                auto slaveRhsVec = columnRhsVec->select( slaveVectorSelector );
                 computeTemperatureRhsVector( slaveMeshAdapter,
                                              slaveTemperatureRhs_db,
                                              tempVar,
@@ -514,8 +514,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             }
             {
                 AMP::LinearAlgebra::VS_Mesh masterVectorSelector( masterMeshAdapter );
-                auto masterRhsVec =
-                    columnRhsVec->select( masterVectorSelector, dispVar->getName() );
+                auto masterRhsVec = columnRhsVec->select( masterVectorSelector );
                 computeTemperatureRhsVector( masterMeshAdapter,
                                              masterTemperatureRhs_db,
                                              tempVar,

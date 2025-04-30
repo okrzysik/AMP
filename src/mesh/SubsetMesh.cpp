@@ -253,24 +253,21 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
     for ( int i = 0; i <= (int) GeomDim; i++ )
         AMP_ASSERT( N_global[i] > 0 );
     // Create the bounding box
-    d_box = std::vector<double>( 2 * PhysicalDim );
+    d_box_local = std::vector<double>( 2 * PhysicalDim );
     for ( int j = 0; j < PhysicalDim; j++ ) {
-        d_box[2 * j + 0] = 1e100;
-        d_box[2 * j + 1] = -1e100;
+        d_box_local[2 * j + 0] = 1e100;
+        d_box_local[2 * j + 1] = -1e100;
     }
     for ( const auto &elem : getIterator( GeomType::Vertex, 0 ) ) {
         auto coord = elem.coord();
         for ( int j = 0; j < PhysicalDim; j++ ) {
-            if ( coord[j] < d_box[2 * j + 0] )
-                d_box[2 * j + 0] = coord[j];
-            if ( coord[j] > d_box[2 * j + 1] )
-                d_box[2 * j + 1] = coord[j];
+            if ( coord[j] < d_box_local[2 * j + 0] )
+                d_box_local[2 * j + 0] = coord[j];
+            if ( coord[j] > d_box_local[2 * j + 1] )
+                d_box_local[2 * j + 1] = coord[j];
         }
     }
-    for ( int j = 0; j < PhysicalDim; j++ ) {
-        d_box[2 * j + 0] = d_comm.minReduce( d_box[2 * j + 0] );
-        d_box[2 * j + 1] = d_comm.maxReduce( d_box[2 * j + 1] );
-    }
+    d_box = Mesh::reduceBox( d_box_local, d_comm );
     // Create the boundary id sets
     auto boundary_ids = d_parentMesh->getBoundaryIDs();
     std::set<int> new_boundary_ids;

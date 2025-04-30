@@ -43,6 +43,12 @@ public:
     virtual ~structuredFaceDOFManager();
 
 
+    /** \brief   Get the underlying mesh
+     * \details  This will return the mesh(es) that underly the DOF manager (if they exist)
+     */
+    std::shared_ptr<const AMP::Mesh::Mesh> getMesh() const override;
+
+
     /** \brief Get the mesh element ID for a DOF
      * \details  This will return the mesh element id associated with a given DOF.
      * \param[in] dof       The entry in the vector associated with DOF
