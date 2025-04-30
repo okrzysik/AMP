@@ -181,6 +181,8 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatHorizontal(
     std::shared_ptr<MatrixParametersBase> params,
     std::map<int, std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
 {
+    PROFILE( "CSRLocalMatrixData::ConcatHorizontal" );
+
     AMP_INSIST( blocks.size() > 0, "Attempted to concatenate empty set of blocks" );
 
     // Verify that all have matching row/col starts/stops
@@ -236,54 +238,78 @@ template<typename Policy, class Allocator>
 std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>
 CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
     std::shared_ptr<MatrixParametersBase> params,
-    std::map<int, std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks )
+    std::map<int, std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>> blocks,
+    const gidx_t first_col,
+    const gidx_t last_col,
+    const bool is_diag )
 {
+    PROFILE( "CSRLocalMatrixData::ConcatVertical" );
+
     AMP_INSIST( blocks.size() > 0, "Attempted to concatenate empty set of blocks" );
 
-    // Verify that all have matching column starts/stops
-    // Blocks must have valid global columns present
-    // Count total number of non-zeros in each row from combination.
-    auto block           = ( *blocks.begin() ).second;
-    const auto mem_loc   = block->d_memory_location;
-    const auto first_col = block->d_first_col;
-    const auto last_col  = block->d_last_col;
-    std::vector<lidx_t> row_nnz;
+    // count number of rows and check compatibility of blocks
+    auto block         = ( *blocks.begin() ).second;
+    const auto mem_loc = block->d_memory_location;
+    lidx_t num_rows    = 0;
     for ( auto it : blocks ) {
         block = it.second;
-        AMP_INSIST( mem_loc == block->d_memory_location,
-                    "Blocks to concatenate must be in same memory space" );
-        AMP_INSIST( first_col == block->d_first_col && last_col == block->d_last_col,
-                    "Blocks to concatenate must have compatible layouts" );
-        if ( !block->d_is_empty ) {
-            AMP_INSIST( block->d_cols.get(),
-                        "Non-empty blocks to concatenate must have accessible global columns" );
-        }
-        for ( lidx_t row = 0; row < block->d_num_rows; ++row ) {
-            row_nnz.push_back( block->d_row_starts[row + 1] - block->d_row_starts[row] );
+        AMP_DEBUG_INSIST( mem_loc == block->d_memory_location,
+                          "Blocks to concatenate must be in same memory space" );
+        AMP_INSIST( block->d_cols.get(),
+                    "Blocks to concatenate must have accessible global columns" );
+        num_rows += block->d_num_rows;
+    }
+
+    // create output matrix
+    auto concat_matrix = std::make_shared<CSRLocalMatrixData<Policy, Allocator>>(
+        params, mem_loc, 0, num_rows, first_col, last_col, is_diag );
+
+    // Count total number of non-zeros in each row from combination.
+    lidx_t cat_row = 0; // counter for which row we are on in concat_matrix
+    for ( auto it : blocks ) {
+        block = it.second;
+        // loop over rows and count NZs that fall in/out of column range
+        for ( lidx_t brow = 0; brow < block->d_num_rows; ++brow ) {
+            lidx_t row_nnz = 0;
+            for ( lidx_t k = block->d_row_starts[brow]; k < block->d_row_starts[brow + 1]; ++k ) {
+                const auto c      = block->d_cols[k];
+                const bool inside = first_col <= c && c < last_col;
+                const bool valid  = ( is_diag && inside ) || ( !is_diag && !inside );
+                if ( valid ) {
+                    ++row_nnz;
+                }
+            }
+            concat_matrix->d_row_starts[cat_row] = row_nnz;
+            ++cat_row;
         }
     }
 
-    // Create empty matrix and trigger allocations to match
-    auto concat_matrix = std::make_shared<CSRLocalMatrixData<Policy, Allocator>>(
-        params, mem_loc, 0, row_nnz.size(), first_col, last_col, true );
-    concat_matrix->setNNZ( row_nnz );
+    // Trigger allocations
+    concat_matrix->setNNZ( true );
 
     // loop over blocks again and write into new matrix
-    lidx_t cat_row = 0;
+    cat_row = 0;
     for ( auto it : blocks ) {
         block = it.second;
         if ( !block->d_is_empty ) {
             for ( lidx_t brow = 0; brow < block->d_num_rows; ++brow ) {
                 lidx_t cat_pos = concat_matrix->d_row_starts[cat_row];
-                for ( auto n = block->d_row_starts[brow]; n < block->d_row_starts[brow + 1]; ++n ) {
-                    concat_matrix->d_cols[cat_pos]   = block->d_cols[n];
-                    concat_matrix->d_coeffs[cat_pos] = block->d_coeffs[n];
-                    cat_pos++;
+                for ( auto k = block->d_row_starts[brow]; k < block->d_row_starts[brow + 1]; ++k ) {
+                    const auto c      = block->d_cols[k];
+                    const bool inside = first_col <= c && c < last_col;
+                    const bool valid  = ( is_diag && inside ) || ( !is_diag && !inside );
+                    if ( valid ) {
+                        concat_matrix->d_cols[cat_pos]   = c;
+                        concat_matrix->d_coeffs[cat_pos] = block->d_coeffs[k];
+                        ++cat_pos;
+                    }
                 }
-                cat_row++;
+                ++cat_row;
             }
         }
     }
+
+    concat_matrix->globalToLocalColumns();
 
     return concat_matrix;
 }
@@ -291,15 +317,13 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
 template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
 {
-    if ( d_is_empty ) {
+    if ( d_is_empty || d_cols.get() == nullptr ) {
+        // gToL either trivially not needed or has already been called
         return;
     }
 
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::globalToLocalColumns not implemented on device yet" );
-
-    AMP_INSIST( d_cols.get() != nullptr,
-                "CSRLocalMatrixData::globalToLocalColumns Global columns must exist" );
 
     if ( d_is_diag ) {
         for ( lidx_t n = 0; n < d_nnz; ++n ) {
@@ -399,6 +423,187 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
             d_coeffs[rs + k]   = std::get<2>( rTpl[k] );
         }
     }
+}
+
+template<typename Policy, class Allocator>
+void CSRLocalMatrixData<Policy, Allocator>::mergeMatrices(
+    std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>> A,
+    std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>> B )
+{
+    PROFILE( "CSRLocalMatrixData::mergeMatrices" );
+
+    if ( A.get() == nullptr && B.get() == nullptr ) {
+        return;
+    }
+
+    // verify this matrix is empty
+    AMP_INSIST( d_is_empty,
+                "CSRLocalMatrixData::mergeMatrices Result matrix must be empty initially" );
+
+    // first check for simple case where one of the inputs is empty
+    if ( B.get() == nullptr || B->d_is_empty ) {
+        // Just copy all fields from A and call swap on pointed members
+        // to take ownership
+        d_is_empty  = A->d_is_empty;
+        d_nnz       = A->d_nnz;
+        d_ncols_unq = A->d_ncols_unq;
+        d_row_starts.swap( A->d_row_starts );
+        d_cols.swap( A->d_cols );
+        d_cols_loc.swap( A->d_cols_loc );
+        d_cols_unq.swap( A->d_cols_unq );
+        d_coeffs.swap( A->d_coeffs );
+        globalToLocalColumns();
+        return;
+    } else if ( A.get() == nullptr || A->d_is_empty ) {
+        // same but take from B
+        d_is_empty  = B->d_is_empty;
+        d_nnz       = B->d_nnz;
+        d_ncols_unq = B->d_ncols_unq;
+        d_row_starts.swap( B->d_row_starts );
+        d_cols.swap( B->d_cols );
+        d_cols_loc.swap( B->d_cols_loc );
+        d_cols_unq.swap( B->d_cols_unq );
+        d_coeffs.swap( B->d_coeffs );
+        globalToLocalColumns();
+        return;
+    }
+    // verify that input matrices match overall dimensions of this one
+    AMP_INSIST( d_first_row == A->d_first_row,
+                "CSRLocalMatrixData::mergeMatrices First row must agree" );
+    AMP_INSIST( d_first_row == B->d_first_row,
+                "CSRLocalMatrixData::mergeMatrices First row must agree" );
+    AMP_INSIST( d_last_row == A->d_last_row,
+                "CSRLocalMatrixData::mergeMatrices Last row must agree" );
+    AMP_INSIST( d_last_row == B->d_last_row,
+                "CSRLocalMatrixData::mergeMatrices Last row must agree" );
+    AMP_INSIST( d_first_col == A->d_first_col,
+                "CSRLocalMatrixData::mergeMatrices First col must agree" );
+    AMP_INSIST( d_first_col == B->d_first_col,
+                "CSRLocalMatrixData::mergeMatrices First col must agree" );
+    AMP_INSIST( d_last_col == A->d_last_col,
+                "CSRLocalMatrixData::mergeMatrices Last col must agree" );
+    AMP_INSIST( d_last_col == B->d_last_col,
+                "CSRLocalMatrixData::mergeMatrices Last col must agree" );
+
+    // Neither empty, need to actually figure out merge
+    // Input matrices have had their columns sorted, so detecting
+    // collisions should be semi-straightforward
+
+    // comparator somewhat strange because diag blocks have diag
+    // entries first in each row, pull out into dedicated lambda
+    const bool is_diag = d_is_diag;
+    auto less_equal    = [is_diag]( gidx_t Ac, gidx_t Bc, gidx_t Dc ) -> bool {
+        if ( !is_diag ) {
+            // not diag block, simple comparison
+            return Ac <= Bc;
+        }
+        // diag block
+        // simple comparison if neither are equal to diag value
+        // if one or both is equal to diag value then less_equal holds
+        // iff Ac==Dc
+        return ( Ac != Dc && Bc != Dc ) ? Ac <= Bc : Ac == Dc;
+    };
+
+    // First pass counts unique entries in union of A and B rows
+    for ( lidx_t row = 0; row < d_num_rows; ++row ) {
+        // column id of diagonal entry
+        const auto Dc = static_cast<gidx_t>( row ) + d_first_row;
+        // bounds of each row
+        const auto A_start = A->d_row_starts[row];
+        const auto A_end   = A->d_row_starts[row + 1];
+        const auto B_start = B->d_row_starts[row];
+        const auto B_end   = B->d_row_starts[row + 1];
+
+        // position in each row
+        auto A_ptr = A_start;
+        auto B_ptr = B_start;
+
+        lidx_t nunq = 0;
+        while ( A_ptr < A_end && B_ptr < B_end ) {
+            auto A_col = A->d_cols[A_ptr];
+            auto B_col = B->d_cols[B_ptr];
+            // increment pointer of smaller column
+            // note that both will increment if columns are equal
+            // but nunq only increments once
+            if ( less_equal( A_col, B_col, Dc ) ) {
+                ++A_ptr;
+            }
+            if ( less_equal( B_col, A_col, Dc ) ) {
+                ++B_ptr;
+            }
+            ++nunq;
+        }
+
+        // above loop stops if either pointer gets to end
+        // add remainder of range if present
+        nunq += A_end - A_ptr;
+        nunq += B_end - B_ptr;
+
+        // record length of row
+        d_row_starts[row] = nunq;
+    }
+
+    // Have now recorded size of merged rows, need to allocate
+    setNNZ( true );
+
+    // now sweep through again and write cols/vals
+    // adding vals whenever collisions happen
+    for ( lidx_t row = 0; row < d_num_rows; ++row ) {
+        // column id of diagonal entry
+        const auto Dc = static_cast<gidx_t>( row ) + d_first_row;
+        // bounds of each row
+        const auto A_start = A->d_row_starts[row];
+        const auto A_end   = A->d_row_starts[row + 1];
+        const auto B_start = B->d_row_starts[row];
+        const auto B_end   = B->d_row_starts[row + 1];
+
+        // position in each row
+        auto A_ptr = A_start;
+        auto B_ptr = B_start;
+
+        lidx_t pos = d_row_starts[row];
+        while ( A_ptr < A_end && B_ptr < B_end ) {
+            auto A_col = A->d_cols[A_ptr];
+            auto B_col = B->d_cols[B_ptr];
+
+            if ( A_col == B_col ) {
+                // collision, sum values, write, increment both pointers
+                d_cols[pos]   = A_col;
+                d_coeffs[pos] = A->d_coeffs[A_ptr] + B->d_coeffs[B_ptr];
+                ++A_ptr;
+                ++B_ptr;
+            } else if ( less_equal( A_col, B_col, Dc ) ) {
+                // A_col strictly smaller
+                d_cols[pos]   = A_col;
+                d_coeffs[pos] = A->d_coeffs[A_ptr];
+                ++A_ptr;
+            } else {
+                // B_col strictly smaller
+                d_cols[pos]   = B_col;
+                d_coeffs[pos] = B->d_coeffs[B_ptr];
+                ++B_ptr;
+            }
+            ++pos;
+        }
+
+        // above loop stops if either pointer gets to end
+        // add remainder of range if present
+        for ( ; A_ptr < A_end; ++A_ptr ) {
+            d_cols[pos]   = A->d_cols[A_ptr];
+            d_coeffs[pos] = A->d_coeffs[A_ptr];
+            ++pos;
+        }
+        for ( ; B_ptr < B_end; ++B_ptr ) {
+            d_cols[pos]   = B->d_cols[B_ptr];
+            d_coeffs[pos] = B->d_coeffs[B_ptr];
+            ++pos;
+        }
+
+        AMP_DEBUG_ASSERT( pos == d_row_starts[row + 1] );
+    }
+
+    // global columns now filled in, convert to local and return
+    globalToLocalColumns();
 }
 
 template<typename Policy, class Allocator>

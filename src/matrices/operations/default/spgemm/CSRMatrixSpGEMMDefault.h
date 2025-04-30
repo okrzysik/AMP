@@ -45,10 +45,6 @@ protected:
     void multiply( std::shared_ptr<DiagMatrixData> A_data,
                    std::shared_ptr<DiagMatrixData> B_data,
                    std::shared_ptr<DiagMatrixData> C_data );
-    template<bool SYMBOLIC>
-    void multiplyLocal( std::shared_ptr<DiagMatrixData> B_data,
-                        std::shared_ptr<DiagMatrixData> C_data,
-                        lidx_t *nnz );
 
     void setupBRemoteComm();
     void startBRemoteComm();
@@ -70,9 +66,15 @@ protected:
     bool d_need_comms;
 
     // Matrix data formed from remote rows of B that get pulled to each process
-    // This is a single block for all columns in remote rows. It is much easier
-    // to split these between C_diag and C_offd after receiving them
-    std::shared_ptr<DiagMatrixData> BRemote;
+    std::shared_ptr<DiagMatrixData> BR_diag;
+    std::shared_ptr<DiagMatrixData> BR_offd;
+
+    // To overlap comms and calcs it is easiest to form the output in four
+    // blocks and merge them together at the end
+    std::shared_ptr<DiagMatrixData> C_diag_diag; // from A_diag * B_diag
+    std::shared_ptr<DiagMatrixData> C_diag_offd; // from A_diag * B_offd
+    std::shared_ptr<DiagMatrixData> C_offd_diag; // from A_offd * BR_diag
+    std::shared_ptr<DiagMatrixData> C_offd_offd; // from A_offd * BR_offd
 
     // The following all support the communication needed to build BRemote
     // these are worth preserving to allow repeated SpGEMMs to re-use the
