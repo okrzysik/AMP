@@ -24,6 +24,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
     std::string input_file = inputName;
     std::string log_file   = "output_" + inputName;
 
+    AMP::pout << "Running with input " << input_file << std::endl;
+
     size_t N_error0 = ut->NumFailLocal();
 
     AMP::logOnlyNodeZero( log_file );
@@ -65,7 +67,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
     ut->passes( solverName + " solve called with simple vector" );
     auto x = u->clone();
     x->subtract( *u, *f );
-    double error = static_cast<double>( x->L2Norm() ) / static_cast<double>( f->L2Norm() );
+    auto error = static_cast<double>( x->L2Norm() ) / static_cast<double>( f->L2Norm() );
     if ( fabs( error ) < 1e-8 )
         ut->passes( "Solve with simple vector passed" );
     else

@@ -1,20 +1,9 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/MeshParameters.h"
-#include "AMP/operators/ElementOperationFactory.h"
-#include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/boundary/DirichletMatrixCorrection.h"
-#include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
-#include "AMP/operators/diffusion/DiffusionLinearElement.h"
-#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionTransportModel.h"
-#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
@@ -88,9 +77,9 @@ void linearThermalTest( AMP::UnitTest *ut,
 
     // Compute the residual
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
-#if 1
+
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
+    auto finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     auto combo        = linearSolver->type();
@@ -103,7 +92,6 @@ void linearThermalTest( AMP::UnitTest *ut,
     } else {
         ut->failure( combo + " fails linear thermal problem with input " + input_file );
     }
-#endif
 }
 
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile, bool all_solvers )
@@ -111,6 +99,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile, bool al
     // Input and output file names
     std::string input_file = inputFile;
     std::string log_file   = "output_" + inputFile;
+
+    AMP::pout << "Running with input " << input_file << std::endl;
 
     // Fill the database from the input file
     auto input_db = AMP::Database::parseInputFile( input_file );
