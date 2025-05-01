@@ -185,18 +185,7 @@ NonlinearSolver{
         relative_tolerance = 1.0e-06
         divergence_tolerance = 1.0e03
         max_krylov_dimension = 40
-        uses_preconditioner=TRUE
-        pc_type = "shell"
-        pc_side = "RIGHT"
-
-        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1.0e-9 -ksp_atol 1.0e-9"
-
-        Preconditioner{
-	    name = "BoomerAMGSolver"
-            print_info_level = 0
-            max_iterations = 1
-            max_error = 1e-15
-        }
+        uses_preconditioner=FALSE
     }
 }
 
