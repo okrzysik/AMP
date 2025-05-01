@@ -62,7 +62,8 @@ MultiVectorFactory::MultiVectorFactory( std::shared_ptr<const VectorFactory> fac
 }
 AMP::LinearAlgebra::Vector::shared_ptr MultiVectorFactory::getVector() const
 {
-    auto var    = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "var1" );
+    auto var = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "var1" );
+
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs;
     for ( int i = 0; i != NUM1; i++ )
         vecs.push_back( FACTORY1->getVector() );

@@ -1,5 +1,7 @@
 // Sample input file to test thermal solve
 
+referenceSolutionNorm = 45431.3
+
 Mesh{
     FileName = "halden_1_pellet_9mil.e"
     MeshType = "libMesh"
@@ -144,45 +146,43 @@ DirichletMatrixCorrection2 {
 }
 
 NonlinearSolver{
-    name = "PetscSNESSolver"
+    name = "TrilinosNOXSolver"
     print_info_level = 7
+    //solver = "Anderson"
+    solver = "JFNK"
     max_iterations = 500
     max_error = 1e-10
-    absolute_tolerance = 1.0e-10
-    relative_tolerance = 1e-14
-    stepTolerance = 1.0e-10
+    absolute_tolerance = 1e-10
+    relative_tolerance = 1e-12
+    stepTolerance = 1e-10
     maximumFunctionEvals = 100
     usesJacobian=FALSE
-    zero_initial_guess = FALSE
-    
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.0001"
 
     LinearSolver{
-        name = "PetscKrylovSolver"
-        print_info_level = 0
+        print_info_level = 7
+        linearSolverType = "Belos"
+        linearSolver = "Pseudo Block GMRES"
+        //linearSolver = "Block CG"
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"
-        absolute_tolerance = 1e-12
-        relative_tolerance = 1e-4
-        divergence_tolerance = 1e3
+        absolute_tolerance = 1e-9
+        relative_tolerance = 1e-03
+        divergence_tolerance = 1e03
         max_krylov_dimension = 40
         uses_preconditioner=TRUE
         pc_type = "shell"
         pc_side = "RIGHT"
-        pc_solver_name = "Preconditioner"
-	
-        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1e-3 -ksp_atol 1e-13 "
 
+        Preconditioner{
+            name = "TrilinosMLSolver"
+            print_info_level = 0
+            max_iterations = 3
+            max_levels = 5
+            max_error = 1e-15
+        }
     }
 }
 
-Preconditioner{
-    name = "BoomerAMGSolver"
-    print_info_level = 0
-    max_iterations = 3
-    max_levels = 5
-    max_error = 1e-15
-}
 
 

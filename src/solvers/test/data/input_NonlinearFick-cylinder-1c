@@ -36,8 +36,8 @@ DiffusionNonlinearFEOperator1 {
         }    
 
 	LocalModel = "DiffusionTransportModel1"
-}
-	
+    }
+
 DirichletVectorCorrection1 {
     name = "DirichletVectorCorrection"
       print_info_level = 0
@@ -55,13 +55,13 @@ DirichletVectorCorrection1 {
   }
 
 DiffusionTransportModel1{
-        name = "DiffusionCylindricalTransportModel"
-        Material = "CylindricallySymmetric"
-        Property = "ScalarRadialFick"
- 		RadiusArgument = "radius"
- 		// coefficients for the polynomial 1. + 100 r (1 - r) (r - .2) (r - .52) (r - .63) (r - .8)
-        Parameters =  1., 5.2416, -56.4016, 214.92, -378.76, 315.0, -100.
-} 
+        name = "DiffusionTransportModel"
+          Material = "Ox_MSRZC_09"
+          Property = "FickCoefficient"
+          Default_Concentration = .05
+          Default_Temperature   = 1350.
+          Default_Burnup   = 0.0
+      } 
 
 testLinearFickOperator {
     name = "LinearBVPOperator"
@@ -88,9 +88,9 @@ DiffusionLinearFEOperator2 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "DiffusionTransportModel1"
-}
-	
+ 	LocalModel = "DiffusionTransportModel1"
+    }
+
 DirichletMatrixCorrection2 {
     name = "DirichletMatrixCorrection"
       print_info_level = 0
@@ -106,45 +106,3 @@ DirichletMatrixCorrection2 {
       dof_1_0          =   0
       value_1_0        = .05
   }
-
-NonlinearSolver{
-    name = "PetscSNESSolver"
-    print_info_level = 7
-    max_iterations = 500
-    max_error = 1e-10
-
-    absolute_tolerance = 1.0e-33
-    relative_tolerance = 1.0e-10
-    stepTolerance = 1.0e-10
-    maximumFunctionEvals = 100
-    usesJacobian=FALSE
-
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.0001"
-
-    LinearSolver{
-        name = "PetscKrylovSolver"
-        print_info_level = 0
-        max_iterations = 100
-        max_error = 1e-10
-        ksp_type = "fgmres"
-        absolute_tolerance = 1.0e-33
-        relative_tolerance = 1.0e-01
-        divergence_tolerance = 1.0e03
-        max_krylov_dimension = 40
-        uses_preconditioner=TRUE
-        pc_type = "shell"
-        pc_side = "RIGHT"
-
-        KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
-
-        Preconditioner{
-	    name = "BoomerAMGSolver"
-            print_info_level = 0
-            max_iterations = 1
-            max_error = 1.0e-15
-        }
-    }
-}
-
-
-
