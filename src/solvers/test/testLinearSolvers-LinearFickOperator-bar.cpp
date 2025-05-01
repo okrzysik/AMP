@@ -4,16 +4,8 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-#include "AMP/operators/ElementOperationFactory.h"
-#include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/boundary/DirichletMatrixCorrection.h"
-#include "AMP/operators/diffusion/DiffusionLinearElement.h"
-#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionTransportModel.h"
-#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
@@ -32,10 +24,7 @@
 #include <memory>
 #include <string>
 
-#define ITFAILS ut.failure( __LINE__ );
-#define UNIT_TEST( a ) \
-    if ( !( a ) )      \
-        ut.failure( __LINE__ );
+#include "testSolverHelpers.h"
 
 void linearFickTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
@@ -44,6 +33,8 @@ void linearFickTest( AMP::UnitTest *ut, const std::string &inputFileName )
     std::string log_file   = "output_" + inputFileName;
     const auto globalComm  = AMP::AMP_MPI( AMP_COMM_WORLD );
 
+    AMP::pout << "Running with input " << input_file << std::endl;
+
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -51,12 +42,8 @@ void linearFickTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Print from all cores into the output files
     AMP::logAllNodes( log_file );
 
-    //   Create the Mesh
-    AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    auto mesh_db   = input_db->getDatabase( "Mesh" );
-    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    mgrParams->setComm( globalComm );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    // create the Mesh
+    const auto meshAdapter = createMesh( input_db );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
@@ -91,11 +78,11 @@ void linearFickTest( AMP::UnitTest *ut, const std::string &inputFileName )
     SolutionVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = static_cast<double>( SolutionVec->L2Norm() );
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    auto initSolNorm = static_cast<double>( SolutionVec->L2Norm() );
+    AMP::pout << "Initial Solution Norm: " << initSolNorm << std::endl;
 
-    double rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
-    std::cout << "RHS Norm: " << rhsNorm << std::endl;
+    auto rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
+    AMP::pout << "RHS Norm: " << rhsNorm << std::endl;
 
     auto mlSolver = AMP::Solver::Test::buildSolver(
         "LinearSolver", input_db, globalComm, nullptr, diffusionOperator );
@@ -110,8 +97,8 @@ void linearFickTest( AMP::UnitTest *ut, const std::string &inputFileName )
     diffusionOperator->residual( RightHandSideVec, SolutionVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
-    std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    auto finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
+    AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
         ut->failure( mlSolver->type() + " fails to solve a linear Fick problem." );
