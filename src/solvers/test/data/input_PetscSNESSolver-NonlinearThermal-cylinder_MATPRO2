@@ -173,7 +173,7 @@ NonlinearSolver{
     maximumFunctionEvals = 10000
     usesJacobian=FALSE
 
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_maxstep 10000.0 -snes_ls_alpha 1.0e-4"
+    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.01"
 
     LinearSolver{
         name = "PetscKrylovSolver"
@@ -184,7 +184,7 @@ NonlinearSolver{
         absolute_tolerance = 1.0e-12
         relative_tolerance = 1.0e-06
         divergence_tolerance = 1.0e03
-        max_krylov_dimension = 40
+        max_krylov_dimension = 100
         uses_preconditioner=FALSE
     }
 }
