@@ -1,10 +1,10 @@
 <<< "input_LinearThermalRobinOperator" >>>
-<<< "GMRESParameters" >>>
+<<< "PetscCGParameters" >>>
 <<< "PC-MLParameters" >>>
 
 Reference{
-  iterations = 5
-  res_l2_norm = 1.220976553256886e-09
+  iterations = 4
+  res_l2_norm = 4.020169226617768e-10
   tolerance = 2.0e-10
-  strict = FALSE
+  strict = TRUE
 }

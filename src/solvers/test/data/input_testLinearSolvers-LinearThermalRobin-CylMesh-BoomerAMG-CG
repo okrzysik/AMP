@@ -28,3 +28,10 @@ Preconditioner{
   keep_transpose         = 1
   strong_threshold       = 0.5
 }
+
+Reference{
+  iterations = 11
+  res_l2_norm = -1.0
+  tolerance = 0.0
+  strict = FALSE
+}

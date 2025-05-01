@@ -13,3 +13,10 @@ LinearSolver{
   uses_preconditioner=FALSE
   KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1.0e-12 -ksp_atol 1.0e-12"
 }
+
+Reference{
+  iterations = 25
+  res_l2_norm = 6.62678786883557e-12
+  tolerance = 6.0e-12
+  strict = TRUE
+}

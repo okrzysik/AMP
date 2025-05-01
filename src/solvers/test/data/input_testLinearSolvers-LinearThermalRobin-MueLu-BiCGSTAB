@@ -1,3 +1,10 @@
 <<< "input_LinearThermalRobinOperator" >>>
 <<< "BiCGSTABParameters" >>>
 <<< "PC-MueLuParameters" >>>
+
+Reference{
+  iterations = 4
+  res_l2_norm = 2.696506029673837e-09
+  tolerance = 2.0e-09
+  strict = FALSE
+}

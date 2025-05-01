@@ -1,5 +1,5 @@
 <<< "input_LinearThermalRobinOperator" >>>
-<<< "PetscFGMRESParameters" >>>
+<<< "PetscBiCGSTABParameters" >>>
 <<< "PC-BoomerAMGParameters" >>>
 
 Reference{

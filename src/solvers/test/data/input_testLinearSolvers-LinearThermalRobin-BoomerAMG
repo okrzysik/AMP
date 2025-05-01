@@ -14,3 +14,10 @@ LinearSolver{
   interp_type = 17
   relax_order = 0
 }
+
+Reference{
+  iterations = 15
+  res_l2_norm = -1.0
+  tolerance = 0.0
+  strict = FALSE
+}

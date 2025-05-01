@@ -14,3 +14,10 @@ LinearSolver{
   }
   coarse_max_size = 25
 }
+
+Reference{
+  iterations = 0
+  res_l2_norm = 3.947153362581674e-09
+  tolerance = 2.0e-10
+  strict = FALSE
+}

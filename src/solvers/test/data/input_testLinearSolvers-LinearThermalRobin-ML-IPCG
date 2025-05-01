@@ -11,3 +11,10 @@ LinearSolver{
 }
 
 <<< "PC-MLParameters" >>>
+
+Reference{
+  iterations = 5
+  res_l2_norm = 1.27898867439474e-09
+  tolerance = 2.0e-09
+  strict = FALSE
+}

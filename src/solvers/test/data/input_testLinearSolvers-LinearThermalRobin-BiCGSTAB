@@ -8,3 +8,10 @@ LinearSolver{
   relative_tolerance = 1.0e-12
   print_info_level = 2
 }
+
+Reference{
+  iterations = 18
+  res_l2_norm = 3.686753e-09
+  tolerance = 1.0e-09
+  strict = TRUE
+}
