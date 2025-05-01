@@ -62,8 +62,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
                                                         C->endCol(),
                                                         false );
 
-        multiply<DenseAccumulator, true>( A_offd, BR_diag, C_offd_diag );
-        multiply<DenseAccumulator, true>( A_offd, BR_offd, C_offd_offd );
+        multiply<SparseAccumulator, true>( A_offd, BR_diag, C_offd_diag );
+        multiply<SparseAccumulator, true>( A_offd, BR_offd, C_offd_offd );
     }
 }
 
@@ -95,18 +95,11 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMul
         if ( d_need_comms ) {
             endBRemoteComm();
         }
-        multiply<DenseAccumulator, false>( A_offd, BR_diag, C_offd_diag );
-        multiply<DenseAccumulator, false>( A_offd, BR_offd, C_offd_offd );
+        multiply<SparseAccumulator, false>( A_offd, BR_diag, C_offd_diag );
+        multiply<SparseAccumulator, false>( A_offd, BR_offd, C_offd_offd );
     }
-
-    // merge the separate blocks together into cohesive output matrix
-    // and deallocate blocks now that they are not needed
-    C_diag->mergeMatrices( C_diag_diag, C_offd_diag );
-    C_offd->mergeMatrices( C_diag_offd, C_offd_offd );
-    C_diag_diag.reset();
-    C_offd_diag.reset();
-    C_diag_offd.reset();
-    C_offd_offd.reset();
+    mergeDiag<DenseAccumulator>();
+    mergeOffd<SparseAccumulator>();
 
     C->globalToLocalColumns();
     C->resetDOFManagers();
@@ -160,7 +153,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
     std::tie( C_rs, C_cols, C_cols_loc, C_coeffs ) = C_data->getDataFields();
 
     AMP_DEBUG_ASSERT( A_cols_loc != nullptr );
-    AMP_DEBUG_ASSERT( B_cols_loc != nullptr );
+    AMP_DEBUG_ASSERT( B_cols_loc != nullptr || B_cols != nullptr );
 
     // may or may not have access to B global column indices
     // set up conversion function from local indices
@@ -168,8 +161,19 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
     auto B_colmap_size     = B_data->numUniqueColumns();
     const auto B_first_col = B_data->beginCol();
 
-    auto B_to_global = [B_cols_loc, B_first_col, B_colmap, B_is_diag]( const lidx_t k ) -> gidx_t {
+    auto B_to_global =
+        [B_cols, B_cols_loc, B_first_col, B_colmap, B_is_diag]( const lidx_t k ) -> gidx_t {
+        if ( B_cols != nullptr ) {
+            return B_cols[k];
+        }
         return B_is_diag ? B_first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]];
+    };
+
+#warning This breaks for A_offd * BR with DenseAccumulator and should be fixed
+    auto B_to_local = [B_cols, B_cols_loc, B_first_col, B_is_diag]( const lidx_t k ) -> lidx_t {
+        return B_cols_loc != nullptr ?
+                   B_cols_loc[k] :
+                   ( B_is_diag ? static_cast<lidx_t>( B_cols[k] - B_first_col ) : k );
     };
 
     // Create accumulator with appropriate capacity
@@ -186,8 +190,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
                 const auto Acl = A_cols_loc[j];
                 // then row of C is union of those B row nz patterns
                 for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
-                    const auto bc = B_to_global( k );
-                    acc.insert_or_append( B_cols_loc[k], bc );
+                    const auto gbl = B_to_global( k );
+                    const auto loc = B_to_local( k );
+                    acc.insert_or_append( loc, gbl );
                 }
             }
             // write out row length and clear accumulator
@@ -209,15 +214,182 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
                 const auto Aval = A_coeffs[j];
                 // then row of C is union of those B row nz patterns
                 for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
-                    const auto bc = B_to_global( k );
-                    acc.insert_or_append(
-                        B_cols_loc[k], bc, Aval * B_coeffs[k], cols, vals, row_len );
+                    const auto gbl = B_to_global( k );
+                    const auto loc = B_to_local( k );
+                    acc.insert_or_append( loc, gbl, Aval * B_coeffs[k], cols, vals, row_len );
                 }
             }
             acc.clear();
         }
-        C_data->sortColumns();
     }
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
+template<class Accumulator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::mergeDiag()
+{
+    PROFILE( "CSRMatrixSpGEMMDefault::mergeDiag" );
+
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto C_diag          = C->getDiagMatrix();
+    const auto nRows     = static_cast<lidx_t>( C_diag->numLocalRows() );
+    const auto first_col = C_diag->beginCol();
+
+    // handle special case where C_diag_offd is empty
+    if ( C_diag_offd.get() == nullptr || C_diag_offd->isEmpty() ) {
+        C_diag->swapDataFields( *C_diag_diag );
+        return;
+    }
+
+    // pull out fields from blocks to merge and row pointers from C_diag
+    lidx_t *C_dd_rs, *C_od_rs, *C_rs;
+    lidx_t *C_dd_cols_loc, *C_od_cols_loc;
+    gidx_t *C_dd_cols, *C_od_cols;
+    scalar_t *C_dd_coeffs, *C_od_coeffs;
+
+    std::tie( C_dd_rs, C_dd_cols, C_dd_cols_loc, C_dd_coeffs ) = C_diag_diag->getDataFields();
+    std::tie( C_od_rs, C_od_cols, C_od_cols_loc, C_od_coeffs ) = C_offd_diag->getDataFields();
+    C_rs                                                       = C_diag->getRowStarts();
+
+    // Create allocator with space for C_diag operations
+    const auto acc_cap = C_diag->numLocalColumns();
+    Accumulator acc( acc_cap );
+
+    // loop over all rows and count unique NZ positions in each
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        // Add C_diag_diag row to accumulator
+        for ( lidx_t j = C_dd_rs[row]; j < C_dd_rs[row + 1]; ++j ) {
+            const auto cl = static_cast<lidx_t>( C_dd_cols[j] - first_col );
+            acc.insert_or_append( cl, C_dd_cols[j] );
+        }
+        // Add C_diag_offd row to accumulator
+        for ( lidx_t j = C_od_rs[row]; j < C_od_rs[row + 1]; ++j ) {
+            const auto cl = static_cast<lidx_t>( C_od_cols[j] - first_col );
+            acc.insert_or_append( cl, C_od_cols[j] );
+        }
+        // write out row length and clear accumulator
+        C_rs[row] += acc.num_inserted;
+        acc.clear();
+    }
+
+    // allocate space in matrix
+    C_diag->setNNZ( true );
+
+    // pull result fields out
+    lidx_t *C_cols_loc;
+    gidx_t *C_cols;
+    scalar_t *C_coeffs;
+    std::tie( C_rs, C_cols, C_cols_loc, C_coeffs ) = C_diag->getDataFields();
+
+    // loop over all rows again and write columns/coeffs into allocated matrix
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        const auto row_len = C_rs[row + 1] - C_rs[row];
+        auto cols          = &C_cols[C_rs[row]];
+        auto vals          = &C_coeffs[C_rs[row]];
+        // Add C_diag_diag row to accumulator
+        for ( lidx_t j = C_dd_rs[row]; j < C_dd_rs[row + 1]; ++j ) {
+            const auto cl = static_cast<lidx_t>( C_dd_cols[j] - first_col );
+            acc.insert_or_append( cl, C_dd_cols[j], C_dd_coeffs[j], cols, vals, row_len );
+        }
+        // Add C_diag_offd row to accumulator
+        for ( lidx_t j = C_od_rs[row]; j < C_od_rs[row + 1]; ++j ) {
+            const auto cl = static_cast<lidx_t>( C_od_cols[j] - first_col );
+            acc.insert_or_append( cl, C_od_cols[j], C_od_coeffs[j], cols, vals, row_len );
+        }
+        // clear accumulator
+        acc.clear();
+    }
+
+    C_diag_diag.reset();
+    C_offd_diag.reset();
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
+template<class Accumulator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::mergeOffd()
+{
+    PROFILE( "CSRMatrixSpGEMMDefault::mergeOffd" );
+
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto C_offd      = C->getOffdMatrix();
+    const auto nRows = static_cast<lidx_t>( C_offd->numLocalRows() );
+
+    // handle special case where either C_diag_offd or C_offd_offd is empty
+    if ( C_diag_offd.get() == nullptr && C_offd_offd.get() == nullptr ) {
+        return;
+    }
+    if ( C_offd_offd.get() == nullptr || C_offd_offd->isEmpty() ) {
+        C_offd->swapDataFields( *C_diag_offd );
+        return;
+    }
+    if ( C_diag_offd.get() == nullptr || C_diag_offd->isEmpty() ) {
+        C_offd->swapDataFields( *C_offd_offd );
+        return;
+    }
+
+    // pull out fields from blocks to merge and row pointers from C_offd
+    lidx_t *C_do_rs, *C_oo_rs, *C_rs;
+    lidx_t *C_do_cols_loc, *C_oo_cols_loc;
+    gidx_t *C_do_cols, *C_oo_cols;
+    scalar_t *C_do_coeffs, *C_oo_coeffs;
+
+    std::tie( C_do_rs, C_do_cols, C_do_cols_loc, C_do_coeffs ) = C_diag_offd->getDataFields();
+    std::tie( C_oo_rs, C_oo_cols, C_oo_cols_loc, C_oo_coeffs ) = C_offd_offd->getDataFields();
+    C_rs                                                       = C_offd->getRowStarts();
+
+    // Create allocator with space for C_offd operations
+    const auto acc_cap = C_offd->numLocalColumns();
+    Accumulator acc( acc_cap );
+
+    // loop over all rows and count unique NZ positions in each
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        // Add C_diag_offd row to accumulator
+        for ( lidx_t j = C_do_rs[row]; j < C_do_rs[row + 1]; ++j ) {
+            acc.insert_or_append( -1, C_do_cols[j] );
+        }
+        // Add C_offd_offd row to accumulator
+        for ( lidx_t j = C_oo_rs[row]; j < C_oo_rs[row + 1]; ++j ) {
+            acc.insert_or_append( -1, C_oo_cols[j] );
+        }
+        // write out row length and clear accumulator
+        C_rs[row] += acc.num_inserted;
+        acc.clear();
+    }
+
+    // allocate space in matrix
+    C_offd->setNNZ( true );
+
+    // pull result fields out
+    lidx_t *C_cols_loc;
+    gidx_t *C_cols;
+    scalar_t *C_coeffs;
+    std::tie( C_rs, C_cols, C_cols_loc, C_coeffs ) = C_offd->getDataFields();
+
+    // loop over all rows again and write columns/coeffs into allocated matrix
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        const auto row_len = C_rs[row + 1] - C_rs[row];
+        auto cols          = &C_cols[C_rs[row]];
+        auto vals          = &C_coeffs[C_rs[row]];
+        // Add C_diag_offd row to accumulator
+        for ( lidx_t j = C_do_rs[row]; j < C_do_rs[row + 1]; ++j ) {
+            acc.insert_or_append( -1, C_do_cols[j], C_do_coeffs[j], cols, vals, row_len );
+        }
+        // Add C_offd_offd row to accumulator
+        for ( lidx_t j = C_oo_rs[row]; j < C_oo_rs[row + 1]; ++j ) {
+            acc.insert_or_append( -1, C_oo_cols[j], C_oo_coeffs[j], cols, vals, row_len );
+        }
+        // clear accumulator
+        acc.clear();
+    }
+
+    C_diag_offd.reset();
+    C_offd_offd.reset();
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
@@ -354,6 +526,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::DenseAccum
     insert_or_append( typename Policy::lidx_t loc, typename Policy::gidx_t gbl )
 {
     using lidx_t = typename Policy::lidx_t;
+    
+    AMP_DEBUG_ASSERT( loc >= 0 );
 
     const auto k = flags[loc];
     if ( k == -1 ) {
@@ -379,6 +553,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::DenseAccum
                       [[maybe_unused]] typename Policy::lidx_t max_pos )
 {
     using lidx_t = typename Policy::lidx_t;
+    
+    AMP_DEBUG_ASSERT( loc >= 0 );
 
     const auto k = flags[loc];
     if ( k == -1 ) {
@@ -410,10 +586,13 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::DenseAccum
 
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccumulator::
-    insert_or_append( typename Policy::lidx_t loc, typename Policy::gidx_t gbl )
+    insert_or_append( [[maybe_unused]] typename Policy::lidx_t loc, typename Policy::gidx_t gbl )
 {
-    kv[gbl]      = loc;
-    num_inserted = static_cast<lidx_t>( kv.size() );
+    auto it = kv.find( gbl );
+    if ( it == kv.end() ) {
+      kv[gbl] = num_inserted;
+      num_inserted++;
+    }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
@@ -433,8 +612,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
         kv.insert( std::make_pair( gbl, num_inserted ) );
         col_space[num_inserted] = gbl;
         val_space[num_inserted] = val;
+	num_inserted++;
     }
-    num_inserted = static_cast<lidx_t>( kv.size() );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>

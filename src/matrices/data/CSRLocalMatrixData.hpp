@@ -168,9 +168,6 @@ CSRLocalMatrixData<Policy, Allocator>::CSRLocalMatrixData(
         return;
     }
 
-    // local columns always owned internally
-    d_cols_loc = sharedArrayBuilder( d_nnz, d_lidxAllocator );
-
     // fill in local column indices
     globalToLocalColumns();
 }
@@ -309,14 +306,36 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
         }
     }
 
-    concat_matrix->globalToLocalColumns();
-
     return concat_matrix;
+}
+
+template<typename Policy, class Allocator>
+void CSRLocalMatrixData<Policy, Allocator>::swapDataFields(
+    CSRLocalMatrixData<Policy, Allocator> &other )
+{
+    // swap metadata
+    const auto o_is_empty  = other.d_is_empty;
+    const auto o_nnz       = other.d_nnz;
+    const auto o_ncols_unq = other.d_ncols_unq;
+    other.d_is_empty       = d_is_empty;
+    other.d_nnz            = d_nnz;
+    other.d_ncols_unq      = d_ncols_unq;
+    d_is_empty             = o_is_empty;
+    d_nnz                  = o_nnz;
+    d_ncols_unq            = o_ncols_unq;
+    // swap fields
+    d_row_starts.swap( other.d_row_starts );
+    d_cols.swap( other.d_cols );
+    d_cols_loc.swap( other.d_cols_loc );
+    d_cols_unq.swap( other.d_cols_unq );
+    d_coeffs.swap( other.d_coeffs );
 }
 
 template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
 {
+    PROFILE( "CSRLocalMatrixData::globalToLocalColumns" );
+
     if ( d_is_empty || d_cols.get() == nullptr ) {
         // gToL either trivially not needed or has already been called
         return;
@@ -325,34 +344,77 @@ void CSRLocalMatrixData<Policy, Allocator>::globalToLocalColumns()
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRLocalMatrixData::globalToLocalColumns not implemented on device yet" );
 
+    // Columns easier to sort before converting to local
+    // and defining unq cols in offd easier if globals are sorted
+    sortColumns();
+
+    // local columns always owned internally
+    d_cols_loc = sharedArrayBuilder( d_nnz, d_lidxAllocator );
+
     if ( d_is_diag ) {
         for ( lidx_t n = 0; n < d_nnz; ++n ) {
             d_cols_loc[n] = static_cast<lidx_t>( d_cols[n] - d_first_col );
         }
     } else {
         // for offd setup column map as part of the process
-        // insert all into std::set to make unique and sorted
-        std::set<gidx_t> colSet;
-        for ( lidx_t n = 0; n < d_nnz; ++n ) {
-            colSet.insert( d_cols[n] );
+
+        // first make a copy of the global columns and sort them
+        // as a whole. This is different from the sortColumns call
+        // above that acts within a row, where this jumbles rows
+        // together.
+        auto cols_tmp = sharedArrayBuilder( d_nnz, d_gidxAllocator );
+        AMP::Utilities::Algorithms<gidx_t>::copy_n( d_cols.get(), d_nnz, cols_tmp.get() );
+        std::sort( cols_tmp.get(), cols_tmp.get() + d_nnz );
+
+        // count unique entries, allocate uniques, fill uniques
+        auto col_curr = cols_tmp[0];
+        lidx_t pos    = 1;
+        for ( lidx_t n = 1; n < d_nnz; ++n ) {
+            if ( cols_tmp[n] != col_curr ) {
+                col_curr = cols_tmp[n];
+                ++pos;
+            }
         }
-        d_ncols_unq = static_cast<lidx_t>( colSet.size() );
+        d_ncols_unq   = pos;
+        d_cols_unq    = sharedArrayBuilder( d_ncols_unq, d_gidxAllocator );
+        col_curr      = cols_tmp[0];
+        d_cols_unq[0] = col_curr;
+        pos           = 1;
+        for ( lidx_t n = 1; n < d_nnz; ++n ) {
+            if ( cols_tmp[n] != col_curr ) {
+                col_curr        = cols_tmp[n];
+                d_cols_unq[pos] = col_curr;
+                ++pos;
+            }
+        }
+        cols_tmp.reset();
+
+        // copy and modify from AMP::Utilities::findfirst to suit task
+        const gidx_t *cols_unq = d_cols_unq.get();
+        const lidx_t ncols_unq = d_ncols_unq;
+        auto bsearch           = [cols_unq, ncols_unq]( gidx_t gc ) -> lidx_t {
+            AMP_DEBUG_ASSERT( cols_unq[0] <= gc && gc <= cols_unq[ncols_unq - 1] );
+            lidx_t lower = 0, upper = ncols_unq - 1, idx;
+            while ( ( upper - lower ) > 1 ) {
+                idx = ( upper + lower ) / 2;
+                if ( cols_unq[idx] == gc ) {
+                    return idx;
+                } else if ( cols_unq[idx] > gc ) {
+                    upper = idx - 1;
+                } else {
+                    lower = idx + 1;
+                }
+            }
+            return gc == cols_unq[upper] ? upper : lower;
+        };
 
         // find all local column indices from set
         for ( lidx_t n = 0; n < d_nnz; ++n ) {
-            auto it       = colSet.lower_bound( d_cols[n] );
-            d_cols_loc[n] = static_cast<lidx_t>( std::distance( colSet.begin(), it ) );
-            AMP_ASSERT( d_cols_loc[n] < d_ncols_unq );
+            d_cols_loc[n] = bsearch( d_cols[n] );
+            AMP_DEBUG_ASSERT( d_cols_loc[n] < d_ncols_unq );
+            AMP_DEBUG_ASSERT( d_cols_unq[d_cols_loc[n]] == d_cols[n] );
         }
-
-        // offd column map also always owned internally
-        d_cols_unq = sharedArrayBuilder( d_ncols_unq, d_gidxAllocator );
-        std::copy( colSet.begin(), colSet.end(), d_cols_unq.get() );
     }
-
-    // Now that local columns are formed and colMap is present
-    // sort column ids within each row
-    sortColumns();
 
     // free global cols as they should not be used from here on out
     d_cols.reset();
@@ -372,7 +434,9 @@ CSRLocalMatrixData<Policy, Allocator>::localToGlobal( const typename Policy::lid
 template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
 {
-    typedef std::tuple<lidx_t, gidx_t, scalar_t> tuple_t;
+    PROFILE( "CSRLocalMatrixData::sortColumns" );
+
+    typedef std::tuple<gidx_t, scalar_t> tuple_t;
 
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRSerialMatrixData::sortColumns not implemented for device memory" );
@@ -380,6 +444,9 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
     if ( d_is_empty ) {
         return;
     }
+
+    AMP_DEBUG_INSIST( d_cols.get() != nullptr,
+                      "CSRLocalMatrixData::sortColumns Access to global columns required" );
 
     std::vector<tuple_t> rTpl;
     for ( lidx_t row = 0; row < d_num_rows; ++row ) {
@@ -395,17 +462,18 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
 
         // pack local column and coeff into array of tuples
         for ( lidx_t k = 0; k < row_len; ++k ) {
-            rTpl[k] = std::make_tuple( d_cols_loc[rs + k], d_cols[rs + k], d_coeffs[rs + k] );
+            rTpl[k] = std::make_tuple( d_cols[rs + k], d_coeffs[rs + k] );
         }
 
         // slightly different sorting criteria for on and off diagonal blocks
         if ( d_is_diag ) {
+            const gidx_t diag_idx = d_first_col + static_cast<gidx_t>( row );
             // diag block puts diag entry first, then ascending order on local col
             std::sort( rTpl.data(),
                        rTpl.data() + row_len,
-                       [row]( const tuple_t &a, const tuple_t &b ) -> bool {
-                           const lidx_t lca = std::get<0>( a ), lcb = std::get<0>( b );
-                           return row != lcb && ( lca < lcb || lca == row );
+                       [diag_idx]( const tuple_t &a, const tuple_t &b ) -> bool {
+                           const gidx_t gca = std::get<0>( a ), gcb = std::get<0>( b );
+                           return diag_idx != gcb && ( gca < gcb || gca == diag_idx );
                        } );
         } else {
             // offd block is plain ascending order on local col
@@ -418,192 +486,10 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
 
         // unpack now sorted array of tuples
         for ( lidx_t k = 0; k < row_len; ++k ) {
-            d_cols_loc[rs + k] = std::get<0>( rTpl[k] );
-            d_cols[rs + k]     = std::get<1>( rTpl[k] );
-            d_coeffs[rs + k]   = std::get<2>( rTpl[k] );
+            d_cols[rs + k]   = std::get<0>( rTpl[k] );
+            d_coeffs[rs + k] = std::get<1>( rTpl[k] );
         }
     }
-}
-
-template<typename Policy, class Allocator>
-void CSRLocalMatrixData<Policy, Allocator>::mergeMatrices(
-    std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>> A,
-    std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>> B )
-{
-    PROFILE( "CSRLocalMatrixData::mergeMatrices" );
-
-    if ( A.get() == nullptr && B.get() == nullptr ) {
-        return;
-    }
-
-    // verify this matrix is empty
-    AMP_INSIST( d_is_empty,
-                "CSRLocalMatrixData::mergeMatrices Result matrix must be empty initially" );
-
-    // first check for simple case where one of the inputs is empty
-    if ( B.get() == nullptr || B->d_is_empty ) {
-        // Just copy all fields from A and call swap on pointed members
-        // to take ownership
-        d_is_empty  = A->d_is_empty;
-        d_nnz       = A->d_nnz;
-        d_ncols_unq = A->d_ncols_unq;
-        d_row_starts.swap( A->d_row_starts );
-        d_cols.swap( A->d_cols );
-        d_cols_loc.swap( A->d_cols_loc );
-        d_cols_unq.swap( A->d_cols_unq );
-        d_coeffs.swap( A->d_coeffs );
-        globalToLocalColumns();
-        return;
-    } else if ( A.get() == nullptr || A->d_is_empty ) {
-        // same but take from B
-        d_is_empty  = B->d_is_empty;
-        d_nnz       = B->d_nnz;
-        d_ncols_unq = B->d_ncols_unq;
-        d_row_starts.swap( B->d_row_starts );
-        d_cols.swap( B->d_cols );
-        d_cols_loc.swap( B->d_cols_loc );
-        d_cols_unq.swap( B->d_cols_unq );
-        d_coeffs.swap( B->d_coeffs );
-        globalToLocalColumns();
-        return;
-    }
-    // verify that input matrices match overall dimensions of this one
-    AMP_INSIST( d_first_row == A->d_first_row,
-                "CSRLocalMatrixData::mergeMatrices First row must agree" );
-    AMP_INSIST( d_first_row == B->d_first_row,
-                "CSRLocalMatrixData::mergeMatrices First row must agree" );
-    AMP_INSIST( d_last_row == A->d_last_row,
-                "CSRLocalMatrixData::mergeMatrices Last row must agree" );
-    AMP_INSIST( d_last_row == B->d_last_row,
-                "CSRLocalMatrixData::mergeMatrices Last row must agree" );
-    AMP_INSIST( d_first_col == A->d_first_col,
-                "CSRLocalMatrixData::mergeMatrices First col must agree" );
-    AMP_INSIST( d_first_col == B->d_first_col,
-                "CSRLocalMatrixData::mergeMatrices First col must agree" );
-    AMP_INSIST( d_last_col == A->d_last_col,
-                "CSRLocalMatrixData::mergeMatrices Last col must agree" );
-    AMP_INSIST( d_last_col == B->d_last_col,
-                "CSRLocalMatrixData::mergeMatrices Last col must agree" );
-
-    // Neither empty, need to actually figure out merge
-    // Input matrices have had their columns sorted, so detecting
-    // collisions should be semi-straightforward
-
-    // comparator somewhat strange because diag blocks have diag
-    // entries first in each row, pull out into dedicated lambda
-    const bool is_diag = d_is_diag;
-    auto less_equal    = [is_diag]( gidx_t Ac, gidx_t Bc, gidx_t Dc ) -> bool {
-        if ( !is_diag ) {
-            // not diag block, simple comparison
-            return Ac <= Bc;
-        }
-        // diag block
-        // simple comparison if neither are equal to diag value
-        // if one or both is equal to diag value then less_equal holds
-        // iff Ac==Dc
-        return ( Ac != Dc && Bc != Dc ) ? Ac <= Bc : Ac == Dc;
-    };
-
-    // First pass counts unique entries in union of A and B rows
-    for ( lidx_t row = 0; row < d_num_rows; ++row ) {
-        // column id of diagonal entry
-        const auto Dc = static_cast<gidx_t>( row ) + d_first_row;
-        // bounds of each row
-        const auto A_start = A->d_row_starts[row];
-        const auto A_end   = A->d_row_starts[row + 1];
-        const auto B_start = B->d_row_starts[row];
-        const auto B_end   = B->d_row_starts[row + 1];
-
-        // position in each row
-        auto A_ptr = A_start;
-        auto B_ptr = B_start;
-
-        lidx_t nunq = 0;
-        while ( A_ptr < A_end && B_ptr < B_end ) {
-            auto A_col = A->d_cols[A_ptr];
-            auto B_col = B->d_cols[B_ptr];
-            // increment pointer of smaller column
-            // note that both will increment if columns are equal
-            // but nunq only increments once
-            if ( less_equal( A_col, B_col, Dc ) ) {
-                ++A_ptr;
-            }
-            if ( less_equal( B_col, A_col, Dc ) ) {
-                ++B_ptr;
-            }
-            ++nunq;
-        }
-
-        // above loop stops if either pointer gets to end
-        // add remainder of range if present
-        nunq += A_end - A_ptr;
-        nunq += B_end - B_ptr;
-
-        // record length of row
-        d_row_starts[row] = nunq;
-    }
-
-    // Have now recorded size of merged rows, need to allocate
-    setNNZ( true );
-
-    // now sweep through again and write cols/vals
-    // adding vals whenever collisions happen
-    for ( lidx_t row = 0; row < d_num_rows; ++row ) {
-        // column id of diagonal entry
-        const auto Dc = static_cast<gidx_t>( row ) + d_first_row;
-        // bounds of each row
-        const auto A_start = A->d_row_starts[row];
-        const auto A_end   = A->d_row_starts[row + 1];
-        const auto B_start = B->d_row_starts[row];
-        const auto B_end   = B->d_row_starts[row + 1];
-
-        // position in each row
-        auto A_ptr = A_start;
-        auto B_ptr = B_start;
-
-        lidx_t pos = d_row_starts[row];
-        while ( A_ptr < A_end && B_ptr < B_end ) {
-            auto A_col = A->d_cols[A_ptr];
-            auto B_col = B->d_cols[B_ptr];
-
-            if ( A_col == B_col ) {
-                // collision, sum values, write, increment both pointers
-                d_cols[pos]   = A_col;
-                d_coeffs[pos] = A->d_coeffs[A_ptr] + B->d_coeffs[B_ptr];
-                ++A_ptr;
-                ++B_ptr;
-            } else if ( less_equal( A_col, B_col, Dc ) ) {
-                // A_col strictly smaller
-                d_cols[pos]   = A_col;
-                d_coeffs[pos] = A->d_coeffs[A_ptr];
-                ++A_ptr;
-            } else {
-                // B_col strictly smaller
-                d_cols[pos]   = B_col;
-                d_coeffs[pos] = B->d_coeffs[B_ptr];
-                ++B_ptr;
-            }
-            ++pos;
-        }
-
-        // above loop stops if either pointer gets to end
-        // add remainder of range if present
-        for ( ; A_ptr < A_end; ++A_ptr ) {
-            d_cols[pos]   = A->d_cols[A_ptr];
-            d_coeffs[pos] = A->d_coeffs[A_ptr];
-            ++pos;
-        }
-        for ( ; B_ptr < B_end; ++B_ptr ) {
-            d_cols[pos]   = B->d_cols[B_ptr];
-            d_coeffs[pos] = B->d_coeffs[B_ptr];
-            ++pos;
-        }
-
-        AMP_DEBUG_ASSERT( pos == d_row_starts[row + 1] );
-    }
-
-    // global columns now filled in, convert to local and return
-    globalToLocalColumns();
 }
 
 template<typename Policy, class Allocator>

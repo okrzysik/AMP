@@ -76,6 +76,9 @@ public:
             d_row_starts.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
     }
 
+    //! Swap data fields with another CSRLocalMatrix
+    void swapDataFields( CSRLocalMatrixData<Policy, Allocator> &other );
+
     //! Get row pointers
     lidx_t *getRowStarts() { return d_row_starts.get(); }
 
@@ -114,14 +117,6 @@ public:
 
     //! Convert global column ids to local and free global columns
     void globalToLocalColumns();
-
-    /** \brief  Sort the columns/values within each row
-     * \details  This sorts within each row using the same ordering as
-     * Hypre. Diagonal blocks will have the diagonal entry first, and
-     * keep columns in ascending order after that. Off-diagonal blocks
-     * have *local* columns in ascending order.
-     */
-    void sortColumns();
 
     //! Get pointer to unique columns, only useful for off-diagonal block
     gidx_t *getColumnMap() const
@@ -175,16 +170,6 @@ public:
     //! Get pointers into d_cols at start of each row
     void getColPtrs( std::vector<gidx_t *> &col_ptrs );
 
-    /** \brief Fill matrix by merging two other matrices together
-     * \param[in] A pointer to first matrix
-     * \param[in] B pointer to second matrix
-     * \details Input matrices must have their columns sorted before
-     * calling this function. Input matrices may be consumed by this
-     * function. They should be discarded after this call returns.
-     */
-    void mergeMatrices( std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>> A,
-                        std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>> B );
-
     //! Print information about matrix block
     void printStats( bool show_zeros ) const
     {
@@ -228,6 +213,14 @@ public:
 protected:
     //! Helper function for getting a global col idx from local depending on diag/offd case
     gidx_t localToGlobal( const lidx_t loc_id ) const;
+
+    /** \brief  Sort the columns/values within each row
+     * \details  This sorts within each row using the same ordering as
+     * Hypre. Diagonal blocks will have the diagonal entry first, and
+     * keep columns in ascending order after that. Off-diagonal blocks
+     * have *local* columns in ascending order.
+     */
+    void sortColumns();
 
     //! Make a clone of this matrix data
     std::shared_ptr<CSRLocalMatrixData> cloneMatrixData();

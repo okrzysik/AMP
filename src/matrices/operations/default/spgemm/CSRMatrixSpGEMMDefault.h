@@ -50,6 +50,12 @@ protected:
     void startBRemoteComm();
     void endBRemoteComm();
 
+    template<class Accumulator>
+    void mergeDiag();
+
+    template<class Accumulator>
+    void mergeOffd();
+
     // This only (re-)fills the coefficients in BRemote
     // the comm info and symbolic creation must have already happened
     // void fillBRemoteNumeric();
@@ -128,8 +134,8 @@ protected:
     struct SparseAccumulator {
         SparseAccumulator( int capacity_ ) : capacity( capacity_ ), num_inserted( 0 ) {}
 
-        void insert_or_append( lidx_t loc, gidx_t gbl );
-        void insert_or_append( lidx_t loc,
+        void insert_or_append( lidx_t, gidx_t gbl );
+        void insert_or_append( lidx_t,
                                gidx_t gbl,
                                scalar_t val,
                                gidx_t *col_space,
