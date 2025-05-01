@@ -1,7 +1,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -15,10 +14,14 @@
 
 #include <iomanip>
 
+#include "testSolverHelpers.h"
+
 void linearElasticTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
     std::string input_file = inputFileName;
     AMP::pout << "Running linearElasticTest with input " << input_file << std::endl;
+
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
 
     std::string log_file = "output_" + input_file;
 
@@ -27,12 +30,8 @@ void linearElasticTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    auto mesh_db    = input_db->getDatabase( "Mesh" );
-    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    auto comm       = AMP::AMP_MPI( AMP_COMM_WORLD );
-    meshParams->setComm( comm );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    // create the Mesh
+    const auto meshAdapter = createMesh( input_db );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -63,14 +62,13 @@ void linearElasticTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     dirichletVecOp->apply( nullVec, mechRhsVec );
 
-
-    std::cout << "RHS Norm: " << mechRhsVec->L2Norm() << std::endl;
-    std::cout << "Initial Solution Norm: " << mechSolVec->L2Norm() << std::endl;
+    AMP::pout << "RHS Norm: " << mechRhsVec->L2Norm() << std::endl;
+    AMP::pout << "Initial Solution Norm: " << mechSolVec->L2Norm() << std::endl;
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 
     double initResidualNorm = static_cast<double>( mechResVec->L2Norm() );
-    std::cout << "Initial Residual Norm: " << initResidualNorm << std::endl;
+    AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
     auto mlSolver =
         AMP::Solver::Test::buildSolver( "LinearSolver", input_db, comm, nullptr, bvpOperator );
@@ -83,7 +81,7 @@ void linearElasticTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     double finalResidualNorm = static_cast<double>( mechResVec->L2Norm() );
 
-    std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     // BP: convergence assumes convergence rate of ~0.6 and 40 iterations
     if ( finalResidualNorm > ( 1.0e-8 * initResidualNorm ) ) {
