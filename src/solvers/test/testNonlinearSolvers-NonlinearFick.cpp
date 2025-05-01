@@ -5,17 +5,8 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
-#include "AMP/operators/ColumnOperator.h"
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/boundary/DirichletVectorCorrection.h"
-#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
-#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/testHelpers/SolverTestParameters.h"
@@ -23,7 +14,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -37,6 +27,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
     std::string input_file = inputName;
     std::string log_file   = "output_" + inputName;
 
+    AMP::pout << "Running with input " << input_file << std::endl;
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
@@ -65,10 +56,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
             meshAdapter, "testNonlinearFickOperator", input_db, fickTransportModel ) );
 
     // initialize the input variable
-    auto fickVolumeOperator =
-        std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
-            nonlinearFickOperator->getVolumeOperator() );
-    auto fickVariable = fickVolumeOperator->getOutputVariable();
+    auto fickVariable = nonlinearFickOperator->getOutputVariable();
 
     // create solution, rhs, and residual vectors
     auto solVec = AMP::LinearAlgebra::createVector( DOF_scalar, fickVariable );
@@ -77,9 +65,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
 
     // Initial guess
     solVec->setToScalar( .05 );
-    std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
+    AMP::pout << "initial guess norm = " << solVec->L2Norm() << "\n";
     nonlinearFickOperator->modifyInitialSolutionVector( solVec );
-    std::cout << "initial guess norm  after apply = " << solVec->L2Norm() << "\n";
+    AMP::pout << "initial guess norm  after apply = " << solVec->L2Norm() << "\n";
 
     rhsVec->setToScalar( 0.0 );
     nonlinearFickOperator->modifyRHSvector( rhsVec );
@@ -98,12 +86,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
+    auto finalResidualNorm = static_cast<double>( resVec->L2Norm() );
 
-    std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
-
-    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 1.0e-08 ) {
         ut->failure( inputName );
