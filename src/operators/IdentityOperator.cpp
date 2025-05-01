@@ -1,4 +1,5 @@
 #include "AMP/operators/IdentityOperator.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -50,4 +51,26 @@ void IdentityOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
+
+std::shared_ptr<OperatorParameters>
+IdentityOperator::getParameters( const std::string &type,
+                                 std::shared_ptr<const AMP::LinearAlgebra::Vector>,
+                                 std::shared_ptr<OperatorParameters> )
+{
+    std::shared_ptr<OperatorParameters> params;
+    if ( type == "Jacobian" ) {
+        std::shared_ptr<AMP::Database> db = AMP::Database::create( "name", "IdentityOperator" );
+        params                            = std::make_shared<OperatorParameters>( db );
+        params->d_memory_location         = d_memory_location;
+        if ( d_inputVariable )
+            db->putScalar<std::string>( "InputVariable", d_inputVariable->getName() );
+        if ( d_outputVariable )
+            db->putScalar<std::string>( "OutputVariable", d_outputVariable->getName() );
+    } else {
+        // Derived class should implement this
+        AMP_ERROR( "Unknown OperatorParameters type specified" );
+    }
+    return params;
+}
+
 } // namespace AMP::Operator

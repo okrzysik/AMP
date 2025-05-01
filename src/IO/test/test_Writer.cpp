@@ -292,9 +292,9 @@ void testWriterMesh( AMP::UnitTest &ut,
         AMP::LinearAlgebra::VS_MeshIterator meshSelector( surface->getIterator( pointType, 1 ),
                                                           surface->getComm() );
         AMP::LinearAlgebra::VS_Stride xSelector( 0, ndim );
-        auto vec_meshSubset = position->select( meshSelector, "mesh subset" );
+        auto vec_meshSubset = position->select( meshSelector );
         AMP_ASSERT( vec_meshSubset );
-        x_surface = vec_meshSubset->select( xSelector, "x surface" );
+        x_surface = vec_meshSubset->select( xSelector );
         AMP_ASSERT( x_surface );
     }
 
@@ -322,7 +322,7 @@ void testWriterMesh( AMP::UnitTest &ut,
         if ( mesh2 ) {
             auto volume = calcVolume( mesh2 );
             AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2 );
-            auto meshID_vec2 = meshID_vec->select( meshSelector, "mesh subset" );
+            auto meshID_vec2 = meshID_vec->select( meshSelector );
             meshID_vec2->setToScalar( i + 1 );
             writer->registerMesh( mesh2, level );
             if ( properties.registerVectorWithMesh )

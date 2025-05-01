@@ -47,7 +47,8 @@ void PelletStackOperator::reset( std::shared_ptr<const OperatorParameters> param
     AMP_ASSERT( params );
     d_memory_location = params->d_memory_location;
     auto myParams     = std::dynamic_pointer_cast<const PelletStackOperatorParameters>( params );
-    d_currentPellet   = myParams->d_currentPellet;
+    if ( myParams )
+        d_currentPellet = myParams->d_currentPellet;
 }
 
 std::vector<std::shared_ptr<AMP::Mesh::Mesh>> PelletStackOperator::getLocalMeshes()

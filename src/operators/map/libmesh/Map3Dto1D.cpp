@@ -38,12 +38,16 @@ void Map3Dto1D::reset( std::shared_ptr<const OperatorParameters> params )
 
     auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameter" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
-    AMP_INSIST( !myparams->d_MapComm.isNull(), "NULL communicator" );
+    AMP_INSIST( myparams, "NULL parameter" );
+    AMP_INSIST( myparams->d_db, "NULL database" );
     d_Mesh    = myparams->d_Mesh;
     d_MapMesh = myparams->d_MapMesh;
     d_MapComm = myparams->d_MapComm;
+    if ( d_MapComm.isNull() && d_MapMesh )
+        d_MapComm = d_MapMesh->getComm();
+    if ( d_MapComm.isNull() && d_Mesh )
+        d_MapComm = d_Mesh->getComm();
+    AMP_INSIST( !d_MapComm.isNull(), "NULL communicator" );
     AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh ? 1 : 0 ) > 0, "Somebody must own the mesh" );
 
     d_useGaussVec = myparams->d_db->getWithDefault<bool>( "UseGaussVec", false );
@@ -67,7 +71,8 @@ void Map3Dto1D::reset( std::shared_ptr<const OperatorParameters> params )
 void Map3Dto1D::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                        AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-
+    if ( !outputVec )
+        setVector( f );
     if ( d_useGaussVec ) {
         apply_Gauss( u, f );
     } else {

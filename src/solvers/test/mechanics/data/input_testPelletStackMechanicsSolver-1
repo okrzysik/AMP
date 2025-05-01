@@ -66,6 +66,15 @@ PointLoad {
     value_0_0 = -1.0e-1
 }
 
+LinearMechanicsElement {
+    name="MechanicsLinearElement"
+    USE_REDUCED_INTEGRATION = FALSE 
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+}
+
 BottomPelletMechanicsNonlinearBVPOperator {
   name = "NonlinearBVPOperator"
     VolumeOperator = "PelletMechanicsNonlinearFEOperator"
@@ -101,6 +110,7 @@ PelletMechanicsNonlinearFEOperator {
       TEMPERATURE = "temperature"
   }
   OutputVariable = "displacement"
+  MechanicsLinearElement = LinearMechanicsElement
 }
 
 PelletMechanicsLinearFEOperator {
@@ -122,6 +132,9 @@ BottomPelletMechanicsNonlinearBC {
     dof_0_0 = 0
     dof_0_1 = 1
     dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
 }
 
 PelletMechanicsNonlinearBC {
@@ -136,6 +149,9 @@ PelletMechanicsNonlinearBC {
     dof_0_0 = 0
     dof_0_1 = 1
     dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
 }
 
 PelletMechanicsLinearBC {
@@ -159,7 +175,8 @@ PelletMechanicsMaterialModel {
 }
 
 NonlinearSolver {
-  max_iterations = 50
+    name = "PetscSNESSolver"
+    max_iterations = 50
     max_error = 1e-12
     zero_initial_guess = FALSE
     absolute_tolerance = 1.0e-12
@@ -170,7 +187,8 @@ NonlinearSolver {
     SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
 
     LinearSolver {
-      max_iterations = 100
+        name = "PetscKrylovSolver"
+        max_iterations = 100
         max_error = 1e-12
         ksp_type = "fgmres"
         absolute_tolerance = 1.0e-12

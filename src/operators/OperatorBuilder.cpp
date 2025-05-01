@@ -42,6 +42,7 @@
 
 #include <string>
 
+#include "ProfilerApp.h"
 
 #define resetOperation( NAME )                                                      \
     do {                                                                            \
@@ -146,6 +147,8 @@ OperatorBuilder::getActiveVariables( std::shared_ptr<const AMP::Database> db,
 std::shared_ptr<Operator>
 OperatorBuilder::createOperator( std::shared_ptr<OperatorParameters> in_params )
 {
+    PROFILE( "OperatorBuilder::createOperator" );
+
     std::shared_ptr<Operator> retOperator;
 
     AMP_INSIST( in_params, "ERROR: OperatorBuilder::createOperator has NULL input" );
@@ -206,6 +209,8 @@ std::shared_ptr<Operator> OperatorBuilder::createOperator( std::shared_ptr<AMP::
                                                            const std::string &operatorName,
                                                            std::shared_ptr<AMP::Database> input_db )
 {
+    PROFILE( "OperatorBuilder::createOperator" );
+
     std::shared_ptr<ElementPhysicsModel> model;
     std::shared_ptr<ElementPhysicsModelFactory> factory;
     return createOperator( mesh, operatorName, input_db, model, factory );
@@ -219,13 +224,14 @@ OperatorBuilder::createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                  std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel,
                                  std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
 {
-
+    PROFILE( "OperatorBuilder::createOperator" );
 
     auto operator_db = input_db->getDatabase( operatorName );
 
     AMP_INSIST( operator_db,
                 "Error:: OperatorBuilder::createOperator(): No operator database entry with "
-                "given name exists in input database" );
+                "given name exists in input database: " +
+                    operatorName );
 
     // we create the element physics model if a database entry exists
     // and the incoming element physics model pointer is NULL
@@ -335,6 +341,8 @@ Operator::shared_ptr
 OperatorBuilder::createIdentityOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                          std::shared_ptr<AMP::Database> input_db )
 {
+    PROFILE( "OperatorBuilder::createIdentityOperator" );
+
     AMP_INSIST( input_db, "Error: The database object for SubchannelTwoEqLinearOperator is NULL" );
 
     auto params       = std::make_shared<OperatorParameters>( input_db );
@@ -350,6 +358,7 @@ Operator::shared_ptr
 OperatorBuilder::createFlowFrapconOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                             std::shared_ptr<AMP::Database> input_db )
 {
+    PROFILE( "OperatorBuilder::createFlowFrapconOperator" );
 
     // now create the flow frapcon operator
     std::shared_ptr<AMP::Database> flowOp_db;
@@ -492,6 +501,8 @@ Operator::shared_ptr
 OperatorBuilder::createNeutronicsRhsOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                               std::shared_ptr<AMP::Database> input_db )
 {
+    PROFILE( "OperatorBuilder::createNeutronicsRhsOperator" );
+
     // now create the Neutronics operator
     std::shared_ptr<AMP::Database> NeutronicsOp_db;
     if ( input_db->getString( "name" ) == "NeutronicsRhsOperator" ) {
@@ -514,6 +525,7 @@ Operator::shared_ptr OperatorBuilder::createLinearDiffusionOperator(
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
 {
+    PROFILE( "OperatorBuilder::createLinearDiffusionOperator" );
 
     // first create a DiffusionTransportModel
     std::shared_ptr<DiffusionTransportModel> transportModel;
@@ -572,6 +584,8 @@ Operator::shared_ptr OperatorBuilder::createVolumeIntegralOperator(
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
 {
+    PROFILE( "OperatorBuilder::createVolumeIntegralOperator" );
+
     std::shared_ptr<SourcePhysicsModel> sourcePhysicsModel;
     if ( elementPhysicsModel ) {
         sourcePhysicsModel = std::dynamic_pointer_cast<SourcePhysicsModel>( elementPhysicsModel );
@@ -960,6 +974,8 @@ Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
     std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel,
     std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
 {
+    PROFILE( "OperatorBuilder::createLinearBVPOperator" );
+
     AMP_INSIST( input_db, "NULL database object passed" );
 
     auto operator_db = input_db->getDatabase( operatorName );

@@ -29,13 +29,13 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
         auto parameters =
             std::dynamic_pointer_cast<AMP::Solver::SolverStrategyParameters>( params );
         if ( parameters ) {
-            d_preconditioner = parameters->d_pNestedSolver;
+            d_pNestedSolver = parameters->d_pNestedSolver;
         }
 
-        if ( d_preconditioner ) {
-            if ( d_pOperator && ( !d_preconditioner->getOperator() ) ) {
+        if ( d_pNestedSolver ) {
+            if ( d_pOperator && ( !d_pNestedSolver->getOperator() ) ) {
                 auto pcOperator = createPreconditionerOperator( d_pOperator );
-                d_preconditioner->registerOperator( pcOperator );
+                d_pNestedSolver->registerOperator( pcOperator );
             }
         } else {
             // construct the preconditioner
@@ -53,7 +53,7 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
                     pcSolverParameters->d_pOperator = pcOperator;
                 }
 
-                d_preconditioner = AMP::Solver::SolverFactory::create( pcSolverParameters );
+                d_pNestedSolver = AMP::Solver::SolverFactory::create( pcSolverParameters );
             }
         }
     }
@@ -173,8 +173,8 @@ void NonlinearKrylovAccelerator<T>::reset( std::shared_ptr<AMP::Solver::SolverSt
 {
     // the preconditioner reset needs to be thought about more..
     if ( d_uses_preconditioner ) {
-        AMP_ASSERT( d_preconditioner );
-        d_preconditioner->reset( {} );
+        AMP_ASSERT( d_pNestedSolver );
+        d_pNestedSolver->reset( {} );
     }
     restart();
 }
@@ -337,12 +337,11 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 {
     PROFILE( "NonlinearKrylovAccelerator<T>::apply" );
     d_ConvergenceStatus = AMP::Solver::SolverStrategy::SolverStatus::DivergedOther;
-    AMP_ASSERT( u.get() != nullptr );
-    AMP_ASSERT( d_pOperator != nullptr );
+    AMP_ASSERT( u && d_pOperator );
 
     if ( d_uses_preconditioner ) {
-        AMP_ASSERT( d_preconditioner );
-        AMP_ASSERT( d_preconditioner->getOperator() );
+        AMP_ASSERT( d_pNestedSolver );
+        AMP_ASSERT( d_pNestedSolver->getOperator() );
     }
 
     d_iNumberIterations = 0;
@@ -350,14 +349,12 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
     d_solution_vector->copyVector( u );
     d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    AMP_ASSERT( d_pOperator.get() != nullptr );
-
     // compute residual
     d_pOperator->residual( f, d_solution_vector, d_residual_vector );
     d_function_apply_count++;
 
     d_residual_vector->scale( static_cast<T>( -1.0 ), *d_residual_vector );
-    d_residual_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    //    d_residual_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     auto residual_norm = d_residual_vector->L2Norm();
 
@@ -373,7 +370,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
     if ( d_uses_preconditioner ) {
         auto pc_parameters = d_pOperator->getParameters( "Jacobian", d_solution_vector );
         AMP_ASSERT( pc_parameters.get() != nullptr );
-        pc_operator = d_preconditioner->getOperator();
+        pc_operator = d_pNestedSolver->getOperator();
         AMP_ASSERT( pc_operator.get() != nullptr );
 
         // if using a frozen preconditioner set it up first
@@ -393,10 +390,10 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
                 AMP_ASSERT( pc_parameters );
 
                 pc_operator->reset( pc_parameters );
-                d_preconditioner->reset( {} ); // PC's like MG might regenerate matrices/coeffs
+                d_pNestedSolver->reset( {} ); // PC's like MG might regenerate matrices/coeffs
             }
 
-            AMP_ASSERT( d_preconditioner->getOperator() );
+            AMP_ASSERT( d_pNestedSolver->getOperator() );
 
             auto solnScaling = this->getSolutionScaling();
             auto funcScaling = this->getFunctionScaling();
@@ -406,14 +403,14 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
                 d_residual_vector->multiply( *d_residual_vector, *funcScaling );
 
             // apply the preconditioner
-            d_preconditioner->apply( d_residual_vector, d_correction_vector );
+            d_pNestedSolver->apply( d_residual_vector, d_correction_vector );
 
             if ( solnScaling )
                 d_correction_vector->divide( *d_correction_vector, *solnScaling );
             if ( funcScaling )
                 d_residual_vector->divide( *d_residual_vector, *funcScaling );
 
-            d_preconditioner_apply_count++;
+            ++d_preconditioner_apply_count;
 
         } else {
             // identity preconditioning
@@ -432,7 +429,8 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
         d_function_apply_count++;
 
         d_residual_vector->scale( static_cast<T>( -1.0 ), *d_residual_vector );
-        d_residual_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        //        d_residual_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET
+        //        );
 
         // auto prev_residual_norm = residual_norm;
         residual_norm = d_residual_vector->L2Norm();
@@ -631,7 +629,7 @@ template<typename T>
 void NonlinearKrylovAccelerator<T>::setNestedSolver(
     std::shared_ptr<AMP::Solver::SolverStrategy> pc )
 {
-    d_preconditioner = pc;
+    d_pNestedSolver = pc;
 }
 
 /*
@@ -688,9 +686,9 @@ void NonlinearKrylovAccelerator<T>::registerOperator( std::shared_ptr<AMP::Opera
     AMP_ASSERT( op );
     d_pOperator = op;
     if ( d_uses_preconditioner ) {
-        AMP_ASSERT( d_preconditioner );
+        AMP_ASSERT( d_pNestedSolver );
         auto pc_operator = createPreconditionerOperator( op );
-        d_preconditioner->registerOperator( pc_operator );
+        d_pNestedSolver->registerOperator( pc_operator );
     }
 }
 

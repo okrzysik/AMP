@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <random>
 #include <stdexcept>
 
 
@@ -140,18 +141,26 @@ static inline double dot( int N, const int256_t *x, const int256_t *y )
  * collinear or coplaner.                                            *
  ********************************************************************/
 template<int NDIM, class TYPE>
-static inline std::array<double, 3> getTol( const std::vector<std::array<TYPE, NDIM>> &x,
-                                            const std::pair<int, int> &index_pair )
+static std::array<std::array<TYPE, NDIM>, 2>
+getDomain( const std::vector<std::array<TYPE, NDIM>> &x )
 {
-    // Get the bounding box for the domain
-    TYPE xmin[3] = { 0, 0, 0 }, xmax[3] = { 0, 0, 0 };
-    for ( size_t i = 0; i < x.size(); i++ ) {
+    auto xmin = x[0];
+    auto xmax = x[0];
+    for ( size_t i = 1; i < x.size(); i++ ) {
         for ( int d = 0; d < NDIM; d++ ) {
             xmin[d] = std::min( xmin[d], x[i][d] );
             xmax[d] = std::max( xmax[d], x[i][d] );
         }
     }
-    TYPE domain_size = 0;
+    return { xmin, xmax };
+}
+template<int NDIM, class TYPE>
+static inline std::array<double, 3> getTol( const std::vector<std::array<TYPE, NDIM>> &x,
+                                            const std::pair<int, int> &index_pair )
+{
+    // Get the bounding box for the domain
+    auto [xmin, xmax] = getDomain<NDIM, TYPE>( x );
+    TYPE domain_size  = 0;
     for ( int d = 0; d < NDIM; d++ )
         domain_size += ( xmax[d] - xmin[d] ) * ( xmax[d] - xmin[d] );
     domain_size = static_cast<TYPE>( std::sqrt( static_cast<double>( domain_size ) ) );
@@ -315,25 +324,24 @@ static inline void check_tri_size( size_t size_new,
  * We will do this by sorting the points by order of their distance  *
  * from the closest pair                                             *
  ********************************************************************/
-template<int NDIM, class TYPE, class ETYPE>
-std::vector<int> getInsertionOrder( const std::pair<int, int> &index_pair,
-                                    const std::vector<std::array<TYPE, NDIM>> &x )
+template<int NDIM, class TYPE>
+static std::vector<int> getInsertionOrder( const std::array<TYPE, NDIM> &x0,
+                                           const std::vector<std::array<TYPE, NDIM>> &x )
 {
     PROFILE( "getInsertionOrder", 3 );
     // Compute the square of the radius
     int N = x.size();
-    std::vector<ETYPE> R2( N );
-    for ( int i = 0, i1 = index_pair.first; i < N; i++ ) {
-        R2[i] = ETYPE( 0 );
+    std::vector<double> R2( N, 0.0 );
+    for ( int j = 0; j < N; j++ ) {
         for ( int d = 0; d < NDIM; d++ ) {
-            ETYPE tmp( x[i][d] - x[i1][d] );
-            R2[i] += tmp * tmp;
+            double tmp = x[j][d] - x0[d];
+            R2[j] += tmp * tmp;
         }
     }
     // Sort the points, keeping track of the index
     std::vector<int> I( N );
-    for ( int i = 0; i < N; i++ ) {
-        I[i] = i;
+    for ( int j = 0; j < N; j++ ) {
+        I[j] = j;
     }
     AMP::Utilities::quicksort( R2, I );
     return I;
@@ -341,11 +349,16 @@ std::vector<int> getInsertionOrder( const std::pair<int, int> &index_pair,
 
 
 /********************************************************************
- * This is the main function that creates the tessellation           *
+ * Create the initial triangle                                       *
  ********************************************************************/
 template<int NDIM, class TYPE, class ETYPE>
-std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
-create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
+static std::tuple<std::array<int, NDIM + 1>, std::vector<int>>
+createInitialTriangle( const std::array<TYPE, NDIM> &x0,
+                       const std::vector<std::array<TYPE, NDIM>> &x,
+                       double TOL_VOL,
+                       double TOL_COLLINEAR,
+                       double TOL_COPLANAR,
+                       int iteration = 0 )
 {
     using Point    = std::array<TYPE, NDIM>;
     using Triangle = std::array<int, NDIM + 1>;
@@ -353,17 +366,8 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
     int N = x.size();
     AMP_INSIST( N > NDIM, "Insufficient number of points" );
 
-    PROFILE( "create_tessellation", 2 );
-
-    // First, get the two closest points
-    auto index_pair = find_min_dist<NDIM, TYPE>( N, x[0].data() );
-
-    // Get the tolerance to use
-    [[maybe_unused]] auto [TOL_VOL, TOL_COLLINEAR, TOL_COPLANAR] =
-        getTol<NDIM, TYPE>( x, index_pair );
-
     // Next we need to create a list of the order in which we want to insert the values
-    auto I = getInsertionOrder<NDIM, TYPE, ETYPE>( index_pair, x );
+    auto I = getInsertionOrder<NDIM, TYPE>( x0, x );
 
     // Resort the first few points so that the first ndim+1 points are not collinear or coplanar
     int ik = 2;
@@ -421,22 +425,71 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
         }
     }
 
-    // Initial ammount of memory to allocate for tri
-    std::vector<Triangle> tri, tri_nab;
-    check_tri_size<NDIM>( 2 * N, tri, tri_nab );
-    size_t N_tri = 1;
-    for ( int d = 0; d <= NDIM; d++ )
-        tri[0][d] = I[d];
+    // Initial amount of memory to allocate for tri
+    Triangle tri;
     Point x2[NDIM + 1];
-    for ( int d = 0; d <= NDIM; d++ )
-        x2[d] = x[tri[0][d]];
+    for ( int d = 0; d <= NDIM; d++ ) {
+        tri[d] = I[d];
+        x2[d]  = x[tri[d]];
+    }
     double volume = DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 );
     if ( fabs( volume ) <= TOL_VOL ) {
-        throw std::logic_error( "Error creating initial triangle" );
+        if ( iteration < 10 ) {
+            // Choose a random point and try again
+            auto [xmin, xmax] = getDomain<NDIM, TYPE>( x );
+            std::random_device rd;
+            std::mt19937 gen( rd() );
+            std::array<TYPE, NDIM> x2;
+            for ( int d = 0; d < NDIM; d++ ) {
+                if constexpr ( std::is_integral_v<TYPE> ) {
+                    std::uniform_int_distribution<int64_t> dis( xmin[d], xmax[d] );
+                    x2[d] = dis( gen );
+                } else {
+                    std::uniform_real_distribution<double> dis( xmin[d], xmax[d] );
+                    x2[d] = dis( gen );
+                }
+            }
+            std::tie( tri, I ) = createInitialTriangle<NDIM, TYPE, ETYPE>(
+                x2, x, TOL_VOL, TOL_COLLINEAR, TOL_COPLANAR, iteration++ );
+        } else {
+            AMP_ERROR( "Error creating initial triangle" );
+        }
     } else if ( volume < 0 ) {
         // The volume is negitive, swap the last two indicies
-        std::swap( tri[0][NDIM - 1], tri[0][NDIM] );
+        std::swap( tri[NDIM - 1], tri[NDIM] );
     }
+    return std::tie( tri, I );
+}
+
+
+/********************************************************************
+ * This is the main function that creates the tessellation           *
+ ********************************************************************/
+template<int NDIM, class TYPE, class ETYPE>
+std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
+create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
+{
+    int N          = x.size();
+    using Point    = std::array<TYPE, NDIM>;
+    using Triangle = std::array<int, NDIM + 1>;
+
+    PROFILE( "create_tessellation", 2 );
+
+    // First, get the two closest points
+    auto index_pair = find_min_dist<NDIM, TYPE>( N, x[0].data() );
+
+    // Get the tolerance to use
+    auto [TOL_VOL, TOL_COLLINEAR, TOL_COPLANAR] = getTol<NDIM, TYPE>( x, index_pair );
+
+    // Initial amount of memory to allocate for tri
+    std::vector<Triangle> tri, tri_nab;
+    check_tri_size<NDIM>( 2 * N, tri, tri_nab );
+
+    // Create an initial triangle
+    std::vector<int> I;
+    std::tie( tri[0], I ) = createInitialTriangle<NDIM, TYPE, ETYPE>(
+        x[index_pair.first], x, TOL_VOL, TOL_COLLINEAR, TOL_COPLANAR );
+    size_t N_tri = 1;
 
     // Maintain a list of the triangle faces on the convex hull
     FaceList<NDIM, TYPE, ETYPE> face_list( N, x.data(), 0, tri[0], TOL_VOL );
@@ -535,6 +588,7 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
                     // We already checked this surface
                     continue;
                 }
+                Point x2[NDIM + 1];
                 for ( int j1 = 0; j1 < NDIM + 1; j1++ ) {
                     int m  = tri[elem.t1][j1];
                     x2[j1] = x[m];

@@ -31,6 +31,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::logOnlyNodeZero( log_file );
 
+    AMP::pout << "Running with input " << input_file << std::endl;
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );

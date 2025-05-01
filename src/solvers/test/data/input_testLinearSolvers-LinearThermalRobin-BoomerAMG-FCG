@@ -1,13 +1,11 @@
-
-Mesh{
-    FileName = "cube64.with.boundary.labels.e"
-    MeshName = "bar"
-    MeshType = "libMesh"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1088
+Mesh {
+MeshName = "cube_3d"
+MeshType = "AMP"
+dim = 3
+Generator = "cube"
+Size = 4, 4, 4
+Range = -5.12, 5.12, -5.12, 5.12, -5.12, 5.12
+static = TRUE
 }
 
 NeutronicsOperator{
@@ -124,7 +122,7 @@ Preconditioner{
   name = "BoomerAMGSolver"
   max_iterations = 1
   max_error = 1e-10
-  min_coarse_size = 10
+  max_coarse_size = 25
   strong_threshold = 0.5
   cycle_type = 1
   relax_type = 16

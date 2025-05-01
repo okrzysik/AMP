@@ -39,6 +39,9 @@ std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allo
                                   localSize[2] * N_blocks[2] };
     retVal->d_offset          = blockOffset * localSize.length();
     retVal->setCommunicationList( std::make_shared<CommunicationList>( localSize.length(), comm ) );
+    // set the state to be unchanged since setCommunicationList sets
+    // it to LOCAL_CHANGED
+    retVal->setUpdateStatus( UpdateState::UNCHANGED );
     retVal->d_localSize  = localSize.length();
     retVal->d_globalSize = retVal->d_globalArraySize.length();
     retVal->d_localStart = retVal->d_CommList->getStartGID();
@@ -52,6 +55,9 @@ std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allo
     AMP_ASSERT( localSize == commList->numLocalRows() );
     auto retVal = std::make_shared<ArrayVectorData<T, FUN, Allocator>>();
     retVal->setCommunicationList( commList );
+    // set the state to be unchanged since setCommunicationList sets
+    // it to LOCAL_CHANGED
+    retVal->setUpdateStatus( UpdateState::UNCHANGED );
     retVal->d_comm            = commList->getComm();
     retVal->d_localStart      = commList->getStartGID();
     retVal->d_localSize       = commList->numLocalRows();
@@ -72,14 +78,17 @@ inline std::shared_ptr<VectorData>
 ArrayVectorData<T, FUN, Allocator>::cloneData( const std::string & ) const
 {
     auto retVal               = std::make_shared<ArrayVectorData<T, FUN, Allocator>>();
-    retVal->d_array           = d_array;
-    retVal->d_comm            = d_comm;
-    retVal->d_blockIndex      = d_blockIndex;
-    retVal->d_globalArraySize = d_globalSize;
-    retVal->d_localSize       = d_localSize;
-    retVal->d_globalSize      = d_globalSize;
-    retVal->d_localStart      = d_localStart;
-    retVal->setCommunicationList( getCommunicationList() );
+    retVal->d_array           = this->d_array;
+    retVal->d_comm            = this->d_comm;
+    retVal->d_blockIndex      = this->d_blockIndex;
+    retVal->d_globalArraySize = this->d_globalSize;
+    retVal->d_localSize       = this->d_localSize;
+    retVal->d_globalSize      = this->d_globalSize;
+    retVal->d_localStart      = this->d_localStart;
+    retVal->setCommunicationList( this->getCommunicationList() );
+    // set the state to be unchanged since setCommunicationList sets
+    // it to LOCAL_CHANGED
+    retVal->setUpdateStatus( UpdateState::UNCHANGED );
     return retVal;
 }
 template<typename T, typename FUN, typename Allocator>
@@ -99,13 +108,14 @@ void ArrayVectorData<T, FUN, Allocator>::swapData( VectorData &rhs )
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::resize( const ArraySize &localDims )
 {
-    AMP_ASSERT( getComm().getSize() == 1 );
-    d_array.resize( localDims );
-    d_globalArraySize = localDims;
-    setCommunicationList( std::make_shared<CommunicationList>( localDims.length(), getComm() ) );
-    d_localSize  = localDims.length();
-    d_globalSize = d_globalArraySize.length();
-    d_localStart = d_CommList->getStartGID();
+    AMP_ASSERT( this->getComm().getSize() == 1 );
+    this->d_array.resize( localDims );
+    this->d_globalArraySize = localDims;
+    this->setCommunicationList(
+        std::make_shared<CommunicationList>( localDims.length(), this->getComm() ) );
+    this->d_localSize  = localDims.length();
+    this->d_globalSize = this->d_globalArraySize.length();
+    this->d_localStart = this->d_CommList->getStartGID();
 }
 
 
@@ -162,8 +172,8 @@ void ArrayVectorData<T, FUN, Allocator>::setValuesByLocalID( size_t num,
     } else {
         AMP_ERROR( "Conversion not supported yet" );
     }
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    if ( *( this->d_UpdateState ) == UpdateState::UNCHANGED )
+        *( this->d_UpdateState ) = UpdateState::LOCAL_CHANGED;
 }
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::addValuesByLocalID( size_t num,
@@ -182,8 +192,8 @@ void ArrayVectorData<T, FUN, Allocator>::addValuesByLocalID( size_t num,
     } else {
         AMP_ERROR( "Conversion not supported yet" );
     }
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    if ( *( this->d_UpdateState ) == UpdateState::UNCHANGED )
+        *( this->d_UpdateState ) = UpdateState::LOCAL_CHANGED;
 }
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::getValuesByLocalID( size_t num,

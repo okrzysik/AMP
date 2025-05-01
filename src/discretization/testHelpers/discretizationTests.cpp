@@ -4,6 +4,7 @@
 #include "AMP/discretization/boxMeshDOFManager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/discretization/subsetCommSelfDOFManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/PureLogicalMesh.h"
@@ -103,16 +104,57 @@ void testBasics( std::shared_ptr<AMP::Discretization::DOFManager> DOF, AMP::Unit
 
 
 // Test subsetting for different comms
+void checkSubsetComm( std::shared_ptr<AMP::Discretization::DOFManager> DOF,
+                      std::shared_ptr<AMP::Discretization::DOFManager> subset,
+                      const std::string &name,
+                      AMP::UnitTest &ut )
+{
+    if ( !subset ) {
+        ut.failure( "Failed to subset on " + name );
+        return;
+    }
+    bool pass = true;
+    pass      = pass && ( subset->getIterator() == DOF->getIterator() );
+    pass      = pass && ( subset->numLocalDOF() == DOF->numLocalDOF() );
+    pass      = pass && ( subset->numLocalDOF() == subset->endDOF() - subset->beginDOF() );
+    for ( size_t i = 0; i < DOF->numLocalDOF(); i++ ) {
+        auto id1 = DOF->getElementID( DOF->beginDOF() + i );
+        auto id2 = subset->getElementID( subset->beginDOF() + i );
+        pass     = pass && id1 == id2;
+    }
+    std::vector<size_t> dofs1, dofs2;
+    std::vector<AMP::Mesh::MeshElementID> ids;
+    for ( auto &elem : DOF->getIterator() ) {
+        ids.push_back( elem.globalID() );
+        DOF->getDOFs( elem.globalID(), dofs1 );
+        subset->getDOFs( elem.globalID(), dofs2 );
+        for ( size_t i = 0; i < dofs1.size(); i++ )
+            pass = pass && ( dofs1[i] - DOF->beginDOF() ) == ( dofs2[i] - subset->beginDOF() );
+    }
+    DOF->getDOFs( ids, dofs1 );
+    subset->getDOFs( ids, dofs2 );
+    pass = pass && dofs1.size() == dofs2.size();
+    PASS_FAIL( pass, "Subset DOF on " + name );
+}
 void testSubsetComm( std::shared_ptr<AMP::Discretization::DOFManager> DOF, AMP::UnitTest &ut )
 {
-    auto subsetDOF = DOF->subset( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    PASS_FAIL( *DOF == *subsetDOF, "Subset DOF on COMM_WORLD" );
-    subsetDOF = DOF->subset( DOF->getComm() );
-    PASS_FAIL( *DOF == *subsetDOF, "Subset DOF on DOF comm" );
-    subsetDOF = DOF->subset( AMP::AMP_MPI( AMP_COMM_SELF ) );
-    PASS_FAIL( subsetDOF->numLocalDOF() == DOF->numLocalDOF() &&
-                   subsetDOF->numGlobalDOF() == DOF->numLocalDOF(),
-               "Subset DOF on COMM_SELF" );
+    std::vector<size_t> localDofs( DOF->numLocalDOF() );
+    for ( size_t i = 0; i < DOF->numLocalDOF(); i++ )
+        localDofs[i] = i + DOF->beginDOF();
+    std::shared_ptr<AMP::Discretization::DOFManager> subset[6];
+    subset[0] = DOF->subset( AMP_COMM_WORLD );
+    subset[1] = DOF->subset( DOF->getComm() );
+    subset[2] = DOF->subset( AMP_COMM_SELF );
+    subset[3] = DOF->subset( DOF->getComm().split( DOF->getComm().getRank() % 2 ) );
+    subset[4] = AMP::Discretization::subsetDOFManager::create(
+        DOF, localDofs, DOF->getIterator(), AMP_COMM_SELF );
+    subset[5] = std::make_shared<AMP::Discretization::subsetCommSelfDOFManager>( DOF );
+    checkSubsetComm( DOF, subset[0], "AMP_COMM_WORLD", ut );
+    checkSubsetComm( DOF, subset[1], "DOF comm", ut );
+    checkSubsetComm( DOF, subset[2], "AMP_COMM_SELF", ut );
+    checkSubsetComm( DOF, subset[3], "comm split", ut );
+    checkSubsetComm( DOF, subset[4], "subsetDOFManager", ut );
+    checkSubsetComm( DOF, subset[5], "subsetCommSelfDOFManager", ut );
 }
 
 

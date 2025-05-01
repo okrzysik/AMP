@@ -45,7 +45,7 @@ libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params )
     PROFILE( "constructor" );
     this->d_max_gcw = 1;
     // Check for valid inputs
-    AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
+    AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
     // Intialize libMesh
     d_libMeshComm = std::make_shared<libMesh::Parallel::Communicator>( d_comm.getCommunicator() );
     libmeshInit   = std::make_shared<initializeLibMesh>( d_comm );
@@ -565,6 +565,8 @@ void libmeshMesh::fillBoundaryElements()
                     list->push_back( *dynamic_cast<libmeshMeshElement *>( elem.getRawElement() ) );
                 }
             }
+            if ( list->empty() )
+                continue;
             // Store the list
             auto mapid = std::pair<int, GeomType>( id, type );
             auto entry = std::make_pair( mapid, list );

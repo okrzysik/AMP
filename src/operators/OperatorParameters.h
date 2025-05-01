@@ -14,6 +14,7 @@ class Mesh;
 
 namespace AMP::Operator {
 
+class Operator;
 
 /**\class OperatorParameters
  *
@@ -58,6 +59,10 @@ public:
     virtual ~OperatorParameters() {}
 
     std::shared_ptr<AMP::Mesh::Mesh> d_Mesh;
+    /**
+     * Allow for the case that a fully constructed operator is returned
+     */
+    std::shared_ptr<AMP::Operator::Operator> d_pOperator;
 
     /**
      * Location (host/managed/device) where internally created

@@ -2,6 +2,7 @@
 #include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/DOFManagerFactory.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/discretization/subsetCommSelfDOFManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/time_integrators/TimeIntegratorFactory.h"
@@ -51,6 +52,10 @@ void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t
         N = appendDOFs( id, dofs.data(), 0, dofs.size() );
     }
     dofs.resize( N );
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    for ( size_t i = 0; i < N; i++ )
+        AMP_ASSERT( dofs[i] < d_global );
+#endif
 }
 void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
                           std::vector<size_t> &dofs ) const
@@ -66,6 +71,10 @@ void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
         N += N2;
     }
     dofs.resize( N );
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    for ( size_t i = 0; i < N; i++ )
+        AMP_ASSERT( dofs[i] < d_global );
+#endif
 }
 size_t DOFManager::appendDOFs( const AMP::Mesh::MeshElementID &, size_t *, size_t, size_t ) const
 {
@@ -89,9 +98,10 @@ AMP::Mesh::MeshElementID DOFManager::getElementID( size_t ) const
 
 
 /****************************************************************
- * Get an entry over the mesh elements associated with the DOFs  *
+ * Get the mesh / mesh iterator                                  *
  ****************************************************************/
-AMP::Mesh::MeshIterator DOFManager::getIterator() const { return AMP::Mesh::MeshIterator(); }
+std::shared_ptr<const AMP::Mesh::Mesh> DOFManager::getMesh() const { return {}; }
+AMP::Mesh::MeshIterator DOFManager::getIterator() const { return {}; }
 
 
 /****************************************************************
@@ -110,6 +120,12 @@ size_t DOFManager::endDOF() const { return d_end; }
  * Return the local number of D.O.F.s                           *
  ****************************************************************/
 size_t DOFManager::numLocalDOF() const { return ( d_end - d_begin ); }
+std::vector<size_t> DOFManager::getLocalSizes() const
+{
+    if ( d_localSize.empty() )
+        d_localSize = d_comm.allGather( d_end - d_begin );
+    return d_localSize;
+}
 
 
 /****************************************************************
@@ -125,7 +141,7 @@ std::vector<size_t> DOFManager::getRemoteDOFs() const { return d_remoteDOFs; }
 
 
 /****************************************************************
- * Return the global number of D.O.F.s                           *
+ * Return the row D.O.F.s                                        *
  ****************************************************************/
 size_t DOFManager::getRowDOFs( const AMP::Mesh::MeshElementID &, size_t *, size_t, bool ) const
 {
@@ -179,15 +195,17 @@ std::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
 {
     if ( comm.compare( d_comm ) != 0 )
         return shared_from_this();
+    if ( comm.getSize() == 1 )
+        return std::make_shared<subsetCommSelfDOFManager>( shared_from_this() );
     std::vector<size_t> local_dofs( numLocalDOF(), beginDOF() );
     for ( size_t i = 0; i < numLocalDOF(); i++ )
         local_dofs[i] += i;
     return subsetDOFManager::create( shared_from_this(), local_dofs, getIterator(), comm );
 }
-std::shared_ptr<DOFManager> DOFManager::subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
+std::shared_ptr<DOFManager> DOFManager::subset( const std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                                                 bool useMeshComm )
 {
-    if ( mesh.get() == nullptr )
+    if ( !mesh || !getMesh() )
         return std::shared_ptr<DOFManager>();
     // Get a list of the elements in the mesh
     auto subsetIterator = mesh->isMember( getIterator() );

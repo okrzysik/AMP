@@ -42,13 +42,22 @@ void getLastHipError( const char *errorMessage,
 
 static void inline setKernelDims( size_t n, dim3 &BlockDim, dim3 &GridDim )
 {
-    // Parameters for an NVIDIA k20x.  Consider using occupancy API
-    const int warpSize    = 32;
-    const int maxGridSize = 112;
+    // ORNL Ref:
+    // https://www.olcf.ornl.gov/wp-content/uploads/2019/10/ORNL_Application_Readiness_Workshop-AMD_GPU_Basics.pdf
+    // AMD Specs
+    // https://rocm.docs.amd.com/en/latest/reference/gpu-arch-specs.html
+    // Parameters for AMD MI250/300 series.
+    // This should change to using occupancy API at
+    // https://rocm.docs.amd.com/projects/HIP/en/docs-develop/reference/hip_runtime_api/modules/occupancy.html
+    constexpr int waveFrontSize = 64;
+    // MI250 CUs (SMs) = 104, max wavefronts/CU = 8
+    // MI300 CUs (SMs) = 228, max wavefronts/CU = 10
+    // For now go with MI 300 values
+    constexpr int maxGridSize = 228 * 10;
 
-    int warpCount    = ( n / warpSize ) + ( ( ( n % warpSize ) == 0 ) ? 0 : 1 );
+    int warpCount    = ( n / waveFrontSize ) + ( ( ( n % waveFrontSize ) == 0 ) ? 0 : 1 );
     int warpPerBlock = std::max( 1, std::min( 4, warpCount ) );
-    int threadCount  = warpSize * warpPerBlock;
+    int threadCount  = waveFrontSize * warpPerBlock;
     int blockCount   = std::min( maxGridSize, std::max( 1, warpCount / warpPerBlock ) );
     BlockDim         = dim3( threadCount, 1, 1 );
     GridDim          = dim3( blockCount, 1, 1 );

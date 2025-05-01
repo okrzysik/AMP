@@ -76,7 +76,7 @@ void DiffusionNonlinearFEOperator::setVector( const std::string &name,
     auto it = d_active.find( name );
     AMP_INSIST( it != d_active.end(), "Variable " + name + " not found" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto mVec = frozenVec->select( meshSelector, frozenVec->getName() );
+    auto mVec = frozenVec->select( meshSelector );
     auto vec  = mVec->subsetVectorForVariable( name );
     vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     it->second.frozen = vec;
@@ -136,7 +136,7 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
 
     AMP_INSIST( u, "NULL Input Vector!" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto u_meshVec = u->select( meshSelector, "u_mesh" );
+    auto u_meshVec = u->select( meshSelector );
 
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::preAssembly, entering" << std::endl;
@@ -294,7 +294,7 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
 {
     auto db = std::make_shared<AMP::Database>( "Dummy" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto u_meshVec = u->select( meshSelector, "u_mesh" );
+    auto u_meshVec = u->select( meshSelector );
 
     // set up a database for the linear operator params
     db->putScalar( "name", "DiffusionLinearFEOperator" );
@@ -371,7 +371,7 @@ bool DiffusionNonlinearFEOperator::isValidVector( AMP::LinearAlgebra::Vector::co
 
     bool result = true;
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto u_meshVec = u->select( meshSelector, "u_mesh" );
+    auto u_meshVec = u->select( meshSelector );
     if ( found ) {
         auto uinp = u_meshVec->subsetVectorForVariable( d_PrincipalVariable );
         std::vector<double> vals( uinp->getLocalSize() );

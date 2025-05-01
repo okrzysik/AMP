@@ -102,6 +102,11 @@ public:
      */
     void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
+    /**
+     * Checks if the restart is allowed
+     */
+    bool restarted() { return d_bRestart; }
+
 protected:
     //! orthogonalize the vector against the existing vectors in the basis
     // stored internally. Store the coefficients of the Arnoldi
@@ -150,10 +155,17 @@ protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
 private:
+    /**
+     * Allocate the vector basis in d_iBasisAllocSize chunks (d_vBasis & d_zBasis)
+     */
+    void allocate_basis( const std::shared_ptr<AMP::LinearAlgebra::Vector> u );
+
     bool d_bRestart = false; //! whether to restart
 
     int d_iMaxKrylovDimension = 50; //! maximum dimension of the Krylov subspace before a restart or
                                     //! termination happens
+
+    int d_iBasisAllocSize = 4; //! size of the allocation increases for the vector basis
 
     int d_restarts; //! logs number of times the solver is restarted
 
@@ -201,6 +213,10 @@ private:
     //! stores the orthonormal basis for the Krylov space in case of FGMRES
     //! we do not preallocate by default
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_zBasis;
+
+    //! stores the vectors needed for right and left preconditioning
+    AMP::LinearAlgebra::Vector::shared_ptr d_z;
+    AMP::LinearAlgebra::Vector::shared_ptr d_z1;
 };
 } // namespace AMP::Solver
 

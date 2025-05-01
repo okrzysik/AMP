@@ -85,17 +85,17 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
         for ( size_t i = 0; i < variableNames.size(); i++ ) {
             std::string cview = variableNames[i] + " view";
             if ( d_Frozen ) {
-                if ( d_Frozen->select( AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ),
-                                       cview ) ) {
+                if ( d_Frozen->select(
+                         AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ) ) ) {
                     d_elementInputVec[i + 1] = d_Frozen->select(
-                        AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
+                        AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ) );
                 } else {
                     d_elementInputVec[i + 1] = uInternal->select(
-                        AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
+                        AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ) );
                 }
             } else {
-                d_elementInputVec[i + 1] = uInternal->select(
-                    AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
+                d_elementInputVec[i + 1] =
+                    uInternal->select( AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ) );
             }
             AMP_INSIST( d_elementInputVec[i + 1],
                         "Did not find vector '" + variableNames[i] + "'" );

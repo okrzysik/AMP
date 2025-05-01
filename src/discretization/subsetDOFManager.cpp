@@ -41,11 +41,10 @@ subsetDOFManager::create( std::shared_ptr<const DOFManager> parentDOFManager,
     }
     AMP::Utilities::unique( subsetDOF->d_localDOFs );
     // Get the begin and global DOFs for the subset
-    size_t N_local = dofs.size();
-    subsetDOF->d_comm.sumScan( &N_local, &( subsetDOF->d_end ), 1 );
-    subsetDOF->d_begin = subsetDOF->d_end - N_local;
-    subsetDOF->d_global =
-        subsetDOF->d_comm.bcast( subsetDOF->d_end, subsetDOF->d_comm.getSize() - 1 );
+    size_t N_local      = dofs.size();
+    subsetDOF->d_end    = subsetDOF->d_comm.sumScan( N_local );
+    subsetDOF->d_begin  = subsetDOF->d_end - N_local;
+    subsetDOF->d_global = subsetDOF->d_comm.sumReduce( N_local );
     // Return if the subset DOF is empty
     if ( subsetDOF->d_global == 0 )
         return std::shared_ptr<DOFManager>();
@@ -137,10 +136,12 @@ AMP::Mesh::MeshElement subsetDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
- * Get an entry over the mesh elements associated with the DOFs  *
- * Note: if any sub-DOFManagers are the same, then this will     *
- * iterate over repeated elements.                               *
+ * Get the mesh / mesh iterator                                  *
  ****************************************************************/
+std::shared_ptr<const AMP::Mesh::Mesh> subsetDOFManager::getMesh() const
+{
+    return d_parentDOFManager->getMesh();
+}
 AMP::Mesh::MeshIterator subsetDOFManager::getIterator() const { return d_iterator; }
 
 

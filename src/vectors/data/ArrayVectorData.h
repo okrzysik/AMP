@@ -7,6 +7,7 @@
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/memory.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 
 
@@ -16,7 +17,7 @@ namespace AMP::LinearAlgebra {
  * \details This is a Vector that implements the Vector interface for an AMP::Array.
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = AMP::HostAllocator<void>>
-class ArrayVectorData : public VectorData
+class ArrayVectorData : public GhostDataHelper<T>
 {
 private:
     AMP::Array<T, FUN, Allocator> d_array;
@@ -57,7 +58,7 @@ public:
 
     /** \brief  Return the communicator this Vector spans
      */
-    AMP_MPI getComm() const override { return d_comm; }
+    const AMP_MPI &getComm() const override { return d_comm; }
 
     //! resize the ArrayVector and reset the internal data structures
     void resize( const ArraySize &localDims );

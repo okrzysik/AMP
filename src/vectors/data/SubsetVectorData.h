@@ -3,6 +3,7 @@
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 
 #include <vector>
@@ -59,7 +60,7 @@ public:
       vec2.copyVector( vec3 );
     \endcode
   */
-class SubsetVectorData : public VectorData
+class SubsetVectorData : public GhostDataHelper<double>
 {
 
 public:
@@ -82,6 +83,7 @@ public:
     std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
     bool hasContiguousData() const override { return numberOfDataBlocks() > 1 ? false : true; }
     SubsetVectorData() {}
+    const AMP_MPI &getComm() const override;
     explicit SubsetVectorData( std::shared_ptr<SubsetVectorParameters> params );
 
 private:

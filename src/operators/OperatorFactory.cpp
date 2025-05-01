@@ -2,6 +2,7 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CoupledOperator.h"
+#include "AMP/operators/IdentityOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
@@ -50,6 +51,7 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
                           std::shared_ptr<AMP::Operator::OperatorParameters>>::registerDefault()
 {
     using namespace AMP::Operator;
+    REGISTER_OPERATOR( IdentityOperator );
     REGISTER_OPERATOR( CoupledOperator );
     REGISTER_OPERATOR( ColumnOperator );
     REGISTER_OPERATOR( LinearBVPOperator );

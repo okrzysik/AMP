@@ -237,6 +237,9 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
         } else {
             AMP_ERROR( "Unknown type" );
         }
+    } else if ( factoryName == "CubeMeshVectorFactory" ) {
+        AMP_ASSERT( args.size() == 1 );
+        factory.reset( new CubeMeshVectorFactory( to_int( args[0] ) ) );
     } else if ( factoryName == "MultiVectorFactory" ) {
         AMP_ASSERT( args.size() == 4 );
         factory.reset( new MultiVectorFactory( generateVectorFactory( args[0] ),
@@ -334,6 +337,20 @@ std::vector<std::string> getNativeVectorFactories()
     list.emplace_back( "NativeEpetraFactory" );
     list.emplace_back( "NativeThyraFactory" );
     list = cleanList( list );
+    return list;
+}
+
+
+/********************************************************************
+ * Get advanced vector factories                                     *
+ ********************************************************************/
+std::vector<std::string> getMeshVectorFactories()
+{
+    std::vector<std::string> list;
+    list.emplace_back( "CubeMeshVectorFactory<4>" );
+    list.emplace_back( "CubeMeshVectorFactory<16>" );
+    list.emplace_back(
+        "MultiVectorFactory<CubeMeshVectorFactory<4>,1,SimpleVectorFactory<15,false,double>,1>" );
     return list;
 }
 
@@ -458,6 +475,8 @@ std::vector<std::string> getAllFactories()
     for ( auto factory : getArrayVectorFactories() )
         list.push_back( factory );
     for ( auto factory : getNativeVectorFactories() )
+        list.push_back( factory );
+    for ( auto factory : getMeshVectorFactories() )
         list.push_back( factory );
     for ( auto factory : getMultiVectorFactories() )
         list.push_back( factory );

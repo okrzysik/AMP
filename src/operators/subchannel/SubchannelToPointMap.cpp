@@ -108,7 +108,7 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
 
     // Perform tri-linear interpolation to fill the output
     AMP::LinearAlgebra::VS_Comm commSelector( d_comm );
-    auto outputVec = r->select( commSelector, u->getName() );
+    auto outputVec = r->select( commSelector );
     if ( outputVec != nullptr )
         outputVec = outputVec->subsetVectorForVariable( getOutputVariable() );
     std::vector<double> localOutput( d_point_x.size(), 0.0 );

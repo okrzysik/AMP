@@ -50,19 +50,19 @@ VectorDataDefault<TYPE, Allocator>::VectorDataDefault( size_t start,
                                                        size_t globalSize )
 {
     static_assert( std::is_same_v<typename Allocator::value_type, void> );
-    d_localSize  = localSize;
-    d_globalSize = globalSize;
-    d_localStart = start;
-    d_data       = d_alloc.allocate( localSize );
+    this->d_localSize  = localSize;
+    this->d_globalSize = globalSize;
+    this->d_localStart = start;
+    this->d_data       = d_alloc.allocate( localSize );
     for ( size_t i = 0; i < localSize; ++i )
-        new ( d_data + i ) TYPE();
+        new ( this->d_data + i ) TYPE();
 }
 template<typename TYPE, class Allocator>
 VectorDataDefault<TYPE, Allocator>::~VectorDataDefault()
 {
-    for ( size_t i = 0; i < d_localSize; ++i )
-        d_data[i].~TYPE();
-    d_alloc.deallocate( d_data, d_localSize );
+    for ( size_t i = 0; i < this->d_localSize; ++i )
+        this->d_data[i].~TYPE();
+    d_alloc.deallocate( this->d_data, this->d_localSize );
 }
 
 
@@ -74,18 +74,18 @@ std::shared_ptr<VectorData>
 VectorDataDefault<TYPE, Allocator>::cloneData( const std::string & ) const
 {
     auto retVal = std::make_shared<VectorDataDefault<TYPE, Allocator>>(
-        d_localStart, d_localSize, d_globalSize );
-    auto comm = getCommunicationList();
+        this->d_localStart, this->d_localSize, this->d_globalSize );
+    auto comm = this->getCommunicationList();
     if ( comm )
         retVal->setCommunicationList( comm );
 
-    if ( d_Ghosts && ( !d_Ghosts->empty() ) ) {
-        retVal->d_Ghosts = std::make_shared<std::vector<double>>( d_Ghosts->size() );
+    if ( !this->d_Ghosts.empty() ) {
+        retVal->d_Ghosts.resize( this->d_Ghosts.size() );
         retVal->copyGhostValues( *this );
     }
-    if ( d_AddBuffer && ( !d_AddBuffer->empty() ) ) {
-        retVal->d_AddBuffer      = std::make_shared<std::vector<double>>( d_AddBuffer->size() );
-        *( retVal->d_AddBuffer ) = *d_AddBuffer;
+    if ( !this->d_AddBuffer.empty() ) {
+        retVal->d_AddBuffer.resize( this->d_AddBuffer.size() );
+        retVal->d_AddBuffer = this->d_AddBuffer;
     }
 
     return retVal;
@@ -104,12 +104,12 @@ inline size_t VectorDataDefault<TYPE, Allocator>::sizeOfDataBlock( size_t i ) co
 {
     if ( i > 0 )
         return 0;
-    return d_localSize;
+    return this->d_localSize;
 }
 template<typename TYPE, class Allocator>
 uint64_t VectorDataDefault<TYPE, Allocator>::getDataID() const
 {
-    return reinterpret_cast<uint64_t>( d_data );
+    return reinterpret_cast<uint64_t>( this->d_data );
 }
 template<typename TYPE, class Allocator>
 typeID VectorDataDefault<TYPE, Allocator>::getType( size_t ) const
@@ -134,8 +134,8 @@ inline void *VectorDataDefault<TYPE, Allocator>::getRawDataBlockAsVoid( size_t i
         return 0;
     }
     AMP_DEBUG_ASSERT( AMP::Utilities::getAllocatorMemoryType<Allocator>() ==
-                      AMP::Utilities::getMemoryType( d_data ) );
-    return d_data;
+                      AMP::Utilities::getMemoryType( this->d_data ) );
+    return this->d_data;
 }
 template<typename TYPE, class Allocator>
 inline const void *VectorDataDefault<TYPE, Allocator>::getRawDataBlockAsVoid( size_t i ) const
@@ -144,8 +144,8 @@ inline const void *VectorDataDefault<TYPE, Allocator>::getRawDataBlockAsVoid( si
         return 0;
     }
     AMP_DEBUG_ASSERT( AMP::Utilities::getAllocatorMemoryType<Allocator>() ==
-                      AMP::Utilities::getMemoryType( d_data ) );
-    return d_data;
+                      AMP::Utilities::getMemoryType( this->d_data ) );
+    return this->d_data;
 }
 
 
@@ -155,13 +155,13 @@ inline const void *VectorDataDefault<TYPE, Allocator>::getRawDataBlockAsVoid( si
 template<typename TYPE, class Allocator>
 inline TYPE &VectorDataDefault<TYPE, Allocator>::operator[]( size_t i )
 {
-    return d_data[i];
+    return this->d_data[i];
 }
 
 template<typename TYPE, class Allocator>
 inline const TYPE &VectorDataDefault<TYPE, Allocator>::operator[]( size_t i ) const
 {
-    return d_data[i];
+    return this->d_data[i];
 }
 template<typename TYPE, class Allocator>
 inline void VectorDataDefault<TYPE, Allocator>::setValuesByLocalID( size_t num,
@@ -169,19 +169,23 @@ inline void VectorDataDefault<TYPE, Allocator>::setValuesByLocalID( size_t num,
                                                                     const void *vals,
                                                                     const typeID &id )
 {
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    for ( size_t i = 0; i < num; i++ )
+        AMP_ASSERT( indices[i] < this->d_localSize );
+#endif
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<const TYPE *>( vals );
         for ( size_t i = 0; i < num; i++ )
-            d_data[indices[i]] = data[i];
+            this->d_data[indices[i]] = data[i];
     } else if ( id == getTypeID<double>() ) {
         auto data = reinterpret_cast<const double *>( vals );
         for ( size_t i = 0; i < num; ++i )
-            d_data[indices[i]] = static_cast<TYPE>( data[i] );
+            this->d_data[indices[i]] = static_cast<TYPE>( data[i] );
     } else {
         AMP_ERROR( "Conversion not supported yet" );
     }
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    if ( *( this->d_UpdateState ) == UpdateState::UNCHANGED )
+        *( this->d_UpdateState ) = UpdateState::LOCAL_CHANGED;
 }
 template<typename TYPE, class Allocator>
 inline void VectorDataDefault<TYPE, Allocator>::addValuesByLocalID( size_t num,
@@ -189,19 +193,23 @@ inline void VectorDataDefault<TYPE, Allocator>::addValuesByLocalID( size_t num,
                                                                     const void *vals,
                                                                     const typeID &id )
 {
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    for ( size_t i = 0; i < num; i++ )
+        AMP_ASSERT( indices[i] < this->d_localSize );
+#endif
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<const TYPE *>( vals );
         for ( size_t i = 0; i < num; i++ )
-            d_data[indices[i]] += data[i];
+            this->d_data[indices[i]] += data[i];
     } else if ( id == getTypeID<double>() ) {
         auto data = reinterpret_cast<const double *>( vals );
         for ( size_t i = 0; i < num; ++i )
-            d_data[indices[i]] += static_cast<TYPE>( data[i] );
+            this->d_data[indices[i]] += static_cast<TYPE>( data[i] );
     } else {
         AMP_ERROR( "Conversion not supported yet" );
     }
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    if ( *( this->d_UpdateState ) == UpdateState::UNCHANGED )
+        *( this->d_UpdateState ) = UpdateState::LOCAL_CHANGED;
 }
 template<typename TYPE, class Allocator>
 inline void VectorDataDefault<TYPE, Allocator>::getValuesByLocalID( size_t num,
@@ -209,14 +217,18 @@ inline void VectorDataDefault<TYPE, Allocator>::getValuesByLocalID( size_t num,
                                                                     void *vals,
                                                                     const typeID &id ) const
 {
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    for ( size_t i = 0; i < num; i++ )
+        AMP_ASSERT( indices[i] < this->d_localSize );
+#endif
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<TYPE *>( vals );
         for ( size_t i = 0; i < num; i++ )
-            data[i] = d_data[indices[i]];
+            data[i] = this->d_data[indices[i]];
     } else if ( id == getTypeID<double>() ) {
         auto data = reinterpret_cast<double *>( vals );
         for ( size_t i = 0; i < num; ++i )
-            data[i] = d_data[indices[i]];
+            data[i] = this->d_data[indices[i]];
     } else {
         AMP_ERROR( "Conversion not supported yet" );
     }
@@ -230,11 +242,11 @@ template<typename TYPE, class Allocator>
 void VectorDataDefault<TYPE, Allocator>::putRawData( const void *in, const typeID &id )
 {
     if ( id == getTypeID<TYPE>() ) {
-        memcpy( d_data, in, d_localSize * sizeof( TYPE ) );
+        memcpy( this->d_data, in, this->d_localSize * sizeof( TYPE ) );
     } else if ( id == getTypeID<double>() ) {
         auto data = reinterpret_cast<const double *>( in );
-        for ( size_t i = 0; i < d_localSize; ++i )
-            d_data[i] = static_cast<TYPE>( data[i] );
+        for ( size_t i = 0; i < this->d_localSize; ++i )
+            this->d_data[i] = static_cast<TYPE>( data[i] );
     } else {
         AMP_ERROR( "Conversion not supported yet" );
     }
@@ -244,11 +256,11 @@ template<typename TYPE, class Allocator>
 void VectorDataDefault<TYPE, Allocator>::getRawData( void *out, const typeID &id ) const
 {
     if ( id == getTypeID<TYPE>() ) {
-        memcpy( out, d_data, d_localSize * sizeof( TYPE ) );
+        memcpy( out, this->d_data, this->d_localSize * sizeof( TYPE ) );
     } else if ( id == getTypeID<double>() ) {
         auto data = reinterpret_cast<double *>( out );
-        for ( size_t i = 0; i < d_localSize; ++i )
-            data[i] = static_cast<double>( d_data[i] );
+        for ( size_t i = 0; i < this->d_localSize; ++i )
+            data[i] = static_cast<double>( this->d_data[i] );
     } else {
         AMP_ERROR( "Conversion not supported yet" );
     }
@@ -263,14 +275,14 @@ void VectorDataDefault<TYPE, Allocator>::swapData( VectorData &rhs )
 {
     auto rhs2 = dynamic_cast<VectorDataDefault<TYPE, Allocator> *>( &rhs );
     AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
-    std::swap( d_CommList, rhs2->d_CommList );
-    std::swap( d_UpdateState, rhs2->d_UpdateState );
-    std::swap( d_Ghosts, rhs2->d_Ghosts );
-    std::swap( d_AddBuffer, rhs2->d_AddBuffer );
-    std::swap( d_data, rhs2->d_data );
-    std::swap( d_localSize, rhs2->d_localSize );
-    std::swap( d_globalSize, rhs2->d_globalSize );
-    std::swap( d_localStart, rhs2->d_localStart );
+    std::swap( this->d_CommList, rhs2->d_CommList );
+    std::swap( this->d_UpdateState, rhs2->d_UpdateState );
+    std::swap( this->d_Ghosts, rhs2->d_Ghosts );
+    std::swap( this->d_AddBuffer, rhs2->d_AddBuffer );
+    std::swap( this->d_data, rhs2->d_data );
+    std::swap( this->d_localSize, rhs2->d_localSize );
+    std::swap( this->d_globalSize, rhs2->d_globalSize );
+    std::swap( this->d_localStart, rhs2->d_localStart );
 }
 
 
@@ -281,27 +293,24 @@ template<typename TYPE, class Allocator>
 void VectorDataDefault<TYPE, Allocator>::registerChildObjects(
     AMP::IO::RestartManager *manager ) const
 {
-    VectorData::registerChildObjects( manager );
+    GhostDataHelper<TYPE>::registerChildObjects( manager );
 }
 template<typename TYPE, class Allocator>
 void VectorDataDefault<TYPE, Allocator>::writeRestart( int64_t fid ) const
 {
-    AMP::Array<TYPE> data( d_localSize );
+    GhostDataHelper<TYPE>::writeRestart( fid );
+    AMP::Array<TYPE> data( this->d_localSize );
     getRawData( data.data(), getTypeID<TYPE>() );
     IO::writeHDF5( fid, "data", data );
-    IO::writeHDF5( fid, "localSize", d_localSize );
-    IO::writeHDF5( fid, "globalSize", d_globalSize );
-    IO::writeHDF5( fid, "localStart", d_localStart );
 }
 template<typename TYPE, class Allocator>
-VectorDataDefault<TYPE, Allocator>::VectorDataDefault( int64_t fid, AMP::IO::RestartManager * )
+VectorDataDefault<TYPE, Allocator>::VectorDataDefault( int64_t fid,
+                                                       AMP::IO::RestartManager *manager )
+    : GhostDataHelper<TYPE>( fid, manager )
 {
     AMP::Array<TYPE> data;
     IO::readHDF5( fid, "data", data );
-    IO::readHDF5( fid, "localSize", d_localSize );
-    IO::readHDF5( fid, "globalSize", d_globalSize );
-    IO::readHDF5( fid, "localStart", d_localStart );
-    d_data = d_alloc.allocate( d_localSize );
+    d_data = d_alloc.allocate( this->d_localSize );
     putRawData( data.data(), getTypeID<TYPE>() );
 }
 

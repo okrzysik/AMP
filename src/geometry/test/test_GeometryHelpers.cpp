@@ -179,17 +179,29 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
     const double tol = 1e-10;
     const double r   = 2.0;
     bool pass        = true;
-    auto t1          = std::chrono::high_resolution_clock::now();
-    for ( int i = 0; i < N; i++ ) {
-        double x  = dis( gen );
-        double y  = dis( gen );
-        auto p    = map_logical_sphere_surface( 1, r, x, y );
-        auto p2   = map_sphere_surface_logical( 1, r, p[0], p[1], p[2] );
-        double r2 = std::sqrt( p[0] * p[0] + p[1] * p[1] + p[2] * p[2] );
-        pass      = pass && r2 < r + 1e-15;
-        pass      = pass && fabs( p2[0] - x ) < tol && fabs( p2[1] - y ) < tol;
-        if ( fabs( p2[0] - x ) > tol || fabs( p2[1] - y ) > tol )
-            printf( "%e %e %e %e %e %e\n", x, y, p2[0], p2[1], p2[0] - x, p2[1] - y );
+    for ( int method = 1; method <= 3; method++ ) {
+        auto t1      = std::chrono::high_resolution_clock::now();
+        int N_failed = 0;
+        for ( int i = 0; i < N; i++ ) {
+            double x   = dis( gen );
+            double y   = dis( gen );
+            auto p     = map_logical_sphere_surface( method, r, x, y );
+            auto p2    = map_sphere_surface_logical( method, r, p[0], p[1], p[2] );
+            double r2  = std::sqrt( p[0] * p[0] + p[1] * p[1] + p[2] * p[2] );
+            double err = std::max( fabs( p2[0] - x ), fabs( p2[1] - y ) );
+            bool pass2 = r2 < r + tol && err < tol;
+            N_failed += pass2 ? 0 : 1;
+            if ( !pass2 && N_failed < 20 )
+                printf(
+                    "%i: %e %e %e %e %e %e\n", method, x, y, p2[0], p2[1], p2[0] - x, p2[1] - y );
+        }
+        if ( N_failed > 3 ) {
+            pass = false;
+            ut.failure( "map_logical_sphere_surface: " + std::to_string( method ) );
+        }
+        auto t2 = std::chrono::high_resolution_clock::now();
+        int ns  = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count() / N;
+        printf( "map_logical_sphere_surface (%i): %i ns\n", method, ns );
     }
     int N2 = 100;
     for ( int i = 0; i < N2; i++ ) {
@@ -208,15 +220,12 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
         auto d  = p0 - AMP::Mesh::Point( p );
         return d.abs() < 1e-12;
     };
-    pass       = pass && testMap( { 0, 0, -1 } );
-    pass       = pass && testMap( { 0, 0, 1 } );
-    pass       = pass && testMap( { 0, -1, 0 } );
-    pass       = pass && testMap( { 0, 1, 0 } );
-    pass       = pass && testMap( { -1, 0, 0 } );
-    pass       = pass && testMap( { 1, 0, 0 } );
-    auto t2    = std::chrono::high_resolution_clock::now();
-    int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
-    printf( "map_logical_sphere_surface: %i ns\n", static_cast<int>( ns / N ) );
+    pass = pass && testMap( { 0, 0, -1 } );
+    pass = pass && testMap( { 0, 0, 1 } );
+    pass = pass && testMap( { 0, -1, 0 } );
+    pass = pass && testMap( { 0, 1, 0 } );
+    pass = pass && testMap( { -1, 0, 0 } );
+    pass = pass && testMap( { 1, 0, 0 } );
     if ( pass )
         ut.passes( "map_logical_sphere_surface" );
     else

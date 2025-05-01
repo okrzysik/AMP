@@ -37,6 +37,7 @@ COPY_TEST_FILE( input_LogicalMesh )
 
 # Copy meshes
 IF ( AMP_DATA )
+    COPY_MESH_FILE( brick.e )
     COPY_MESH_FILE( pellet_1x.e )
     COPY_MESH_FILE( clad_1x_1pellet.e )
     COPY_MESH_FILE( clad_1x_2pellet.e )

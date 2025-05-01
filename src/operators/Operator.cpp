@@ -101,17 +101,16 @@ AMP::LinearAlgebra::Vector::shared_ptr
 Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
     PROFILE( "subsetOutputVector", 1 );
-    auto var = getOutputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr retvec;
+    // Subset for mesh (if set)
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, vec->getName() );
-        auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
-        retvec             = varSubsetVec;
-    } else {
-        retvec = vec->subsetVectorForVariable( var );
+        vec = vec->select( meshSelector );
     }
-    return retvec;
+    // Subset for variable (if set)
+    auto var = getOutputVariable();
+    if ( var )
+        vec = vec->subsetVectorForVariable( var );
+    return vec;
 }
 
 
@@ -119,17 +118,16 @@ AMP::LinearAlgebra::Vector::shared_ptr
 Operator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
     PROFILE( "subsetInputVector", 1 );
-    auto var = getInputVariable();
-    AMP::LinearAlgebra::Vector::shared_ptr retvec;
+    // Subset for mesh (if set)
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, vec->getName() );
-        auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
-        retvec             = varSubsetVec;
-    } else {
-        retvec = vec->subsetVectorForVariable( var );
+        vec = vec->select( meshSelector );
     }
-    return retvec;
+    // Subset for variable (if set)
+    auto var = getInputVariable();
+    if ( var )
+        vec = vec->subsetVectorForVariable( var );
+    return vec;
 }
 
 
@@ -137,17 +135,16 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
     PROFILE( "constSubsetOutputVector", 1 );
-    auto var = getOutputVariable();
-    AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
+    // Subset for mesh (if set)
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, vec->getName() );
-        auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
-        retvec             = varSubsetVec;
-    } else {
-        retvec = vec->subsetVectorForVariable( var );
+        vec = vec->select( meshSelector );
     }
-    return retvec;
+    // Subset for variable (if set)
+    auto var = getOutputVariable();
+    if ( var )
+        vec = vec->subsetVectorForVariable( var );
+    return vec;
 }
 
 
@@ -155,17 +152,16 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
     PROFILE( "constSubsetInputVector", 1 );
-    auto var = getInputVariable();
-    AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
+    // Subset for mesh (if set)
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, vec->getName() );
-        auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
-        retvec             = varSubsetVec;
-    } else {
-        retvec = vec->subsetVectorForVariable( var );
+        vec = vec->select( meshSelector );
     }
-    return retvec;
+    // Subset for variable (if set)
+    auto var = getInputVariable();
+    if ( var )
+        vec = vec->subsetVectorForVariable( var );
+    return vec;
 }
 
 void Operator::makeConsistent( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )

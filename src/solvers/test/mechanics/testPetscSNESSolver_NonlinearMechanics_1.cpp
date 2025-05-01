@@ -123,9 +123,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
 
         AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
 
-        auto mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
-        auto mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
-        auto mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
+        auto mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ) );
+        auto mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ) );
+        auto mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ) );
 
         double finalMaxU = static_cast<double>( mechUvec->maxNorm() );
         double finalMaxV = static_cast<double>( mechVvec->maxNorm() );

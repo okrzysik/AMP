@@ -218,9 +218,9 @@ static void myTest( AMP::UnitTest *ut )
             }
         }
 
-        auto mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
-        auto mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
-        auto mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
+        auto mechUvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ) );
+        auto mechVvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ) );
+        auto mechWvec = mechNlSolVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ) );
 
         AMP::pout << "Maximum U displacement: " << mechUvec->maxNorm() << std::endl;
         AMP::pout << "Maximum V displacement: " << mechVvec->maxNorm() << std::endl;
