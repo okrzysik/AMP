@@ -71,16 +71,16 @@ public:
         return d_outVariable;
     }
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr
+    AMP::LinearAlgebra::Vector::shared_ptr
     subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr
+    AMP::LinearAlgebra::Vector::shared_ptr
     subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
 
-    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
+    AMP::LinearAlgebra::Vector::const_shared_ptr
     subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
 
-    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
+    AMP::LinearAlgebra::Vector::const_shared_ptr
     subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
 
 
