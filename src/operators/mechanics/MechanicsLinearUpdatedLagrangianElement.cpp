@@ -25,7 +25,6 @@ void MechanicsLinearUpdatedLagrangianElement::computeStressAndStrain(
         d_materialModel->getConstitutiveMatrix( constitutiveMatrix );
 
         /* Compute Strain From Given Displacement */
-
         double dudx = 0;
         double dudy = 0;
         double dudz = 0;
@@ -35,19 +34,18 @@ void MechanicsLinearUpdatedLagrangianElement::computeStressAndStrain(
         double dwdx = 0;
         double dwdy = 0;
         double dwdz = 0;
-
         for ( unsigned int k = 0; k < num_nodes; k++ ) {
-            dudx += ( dispVec[( 3 * k ) + 0] * dphi[k][qp]( 0 ) );
-            dudy += ( dispVec[( 3 * k ) + 0] * dphi[k][qp]( 1 ) );
-            dudz += ( dispVec[( 3 * k ) + 0] * dphi[k][qp]( 2 ) );
+            dudx += dispVec[( 3 * k ) + 0] * dphi[k][qp]( 0 );
+            dudy += dispVec[( 3 * k ) + 0] * dphi[k][qp]( 1 );
+            dudz += dispVec[( 3 * k ) + 0] * dphi[k][qp]( 2 );
 
-            dvdx += ( dispVec[( 3 * k ) + 1] * dphi[k][qp]( 0 ) );
-            dvdy += ( dispVec[( 3 * k ) + 1] * dphi[k][qp]( 1 ) );
-            dvdz += ( dispVec[( 3 * k ) + 1] * dphi[k][qp]( 2 ) );
+            dvdx += dispVec[( 3 * k ) + 1] * dphi[k][qp]( 0 );
+            dvdy += dispVec[( 3 * k ) + 1] * dphi[k][qp]( 1 );
+            dvdz += dispVec[( 3 * k ) + 1] * dphi[k][qp]( 2 );
 
-            dwdx += ( dispVec[( 3 * k ) + 2] * dphi[k][qp]( 0 ) );
-            dwdy += ( dispVec[( 3 * k ) + 2] * dphi[k][qp]( 1 ) );
-            dwdz += ( dispVec[( 3 * k ) + 2] * dphi[k][qp]( 2 ) );
+            dwdx += dispVec[( 3 * k ) + 2] * dphi[k][qp]( 0 );
+            dwdy += dispVec[( 3 * k ) + 2] * dphi[k][qp]( 1 );
+            dwdz += dispVec[( 3 * k ) + 2] * dphi[k][qp]( 2 );
         } // end for k
 
         double uStrain[6];
@@ -64,7 +62,7 @@ void MechanicsLinearUpdatedLagrangianElement::computeStressAndStrain(
             for ( int c = 0; c < 6; c++ ) {
                 uStress[r] += ( constitutiveMatrix[( 6 * r ) + c] * uStrain[c] );
             } // end for c
-        }     // end for r
+        } // end for r
 
         for ( int i = 0; i < 6; i++ ) {
             stressVec[( 6 * qp ) + i] = uStress[i];
@@ -80,87 +78,31 @@ void MechanicsLinearUpdatedLagrangianElement::computeStressAndStrain(
 void MechanicsLinearUpdatedLagrangianElement::printStressAndStrain(
     FILE *fp, const std::vector<double> &dispVec )
 {
-    const std::vector<std::vector<libMesh::RealGradient>> &dphi = ( *d_dphi );
-
-    const auto &xyz = ( *d_xyz );
-
-    d_fe->reinit( d_elem );
-
-    d_materialModel->preLinearElementOperation();
-
-    const unsigned int num_nodes = d_elem->n_nodes();
-
-    for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
-        d_materialModel->preLinearGaussPointOperation();
-
-        double *constitutiveMatrix;
-
-        d_materialModel->getConstitutiveMatrix( constitutiveMatrix );
-
-        /* Compute Strain From Given Displacement */
-
-        double dudx = 0;
-        double dudy = 0;
-        double dudz = 0;
-        double dvdx = 0;
-        double dvdy = 0;
-        double dvdz = 0;
-        double dwdx = 0;
-        double dwdy = 0;
-        double dwdz = 0;
-
-        for ( unsigned int k = 0; k < num_nodes; k++ ) {
-            dudx += ( dispVec[( 3 * k ) + 0] * dphi[k][qp]( 0 ) );
-            dudy += ( dispVec[( 3 * k ) + 0] * dphi[k][qp]( 1 ) );
-            dudz += ( dispVec[( 3 * k ) + 0] * dphi[k][qp]( 2 ) );
-
-            dvdx += ( dispVec[( 3 * k ) + 1] * dphi[k][qp]( 0 ) );
-            dvdy += ( dispVec[( 3 * k ) + 1] * dphi[k][qp]( 1 ) );
-            dvdz += ( dispVec[( 3 * k ) + 1] * dphi[k][qp]( 2 ) );
-
-            dwdx += ( dispVec[( 3 * k ) + 2] * dphi[k][qp]( 0 ) );
-            dwdy += ( dispVec[( 3 * k ) + 2] * dphi[k][qp]( 1 ) );
-            dwdz += ( dispVec[( 3 * k ) + 2] * dphi[k][qp]( 2 ) );
-        } // end for k
-
-        double uStrain[6];
-        uStrain[0] = dudx;
-        uStrain[1] = dvdy;
-        uStrain[2] = dwdz;
-        uStrain[3] = 0.5 * ( dvdz + dwdy );
-        uStrain[4] = 0.5 * ( dudz + dwdx );
-        uStrain[5] = 0.5 * ( dudy + dvdx );
-
-        double uStress[6];
-        for ( int r = 0; r < 6; r++ ) {
-            uStress[r] = 0;
-            for ( int c = 0; c < 6; c++ ) {
-                uStress[r] += ( constitutiveMatrix[( 6 * r ) + c] * uStrain[c] );
-            } // end for c
-        }     // end for r
-
-        fprintf( fp, "%.12f %.12f %.12f \n", xyz[qp]( 0 ), xyz[qp]( 1 ), xyz[qp]( 2 ) );
+    size_t N = d_qrule->n_points();
+    std::vector<double> stressVec( N * 6 ), strainVec( N * 6 );
+    computeStressAndStrain( dispVec, stressVec, strainVec );
+    const auto &xyz = *d_xyz;
+    for ( size_t i = 0; i < N; i++ ) {
+        auto stress = &stressVec[6 * i];
+        auto strain = &strainVec[6 * i];
+        fprintf( fp, "%.12f %.12f %.12f \n", xyz[i]( 0 ), xyz[i]( 1 ), xyz[i]( 2 ) );
         fprintf( fp,
                  "%.12f %.12f %.12f %.12f %.12f %.12f \n",
-                 uStress[0],
-                 uStress[1],
-                 uStress[2],
-                 uStress[3],
-                 uStress[4],
-                 uStress[5] );
+                 stress[0],
+                 stress[1],
+                 stress[2],
+                 stress[3],
+                 stress[4],
+                 stress[5] );
         fprintf( fp,
                  "%.12f %.12f %.12f %.12f %.12f %.12f \n\n",
-                 uStrain[0],
-                 uStrain[1],
-                 uStrain[2],
-                 uStrain[3],
-                 uStrain[4],
-                 uStrain[5] );
-
-        d_materialModel->postLinearGaussPointOperation();
-    } // end for qp
-
-    d_materialModel->postLinearElementOperation();
+                 strain[0],
+                 strain[1],
+                 strain[2],
+                 strain[3],
+                 strain[4],
+                 strain[5] );
+    }
 }
 
 void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
@@ -453,9 +395,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
                             ( detJ[0] * materialStiffness[( 3 * k ) + d2][( 3 * j ) + d1] );
 
                     } // end for d2
-                }     // end for k
-            }         // end for d1
-        }             // end for j
+                } // end for k
+            } // end for d1
+        } // end for j
 
         // Adding the stress stiffness matrix to the element stiffness matrix.
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ ) {
@@ -778,9 +720,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Normal()
                         // d1<<"]="<<elementStiffnessMatrix[(3 * k) + d2][(3 * j) + d1]<<std::endl;
 
                     } // end for d2
-                }     // end for k
-            }         // end for d1
-        }             // end for j
+                } // end for k
+            } // end for d1
+        } // end for j
 
         // Adding the stress stiffness matrix to the element stiffness matrix.
         for ( unsigned int i = 0; i < ( 3 * num_nodes ); i++ ) {
