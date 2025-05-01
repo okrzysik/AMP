@@ -254,7 +254,7 @@ NeumannVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::cons
             if ( d_isConstantFlux ) {
                 db->putScalar( stringf( "value_%i_%i", i, j ), d_neumannValues[i][j] );
             } else {
-                // d_variableFlux ??
+                db->putScalar( stringf( "value_%i_%i", i, j ), 0 );
             }
         }
     }
