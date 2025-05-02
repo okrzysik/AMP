@@ -7,7 +7,7 @@
 
 #include <map>
 #include <memory>
-#include <set>
+#include <unordered_map>
 #include <vector>
 
 namespace AMP::LinearAlgebra {
@@ -111,7 +111,13 @@ protected:
     // Internal row accumlator classes
     struct DenseAccumulator {
         DenseAccumulator( int capacity_ )
-            : capacity( capacity_ ), num_inserted( 0 ), flags( capacity, -1 )
+            : capacity( capacity_ ),
+              num_inserted( 0 ),
+              total_inserted( 0 ),
+              total_collisions( 0 ),
+              total_probe_steps( 0 ),
+              total_clears( 0 ),
+              flags( capacity, -1 )
         {
         }
 
@@ -126,13 +132,25 @@ protected:
 
         const lidx_t capacity;
         lidx_t num_inserted;
+        size_t total_inserted;
+        size_t total_collisions;
+        size_t total_probe_steps;
+        size_t total_clears;
         std::vector<lidx_t> flags;
         std::vector<lidx_t> flag_inv;
         std::vector<gidx_t> cols;
     };
 
-    struct SparseAccumulator {
-        SparseAccumulator( int capacity_ ) : capacity( capacity_ ), num_inserted( 0 ) {}
+    struct UMSparseAccumulator {
+        UMSparseAccumulator( int capacity_ )
+            : capacity( capacity_ ),
+              num_inserted( 0 ),
+              total_inserted( 0 ),
+              total_collisions( 0 ),
+              total_probe_steps( 0 ),
+              total_clears( 0 )
+        {
+        }
 
         void insert_or_append( lidx_t, gidx_t gbl );
         void insert_or_append( lidx_t,
@@ -145,7 +163,43 @@ protected:
 
         const lidx_t capacity;
         lidx_t num_inserted;
+        size_t total_inserted;
+        size_t total_collisions;
+        size_t total_probe_steps;
+        size_t total_clears;
         std::unordered_map<gidx_t, lidx_t> kv;
+    };
+
+    struct SparseAccumulator {
+        SparseAccumulator( int capacity_ )
+            : capacity( capacity_ ),
+              num_inserted( 0 ),
+              total_inserted( 0 ),
+              total_collisions( 0 ),
+              total_probe_steps( 0 ),
+              total_clears( 0 ),
+              flags( capacity, 0xFFFF )
+        {
+        }
+
+        uint16_t hash( gidx_t gbl ) const;
+        void insert_or_append( lidx_t, gidx_t gbl );
+        void insert_or_append( lidx_t,
+                               gidx_t gbl,
+                               scalar_t val,
+                               gidx_t *col_space,
+                               scalar_t *val_space,
+                               lidx_t max_pos );
+        void clear();
+
+        const uint16_t capacity;
+        uint16_t num_inserted;
+        size_t total_inserted;
+        size_t total_collisions;
+        size_t total_probe_steps;
+        size_t total_clears;
+        std::vector<uint16_t> flags;
+        std::vector<gidx_t> cols;
     };
 };
 

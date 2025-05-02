@@ -3,12 +3,16 @@
 
 #include "AMP/matrices/data/CSRMatrixCommunicator.h"
 
+#include "ProfilerApp.h"
+
 namespace AMP::LinearAlgebra {
 
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::sendMatrices(
     const std::map<int, std::shared_ptr<DiagMatrixData>> &matrices )
 {
+    PROFILE( "CSRMatrixCommunicator::sendMatrices" );
+
     // At present we allow that the held communication list refer to a
     // super-set of the communications that need to be sent. First count
     // how many sources we actually expect
@@ -35,6 +39,8 @@ template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::countSources(
     const std::map<int, std::shared_ptr<DiagMatrixData>> &matrices )
 {
+    PROFILE( "CSRMatrixCommunicator::countSources" );
+
     // verify that send list actually contains all destinations
     for ( [[maybe_unused]] const auto &it : matrices ) {
         AMP_DEBUG_INSIST( std::find( d_allowed_dest.begin(), d_allowed_dest.end(), it.first ) !=
@@ -80,6 +86,8 @@ CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::recvMatrices(
     typename Policy::gidx_t first_col,
     typename Policy::gidx_t last_col )
 {
+    PROFILE( "CSRMatrixCommunicator::recvMatrices" );
+
     using lidx_t = typename Policy::lidx_t;
     using gidx_t = typename Policy::gidx_t;
 
