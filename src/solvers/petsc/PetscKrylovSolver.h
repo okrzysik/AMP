@@ -153,6 +153,8 @@ public:
 
     bool usesPreconditioner( void ) { return d_bUsesPreconditioner; }
 
+    void setZeroInitialGuess( bool use_zero_guess ) override;
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
     void initializePreconditioner( std::shared_ptr<const SolverStrategyParameters> parameters );

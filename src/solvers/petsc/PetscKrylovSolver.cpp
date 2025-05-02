@@ -239,6 +239,8 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // Check input vector states
     AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
+    // this register operation seems to be necessary for Petsc mat shell operations
+    // to somehow work
     if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
@@ -416,6 +418,13 @@ void PetscKrylovSolver::resetOperator(
     if ( d_pPreconditioner ) {
         d_pPreconditioner->resetOperator( params );
     }
+}
+
+void PetscKrylovSolver::setZeroInitialGuess( bool use_zero_guess )
+{
+    d_bUseZeroInitialGuess    = use_zero_guess;
+    PetscBool useNonzeroGuess = ( !d_bUseZeroInitialGuess ) ? PETSC_TRUE : PETSC_FALSE;
+    checkErr( KSPSetInitialGuessNonzero( d_KrylovSolver, useNonzeroGuess ) );
 }
 
 void PetscKrylovSolver::initializePreconditioner(
