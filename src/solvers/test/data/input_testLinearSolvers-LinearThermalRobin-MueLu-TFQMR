@@ -1,3 +1,10 @@
 <<< "input_LinearThermalRobinOperator" >>>
 <<< "TFQMRParameters" >>>
 <<< "PC-MueLuParameters" >>>
+
+Reference{
+  iterations = 6
+  res_l2_norm = 7.02626e-10
+  tolerance = 2.0e-10
+  strict = FALSE
+}

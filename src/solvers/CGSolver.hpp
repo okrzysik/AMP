@@ -156,7 +156,8 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     auto k = -1;
 
-    for ( d_iNumberIterations = 0; d_iNumberIterations < d_iMaxIterations; ++d_iNumberIterations ) {
+    for ( d_iNumberIterations = 1; d_iNumberIterations <= d_iMaxIterations;
+          ++d_iNumberIterations ) {
 
         ++k;
         p->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
@@ -190,8 +191,8 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // compute the current residual norm
         d_dResidualNorm = static_cast<T>( r->L2Norm() );
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "CG: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
-                      << d_dResidualNorm << std::endl;
+            AMP::pout << "CG: iteration " << d_iNumberIterations << ", residual " << d_dResidualNorm
+                      << std::endl;
         }
 
         // check if converged

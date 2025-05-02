@@ -1,3 +1,10 @@
 <<< "input_LinearThermalRobinOperator" >>>
 <<< "PetscFGMRESParameters" >>>
 <<< "PC-MueLuParameters" >>>
+
+Reference{
+  iterations = 10
+  res_l2_norm = 2.085761625746e-09
+  tolerance = 2.0e-09
+  strict = FALSE
+}

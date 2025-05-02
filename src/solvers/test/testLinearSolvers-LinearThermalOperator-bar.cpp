@@ -78,7 +78,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     mlSolver->setZeroInitialGuess( false );
     mlSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    checkConvergence( mlSolver.get(), inputFileName, *ut );
+    checkConvergence( mlSolver.get(), input_db, inputFileName, *ut );
 
     // check the solution
     auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );

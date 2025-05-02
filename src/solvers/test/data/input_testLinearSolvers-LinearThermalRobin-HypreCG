@@ -8,3 +8,10 @@ LinearSolver{
   max_iterations = 50  
   print_info_level = 2
 }
+
+Reference{
+  iterations = 25
+  res_l2_norm = -1.0
+  tolerance = 0.0
+  strict = FALSE
+}
