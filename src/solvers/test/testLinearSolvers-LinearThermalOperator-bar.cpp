@@ -1,19 +1,9 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/MeshParameters.h"
-#include "AMP/operators/ElementOperationFactory.h"
-#include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/boundary/DirichletMatrixCorrection.h"
-#include "AMP/operators/diffusion/DiffusionLinearElement.h"
-#include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionTransportModel.h"
-#include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
@@ -30,16 +20,13 @@
 #include <limits>
 #include <string>
 
-#define ITFAILS ut.failure( __LINE__ );
-#define UNIT_TEST( a ) \
-    if ( !( a ) )      \
-        ut.failure( __LINE__ );
-
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
     // Input and output file names
     std::string input_file = inputFileName;
     std::string log_file   = "output_" + inputFileName;
+
+    AMP::pout << "Running with input " << input_file << std::endl;
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -91,7 +78,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     mlSolver->setZeroInitialGuess( false );
     mlSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
-    checkConvergence( mlSolver.get(), inputFileName, *ut );
+    checkConvergence( mlSolver.get(), input_db, inputFileName, *ut );
 
     // check the solution
     auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );

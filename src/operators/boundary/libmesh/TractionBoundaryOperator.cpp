@@ -132,7 +132,7 @@ TractionBoundaryOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr
     if ( vec != nullptr ) {
         if ( d_Mesh ) {
             AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-            auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
+            auto meshSubsetVec = vec->select( meshSelector );
             return meshSubsetVec->subsetVectorForVariable( var );
         } else {
             return vec->subsetVectorForVariable( var );

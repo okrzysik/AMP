@@ -1,4 +1,4 @@
-############################################################################
+###########################################################################
 ############################################################################
 #  Configure tests
 
@@ -6,20 +6,32 @@
 COPY_TEST_FILE( CGParameters )
 COPY_TEST_FILE( GMRESParameters )
 COPY_TEST_FILE( FGMRESParameters )
-COPY_TEST_FILE( PetscFGMRESParameters )
 COPY_TEST_FILE( BiCGSTABParameters )
 COPY_TEST_FILE( TFQMRParameters )
 COPY_TEST_FILE( GMRESRParameters )
+COPY_TEST_FILE( PetscFGMRESParameters )
+COPY_TEST_FILE( PetscCGParameters )
+COPY_TEST_FILE( PetscBiCGSTABParameters )
 COPY_TEST_FILE( PC-BoomerAMGParameters )
 COPY_TEST_FILE( PC-MLParameters )
 COPY_TEST_FILE( PC-MueLuParameters )
 
 # Copy test inputs
 COPY_TEST_FILE( input_LinearElasticityOperator-1 )
+
 COPY_TEST_FILE( input_LinearFickOperator-bar )
+
 COPY_TEST_FILE( input_LinearThermalOperator-bar )
 COPY_TEST_FILE( input_LinearThermalRobinOperator )
 COPY_TEST_FILE( input_LinearThermalRobinOperator-CylMesh )
+
+COPY_TEST_FILE( input_NonlinearFick-cylinder-1a )
+COPY_TEST_FILE( input_NonlinearFick-cylinder-1b )
+COPY_TEST_FILE( input_NonlinearFick-cylinder-1c )
+COPY_TEST_FILE( input_NonlinearFick-cylinder-1d )
+
+COPY_TEST_FILE( input_PetscSNESSolver)
+COPY_TEST_FILE( input_TrilinosNOXSolver)
 
 COPY_TEST_FILE( input_testAMGuniform)
 COPY_TEST_FILE( input_testLinearRobinBoundaryOperator-1 )
@@ -28,12 +40,23 @@ COPY_TEST_FILE( input_testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_k
 COPY_TEST_FILE( input_NKA-BoomerAMG-NonlinearThermal-cylinder_MATPRO )
 COPY_TEST_FILE( input_NKA-TrilinosML-NonlinearThermal-cylinder_MATPRO )
 COPY_TEST_FILE( input_PetscSNESSolver-NonlinearThermal-cylinder_MATPRO petsc/data )
-COPY_TEST_FILE( input_PetscSNESSolver-BoomerAMG-NonlinearThermal-cylinder_MATPRO petsc/data )
-COPY_TEST_FILE( input_PetscSNESSolver-TrilinosML-NonlinearThermal-cylinder_MATPRO petsc/data )
+COPY_TEST_FILE( input_PetscSNESSolver-NonlinearThermal-cylinder_MATPRO2 petsc/data )
+COPY_TEST_FILE( input_PetscSNESSolver-BoomerAMG-NonlinearThermal-cylinder_MATPRO2 )
+COPY_TEST_FILE( input_PetscSNESSolver-BoomerAMG-NonlinearThermal-cylinder_MATPRO )
+COPY_TEST_FILE( input_PetscSNESSolver-TrilinosML-NonlinearThermal-cylinder_MATPRO )
+COPY_TEST_FILE( input_TrilinosNOX-TrilinosML-NonlinearThermal-cylinder_MATPRO )
+
 COPY_TEST_FILE( input_testPetscSNESSolver-JFNK-ML-NonlinearMechanics-1-normal mechanics/data )
 COPY_TEST_FILE( input_testPetscSNESSolver-JFNK-BoomerAMG-NonlinearMechanics-1-normal mechanics/data )
+
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-1a )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-1b )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-1c )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-1d )
+
 COPY_TEST_FILE( input_NKASolver-ML-NonlinearMechanics-1-normal mechanics/data )
 COPY_TEST_FILE( input_NKASolver-BoomerAMG-NonlinearMechanics-1-normal mechanics/data )
+
 COPY_TEST_FILE( input_testColumnSolver-LinearThermalAndFick-1 )
 COPY_TEST_FILE( inputNonlinearKrylovAccelerator1 )
 COPY_TEST_FILE( inputNonlinearKrylovAccelerator2 )
@@ -68,6 +91,7 @@ COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-GMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-FGMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-TFQMR )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-PetscCG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES )
 
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu )
@@ -78,6 +102,7 @@ COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-FGMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-PetscCG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-MueLu-PetscFGMRES )
 
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG )
@@ -98,8 +123,10 @@ COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-HypreCG )
-COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-PetscFGMRES )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscCG )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscBiCGSTAB )
 
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-CG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-FCG )
@@ -109,6 +136,8 @@ COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-GMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-FGMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-TFQMR )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-PetscCG )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-PetscFGMRES )
 
 COPY_TEST_FILE( input_testLinearSolvers-PL-AmpMesh-CG )
 COPY_TEST_FILE( input_testLinearSolvers-PL-AmpMesh-BoomerAMG )
@@ -175,6 +204,10 @@ IF ( USE_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearMechanics-1 PROCS 2 )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearMechanics-1 PROCS 4 )
 
+    ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 1 )
+    ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 2 )
+    ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 4 )
+
     ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-NonlinearFickSoret-2 )
 
 IF( USE_TRILINOS )
@@ -190,15 +223,16 @@ ENDIF()
 
 ENDIF()
 
+IF( USE_TRILINOS OR USE_PETSC )
+    ADD_AMP_TEST( testNonlinearSolversWithIdentity )
+ENDIF()
+
 ADD_AMP_TEST( testNewFrozenVectorDesign )
 FINALIZE_TESTBUILDER()
 
 # Add subdirectories
 IF ( USE_PETSC )
     ADD_SUBDIRECTORY( petsc )
-ENDIF()
-IF ( USE_TRILINOS )
-    ADD_SUBDIRECTORY( trilinos )
 ENDIF()
 ADD_SUBDIRECTORY( mechanics )
 ADD_SUBDIRECTORY( flow )

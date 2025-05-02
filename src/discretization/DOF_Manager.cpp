@@ -205,7 +205,7 @@ std::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
 std::shared_ptr<DOFManager> DOFManager::subset( const std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                                                 bool useMeshComm )
 {
-    if ( mesh.get() == nullptr )
+    if ( !mesh || !getMesh() )
         return std::shared_ptr<DOFManager>();
     // Get a list of the elements in the mesh
     auto subsetIterator = mesh->isMember( getIterator() );

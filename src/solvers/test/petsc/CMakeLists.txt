@@ -3,13 +3,8 @@
 ############################################################################
 
 # Copy test inputs
-COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO2 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO_clad )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermalOxygenDiffusion-2 )
-COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-1a )
-COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-1b )
-COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-1c )
-COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-1d )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-1 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-2 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-1 )
@@ -18,8 +13,6 @@ COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-3 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-1 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-BLog-1 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermal-cylinder_kIsOne )
-COPY_TEST_FILE( input_PetscSNESSolver-BoomerAMG-NonlinearThermal-cylinder_MATPRO )
-COPY_TEST_FILE( input_PetscSNESSolver-TrilinosML-NonlinearThermal-cylinder_MATPRO )
 COPY_TEST_FILE( inputPetscKrylovSolver1 )
 COPY_TEST_FILE( inputPetscKrylovSolver2 )
 COPY_TEST_FILE( inputPetscSNESSolver1 )
@@ -35,7 +28,6 @@ COPY_TEST_FILE( petsc_options6 )
 COPY_TEST_FILE( petsc_options7 )
 COPY_TEST_FILE( petsc_options8 )
 COPY_TEST_FILE( petsc_options9 )
-COPY_TEST_FILE( input_testPetscSNESSolver )
 
 
 # Copy test data
@@ -52,15 +44,10 @@ ENDIF()
 
 # Add the tests
 INITIALIZE_TESTBUILDER()
-IF ( AMP_DATA )
-    ADD_TB_TEST_1_2_4( testPetscSNESSolver )
-ENDIF()
 IF ( USE_LIBMESH AND USE_TRILINOS AND AMP_DATA )
-    ADD_TB_TEST( testPetscSNESSolver_NonlinearThermal_2 PROCS 8 )
-    ADD_TB_TEST( testPetscSNESSolver_NonlinearFick PROCS 8 )
-    ADD_TB_TEST( testPetscSNESSolver_NonlinearFickSoret_1 PROCS 4 )
     ADD_TB_TEST( testPetscSNESSolver_NonlinearFickSoret_1 )
     ADD_TB_TEST( testPetscSNESSolver_NonlinearFickSoret_1 PROCS 2)
+    ADD_TB_TEST( testPetscSNESSolver_NonlinearFickSoret_1 PROCS 4 )
     ADD_TB_TEST_1_2_4( testPetscSNESSolver_NonlinearFickSoret_2 )
     ADD_TB_PROVISIONAL_TEST( testPetscSNESSolver_IncompressibleFlow )
 ENDIF()

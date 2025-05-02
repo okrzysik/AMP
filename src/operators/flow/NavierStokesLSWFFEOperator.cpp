@@ -231,8 +231,7 @@ NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_p
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
-            vec->select( meshSelector, var->getName() );
+        auto meshSubsetVec = vec->select( meshSelector );
         return meshSubsetVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -245,8 +244,7 @@ NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_sh
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
-            vec->select( meshSelector, var->getName() );
+        auto meshSubsetVec = vec->select( meshSelector );
         return meshSubsetVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );

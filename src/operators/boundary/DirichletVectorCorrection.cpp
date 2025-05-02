@@ -193,12 +193,17 @@ DirichletVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::co
         db->putScalar( stringf( "id_%i", i ), d_boundaryIds[i] );
     for ( int i = 0; i < (int) d_dofIds.size(); i++ ) {
         db->putScalar( stringf( "number_of_dofs_%i", i ), d_dofIds[i].size() );
-        for ( int j = 0; j < (int) d_dofIds[i].size(); j++ )
+        for ( int j = 0; j < (int) d_dofIds[i].size(); j++ ) {
             db->putScalar( stringf( "dof_%i_%i", i, j ), d_dofIds[i][j] );
+            db->putScalar( stringf( "value_%i_%i", i, j ), 0 );
+        }
     }
     for ( int i = 0; i < (int) d_dirichletValues1.size(); i++ ) {
         for ( int j = 0; j < (int) d_dirichletValues1[i].size(); j++ )
-            db->putScalar( stringf( "value_%i_%i", i, j ), d_dirichletValues1[i][j] );
+            db->putScalar( stringf( "value_%i_%i", i, j ),
+                           d_dirichletValues1[i][j],
+                           {},
+                           AMP::Database::Check::Overwrite );
     }
 
     auto outParams = std::make_shared<DirichletMatrixCorrectionParameters>( db );
@@ -214,7 +219,7 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::shared_pt
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, ( vec->getVariable() )->getName() );
+        auto meshSubsetVec = vec->select( meshSelector );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         return varSubsetVec;
     } else {
@@ -228,7 +233,7 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_sha
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, ( vec->getVariable() )->getName() );
+        auto meshSubsetVec = vec->select( meshSelector );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         return varSubsetVec;
     } else {

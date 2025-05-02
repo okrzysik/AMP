@@ -104,7 +104,7 @@ void HyprePCGSolver::initialize( std::shared_ptr<const SolverStrategyParameters>
     if ( parameters->d_pNestedSolver ) {
         d_pPreconditioner = parameters->d_pNestedSolver;
     } else {
-        if ( d_bUsesPreconditioner ) {
+        if ( d_bUsesPreconditioner && !d_bDiagScalePC ) {
             auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
             auto outerDB = db->keyExists( pcName ) ? db : parameters->d_global_db;
             if ( outerDB ) {

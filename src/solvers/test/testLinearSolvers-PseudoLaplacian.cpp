@@ -96,7 +96,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Solve the problem.
     linearSolver->apply( rhs, sol );
 
-    checkConvergence( linearSolver.get(), inputFileName, *ut );
+    checkConvergence( linearSolver.get(), input_db, inputFileName, *ut );
 }
 
 int main( int argc, char *argv[] )

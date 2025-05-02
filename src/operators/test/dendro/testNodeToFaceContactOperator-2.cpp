@@ -429,8 +429,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     double yDisplacementHelper = input_db->getWithDefault<double>( "yDisplacementHelper", 0.0 );
     if ( yDisplacementHelper != 0.0 ) {
-        auto yDispVec = columnSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "help" );
-        yDispVec      = yDispVec->select( AMP::LinearAlgebra::VS_Mesh( slaveMeshAdapter ), "help" );
+        auto yDispVec = columnSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ) );
+        yDispVec      = yDispVec->select( AMP::LinearAlgebra::VS_Mesh( slaveMeshAdapter ) );
         yDispVec->setToScalar( yDisplacementHelper );
         contactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         yDispVec->zero();
