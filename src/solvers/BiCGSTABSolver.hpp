@@ -86,7 +86,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     PROFILE( "BiCGSTABSolver<T>::apply" );
 
     // Always zero before checking stopping criteria for any reason
-    d_iNumberIterations = 0;
+    d_iNumberIterations = 1;
 
     // Check input vector states
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
@@ -145,7 +145,8 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> p_hat, s, s_hat, t;
 
-    for ( d_iNumberIterations = 0; d_iNumberIterations < d_iMaxIterations; ++d_iNumberIterations ) {
+    for ( d_iNumberIterations = 1; d_iNumberIterations <= d_iMaxIterations;
+          ++d_iNumberIterations ) {
 
         rho[1] = static_cast<T>( r_tilde->dot( *res ) );
 
@@ -165,7 +166,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             continue;
         }
 
-        if ( d_iNumberIterations == 0 ) {
+        if ( d_iNumberIterations == 1 ) {
             // NOTE: there are differences in the literature in what the initial p is
             // Van der Vorst, Eigen, Petsc : p = 0
             // J. Vogel, J. Chen et. al on FBiCGSTAB: p = res
@@ -245,8 +246,8 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         res_norm = static_cast<T>( res->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "BiCGSTAB: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
-                      << res_norm << std::endl;
+            AMP::pout << "BiCGSTAB: iteration " << d_iNumberIterations << ", residual " << res_norm
+                      << std::endl;
         }
 
         // break if the residual is low enough

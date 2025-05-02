@@ -80,7 +80,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     PROFILE( "TFQMRSolver<T>::apply" );
 
     // Always zero before checking stopping criteria for any reason
-    d_iNumberIterations = 0;
+    d_iNumberIterations = 1;
 
     // Check input vector states
     AMP_ASSERT( ( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
