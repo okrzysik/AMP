@@ -2,6 +2,9 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/Utilities.h"
 
+#include <cstdio>
+#include <string>
+
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
     #include <Kokkos_Core.hpp>
 #endif
@@ -12,7 +15,7 @@ namespace AMP::Utilities {
 
 #if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
 static bool AMP_CalledKokkosInit = false;
-void initializeKokkos( int &argc_in, char *argv_in[] )
+void initializeKokkos( int &argc_in, char *argv_in[], const AMPManagerProperties &properties )
 {
     if ( !Kokkos::is_initialized() ) {
         // Copy the input arguments, swap the kokkos arguments to the end,
@@ -35,9 +38,16 @@ void initializeKokkos( int &argc_in, char *argv_in[] )
             setThreads = setThreads || strncmp( argv[i], "--kokkos-threads", 16 ) == 0;
             setThreads = setThreads || strncmp( argv[i], "--kokkos-num-threads", 20 ) == 0;
         }
-        char defaultThreads[] = "--kokkos-num-threads=3";
-        if ( !setThreads )
-            argv[argc++] = defaultThreads;
+        char threadArg[1024];
+        if ( !setThreads ) {
+            int N_threads = 1;
+            if ( properties.default_OpenMP_threads != 0 )
+                N_threads = properties.default_OpenMP_threads;
+            if ( properties.default_Kokkos_threads != 0 )
+                N_threads = properties.default_Kokkos_threads;
+            snprintf( threadArg, sizeof( threadArg ), "--kokkos-num-threads=%i\n", N_threads );
+            argv[argc++] = threadArg;
+        }
         // Initialize kokkos
         Kokkos::initialize( argc, argv );
         AMP_CalledKokkosInit = true;
@@ -50,9 +60,23 @@ void finalizeKokkos()
     if ( AMP_CalledKokkosInit && !Kokkos::is_finalized() )
         Kokkos::finalize();
 }
+bool isKokkosInitialized() { return Kokkos::is_initialized() || AMP_CalledKokkosInit; }
+bool KokkosInitializedOpenMP()
+{
+    #ifdef KOKKOS_ENABLE_OPENMP
+    return isKokkosInitialized() && Kokkos::is_execution_space<Kokkos::OpenMP>::value;
+    #else
+    return false;
+    #endif
+}
+bool KokkosEnabled() { return true; }
 #else
-void initializeKokkos( int &, char *[] ) {}
+void initializeKokkos( int &, char *[], const AMPManagerProperties & ) {}
 void finalizeKokkos() {}
+bool KokkosEnabled() { return false; }
+bool isKokkosInitialized() { return false; }
+bool KokkosInitializedOpenMP() { return false; }
+
 #endif
 
 } // namespace AMP::Utilities

@@ -64,6 +64,8 @@ int LIBMESH_MICRO_VERSION = 0;
 {
     if ( version.size() > 0 ) {
         auto it = version.begin();
+        out << '.' << *it;
+        ++it;
         for ( ; it != version.end(); ++it )
             out << '.' << *it;
     }
