@@ -3,8 +3,8 @@
 <<< "PC-MLParameters" >>>
 
 Reference{
-  iterations = 5
-  res_l2_norm = 1.27898867439474e-09
+  iterations = 6
+  res_l2_norm = 0.0
   tolerance = 2.0e-10
   strict = FALSE
 }
