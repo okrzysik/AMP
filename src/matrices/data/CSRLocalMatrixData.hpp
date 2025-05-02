@@ -248,13 +248,18 @@ CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
     auto block         = ( *blocks.begin() ).second;
     const auto mem_loc = block->d_memory_location;
     lidx_t num_rows    = 0;
+    bool all_empty     = block->isEmpty();
     for ( auto it : blocks ) {
         block = it.second;
         AMP_DEBUG_INSIST( mem_loc == block->d_memory_location,
                           "Blocks to concatenate must be in same memory space" );
-        AMP_INSIST( block->d_cols.get(),
-                    "Blocks to concatenate must have accessible global columns" );
         num_rows += block->d_num_rows;
+        all_empty = all_empty && block->isEmpty();
+    }
+
+    // extreme edge case where every requested row happened to be empty
+    if ( all_empty ) {
+        return nullptr;
     }
 
     // create output matrix

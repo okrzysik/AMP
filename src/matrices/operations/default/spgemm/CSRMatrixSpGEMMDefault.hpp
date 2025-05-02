@@ -47,23 +47,26 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
     if ( A->hasOffDiag() ) {
         PROFILE( "CSRMatrixSpGEMMDefault::symbolicMultiply (A_offd)" );
         endBRemoteComm();
-        C_offd_diag = std::make_shared<DiagMatrixData>( nullptr,
-                                                        C->getMemoryLocation(),
-                                                        C->beginRow(),
-                                                        C->endRow(),
-                                                        C->beginCol(),
-                                                        C->endCol(),
-                                                        true );
-        C_offd_offd = std::make_shared<DiagMatrixData>( nullptr,
-                                                        C->getMemoryLocation(),
-                                                        C->beginRow(),
-                                                        C->endRow(),
-                                                        C->beginCol(),
-                                                        C->endCol(),
-                                                        false );
-
-        multiply<SparseAccumulator, true>( A_offd, BR_diag, C_offd_diag );
-        multiply<SparseAccumulator, true>( A_offd, BR_offd, C_offd_offd );
+        if ( BR_diag.get() != nullptr ) {
+            C_offd_diag = std::make_shared<DiagMatrixData>( nullptr,
+                                                            C->getMemoryLocation(),
+                                                            C->beginRow(),
+                                                            C->endRow(),
+                                                            C->beginCol(),
+                                                            C->endCol(),
+                                                            true );
+            multiply<SparseAccumulator, true>( A_offd, BR_diag, C_offd_diag );
+        }
+        if ( BR_offd.get() != nullptr ) {
+            C_offd_offd = std::make_shared<DiagMatrixData>( nullptr,
+                                                            C->getMemoryLocation(),
+                                                            C->beginRow(),
+                                                            C->endRow(),
+                                                            C->beginCol(),
+                                                            C->endCol(),
+                                                            false );
+            multiply<SparseAccumulator, true>( A_offd, BR_offd, C_offd_offd );
+        }
     }
 }
 
@@ -95,8 +98,12 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMul
         if ( d_need_comms ) {
             endBRemoteComm();
         }
-        multiply<SparseAccumulator, false>( A_offd, BR_diag, C_offd_diag );
-        multiply<SparseAccumulator, false>( A_offd, BR_offd, C_offd_offd );
+        if ( BR_diag.get() != nullptr ) {
+            multiply<SparseAccumulator, false>( A_offd, BR_diag, C_offd_diag );
+        }
+        if ( BR_offd.get() != nullptr ) {
+            multiply<SparseAccumulator, false>( A_offd, BR_offd, C_offd_offd );
+        }
     }
     mergeDiag<DenseAccumulator>();
     mergeOffd<SparseAccumulator>();
@@ -501,17 +508,6 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::endBRemote
         nullptr, d_recv_matrices, B->beginCol(), B->endCol(), true );
     BR_offd = CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
         nullptr, d_recv_matrices, B->beginCol(), B->endCol(), false );
-    const auto A_col_map_size = A->getOffdMatrix()->numUniqueColumns();
-    if ( A_col_map_size != static_cast<lidx_t>( BR_diag->endRow() ) ) {
-        int num_reqd = 0;
-        for ( auto it = d_src_info.begin(); it != d_src_info.end(); ++it ) {
-            num_reqd += it->second.numrow;
-        }
-        std::cout << "Rank " << comm.getRank() << " expected last row " << A_col_map_size << " got "
-                  << BR_diag->endRow() << " requested " << num_reqd << std::endl;
-
-        AMP_ERROR( "BRemote has wrong ending row" );
-    }
 
     // comms are done and BR_{diag,offd} filled, deallocate send/recv blocks
     d_send_matrices.clear();
@@ -526,7 +522,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::DenseAccum
     insert_or_append( typename Policy::lidx_t loc, typename Policy::gidx_t gbl )
 {
     using lidx_t = typename Policy::lidx_t;
-    
+
     AMP_DEBUG_ASSERT( loc >= 0 );
 
     const auto k = flags[loc];
@@ -553,7 +549,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::DenseAccum
                       [[maybe_unused]] typename Policy::lidx_t max_pos )
 {
     using lidx_t = typename Policy::lidx_t;
-    
+
     AMP_DEBUG_ASSERT( loc >= 0 );
 
     const auto k = flags[loc];
@@ -590,8 +586,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
 {
     auto it = kv.find( gbl );
     if ( it == kv.end() ) {
-      kv[gbl] = num_inserted;
-      num_inserted++;
+        kv[gbl] = num_inserted;
+        num_inserted++;
     }
 }
 
@@ -612,7 +608,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
         kv.insert( std::make_pair( gbl, num_inserted ) );
         col_space[num_inserted] = gbl;
         val_space[num_inserted] = val;
-	num_inserted++;
+        num_inserted++;
     }
 }
 
