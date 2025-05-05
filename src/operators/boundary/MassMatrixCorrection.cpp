@@ -75,7 +75,8 @@ void MassMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> para
             auto neighbors = bnd->getNeighbors();
 
             for ( auto &neighbor : neighbors ) {
-                AMP_ASSERT( ( *( neighbor ) ) != ( *bnd ) );
+                if ( neighbor )
+                    AMP_ASSERT( *neighbor != *bnd );
             } // end for el
 
             for ( unsigned int j = 0; j < d_dofIds[k].size(); ++j ) {
@@ -92,6 +93,8 @@ void MassMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> para
                     }
                 } // end for i
                 for ( auto &neighbor : neighbors ) {
+                    if ( !neighbor )
+                        continue;
                     std::vector<size_t> nhDofIds;
                     dof_map->getDOFs( neighbor->globalID(), nhDofIds );
                     for ( auto &nhDofId : nhDofIds ) {
