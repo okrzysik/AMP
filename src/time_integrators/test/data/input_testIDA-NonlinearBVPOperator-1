@@ -1,25 +1,23 @@
-
 Mesh{
-  FileName = "unitCubeDirichlet.e"
-  MeshName = "ida"
-  MeshType = "libMesh"
-  dim      = 3        
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 1000
+    MeshName  = "ida"
+    MeshType  = "AMP"
+    Generator = "cube"
+    dim       = 3
+    Size      = 10, 10, 10
+    Range     = -0.5, 0.5, -0.5, 0.5, -0.5, 0.5
+    surfaceIds = 10, 10, 10, 10, 10, 10
+    static = TRUE
 }
 
-
 NeutronicsOperator{
-  name="NeutronicsRhsOperator"
-  type               = "Power"
-  OutputVariable     = "SpecificPowerInWattsPerGram"
-  numTimeSteps       = 2
-  timeSteps          = 1, 10000.
-  useFixedValue      = TRUE
-  fixedValues        = 100., 2.0
-  print_info_level   = 3
+    name="NeutronicsRhsOperator"
+    type               = "Power"
+    OutputVariable     = "SpecificPowerInWattsPerGram"
+    numTimeSteps       = 2
+    timeSteps          = 1, 10000.
+    useFixedValue      = TRUE
+    fixedValues        = 100., 2.0
+    print_info_level   = 3
 }
 
 VolumeIntegralOperator{
@@ -170,7 +168,7 @@ MassLinearFEOperator {
 
     MassElement {
         name = "MassLinearElement"
-		print_info_level = 3
+        print_info_level = 3
         TransportAtGaussPoints = TRUE
         FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
@@ -192,7 +190,7 @@ MassDensityModel{
 //        UseBilogScaling = TRUE
 //        BilogVariable = "concentration"
        BilogScaleCoefficient = FALSE
-	   print_info_level = 3
+       print_info_level = 3
 }
 
 MassMatrixCorrection{
@@ -209,25 +207,25 @@ MassMatrixCorrection{
 }
 
 IDATimeIntegrator{
-                name = "IDATimeIntegrator"
-		linear_solver_type		= 1
-		relative_tolerance		= 1.00e-10
-		absolute_tolerance		= 1.00e-16
-		initial_time 			= 0.0
-                final_time			= 100.0
-		max_integrator_steps		= 10000
-                initial_dt                      = 0.01
-		max_dt				= 10.0
-		min_dt				= 1.0e-08
-		bLinearMassOperator             = TRUE
-                bLinearRhsOperator              = FALSE
-//              createLinearTimeOperatorInternally=TRUE
-                CallCalcIC                      = TRUE
-  Preconditioner{
+    name = "IDATimeIntegrator"
+    linear_solver_type        = 1
+    relative_tolerance        = 1.00e-10
+    absolute_tolerance        = 1.00e-16
+    initial_time             = 0.0
+            final_time            = 100.0
+    max_integrator_steps        = 10000
+            initial_dt                      = 0.01
+    max_dt                = 10.0
+    min_dt                = 1.0e-08
+    bLinearMassOperator             = TRUE
+    bLinearRhsOperator              = FALSE
+//  createLinearTimeOperatorInternally=TRUE
+    CallCalcIC                      = TRUE
+    Preconditioner{
         print_info_level = 0
         max_iterations = 1
         max_error = 1e-10
-   }
+    }
 }
 
 
