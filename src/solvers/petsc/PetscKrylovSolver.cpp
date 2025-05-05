@@ -128,7 +128,8 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
             checkErr( KSPGMRESSetCGSRefinementType( d_KrylovSolver, KSP_GMRES_CGS_REFINE_ALWAYS ) );
         }
     } else if ( d_sKspType == "bcgs" ) {
-        //        checkErr( KSPSetNormType( d_KrylovSolver, KSP_NORM_NONE ) );
+    } else if ( d_sKspType == "cg" ) {
+        d_PcSide = "LEFT";
     } else if ( d_sKspType == "preonly" ) {
         // if only preconditioner, override preconditioner side
         d_PcSide = "LEFT";
@@ -238,6 +239,8 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // Check input vector states
     AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
+    // this register operation seems to be necessary for Petsc mat shell operations
+    // to somehow work
     if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
@@ -415,6 +418,13 @@ void PetscKrylovSolver::resetOperator(
     if ( d_pPreconditioner ) {
         d_pPreconditioner->resetOperator( params );
     }
+}
+
+void PetscKrylovSolver::setZeroInitialGuess( bool use_zero_guess )
+{
+    d_bUseZeroInitialGuess    = use_zero_guess;
+    PetscBool useNonzeroGuess = ( !d_bUseZeroInitialGuess ) ? PETSC_TRUE : PETSC_FALSE;
+    checkErr( KSPSetInitialGuessNonzero( d_KrylovSolver, useNonzeroGuess ) );
 }
 
 void PetscKrylovSolver::initializePreconditioner(

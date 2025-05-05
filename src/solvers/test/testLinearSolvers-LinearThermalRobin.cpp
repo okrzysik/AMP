@@ -82,7 +82,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
     }
 
-    checkConvergence( linearSolver.get(), inputFileName, *ut );
+    checkConvergence( linearSolver.get(), input_db, input_file, *ut );
 }
 
 int main( int argc, char *argv[] )
@@ -129,11 +129,15 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
     #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
+            //        files.emplace_back(
+            //        "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscBiCGSTAB" );
     #endif
 #endif
 
 #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
 #endif
 
@@ -147,6 +151,7 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
     #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
     #endif
 #endif
@@ -161,6 +166,7 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
     #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-PetscFGMRES" );
     #endif
 #endif

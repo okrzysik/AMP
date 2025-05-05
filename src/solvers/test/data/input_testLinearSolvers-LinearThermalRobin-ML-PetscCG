@@ -1,5 +1,5 @@
 <<< "input_LinearThermalRobinOperator" >>>
-<<< "CGParameters" >>>
+<<< "PetscCGParameters" >>>
 <<< "PC-MLParameters" >>>
 
 Reference{

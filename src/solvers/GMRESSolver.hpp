@@ -105,7 +105,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     PROFILE( "GMRESSolver<T>::apply" );
 
     // Always zero before checking stopping criteria for any reason
-    d_iNumberIterations = 0;
+    d_iNumberIterations = 1;
 
     // Check input vector states
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
@@ -161,7 +161,8 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto v_norm = beta;
 
     int k = 0;
-    for ( d_iNumberIterations = 0; d_iNumberIterations < d_iMaxIterations; ++d_iNumberIterations ) {
+    for ( d_iNumberIterations = 1; d_iNumberIterations <= d_iMaxIterations;
+          ++d_iNumberIterations ) {
 
         AMP::LinearAlgebra::Vector::shared_ptr v;
         AMP::LinearAlgebra::Vector::shared_ptr zb;
@@ -244,8 +245,8 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v_norm = std::fabs( d_dw[k + 1] );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "GMRES: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
-                      << v_norm << std::endl;
+            AMP::pout << "GMRES: iteration " << d_iNumberIterations << ", residual " << v_norm
+                      << std::endl;
         }
 
         ++k;

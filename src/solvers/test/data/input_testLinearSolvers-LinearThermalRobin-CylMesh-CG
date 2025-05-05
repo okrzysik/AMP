@@ -9,3 +9,10 @@ LinearSolver{
   max_iterations = 100
 }
 
+Reference{
+  iterations = 88
+  res_l2_norm = 2.4806061595639e-09
+  tolerance = 3.0e-10
+  strict = TRUE
+}
+
