@@ -68,7 +68,6 @@ COPY_TEST_FILE( input_linearThermalDiffusion+FickDiffusion-UO2MSRZC09-1 )
 
 # Copy test data
 IF ( AMP_DATA )
-    COPY_MESH_FILE( brick.e )
     COPY_MESH_FILE( cylinder4K.e )
 ENDIF()
 

@@ -1,8 +1,8 @@
 Mesh {
-MeshType = "libMesh"
-dim = 3
-MeshName = "TestMesh"
-FileName = "brick.e"
+    MeshType = "libMesh"
+    dim = 3
+    MeshName = "TestMesh"
+    FileName = "brick.e"
 }
 
 BVPOperator {
