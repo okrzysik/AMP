@@ -1,10 +1,13 @@
 // Database for the mesh
-Mesh{
+Mesh {
     MeshName = "mesh"
-    MeshType = "libMesh"
-    FileName = "brick.e"
+    MeshType = "AMP"
+    Generator = "cube"
     dim = 3
-    NumberOfElements = 100
+    Size = 8, 8, 17
+    Range = -5, 5, -5, 5, -10, 10
+    surfaceIds = 8, 8, 8, 8, 8, 8
+    static = TRUE
 }
   
 LinearDiffusionOp{

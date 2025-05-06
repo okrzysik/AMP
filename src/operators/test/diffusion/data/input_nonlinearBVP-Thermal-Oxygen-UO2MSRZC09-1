@@ -1,14 +1,13 @@
 // Database for the mesh
-Mesh{
-    // This is the main multimesh that will contain all meshes
+Mesh {
     MeshName = "brick"
-    MeshType = "libMesh"
-    FileName = "brick.e"
+    MeshType = "AMP"
+    Generator = "cube"
     dim = 3
-    x_offset = 0.0
-    y_offset = 0.0
-    z_offset = 0.0
-    NumberOfElements = 80
+    Size = 8, 8, 17
+    Range = -5, 5, -5, 5, -10, 10
+    surfaceIds = 8, 8, 8, 8, 8, 8
+    static = TRUE
 }
 
 testNonlinearThermalOperator {
