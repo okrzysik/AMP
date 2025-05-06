@@ -2,6 +2,10 @@
 
 #include "ProfilerApp.h"
 
+#ifndef CSRSPGEMM_REPORT_SPACC_STATS
+    #define CSRSPGEMM_REPORT_SPACC_STATS 0
+#endif
+
 namespace AMP::LinearAlgebra {
 
 template<typename Policy, class Allocator, class DiagMatrixData>
@@ -215,7 +219,6 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
     }
     AMP_ASSERT( B_cols != nullptr || B_cols_loc != nullptr ); // otherwise just need one of them
 
-
     auto B_colmap          = B_data->getColumnMap();
     auto B_colmap_size     = B_data->numUniqueColumns();
     const auto B_first_col = B_data->beginCol();
@@ -239,7 +242,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
     };
 
     // Create accumulator with appropriate capacity
-    lidx_t acc_cap = use_dense ? ( B_is_diag ? B_data->numLocalColumns() : B_colmap_size ) : 128;
+    lidx_t acc_cap =
+        use_dense ? ( B_is_diag ? B_data->numLocalColumns() : B_colmap_size ) : SPACC_SIZE;
     Accumulator acc( acc_cap );
 
     // Finally, after all the setup do the actual computation
@@ -262,6 +266,17 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
             acc.clear();
         }
         C_data->setNNZ( true );
+#if CSRSPGEMM_REPORT_SPACC_STATS
+        if ( !use_dense && ( acc.total_collisions > 0 || acc.total_grows > 0 ) ) {
+            AMP::pout << "\nSparseAcc stats:\n"
+                      << "  Insertions: " << acc.total_inserted << "\n"
+                      << "  Collisions: " << acc.total_collisions << "\n"
+                      << "      Probes: " << acc.total_probe_steps << "\n"
+                      << "      Clears: " << acc.total_clears << "\n"
+                      << "       Grows: " << acc.total_grows << "\n"
+                      << std::endl;
+        }
+#endif
     } else {
         // Otherwise, for numeric call write directly into C by
         // passing pointers into cols and coeffs fields as workspace
@@ -418,7 +433,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::mergeOffd(
     C_rs                                                       = C_offd->getRowStarts();
 
     // Create allocator with space for C_offd operations
-    Accumulator acc( 128 );
+    Accumulator acc( SPACC_SIZE );
 
     // loop over all rows and count unique NZ positions in each
     for ( lidx_t row = 0; row < nRows; ++row ) {
@@ -438,6 +453,18 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::mergeOffd(
     // allocate space in matrix
     C_offd->setNNZ( true );
 
+    // report accumulator stats if useful
+#if CSRSPGEMM_REPORT_SPACC_STATS
+    if ( acc.total_collisions > 0 || acc.total_grows > 0 ) {
+        AMP::pout << "\nSparseAcc stats:\n"
+                  << "  Insertions: " << acc.total_inserted << "\n"
+                  << "  Collisions: " << acc.total_collisions << "\n"
+                  << "      Probes: " << acc.total_probe_steps << "\n"
+                  << "      Clears: " << acc.total_clears << "\n"
+                  << "       Grows: " << acc.total_grows << "\n"
+                  << std::endl;
+    }
+#endif
     // pull result fields out
     lidx_t *C_cols_loc;
     gidx_t *C_cols;
@@ -672,12 +699,12 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
             cols[loc_new] = gbl;
         }
         ++num_inserted;
-#if 0
+#if CSRSPGEMM_REPORT_SPACC_STATS
         ++total_inserted;
 #endif
     } else {
         // location occupied, linear probe to empty or gbl found
-#if 0
+#if CSRSPGEMM_REPORT_SPACC_STATS
         if ( cols[flag] != gbl ) {
             ++total_collisions;
         }
@@ -688,7 +715,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
             }
             pos  = ( pos + 1 ) % capacity;
             flag = flags[pos];
-#if 0
+#if CSRSPGEMM_REPORT_SPACC_STATS
             ++total_probe_steps;
 #endif
         } while ( flag != 0xFFFF );
@@ -700,7 +727,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
             cols[num_inserted] = gbl;
         }
         ++num_inserted;
-#if 0
+#if CSRSPGEMM_REPORT_SPACC_STATS
         ++total_inserted;
 #endif
     }
@@ -749,13 +776,13 @@ template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccumulator::grow(
     typename Policy::gidx_t *col_space )
 {
-#if 0
+#if CSRSPGEMM_REPORT_SPACC_STATS
     ++total_grows;
 #endif
 
     uint16_t old_capacity = capacity;
     capacity *= 2;
-    std::vector<uin16_t> old_flags( capacity, 0xFFFF );
+    std::vector<uint16_t> old_flags( capacity, 0xFFFF );
     flags.swap( old_flags );
     for ( uint16_t n = 0; n < old_capacity; ++n ) {
         // insert all existing global local pairs into new flags vector
@@ -783,7 +810,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccumulator::clear()
 {
-#if 0
+#if CSRSPGEMM_REPORT_SPACC_STATS
     total_clears++;
 #endif
     num_inserted = 0;
@@ -791,3 +818,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
 }
 
 } // namespace AMP::LinearAlgebra
+
+#ifdef CSRSPGEMM_REPORT_SPACC_STATS
+    #undef CSRSPGEMM_REPORT_SPACC_STATS
+#endif

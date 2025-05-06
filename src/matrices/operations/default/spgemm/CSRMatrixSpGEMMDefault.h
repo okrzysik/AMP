@@ -118,6 +118,7 @@ protected:
               total_collisions( 0 ),
               total_probe_steps( 0 ),
               total_clears( 0 ),
+              total_grows( 0 ),
               flags( capacity, -1 )
         {
         }
@@ -137,10 +138,14 @@ protected:
         size_t total_collisions;
         size_t total_probe_steps;
         size_t total_clears;
+        size_t total_grows;
         std::vector<lidx_t> flags;
         std::vector<lidx_t> flag_inv;
         std::vector<gidx_t> cols;
     };
+
+    // default starting size for sparse accumulators
+    static constexpr lidx_t SPACC_SIZE = 512;
 
     struct SparseAccumulator {
         SparseAccumulator( int capacity_ )
@@ -150,6 +155,7 @@ protected:
               total_collisions( 0 ),
               total_probe_steps( 0 ),
               total_clears( 0 ),
+              total_grows( 0 ),
               flags( capacity, 0xFFFF )
         {
             AMP_DEBUG_ASSERT( capacity > 1 );
