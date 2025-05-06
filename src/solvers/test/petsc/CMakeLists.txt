@@ -4,7 +4,6 @@
 
 # Copy test inputs
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO_clad )
-COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermalOxygenDiffusion-2 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-1 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-2 )
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-1 )
