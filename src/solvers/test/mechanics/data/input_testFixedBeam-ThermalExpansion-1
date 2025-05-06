@@ -1,7 +1,3 @@
-
-//mesh_file = "mesh7elem-1"
-//mesh_file = "oneBrick0"
-
 NumberOfLoadingSteps = 10
 
 Mesh {

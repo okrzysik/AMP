@@ -167,7 +167,6 @@ IF ( AMP_DATA )
     COPY_MESH_FILE( cylinder8640.e )
     COPY_MESH_FILE( cube.with.12.boundaries.e )
     COPY_MESH_FILE( cube.with.12.boundaries.2.e )
-    COPY_MESH_FILE( brick.e )
 ENDIF()
 
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 1 )
