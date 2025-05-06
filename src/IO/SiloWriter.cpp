@@ -262,7 +262,7 @@ void SiloIO::writeMesh( DBfile *fid, const baseMeshData &data, int cycle, double
         for ( int j = 0; j < varSize; ++j )
             var[j] = nullptr;
         const char *varnames[] = { "1", "2", "3" };
-        if ( varType > mesh->getGeomType() ) {
+        if ( varType > mesh->getGeomType() || varSize == 0 ) {
             // We have a mixed mesh type and there will be no data of the given type for this mesh
             continue;
         } else if ( varType == AMP::Mesh::GeomType::Vertex ) {
