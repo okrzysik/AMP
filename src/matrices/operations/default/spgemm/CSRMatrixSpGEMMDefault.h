@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 namespace AMP::LinearAlgebra {
@@ -39,12 +38,14 @@ public:
 
     void symbolicMultiply();
     void numericMultiply();
+    void numericMultiplyReuse();
 
 protected:
     template<class Accumulator, bool IsSymbolic>
     void multiply( std::shared_ptr<DiagMatrixData> A_data,
                    std::shared_ptr<DiagMatrixData> B_data,
-                   std::shared_ptr<DiagMatrixData> C_data );
+                   std::shared_ptr<DiagMatrixData> C_data,
+                   lidx_t *ctr );
 
     void setupBRemoteComm();
     void startBRemoteComm();
@@ -141,35 +142,6 @@ protected:
         std::vector<gidx_t> cols;
     };
 
-    struct UMSparseAccumulator {
-        UMSparseAccumulator( int capacity_ )
-            : capacity( capacity_ ),
-              num_inserted( 0 ),
-              total_inserted( 0 ),
-              total_collisions( 0 ),
-              total_probe_steps( 0 ),
-              total_clears( 0 )
-        {
-        }
-
-        void insert_or_append( lidx_t, gidx_t gbl );
-        void insert_or_append( lidx_t,
-                               gidx_t gbl,
-                               scalar_t val,
-                               gidx_t *col_space,
-                               scalar_t *val_space,
-                               lidx_t max_pos );
-        void clear();
-
-        const lidx_t capacity;
-        lidx_t num_inserted;
-        size_t total_inserted;
-        size_t total_collisions;
-        size_t total_probe_steps;
-        size_t total_clears;
-        std::unordered_map<gidx_t, lidx_t> kv;
-    };
-
     struct SparseAccumulator {
         SparseAccumulator( int capacity_ )
             : capacity( capacity_ ),
@@ -180,6 +152,7 @@ protected:
               total_clears( 0 ),
               flags( capacity, 0xFFFF )
         {
+            AMP_DEBUG_ASSERT( capacity > 1 );
         }
 
         uint16_t hash( gidx_t gbl ) const;
@@ -192,14 +165,18 @@ protected:
                                lidx_t max_pos );
         void clear();
 
-        const uint16_t capacity;
+        uint16_t capacity;
         uint16_t num_inserted;
         size_t total_inserted;
         size_t total_collisions;
         size_t total_probe_steps;
         size_t total_clears;
+        size_t total_grows;
         std::vector<uint16_t> flags;
         std::vector<gidx_t> cols;
+
+    private:
+        void grow( gidx_t *col_space );
     };
 };
 

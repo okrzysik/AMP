@@ -192,12 +192,11 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData>::matMultiply(
     auto bcPair = std::make_pair( csrDataB, csrDataC );
     if ( d_SpGEMMHelpers.find( bcPair ) == d_SpGEMMHelpers.end() ) {
         d_SpGEMMHelpers[bcPair] = CSRMatrixSpGEMMHelperDefault( csrDataA, csrDataB, csrDataC );
-        // d_SpGEMMHelpers[bcPair].symbolicMultiply();
+        d_SpGEMMHelpers[bcPair].symbolicMultiply();
+        d_SpGEMMHelpers[bcPair].numericMultiply();
+    } else {
+        d_SpGEMMHelpers[bcPair].numericMultiplyReuse();
     }
-
-    // remove next and re-enable skipping symbolic phase above when supported
-    d_SpGEMMHelpers[bcPair].symbolicMultiply();
-    d_SpGEMMHelpers[bcPair].numericMultiply();
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>

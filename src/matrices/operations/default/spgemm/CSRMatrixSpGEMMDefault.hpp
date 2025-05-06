@@ -2,8 +2,6 @@
 
 #include "ProfilerApp.h"
 
-#include <iostream>
-
 namespace AMP::LinearAlgebra {
 
 template<typename Policy, class Allocator, class DiagMatrixData>
@@ -37,8 +35,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
 
     {
         PROFILE( "CSRMatrixSpGEMMDefault::symbolicMultiply (A_diag)" );
-        multiply<DenseAccumulator, true>( A_diag, B_diag, C_diag_diag );
-        multiply<DenseAccumulator, true>( A_diag, B_offd, C_diag_offd );
+        multiply<DenseAccumulator, true>( A_diag, B_diag, C_diag_diag, nullptr );
+        multiply<DenseAccumulator, true>( A_diag, B_offd, C_diag_offd, nullptr );
     }
 
     if ( A->hasOffDiag() ) {
@@ -52,7 +50,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
                                                             C->beginCol(),
                                                             C->endCol(),
                                                             true );
-            multiply<SparseAccumulator, true>( A_offd, BR_diag, C_offd_diag );
+            multiply<SparseAccumulator, true>( A_offd, BR_diag, C_offd_diag, nullptr );
         }
         if ( BR_offd.get() != nullptr ) {
             C_offd_offd = std::make_shared<DiagMatrixData>( nullptr,
@@ -62,7 +60,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::symbolicMu
                                                             C->beginCol(),
                                                             C->endCol(),
                                                             false );
-            multiply<SparseAccumulator, true>( A_offd, BR_offd, C_offd_offd );
+            multiply<SparseAccumulator, true>( A_offd, BR_offd, C_offd_offd, nullptr );
         }
     }
 }
@@ -81,13 +79,11 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMul
     auto A_offd = A->getOffdMatrix();
     auto B_diag = B->getDiagMatrix();
     auto B_offd = B->getOffdMatrix();
-    auto C_diag = C->getDiagMatrix();
-    auto C_offd = C->getOffdMatrix();
 
     {
         PROFILE( "CSRMatrixSpGEMMDefault::numericMultiply (A_diag)" );
-        multiply<DenseAccumulator, false>( A_diag, B_diag, C_diag_diag );
-        multiply<DenseAccumulator, false>( A_diag, B_offd, C_diag_offd );
+        multiply<DenseAccumulator, false>( A_diag, B_diag, C_diag_diag, nullptr );
+        multiply<DenseAccumulator, false>( A_diag, B_offd, C_diag_offd, nullptr );
     }
 
     if ( A->hasOffDiag() ) {
@@ -96,10 +92,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMul
             endBRemoteComm();
         }
         if ( BR_diag.get() != nullptr ) {
-            multiply<SparseAccumulator, false>( A_offd, BR_diag, C_offd_diag );
+            multiply<SparseAccumulator, false>( A_offd, BR_diag, C_offd_diag, nullptr );
         }
         if ( BR_offd.get() != nullptr ) {
-            multiply<SparseAccumulator, false>( A_offd, BR_offd, C_offd_offd );
+            multiply<SparseAccumulator, false>( A_offd, BR_offd, C_offd_offd, nullptr );
         }
     }
     mergeDiag<DenseAccumulator>();
@@ -115,11 +111,67 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMul
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::numericMultiplyReuse()
+{
+    using lidx_t = typename Policy::lidx_t;
+
+    PROFILE( "CSRMatrixSpGEMMDefault::numericMultiply" );
+
+    // start communication to build BRemote before doing anything
+    if ( A->hasOffDiag() && d_need_comms ) {
+        startBRemoteComm();
+    }
+
+    auto A_diag = A->getDiagMatrix();
+    auto A_offd = A->getOffdMatrix();
+    auto B_diag = B->getDiagMatrix();
+    auto B_offd = B->getOffdMatrix();
+    auto C_diag = C->getDiagMatrix();
+    auto C_offd = C->getOffdMatrix();
+
+    // In this version C has already been allocated from merged blocks
+    // This means that the latter two calls need to re-create the
+    // accumulators from the first two before adding their entries.
+    // These counters persist just the length of the partial rows
+    // between calls.
+    const auto nRows = static_cast<lidx_t>( C->numLocalRows() );
+    std::vector<lidx_t> ctr_diag( nRows, 0 ), ctr_offd( nRows, 0 );
+
+    {
+        PROFILE( "CSRMatrixSpGEMMDefault::numericMultiply (A_diag)" );
+        multiply<DenseAccumulator, false>( A_diag, B_diag, C_diag, ctr_diag.data() );
+        multiply<DenseAccumulator, false>( A_diag, B_offd, C_offd, ctr_offd.data() );
+    }
+
+    if ( A->hasOffDiag() ) {
+        PROFILE( "CSRMatrixSpGEMMDefault::numericMultiply (A_offd)" );
+        if ( d_need_comms ) {
+            endBRemoteComm();
+        }
+        if ( BR_diag.get() != nullptr ) {
+            multiply<SparseAccumulator, false>( A_offd, BR_diag, C_diag, ctr_diag.data() );
+        }
+        if ( BR_offd.get() != nullptr ) {
+            multiply<SparseAccumulator, false>( A_offd, BR_offd, C_offd, ctr_offd.data() );
+        }
+    }
+
+    C->globalToLocalColumns();
+    C->resetDOFManagers();
+
+    // set that comms need to be refreshed
+    // assumes that user will only call multiply again if they have changed
+    // the values in A and or B
+    d_need_comms = true;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
 template<class Accumulator, bool IsSymbolic>
 void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
     std::shared_ptr<DiagMatrixData> A_data,
     std::shared_ptr<DiagMatrixData> B_data,
-    std::shared_ptr<DiagMatrixData> C_data )
+    std::shared_ptr<DiagMatrixData> C_data,
+    typename Policy::lidx_t *ctr )
 {
     PROFILE( "CSRMatrixSpGEMMDefault::multiplyBlock" );
 
@@ -187,7 +239,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
     };
 
     // Create accumulator with appropriate capacity
-    lidx_t acc_cap = use_dense ? ( B_is_diag ? B_data->numLocalColumns() : B_colmap_size ) : 1024;
+    lidx_t acc_cap = use_dense ? ( B_is_diag ? B_data->numLocalColumns() : B_colmap_size ) : 128;
     Accumulator acc( acc_cap );
 
     // Finally, after all the setup do the actual computation
@@ -210,26 +262,24 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
             acc.clear();
         }
         C_data->setNNZ( true );
-        if ( acc.total_collisions > 0 ) {
-            AMP::pout << "\nSparseAcc stats:\n"
-                      << "  Insertions: " << acc.total_inserted << "\n"
-                      << "  Collisions: " << acc.total_collisions << "\n"
-                      << "      Probes: " << acc.total_probe_steps << "\n"
-                      << "      Clears: " << acc.total_clears << "\n"
-                      << std::endl;
-        }
     } else {
         // Otherwise, for numeric call write directly into C by
         // passing pointers into cols and coeffs fields as workspace
         // for the accumulator
         for ( lidx_t row = 0; row < nRows; ++row ) {
-            const auto row_len = C_rs[row + 1] - C_rs[row];
-            auto cols          = &C_cols[C_rs[row]];
-            auto vals          = &C_coeffs[C_rs[row]];
+            const auto row_len   = C_rs[row + 1] - C_rs[row];
+            const lidx_t pre_len = ctr == nullptr ? 0 : ctr[row];
+            auto cols            = &C_cols[C_rs[row]];
+            auto vals            = &C_coeffs[C_rs[row]];
             // get rows in B block from the A column indices
             for ( lidx_t j = A_rs[row]; j < A_rs[row + 1]; ++j ) {
                 const auto Acl  = A_cols_loc[j];
                 const auto Aval = A_coeffs[j];
+                // If we are re-using a prior result put those entries
+                // into the accumulator first
+                for ( lidx_t k = 0; k < pre_len; ++k ) {
+                    acc.insert_or_append( k, cols[k], vals[k], cols, vals, row_len );
+                }
                 // then row of C is union of those B row nz patterns
                 for ( lidx_t k = B_rs[Acl]; k < B_rs[Acl + 1]; ++k ) {
                     const auto gbl = B_to_global( k );
@@ -237,6 +287,12 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::multiply(
                     acc.insert_or_append( loc, gbl, Aval * B_coeffs[k], cols, vals, row_len );
                 }
             }
+            // If we are going to re-use this result, increment counter to persist
+            // partial row length
+            if ( ctr != nullptr ) {
+                ctr[row] += acc.num_inserted;
+            }
+            // Clear accumulator to prepare for next row
             acc.clear();
         }
     }
@@ -362,7 +418,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::mergeOffd(
     C_rs                                                       = C_offd->getRowStarts();
 
     // Create allocator with space for C_offd operations
-    Accumulator acc( 1024 );
+    Accumulator acc( 128 );
 
     // loop over all rows and count unique NZ positions in each
     for ( lidx_t row = 0; row < nRows; ++row ) {
@@ -377,14 +433,6 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::mergeOffd(
         // write out row length and clear accumulator
         C_rs[row] += acc.num_inserted;
         acc.clear();
-    }
-    if ( acc.total_collisions > 0 ) {
-        AMP::pout << "\nSparseAcc stats:\n"
-                  << "  Insertions: " << acc.total_inserted << "\n"
-                  << "  Collisions: " << acc.total_collisions << "\n"
-                  << "      Probes: " << acc.total_probe_steps << "\n"
-                  << "      Clears: " << acc.total_clears << "\n"
-                  << std::endl;
     }
 
     // allocate space in matrix
@@ -597,45 +645,6 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::DenseAccum
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::UMSparseAccumulator::
-    insert_or_append( [[maybe_unused]] typename Policy::lidx_t loc, typename Policy::gidx_t gbl )
-{
-    auto it = kv.find( gbl );
-    if ( it == kv.end() ) {
-        kv[gbl] = num_inserted;
-        num_inserted++;
-    }
-}
-
-template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::UMSparseAccumulator::
-    insert_or_append( [[maybe_unused]] typename Policy::lidx_t loc,
-                      typename Policy::gidx_t gbl,
-                      typename Policy::scalar_t val,
-                      typename Policy::gidx_t *col_space,
-                      typename Policy::scalar_t *val_space,
-                      [[maybe_unused]] typename Policy::lidx_t max_pos )
-{
-    auto it = kv.find( gbl );
-    if ( it != kv.end() ) {
-        val_space[it->second] += val;
-    } else {
-        AMP_DEBUG_ASSERT( num_inserted < max_pos );
-        kv.insert( std::make_pair( gbl, num_inserted ) );
-        col_space[num_inserted] = gbl;
-        val_space[num_inserted] = val;
-        num_inserted++;
-    }
-}
-
-template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::UMSparseAccumulator::clear()
-{
-    num_inserted = 0;
-    kv.clear();
-}
-
-template<typename Policy, class Allocator, class DiagMatrixData>
 uint16_t CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccumulator::hash(
     typename Policy::gidx_t gbl ) const
 {
@@ -646,17 +655,21 @@ uint16_t CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::Sparse
 
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccumulator::
-    insert_or_append( [[maybe_unused]] typename Policy::lidx_t loc, typename Policy::gidx_t gbl )
+    insert_or_append( typename Policy::lidx_t loc, typename Policy::gidx_t gbl )
 {
-    uint16_t pos  = hash( gbl );
-    uint16_t flag = flags[pos];
+    if ( num_inserted == capacity ) {
+        grow( cols.data() );
+    }
+
+    const auto loc_new = loc >= 0 ? static_cast<uint16_t>( loc ) : num_inserted;
+    auto pos = hash( gbl ), flag = flags[pos];
     if ( flag == 0xFFFF ) {
         // Location is empty, append
-        flags[pos] = num_inserted;
+        flags[pos] = loc_new;
         if ( cols.size() <= num_inserted ) {
             cols.push_back( gbl );
         } else {
-            cols[num_inserted] = gbl;
+            cols[loc_new] = gbl;
         }
         ++num_inserted;
 #if 0
@@ -691,25 +704,28 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
         ++total_inserted;
 #endif
     }
-    AMP_ASSERT( num_inserted < capacity );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccumulator::
-    insert_or_append( [[maybe_unused]] typename Policy::lidx_t loc,
+    insert_or_append( typename Policy::lidx_t loc,
                       typename Policy::gidx_t gbl,
                       typename Policy::scalar_t val,
                       typename Policy::gidx_t *col_space,
                       typename Policy::scalar_t *val_space,
                       [[maybe_unused]] typename Policy::lidx_t max_pos )
 {
-    uint16_t pos  = hash( gbl );
-    uint16_t flag = flags[pos];
+    if ( num_inserted == capacity ) {
+        grow( col_space );
+    }
+
+    const auto loc_new = loc >= 0 ? static_cast<uint16_t>( loc ) : num_inserted;
+    auto pos = hash( gbl ), flag = flags[pos];
     if ( flag == 0xFFFF ) {
         // Location is empty, append
-        flags[pos]              = num_inserted;
-        col_space[num_inserted] = gbl;
-        val_space[num_inserted] = val;
+        flags[pos]         = loc_new;
+        col_space[loc_new] = gbl;
+        val_space[loc_new] = val;
         ++num_inserted;
     } else {
         // location occupied, linear probe to empty or gbl found
@@ -722,12 +738,46 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccu
             flag = flags[pos];
         } while ( flag != 0xFFFF );
         // gbl never found, have empty slot
-        flags[pos]              = num_inserted;
-        col_space[num_inserted] = gbl;
-        val_space[num_inserted] = val;
+        flags[pos]         = loc_new;
+        col_space[loc_new] = gbl;
+        val_space[loc_new] = val;
         ++num_inserted;
     }
-    AMP_ASSERT( num_inserted < capacity );
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>::SparseAccumulator::grow(
+    typename Policy::gidx_t *col_space )
+{
+#if 0
+    ++total_grows;
+#endif
+
+    uint16_t old_capacity = capacity;
+    capacity *= 2;
+    std::vector<uin16_t> old_flags( capacity, 0xFFFF );
+    flags.swap( old_flags );
+    for ( uint16_t n = 0; n < old_capacity; ++n ) {
+        // insert all existing global local pairs into new flags vector
+        // do it inline since cols/col_space should not be touched,
+        // and nor should the num_inserted value
+        const auto loc = old_flags[n];
+        const auto gbl = col_space[loc];
+        auto pos = hash( gbl ), flag = flags[pos];
+        if ( flag == 0xFFFF ) {
+            // Location is empty, set and carry on
+            flags[pos] = loc;
+        } else {
+            // location occupied, linear probe to empty
+            // Note: must find empty since grow is guaranteed to work with set
+            // of unique columns
+            do {
+                pos  = ( pos + 1 ) % capacity;
+                flag = flags[pos];
+            } while ( flag != 0xFFFF );
+            flags[pos] = loc;
+        }
+    }
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
