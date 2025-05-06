@@ -144,6 +144,8 @@ COPY_TEST_FILE( input_testLinearSolvers-PL-AmpMesh-BoomerAMG )
 COPY_TEST_FILE( input_testLinearSolvers-PL-CylMesh-CG )
 COPY_TEST_FILE( input_testLinearSolvers-PL-CylMesh-BoomerAMG )
 
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermalOxygenDiffusion-2 )
+
 # Copy test data
 IF ( AMP_DATA )
     COPY_MESH_FILE( testAMGmesh5 )
@@ -207,6 +209,8 @@ IF ( USE_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 1 )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 2 )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 4 )
+
+    ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-NonlinearThermalOxygenDiffusion )
 
     ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-NonlinearFickSoret-2 )
 
