@@ -1,13 +1,12 @@
-
 Mesh{
-    FileName = "cube4096.e"
     MeshName = "bar"
-    MeshType = "libMesh"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 4096
+	MeshType = "AMP"
+	Generator = "cube"
+    dim = 3
+	Size = 16, 16, 16
+	Range = -5, 5, -5, 5, -5, 5
+    surfaceIds = 4, 6, 3, 5, 2, 1
+    static = TRUE
 }
 
 NonlinearBVPOperator {

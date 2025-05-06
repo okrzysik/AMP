@@ -12,7 +12,6 @@ COPY_TEST_FILE( input_testThermalRobinFlow-2 )
 
 # Copy test data
 IF ( AMP_DATA )
-    COPY_MESH_FILE( cube343.e )
     COPY_MESH_FILE( cube343H27.e )
     COPY_MESH_FILE( cube343H8.e )
     COPY_MESH_FILE( cube.with.12.boundaries.e )
