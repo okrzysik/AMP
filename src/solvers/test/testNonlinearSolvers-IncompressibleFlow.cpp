@@ -6,18 +6,15 @@
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/boundary/DirichletVectorCorrection.h"
 #include "AMP/operators/flow/NavierStokesLSWFFEOperator.h"
 #include "AMP/operators/flow/NavierStokesLSWFLinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscSNESSolver.h"
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -29,22 +26,19 @@
 #include <memory>
 #include <string>
 
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 
-static void myTest( AMP::UnitTest *ut, const std::string &exeName )
+static void myTest( AMP::UnitTest *ut, const std::string &inputName )
 {
-    std::string input_file = "input_" + exeName;
+    std::string input_file = inputName;
 
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     size_t N_error0 = ut->NumFailLocal();
     auto input_db   = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    //   Create the Mesh.
-    AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    auto mesh_db   = input_db->getDatabase( "Mesh" );
-    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    // create the Mesh
+    const auto meshAdapter = createMesh( input_db );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 10;
@@ -72,13 +66,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto resVec = AMP::LinearAlgebra::createVector( nodalDofMap, flowVariable );
 
     // create the following shared pointers for ease of use
-    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
-    // now construct the linear BVP operator for flow
-    AMP_INSIST( input_db->keyExists( "LinearFlowOperator" ), "key missing!" );
-    auto linearFlowOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearFlowOperator", input_db, flowTransportModel ) );
 
     // Initial guess
     solVec->setToScalar( 0. );
@@ -96,8 +83,22 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( !AMP::Utilities::approx_equal( expectedVal, initialRhsNorm, 1e-5 ) )
         ut->failure( "the rhs norm after modifyRHSvector has changed." );
 
+    // Create the solver
+    auto nonlinearSolver = AMP::Solver::Test::buildSolver(
+        "NonlinearSolver", input_db, globalComm, solVec, nonlinearFlowOperator );
+
+#if 0
+    // now construct the linear BVP operator for flow
+    AMP_INSIST( input_db->keyExists( "LinearFlowOperator" ), "key missing!" );
+    auto linearFlowOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "LinearFlowOperator", input_db, flowTransportModel ) );
+
     // Get the solver databases
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+
+
+
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     // Create the preconditioner
@@ -128,9 +129,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setNestedSolver( linearFlowPreconditioner );
+#endif
 
     nonlinearFlowOperator->residual( rhsVec, solVec, resVec );
-    double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
+    auto initialResidualNorm = static_cast<double>( resVec->L2Norm() );
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
     expectedVal = 3625.84;
@@ -142,14 +144,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearSolver->apply( rhsVec, solVec );
 
-    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
     nonlinearFlowOperator->residual( rhsVec, solVec, resVec );
 
-    double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
-    double finalSolutionNorm = static_cast<double>( solVec->L2Norm() );
-    double finalRhsNorm      = static_cast<double>( rhsVec->L2Norm() );
+    auto finalResidualNorm = static_cast<double>( resVec->L2Norm() );
+    auto finalSolutionNorm = static_cast<double>( solVec->L2Norm() );
+    auto finalRhsNorm      = static_cast<double>( rhsVec->L2Norm() );
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
     std::cout << "Final Solution Norm: " << finalSolutionNorm << std::endl;
@@ -163,21 +162,29 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( "the Final Rhs Norm has changed." );
 
     if ( N_error0 == ut->NumFailLocal() )
-        ut->passes( exeName );
+        ut->passes( inputName );
     else
-        ut->failure( exeName );
+        ut->failure( inputName );
 }
 
-int testPetscSNESSolver_IncompressibleFlow( int argc, char *argv[] )
+int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    std::vector<std::string> exeNames;
-    exeNames.emplace_back( "testPetscSNESSolver-IncompressibleFlow-1" );
+    std::vector<std::string> inputNames;
 
-    for ( auto &exeName : exeNames )
-        myTest( &ut, exeName );
+    if ( argc > 1 ) {
+        inputNames.push_back( argv[1] );
+    } else {
+#ifdef AMP_USE_PETSC
+    #ifdef AMP_USE_TRILINOS_ML
+        inputNames.emplace_back( "input_testPetscSNESSolver-IncompressibleFlow-1" );
+    #endif
+#endif
+    }
+    for ( auto &inputName : inputNames )
+        myTest( &ut, inputName );
 
     ut.report();
 
