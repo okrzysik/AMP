@@ -1,8 +1,4 @@
-
-//mesh_file = "mesh7elem-1"
 mesh_file = "oneBrick0"
-//mesh_file = "distortedBrick0"
-//mesh_file = "twentyBrick0"
 
 NumberOfMeshes = 0
 

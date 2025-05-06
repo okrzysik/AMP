@@ -32,7 +32,6 @@ COPY_TEST_FILE( petsc_options9 )
 
 # Copy test data
 IF ( AMP_DATA )
-    COPY_MESH_FILE( brick.e )
     COPY_MESH_FILE( halden_3pel_clad_1x.e )
     COPY_MESH_FILE( halden_contact_pellet_9mil_1x.e )
     COPY_MESH_FILE( halden_1_pellet_9mil.e )
