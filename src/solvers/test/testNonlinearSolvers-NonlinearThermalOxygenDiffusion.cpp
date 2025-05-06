@@ -14,6 +14,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/testHelpers/SolverTestParameters.h"
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -24,8 +25,6 @@
 #include <memory>
 #include <string>
 
-
-#include "testSolverHelpers.h"
 
 static void myTest( AMP::UnitTest *ut, const std::string &inputName )
 {

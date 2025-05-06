@@ -8,6 +8,7 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/testHelpers/SolverTestParameters.h"
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -16,15 +17,12 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include "testSolverHelpers.h"
-
 #include <fstream>
 #include <iomanip>
 #include <limits>
 #include <memory>
 #include <string>
 
-#include "testSolverHelpers.h"
 
 void linearFickTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {

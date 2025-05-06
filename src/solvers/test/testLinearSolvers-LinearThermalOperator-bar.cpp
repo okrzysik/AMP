@@ -6,15 +6,13 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/testHelpers/SolverTestParameters.h"
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-
-#include "reference_solver_solutions.h"
-#include "testSolverHelpers.h"
 
 #include <iomanip>
 #include <limits>

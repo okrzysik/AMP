@@ -20,7 +20,7 @@
 #include <iostream>
 #include <string>
 
-#include "testSolverHelpers.h"
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 
 void myTest( AMP::UnitTest *ut, const std::string &fileName )
 {
