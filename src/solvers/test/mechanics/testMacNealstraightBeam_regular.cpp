@@ -33,6 +33,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName + ".txt";
 
+    AMP::pout << "Running test with input " << input_file << std::endl;
+
     AMP::logOnlyNodeZero( log_file );
 
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
@@ -104,7 +106,10 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     linearSolverParams->d_pNestedSolver = pcSolver;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
-    linearSolver->setZeroInitialGuess( false );
+    // Petsc either has a bug in the preonly interface for KSP that assumes that
+    // a non-zero initial guess is intended for a petsc preconditioner -we are using
+    // a non-petsc preconditioner or else it's a user error on our part
+    linearSolver->setZeroInitialGuess( true );
 
     linearSolver->apply( mechRhsVec, mechSolVec );
 

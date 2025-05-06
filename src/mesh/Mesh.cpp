@@ -112,7 +112,7 @@ std::vector<double> Mesh::reduceBox( const std::vector<double> &x, const AMP_MPI
 {
     int ndim = x.size() / 2;
     AMP_ASSERT( ndim && (int) x.size() == 2 * ndim );
-    double localMin[3], localMax[3], globalMin[3], globalMax[3];
+    double localMin[3] = { 0 }, localMax[3] = { 0 }, globalMin[3] = { 0 }, globalMax[3] = { 0 };
     for ( int d = 0; d < ndim; d++ ) {
         localMin[d] = x[2 * d + 0];
         localMax[d] = x[2 * d + 1];

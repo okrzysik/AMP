@@ -95,6 +95,26 @@ public:
      */
     AMP_MPI::Comm COMM_WORLD;
 
+    /*!
+     *  Default number of Kokkos threads to use
+     *  Kokkos OpenMP backend will be initialized according to the following:
+     *     command line arguments: "--threads", "--kokkos-threads", "--kokkos-num-thread"
+     *     OMP_NUM_THREADS environmental value (if set)
+     *     default_Kokkos_threads (if not equal to 0)
+     *     default_OpenMP_threads (if not equal to 0)
+     *     1 thread if none of the above apply
+     */
+    int default_Kokkos_threads = 0;
+
+    /*!
+     *  Default number of OpenMP threads to use
+     *  OpenMP will be initialized according to the following:
+     *     Kokkos (may override OpenMP)
+     *     default_OpenMP_threads (if not equal to 0)
+     *     1 thread if none of the above apply
+     */
+    int default_OpenMP_threads = 0;
+
 private:
     friend class AMPManager;
 };
@@ -206,6 +226,7 @@ private:
     static double start_PETSc();
     static double start_HYPRE();
     static double start_CudaOrHip();
+    static double start_OpenMP();
     static double stop_SAMRAI();
     static double stop_HYPRE();
     static double stop_PETSc();

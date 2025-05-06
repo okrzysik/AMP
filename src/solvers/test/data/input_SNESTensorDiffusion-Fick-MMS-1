@@ -1,12 +1,14 @@
 NumberOfMeshes = 1
 
 Mesh_1{
-  Filename = "cube4096.e"
-  MeshName = "cube"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 4096
+    MeshName = "cube"
+	MeshType = "AMP"
+	Generator = "cube"
+    dim = 3
+	Size = 16, 16, 16
+	Range = -5, 5, -5, 5, -5, 5
+    surfaceIds = 4, 6, 3, 5, 2, 1
+    static = TRUE
 }
 
 FickNonlinearBVPOperator {

@@ -11,20 +11,16 @@ COPY_TEST_FILE( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
 COPY_TEST_FILE( inputIDATimeIntegrator )
 COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
 
-
-# Copy test data
-IF ( AMP_DATA )
-    COPY_MESH_FILE( unitCubeDirichlet.e )
-    COPY_MESH_FILE( simple_linear_thermomech.e )
-ENDIF()
-
-
 # Add the tests
 INITIALIZE_TESTBUILDER()
 ADD_TB_TEST( testSimpleTimeIntegration )
 ADD_TB_TEST_1_2_4( testTimeIntegratorParameters )
 IF ( USE_LAPACK_WRAPPERS )
-    ADD_TB_TEST_1_2_4( testOxideTimeIntegrator )
+    IF ( USE_LAPACK )
+        ADD_TB_TEST_1_2_4( testOxideTimeIntegrator )
+    ELSE()
+        ADD_TB_PROVISIONAL_TEST( testOxideTimeIntegrator )
+    ENDIF()
 ENDIF()
 IF ( USE_SUNDIALS AND USE_LIBMESH AND USE_TRILINOS AND USE_PETSC AND AMP_DATA )
     ADD_TB_TEST( testIDATimeIntegrator )
