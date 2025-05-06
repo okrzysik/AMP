@@ -29,6 +29,12 @@ COPY_TEST_FILE( input_NonlinearFick-cylinder-1a )
 COPY_TEST_FILE( input_NonlinearFick-cylinder-1b )
 COPY_TEST_FILE( input_NonlinearFick-cylinder-1c )
 COPY_TEST_FILE( input_NonlinearFick-cylinder-1d )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-1 )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-2 )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-1 )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-2 )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-3 )
+COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-1 )
 
 COPY_TEST_FILE( input_PetscSNESSolver)
 COPY_TEST_FILE( input_TrilinosNOXSolver)
@@ -164,10 +170,6 @@ IF ( AMP_DATA )
     COPY_MESH_FILE( brick.e )
 ENDIF()
 
-
-# Add the tests
-INITIALIZE_TESTBUILDER()
-
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 1 )
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 2 )
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 4 )
@@ -209,9 +211,8 @@ IF ( USE_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 2 )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 4 )
 
+    ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-IncompressibleFlow )
     ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-NonlinearThermalOxygenDiffusion )
-
-    ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-NonlinearFickSoret-2 )
 
 IF( USE_TRILINOS )
     ADD_AMP_TEST( testAMGuniform )
@@ -231,12 +232,19 @@ IF( USE_TRILINOS OR USE_PETSC )
 ENDIF()
 
 ADD_AMP_TEST( testNewFrozenVectorDesign )
+
+# Add the tests
+INITIALIZE_TESTBUILDER()
+IF ( USE_LIBMESH AND USE_PETSC AND USE_HYPRE AND AMP_DATA )
+    ADD_TB_TEST( testNonlinearSolvers_NonlinearFickSoret_1 )
+    ADD_TB_TEST( testNonlinearSolvers_NonlinearFickSoret_1 PROCS 2)
+    ADD_TB_TEST( testNonlinearSolvers_NonlinearFickSoret_1 PROCS 4 )
+    ADD_TB_TEST( testNonlinearSolvers_NonlinearFickSoret_2 )
+    ADD_TB_TEST( testNonlinearSolvers_NonlinearFickSoret_2 PROCS 2)
+    ADD_TB_TEST( testNonlinearSolvers_NonlinearFickSoret_2 PROCS 4 )
+ENDIF()
 FINALIZE_TESTBUILDER()
 
-# Add subdirectories
-IF ( USE_PETSC )
-    ADD_SUBDIRECTORY( petsc )
-ENDIF()
 ADD_SUBDIRECTORY( mechanics )
 ADD_SUBDIRECTORY( flow )
 ADD_SUBDIRECTORY( subchannel )

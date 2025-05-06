@@ -10,16 +10,14 @@
 #include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/boundary/DirichletVectorCorrection.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscSNESSolver.h"
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#include "AMP/solvers/testHelpers/SolverTestParameters.h"
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -35,10 +33,11 @@
 #include <string>
 
 
-static void fickTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double> &results )
+static void
+fickTest( AMP::UnitTest *ut, const std::string &inputName, std::vector<double> &results )
 {
-    std::string input_file = "input_" + exeName;
-    std::string log_file   = "output_" + exeName;
+    std::string input_file = inputName;
+    std::string log_file   = "output_" + inputName;
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -77,12 +76,6 @@ static void fickTest( AMP::UnitTest *ut, const std::string &exeName, std::vector
     auto rhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
     auto resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
 
-    // now construct the linear BVP operator for fick
-    AMP_INSIST( input_db->keyExists( "testLinearFickOperator" ), "key missing!" );
-    auto linearFickOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testLinearFickOperator", input_db, fickTransportModel ) );
-
     // Initial guess
     solVec->setToScalar( .05 );
     std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
@@ -91,31 +84,9 @@ static void fickTest( AMP::UnitTest *ut, const std::string &exeName, std::vector
     rhsVec->setToScalar( 0.0 );
     nonlinearFickOperator->modifyRHSvector( rhsVec );
 
-    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
-
-    // initialize the nonlinear solver
-    auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
-
-    // change the next line to get the correct communicator out
-    nonlinearSolverParams->d_comm          = globalComm;
-    nonlinearSolverParams->d_pOperator     = nonlinearFickOperator;
-    nonlinearSolverParams->d_pInitialGuess = solVec;
-
-    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
-
-    auto fickPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
-    auto fickPreconditionerParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( fickPreconditioner_db );
-    fickPreconditionerParams->d_pOperator = linearFickOperator;
-    auto linearFickPreconditioner =
-        std::make_shared<AMP::Solver::TrilinosMLSolver>( fickPreconditionerParams );
-
-    // register the preconditioner with the Jacobian free Krylov solver
-    auto linearSolver = nonlinearSolver->getKrylovSolver();
-
-    linearSolver->setNestedSolver( linearFickPreconditioner );
+    // Create the solver
+    auto nonlinearSolver = AMP::Solver::Test::buildSolver(
+        "NonlinearSolver", input_db, globalComm, solVec, nonlinearFickOperator );
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
     AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
@@ -126,7 +97,6 @@ static void fickTest( AMP::UnitTest *ut, const std::string &exeName, std::vector
     std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
     solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // store result
     {
@@ -142,15 +112,15 @@ static void fickTest( AMP::UnitTest *ut, const std::string &exeName, std::vector
         }
     }
 
-    ut->passes( exeName );
+    ut->passes( inputName );
 }
 
 
 static void
-fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double> &results )
+fickSoretTest( AMP::UnitTest *ut, const std::string &inputName, std::vector<double> &results )
 {
-    std::string input_file = "input_" + exeName;
-    std::string log_file   = "output_" + exeName;
+    std::string input_file = inputName;
+    std::string log_file   = "output_" + inputName;
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -183,13 +153,6 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double
     auto soretOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nlinOp->getSoretOperator() );
 
-    // use the linear BVP operator to create a Fick linear operator with bc's
-    AMP_INSIST( input_db->keyExists( "testLinearFickBVPOperator" ), "key missing!" );
-
-    auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "testLinearFickBVPOperator", input_db, elementPhysicsModel );
-    auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
-
     auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto cVar = std::make_shared<AMP::LinearAlgebra::Variable>( *fickOp->getOutputVariable() );
     auto fsOutVar =
@@ -218,31 +181,9 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double
     rhsVec->setToScalar( 0.0 );
     nlinBVPOp->modifyRHSvector( rhsVec );
 
-    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
-
-    // initialize the nonlinear solver
-    auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
-
-    // change the next line to get the correct communicator out
-    nonlinearSolverParams->d_comm          = globalComm;
-    nonlinearSolverParams->d_pOperator     = nlinBVPOp;
-    nonlinearSolverParams->d_pInitialGuess = solVec;
-
-    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
-
-    auto fickPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
-    auto fickPreconditionerParams =
-        std::make_shared<AMP::Solver::SolverStrategyParameters>( fickPreconditioner_db );
-    fickPreconditionerParams->d_pOperator = linBVPOp;
-    auto linearFickPreconditioner =
-        std::make_shared<AMP::Solver::TrilinosMLSolver>( fickPreconditionerParams );
-
-    // register the preconditioner with the Jacobian free Krylov solver
-    auto linearSolver = nonlinearSolver->getKrylovSolver();
-
-    linearSolver->setNestedSolver( linearFickPreconditioner );
+    // Create the solver
+    auto nonlinearSolver = AMP::Solver::Test::buildSolver(
+        "NonlinearSolver", input_db, globalComm, solVec, nlinBVPOperator );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
     AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
@@ -253,7 +194,6 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double
     std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
     solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // store result
     {
@@ -269,22 +209,26 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double
         }
     }
 
-    ut->passes( exeName );
+    ut->passes( inputName );
 }
 
 
-int testPetscSNESSolver_NonlinearFickSoret_1( int argc, char *argv[] )
+int testNonlinearSolvers_NonlinearFickSoret_1( int argc, char **argv )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
     std::vector<double> fickOnly, fickSoretOff, fickSoretZero, fickOnlyReal, fickSoretOffReal;
 
-    fickTest( &ut, "testPetscSNESSolver-NonlinearFick-cylinder-TUI-1", fickOnly );
-    fickTest( &ut, "testPetscSNESSolver-NonlinearFick-cylinder-TUI-2", fickOnlyReal );
-    fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-1", fickSoretOff );
-    fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-2", fickSoretZero );
-    fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-3", fickSoretOffReal );
+    fickTest( &ut, "input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-1", fickOnly );
+    fickTest( &ut, "input_testPetscSNESSolver-NonlinearFick-cylinder-TUI-2", fickOnlyReal );
+    fickSoretTest(
+        &ut, "input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-1", fickSoretOff );
+    fickSoretTest(
+        &ut, "input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-2", fickSoretZero );
+    fickSoretTest(
+        &ut, "input_testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-3", fickSoretOffReal );
+
     AMP_INSIST( fickOnly.size() == fickSoretOff.size() &&
                     fickSoretOff.size() == fickSoretZero.size() &&
                     fickOnlyReal.size() == fickSoretOffReal.size(),
