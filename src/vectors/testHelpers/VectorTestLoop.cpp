@@ -62,6 +62,7 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
         VectorIteratorTests( ut );
         TestMultivectorDuplicate( ut );
         TestContainsGlobalElement( ut );
+        VerifyVectorSetZeroGhosts( ut );
     } catch ( const std::exception &err ) {
         ut->failure( "Caught std::exception testing " + d_factory->name() + ":\n" + err.what() );
     } catch ( ... ) {

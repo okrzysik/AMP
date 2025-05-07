@@ -175,7 +175,12 @@ public:
      * \brief  Return the number of local rows for this communication list
      * \return The number of local d.o.f. for this communication list
      */
-    virtual size_t numLocalRows() const;
+    size_t numLocalRows() const;
+
+    /**
+     * Clears the internal buffers so that they are empty
+     */
+    void clearBuffers();
 
     /**
      * \brief  Return the local index of a shared datum.
