@@ -133,10 +133,11 @@ int testLinearElasticity_patch_2( int argc, char *argv[] )
             AMP::pout << "ERROR: " << err.what() << std::endl;
             ut.failure( "ERROR" );
         } catch ( ... ) {
-            AMP::pout << "ERROR: " << "An unknown exception was thrown." << std::endl;
+            AMP::pout << "ERROR: "
+                      << "An unknown exception was thrown." << std::endl;
             ut.failure( "ERROR" );
         } // end for reduced
-    } // end for i
+    }     // end for i
 
     ut.report();
     int num_failed = ut.NumFailGlobal();

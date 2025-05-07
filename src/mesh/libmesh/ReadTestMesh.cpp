@@ -194,7 +194,7 @@ void readTestMesh( std::shared_ptr<AMP::Database> db, std::shared_ptr<libMesh::M
         for ( int j = 0; j < 8; j++ ) {
             elem->set_node( j ) = mesh->node_ptr( elemNodeMap[i][j] );
         } // end for j
-    } // end for i
+    }     // end for i
 
     for ( int bid = 1; bid <= num_boundaryNodeIds; bid++ ) {
         char key[100];
