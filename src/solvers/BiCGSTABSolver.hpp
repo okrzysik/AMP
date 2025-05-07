@@ -103,23 +103,24 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     }
 
     // compute the current residual norm
-    auto res_norm     = static_cast<T>( res->L2Norm() );
-    auto r_tilde_norm = res_norm;
+    d_dResidualNorm   = res->L2Norm();
+    auto r_tilde_norm = static_cast<T>( d_dResidualNorm );
     // Override zero initial residual to force relative tolerance convergence
     // here to potentially handle singular systems
-    d_dInitialResidual = res_norm > std::numeric_limits<T>::epsilon() ? res_norm : 1.0;
+    d_dInitialResidual =
+        d_dResidualNorm > std::numeric_limits<T>::epsilon() ? d_dResidualNorm : 1.0;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
         AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of rhs vector: " << f->L2Norm()
                   << std::endl;
-        AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of residual " << res_norm
+        AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of residual " << d_dResidualNorm
                   << std::endl;
     }
 
     // return if the residual is already low enough
-    if ( checkStoppingCriteria( res_norm ) ) {
+    if ( checkStoppingCriteria( d_dResidualNorm ) ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
             AMP::pout << "BiCGSTABSolver<T>::solve: initial residual below tolerance" << std::endl;
         }
@@ -160,8 +161,8 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             d_pOperator->residual( f, u, res );
             r_tilde->copyVector( res );
             p->copyVector( res );
-            res_norm = static_cast<T>( res->L2Norm() );
-            rho[1] = r_tilde_norm = res_norm;
+            d_dResidualNorm = res->L2Norm();
+            rho[1] = r_tilde_norm = static_cast<T>( d_dResidualNorm );
             d_restarts++;
             continue;
         }
@@ -208,7 +209,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         // s is residual wrt. h, if good replace u with h
         if ( checkStoppingCriteria( s_norm, false ) ) {
             u->axpy( alpha, *p_hat, *u );
-            res_norm = static_cast<T>( s_norm );
+            d_dResidualNorm = static_cast<T>( s_norm );
             break;
         }
 
@@ -243,15 +244,15 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         res->axpy( -omega, *t, *s );
 
         // compute the current residual norm
-        res_norm = static_cast<T>( res->L2Norm() );
+        d_dResidualNorm = static_cast<T>( res->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "BiCGSTAB: iteration " << d_iNumberIterations << ", residual " << res_norm
-                      << std::endl;
+            AMP::pout << "BiCGSTAB: iteration " << d_iNumberIterations << ", residual "
+                      << d_dResidualNorm << std::endl;
         }
 
         // break if the residual is low enough
-        if ( checkStoppingCriteria( res_norm ) ) {
+        if ( checkStoppingCriteria( d_dResidualNorm ) ) {
             break;
         }
 
@@ -268,18 +269,15 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, res );
-        res_norm = static_cast<T>( res->L2Norm() );
+        d_dResidualNorm = static_cast<T>( res->L2Norm() );
         // final check updates flags if needed
-        checkStoppingCriteria( res_norm );
+        checkStoppingCriteria( d_dResidualNorm );
     }
-
-    // Store final residual should it be queried elsewhere
-    d_dResidualNorm = res_norm;
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         AMP::pout << "BiCGSTABSolver<T>::apply: final L2Norm of solution: " << u->L2Norm()
                   << std::endl;
-        AMP::pout << "BiCGSTABSolver<T>::apply: final L2Norm of residual: " << res_norm
+        AMP::pout << "BiCGSTABSolver<T>::apply: final L2Norm of residual: " << d_dResidualNorm
                   << std::endl;
         AMP::pout << "BiCGSTABSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
         AMP::pout << "BiCGSTABSolver<T>::apply: convergence reason: "
