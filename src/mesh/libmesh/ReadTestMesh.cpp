@@ -109,7 +109,10 @@ void readBinaryTestMesh( const std::string &mesh_file, std::shared_ptr<libMesh::
 void readTestMesh( const std::string &mesh_file, std::shared_ptr<libMesh::Mesh> mesh )
 {
     [[maybe_unused]] auto tmp = AMP::Utilities::randomString();
-    if ( mesh_file == "cookMesh0" ) {
+    if ( mesh_file == "distortedElementMesh" ) {
+        AMP::Mesh::MeshWriters::writeDistortedElement( tmp );
+        readTestMesh( tmp, mesh );
+    } else if ( mesh_file == "cookMesh0" ) {
         AMP::Mesh::MeshWriters::writeCookMesh( 9, 2, 9, tmp );
         readTestMesh( tmp, mesh );
     } else if ( mesh_file == "cookMesh1" ) {

@@ -92,9 +92,9 @@ int main( int argc, char **argv )
         run( "write2elementMesh", { 0.5, 5, 10, 1.0, 2.0, 3.0 }, "outWrite2elementMesh" );
         run( "write3pointConstrainedBox", { 4, 7, 10, 1.0, 2.0, 3.0 }, "out3pointConstrainedBox" );
         run( "writeBox", { 4, 7, 10, 1.0, 2.0, 3.0 }, "outWriteBox" );
-        run( "writeDistortedElementMesh", {}, "outDistortedElementMesh" );
         run( "writeDispValsForPatchTest-2", {}, "outDispValsForPatchTest-2" );
         // Meshes stored in AMP-Data and used by some tests
+        run( "writeDistortedElementMesh", {}, "distortedElementMesh" );
         run( "writeCookMesh", { 9, 2, 9 }, "cookMesh0" );
         run( "writeCookMesh", { 17, 3, 17 }, "cookMesh1" );
         run( "writeCookMesh", { 33, 5, 33 }, "cookMesh2" );
@@ -111,9 +111,9 @@ int main( int argc, char **argv )
         run( "writeAMGMesh", { 17, 17, 17, 10, 10, 10 }, "boxMesh-5" );
     } else {
         std::string exe( argv[1] );
-        std::vector<double> args2( argc - 2 );
+        std::vector<double> args2( argc - 3 );
         for ( size_t i = 0; i < args2.size(); i++ )
-            args2[i] = atof( argv[i + 1] );
+            args2[i] = atof( argv[i + 2] );
         run( exe, args2, argv[argc - 1] );
     }
     return 0;
