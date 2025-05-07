@@ -23,7 +23,7 @@ void BlockOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     d_memory_location = params->d_memory_location;
     Operator::getFromInput( params->d_db );
-    auto myParams     = std::dynamic_pointer_cast<const BlockOperatorParameters>( params );
+    auto myParams = std::dynamic_pointer_cast<const BlockOperatorParameters>( params );
     for ( int i = 0; i < d_iNumRowBlocks; i++ ) {
         for ( int j = 0; j < d_iNumColumnBlocks; j++ ) {
             d_blocks[i][j]->reset( ( myParams->d_blockParams )[i][j] );

@@ -96,7 +96,7 @@ void Operator::getFromInput( std::shared_ptr<AMP::Database> db )
     d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
     if ( db->keyExists( "AccelerationBackend" ) ) {
         auto bcknd = db->getString( "AccelerationBackend" );
-        d_backend   = AMP::Utilities::backendFromString( bcknd );
+        d_backend  = AMP::Utilities::backendFromString( bcknd );
     } else if ( d_backend == AMP::Utilities::Backend::none ) {
         d_backend = AMP::Utilities::getDefaultBackend( d_memory_location );
     }
