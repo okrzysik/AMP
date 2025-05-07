@@ -14,7 +14,7 @@
 
 #include <iomanip>
 
-#include "testSolverHelpers.h"
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 
 void linearElasticTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
