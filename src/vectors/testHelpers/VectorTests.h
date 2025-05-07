@@ -132,6 +132,8 @@ public:
 
     void TestContainsGlobalElement( AMP::UnitTest *utils );
 
+    void VerifyVectorSetZeroGhosts( AMP::UnitTest *utils );
+
 public: // Vector selector tests
     // Test to check that Vector::select, Vector::select, VectorSelector::subset,
     // and VectorSelector::constSubset return the same vectors

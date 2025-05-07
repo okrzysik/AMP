@@ -185,6 +185,20 @@ void GhostDataHelper<TYPE, Allocator>::fillGhosts( const Scalar &scalar )
 
 
 /****************************************************************
+ * Clear ghost buffers                                            *
+ ****************************************************************/
+template<class TYPE, class Allocator>
+void GhostDataHelper<TYPE, Allocator>::setNoGhosts()
+{
+    this->d_Ghosts.clear();
+    this->d_AddBuffer.clear();
+    if ( this->d_CommList ) {
+        this->d_CommList->clearBuffers();
+    }
+}
+
+
+/****************************************************************
  * Check if vector contains a particular element                 *
  ****************************************************************/
 template<class TYPE, class Allocator>
