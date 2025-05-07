@@ -72,6 +72,7 @@ public:
     std::shared_ptr<UpdateState> getUpdateStatusPtr() const override;
     bool containsGlobalElement( size_t ) const override;
     void copyGhostValues( const VectorData &rhs ) override;
+    void setNoGhosts() override;
     bool hasGhosts() const override;
 
 public: // Advanced virtual functions

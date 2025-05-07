@@ -131,7 +131,7 @@ std::shared_ptr<const VectorData> VectorData::getComponent( size_t i ) const
  * reset vector data                                             *
  ****************************************************************/
 void VectorData::reset() {}
-
+void VectorData::setNoGhosts() {}
 void VectorData::print( std::ostream &, const std::string &, const std::string & ) const
 {
     AMP_ERROR( "Not implemented" );

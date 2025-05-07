@@ -72,6 +72,11 @@ size_t MultiVectorData::sizeOfDataBlock( size_t i ) const
     }
     return retVal;
 }
+void MultiVectorData::setNoGhosts()
+{
+    for ( auto &data : d_data )
+        data->setNoGhosts();
+}
 bool MultiVectorData::hasGhosts() const
 {
     bool ans = false;

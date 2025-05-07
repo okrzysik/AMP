@@ -787,6 +787,11 @@ public: // VectorData operations
         d_VectorData->dumpGhostedData( out, offset );
     }
 
+    /**\brief Ensure this vector has no ghosts
+     *\details Calls clearBuffer for the communication list and removes any storage for ghosts
+     */
+    inline void setNoGhosts() { d_VectorData->setNoGhosts(); }
+
 public: // Get values
     /**
      * \brief Return a value from the vector.
