@@ -909,6 +909,18 @@ void VectorTests::VerifyVectorGhostCreate( AMP::UnitTest *ut )
     }
 }
 
+void VectorTests::VerifyVectorSetZeroGhosts( AMP::UnitTest *ut )
+{
+    PROFILE( "VerifyVectorSetZeroGhosts" );
+    AMP_MPI globalComm( AMP_COMM_WORLD );
+    auto vector = d_factory->getVector();
+    vector->setNoGhosts();
+    int num_ghosts = vector->getGhostSize();
+    bool no_ghosts = vector->getVectorData()->hasGhosts();
+    num_ghosts     = globalComm.sumReduce( num_ghosts );
+    PASS_FAIL( no_ghosts && num_ghosts == 0, "verify setNoGhosts " );
+}
+
 
 void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *ut )
 {

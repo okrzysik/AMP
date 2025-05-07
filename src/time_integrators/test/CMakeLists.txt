@@ -11,14 +11,6 @@ COPY_TEST_FILE( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
 COPY_TEST_FILE( inputIDATimeIntegrator )
 COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
 
-
-# Copy test data
-IF ( AMP_DATA )
-    COPY_MESH_FILE( unitCubeDirichlet.e )
-    COPY_MESH_FILE( simple_linear_thermomech.e )
-ENDIF()
-
-
 # Add the tests
 INITIALIZE_TESTBUILDER()
 ADD_TB_TEST( testSimpleTimeIntegration )

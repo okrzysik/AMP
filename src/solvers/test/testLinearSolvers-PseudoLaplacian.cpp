@@ -12,6 +12,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/testHelpers/SolverTestParameters.h"
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -19,10 +20,9 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include <iomanip>
 #include <memory>
 #include <string>
-
-#include "reference_solver_solutions.h"
 
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {

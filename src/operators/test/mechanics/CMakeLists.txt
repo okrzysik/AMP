@@ -25,7 +25,6 @@ COPY_TEST_FILE( input_testNonlinearSwellVonMisesMechanics-1 )
 COPY_TEST_FILE( input_testNonlinearSwellVonMisesMechanics_MatLib-1 )
 COPY_TEST_FILE( input_nonlinearBVP-Mechanics-ThermalStrain-Thermal-Oxygen-UO2MSRZC09-1 )
 COPY_TEST_FILE( input_testNonlinearMechanics-reset-1 )
-
 COPY_TEST_FILE( input_linearMechanics+ThermalDiffusion-TUI-1 )
 COPY_TEST_FILE( input_linearMechanics+ThermalDiffusion-UO2MSRZC09-1 )
 COPY_TEST_FILE( input_linearMechanics+FickDiffusion-TUI-1 )
