@@ -169,6 +169,8 @@ protected:
 
     AMP::Utilities::MemoryType d_memory_location;
 
+    AMP::Utilities::Backend d_backend = AMP::Utilities::Backend::none;
+
 private:
 };
 } // namespace AMP::Operator

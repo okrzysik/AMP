@@ -68,6 +68,7 @@ NeutronicsRhsExtras::~NeutronicsRhsExtras() = default;
 void NeutronicsRhsExtras::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( db );
+    Operator::getFromInput( db );
 
     // define the source type and create the output variable.
     auto str = db->getWithDefault<std::string>( "type", "Power" );

@@ -366,6 +366,7 @@ void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
 {
     AMP_ASSERT( params );
     d_memory_location = params->d_memory_location;
+    Operator::getFromInput( params->d_db );
 
     if ( !d_isInitialized )
         init();

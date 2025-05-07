@@ -96,6 +96,18 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                  AMP::LinearAlgebra::Vector::shared_ptr rightVec,
                  const std::function<std::vector<size_t>( size_t )> &getRow )
 {
+    auto memType = AMP::Utilities::getMemoryType( rightVec->getRawDataBlockAsVoid( 0 ) );
+    auto accelerationBackend = AMP::Utilities::getDefaultBackend( memType );
+    return createCSRMatrix<Policy, Allocator>( leftVec, rightVec, getRow, accelerationBackend );
+}
+
+template<typename Policy, class Allocator>
+std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+                 AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+                 const std::function<std::vector<size_t>( size_t )> &getRow,
+                 AMP::Utilities::Backend accelerationBackend )
+{
     using gidx_t = typename Policy::gidx_t;
     using lidx_t = typename Policy::lidx_t;
 
@@ -147,6 +159,7 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
             getRowCols );
     }
 
+    params->d_backend = accelerationBackend;
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( data );
@@ -168,6 +181,13 @@ createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<void>>(
     AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     const std::function<std::vector<size_t>( size_t )> &getRow );
 
+template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<void>>(
+    AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+    AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+    const std::function<std::vector<size_t>( size_t )> &getRow,
+    AMP::Utilities::Backend accelerationBackend );
+
 #ifdef USE_DEVICE
 template std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator<void>>(
@@ -176,10 +196,24 @@ createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator<void>>(
     const std::function<std::vector<size_t>( size_t )> &getRow );
 
 template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator<void>>(
+    AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+    AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+    const std::function<std::vector<size_t>( size_t )> &getRow,
+    AMP::Utilities::Backend accelerationBackend );
+
+template std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator<void>>(
     AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     const std::function<std::vector<size_t>( size_t )> &getRow );
+
+template std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator<void>>(
+    AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+    AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+    const std::function<std::vector<size_t>( size_t )> &getRow,
+    AMP::Utilities::Backend accelerationBackend );
 #endif
 
 /********************************************************
@@ -280,6 +314,20 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
               std::string type,
               std::function<std::vector<size_t>( size_t )> getRow )
 {
+
+    // Find memory type associated with (right) vector
+    auto memType = AMP::Utilities::getMemoryType( rightVec->getRawDataBlockAsVoid( 0 ) );
+    auto accelerationBackend = AMP::Utilities::getDefaultBackend( memType );
+    return createMatrix( rightVec, leftVec, accelerationBackend, type, getRow );
+}
+
+std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+              AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+              AMP::Utilities::Backend accelerationBackend,
+              std::string type,
+              std::function<std::vector<size_t>( size_t )> getRow )
+{
     if ( type == "auto" )
         type = DEFAULT_MATRIX; // Definition set by CMake variable DEFAULT_MATRIX
     if ( type == "NULL" )
@@ -312,18 +360,18 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         std::function<std::vector<size_t>( size_t )> emptyGetRow;
         if ( memType <= AMP::Utilities::MemoryType::host ) {
             matrix = createCSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<void>>(
-                leftVec, rightVec, useDefaultGetRow ? emptyGetRow : getRow );
+                leftVec, rightVec, useDefaultGetRow ? emptyGetRow : getRow, accelerationBackend );
         } else if ( memType == AMP::Utilities::MemoryType::managed ) {
 #ifdef USE_DEVICE
             matrix = createCSRMatrix<DefaultCSRPolicy, AMP::ManagedAllocator<void>>(
-                leftVec, rightVec, useDefaultGetRow ? emptyGetRow : getRow );
+                leftVec, rightVec, useDefaultGetRow ? emptyGetRow : getRow, accelerationBackend );
 #else
             AMP_ERROR( "Creating CSRMatrix in managed memory requires HIP or CUDA support" );
 #endif
         } else if ( memType == AMP::Utilities::MemoryType::device ) {
 #ifdef USE_DEVICE
             matrix = createCSRMatrix<DefaultCSRPolicy, AMP::DeviceAllocator<void>>(
-                leftVec, rightVec, useDefaultGetRow ? emptyGetRow : getRow );
+                leftVec, rightVec, useDefaultGetRow ? emptyGetRow : getRow, accelerationBackend );
 #else
             AMP_ERROR( "Creating CSRMatrix in device memory requires HIP or CUDA support" );
 #endif

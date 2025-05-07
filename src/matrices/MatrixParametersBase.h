@@ -53,7 +53,7 @@ public:
     std::shared_ptr<Variable> getRightVariable() const { return d_VariableRight; }
 
     // The backend used for cpus and/or gpu acceleration
-    AMP::Utilities::Backend d_backend = AMP::Utilities::Backend::serial;
+    AMP::Utilities::Backend d_backend = AMP::Utilities::Backend::none;
 
 protected:
     // The comm of the matrix

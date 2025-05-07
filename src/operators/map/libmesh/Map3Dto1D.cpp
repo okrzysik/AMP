@@ -35,6 +35,7 @@ void Map3Dto1D::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_ASSERT( params );
     d_memory_location = params->d_memory_location;
+    Operator::getFromInput( params->d_db );
 
     auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
 

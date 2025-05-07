@@ -57,6 +57,7 @@ void SubchannelTwoEqLinearOperator::reset( std::shared_ptr<const OperatorParamet
 {
     AMP_ASSERT( params );
     d_memory_location = params->d_memory_location;
+    Operator::getFromInput( params->d_db );
 
     PROFILE( "reset" );
     d_initialized = true;

@@ -239,7 +239,7 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copyCas
     } else {
         AMP::Utilities::copyCast<scalar_t_in,
                                  scalar_t_out,
-                                 AMP::Utilities::PortabilityBackend::Hip_Cuda,
+                                 AMP::Utilities::AccelerationBackend::Hip_Cuda,
                                  Allocator>( X->numberOfNonZeros(), X_coeffs, Y_coeffs );
     }
 }

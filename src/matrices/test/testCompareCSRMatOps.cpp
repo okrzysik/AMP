@@ -39,7 +39,7 @@
 template<typename Policy, class Allocator>
 void createMatrixAndVectors(
     AMP::UnitTest *ut,
-    AMP::Utilities::Backend portabilityBackend,
+    AMP::Utilities::Backend AccelerationBackend,
     std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
     std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> &matrix,
     std::shared_ptr<AMP::LinearAlgebra::Vector> &x,
@@ -74,7 +74,7 @@ void createMatrixAndVectors(
     // Create the matrix parameters
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
         leftDOF, rightDOF, comm, inVar, outVar, getRow );
-    params->d_backend = portabilityBackend;
+    params->d_backend = AccelerationBackend;
 
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );

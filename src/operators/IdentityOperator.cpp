@@ -17,6 +17,7 @@ IdentityOperator::IdentityOperator( std::shared_ptr<const OperatorParameters> pa
 void IdentityOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     d_memory_location = params->d_memory_location;
+    Operator::getFromInput( params->d_db );
     if ( params->d_db ) {
         if ( params->d_db->keyExists( "InputVariable" ) ) {
             std::string inpVar = params->d_db->getString( "InputVariable" );

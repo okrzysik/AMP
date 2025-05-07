@@ -63,6 +63,7 @@ void PowerShape::reset( std::shared_ptr<const OperatorParameters> parameters )
     AMP_ASSERT( parameters );
     d_memory_location = parameters->d_memory_location;
     d_db              = parameters->d_db;
+    Operator::getFromInput( d_db );
 
     if ( d_coordinateSystem == "cartesian" ) {
 

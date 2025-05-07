@@ -19,7 +19,7 @@ template<typename TypeIn,
          typename ptrIn,
          typename ptrOut,
          typename ExecutionSpace,
-         typename PortabilityBackend>
+         typename AccelerationBackend>
 void runTest( AMP::UnitTest &ut, const std::string &pass_msg )
 {
     AllocatorIn alloc1;
@@ -33,7 +33,7 @@ void runTest( AMP::UnitTest &ut, const std::string &pass_msg )
         v1p[i] = static_cast<TypeIn>( std::rand() ) / static_cast<TypeIn>( RAND_MAX );
 
     // Perform copy-cast
-    AMP::Utilities::copyCast<TypeIn, TypeOut, PortabilityBackend, ExecutionSpace>( 3, v1, v2 );
+    AMP::Utilities::copyCast<TypeIn, TypeOut, AccelerationBackend, ExecutionSpace>( 3, v1, v2 );
     bool pass = true;
     auto tol  = std::numeric_limits<float>::epsilon();
     for ( int i = 0; i < 3; i++ ) {
@@ -53,7 +53,7 @@ template<class AllocatorIn,
          class AllocatorOut,
          typename ptrIn,
          typename ExecutionSpace,
-         typename PortabilityBackend>
+         typename AccelerationBackend>
 void testOverflow( AMP::UnitTest &ut, const std::string &mem_type )
 {
     AllocatorIn alloc1;
@@ -67,7 +67,7 @@ void testOverflow( AMP::UnitTest &ut, const std::string &mem_type )
     v1p[1] = std::numeric_limits<float>::max() * 2;
     // Perform copy-cast
     try {
-        AMP::Utilities::copyCast<double, float, PortabilityBackend, ExecutionSpace>( 3, v1, v2 );
+        AMP::Utilities::copyCast<double, float, AccelerationBackend, ExecutionSpace>( 3, v1, v2 );
         ut.failure( mem_type + " copyCast didn't catch an overflow." );
     } catch ( ... ) {
         ut.passes( mem_type + " overflow test succeeded." );
@@ -87,7 +87,7 @@ int main( int argc, char *argv[] )
             double *,
             float *,
             AMP::HostAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Serial>( ut, "Serial Host double->float passed" );
+            AMP::Utilities::AccelerationBackend::Serial>( ut, "Serial Host double->float passed" );
     runTest<float,
             double,
             AMP::HostAllocator<float>,
@@ -95,13 +95,13 @@ int main( int argc, char *argv[] )
             float *,
             double *,
             AMP::HostAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Serial>( ut, "Serial Host float->double passed" );
+            AMP::Utilities::AccelerationBackend::Serial>( ut, "Serial Host float->double passed" );
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     testOverflow<AMP::HostAllocator<double>,
                  AMP::HostAllocator<float>,
                  double *,
                  AMP::HostAllocator<void>,
-                 AMP::Utilities::PortabilityBackend::Serial>( ut, "Serial Host" );
+                 AMP::Utilities::AccelerationBackend::Serial>( ut, "Serial Host" );
 #endif
 
 #ifdef USE_OPENMP
@@ -113,7 +113,7 @@ int main( int argc, char *argv[] )
             double *,
             float *,
             AMP::HostAllocator<void>,
-            AMP::Utilities::PortabilityBackend::OpenMP>( ut, "OpenMP Host double->float passed" );
+            AMP::Utilities::AccelerationBackend::OpenMP>( ut, "OpenMP Host double->float passed" );
     runTest<float,
             double,
             AMP::HostAllocator<float>,
@@ -121,13 +121,13 @@ int main( int argc, char *argv[] )
             float *,
             double *,
             AMP::HostAllocator<void>,
-            AMP::Utilities::PortabilityBackend::OpenMP>( ut, "OpenMP Host float->double passed" );
+            AMP::Utilities::AccelerationBackend::OpenMP>( ut, "OpenMP Host float->double passed" );
     #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     testOverflow<AMP::HostAllocator<double>,
                  AMP::HostAllocator<float>,
                  double *,
                  AMP::HostAllocator<void>,
-                 AMP::Utilities::PortabilityBackend::OpenMP>( ut, "OpenMP Host" );
+                 AMP::Utilities::AccelerationBackend::OpenMP>( ut, "OpenMP Host" );
     #endif
 #endif
 
@@ -141,7 +141,7 @@ int main( int argc, char *argv[] )
             double *,
             float *,
             AMP::HostAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Kokkos>( ut, "Kokkos Host double->float passed" );
+            AMP::Utilities::AccelerationBackend::Kokkos>( ut, "Kokkos Host double->float passed" );
     runTest<float,
             double,
             AMP::HostAllocator<float>,
@@ -149,13 +149,13 @@ int main( int argc, char *argv[] )
             float *,
             double *,
             AMP::HostAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Kokkos>( ut, "Kokkos Host float->double passed" );
+            AMP::Utilities::AccelerationBackend::Kokkos>( ut, "Kokkos Host float->double passed" );
     #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     testOverflow<AMP::HostAllocator<double>,
                  AMP::HostAllocator<float>,
                  double *,
                  AMP::HostAllocator<void>,
-                 AMP::Utilities::PortabilityBackend::Kokkos>( ut, "Kokkos Host" );
+                 AMP::Utilities::AccelerationBackend::Kokkos>( ut, "Kokkos Host" );
     #endif
     #ifdef USE_DEVICE
     // Test Managed Kokkos
@@ -166,7 +166,7 @@ int main( int argc, char *argv[] )
             thrust::device_ptr<double>,
             thrust::device_ptr<float>,
             AMP::ManagedAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Kokkos>( ut,
+            AMP::Utilities::AccelerationBackend::Kokkos>( ut,
                                                          "Kokkos Managed double->float passed" );
     runTest<float,
             double,
@@ -175,14 +175,14 @@ int main( int argc, char *argv[] )
             thrust::device_ptr<float>,
             thrust::device_ptr<double>,
             AMP::ManagedAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Kokkos>( ut,
+            AMP::Utilities::AccelerationBackend::Kokkos>( ut,
                                                          "Kokkos Managed float->double passed" );
         #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     testOverflow<AMP::ManagedAllocator<double>,
                  AMP::ManagedAllocator<float>,
                  thrust::device_ptr<double>,
                  AMP::ManagedAllocator<void>,
-                 AMP::Utilities::PortabilityBackend::Kokkos>( ut, "Kokkos Managed" );
+                 AMP::Utilities::AccelerationBackend::Kokkos>( ut, "Kokkos Managed" );
         #endif
     // Test Device Kokkos
     runTest<double,
@@ -192,7 +192,7 @@ int main( int argc, char *argv[] )
             thrust::device_ptr<double>,
             thrust::device_ptr<float>,
             AMP::DeviceAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Kokkos>( ut, "Kokkos Device double->float passed" );
+            AMP::Utilities::AccelerationBackend::Kokkos>( ut, "Kokkos Device double->float passed" );
     runTest<float,
             double,
             AMP::DeviceAllocator<float>,
@@ -200,13 +200,13 @@ int main( int argc, char *argv[] )
             thrust::device_ptr<float>,
             thrust::device_ptr<double>,
             AMP::DeviceAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Kokkos>( ut, "Kokkos Device float->double passed" );
+            AMP::Utilities::AccelerationBackend::Kokkos>( ut, "Kokkos Device float->double passed" );
         #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     testOverflow<AMP::DeviceAllocator<double>,
                  AMP::DeviceAllocator<float>,
                  thrust::device_ptr<double>,
                  AMP::DeviceAllocator<void>,
-                 AMP::Utilities::PortabilityBackend::Kokkos>( ut, "Kokkos Device" );
+                 AMP::Utilities::AccelerationBackend::Kokkos>( ut, "Kokkos Device" );
         #endif
     #endif
 #endif
@@ -220,7 +220,7 @@ int main( int argc, char *argv[] )
             double *,
             float *,
             AMP::HostAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Hip_Cuda>( ut,
+            AMP::Utilities::AccelerationBackend::Hip_Cuda>( ut,
                                                            "Hip_Cuda Host double->float passed" );
     runTest<float,
             double,
@@ -229,14 +229,14 @@ int main( int argc, char *argv[] )
             float *,
             double *,
             AMP::HostAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Hip_Cuda>( ut,
+            AMP::Utilities::AccelerationBackend::Hip_Cuda>( ut,
                                                            "Hip_Cuda Host float->double passed" );
     #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     testOverflow<AMP::HostAllocator<double>,
                  AMP::HostAllocator<float>,
                  double *,
                  AMP::HostAllocator<void>,
-                 AMP::Utilities::PortabilityBackend::Hip_Cuda>( ut, "Hip_Cuda Host" );
+                 AMP::Utilities::AccelerationBackend::Hip_Cuda>( ut, "Hip_Cuda Host" );
     #endif
     // Test Managed
     runTest<double,
@@ -246,7 +246,7 @@ int main( int argc, char *argv[] )
             thrust::device_ptr<double>,
             thrust::device_ptr<float>,
             AMP::ManagedAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Hip_Cuda>(
+            AMP::Utilities::AccelerationBackend::Hip_Cuda>(
         ut, "Hip_Cuda Managed double->float passed" );
     runTest<float,
             double,
@@ -255,14 +255,14 @@ int main( int argc, char *argv[] )
             thrust::device_ptr<float>,
             thrust::device_ptr<double>,
             AMP::ManagedAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Hip_Cuda>(
+            AMP::Utilities::AccelerationBackend::Hip_Cuda>(
         ut, "Hip_Cuda Managed float->double passed" );
     #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     testOverflow<AMP::ManagedAllocator<double>,
                  AMP::ManagedAllocator<float>,
                  thrust::device_ptr<double>,
                  AMP::ManagedAllocator<void>,
-                 AMP::Utilities::PortabilityBackend::Hip_Cuda>( ut, "Hip_Cuda Managed" );
+                 AMP::Utilities::AccelerationBackend::Hip_Cuda>( ut, "Hip_Cuda Managed" );
     #endif
     // Test Device
     runTest<double,
@@ -272,7 +272,7 @@ int main( int argc, char *argv[] )
             thrust::device_ptr<double>,
             thrust::device_ptr<float>,
             AMP::DeviceAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Hip_Cuda>( ut,
+            AMP::Utilities::AccelerationBackend::Hip_Cuda>( ut,
                                                            "Hip_Cuda Device double->float passed" );
     runTest<float,
             double,
@@ -281,14 +281,14 @@ int main( int argc, char *argv[] )
             thrust::device_ptr<float>,
             thrust::device_ptr<double>,
             AMP::DeviceAllocator<void>,
-            AMP::Utilities::PortabilityBackend::Hip_Cuda>( ut,
+            AMP::Utilities::AccelerationBackend::Hip_Cuda>( ut,
                                                            "Hip_Cuda Device float->double passed" );
     #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     testOverflow<AMP::DeviceAllocator<double>,
                  AMP::DeviceAllocator<float>,
                  thrust::device_ptr<double>,
                  AMP::DeviceAllocator<void>,
-                 AMP::Utilities::PortabilityBackend::Hip_Cuda>( ut, "Hip_Cuda Device" );
+                 AMP::Utilities::AccelerationBackend::Hip_Cuda>( ut, "Hip_Cuda Device" );
     #endif
 #endif
 

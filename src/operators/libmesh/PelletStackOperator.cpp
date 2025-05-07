@@ -46,6 +46,7 @@ void PelletStackOperator::reset( std::shared_ptr<const OperatorParameters> param
 {
     AMP_ASSERT( params );
     d_memory_location = params->d_memory_location;
+    Operator::getFromInput( params->d_db );
     auto myParams     = std::dynamic_pointer_cast<const PelletStackOperatorParameters>( params );
     if ( myParams )
         d_currentPellet = myParams->d_currentPellet;

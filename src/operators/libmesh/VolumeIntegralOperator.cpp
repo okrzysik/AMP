@@ -215,6 +215,7 @@ void VolumeIntegralOperator::reset( std::shared_ptr<const OperatorParameters> pa
 {
     AMP_ASSERT( params );
     d_memory_location = params->d_memory_location;
+    Operator::getFromInput( params->d_db );
     d_outVec.reset();
 }
 
