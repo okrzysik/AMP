@@ -490,6 +490,34 @@ void busy_ms( int N )
 
 
 /****************************************************************************
+ *   Function to return a unique alpha-numeric string on the comm            *
+ ****************************************************************************/
+std::string randomString( const AMP::AMP_MPI &comm )
+{
+    // Get a random number that is consistent across the communicator
+    //    key = rand() * 2^64*0.5*(sqrt(5)-1)
+    uint64_t key = ( ( (uint64_t) comm.rand() ) * 0x9E3779B97F4A7C15 );
+    // Convert the hash key to an alpha-numeric string
+    char cname[64] = { 0 };
+    size_t i       = 0;
+    while ( key != 0 ) {
+        size_t tmp = key % 62;
+        key /= 62;
+        if ( tmp < 10 )
+            cname[i] = static_cast<char>( tmp + 48 );
+        else if ( tmp < 36 )
+            cname[i] = static_cast<char>( tmp - 10 + 97 );
+        else if ( tmp < 62 )
+            cname[i] = static_cast<char>( tmp - 36 + 65 );
+        else
+            AMP_ERROR( "Internal error" );
+        i++;
+    }
+    return std::string( cname, i );
+}
+
+
+/****************************************************************************
  *  Function to demangle a string (e.g. from typeid)                         *
  ****************************************************************************/
 #ifdef __GNUC__
