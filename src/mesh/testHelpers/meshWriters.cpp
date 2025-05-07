@@ -37,8 +37,8 @@ void writeBox( int nx, int ny, int nz, double Lx, double Ly, double Lz, const st
                 p[2] = ( static_cast<double>( zi ) ) * hz;
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", pi, p[0], p[1], p[2] );
             } // end for xi
-        }     // end for yi
-    }         // end for zi
+        } // end for yi
+    } // end for zi
 
     fprintf( fp, "\n" );
 
@@ -232,8 +232,8 @@ void writePlateWithHole( int le,
             for ( int k = 0; k < ( ze[ei] + 1 ); k++ ) {
                 uniqueNodeId[ei][li][k].resize( xe[ei] + 1 );
             } // end for k
-        }     // end for li
-    }         // end for ei
+        } // end for li
+    } // end for ei
 
     int nodeCnt = 0;
     for ( int li = 0; li <= le; li++ ) {
@@ -285,7 +285,7 @@ void writePlateWithHole( int le,
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], zPos );
                 nodeCnt++;
             } // end for ni
-        }     // end for mi
+        } // end for mi
 
         // Node zone 6
         for ( int pi = 1; pi < pe; pi++ ) {
@@ -299,7 +299,7 @@ void writePlateWithHole( int le,
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], zPos );
                 nodeCnt++;
             } // end for ni
-        }     // end for pi
+        } // end for pi
 
         // Node zone 7
         for ( int mi = 1; mi <= me; mi++ ) {
@@ -316,7 +316,7 @@ void writePlateWithHole( int le,
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], -zPos );
                 nodeCnt++;
             } // end for ni
-        }     // end for mi
+        } // end for mi
 
         // Node zone 8
         for ( int pi = 1; pi < pe; pi++ ) {
@@ -330,7 +330,7 @@ void writePlateWithHole( int le,
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, xPos, lYarr[li], -zPos );
                 nodeCnt++;
             } // end for ni
-        }     // end for pi
+        } // end for pi
 
         // Node zone 9
         for ( int mi = 1; mi <= me; mi++ ) {
@@ -347,7 +347,7 @@ void writePlateWithHole( int le,
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -xPos, lYarr[li], zPos );
                 nodeCnt++;
             } // end for ni
-        }     // end for mi
+        } // end for mi
 
         // Node zone 10
         for ( int pi = 1; pi < pe; pi++ ) {
@@ -361,7 +361,7 @@ void writePlateWithHole( int le,
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -xPos, lYarr[li], zPos );
                 nodeCnt++;
             } // end for ni
-        }     // end for pi
+        } // end for pi
 
         // Node zone 11
         for ( int mi = 1; mi <= me; mi++ ) {
@@ -378,7 +378,7 @@ void writePlateWithHole( int le,
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -xPos, lYarr[li], -zPos );
                 nodeCnt++;
             } // end for ni
-        }     // end for mi
+        } // end for mi
 
         // Node zone 12
         for ( int pi = 1; pi < pe; pi++ ) {
@@ -392,7 +392,7 @@ void writePlateWithHole( int le,
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", nodeCnt, -xPos, lYarr[li], -zPos );
                 nodeCnt++;
             } // end for ni
-        }     // end for pi
+        } // end for pi
 
     } // end for li
 
@@ -428,9 +428,9 @@ void writePlateWithHole( int le,
                              p[7] );
                     elemCnt++;
                 } // end for xi
-            }     // end for zi
-        }         // end for ei
-    }             // end for li
+            } // end for zi
+        } // end for ei
+    } // end for li
 
     fprintf( fp, "\n" );
 
@@ -550,7 +550,7 @@ void write2elementMesh(
                 pi++;
             }
         } // end for yi
-    }     // end for zi
+    } // end for zi
 
     fprintf( fp, "\n" );
 
@@ -580,8 +580,8 @@ void write2elementMesh(
                          p6,
                          p7 );
             } // end for xi
-        }     // end for yi
-    }         // end for zi
+        } // end for yi
+    } // end for zi
 
     fprintf( fp, "NumberOfBoundaryNodeIds = 4 \n\n" );
 
@@ -707,9 +707,9 @@ void write7elementMesh( int NumberOfBoundaryNodeIds, const std::string &file )
     } else {
         AMP_ERROR( "Not valid" );
     }
-    fprintf( fp, "NumberOfBoundarySideIds = 0 \n\n" );
+    fprintf( fp, "NumberOfBoundarySideIds = 0\n\n" );
 
-    fprintf( fp, "} \n" );
+    fprintf( fp, "}\n" );
 
     fclose( fp );
 }
@@ -742,8 +742,8 @@ void writeConstrainedMesh(
                 p[2] = ( static_cast<double>( zi ) ) * hz;
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", pi, p[0], p[1], p[2] );
             } // end for xi
-        }     // end for yi
-    }         // end for zi
+        } // end for yi
+    } // end for zi
 
     fprintf( fp, "\n" );
 
@@ -774,8 +774,8 @@ void writeConstrainedMesh(
                          p[6],
                          p[7] );
             } // end for xi
-        }     // end for yi
-    }         // end for zi
+        } // end for yi
+    } // end for zi
 
     fprintf( fp, "\n" );
 
@@ -793,7 +793,7 @@ void writeConstrainedMesh(
                 fprintf( fp, ", " );
             }
         } // end for yi
-    }     // end for zi
+    } // end for zi
 
     fprintf( fp, "\n\n" );
 
@@ -852,8 +852,8 @@ void writeCookMesh( int nx, int ny, int nz, const std::string &file )
                                    static_cast<double>( nz - 1 ) );
                 fprintf( fp, "Point%d = %lf, %lf, %lf \n", pi, px, py, pz );
             } // end for xi
-        }     // end for yi
-    }         // end for zi
+        } // end for yi
+    } // end for zi
 
     fprintf( fp, "\n" );
 
@@ -883,8 +883,8 @@ void writeCookMesh( int nx, int ny, int nz, const std::string &file )
                          p6,
                          p7 );
             } // end for xi
-        }     // end for yi
-    }         // end for zi
+        } // end for yi
+    } // end for zi
 
     fprintf( fp, "\n" );
 
@@ -900,7 +900,7 @@ void writeCookMesh( int nx, int ny, int nz, const std::string &file )
                 fprintf( fp, ", " );
             }
         } // end for yi
-    }     // end for zi
+    } // end for zi
     fprintf( fp, "\n\n" );
 
     // x = Lx surface
@@ -913,10 +913,205 @@ void writeCookMesh( int nx, int ny, int nz, const std::string &file )
                 fprintf( fp, ", " );
             }
         } // end for yi
-    }     // end for zi
+    } // end for zi
     fprintf( fp, "\n\n" );
     fprintf( fp, "NumberOfBoundarySideIds = 0 \n\n" );
     fprintf( fp, "} \n" );
+    fclose( fp );
+}
+
+
+/********************************************************
+ * write AMG test mesh                                   *
+ ********************************************************/
+void writeAMGMesh(
+    int nx, int ny, int nz, double Lx, double Ly, double Lz, const std::string &filename )
+{
+    auto NODE = [nx, ny]( int xi, int yi, int zi ) { return xi + ( yi * nx ) + ( zi * nx * ny ); };
+
+    double hx = Lx / ( static_cast<double>( nx - 1 ) );
+    double hy = Ly / ( static_cast<double>( ny - 1 ) );
+    double hz = Lz / ( static_cast<double>( nz - 1 ) );
+
+    auto fp = fopen( filename.data(), "w" );
+
+    fprintf( fp, "Mesh { \n" );
+
+    int numPts = nx * ny * nz;
+    fprintf( fp, "NumberOfNodes = %d \n", numPts );
+
+    for ( int zi = 0, pi = 0; zi < nz; zi++ ) {
+        for ( int yi = 0; yi < ny; yi++ ) {
+            for ( int xi = 0; xi < nx; xi++, pi++ ) {
+                double p[3];
+                p[0] = ( static_cast<double>( xi ) ) * hx;
+                p[1] = ( static_cast<double>( yi ) ) * hy;
+                p[2] = ( static_cast<double>( zi ) ) * hz;
+                fprintf( fp, "Point%d = %lf, %lf, %lf \n", pi, p[0], p[1], p[2] );
+            } // end for xi
+        } // end for yi
+    } // end for zi
+
+    fprintf( fp, "\n" );
+
+    int numElem = ( nx - 1 ) * ( ny - 1 ) * ( nz - 1 );
+    fprintf( fp, "NumberOfElements = %d \n", numElem );
+
+    for ( int zi = 0, pi = 0; zi < ( nz - 1 ); zi++ ) {
+        for ( int yi = 0; yi < ( ny - 1 ); yi++ ) {
+            for ( int xi = 0; xi < ( nx - 1 ); xi++, pi++ ) {
+                int p[8];
+                p[0] = NODE( xi, yi, zi );
+                p[1] = NODE( ( xi + 1 ), yi, zi );
+                p[2] = NODE( ( xi + 1 ), ( yi + 1 ), zi );
+                p[3] = NODE( xi, ( yi + 1 ), zi );
+                p[4] = NODE( xi, yi, ( zi + 1 ) );
+                p[5] = NODE( ( xi + 1 ), yi, ( zi + 1 ) );
+                p[6] = NODE( ( xi + 1 ), ( yi + 1 ), ( zi + 1 ) );
+                p[7] = NODE( xi, ( yi + 1 ), ( zi + 1 ) );
+                fprintf( fp,
+                         "Elem%d = %d, %d, %d, %d, %d, %d, %d, %d \n",
+                         pi,
+                         p[0],
+                         p[1],
+                         p[2],
+                         p[3],
+                         p[4],
+                         p[5],
+                         p[6],
+                         p[7] );
+            } // end for xi
+        } // end for yi
+    } // end for zi
+
+    fprintf( fp, "\n" );
+
+    {
+        int num = 6;
+        fprintf( fp, "NumberOfBoundaryNodeIds = %d \n\n", num );
+    }
+
+    // x = 0 surface
+    {
+        int num = ( ny * nz );
+        fprintf( fp, "NumberOfBoundaryNodes1 = %d \n", num );
+        fprintf( fp, "BoundaryNodeId1 = " );
+    }
+
+    for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
+        for ( int yi = 0; yi < ny; yi++, cnt++ ) {
+            int num = NODE( 0, yi, zi );
+            fprintf( fp, "%d", num );
+            if ( cnt < ( ( ny * nz ) - 1 ) ) {
+                fprintf( fp, ", " );
+            }
+        } // end for yi
+    } // end for zi
+
+    fprintf( fp, "\n\n" );
+
+    // x = Lx surface
+    {
+        int num = ( ny * nz );
+        fprintf( fp, "NumberOfBoundaryNodes2 = %d \n", num );
+        fprintf( fp, "BoundaryNodeId2 = " );
+    }
+
+    for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
+        for ( int yi = 0; yi < ny; yi++, cnt++ ) {
+            int num = NODE( ( nx - 1 ), yi, zi );
+            fprintf( fp, "%d", num );
+            if ( cnt < ( ( ny * nz ) - 1 ) ) {
+                fprintf( fp, ", " );
+            }
+        } // end for yi
+    } // end for zi
+
+    fprintf( fp, "\n\n" );
+
+    // y = 0 surface
+    {
+        int num = ( nx * nz );
+        fprintf( fp, "NumberOfBoundaryNodes3 = %d \n", num );
+        fprintf( fp, "BoundaryNodeId3 = " );
+    }
+
+    for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
+        for ( int xi = 0; xi < nx; xi++, cnt++ ) {
+            int num = NODE( xi, 0, zi );
+            fprintf( fp, "%d", num );
+            if ( cnt < ( ( nx * nz ) - 1 ) ) {
+                fprintf( fp, ", " );
+            }
+        } // end for yi
+    } // end for zi
+
+    fprintf( fp, "\n\n" );
+
+    // y = Ly surface
+    {
+        int num = ( nx * nz );
+        fprintf( fp, "NumberOfBoundaryNodes4 = %d \n", num );
+        fprintf( fp, "BoundaryNodeId4 = " );
+    }
+
+    for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
+        for ( int xi = 0; xi < nx; xi++, cnt++ ) {
+            int num = NODE( xi, ( ny - 1 ), zi );
+            fprintf( fp, "%d", num );
+            if ( cnt < ( ( nx * nz ) - 1 ) ) {
+                fprintf( fp, ", " );
+            }
+        } // end for yi
+    } // end for zi
+
+    fprintf( fp, "\n\n" );
+
+    // z = 0 surface
+    {
+        int num = ( ny * nx );
+        fprintf( fp, "NumberOfBoundaryNodes5 = %d \n", num );
+        fprintf( fp, "BoundaryNodeId5 = " );
+    }
+
+    for ( int yi = 0, cnt = 0; yi < ny; yi++ ) {
+        for ( int xi = 0; xi < nx; xi++, cnt++ ) {
+            int num = NODE( xi, yi, 0 );
+            fprintf( fp, "%d", num );
+            if ( cnt < ( ( ny * nx ) - 1 ) ) {
+                fprintf( fp, ", " );
+            }
+        } // end for xi
+    } // end for yi
+
+    fprintf( fp, "\n\n" );
+
+    // z = Lz surface
+    {
+        int num = ( ny * nx );
+        fprintf( fp, "NumberOfBoundaryNodes6 = %d \n", num );
+        fprintf( fp, "BoundaryNodeId6 = " );
+    }
+
+    for ( int yi = 0, cnt = 0; yi < ny; yi++ ) {
+        for ( int xi = 0; xi < nx; xi++, cnt++ ) {
+            int num = NODE( xi, yi, ( nz - 1 ) );
+            fprintf( fp, "%d", num );
+            if ( cnt < ( ( ny * nx ) - 1 ) ) {
+                fprintf( fp, ", " );
+            }
+        } // end for xi
+    } // end for yi
+
+    fprintf( fp, "\n\n" );
+
+    {
+        int num = 0;
+        fprintf( fp, "NumberOfBoundarySideIds = %d \n\n", num );
+    }
+
+    fprintf( fp, "} \n" );
+
     fclose( fp );
 }
 

@@ -34,13 +34,11 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
         auto input_db = AMP::Database::parseInputFile( input_file );
         input_db->print( AMP::plog );
 
-        auto mesh_file_db = AMP::Database::parseInputFile( input_db->getString( "mesh_file" ) );
-
         const unsigned int mesh_dim = 3;
         libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
         auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 
-        AMP::readTestMesh( mesh_file_db, mesh );
+        AMP::readTestMesh( input_db->getString( "mesh_file" ), mesh );
         mesh->prepare_for_use( false );
 
         auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "TestMesh" );
@@ -135,11 +133,10 @@ int testLinearElasticity_patch_2( int argc, char *argv[] )
             AMP::pout << "ERROR: " << err.what() << std::endl;
             ut.failure( "ERROR" );
         } catch ( ... ) {
-            AMP::pout << "ERROR: "
-                      << "An unknown exception was thrown." << std::endl;
+            AMP::pout << "ERROR: " << "An unknown exception was thrown." << std::endl;
             ut.failure( "ERROR" );
         } // end for reduced
-    }     // end for i
+    } // end for i
 
     ut.report();
     int num_failed = ut.NumFailGlobal();

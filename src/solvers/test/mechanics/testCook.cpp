@@ -169,19 +169,14 @@ int testCook( int argc, char *argv[] )
 
     if ( argc == 1 ) {
         exeNames.emplace_back( "testCook-normal-mesh0" );
-        exeNames.emplace_back( "testCook-reduced-mesh0" );
-
         exeNames.emplace_back( "testCook-normal-mesh1" );
-        exeNames.emplace_back( "testCook-reduced-mesh1" );
-
         exeNames.emplace_back( "testCook-normal-mesh2" );
+        exeNames.emplace_back( "testCook-reduced-mesh0" );
+        exeNames.emplace_back( "testCook-reduced-mesh1" );
         exeNames.emplace_back( "testCook-reduced-mesh2" );
     } else {
-        for ( int i = 1; i < argc; i += 2 ) {
-            auto inpName =
-                AMP::Utilities::stringf( "testCook-%s-mesh%d", argv[i], atoi( argv[i + 1] ) );
-            exeNames.emplace_back( inpName );
-        } // end for i
+        for ( int i = 1; i < argc; i++ )
+            exeNames.emplace_back( argv[i] );
     }
 
     for ( auto &exeName : exeNames )
