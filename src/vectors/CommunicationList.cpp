@@ -206,6 +206,15 @@ size_t CommunicationList::getTotalSize() const { return d_partition.back(); }
 /************************************************************************
  * Misc. functions                                                       *
  ************************************************************************/
+void CommunicationList::clearBuffers()
+{
+    d_ReceiveSizes.clear();
+    d_ReceiveDisp.clear();
+    d_SendSizes.clear();
+    d_SendDisp.clear();
+    d_SendDOFList.clear();
+}
+
 size_t CommunicationList::getVectorSendBufferSize() const
 {
     if ( !d_initialized )
