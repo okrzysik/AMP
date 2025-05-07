@@ -136,6 +136,21 @@ void readTestMesh( const std::string &mesh_file, std::shared_ptr<libMesh::Mesh> 
     } else if ( mesh_file == "mesh7elem-2" ) {
         AMP::Mesh::MeshWriters::write7elementMesh( 8, tmp );
         readTestMesh( tmp, mesh );
+    } else if ( mesh_file == "boxMesh-1" ) {
+        AMP::Mesh::MeshWriters::writeAMGMesh( 2, 2, 2, 10, 10, 10, tmp );
+        readTestMesh( tmp, mesh );
+    } else if ( mesh_file == "boxMesh-2" ) {
+        AMP::Mesh::MeshWriters::writeAMGMesh( 3, 3, 3, 10, 10, 10, tmp );
+        readTestMesh( tmp, mesh );
+    } else if ( mesh_file == "boxMesh-3" ) {
+        AMP::Mesh::MeshWriters::writeAMGMesh( 5, 5, 5, 10, 10, 10, tmp );
+        readTestMesh( tmp, mesh );
+    } else if ( mesh_file == "boxMesh-4" ) {
+        AMP::Mesh::MeshWriters::writeAMGMesh( 9, 9, 9, 10, 10, 10, tmp );
+        readTestMesh( tmp, mesh );
+    } else if ( mesh_file == "boxMesh-5" ) {
+        AMP::Mesh::MeshWriters::writeAMGMesh( 17, 17, 17, 10, 10, 10, tmp );
+        readTestMesh( tmp, mesh );
     } else {
         auto db = AMP::Database::parseInputFile( mesh_file );
         readTestMesh( db, mesh );
