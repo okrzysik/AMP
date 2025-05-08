@@ -84,7 +84,7 @@ static void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> me
             os << "\\draw[" << option << "]\n";
             write_face( faceDataPtr, os );
         } // end if
-    }     // end for
+    } // end for
 }
 
 static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
