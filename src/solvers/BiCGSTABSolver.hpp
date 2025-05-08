@@ -98,6 +98,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
         res->copyVector( f );
+        u->zero();
     } else {
         d_pOperator->residual( f, u, res );
     }
