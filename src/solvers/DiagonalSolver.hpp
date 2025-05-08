@@ -10,13 +10,29 @@ namespace AMP::Solver {
  ****************************************************************/
 
 template<typename T>
-DiagonalSolver<T>::DiagonalSolver( std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters )
+DiagonalSolver<T>::DiagonalSolver(
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters );
 
     // Initialize
     initialize( parameters );
+}
+
+template<typename T>
+void DiagonalSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
+{
+    d_pOperator = op;
+
+    if ( d_pOperator ) {
+        auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+        AMP_ASSERT( linearOp );
+        auto matrix        = linearOp->getMatrix();
+        d_pDiagonalInverse = matrix->extractDiagonal();
+        AMP_ASSERT( d_pDiagonalInverse );
+        d_pDiagonalInverse->reciprocal( *d_pDiagonalInverse );
+    }
 }
 
 /****************************************************************
@@ -49,6 +65,8 @@ void DiagonalSolver<T>::initialize(
             }
         }
     }
+
+    registerOperator( d_pOperator );
 }
 
 // Function to get values from input
@@ -75,28 +93,11 @@ void DiagonalSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
+    u->multiply( d_pDiagonalInverse, f );
+
     {
         PROFILE( "DiagonalSolver<T>:: u->makeConsistent" );
         u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    }
-    {
-        PROFILE( "DiagonalSolver<T>:: r = f-Au (final)" );
-        d_pOperator->residual( f, u, r );
-    }
-    {
-        PROFILE( "DiagonalSolver<T>:: r->L2Norm (final)" );
-        d_dResidualNorm = static_cast<T>( r->L2Norm() );
-    }
-    // final check updates flags if needed
-    checkStoppingCriteria( d_dResidualNorm );
-
-    if ( d_iDebugPrintInfoLevel > 0 ) {
-        AMP::pout << "CG: final residual: " << d_dResidualNorm
-                  << ", iterations: " << d_iNumberIterations << ", convergence reason: "
-                  << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
-    }
-    if ( d_iDebugPrintInfoLevel > 1 ) {
-        AMP::pout << "CG: final L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 }
 
@@ -106,6 +107,7 @@ void DiagonalSolver<T>::resetOperator(
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );
+        registerOperator( d_pOperator );
     }
 
     // should add a mechanism for the linear operator to provide updated parameters for the

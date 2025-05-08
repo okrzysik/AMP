@@ -95,7 +95,7 @@ protected:
 
 private:
     bool d_bUsesNestedSolver = false;
-
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pDiagonalInverse;
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pNestedSolver;
 };
 } // namespace AMP::Solver
