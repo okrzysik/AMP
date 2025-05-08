@@ -47,15 +47,34 @@ myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, const std::s
     // Call solve with a simple vector
     u->setRandomValues();
     f->setRandomValues();
+    linearSolver->setZeroInitialGuess( true );
     linearSolver->apply( f, u );
-    auto iter = linearSolver->getIterations();
-
+    auto iter   = linearSolver->getIterations();
+    auto solver = linearSolver->type();
     u->subtract( *u, *f );
     auto error = static_cast<double>( u->L2Norm() );
     if ( iter == 1 && fabs( error ) < 1.0e-14 )
-        ut->passes( "Solve with simple vector passed" );
+        ut->passes( solver +
+                    " solves identity operator in one iteration withj zero initial guess" );
     else
-        ut->failure( "Solve with simple vector failed" );
+        ut->failure( solver +
+                     " fails to solve identity operator in one iteration with zero initial guess" );
+
+    // Call solve with a simple vector
+    u->setRandomValues();
+    f->setRandomValues();
+    linearSolver->setZeroInitialGuess( false );
+    linearSolver->apply( f, u );
+    iter = linearSolver->getIterations();
+    u->subtract( *u, *f );
+    error = static_cast<double>( u->L2Norm() );
+    if ( iter == 1 && fabs( error ) < 1.0e-14 )
+        ut->passes( solver +
+                    " solves identity operator in one iteration with non-zero initial guess" );
+    else
+        ut->failure(
+            solver +
+            " fails to solve identity operator in one iteration with non-zero initial guess" );
 
         // Call solve with a multivector (there can be bugs when solve is called with a single
         // vector and then a multivector)
