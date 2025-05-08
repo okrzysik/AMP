@@ -1,9 +1,12 @@
-
-Mesh{
-  FileName = "brick.e"
-    MeshName = "brick"
-    MeshType = "libMesh"
-    dim      = 3
+Mesh {
+  MeshType = "AMP"
+  MeshName = "cube_3d"
+  Generator = "cube"
+  Size = 8, 8, 17
+  Range = -5, 5, -5, 5, -10, 10
+  surfaceIds = 8, 8, 8, 8, 8, 8
+  dim = 3
+  static = FALSE
 }
 
 NumberOfLoadingSteps = 10

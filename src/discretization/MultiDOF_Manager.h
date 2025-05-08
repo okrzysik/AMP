@@ -2,6 +2,7 @@
 #define included_AMP_MultiDOF_Manager
 
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/MultiDOFHelper.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
 #include <memory>
@@ -29,8 +30,18 @@ public:
      * \details  This is the standard constructor for creating a new multiDOFManager object.
      * \param comm  Comm over which the DOFManager will exist
      * \param managers  List of the DOFManagers on the current processor
+     * \param mesh  Optional mesh over which dof managers are defined (usually a multimesh)
      */
-    multiDOFManager( const AMP_MPI &comm, std::vector<std::shared_ptr<DOFManager>> managers );
+    multiDOFManager( const AMP_MPI &comm,
+                     std::vector<std::shared_ptr<DOFManager>> managers,
+                     std::shared_ptr<const AMP::Mesh::Mesh> mesh = {} );
+
+    /**
+     * \brief Create a new DOF manager object
+     * \details  Create a multiDOFManager that is a view of a single DOFManager
+     * \param manager  Original DOF Manager
+     */
+    multiDOFManager( std::shared_ptr<DOFManager> manager );
 
     //! Deconstructor
     virtual ~multiDOFManager() override;
@@ -50,6 +61,12 @@ public:
      * @return              The element for the given DOF.
      */
     AMP::Mesh::MeshElement getElement( size_t dof ) const override;
+
+
+    /** \brief   Get the underlying mesh
+     * \details  This will return the mesh(es) that underly the DOF manager (if they exist)
+     */
+    std::shared_ptr<const AMP::Mesh::Mesh> getMesh() const override;
 
 
     /** \brief   Get an entry over the mesh elements associated with the DOFs
@@ -78,7 +95,7 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    std::shared_ptr<DOFManager> subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
+    std::shared_ptr<DOFManager> subset( const std::shared_ptr<const AMP::Mesh::Mesh> mesh,
                                         bool useMeshComm = true ) override;
 
 
@@ -93,8 +110,10 @@ public:
 
     /** reset a dof manager based on component dof managers
      * \param managers  List of the DOFManagers on the current processor
+     * \param mesh  Optional mesh over which dof managers are defined (usually a multimesh)
      **/
-    void reset( std::vector<std::shared_ptr<DOFManager>> managers );
+    void reset( std::vector<std::shared_ptr<DOFManager>> managers,
+                std::shared_ptr<const AMP::Mesh::Mesh> mesh = {} );
 
 public:
     //! Get the DOFManagers that compose the multiDOFManager
@@ -150,61 +169,34 @@ public: // Advanced interfaces
                        size_t index,
                        size_t capacity ) const override;
 
-protected:
-    void initialize();
+    //! Get the local sizes on each rank
+    std::vector<size_t> getLocalSizes() const override;
+
+    // Get the map
+    inline const multiDOFHelper &getMap() const { return d_dofMap; }
 
 private:
     // Convert the local to global dof
-    inline size_t subToGlobal( int manager, size_t dof ) const;
+    inline size_t subToGlobal( int manager, size_t dof ) const
+    {
+        return d_dofMap.subToGlobal( manager, dof );
+    }
 
     // Convert the global to local dof
-    inline std::pair<size_t, int> globalToSub( size_t dof ) const;
-
-private:
-    // Data used to convert between the local (sub) and global (parent) DOFs
-    struct DOFMapStruct {
-        // Constructors
-        inline DOFMapStruct( size_t sub_start, size_t sub_end, size_t global_start, size_t id )
-        {
-            data[0] = sub_start;
-            data[1] = sub_end;
-            data[2] = global_start;
-            data[3] = id;
-        }
-        inline DOFMapStruct()
-        {
-            data[0] = 0;
-            data[1] = 0;
-            data[2] = 0;
-            data[3] = 0;
-        }
-        // Convert ids
-        inline size_t toGlobal( size_t local ) const { return local - data[0] + data[2]; }
-        inline size_t toLocal( size_t global ) const { return global - data[2] + data[0]; }
-        inline bool inRangeLocal( size_t local ) const
-        {
-            return local >= data[0] && local < data[1];
-        }
-        inline size_t inRangeGlobal( size_t global ) const
-        {
-            return global >= data[2] && ( global - data[2] ) < ( data[1] - data[0] );
-        }
-        inline size_t id() const { return data[3]; }
-
-    private:
-        size_t data[4];
-    };
+    inline std::pair<size_t, int> globalToSub( size_t dof ) const
+    {
+        return d_dofMap.globalToSub( dof );
+    }
 
 
 private:
     multiDOFManager() = delete;
 
+    std::shared_ptr<const AMP::Mesh::Mesh> d_mesh;
     std::vector<std::shared_ptr<DOFManager>> d_managers;
-    std::vector<size_t> d_ids;
     std::vector<size_t> d_localSize;
     std::vector<size_t> d_globalSize;
-    std::vector<DOFMapStruct> d_dofMap;
-    const size_t neg_one = ~( (size_t) 0 );
+    multiDOFHelper d_dofMap;
 };
 } // namespace AMP::Discretization
 

@@ -50,11 +50,7 @@ void VectorOperationsDefault<TYPE>::zero( VectorData &x )
         *curMe = 0;
         ++curMe;
     }
-    if ( x.hasGhosts() ) {
-        auto &ghosts = x.getGhosts();
-        for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i] = 0;
-    }
+    x.fillGhosts( 0 );
     // Override the status state since we set the ghost values
     x.setUpdateStatus( UpdateState::UNCHANGED );
 }
@@ -69,11 +65,7 @@ void VectorOperationsDefault<TYPE>::setToScalar( const Scalar &alpha_in, VectorD
         *curMe = alpha;
         ++curMe;
     }
-    if ( x.hasGhosts() ) {
-        auto &ghosts = x.getGhosts();
-        for ( size_t i = 0; i != ghosts.size(); i++ )
-            ghosts[i] = alpha;
-    }
+    x.fillGhosts( alpha_in );
     // Override the status state since we set the ghost values
     x.setUpdateStatus( UpdateState::UNCHANGED );
 }
@@ -110,7 +102,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues( VectorData &x )
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &y )
 {
-    AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
+    AMP_DEBUG_ASSERT( y.getLocalSize() == x.getLocalSize() );
     std::copy( x.begin<TYPE>(), x.end<TYPE>(), y.begin<TYPE>() );
     y.copyGhostValues( x );
 }

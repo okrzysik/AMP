@@ -1,5 +1,7 @@
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolver.h"
 #include "AMP/AMP_TPLs.h"
+#include "AMP/operators/OperatorFactory.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/trilinos/nox/AndersonStatusTest.h"
 #include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
@@ -39,10 +41,12 @@ namespace AMP::Solver {
  *  Constructors                                                 *
  ****************************************************************/
 TrilinosNOXSolver::TrilinosNOXSolver() : SolverStrategy() {}
-TrilinosNOXSolver::TrilinosNOXSolver( std::shared_ptr<TrilinosNOXSolverParameters> parameters )
+TrilinosNOXSolver::TrilinosNOXSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
-    initialize( parameters );
+    auto params = std::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
+    AMP_ASSERT( params );
+    initialize( params );
 }
 void TrilinosNOXSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
 {
@@ -63,19 +67,37 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     d_comm = params->d_comm;
     if ( params->d_pInitialGuess )
         d_initialGuess = params->d_pInitialGuess;
-    AMP_ASSERT( d_initialGuess != nullptr );
+    AMP_ASSERT( d_initialGuess );
     std::shared_ptr<AMP::Database> nonlinear_db = parameters->d_db;
-    std::shared_ptr<AMP::Database> linear_db    = nonlinear_db->getDatabase( "LinearSolver" );
-    AMP_ASSERT( linear_db != nullptr );
+    AMP_ASSERT( nonlinear_db );
+    auto linear_solver_db_name =
+        nonlinear_db->getWithDefault<std::string>( "linear_solver_name", "LinearSolver" );
+    auto enclosing_db =
+        nonlinear_db->keyExists( linear_solver_db_name ) ? nonlinear_db : d_global_db;
+    AMP_ASSERT( enclosing_db );
+    std::shared_ptr<AMP::Database> linear_db = enclosing_db->getDatabase( linear_solver_db_name );
+    AMP_ASSERT( linear_db );
     // Create a model evaluator
     auto modelParams           = std::make_shared<TrilinosThyraModelEvaluatorParameters>();
     modelParams->d_nonlinearOp = d_pOperator;
-    modelParams->d_linearOp    = params->d_pLinearOperator;
-    modelParams->d_icVec       = d_initialGuess;
+    AMP_WARNING( "TrilinosNOXSolver at present sets linear operator to nonlinear operator also" );
+    modelParams->d_linearOp = d_pOperator;
+    modelParams->d_icVec    = d_initialGuess;
     modelParams->d_preconditioner.reset();
     modelParams->d_prePostOperator = params->d_prePostOperator;
-    if ( linear_db->getWithDefault<bool>( "uses_preconditioner", false ) )
-        modelParams->d_preconditioner = params->d_preconditioner;
+    if ( linear_db->getWithDefault<bool>( "uses_preconditioner", false ) ) {
+        if ( params->d_preconditioner ) {
+            modelParams->d_preconditioner = params->d_preconditioner;
+        } else {
+            auto preconditionerName =
+                linear_db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
+            auto pc_db                    = linear_db->keyExists( "pc_solver_name" ) ?
+                                                d_global_db->getDatabase( preconditionerName ) :
+                                                linear_db->getDatabase( preconditionerName );
+            modelParams->d_preconditioner = createPreconditioner( pc_db );
+        }
+    }
+
     d_thyraModel =
         Teuchos::RCP<TrilinosThyraModelEvaluator>( new TrilinosThyraModelEvaluator( modelParams ) );
     // Create the Preconditioner operator
@@ -265,4 +287,29 @@ void TrilinosNOXSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     AMP_ASSERT( thyraVec->numVecs() == 1 );
     u->copyVector( thyraVec->getVec( 0 ) );
 }
+
+// This routine or almost identical code is now present in NKA, SNESSolver and here. This needs to
+// move into a base class
+std::shared_ptr<SolverStrategy>
+TrilinosNOXSolver::createPreconditioner( std::shared_ptr<AMP::Database> pc_solver_db )
+{
+    AMP_INSIST(
+        pc_solver_db,
+        "TrilinosNOXSolver::createPreconditioner: Database object for preconditioner is NULL" );
+    std::shared_ptr<SolverStrategy> preconditionerSolver;
+    auto pcSolverParameters =
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( pc_solver_db );
+    if ( d_pOperator ) {
+        // check if this should be passed the initial guess or a solution vector that can be reset
+        auto pc_params = d_pOperator->getParameters( "Jacobian", d_initialGuess );
+        std::shared_ptr<AMP::Operator::Operator> pcOperator =
+            AMP::Operator::OperatorFactory::create( pc_params );
+        pcSolverParameters->d_pOperator = pcOperator;
+    }
+
+    preconditionerSolver = AMP::Solver::SolverFactory::create( pcSolverParameters );
+
+    return preconditionerSolver;
+}
+
 } // namespace AMP::Solver

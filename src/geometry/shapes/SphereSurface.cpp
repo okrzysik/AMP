@@ -151,9 +151,9 @@ ArraySize SphereSurface::getLogicalGridSize( const ArraySize &x ) const
 }
 ArraySize SphereSurface::getLogicalGridSize( const std::vector<double> &res ) const
 {
-    AMP_INSIST( res.size() == 2u, "Resolution must be an array of length 2" );
-    AMP_ERROR( "Not finished" );
-    return {};
+    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 2" );
+    int N = d_r / std::min( { res[0], res[1], res[2] } );
+    return { 2 * N, N };
 }
 
 

@@ -272,18 +272,24 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // Verify each surface point is "inside" the object
     {
         PROFILE( "testGeometry-inside" );
-        bool pass_inside = true;
+        int N_fail = 0;
         for ( const auto &tmp : surfacePoints ) {
             bool inside = geom.inside( tmp );
             if ( !inside ) {
-                pass_inside = false;
-                std::cout << "testGeometry-inside: " << tmp << std::endl;
-                break;
+                N_fail++;
+                if ( N_fail <= 10 )
+                    std::cout << "testGeometry-inside: " << tmp << std::endl;
             }
         }
-        pass = pass && pass_inside;
-        if ( !pass_inside )
-            ut.failure( "testGeometry surface inside geometry: " + name );
+        bool pass_inside = N_fail == 0;
+        pass             = pass && pass_inside;
+        if ( !pass_inside ) {
+            auto msg = AMP::Utilities::stringf( "testGeometry surface inside geometry (%i/%i): %s",
+                                                N_fail,
+                                                (int) surfacePoints.size(),
+                                                name.data() );
+            ut.failure( msg );
+        }
     }
     // Project each surface point in a random direction and back propagate to get the same point
     {

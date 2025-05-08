@@ -8,6 +8,8 @@
 
 #include <numeric>
 
+#include "ProfilerApp.h"
+
 #include "HYPRE_utilities.h"
 #include "_hypre_IJ_mv.h"
 #include "_hypre_parcsr_mv.h"
@@ -31,6 +33,8 @@ template void HypreMatrixAdaptor::initializeHypreMatrix<
 
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 {
+    PROFILE( "HypreMatrixAdaptor::HypreMatrixAdaptor" );
+
     int ierr;
     char hypre_mesg[100];
 
@@ -74,6 +78,9 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
         AMP_ERROR( "Pure device memory not yet supported in HypreMatrixAdaptor" );
         initializeHypreMatrix( csrDataDevice );
     } else {
+        PROFILE( "HypreMatrixAdaptor::HypreMatrixAdaptor(deep copy)" );
+
+        AMP::pout << "HYPRE: Doing deep copy" << std::endl;
 
         HYPRE_SetMemoryLocation( HYPRE_MEMORY_HOST );
         HYPRE_IJMatrixInitialize( d_matrix );
@@ -116,6 +123,8 @@ HypreMatrixAdaptor::~HypreMatrixAdaptor()
 template<class csr_data_type>
 void HypreMatrixAdaptor::initializeHypreMatrix( std::shared_ptr<csr_data_type> csrData )
 {
+    PROFILE( "HypreMatrixAdaptor::initializeHypreMatrix" );
+
     // extract fields from csrData
     const auto first_row    = static_cast<HYPRE_BigInt>( csrData->beginRow() );
     const auto last_row     = static_cast<HYPRE_BigInt>( csrData->endRow() - 1 );

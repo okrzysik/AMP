@@ -82,6 +82,13 @@ public:
      */
     inline std::array<int, 6> getLogicalSurfaceIds() const { return d_ids; }
 
+    /**
+     * \brief    Get the geometric type for the geometry
+     * \details  This function returns the largest geometric type supported by the geometry
+     * @return      Returns the geometric dimensions
+     */
+    AMP::Mesh::GeomType getGeomType() const override final;
+
 
 public: // Restart functions
     void writeRestart( int64_t fid ) const override;

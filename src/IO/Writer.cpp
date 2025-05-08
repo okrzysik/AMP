@@ -1,3 +1,4 @@
+#include "AMP/AMP_TPLs.h"
 #include "AMP/IO/AsciiWriter.h"
 #include "AMP/IO/FileSystem.h"
 #include "AMP/IO/HDF5writer.h"
@@ -126,6 +127,16 @@ std::shared_ptr<AMP::IO::Writer> Writer::buildWriter( std::string type, AMP_MPI 
         writer.reset( new AMP::IO::HDF5writer() );
     } else if ( type == "ascii" ) {
         writer.reset( new AMP::IO::AsciiWriter() );
+    } else if ( type == "auto" ) {
+#ifdef AMP_USE_HDF5
+        if ( comm.getSize() == 1 )
+            return buildWriter( "hdf5", comm );
+#endif
+#ifdef AMP_USE_SILO
+        return buildWriter( "silo", comm );
+#else
+        return buildWriter( "null", comm );
+#endif
     } else {
         AMP_ERROR( "Unknown writer: " + type );
     }

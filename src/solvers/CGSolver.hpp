@@ -83,56 +83,68 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     d_iNumberIterations = 0;
 
     // Check input vector states
-    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
-                ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // z will store r when a preconditioner is not present
     // and will store the result of a preconditioner solve
     // when a preconditioner is present
-    std::shared_ptr<AMP::LinearAlgebra::Vector> z;
+    auto z = u->clone();
+    auto p = z->clone();
+    auto w = f->clone();
+
+    // ensure w does no communication
+    w->setNoGhosts();
 
     // residual vector
     AMP::LinearAlgebra::Vector::shared_ptr r = f->clone();
 
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
+        PROFILE( "CGSolver<T>:: u=0, r = f (initial)" );
         u->zero();
         r->copyVector( f );
     } else {
+        PROFILE( "CGSolver<T>:: r = f-Au (initial)" );
         d_pOperator->residual( f, u, r );
     }
 
     // Store initial residual
-    auto current_res = static_cast<T>( r->L2Norm() );
+    {
+        PROFILE( "CGSolver<T>:: r->L2Norm (initial)" );
+        d_dResidualNorm = static_cast<T>( r->L2Norm() );
+    }
+
     // Override zero initial residual to force relative tolerance convergence
     // here to potentially handle singular systems
-    d_dInitialResidual = current_res > std::numeric_limits<T>::epsilon() ? current_res : 1.0;
+    d_dInitialResidual =
+        d_dResidualNorm > std::numeric_limits<T>::epsilon() ? d_dResidualNorm : 1.0;
+
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        AMP::pout << "CG: initial residual: " << d_dResidualNorm << std::endl;
+    }
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        AMP::pout << "CGSolver<T>::apply: initial L2Norm of solution vector: " << u->L2Norm()
-                  << std::endl;
-        AMP::pout << "CGSolver<T>::apply: initial L2Norm of rhs vector: " << f->L2Norm()
-                  << std::endl;
-        AMP::pout << "CGSolver<T>::apply: initial L2Norm of residual: " << current_res << std::endl;
+        AMP::pout << "CG: initial L2Norm of solution vector: " << u->L2Norm() << std::endl;
+        AMP::pout << "CG: initial L2Norm of rhs vector: " << f->L2Norm() << std::endl;
     }
 
     // return if the residual is already low enough
     // checkStoppingCriteria responsible for setting flags on convergence reason
-    if ( checkStoppingCriteria( current_res ) ) {
+    if ( checkStoppingCriteria( d_dResidualNorm ) ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "CGSolver<T>::apply: initial residual below tolerance" << std::endl;
+            AMP::pout << "CG: initial residual below tolerance" << std::endl;
         }
         return;
     }
 
-    z = u->clone();
 
     // apply the preconditioner if it exists
     if ( d_bUsesPreconditioner ) {
+        PROFILE( "CGSolver<T>:: z = M^{-1}r (initial)" );
         d_pPreconditioner->apply( r, z );
     } else {
+        PROFILE( "CGSolver<T>:: z = r (initial) " );
         z->copyVector( r );
     }
 
@@ -148,62 +160,81 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_vDirs[0]->copyVector( r );
     }
 
-    auto rho_1 = static_cast<T>( z->dot( *r ) );
-    auto rho_0 = rho_1;
+    T rho_0, rho_1, alpha, gamma;
 
-    auto p = z->clone();
-    p->copyVector( z );
+    {
+        PROFILE( "CGSolver<T>:: rho_1 = <z,r> (initial)" );
+        rho_1 = static_cast<T>( z->dot( *r ) );
+    }
 
-    auto w = r->clone();
-
+    rho_0 = rho_1;
+    {
+        PROFILE( "CGSolver<T>:: p = z (initial) " );
+        p->copyVector( z );
+    }
     auto k = -1;
 
-    for ( d_iNumberIterations = 0; d_iNumberIterations < d_iMaxIterations; ++d_iNumberIterations ) {
+    for ( d_iNumberIterations = 1; d_iNumberIterations <= d_iMaxIterations;
+          ++d_iNumberIterations ) {
 
         ++k;
-        p->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-        // w = Ap
-        d_pOperator->apply( p, w );
-
-        // gamma = p'Ap
-        auto gamma = static_cast<T>( w->dot( *p ) );
-
+        {
+            PROFILE( "CGSolver<T>:: p->makeConsistent" );
+            p->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        }
+        {
+            PROFILE( "CGSolver<T>:: w = Ap " );
+            // w = Ap
+            d_pOperator->apply( p, w );
+        }
+        {
+            PROFILE( "CGSolver<T>:: gamma = <w,p>" );
+            // gamma = p'Ap
+            gamma = static_cast<T>( w->dot( *p ) );
+        }
         if ( d_sVariant == "fcg" )
             d_gamma[k % d_max_dimension] = gamma;
 
         // sanity check, the curvature should be positive
         if ( gamma == 0.0 ) {
+            // the checkStoppingCriteria looks wrong!! check
             // at solution
-            checkStoppingCriteria( current_res );
+            checkStoppingCriteria( d_dResidualNorm );
             break;
         } else if ( gamma < 0.0 ) {
             // set diverged reason
             d_ConvergenceStatus = SolverStatus::DivergedOther;
-            AMP_WARNING( "CGSolver<T>::apply: negative curvature encountered" );
+            AMP_WARNING( "CG: negative curvature encountered" );
             break;
         }
 
-        auto alpha = rho_1 / gamma;
+        alpha = rho_1 / gamma;
 
         u->axpy( alpha, *p, *u );
         r->axpy( -alpha, *w, *r );
 
-        // compute the current residual norm
-        current_res = static_cast<T>( r->L2Norm() );
+        {
+            PROFILE( "CGSolver<T>:: r->L2Norm" );
+            // compute the current residual norm
+            d_dResidualNorm = static_cast<T>( r->L2Norm() );
+        }
+
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "CG: iteration " << ( d_iNumberIterations + 1 ) << ", residual "
-                      << current_res << std::endl;
+            AMP::pout << "CG: iteration " << d_iNumberIterations << ", residual " << d_dResidualNorm
+                      << std::endl;
         }
 
         // check if converged
-        if ( checkStoppingCriteria( current_res ) ) {
+        if ( checkStoppingCriteria( d_dResidualNorm ) ) {
             break;
         }
 
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
+            PROFILE( "CGSolver<T>:: z = M^{-1}r" );
             d_pPreconditioner->apply( r, z );
         } else {
+            PROFILE( "CGSolver<T>:: z = r " );
             z->copyVector( r );
         }
 
@@ -244,6 +275,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             rho_1 = static_cast<T>( r->dot( *p ) );
 
         } else {
+            PROFILE( "CGSolver<T>:: rho_1 = <r,z>" );
             rho_1 = static_cast<T>( r->dot( *z ) );
         }
 
@@ -257,24 +289,28 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         }
     }
 
-    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
-    if ( d_bComputeResidual ) {
-        d_pOperator->residual( f, u, r );
-        current_res = static_cast<T>( r->L2Norm() );
-        // final check updates flags if needed
-        checkStoppingCriteria( current_res );
+    {
+        PROFILE( "CGSolver<T>:: u->makeConsistent" );
+        u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
-
-    // Store final residual should it be queried elsewhere
-    d_dResidualNorm = current_res;
+    {
+        PROFILE( "CGSolver<T>:: r = f-Au (final)" );
+        d_pOperator->residual( f, u, r );
+    }
+    {
+        PROFILE( "CGSolver<T>:: r->L2Norm (final)" );
+        d_dResidualNorm = static_cast<T>( r->L2Norm() );
+    }
+    // final check updates flags if needed
+    checkStoppingCriteria( d_dResidualNorm );
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
-        AMP::pout << "CGSolver<T>::apply: final L2Norm of solution: " << u->L2Norm() << std::endl;
-        AMP::pout << "CGSolver<T>::apply: final L2Norm of residual: " << current_res << std::endl;
-        AMP::pout << "CGSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
-        AMP::pout << "CGSolver<T>::apply: convergence reason: "
+        AMP::pout << "CG: final residual: " << d_dResidualNorm
+                  << ", iterations: " << d_iNumberIterations << ", convergence reason: "
                   << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
+    }
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "CG: final L2Norm of solution: " << u->L2Norm() << std::endl;
     }
 }
 

@@ -1,5 +1,6 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/solvers/GMRESRSolver.h"
+#include "AMP/solvers/GMRESSolver.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/utils/Utilities.h"
 
@@ -67,6 +68,15 @@ void GMRESRSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters
             }
         }
     }
+
+    // Check if nested solver is GMRES and assert GMRES won't be restarted since it would
+    // breack GMRESR
+    if ( d_variant != "gcr" ) {
+        if ( d_pNestedSolver->type() == "GMRESSolver" ) {
+            auto gmres = std::dynamic_pointer_cast<AMP::Solver::GMRESSolver<T>>( d_pNestedSolver );
+            AMP_INSIST( !gmres->restarted(), "Restarted GMRES can not be used within GMRESR" );
+        }
+    }
 }
 
 // Function to get values from input
@@ -94,8 +104,6 @@ void GMRESRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     d_iNumberIterations = 0;
 
     // Check input vector states
-    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
-                ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
@@ -158,7 +166,7 @@ void GMRESRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         d_pOperator->apply( z, c );
-        for ( int i = 0; i <= k - 1; ++i ) {
+        for ( int i = std::max( 0, k - d_iMaxKrylovDimension ); i <= k - 1; ++i ) {
             j = i % d_iMaxKrylovDimension;
 
             const auto alpha = d_c[j]->dot( *c );

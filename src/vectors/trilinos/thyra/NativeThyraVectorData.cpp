@@ -20,7 +20,7 @@ namespace AMP::LinearAlgebra {
 NativeThyraVectorData::NativeThyraVectorData( Teuchos::RCP<Thyra::VectorBase<double>> vec,
                                               size_t localsize,
                                               AMP_MPI comm )
-    : VectorData()
+    : GhostDataHelper<double>()
 {
     size_t dim = vec->space()->dim();
     AMP_ASSERT( comm.sumReduce( localsize ) == dim );

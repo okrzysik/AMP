@@ -231,8 +231,9 @@ ArraySize Cylinder::getLogicalGridSize( const ArraySize &x ) const
 ArraySize Cylinder::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
-    return { (size_t) ( ( d_z_max - d_z_min ) / res[2] ),
-             (size_t) ( d_r / std::min( res[0], res[1] ) ) };
+    size_t Nxy = d_r / std::min( res[0], res[1] );
+    size_t Nz  = ( d_z_max - d_z_min ) / res[2];
+    return { Nxy, Nxy, Nz };
 }
 
 

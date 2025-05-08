@@ -7,6 +7,7 @@
 namespace AMP::Mesh::MeshWriters {
 
 
+// Write mesh files
 void writeBox( int nx, int ny, int nz, double Lx, double Ly, double Lz, const std::string &file );
 void writeDispValsForPatchTest( const std::string &file );
 void writeDistortedElement( const std::string &file );
@@ -25,6 +26,8 @@ void write7elementMesh( int NumberOfBoundaryNodeIds, const std::string &file );
 void writeConstrainedMesh(
     int nx, int ny, int nz, double Lx, double Ly, double Lz, const std::string &file );
 void writeCookMesh( int nx, int ny, int nz, const std::string &file );
+void writeAMGMesh(
+    int nx, int ny, int nz, double Lx, double Ly, double Lz, const std::string &filename );
 
 } // namespace AMP::Mesh::MeshWriters
 

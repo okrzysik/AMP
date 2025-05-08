@@ -1,4 +1,5 @@
-# Copyright Spack Project Developers. See COPYRIGHT file for details.
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
@@ -21,9 +22,12 @@ class Stacktrace(CMakePackage):
     variant("mpi", default=True, description="build with mpi")
     variant("shared", default=False, description="Build shared libraries")
     variant("pic", default=False, description="Produce position-independent code")
+    variant("timerutility", default=False, description="Build with support for TimerUtility")
 
     depends_on("cmake@3.26.0:", type="build")
     depends_on("mpi", when="+mpi")
+    depends_on("timerutility", when="+timerutility")
+    depends_on("timerutility+shared", when="+timerutility+shared")
 
     def cmake_args(self):
         args = [

@@ -1,13 +1,9 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/MeshParameters.h"
-#include "AMP/operators/BVPOperatorParameters.h"
-#include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
-#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategy.h"
@@ -24,6 +20,7 @@
 #include <iostream>
 #include <string>
 
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 
 void myTest( AMP::UnitTest *ut, const std::string &fileName )
 {
@@ -32,21 +29,20 @@ void myTest( AMP::UnitTest *ut, const std::string &fileName )
     std::string input_file = fileName;
     std::string log_file   = "output_" + fileName;
 
+    AMP::pout << "Running with input " << input_file << std::endl;
+
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    auto mesh_db    = input_db->getDatabase( "Mesh" );
-    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
-    meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    // create the Mesh
+    const auto meshAdapter = createMesh( input_db );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
-    int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
+    auto NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
     auto nonlinBvpOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(

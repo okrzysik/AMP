@@ -45,8 +45,6 @@ public:
                 AMP::LinearAlgebra::Vector::shared_ptr r );
 
 private:
-    AMP::LinearAlgebra::VS_Comm createCommSelect( AMP_MPI globalComm, bool createOnThisRank );
-
     std::shared_ptr<MultiDofDTKMapOperatorParameters> d_multiDofDTKMapOpParams;
     std::shared_ptr<AMP::Operator::DTKMapOperator> d_Map12;
     std::shared_ptr<AMP::Operator::DTKMapOperator> d_Map21;

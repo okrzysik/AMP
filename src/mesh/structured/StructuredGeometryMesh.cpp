@@ -49,6 +49,27 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
         size2, surfaceIds, db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", {} ) );
     BoxMesh::finalize( db->getString( "MeshName" ), getDisplacement( db ) );
 }
+StructuredGeometryMesh::StructuredGeometryMesh(
+    std::shared_ptr<AMP::Geometry::LogicalGeometry> geom,
+    const ArraySize &size,
+    const AMP::AMP_MPI &comm )
+    : BoxMesh(), d_geometry2( geom )
+{
+    // Set base Mesh variables
+    setMeshID();
+    d_comm      = comm;
+    d_geometry  = geom;
+    GeomDim     = geom->getGeomType();
+    PhysicalDim = geom->getDim();
+    d_max_gcw   = 2;
+    // Initialize the logical mesh
+    AMP_ASSERT( size.ndim() == static_cast<int>( GeomDim ) );
+    std::array<int, 3> size2 = { (int) size[0], (int) size[1], (int) size[2] };
+    auto surfaceIds          = d_geometry2->getLogicalSurfaceIds();
+    BoxMesh::initialize( size2, surfaceIds );
+    BoxMesh::finalize( geom->getName(), {} );
+}
+
 StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &mesh )
     : BoxMesh( mesh )
 {

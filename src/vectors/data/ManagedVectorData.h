@@ -3,6 +3,7 @@
 
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/DataChangeListener.h"
+#include "AMP/vectors/data/GhostDataHelper.hpp"
 #include "AMP/vectors/data/VectorData.h"
 
 #include <stdexcept>
@@ -20,7 +21,7 @@ namespace AMP::LinearAlgebra {
    A ManagedVector has two pointers: data and engine.  If the data pointer
    is null, then the engine is assumed to have the data.
 */
-class ManagedVectorData : public VectorData, public DataChangeListener
+class ManagedVectorData : public GhostDataHelper<double>, public DataChangeListener
 {
 
 public:

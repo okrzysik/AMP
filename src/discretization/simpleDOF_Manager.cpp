@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "ProfilerApp.h"
 
 namespace AMP::Discretization {
 
@@ -54,6 +55,8 @@ std::shared_ptr<DOFManager> simpleDOFManager::create( std::shared_ptr<const AMP:
                                                       int DOFsPerObject,
                                                       bool split )
 {
+    PROFILE( "simpleDOFManager::create" );
+
     if ( !mesh )
         return std::shared_ptr<DOFManager>();
     if ( split && std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
@@ -65,7 +68,7 @@ std::shared_ptr<DOFManager> simpleDOFManager::create( std::shared_ptr<const AMP:
             if ( subMesh )
                 managers.push_back( create( subMesh, type, gcw, DOFsPerObject, false ) );
         }
-        auto rtn = std::make_shared<multiDOFManager>( mesh->getComm(), managers );
+        auto rtn = std::make_shared<multiDOFManager>( mesh->getComm(), managers, mesh );
         return rtn;
     }
     // Check if the mesh is a BoxMesh
@@ -82,6 +85,8 @@ std::shared_ptr<DOFManager> simpleDOFManager::create( std::shared_ptr<const AMP:
                                                       const AMP::Mesh::MeshIterator &it2,
                                                       int DOFsPerObject )
 {
+    PROFILE( "simpleDOFManager::create" );
+
     // Check the iterators
     for ( auto &elem : it2 ) {
         auto id = elem.globalID();
@@ -102,6 +107,8 @@ std::shared_ptr<DOFManager> simpleDOFManager::create( std::shared_ptr<const AMP:
 std::shared_ptr<DOFManager> simpleDOFManager::create( const AMP::Mesh::MeshIterator &it,
                                                       int DOFsPerObject )
 {
+    PROFILE( "simpleDOFManager::create" );
+
     // Check the iterator
     auto type = it->globalID().type();
     for ( auto &elem : it ) {
@@ -144,6 +151,8 @@ simpleDOFManager::~simpleDOFManager() = default;
  ****************************************************************/
 void simpleDOFManager::initialize()
 {
+    PROFILE( "simpleDOFManager::initialize" );
+
     // Get the mesh ids
     if ( d_mesh != nullptr ) {
         d_meshID     = d_mesh->meshID();
@@ -207,8 +216,8 @@ static bool containsMesh( std::shared_ptr<const AMP::Mesh::Mesh> mesh, AMP::Mesh
     }
     return false;
 }
-std::shared_ptr<DOFManager> simpleDOFManager::subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                                      bool useMeshComm )
+std::shared_ptr<DOFManager>
+simpleDOFManager::subset( const std::shared_ptr<const AMP::Mesh::Mesh> mesh, bool useMeshComm )
 {
     // Check if we are dealing with a single mesh for both the internal and desired mesh
     if ( mesh->meshID() == d_meshID ) {
@@ -300,8 +309,9 @@ AMP::Mesh::MeshElement simpleDOFManager::getElement( size_t dof ) const
 
 
 /****************************************************************
- * Get an entry over the mesh elements associated with the DOFs  *
+ * Get the mesh / mesh iterator                                  *
  ****************************************************************/
+std::shared_ptr<const AMP::Mesh::Mesh> simpleDOFManager::getMesh() const { return d_mesh; }
 AMP::Mesh::MeshIterator simpleDOFManager::getIterator() const { return d_localIterator.begin(); }
 
 

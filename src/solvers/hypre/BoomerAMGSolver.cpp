@@ -37,8 +37,10 @@ BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> para
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
     hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
-    if ( d_bSetupSolver )
+    if ( d_bSetupSolver ) {
+        PROFILE( "BoomerAMGSolver::BoomerAMGSolver(setup)" );
         HYPRE_BoomerAMGSetup( d_solver, parcsr_A, nullptr, nullptr );
+    }
 }
 
 BoomerAMGSolver::~BoomerAMGSolver() { HYPRE_BoomerAMGDestroy( d_solver ); }
@@ -434,8 +436,9 @@ void BoomerAMGSolver::reset( std::shared_ptr<SolverStrategyParameters> params )
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
     hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
-    if ( d_bSetupSolver )
+    if ( d_bSetupSolver ) {
+        PROFILE( "BoomerAMGSolver::reset(setup)" );
         HYPRE_BoomerAMGSetup( d_solver, parcsr_A, nullptr, nullptr );
+    }
 }
-
 } // namespace AMP::Solver

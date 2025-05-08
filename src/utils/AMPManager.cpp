@@ -13,6 +13,9 @@
 
 // Include external packages for startup/shutdown
 // clang-format off
+#ifdef USE_OPENMP
+    #include <omp.h>
+#endif
 #ifdef USE_CUDA
     #include <cuda.h>
     #include <cuda_runtime_api.h>
@@ -159,8 +162,10 @@ void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &p
     comm_world = AMP_MPI( new_comm, true );
     // Initialize cuda/hip
     start_CudaOrHip();
+    // Initialize OpenMP
+    start_OpenMP();
     // Initialize Kokkos
-    AMP::Utilities::initializeKokkos( argc, argv );
+    AMP::Utilities::initializeKokkos( argc, argv, d_properties );
     // Initialize Hypre
     double hypre_time = start_HYPRE();
     // Initialize PETSc
@@ -393,6 +398,42 @@ double AMPManager::start_CudaOrHip()
     #endif
 #endif
     return getDuration( start );
+}
+
+
+/****************************************************************************
+ * Initialize OpenMP                                                         *
+ ****************************************************************************/
+double AMPManager::start_OpenMP()
+{
+#ifdef USE_OPENMP
+    if ( AMP::Utilities::KokkosInitializedOpenMP() )
+        return 0;
+    auto start = std::chrono::steady_clock::now();
+    // Set the number of threads
+    int N_threads = 1;
+    if ( d_properties.default_OpenMP_threads != 0 )
+        N_threads = d_properties.default_OpenMP_threads;
+    if ( d_properties.default_Kokkos_threads != 0 && AMP::Utilities::KokkosEnabled() )
+        N_threads = d_properties.default_Kokkos_threads;
+    auto OMP_NUM_THREADS = AMP::Utilities::getenv( "OMP_NUM_THREADS" );
+    if ( !OMP_NUM_THREADS.empty() )
+        N_threads = atoi( OMP_NUM_THREADS.data() );
+    AMP::Utilities::setenv( "OMP_NUM_THREADS", std::to_string( N_threads ).data() );
+    omp_set_num_threads( N_threads );
+    // Verify the count
+    int count = 0;
+    #pragma omp parallel
+    {
+    #pragma omp atomic
+        ++count;
+    }
+    if ( count != N_threads )
+        printf( "OpenMP has %i threads but we expected %i\n", count, N_threads );
+    return getDuration( start );
+#else
+    return 0;
+#endif
 }
 
 

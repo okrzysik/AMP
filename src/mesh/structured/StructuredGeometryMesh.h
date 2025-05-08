@@ -24,6 +24,11 @@ public:
     //! Default constructor
     explicit StructuredGeometryMesh( std::shared_ptr<const MeshParameters> );
 
+    //! Create from a geometry
+    explicit StructuredGeometryMesh( std::shared_ptr<AMP::Geometry::LogicalGeometry>,
+                                     const ArraySize &size,
+                                     const AMP::AMP_MPI &comm );
+
     //! Copy constructor
     explicit StructuredGeometryMesh( const StructuredGeometryMesh & );
 

@@ -1,5 +1,7 @@
 // Sample input file to test thermal solve
 
+referenceSolutionNorm = 45431.3
+
 Mesh{
     FileName = "halden_1_pellet_9mil.e"
     MeshType = "libMesh"

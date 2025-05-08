@@ -58,69 +58,79 @@ public:
      * \brief Construct a communication list
      * \param[in] params  A shared pointer to parameters for constructing the list
      * \details This will set the communicator for the communication list.  It will not
-     * compute the communication lists.  Derived classes are expected to call
-     * buildCommunicationArrays with appropriate data to compute the communication list
+     *     compute the communication lists.  Derived classes are expected to call
+     *     buildCommunicationArrays with appropriate data to compute the communication list
+     *     This is a blocking call and must be called from all ranks.
      */
     CommunicationList( std::shared_ptr<const CommunicationListParameters> params );
 
     /**
      * \brief  Construct a CommunicationList with no comunication
-     * \param[in]  local  The number of local elements in the vector
-     * \param[in]  comm   The AMP_MPI for the vector.
+     * \param[in]  local    The number of local elements in the vector
+     * \param[in]  comm     The AMP_MPI for the vector.
      * \details  Create a communication list with no communication.
+     *     This is a blocking call and must be called from all ranks.
      */
     CommunicationList( size_t local, const AMP_MPI &comm );
 
     /**
-     * \brief reset a CommunicationList with no comunication
-     * \param[in]  local  The number of local elements in the vector
-     * \details  Create a communication list with no communication.
+     * \brief  Construct a CommunicationList with no comunication
+     * \param[in]  comm     The AMP_MPI for the vector.
+     * \param[in]  local    The number of local elements for each rank
+     * \param[in]  remote   The remote DOFs that we need to receive on this rank
+     * \details  Create a communication list (advanced interface)
      */
-    void reset( size_t local );
-
-    /**
-     * \brief reset a communication list
-     * \param[in] params  A shared pointer to parameters for constructing the list
-     * \details It will not
-     * compute the communication lists.  Derived classes are expected to call
-     * buildCommunicationArrays with appropriate data to compute the communication list
-     */
-    void reset( std::shared_ptr<const CommunicationListParameters> params );
+    CommunicationList( const AMP_MPI &comm, std::vector<size_t> local, std::vector<size_t> remote );
 
     /**
      * \brief Subset a communication list based on a VectorIndexer
      * \param[in] sub  A VectorIndexer pointer that describes a subset
+     *     This is a blocking call and must be called from all ranks.
      */
     std::shared_ptr<CommunicationList> subset( std::shared_ptr<VectorIndexer> sub );
 
     /**
      * \brief Retrieve the size of the buffer used to receive data from other processes
      * \details This is an alias of getGhostIDList().size()
-     * \return The number of unowned entries on this core
+     *     This is a potentially blocking call and must be called from all ranks.
+     *     It is only blocking if initialize has not been called first.
+     *     Users can explicitly call initialize() to avoid this.
+     * \return The number of unowned entries on this rank
      */
     size_t getVectorReceiveBufferSize() const;
 
     /**
      * \brief Retrieve the size of the buffer used to send data to other processes
      * \details This is an alias of getReplicatedIDList().size()
-     * \return The number of owned entries on this core shared with other cores
+     *     This is a potentially blocking call and must be called from all ranks.
+     *     It is only blocking if initialize has not been called first.
+     *     Users can explicitly call initialize() to avoid this.
+     * \return The number of owned entries on this rank shared with other rank
      */
     size_t getVectorSendBufferSize() const;
 
     /**
      * \brief Retrieve list of global indices shared locally stored elsewhere
-     * \return A vector of indices not owned by the core but are stored locally.
+     * \return A vector of indices not owned by the rank but are stored locally.
      */
     const std::vector<size_t> &getGhostIDList() const;
 
     /**
      * \brief Retrieve list of global indices stored here and shared elsewhere
-     * \return A vector of indices owned by the core and shared on other cores.
+     * \details This will obtain the list of indices owned by this rank and shared on other rank.
+     *     This is a potentially blocking call and must be called from all ranks.
+     *     It is only blocking if initialize has not been called first.
+     *     Users can explicitly call initialize() to avoid this.
+     * \return A vector of indices owned by the rank and shared on other ranks.
      */
     const std::vector<size_t> &getReplicatedIDList() const;
 
     /**
      * \brief Retrieve number of DOFs received from each rank
+     * \details Retrieve number of DOFs received from each rank
+     *     This is a potentially blocking call and must be called from all ranks.
+     *     It is only blocking if initialize has not been called first.
+     *     Users can explicitly call initialize() to avoid this.
      * \return A vector size of comm.getSize() containing the number
      *         of DOFs we will receive from each rank
      */
@@ -128,10 +138,20 @@ public:
 
     /**
      * \brief Retrieve number of DOFs sent to each rank
+     * \details Retrieve number of DOFs sent to each rank
+     *     This is a potentially blocking call and must be called from all ranks.
+     *     It is only blocking if initialize has not been called first.
+     *     Users can explicitly call initialize() to avoid this.
      * \return A vector size of comm.getSize() containing the number
      *         of DOFs we will sent to each rank
      */
     const std::vector<int> &getSendSizes() const;
+
+    //! Get the receive displacements
+    const std::vector<int> &getReceiveDisp() const;
+
+    //! Get the send displacements
+    const std::vector<int> &getSendDisp() const;
 
     /**
      * \brief Retrieve the partition of DOFs
@@ -139,26 +159,6 @@ public:
      *        (getStartGID()+numLocalRows()) for each rank
      */
     const std::vector<size_t> &getPartition() const;
-
-    /**
-     * \brief Scatter data stored here to processors that share the data.
-     * \param[in,out] vec  Data to set
-     * \details  The convention is if data are set on different processes, then
-     * the owner of the data has the correct value.  As such, in a scatter_set,
-     * the owner of data scatters the data out which overwrites the data on cores
-     * that share the data
-     */
-    void scatter_set( VectorData &vec ) const;
-
-    /**
-     * \brief Scatter data shared here to processors that own the data.
-     * \param[in,out] vec  Data to add
-     * \details  When adding data to a vector, any process that shares the data
-     * can contribute to the value of the data.  Therefore, this will scatter data
-     * that is shared to the core that owns it.  A call to scatter_add is generally
-     * followed by a call to scatter_set to ensure parallel consistency.
-     */
-    void scatter_add( VectorData &vec ) const;
 
     /**
      * \brief  Return the first d.o.f. on this core
@@ -175,7 +175,12 @@ public:
      * \brief  Return the number of local rows for this communication list
      * \return The number of local d.o.f. for this communication list
      */
-    virtual size_t numLocalRows() const;
+    size_t numLocalRows() const;
+
+    /**
+     * Clears the internal buffers so that they are empty
+     */
+    void clearBuffers();
 
     /**
      * \brief  Return the local index of a shared datum.
@@ -197,26 +202,23 @@ public:
 
 
 public:
-    //! Build the partition info from the local size
-    static std::vector<size_t> buildPartition( AMP_MPI &comm, size_t N_local );
-
+    // Initialize the internal data
+    void initialize() const;
 
 protected:
-    // Build the communication lists
-    void buildCommunicationArrays( const std::vector<size_t> &dofs );
-
     // Empty constructor
     CommunicationList();
 
 private:
-    AMP_MPI d_comm;                       // Communicator
-    std::vector<size_t> d_ReceiveDOFList; // Sorted DOF receive lists
-    std::vector<size_t> d_SendDOFList;    // Sorted DOF send lists
-    std::vector<size_t> d_partition;      // Partition info
-    std::vector<int> d_ReceiveSizes;      // Number of DOFs to receive from each rank
-    std::vector<int> d_ReceiveDisp;       // Displacement for each rank into d_ReceiveDOFList
-    std::vector<int> d_SendSizes;         // Number of DOFs to send from each rank
-    std::vector<int> d_SendDisp;          // Displacement for each rank into d_SendDisplacements
+    AMP_MPI d_comm;                            // Communicator
+    mutable bool d_initialized = false;        // Have we initialized all of the data
+    std::vector<size_t> d_ReceiveDOFList;      // Sorted DOF receive lists
+    std::vector<size_t> d_partition;           // Partition info
+    mutable std::vector<size_t> d_SendDOFList; // Sorted DOF send lists
+    mutable std::vector<int> d_ReceiveSizes;   // Number of DOFs to receive from each rank
+    mutable std::vector<int> d_ReceiveDisp;    // Displacement for each rank
+    mutable std::vector<int> d_SendSizes;      // Number of DOFs to send from each rank
+    mutable std::vector<int> d_SendDisp;       // Displacement for each rank
 };
 
 } // namespace AMP::LinearAlgebra

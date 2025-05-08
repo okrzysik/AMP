@@ -221,9 +221,12 @@ ArraySize Tube::getLogicalGridSize( const ArraySize &x ) const
 }
 ArraySize Tube::getLogicalGridSize( const std::vector<double> &res ) const
 {
+    constexpr double pi = 3.141592653589793;
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
-    AMP_ERROR( "Not finished" );
-    return {};
+    int Nx = ( d_r_max - d_r_min ) / std::min( res[0], res[1] );
+    int Ny = 2 * pi * d_r_max / std::min( res[0], res[1] );
+    int Nz = ( d_z_max - d_z_min ) / res[2];
+    return { Nx, Ny, Nz };
 }
 
 

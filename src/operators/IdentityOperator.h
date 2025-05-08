@@ -46,6 +46,10 @@ public:
      */
     void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
+    std::shared_ptr<OperatorParameters>
+    getParameters( const std::string &type,
+                   std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                   std::shared_ptr<OperatorParameters> params = nullptr ) override;
     /**
      * Copies the shared pointer for the matrix representation of this linear operator.
      *  @param [in] in_mat The matrix representation of this linear operator.

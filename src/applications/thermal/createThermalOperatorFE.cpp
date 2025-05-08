@@ -148,7 +148,7 @@ createOperators( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     using namespace AMP::Operator;
 
     // Subset the temperature vector
-    auto tempVec = solVec->select( AMP::LinearAlgebra::VS_Mesh( mesh ), solVec->getName() );
+    auto tempVec = solVec->select( AMP::LinearAlgebra::VS_Mesh( mesh ) );
 
     // Create the local model for thermal diffusion
     auto DiffusionTransportModelDB = std::make_shared<AMP::Database>( "DiffusionTransportModel" );
@@ -192,7 +192,7 @@ createOperators( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         nonlinearBoundaryOp->append( DirichletOp );
     } else {
         AMP_ASSERT( boundaryIds.size() == boundaryImpedance.size() );
-        auto boundaryVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
+        auto boundaryVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
         auto boundaryDOFs = AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
         for ( size_t i = 0; i < boundaryIds.size(); i++ ) {

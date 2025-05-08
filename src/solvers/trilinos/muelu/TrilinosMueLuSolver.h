@@ -169,6 +169,7 @@ protected:
     Teuchos::RCP<MueLu::SmootherFactory<SC, LO, GO, NO>> getSmootherFactory( const int level );
 
     Teuchos::ParameterList &getSmootherParameters( const int level );
+    MueLu::MsgType getVerbosityLevel();
 
 private:
     bool d_bUseEpetra      = true;  //! whether we are using Epetra
