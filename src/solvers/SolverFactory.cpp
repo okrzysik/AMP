@@ -23,6 +23,7 @@ responsibility for the use of this software.
 #include "AMP/solvers/BiCGSTABSolver.h"
 #include "AMP/solvers/CGSolver.h"
 #include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/DiagonalSolver.h"
 #include "AMP/solvers/GMRESRSolver.h"
 #include "AMP/solvers/GMRESSolver.h"
 #include "AMP/solvers/NonlinearKrylovAccelerator.h"
@@ -107,7 +108,6 @@ void AMP::FactoryStrategy<AMP::Solver::SolverStrategy,
     d_factories["TFQMRSolver"]     = TFQMRSolver<double>::createSolver;
     d_factories["QMRCGSTABSolver"] = QMRCGSTABSolver<double>::createSolver;
 
-    d_factories["NKASolver"] = NonlinearKrylovAccelerator<double>::createSolver;
 
     d_factories["CGSolver<double>"]        = CGSolver<double>::createSolver;
     d_factories["GMRESSolver<double>"]     = GMRESSolver<double>::createSolver;
@@ -116,8 +116,6 @@ void AMP::FactoryStrategy<AMP::Solver::SolverStrategy,
     d_factories["TFQMRSolver<double>"]     = TFQMRSolver<double>::createSolver;
     d_factories["QMRCGSTABSolver<double>"] = QMRCGSTABSolver<double>::createSolver;
 
-    d_factories["NKASolver<double>"] = NonlinearKrylovAccelerator<double>::createSolver;
-
     d_factories["CGSolver<float>"]        = CGSolver<float>::createSolver;
     d_factories["GMRESSolver<float>"]     = GMRESSolver<float>::createSolver;
     d_factories["GMRESRSolver<float>"]    = GMRESRSolver<float>::createSolver;
@@ -125,7 +123,13 @@ void AMP::FactoryStrategy<AMP::Solver::SolverStrategy,
     d_factories["TFQMRSolver<float>"]     = TFQMRSolver<float>::createSolver;
     d_factories["QMRCGSTABSolver<float>"] = QMRCGSTABSolver<float>::createSolver;
 
-    d_factories["NKASolver<float>"] = NonlinearKrylovAccelerator<float>::createSolver;
+    d_factories["NKASolver"]         = NonlinearKrylovAccelerator<double>::createSolver;
+    d_factories["NKASolver<double>"] = NonlinearKrylovAccelerator<double>::createSolver;
+    d_factories["NKASolver<float>"]  = NonlinearKrylovAccelerator<float>::createSolver;
+
+    d_factories["DiagonalSolver"]         = DiagonalSolver<double>::createSolver;
+    d_factories["DiagonalSolver<double>"] = DiagonalSolver<double>::createSolver;
+    d_factories["DiagonalSolver<float>"]  = DiagonalSolver<float>::createSolver;
 
     d_factories["BandedSolver"] = BandedSolver::createSolver;
 
