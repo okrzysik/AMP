@@ -1,6 +1,6 @@
 #include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/UtilityMacros.h"
+#include "AMP/utils/Utilities.h"
 
 #include "AMP/AMP_TPLs.h"
 #ifdef AMP_USE_LIBMESH
@@ -60,15 +60,15 @@ putVector( AMP::Database &db, std::string_view key, const std::vector<std::array
         db.putArray<TYPE>( key, {} );
     AMP::Array<TYPE> data2;
     data2.viewRaw( { SIZE, x.size() }, const_cast<TYPE *>( x[0].data() ) );
-    db.putArray( key, data2 );
+    db.putArray( key, data2, {}, AMP::Database::Check::Overwrite );
 }
 static void
 putVector( AMP::Database &db, std::string_view key, const std::vector<std::vector<int>> x )
 {
-    db.putScalar<int>( key, x.size() );
+    db.putScalar<int>( key, x.size(), {}, AMP::Database::Check::Overwrite );
     for ( size_t i = 0; i < x.size(); i++ ) {
         auto key2 = std::string( key ) + std::to_string( i + 1 );
-        db.putVector( key2, x[i] );
+        db.putVector( key2, x[i], {}, AMP::Database::Check::Overwrite );
     }
 }
 template<class TYPE, size_t SIZE>
@@ -90,81 +90,6 @@ std::vector<std::vector<int>> getVector( const AMP::Database &db, std::string_vi
         x[i]      = db.getVector<int>( key2 );
     }
     return x;
-}
-
-
-/********************************************************
- * Generate the database for a known mesh                *
- ********************************************************/
-std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
-{
-    PROFILE( "generateTestMesh" );
-    if ( name == "distortedElementMesh" ) {
-        return createDistortedElement();
-    } else if ( name == "cookMesh0" ) {
-        return createCookMesh( 9, 2, 9 );
-    } else if ( name == "cookMesh1" ) {
-        return createCookMesh( 17, 3, 17 );
-    } else if ( name == "cookMesh2" ) {
-        return createCookMesh( 33, 5, 33 );
-    } else if ( name == "cookMesh3" ) {
-        return createCookMesh( 65, 9, 65 );
-    } else if ( name == "cookMesh4" ) {
-        return createCookMesh( 129, 17, 129 );
-    } else if ( name == "regPlateWithHole1" ) {
-        return createPlateWithHole( 5, 15, 15, 15, 5.0, 10.0, 1.0, 1.0 );
-    } else if ( name == "regPlateWithHole2" ) {
-        return createPlateWithHole( 10, 30, 30, 30, 5.0, 10.0, 1.0, 1.0 );
-    } else if ( name == "mesh7elem-1" ) {
-        return create7elementMesh( 2 );
-    } else if ( name == "mesh7elem-2" ) {
-        return create7elementMesh( 8 );
-    } else if ( name == "boxMesh-1" ) {
-        return createAMGMesh( 2, 2, 2, 10, 10, 10 );
-    } else if ( name == "boxMesh-2" ) {
-        return createAMGMesh( 3, 3, 3, 10, 10, 10 );
-    } else if ( name == "boxMesh-3" ) {
-        return createAMGMesh( 5, 5, 5, 10, 10, 10 );
-    } else if ( name == "boxMesh-4" ) {
-        return createAMGMesh( 9, 9, 9, 10, 10, 10 );
-    } else if ( name == "boxMesh-5" ) {
-        return createAMGMesh( 17, 17, 17, 10, 10, 10 );
-    }
-    return {};
-}
-
-
-/********************************************************
- * Create and write all known test meshes                *
- ********************************************************/
-void generateAll()
-{
-    const char *ascii[] = { "distortedElementMesh",
-                            "cookMesh0",
-                            "cookMesh1",
-                            "cookMesh2",
-                            "cookMesh3",
-                            "cookMesh4",
-                            "regPlateWithHole1",
-                            "regPlateWithHole2",
-                            "mesh7elem-1",
-                            "mesh7elem-2",
-                            "boxMesh-1",
-                            "boxMesh-2",
-                            "boxMesh-3",
-                            "boxMesh-4",
-                            "boxMesh-5" };
-    // const char* binary[] = {};
-    for ( auto name : ascii ) {
-        auto db = generateTestMesh( name );
-        AMP_ASSERT( db );
-        writeTestMesh( *db, name );
-    }
-    /*for ( auto name : binary ) {
-        auto db = generateTestMesh( name );
-        AMP_ASSERT( db );
-        writeBinaryTestMesh( *db, name );
-    }*/
 }
 
 
@@ -656,17 +581,17 @@ DatabasePtr create2elementMesh( double a, int ny, int nz, double Lx, double Ly, 
     // x = 0, z = (nz - 1) edge
     BoundaryNodes[1] = std::vector<int>( ny );
     for ( int yi = 0; yi < ny; yi++ )
-        BoundaryNodes[0][yi] = NODE( 0, yi, ( nz - 1 ) );
+        BoundaryNodes[1][yi] = NODE( 0, yi, ( nz - 1 ) );
 
     // x = 2, z = 0 edge
     BoundaryNodes[2] = std::vector<int>( ny );
     for ( int yi = 0; yi < ny; yi++ )
-        BoundaryNodes[0][yi] = NODE( 2, yi, 0 );
+        BoundaryNodes[2][yi] = NODE( 2, yi, 0 );
 
     // x = 2, z = (nz - 1) edge
     BoundaryNodes[3] = std::vector<int>( ny );
     for ( int yi = 0; yi < ny; yi++ )
-        BoundaryNodes[0][yi] = NODE( 2, yi, ( nz - 1 ) );
+        BoundaryNodes[3][yi] = NODE( 2, yi, ( nz - 1 ) );
 
     std::vector<std::vector<int>> SideIds;
 
@@ -986,6 +911,173 @@ DatabasePtr createAMGMesh( int nx, int ny, int nz, double Lx, double Ly, double 
 
 
 /********************************************************
+ * Generate a lumlmesh                                   *
+ ********************************************************/
+std::shared_ptr<AMP::Database> createLUML( int Nx, int Ny, int Nz, double Lx, double Ly, double Lz )
+{
+    auto db   = createAMGMesh( Nx, Ny, Nz, Lx, Ly, Lz );
+    auto mesh = db->getDatabase( "Mesh" );
+    auto NODE = [Nx, Ny]( int xi, int yi, int zi ) { return xi + yi * Nx + zi * Nx * Ny; };
+    std::vector<std::vector<int>> BoundaryNodes( 6 );
+    BoundaryNodes[0].resize( Ny * Nz );
+    BoundaryNodes[1].resize( Ny * Nz );
+    for ( int i = 0; i < Ny * Nz; i++ ) {
+        BoundaryNodes[0][i] = i * Nx;
+        BoundaryNodes[1][i] = Nx - 1 + i * Nx;
+    }
+    BoundaryNodes[2].resize( ( Ny - 2 ) * ( Nz - 2 ) );
+    for ( int k = 1, i = 0; k < Nz - 1; k++ ) {
+        for ( int j = 1; j < Ny - 1; j++ ) {
+            BoundaryNodes[2][i++] = NODE( Nx - 1, j, k );
+        }
+    }
+    BoundaryNodes[3].resize( 2 * ( Ny - 2 ) );
+    BoundaryNodes[4].resize( 2 * ( Nz - 2 ) );
+    int i = 0;
+    for ( int j = 1; j < Ny - 1; j++ )
+        BoundaryNodes[3][i++] = NODE( Nx - 1, j, 0 );
+    for ( int j = 1; j < Ny - 1; j++ )
+        BoundaryNodes[3][i++] = NODE( Nx - 1, j, Nz - 1 );
+    i = 0;
+    for ( int k = 1; k < Nz - 1; k++ )
+        BoundaryNodes[4][i++] = NODE( Nx - 1, 0, k );
+    for ( int k = 1; k < Nz - 1; k++ )
+        BoundaryNodes[4][i++] = NODE( Nx - 1, Ny - 1, k );
+    BoundaryNodes[5] = { NODE( Nx - 1, 0, 0 ),
+                         NODE( Nx - 1, Ny - 1, 0 ),
+                         NODE( Nx - 1, 0, Nz - 1 ),
+                         NODE( Nx - 1, Ny - 1, Nz - 1 ) };
+    putVector( *mesh, "BoundaryNodes", BoundaryNodes );
+    return db;
+}
+
+
+/********************************************************
+ * Generate the database for a known mesh                *
+ ********************************************************/
+std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
+{
+    PROFILE( "generateTestMesh" );
+    if ( name == "distortedElementMesh" ) {
+        return createDistortedElement();
+    } else if ( name == "cookMesh0" ) {
+        return createCookMesh( 9, 2, 9 );
+    } else if ( name == "cookMesh1" ) {
+        return createCookMesh( 17, 3, 17 );
+    } else if ( name == "cookMesh2" ) {
+        return createCookMesh( 33, 5, 33 );
+    } else if ( name == "cookMesh3" ) {
+        return createCookMesh( 65, 9, 65 );
+    } else if ( name == "cookMesh4" ) {
+        return createCookMesh( 129, 17, 129 );
+    } else if ( name == "regPlateWithHole1" ) {
+        return createPlateWithHole( 5, 15, 15, 15, 5.0, 10.0, 1.0, 1.0 );
+    } else if ( name == "regPlateWithHole2" ) {
+        return createPlateWithHole( 10, 30, 30, 30, 5.0, 10.0, 1.0, 1.0 );
+    } else if ( name == "mesh2elem-1" ) {
+        return create2elementMesh( 0, 2, 2, 10, 0.1, 2 );
+    } else if ( name == "mesh2elem-2" ) {
+        return create2elementMesh( 1, 2, 2, 10, 0.1, 2 );
+    } else if ( name == "mesh2elem-3" ) {
+        return create2elementMesh( 2, 2, 2, 10, 0.1, 2 );
+    } else if ( name == "mesh2elem-4" ) {
+        return create2elementMesh( 3, 2, 2, 10, 0.1, 2 );
+    } else if ( name == "mesh2elem-5" ) {
+        return create2elementMesh( 4, 2, 2, 10, 0.1, 2 );
+    } else if ( name == "mesh2elem-6" ) {
+        return create2elementMesh( 5, 2, 2, 10, 0.1, 2 );
+    } else if ( name == "mesh7elem-1" ) {
+        return create7elementMesh( 2 );
+    } else if ( name == "mesh7elem-2" ) {
+        return create7elementMesh( 8 );
+    } else if ( name == "boxMesh-1" ) {
+        return createAMGMesh( 2, 2, 2, 10, 10, 10 );
+    } else if ( name == "boxMesh-2" ) {
+        return createAMGMesh( 3, 3, 3, 10, 10, 10 );
+    } else if ( name == "boxMesh-3" ) {
+        return createAMGMesh( 5, 5, 5, 10, 10, 10 );
+    } else if ( name == "boxMesh-4" ) {
+        return createAMGMesh( 9, 9, 9, 10, 10, 10 );
+    } else if ( name == "boxMesh-5" ) {
+        return createAMGMesh( 17, 17, 17, 10, 10, 10 );
+    } else if ( name == "lumlmesh1" ) {
+        return createLUML( 9, 9, 9, 10, 10, 10 );
+    } else if ( name == "lumlmesh2" ) {
+        return createLUML( 17, 9, 9, 20, 10, 10 );
+    } else if ( name == "lumlmesh3" ) {
+        return createLUML( 17, 17, 9, 20, 20, 10 );
+    } else if ( name == "lumlmesh4" ) {
+        return createLUML( 17, 17, 17, 10, 10, 10 );
+    } else if ( name == "lumlmesh5" ) {
+        return createLUML( 33, 17, 17, 20, 10, 10 );
+    } else if ( name == "lumlmesh6" ) {
+        return createLUML( 33, 33, 17, 20, 20, 10 );
+    } else if ( name == "lumlmesh7" ) {
+        return createLUML( 33, 33, 33, 10, 10, 10 );
+    } else if ( name == "lumlmesh8" ) {
+        return createLUML( 65, 33, 33, 20, 10, 10 );
+    } else if ( name == "mesh0" ) {
+        return createLUML( 7, 2, 2, 6, 0.1, 0.2 );
+    } else if ( name == "mesh1" ) {
+        return createLUML( 13, 3, 3, 6, 0.1, 0.2 );
+    } else if ( name == "mesh2" ) {
+        return createLUML( 25, 5, 5, 6, 0.1, 0.2 );
+    } else if ( name == "mesh3" ) {
+        return createLUML( 49, 9, 9, 6, 0.1, 0.2 );
+    } else if ( name == "mesh4" ) {
+        return createLUML( 97, 17, 17, 6, 0.1, 0.2 );
+    }
+    return {};
+}
+
+
+/********************************************************
+ * Create and write all known test meshes                *
+ ********************************************************/
+void generateAll()
+{
+    const char *ascii[]  = { "distortedElementMesh",
+                             "cookMesh0",
+                             "cookMesh1",
+                             "cookMesh2",
+                             "cookMesh3",
+                             "cookMesh4",
+                             "regPlateWithHole1",
+                             "regPlateWithHole2",
+                             "mesh7elem-1",
+                             "mesh7elem-2",
+                             "boxMesh-1",
+                             "boxMesh-2",
+                             "boxMesh-3",
+                             "boxMesh-4",
+                             "boxMesh-5",
+                             "mesh0",
+                             "mesh1",
+                             "mesh2",
+                             "mesh3",
+                             "mesh4",
+                             "mesh2elem-1",
+                             "mesh2elem-2",
+                             "mesh2elem-3",
+                             "mesh2elem-4",
+                             "mesh2elem-5",
+                             "mesh2elem-6" };
+    const char *binary[] = { "lumlmesh1", "lumlmesh2", "lumlmesh3", "lumlmesh4",
+                             "lumlmesh5", "lumlmesh6", "lumlmesh7", "lumlmesh8" };
+    for ( auto name : ascii ) {
+        auto db = generateTestMesh( name );
+        AMP_ASSERT( db );
+        writeTestMesh( *db, name );
+    }
+    for ( auto name : binary ) {
+        auto db = generateTestMesh( name );
+        AMP_ASSERT( db );
+        writeBinaryTestMesh( *db, name );
+    }
+}
+
+
+/********************************************************
  * Read a test mesh file                                 *
  * Note: we cache certain known meshes                   *
  ********************************************************/
@@ -1176,7 +1268,11 @@ void writeTestMesh( const AMP::Database &db0, const std::string &filename )
         auto data = db0.getData( key );
         std::ostringstream os;
         data->print( os );
-        fprintf( fp, "%s = %s\n", key.data(), os.str().data() );
+        if ( db0.isDatabase( key ) ) {
+            fprintf( fp, "%s {\n%s\n}\n", key.data(), os.str().data() );
+        } else {
+            fprintf( fp, "%s = %s\n", key.data(), os.str().data() );
+        }
     }
     fclose( fp );
 }
