@@ -272,8 +272,8 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
             for ( int k = 0; k < ( ze[ei] + 1 ); k++ ) {
                 uniqueNodeId[ei][li][k].resize( xe[ei] + 1 );
             } // end for k
-        } // end for li
-    } // end for ei
+        }     // end for li
+    }         // end for ei
 
     int nodeCnt = 0;
     int numPts  = 4 * ( le + 1 ) * ( ne + 1 ) * ( me + pe );
@@ -322,7 +322,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                                              static_cast<double>( ne ) );
                 nodes[nodeCnt++] = { xPos, lYarr[li], zPos };
             } // end for ni
-        } // end for mi
+        }     // end for mi
 
         // Node zone 6
         for ( int pi = 1; pi < pe; pi++ ) {
@@ -335,7 +335,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                                    static_cast<double>( ne ) );
                 nodes[nodeCnt++] = { xPos, lYarr[li], zPos };
             } // end for ni
-        } // end for pi
+        }     // end for pi
 
         // Node zone 7
         for ( int mi = 1; mi <= me; mi++ ) {
@@ -350,7 +350,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                                              static_cast<double>( ne ) );
                 nodes[nodeCnt++] = { xPos, lYarr[li], -zPos };
             } // end for ni
-        } // end for mi
+        }     // end for mi
 
         // Node zone 8
         for ( int pi = 1; pi < pe; pi++ ) {
@@ -363,7 +363,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                                    static_cast<double>( ne ) );
                 nodes[nodeCnt++] = { xPos, lYarr[li], -zPos };
             } // end for ni
-        } // end for pi
+        }     // end for pi
 
         // Node zone 9
         for ( int mi = 1; mi <= me; mi++ ) {
@@ -379,7 +379,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                                              static_cast<double>( ne ) );
                 nodes[nodeCnt++] = { -xPos, lYarr[li], zPos };
             } // end for ni
-        } // end for mi
+        }     // end for mi
 
         // Node zone 10
         for ( int pi = 1; pi < pe; pi++ ) {
@@ -392,7 +392,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                                    static_cast<double>( ne ) );
                 nodes[nodeCnt++] = { -xPos, lYarr[li], zPos };
             } // end for ni
-        } // end for pi
+        }     // end for pi
 
         // Node zone 11
         for ( int mi = 1; mi <= me; mi++ ) {
@@ -408,7 +408,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                                              static_cast<double>( ne ) );
                 nodes[nodeCnt++] = { -xPos, lYarr[li], -zPos };
             } // end for ni
-        } // end for mi
+        }     // end for mi
 
         // Node zone 12
         for ( int pi = 1; pi < pe; pi++ ) {
@@ -421,7 +421,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                                    static_cast<double>( ne ) );
                 nodes[nodeCnt++] = { -xPos, lYarr[li], -zPos };
             } // end for ni
-        } // end for pi
+        }     // end for pi
 
     } // end for li
 
@@ -445,9 +445,9 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                     p[7]            = uniqueNodeId[ei][li + 1][zi + 1][xi];
                     elem[elemCnt++] = { p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7] };
                 } // end for xi
-            } // end for zi
-        } // end for ei
-    } // end for li
+            }     // end for zi
+        }         // end for ei
+    }             // end for li
 
 
     std::vector<std::vector<int>> BoundaryNodes( 2 );
@@ -551,7 +551,7 @@ DatabasePtr create2elementMesh( double a, int ny, int nz, double Lx, double Ly, 
                 nodes[pi++] = { px, py, pz };
             }
         } // end for yi
-    } // end for zi
+    }     // end for zi
 
     int numElem = 2 * ( ny - 1 ) * ( nz - 1 );
     std::vector<std::array<int, 8>> elem( numElem );
@@ -568,8 +568,8 @@ DatabasePtr create2elementMesh( double a, int ny, int nz, double Lx, double Ly, 
                 int p7     = NODE( xi, ( yi + 1 ), ( zi + 1 ) );
                 elem[pi++] = { p0, p1, p2, p3, p4, p5, p6, p7 };
             } // end for xi
-        } // end for yi
-    } // end for zi
+        }     // end for yi
+    }         // end for zi
 
     std::vector<std::vector<int>> BoundaryNodes( 4 );
 
@@ -800,7 +800,7 @@ DatabasePtr createCookMesh( int nx, int ny, int nz )
         for ( int yi = 0; yi < ny; yi++, cnt++ ) {
             BoundaryNodes[1][cnt] = NODE( ( nx - 1 ), yi, zi );
         } // end for yi
-    } // end for zi
+    }     // end for zi
 
     std::vector<std::vector<int>> SideIds;
 

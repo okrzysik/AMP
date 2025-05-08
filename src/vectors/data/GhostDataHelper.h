@@ -22,6 +22,7 @@ public: // Functions overloaded from VectorData
     void aliasGhostBuffer( std::shared_ptr<VectorData> in ) override;
     size_t getGhostSize() const override;
     void fillGhosts( const Scalar & ) override;
+    void setNoGhosts() override;
     bool containsGlobalElement( size_t ) const override;
     void setGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
     void addGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;

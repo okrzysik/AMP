@@ -101,6 +101,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
         r0->copyVector( f );
+        x->zero();
     } else {
         d_pOperator->residual( f, x, r0 );
     }
