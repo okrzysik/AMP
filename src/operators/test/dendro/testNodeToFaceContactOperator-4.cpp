@@ -5,8 +5,8 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/euclidean_geometry_tools.h"
 #include "AMP/mesh/latex_visualization_tools.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -175,7 +175,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::make_shared<AMP::Solver::TrilinosMLSolver>( masterSolverParams );
             columnPreconditioner->append( masterSolver );
         } // end if
-    }     // end if
+    } // end if
 
     std::shared_ptr<AMP::Operator::LinearBVPOperator> slaveBVPOperator;
     auto slaveMeshID      = contactOperator->getSlaveMeshID();
@@ -207,7 +207,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto slaveSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( slaveSolverParams );
             columnPreconditioner->append( slaveSolver );
         } // end if
-    }     // end if
+    } // end if
 
     auto contactPreconditioner_db = columnPreconditioner_db->getDatabase( "ContactPreconditioner" );
     auto contactPreconditionerParams =
@@ -427,7 +427,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 //        zDispVec->setValueByGlobalID(dofs[2], 0.00005);
                 columnSolVec->setValueByGlobalID( dofs[2], 0.00005 );
             } // end if
-        }     // end for
+        } // end for
         contactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         //    zDispVec->zero();
         columnSolVec->zero();
@@ -740,7 +740,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     std::cout << "!!!!!! ACTIVE SET ITERATIONS DID NOT CONVERGE !!!!!!!!\n";
                 }
             } // end if
-        }     // end for
+        } // end for
 
     } // end for
 

@@ -5,8 +5,8 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/euclidean_geometry_tools.h"
 #include "AMP/mesh/latex_visualization_tools.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -214,7 +214,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::make_shared<AMP::Solver::TrilinosMLSolver>( bottomPelletSolverParams );
             columnPreconditioner->append( bottomPelletSolver );
         } // end if
-    }     // end if
+    } // end if
 
     auto topPelletMeshID = bottomPelletTopPelletContactOperator->getSlaveMeshID();
     AMP_ASSERT( topPelletMeshID == topPelletCladContactOperator->getMasterMeshID() );
@@ -246,7 +246,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::make_shared<AMP::Solver::TrilinosMLSolver>( topPelletSolverParams );
             columnPreconditioner->append( topPelletSolver );
         } // end if
-    }     // end if
+    } // end if
 
     auto cladMeshID = bottomPelletCladContactOperator->getSlaveMeshID();
     AMP_ASSERT( cladMeshID == topPelletCladContactOperator->getSlaveMeshID() );
@@ -504,7 +504,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     dispDofManager->getDOFs( it->globalID(), dofs );
                     columnSolVec->setValueByGlobalID( dofs[2], 0.0001 );
                 } // end if
-            }     // end for
+            } // end for
         }
         bottomPelletTopPelletContactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         columnSolVec->zero();
@@ -1094,7 +1094,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     std::cout << "!!!!!! ACTIVE SET ITERATIONS DID NOT CONVERGE !!!!!!!!\n";
                 }
             } // end if
-        }     // end for
+        } // end for
 
     } // end for
 

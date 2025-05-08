@@ -5,8 +5,8 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/euclidean_geometry_tools.h"
 #include "AMP/mesh/latex_visualization_tools.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -90,7 +90,7 @@ static void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> me
             os << "\\draw[" << option << "]\n";
             write_face( faceDataPtr, os );
         } // end if
-    }     // end for
+    } // end for
 }
 
 static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
