@@ -5,8 +5,8 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
@@ -192,25 +192,17 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     auto inputDatabase = AMP::Database::parseInputFile( inputFile );
     inputDatabase->print( AMP::plog );
 
-    std::shared_ptr<AMP::Mesh::Mesh> mesh;
-    [[maybe_unused]] std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
-
     // Regular grid mesh file
+    std::shared_ptr<AMP::Mesh::Mesh> mesh;
     bool useRegularGridMesh = inputDatabase->getScalar<bool>( "UseRegularGridMesh" );
     if ( useRegularGridMesh ) {
-        libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
-        libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
         auto mesh_file    = inputDatabase->getString( "mesh_file" );
-        auto myMesh       = std::make_shared<libMesh::Mesh>( comm, 3 );
         bool binaryMeshes = inputDatabase->getScalar<bool>( "BinaryMeshes" );
         if ( binaryMeshes ) {
-            AMP::readBinaryTestMesh( mesh_file, myMesh );
+            mesh = AMP::Mesh::MeshWriters::readBinaryTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
         } else {
-            AMP::readTestMesh( mesh_file, myMesh );
+            mesh = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
         }
-        libMesh::MeshCommunication().broadcast( *myMesh );
-        myMesh->prepare_for_use( false );
-        mesh = std::make_shared<AMP::Mesh::libmeshMesh>( myMesh, "myMesh" );
     } else {
         // Create the Mesh.
         AMP_INSIST( inputDatabase->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
