@@ -92,6 +92,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
         res->copyVector( f );
+        x->zero();
     } else {
         d_pOperator->residual( f, x, res );
     }
