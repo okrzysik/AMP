@@ -15,6 +15,7 @@ COPY_TEST_FILE( PetscBiCGSTABParameters )
 COPY_TEST_FILE( PC-BoomerAMGParameters )
 COPY_TEST_FILE( PC-MLParameters )
 COPY_TEST_FILE( PC-MueLuParameters )
+COPY_TEST_FILE( PC-DiagParameters )
 
 # Copy test inputs
 COPY_TEST_FILE( input_LinearElasticityOperator-1 )
