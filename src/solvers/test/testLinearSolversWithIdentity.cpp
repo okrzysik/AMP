@@ -86,9 +86,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
 
 static void myTest( AMP::UnitTest *ut )
 {
-    std::vector<std::pair<std::string, std::string>> solvers{
-        { "CG", "NoPC" }, { "GMRES", "NoPC" }, { "FGMRES", "NoPC" }, { "BiCGSTAB", "NoPC" }
-    };
+    std::vector<std::pair<std::string, std::string>> solvers{ { "CG", "NoPC" },
+                                                              { "GMRES", "NoPC" },
+                                                              { "FGMRES", "NoPC" },
+                                                              { "BiCGSTAB", "NoPC" },
+                                                              { "TFQMR", "NoPC" } };
 
     for ( auto &[primary, nested] : solvers ) {
         std::shared_ptr<AMP::Database> db = std::make_shared<AMP::Database>( "SolverDatabase" );
