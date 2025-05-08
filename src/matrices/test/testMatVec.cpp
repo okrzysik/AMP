@@ -11,7 +11,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -41,7 +41,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 #if defined( AMP_USE_TRILINOS )
     type = "ManagedEpetraMatrix";
 #elif defined( AMP_USE_PETSC )
-    type         = "NativePetscMatrix";
+    type = "NativePetscMatrix";
 #else
     AMP_ERROR( "This test requires either Trilinos or Petsc matrices to be enabled" );
 #endif

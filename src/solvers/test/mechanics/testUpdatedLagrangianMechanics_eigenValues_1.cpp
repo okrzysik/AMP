@@ -2,8 +2,8 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -34,16 +34,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    std::string mesh_file       = input_db->getString( "mesh_file" );
-    const unsigned int mesh_dim = 3;
-    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
-    auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
-    AMP::readTestMesh( mesh_file, mesh );
-    libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
-    mesh->prepare_for_use( false );
-
-    auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "TestMesh" );
+    auto mesh_file   = input_db->getString( "mesh_file" );
+    auto meshAdapter = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );

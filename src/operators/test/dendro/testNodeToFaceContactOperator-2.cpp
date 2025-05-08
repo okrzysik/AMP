@@ -5,8 +5,8 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/euclidean_geometry_tools.h"
 #include "AMP/mesh/latex_visualization_tools.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CustomConstraintsEliminationOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -51,7 +51,7 @@ static void selectNodes( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             //      std::cout<<nodesGlobalIDs.size()<<"  ("<<coord[0]<<", "<<coord[1]<<",
             //      "<<coord[2]<<")"<<std::endl;
         } // end if
-    }     // end for
+    } // end for
 }
 
 static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
@@ -111,7 +111,7 @@ getConcentratedLoadAtNodes( double loadParameter,
                 //        ("<<vertexCoordinates[0]<<", "<<vertexCoordinates[1]<<"
                 //        ,"<<vertexCoordinates[2]<<")\n";
             } // end if
-        }     // end for
+        } // end for
         std::cout << "TOTAL load=" << totalLoad << "\n";
         AMP_ASSERT( loadValues.size() > 0 );
     } // end if
@@ -326,7 +326,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double>>( it->globalID(),
                                                                                    dummyTmp ) );
             } // end if
-        }     // end for
+        } // end for
     }
 
     //{
