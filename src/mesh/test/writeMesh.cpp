@@ -82,6 +82,15 @@ void run( const std::string &exe, const std::vector<double> &args, const std::st
         double Ly = args[4];
         double Lz = args[5];
         db        = AMP::Mesh::MeshWriters::createAMGMesh( nx, ny, nz, Lx, Ly, Lz );
+    } else if ( exe == "writeLUML" ) {
+        CHECK_ARGS( 6, "Usage: <exe> writeLUML nx ny nz Lx Ly Lz filename\n" );
+        int nx    = args[0];
+        int ny    = args[1];
+        int nz    = args[2];
+        double Lx = args[3];
+        double Ly = args[4];
+        double Lz = args[5];
+        db        = AMP::Mesh::MeshWriters::createLUML( nx, ny, nz, Lx, Ly, Lz );
     } else {
         std::cerr << "Unknown mesh: " << exe << std::endl;
         exit( 1 );
@@ -106,9 +115,11 @@ int main( int argc, char **argv )
         auto db = AMP::Mesh::MeshWriters::readTestMesh( "outWriteBox" );
         AMP::Mesh::MeshWriters::writeTestMesh( *db, "outWriteBox(copy)" );
     } else if ( std::string_view( argv[1] ) == "copy" ) {
+        AMP_ASSERT( argc == 4 );
         auto db = AMP::Mesh::MeshWriters::readTestMesh( argv[2], false );
         AMP::Mesh::MeshWriters::writeTestMesh( *db, argv[3] );
     } else if ( std::string_view( argv[1] ) == "copyBinary" ) {
+        AMP_ASSERT( argc == 4 );
         auto db = AMP::Mesh::MeshWriters::readBinaryTestMesh( argv[2] );
         AMP::Mesh::MeshWriters::writeTestMesh( *db, argv[3] );
     } else {
