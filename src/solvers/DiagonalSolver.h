@@ -85,6 +85,12 @@ public:
     }
 
     /**
+     * Register the operator that the solver will use during solves
+     * @param [in] op shared pointer to operator \f$A()\f$ for equation \f$A(u) = f\f$
+     */
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
+
+    /**
      * Resets the registered operator internally with new parameters if necessary
      * @param params    OperatorParameters object that is NULL by default
      */

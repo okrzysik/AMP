@@ -73,8 +73,7 @@ void DiagonalSolver<T>::initialize(
 template<typename T>
 void DiagonalSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
 {
-    d_dDivergenceTolerance = db->getWithDefault<T>( "divergence_tolerance", 1.0e+03 );
-    d_bUsesNestedSolver    = db->getWithDefault<bool>( "uses_nested_solver", false );
+    d_bUsesNestedSolver = db->getWithDefault<bool>( "uses_nested_solver", false );
 }
 
 /****************************************************************
@@ -89,16 +88,15 @@ void DiagonalSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // Always zero before checking stopping criteria for any reason
     d_iNumberIterations = 1;
 
-    // Check input vector states
-    AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
-                ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
-
-    u->multiply( d_pDiagonalInverse, f );
+    u->multiply( *d_pDiagonalInverse, *f );
 
     {
         PROFILE( "DiagonalSolver<T>:: u->makeConsistent" );
         u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
+
+    // always set this condition for now
+    d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
 }
 
 template<typename T>
