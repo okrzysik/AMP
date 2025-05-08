@@ -87,7 +87,7 @@ static void selectNodes( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             //      std::cout<<nodesGlobalIDs.size()<<"  ("<<coord[0]<<", "<<coord[1]<<",
             //      "<<coord[2]<<")"<<std::endl;
         } // end if
-    } // end for
+    }     // end for
 }
 
 static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
@@ -156,7 +156,7 @@ static void applySlaveLoadOperator( double loadParameterX,
                 totalLoadX += loadValuesX.back();
                 totalLoadZ += loadValuesZ.back();
             } // end if
-        } // end for
+        }     // end for
         std::cout << "TOTAL load slave X=" << totalLoadX << "\n";
         std::cout << "TOTAL load slave Z=" << totalLoadZ << "\n";
         AMP_ASSERT( loadValuesX.size() > 0 );
@@ -220,7 +220,7 @@ static void applyMasterLoadOperator( double loadParameterX,
                 totalLoadX += loadValuesX.back();
                 totalLoadZ += loadValuesZ.back();
             } // end if
-        } // end for
+        }     // end for
         std::cout << "TOTAL load master X=" << totalLoadX << "\n";
         std::cout << "TOTAL load master Z=" << totalLoadZ << "\n";
         AMP_ASSERT( loadValuesX.size() > 0 );
