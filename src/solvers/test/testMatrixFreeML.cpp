@@ -3,9 +3,9 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MultiMesh.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/initializeLibMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -132,23 +132,13 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName, int type )
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
-    std::string mesh_file = input_db->getString( "mesh_file" );
 
-    auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
+    [[maybe_unused]] auto libmeshInit =
+        std::make_shared<AMP::Mesh::initializeLibMesh>( AMP_COMM_WORLD );
 
-    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
-
-    const int mesh_dim = 3;
-    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
-    auto fusedMesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
-
-    AMP::readTestMesh( mesh_file, fusedMesh );
-
-    libMesh::MeshCommunication().broadcast( *( fusedMesh.get() ) );
-
-    fusedMesh->prepare_for_use( false );
-
-    auto fusedMeshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( fusedMesh, "mesh" );
+    auto mesh_file = input_db->getString( "mesh_file" );
+    auto fusedMeshAdapter =
+        AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> fusedElementPhysicsModel;
     auto fusedOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -392,26 +382,10 @@ void myTest2( AMP::UnitTest *ut, const std::string &exeName, bool useTwoMeshes )
     input_db->print( AMP::plog );
     std::string mesh_file = input_db->getString( "mesh_file" );
 
-    auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
-
-    auto libmeshInit = std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
-
-    const int mesh_dim = 3;
-    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
-    auto firstFusedMesh  = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
-    auto secondFusedMesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
-
-    AMP::readTestMesh( mesh_file, firstFusedMesh );
-    AMP::readTestMesh( mesh_file, secondFusedMesh );
-
-    libMesh::MeshCommunication().broadcast( *( firstFusedMesh.get() ) );
-    libMesh::MeshCommunication().broadcast( *( secondFusedMesh.get() ) );
-
-    firstFusedMesh->prepare_for_use( false );
-    secondFusedMesh->prepare_for_use( false );
-
-    auto firstMesh  = std::make_shared<AMP::Mesh::libmeshMesh>( firstFusedMesh, "Mesh_1" );
-    auto secondMesh = std::make_shared<AMP::Mesh::libmeshMesh>( secondFusedMesh, "Mesh_2" );
+    auto firstMesh  = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
+    auto secondMesh = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
+    firstMesh->setName( "Mesh_1" );
+    firstMesh->setName( "Mesh_2" );
 
     std::vector<std::shared_ptr<AMP::Mesh::Mesh>> vectorOfMeshes;
     vectorOfMeshes.push_back( firstMesh );
