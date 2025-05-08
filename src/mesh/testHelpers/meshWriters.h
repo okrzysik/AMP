@@ -29,7 +29,7 @@ DatabasePtr create7elementMesh( int NumBoundaryNodeIds );
 DatabasePtr createConstrainedMesh( int nx, int ny, int nz, double Lx, double Ly, double Lz );
 DatabasePtr createCookMesh( int nx, int ny, int nz );
 DatabasePtr createAMGMesh( int nx, int ny, int nz, double Lx, double Ly, double Lz );
-
+DatabasePtr createLUML( int Nx, int Ny, int Nz, double Lx, double Ly, double Lz );
 
 // LibMesh generators
 std::shared_ptr<libmeshMesh> readTestMeshLibMesh( std::shared_ptr<AMP::Database> db,
