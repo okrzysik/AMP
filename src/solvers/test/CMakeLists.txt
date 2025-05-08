@@ -209,6 +209,10 @@ IF ( USE_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 2 )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 4 )
 
+    ADD_AMP_TEST( testLinearSolversWithIdentity )
+    ADD_AMP_TEST( testLinearSolversWithIdentity PROCS 2)
+    ADD_AMP_TEST( testLinearSolversWithIdentity PROCS 4)
+
     ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-IncompressibleFlow )
     ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-NonlinearThermalOxygenDiffusion )
 
