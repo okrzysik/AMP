@@ -68,7 +68,19 @@ public:
         d_outputVariable = var;
     }
 
+    /** \brief Get a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a
+     * right vector ) \return  A newly created right vector
+     */
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getRightVector() const override;
+
+    /** \brief Get a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{y}\f$ is a left
+     * vector )
+     * \return  A newly created left vector
+     */
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getLeftVector() const override;
+
 private:
+    size_t d_localSize;
 };
 } // namespace AMP::Operator
 
