@@ -112,15 +112,15 @@ private:
 
     bool d_bUsesPreconditioner = false;
 
-    //! scratch vectors required for PCG
+    //! scratch vectors required for BiCGSTAB
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_r;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_r_tilde;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_p;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_p_hat;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_v;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_s;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_s_hat;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_t;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_v;
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };

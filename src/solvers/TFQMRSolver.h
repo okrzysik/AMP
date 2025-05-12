@@ -111,6 +111,18 @@ private:
 
     std::string d_preconditioner_side;
 
+    //! scratch vectors required for TFQMR
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_r;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_z;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_delta;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_w;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_d;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_v;
+
+    std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> d_u;
+    std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> d_y;
+
+
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
 } // namespace AMP::Solver

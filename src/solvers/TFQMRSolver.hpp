@@ -77,27 +77,28 @@ void TFQMRSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> 
 {
     // not sure about excluding op == d_pOperator
     d_pOperator = op;
-#if 0
+
     if ( d_pOperator ) {
         auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
         AMP_ASSERT( linearOp );
-        d_r       = linearOp->getRightVector();
-        d_r_tilde = d_r->clone();
-        d_p       = d_r->clone();
-        d_s       = d_r->clone();
-        d_t       = d_r->clone();
-        d_v       = d_r->clone();
+        d_r = linearOp->getRightVector();
 
-        // ensure t, v do no communication
-        d_t->setNoGhosts();
+        d_z     = d_r->clone();
+        d_delta = d_r->clone();
+        d_w     = d_r->clone();
+        d_d     = d_r->clone();
+        d_v     = d_r->clone();
+
         d_v->setNoGhosts();
 
-        if ( d_bUsesPreconditioner ) {
-            d_p_hat = d_r->clone();
-            d_s_hat = d_r->clone();
+        for ( size_t i = 0; i < 2; ++i ) {
+            d_u[i] = d_r->clone();
+            d_y[i] = d_r->clone();
+            // ensure d_u[i], d_y[i] do no communication
+            d_u[i]->setNoGhosts();
+            d_y[i]->setNoGhosts();
         }
     }
-#endif
 }
 
 /****************************************************************
@@ -116,19 +117,16 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     AMP_ASSERT( ( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
-    // residual vector
-    auto res = f->clone();
-
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
-        res->copyVector( f );
+        d_r->copyVector( f );
         x->zero();
     } else {
-        d_pOperator->residual( f, x, res );
+        d_pOperator->residual( f, x, d_r );
     }
 
     // compute the current residual norm
-    d_dResidualNorm = res->L2Norm();
+    d_dResidualNorm = d_r->L2Norm();
     // Override zero initial residual to force relative tolerance convergence
     // here to potentially handle singular systems
     d_dInitialResidual =
@@ -159,51 +157,37 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     T tau    = static_cast<T>( d_dResidualNorm );
     auto rho = tau * tau;
 
-    std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> u;
-    u[0] = f->clone();
-    u[1] = f->clone();
-    u[0]->zero();
-    u[1]->zero();
+    d_u[0]->zero();
+    d_u[1]->zero();
 
-    std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> y;
-    y[0] = f->clone();
-    y[1] = f->clone();
-    y[0]->zero();
-    y[1]->zero();
+    d_y[0]->zero();
+    d_y[1]->zero();
 
-    AMP::LinearAlgebra::Vector::shared_ptr z = x->clone();
-    z->zero();
+    d_z->zero();
+    d_delta->zero();
+    d_d->zero();
 
-    auto delta = f->clone();
-    delta->zero();
+    d_w->copyVector( d_r );
 
-    auto w = res->clone();
-    w->copyVector( res );
-
-    y[0]->copyVector( res );
-
-    auto d = res->clone();
-    d->zero();
-
-    auto v = res->clone();
+    d_y[0]->copyVector( d_r );
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-        d_pPreconditioner->apply( y[0], z );
+        d_pPreconditioner->apply( d_y[0], d_z );
     } else {
-        z->copyVector( y[0] );
+        d_z->copyVector( d_y[0] );
     }
 
-    z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    d_pOperator->apply( z, v );
+    d_pOperator->apply( d_z, d_v );
 
-    u[0]->copyVector( v );
+    d_u[0]->copyVector( d_v );
 
     // must start at iter == 1 to make m in the inner loop make sense
     for ( d_iNumberIterations = 1; d_iNumberIterations <= d_iMaxIterations;
           ++d_iNumberIterations ) {
 
-        auto sigma = static_cast<T>( res->dot( *v ) );
+        auto sigma = static_cast<T>( d_r->dot( *d_v ) );
 
         // replace by soft-equal
         if ( sigma == static_cast<T>( 0.0 ) ) {
@@ -219,33 +203,33 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         T res_bound{ 0.0 };
         for ( int j = 0; j <= 1; ++j ) {
             if ( j == 1 ) {
-                y[1]->axpy( -alpha, *v, *y[0] );
+                d_y[1]->axpy( -alpha, *d_v, *d_y[0] );
                 if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-                    d_pPreconditioner->apply( y[1], z );
+                    d_pPreconditioner->apply( d_y[1], d_z );
                 } else {
-                    z->copyVector( y[1] );
+                    d_z->copyVector( d_y[1] );
                 }
 
-                z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-                d_pOperator->apply( z, u[1] );
+                d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+                d_pOperator->apply( d_z, d_u[1] );
             }
 
             const int m = 2 * d_iNumberIterations - 2 + j;
-            w->axpy( -alpha, *u[j], *w );
-            d->axpy( ( theta * theta * eta / alpha ), *d, *y[j] );
+            d_w->axpy( -alpha, *d_u[j], *d_w );
+            d_d->axpy( ( theta * theta * eta / alpha ), *d_d, *d_y[j] );
 
-            theta = static_cast<T>( w->L2Norm() ) / tau;
+            theta = static_cast<T>( d_w->L2Norm() ) / tau;
             const auto c =
                 static_cast<T>( 1.0 ) / std::sqrt( static_cast<T>( 1.0 ) + theta * theta );
             tau = tau * theta * c;
             eta = c * c * alpha;
 
             // update the increment to the solution
-            delta->axpy( eta, *d, *delta );
+            d_delta->axpy( eta, *d_d, *d_delta );
             if ( d_iDebugPrintInfoLevel > 2 ) {
                 AMP::pout << std::setw( 30 ) << "TFQMR: outer/inner iteration " << std::setw( 6 )
                           << d_iNumberIterations << "/" << j << ", solution update norm "
-                          << delta->L2Norm() << std::endl;
+                          << d_delta->L2Norm() << std::endl;
             }
 
             // Use upper bound on residual norm to test convergence cheaply
@@ -275,24 +259,25 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             break;
         }
 
-        auto rho_n = static_cast<T>( res->dot( *w ) );
+        auto rho_n = static_cast<T>( d_r->dot( *d_w ) );
         auto beta  = rho_n / rho;
         rho        = rho_n;
 
-        y[0]->axpy( beta, *y[1], *w );
+        d_y[0]->axpy( beta, *d_y[1], *d_w );
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-            d_pPreconditioner->apply( y[0], z );
+            d_pPreconditioner->apply( d_y[0], d_z );
         } else {
-            z->copyVector( y[0] );
+            d_z->copyVector( d_y[0] );
         }
 
-        z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-        d_pOperator->apply( z, u[0] );
+        d_pOperator->apply( d_z, d_u[0] );
 
-        v->axpy( beta, *v, *u[1] );
-        v->axpy( beta, *v, *u[0] );
+        // replace by axpbycz when ready
+        d_v->axpy( beta, *d_v, *d_u[1] );
+        d_v->axpy( beta, *d_v, *d_u[0] );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << std::setw( 30 ) << "TFQMR: outer iteration " << std::setw( 8 )
@@ -302,20 +287,20 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // unwind the preconditioner if necessary
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-        d_pPreconditioner->apply( delta, z );
+        d_pPreconditioner->apply( d_delta, d_z );
     } else {
-        z->copyVector( delta );
+        d_z->copyVector( d_delta );
     }
 
-    x->add( *z, *x );
+    x->add( *d_z, *x );
 
     x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // should this always be true since TFQMR only gives a bound on the
     // residual?
     if ( d_bComputeResidual ) {
-        d_pOperator->residual( f, x, res );
-        d_dResidualNorm = res->L2Norm();
+        d_pOperator->residual( f, x, d_r );
+        d_dResidualNorm = d_r->L2Norm();
         // final check updates flags if needed
         checkStoppingCriteria( d_dResidualNorm );
     }
