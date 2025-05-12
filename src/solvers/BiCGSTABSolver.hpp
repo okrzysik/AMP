@@ -42,6 +42,8 @@ void BiCGSTABSolver<T>::initialize( std::shared_ptr<const SolverStrategyParamete
     auto db = parameters->d_db;
     getFromInput( db );
 
+    registerOperator( d_pOperator );
+
     if ( parameters->d_pNestedSolver ) {
         d_pPreconditioner = parameters->d_pNestedSolver;
     } else {
@@ -68,6 +70,33 @@ void BiCGSTABSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
     d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 }
 
+template<typename T>
+void BiCGSTABSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
+{
+    // not sure about excluding op == d_pOperator
+    d_pOperator = op;
+
+    if ( d_pOperator ) {
+        auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+        AMP_ASSERT( linearOp );
+        d_r       = linearOp->getRightVector();
+        d_r_tilde = d_r->clone();
+        d_p       = d_r->clone();
+        d_s       = d_r->clone();
+        d_t       = d_r->clone();
+        d_v       = d_r->clone();
+
+        // ensure t, v do no communication
+        d_t->setNoGhosts();
+        d_v->setNoGhosts();
+
+        if ( d_bUsesPreconditioner ) {
+            d_p_hat = d_r->clone();
+            d_s_hat = d_r->clone();
+        }
+    }
+}
+
 /****************************************************************
  *  Solve                                                        *
  ****************************************************************/
@@ -92,19 +121,16 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
-    // residual vector
-    AMP::LinearAlgebra::Vector::shared_ptr res = f->clone();
-
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
-        res->copyVector( f );
+        d_r->copyVector( f );
         u->zero();
     } else {
-        d_pOperator->residual( f, u, res );
+        d_pOperator->residual( f, u, d_r );
     }
 
     // compute the current residual norm
-    d_dResidualNorm   = res->L2Norm();
+    d_dResidualNorm   = d_r->L2Norm();
     auto r_tilde_norm = static_cast<T>( d_dResidualNorm );
     // Override zero initial residual to force relative tolerance convergence
     // here to potentially handle singular systems
@@ -135,22 +161,16 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     [[maybe_unused]] std::vector<T> rho( 2, static_cast<T>( 1.0 ) );
 
     // r_tilde is a non-zero initial direction chosen to be r
-    std::shared_ptr<AMP::LinearAlgebra::Vector> r_tilde;
     // traditional choice is the initial residual
-    r_tilde = res->clone();
-    r_tilde->copyVector( res );
+    d_r_tilde->copyVector( d_r );
 
-    auto p = res->clone();
-    auto v = res->clone();
-    p->zero();
-    v->zero();
-
-    std::shared_ptr<AMP::LinearAlgebra::Vector> p_hat, s, s_hat, t;
+    d_p->zero();
+    d_v->zero();
 
     for ( d_iNumberIterations = 1; d_iNumberIterations <= d_iMaxIterations;
           ++d_iNumberIterations ) {
 
-        rho[1] = static_cast<T>( r_tilde->dot( *res ) );
+        rho[1] = static_cast<T>( d_r_tilde->dot( *d_r ) );
 
         auto angle = std::sqrt( std::fabs( rho[1] ) );
         auto eps   = std::numeric_limits<T>::epsilon();
@@ -159,10 +179,10 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             // the method breaks down as the vectors are orthogonal to r0
             // attempt to restart with a new r0
             u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-            d_pOperator->residual( f, u, res );
-            r_tilde->copyVector( res );
-            p->copyVector( res );
-            d_dResidualNorm = res->L2Norm();
+            d_pOperator->residual( f, u, d_r );
+            d_r_tilde->copyVector( d_r );
+            d_p->copyVector( d_r );
+            d_dResidualNorm = d_r->L2Norm();
             rho[1] = r_tilde_norm = static_cast<T>( d_dResidualNorm );
             d_restarts++;
             continue;
@@ -172,80 +192,68 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             // NOTE: there are differences in the literature in what the initial p is
             // Van der Vorst, Eigen, Petsc : p = 0
             // J. Vogel, J. Chen et. al on FBiCGSTAB: p = res
-            p->copyVector( res );
+            d_p->copyVector( d_r );
         } else {
 
             beta = ( rho[1] / rho[0] ) * ( alpha / omega );
-            p->axpy( -omega, *v, *p );
-            p->axpy( beta, *p, *res );
-        }
-
-        if ( !p_hat ) {
-            p_hat = u->clone();
-            p_hat->zero();
+            d_p->axpy( -omega, *d_v, *d_p );
+            d_p->axpy( beta, *d_p, *d_r );
         }
 
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
-            d_pPreconditioner->apply( p, p_hat );
+            d_pPreconditioner->apply( d_p, d_p_hat );
         } else {
-            p_hat->copyVector( p );
+            d_p_hat = d_p;
         }
 
-        p_hat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-        d_pOperator->apply( p_hat, v );
+        d_p_hat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        d_pOperator->apply( d_p_hat, d_v );
 
-        alpha = static_cast<T>( r_tilde->dot( *v ) );
+        alpha = static_cast<T>( d_r_tilde->dot( *d_v ) );
         AMP_ASSERT( alpha != static_cast<T>( 0.0 ) );
         alpha = rho[1] / alpha;
 
-        if ( !s ) {
-            s = res->clone();
-        }
-        s->axpy( -alpha, *v, *res );
+        d_s->axpy( -alpha, *d_v, *d_r );
 
-        const auto s_norm = s->L2Norm();
+        const auto s_norm = d_s->L2Norm();
 
         // Check for early convergence
         // s is residual wrt. h, if good replace u with h
         if ( checkStoppingCriteria( s_norm, false ) ) {
-            u->axpy( alpha, *p_hat, *u );
+            u->axpy( alpha, *d_p_hat, *u );
             d_dResidualNorm = static_cast<T>( s_norm );
             break;
         }
 
-        if ( !s_hat ) {
-            s_hat = u->clone();
-            s_hat->zero();
-        }
-
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
-            d_pPreconditioner->apply( s, s_hat );
+            d_pPreconditioner->apply( d_s, d_s_hat );
         } else {
-            s_hat->copyVector( s );
+            d_s_hat = d_s;
         }
 
 
-        if ( !t ) {
-            t = res->clone();
-        }
+        d_s_hat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        d_pOperator->apply( d_s_hat, d_t );
 
-        s_hat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-        d_pOperator->apply( s_hat, t );
+        // the L2NormAndDot is not optimized in vectors and needs to be
+        // if BiCGSTAB becomes a priority
+        auto [norm, dot] = d_t->L2NormAndDot( *d_s );
+        auto t_sqnorm    = static_cast<T>( norm * norm );
+        auto t_dot_s     = static_cast<T>( dot );
 
-        auto t_sqnorm = static_cast<T>( t->dot( *t ) );
-        auto t_dot_s  = static_cast<T>( t->dot( *s ) );
         // note the choice of omega below corresponds to what van der Vorst calls BiCGSTAB-P
         omega = ( t_sqnorm == static_cast<T>( 0.0 ) ) ? static_cast<T>( 0.0 ) : t_dot_s / t_sqnorm;
 
-        u->axpy( alpha, *p_hat, *u );
-        u->axpy( omega, *s_hat, *u );
+        // this should be replaced by vec->axpbycz  when it is ready
+        u->axpy( alpha, *d_p_hat, *u );
+        u->axpy( omega, *d_s_hat, *u );
 
-        res->axpy( -omega, *t, *s );
+        d_r->axpy( -omega, *d_t, *d_s );
 
         // compute the current residual norm
-        d_dResidualNorm = static_cast<T>( res->L2Norm() );
+        d_dResidualNorm = static_cast<T>( d_r->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "BiCGSTAB: iteration " << d_iNumberIterations << ", residual "
@@ -269,8 +277,8 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     if ( d_bComputeResidual ) {
-        d_pOperator->residual( f, u, res );
-        d_dResidualNorm = static_cast<T>( res->L2Norm() );
+        d_pOperator->residual( f, u, d_r );
+        d_dResidualNorm = static_cast<T>( d_r->L2Norm() );
         // final check updates flags if needed
         checkStoppingCriteria( d_dResidualNorm );
     }

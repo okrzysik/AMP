@@ -93,6 +93,12 @@ public:
     }
 
     /**
+     * Register the operator that the solver will use during solves
+     * @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$
+     */
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
+
+    /**
      * Resets the registered operator internally with new parameters if necessary
      * @param params    OperatorParameters object that is NULL by default
      */
@@ -105,6 +111,16 @@ private:
     int d_restarts = 0; //! number of times the solver is restarted
 
     bool d_bUsesPreconditioner = false;
+
+    //! scratch vectors required for PCG
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_r;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_r_tilde;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_p;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_p_hat;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_v;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_s;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_s_hat;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_t;
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
