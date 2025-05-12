@@ -35,6 +35,8 @@ void TFQMRSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
     auto db = parameters->d_db;
     getFromInput( db );
 
+    registerOperator( d_pOperator );
+
     if ( parameters->d_pNestedSolver ) {
         d_pPreconditioner = parameters->d_pNestedSolver;
     } else {
@@ -70,6 +72,34 @@ void TFQMRSolver<T>::getFromInput( std::shared_ptr<const AMP::Database> db )
     d_bComputeResidual = db->getWithDefault<bool>( "compute_residual", true );
 }
 
+template<typename T>
+void TFQMRSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
+{
+    // not sure about excluding op == d_pOperator
+    d_pOperator = op;
+#if 0
+    if ( d_pOperator ) {
+        auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+        AMP_ASSERT( linearOp );
+        d_r       = linearOp->getRightVector();
+        d_r_tilde = d_r->clone();
+        d_p       = d_r->clone();
+        d_s       = d_r->clone();
+        d_t       = d_r->clone();
+        d_v       = d_r->clone();
+
+        // ensure t, v do no communication
+        d_t->setNoGhosts();
+        d_v->setNoGhosts();
+
+        if ( d_bUsesPreconditioner ) {
+            d_p_hat = d_r->clone();
+            d_s_hat = d_r->clone();
+        }
+    }
+#endif
+}
+
 /****************************************************************
  *  Solve                                                        *
  ****************************************************************/
@@ -98,14 +128,15 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // compute the current residual norm
-    auto res_norm = static_cast<T>( res->L2Norm() );
+    d_dResidualNorm = res->L2Norm();
     // Override zero initial residual to force relative tolerance convergence
     // here to potentially handle singular systems
-    d_dInitialResidual = res_norm > std::numeric_limits<T>::epsilon() ? res_norm : 1.0;
+    d_dInitialResidual =
+        d_dResidualNorm > std::numeric_limits<T>::epsilon() ? d_dResidualNorm : 1.0;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        AMP::pout << std::setw( 30 ) << "TFQMR: initial residual" << std::setw( 26 ) << res_norm
-                  << std::endl;
+        AMP::pout << std::setw( 30 ) << "TFQMR: initial residual" << std::setw( 26 )
+                  << d_dResidualNorm << std::endl;
     }
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "TFQMRSolver<T>::apply: initial solution L2-norm: " << x->L2Norm()
@@ -115,7 +146,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
 
     // return if the residual is already low enough
-    if ( checkStoppingCriteria( res_norm ) ) {
+    if ( checkStoppingCriteria( d_dResidualNorm ) ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
             AMP::pout << "TFQMRSolver<T>::apply: initial residual below tolerance" << std::endl;
         }
@@ -125,7 +156,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // parameters in TFQMR
     T theta  = static_cast<T>( 0.0 );
     T eta    = static_cast<T>( 0.0 );
-    T tau    = res_norm;
+    T tau    = static_cast<T>( d_dResidualNorm );
     auto rho = tau * tau;
 
     std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> u;
@@ -226,8 +257,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                               << std::setw( 6 ) << d_iNumberIterations << "/" << j << ", residual "
                               << res_bound << std::endl;
                 }
-                res_norm  = res_bound; // this is likely an over-estimate
-                converged = true;
+                d_dResidualNorm = res_bound; // this is likely an over-estimate
+                converged       = true;
                 break;
             }
         }
@@ -284,16 +315,13 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // residual?
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, x, res );
-        res_norm = static_cast<T>( res->L2Norm() );
+        d_dResidualNorm = res->L2Norm();
         // final check updates flags if needed
-        checkStoppingCriteria( res_norm );
+        checkStoppingCriteria( d_dResidualNorm );
     }
 
-    // Store final residual should it be queried elsewhere
-    d_dResidualNorm = res_norm;
-
     if ( d_iDebugPrintInfoLevel > 0 ) {
-        AMP::pout << "TFQMRSolver<T>::apply: final residual L2-norm: " << res_norm
+        AMP::pout << "TFQMRSolver<T>::apply: final residual L2-norm: " << d_dResidualNorm
                   << " iterations: " << d_iNumberIterations << " convergence reason: "
                   << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
     }
