@@ -97,6 +97,12 @@ public:
     }
 
     /**
+     * Register the operator that the solver will use during solves
+     * @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$
+     */
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
+
+    /**
      * Resets the registered operator internally with new parameters if necessary
      * @param params    OperatorParameters object that is NULL by default
      */
@@ -208,15 +214,15 @@ private:
 
     //! stores the orthonormal basis for the Krylov space
     //! we do not preallocate by default
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vBasis;
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vBasis;
 
     //! stores the orthonormal basis for the Krylov space in case of FGMRES
     //! we do not preallocate by default
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_zBasis;
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_zBasis;
 
     //! stores the vectors needed for right and left preconditioning
-    AMP::LinearAlgebra::Vector::shared_ptr d_z;
-    AMP::LinearAlgebra::Vector::shared_ptr d_z1;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_z;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_z1;
 };
 } // namespace AMP::Solver
 

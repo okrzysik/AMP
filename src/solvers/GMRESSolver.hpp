@@ -38,6 +38,8 @@ void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
 
     getFromInput( db );
 
+    registerOperator( d_pOperator );
+
     // maximum dimension to allocate storage for
     const int max_dim = std::min( d_iMaxKrylovDimension, d_iMaxIterations );
     d_dHessenberg.resize( max_dim + 1, max_dim + 1 );
@@ -95,6 +97,26 @@ void GMRESSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
     d_iBasisAllocSize = db->getWithDefault<int>( "basis_allocation_size", 4 );
 }
 
+template<typename T>
+void GMRESSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
+{
+    // not sure about excluding op == d_pOperator
+    d_pOperator = op;
+
+    if ( d_pOperator ) {
+        auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+        AMP_ASSERT( linearOp );
+        if ( d_bUsesPreconditioner ) {
+            d_z = linearOp->getRightVector();
+            if ( d_preconditioner_side == "right" ) {
+                d_z1 = d_z->clone();
+            }
+        }
+
+        allocate_basis( d_z );
+    }
+}
+
 /****************************************************************
  *  Solve                                                        *
  ****************************************************************/
@@ -117,15 +139,6 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // residual vector
     AMP::LinearAlgebra::Vector::shared_ptr res = d_vBasis[0];
-
-    if ( d_bUsesPreconditioner ) {
-        if ( !d_z )
-            d_z = u->clone();
-        if ( d_preconditioner_side == "right" ) {
-            if ( !d_z1 )
-                d_z1 = u->clone();
-        }
-    }
 
     // compute the initial residual
     computeInitialResidual( d_bUseZeroInitialGuess, f, u, d_z, res );
