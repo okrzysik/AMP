@@ -153,8 +153,8 @@ constructNeutronicsPowerSource( std::shared_ptr<AMP::Database> input_db,
 }
 #else
 std::shared_ptr<AMP::LinearAlgebra::Vector>
-constructNeutronicsPowerSource( std::shared_ptr<AMP::Database> input_db,
-                                std::shared_ptr<AMP::Mesh::Mesh> meshAdapter )
+constructNeutronicsPowerSource( [[maybe_unused]] std::shared_ptr<AMP::Database> input_db,
+                                [[maybe_unused]] std::shared_ptr<AMP::Mesh::Mesh> meshAdapter )
 {
     AMP_ERROR( "Required LibMesh to be enabled at present" );
     return nullptr;

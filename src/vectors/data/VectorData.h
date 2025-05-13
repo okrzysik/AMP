@@ -540,6 +540,11 @@ public: // Virtual functions dealing with the update status
      */
     virtual void setCommunicationList( std::shared_ptr<CommunicationList> comm ) = 0;
 
+    /**\brief Ensure this vector has no ghosts
+     *\details Calls clearBuffer for the communication list and removes any storage for ghosts
+     */
+    virtual void setNoGhosts();
+
     virtual void
     print( std::ostream &os, const std::string &name = "A", const std::string &prefix = "" ) const;
 

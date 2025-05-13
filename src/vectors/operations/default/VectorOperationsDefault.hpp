@@ -102,7 +102,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues( VectorData &x )
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::copy( const VectorData &x, VectorData &y )
 {
-    AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
+    AMP_DEBUG_ASSERT( y.getLocalSize() == x.getLocalSize() );
     std::copy( x.begin<TYPE>(), x.end<TYPE>(), y.begin<TYPE>() );
     y.copyGhostValues( x );
 }

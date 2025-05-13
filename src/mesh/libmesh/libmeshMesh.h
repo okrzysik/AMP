@@ -63,7 +63,9 @@ public:
      * \param mesh The mesh in libmesh we want to use to construct the new mesh object
      * \param name The name of the new mesh object
      */
-    explicit libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string &name );
+    explicit libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh,
+                          const std::string &name,
+                          std::shared_ptr<libMesh::Parallel::Communicator> libMeshComm = nullptr );
 
     //! Deconstructor
     virtual ~libmeshMesh();
@@ -275,8 +277,8 @@ private:
     uint64_t d_pos_hash;
 
     // libMesh objects
-    std::shared_ptr<libMesh::Parallel::Communicator> d_libMeshComm;
     std::shared_ptr<libMesh::Mesh> d_libMesh;
+    std::shared_ptr<libMesh::Parallel::Communicator> d_libMeshComm;
 
     // Some basic internal data
     std::vector<size_t> n_local, n_global, n_ghost;
