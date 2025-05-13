@@ -3,9 +3,9 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/initializeLibMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -52,26 +52,14 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::logOnlyNodeZero( log_file );
 
-
     auto globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
     auto input_db   = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    [[maybe_unused]] auto libmeshInit =
-        std::make_shared<AMP::Mesh::initializeLibMesh>( globalComm );
-
-    const unsigned int mesh_dim = 3;
-    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
-    auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
-
-    std::string mesh_file = input_db->getString( "mesh_file" );
-    if ( globalComm.getRank() == 0 ) {
-        AMP::readTestMesh( mesh_file, mesh );
-    } // end if root processor
-
-    libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
-    mesh->prepare_for_use( false );
-    auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "cook" );
+    auto mesh_file = input_db->getString( "mesh_file" );
+    auto meshAdapter =
+        AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD, "cook" );
+    AMP_ASSERT( meshAdapter );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -169,19 +157,14 @@ int testCook( int argc, char *argv[] )
 
     if ( argc == 1 ) {
         exeNames.emplace_back( "testCook-normal-mesh0" );
-        exeNames.emplace_back( "testCook-reduced-mesh0" );
-
         exeNames.emplace_back( "testCook-normal-mesh1" );
-        exeNames.emplace_back( "testCook-reduced-mesh1" );
-
         exeNames.emplace_back( "testCook-normal-mesh2" );
+        exeNames.emplace_back( "testCook-reduced-mesh0" );
+        exeNames.emplace_back( "testCook-reduced-mesh1" );
         exeNames.emplace_back( "testCook-reduced-mesh2" );
     } else {
-        for ( int i = 1; i < argc; i += 2 ) {
-            auto inpName =
-                AMP::Utilities::stringf( "testCook-%s-mesh%d", argv[i], atoi( argv[i + 1] ) );
-            exeNames.emplace_back( inpName );
-        } // end for i
+        for ( int i = 1; i < argc; i++ )
+            exeNames.emplace_back( argv[i] );
     }
 
     for ( auto &exeName : exeNames )

@@ -2,8 +2,8 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -34,16 +34,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
         auto input_db = AMP::Database::parseInputFile( input_file );
         input_db->print( AMP::plog );
 
-        auto mesh_file_db = AMP::Database::parseInputFile( input_db->getString( "mesh_file" ) );
-
-        const unsigned int mesh_dim = 3;
-        libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
-        auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
-
-        AMP::readTestMesh( mesh_file_db, mesh );
-        mesh->prepare_for_use( false );
-
-        auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "TestMesh" );
+        auto mesh_file   = input_db->getString( "mesh_file" );
+        auto meshAdapter = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(

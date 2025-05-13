@@ -1,9 +1,9 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/initializeLibMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -63,18 +63,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         auto meshFile = input_db->getString( meshFileKey );
 
-        const unsigned int mesh_dim = 3;
-        libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
-        auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
-
-        if ( globalComm.getRank() == 0 ) {
-            AMP::readBinaryTestMesh( meshFile, mesh );
-        }
-
-        libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
-        mesh->prepare_for_use( false );
-
-        auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "mesh" );
+        auto meshAdapter =
+            AMP::Mesh::MeshWriters::readBinaryTestMeshLibMesh( meshFile, AMP_COMM_WORLD );
 
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(

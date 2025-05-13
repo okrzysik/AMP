@@ -98,6 +98,7 @@ int main( int argc, char *argv[] )
         files.emplace_back( argv[1] );
 
     } else {
+
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-IPCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FCG" );
@@ -106,6 +107,28 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-IPCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-FCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-CG-FCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-FGMRES" );
+        files.emplace_back(
+            "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-GMRESR-GMRES" );
+        files.emplace_back(
+            "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-GMRESR-BiCGSTAB" );
+        files.emplace_back(
+            "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-GMRESR-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-TFQMR" );
+#ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-PetscCG" );
+        files.emplace_back(
+            "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-PetscFGMRES" );
+        //        files.emplace_back(
+        //        "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-PetscBiCGSTAB" );
+#endif
 
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
@@ -127,6 +150,12 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreBiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreBiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreBiCGSTAB" );
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );

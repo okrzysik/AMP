@@ -129,8 +129,10 @@ libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params )
     auto globalRanks = getComm().globalRanks();
     AMP_ASSERT( !globalRanks.empty() );
 }
-libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string &name )
-    : d_pos_hash( 0 ), d_libMesh( mesh )
+libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh,
+                          const std::string &name,
+                          std::shared_ptr<libMesh::Parallel::Communicator> libMeshComm )
+    : d_pos_hash( 0 ), d_libMesh( mesh ), d_libMeshComm( libMeshComm )
 {
     // Set the base properties
 #ifdef AMP_USE_MPI
@@ -144,6 +146,8 @@ libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string
     this->d_max_gcw   = 1;
     this->PhysicalDim = d_libMesh->mesh_dimension();
     this->GeomDim     = (GeomType) PhysicalDim;
+    // Intialize libMesh
+    libmeshInit = std::make_shared<initializeLibMesh>( d_comm );
     // Initialize all of the internal data
     initialize();
 }

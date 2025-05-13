@@ -3,6 +3,7 @@
 
 
 #include "AMP/AMP_TPLs.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/memory.h"
 
@@ -357,8 +358,20 @@ inline void busy_s( int N ) { busy_ms( 1000 * N ); }
 //! Print AMP Banner
 void printBanner();
 
+
 //! Null use function
 void nullUse( const void * );
+
+
+/*!
+ * \brief Function to return a unique alpha-numeric string across a given communicator.
+ * \details This will return a unique alpha-numeric string on the given communicator.
+ *   The string will be the same on all processors, but unique for all subsequent calls
+ *   to this routine regardless of the communicator used.
+ *   Note: this is a blocking call on the given communicator.
+ */
+std::string randomString( const AMP::AMP_MPI &comm = AMP_COMM_NULL );
+
 
 //! std::string version of sprintf
 inline std::string stringf( const char *format, ... )

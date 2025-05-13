@@ -16,7 +16,6 @@ IF ( AMP_DATA AND USE_LIBMESH )
 
     # Add Jacobian map
     ADD_TB_PROVISIONAL_TEST( testJacobianMap )
-    COPY_MESH_FILE( distortedElementMesh )
 
     # Test ScalarN2GZAxis map
     ADD_TB_TEST_1_2_4( testScalarN2GZAxisMap )

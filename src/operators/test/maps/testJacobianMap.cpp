@@ -1,15 +1,19 @@
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include <cstdlib>
 #include <iostream>
 
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include <memory>
 
 // Libmesh files
 DISABLE_WARNINGS
+#include "libmesh/libmesh_config.h"
+#undef LIBMESH_ENABLE_REFERENCE_COUNTING
 #include "libmesh/auto_ptr.h"
 #include "libmesh/boundary_info.h"
+#include "libmesh/cell_hex8.h"
 #include "libmesh/dof_map.h"
 #include "libmesh/elem.h"
 #include "libmesh/enum_fe_family.h"
@@ -32,18 +36,12 @@ ENABLE_WARNINGS
 
 static void calculateGrad( AMP::UnitTest *ut )
 {
-    const unsigned int mesh_dim = 3;
-    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
-    auto mesh = std::make_shared<libMesh::Mesh>( comm, mesh_dim );
 
-    AMP::readTestMesh( "distortedElementMesh", mesh );
+    auto meshAdapter =
+        AMP::Mesh::MeshWriters::readTestMeshLibMesh( "distortedElementMesh", AMP_COMM_WORLD );
+    auto mesh = meshAdapter->getlibMesh();
 
-    libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
-
-    mesh->prepare_for_use( false );
-
-    libMesh::EquationSystems equation_systems( *( mesh.get() ) );
+    libMesh::EquationSystems equation_systems( *mesh );
 
     auto &system = equation_systems.add_system<libMesh::LinearImplicitSystem>( "Poisson" );
 
