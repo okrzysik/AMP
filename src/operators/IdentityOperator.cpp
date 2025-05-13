@@ -1,6 +1,7 @@
 #include "AMP/operators/IdentityOperator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 
 namespace AMP::Operator {
@@ -26,6 +27,7 @@ void IdentityOperator::reset( std::shared_ptr<const OperatorParameters> params )
             std::string outVar = params->d_db->getString( "OutputVariable" );
             d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
         }
+        d_localSize = params->d_db->getWithDefault<size_t>( "localSize", 10 );
     }
 }
 
@@ -50,6 +52,18 @@ void IdentityOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     rInternal->copyVector( uInternal );
 
     rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+}
+
+std::shared_ptr<AMP::LinearAlgebra::Vector> IdentityOperator::getRightVector() const
+{
+    return AMP::LinearAlgebra::createSimpleVector<double>(
+        d_localSize, d_inputVariable, AMP_COMM_WORLD );
+}
+
+std::shared_ptr<AMP::LinearAlgebra::Vector> IdentityOperator::getLeftVector() const
+{
+    return AMP::LinearAlgebra::createSimpleVector<double>(
+        d_localSize, d_outputVariable, AMP_COMM_WORLD );
 }
 
 std::shared_ptr<OperatorParameters>

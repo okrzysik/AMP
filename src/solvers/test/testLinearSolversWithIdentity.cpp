@@ -6,6 +6,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/IdentityOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/utils/AMPManager.h"
@@ -29,14 +30,16 @@ myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, const std::s
     auto solverComm = globalComm; // a dup fails for no MPI
 #endif
     // Create the solution and function variables
-    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
-    auto u   = AMP::LinearAlgebra::createSimpleVector<double>( 10, var, solverComm );
-    auto f   = u->clone();
-
+    auto db = AMP::Database::create(
+        "name", "IdentityOperator", "InputVariable", "x", "OutputVariable", "x", "localSize", 20 );
+    input_db->putDatabase( "IdentityOperator", std::move( db ) );
     // Create the operator
-    auto op = std::make_shared<AMP::Operator::IdentityOperator>();
-    op->setInputVariable( var );
-    op->setOutputVariable( var );
+    auto op =
+        AMP::Operator::OperatorBuilder::createOperator( nullptr, "IdentityOperator", input_db );
+
+    auto u = std::dynamic_pointer_cast<AMP::Operator::IdentityOperator>( op )->getRightVector();
+    auto f = u->clone();
+
 
     // Create the solver
     auto linearSolver =
