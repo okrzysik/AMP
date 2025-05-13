@@ -150,7 +150,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // return if the residual is already low enough
     if ( checkStoppingCriteria( d_dResidualNorm ) ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "BiCGSTABSolver<T>::solve: initial residual below tolerance" << std::endl;
+            AMP::pout << "BiCGSTAB: initial residual below tolerance" << std::endl;
         }
         return;
     }
