@@ -221,7 +221,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // check for happy breakdown
         if ( v_norm != static_cast<T>( 0.0 ) ) {
             v->scale( static_cast<T>( 1.0 ) / v_norm );
-            v->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+            //            v->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         }
 
         // apply all previous Givens rotations to
@@ -440,8 +440,7 @@ void GMRESSolver<T>::computeInitialResidual( bool use_zero_guess,
 {
     if ( use_zero_guess ) {
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
-            tmp->copyVector( f );
-            d_pPreconditioner->apply( tmp, res );
+            d_pPreconditioner->apply( f, res );
         } else {
             res->copyVector( f );
         }
