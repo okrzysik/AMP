@@ -150,6 +150,12 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreBiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreBiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreBiCGSTAB" );
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
