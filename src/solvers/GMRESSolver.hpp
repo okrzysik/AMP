@@ -198,16 +198,9 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             } else if ( d_preconditioner_side == "right" ) {
                 if ( !d_bFlexibleGMRES ) {
                     d_pPreconditioner->apply( d_vBasis[k], d_z );
-                    //                    if ( z->getUpdateStatus() !=
-                    //                         AMP::LinearAlgebra::UpdateState::UNCHANGED
-                    //                         )
-                    //                    d_z->makeConsistent(
-                    //                    AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( d_z, v );
                 } else {
                     d_pPreconditioner->apply( d_vBasis[k], zb );
-                    //                    zb->makeConsistent(
-                    //                    AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( zb, v );
                 }
             } else {
