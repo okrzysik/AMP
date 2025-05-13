@@ -144,7 +144,8 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     computeInitialResidual( d_bUseZeroInitialGuess, f, u, d_z, res );
 
     // compute residual norm
-    auto beta = static_cast<T>( res->L2Norm() );
+    auto beta       = static_cast<T>( res->L2Norm() );
+    d_dResidualNorm = beta;
     // Override zero initial residual to force relative tolerance convergence
     // here to potentially handle singular systems
     d_dInitialResidual = beta > std::numeric_limits<T>::epsilon() ? beta : 1.0;
@@ -188,33 +189,34 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         if ( d_bFlexibleGMRES )
             zb = d_zBasis[k];
 
-        if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
-            d_pOperator->apply( d_vBasis[k], d_z );
-            d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-            // construct the Krylov vector
-            d_pPreconditioner->apply( d_z, v );
-        } else {
-            if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-                // the makeConsistent calls below are there because the commented condition
-                // on status appears not to be working. They are required or we have to change
-                // policy on what the status of a vector is coming out of a solver.
+        // construct the Krylov vector
+        if ( d_bUsesPreconditioner ) {
+            if ( d_preconditioner_side == "left" ) {
+                d_vBasis[k]->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+                d_pOperator->apply( d_vBasis[k], d_z );
+                d_pPreconditioner->apply( d_z, v );
+            } else if ( d_preconditioner_side == "right" ) {
                 if ( !d_bFlexibleGMRES ) {
                     d_pPreconditioner->apply( d_vBasis[k], d_z );
                     //                    if ( z->getUpdateStatus() !=
                     //                         AMP::LinearAlgebra::UpdateState::UNCHANGED
                     //                         )
-                    d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+                    //                    d_z->makeConsistent(
+                    //                    AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( d_z, v );
                 } else {
                     d_pPreconditioner->apply( d_vBasis[k], zb );
-                    zb->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+                    //                    zb->makeConsistent(
+                    //                    AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( zb, v );
                 }
             } else {
-                d_z = d_vBasis[k];
-                d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-                d_pOperator->apply( d_z, v );
+                AMP_ERROR( "Left and right preconditioning not enabled" );
             }
+        } else {
+            d_z = d_vBasis[k];
+            d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+            d_pOperator->apply( d_z, v );
         }
 
         // orthogonalize to previous vectors and
@@ -255,7 +257,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         }
 
         // this is the norm of the residual thanks to the Givens rotations
-        v_norm = std::fabs( d_dw[k + 1] );
+        d_dResidualNorm = v_norm = std::fabs( d_dw[k + 1] );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "GMRES: iteration " << d_iNumberIterations << ", residual " << v_norm
@@ -264,7 +266,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         ++k;
 
-        if ( checkStoppingCriteria( v_norm ) ) {
+        if ( checkStoppingCriteria( d_dResidualNorm ) ) {
             break;
         }
 
@@ -282,7 +284,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 // update the current approximation with the correction
                 addCorrection( k - 1, d_z, d_z1, u );
                 computeInitialResidual( false, f, u, d_z, d_vBasis[0] );
-                v_norm = static_cast<T>( d_vBasis[0]->L2Norm() );
+                d_dResidualNorm = v_norm = static_cast<T>( d_vBasis[0]->L2Norm() );
                 d_vBasis[0]->scale( static_cast<T>( 1.0 ) / v_norm );
                 d_dw[0] = v_norm;
                 ++d_restarts;
@@ -313,18 +315,16 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, res );
-        v_norm = static_cast<T>( res->L2Norm() );
+        d_dResidualNorm = v_norm = static_cast<T>( res->L2Norm() );
         // final check updates flags if needed
-        checkStoppingCriteria( v_norm );
+        checkStoppingCriteria( d_dResidualNorm );
     }
-
-    // Store final residual should it be queried elsewhere
-    d_dResidualNorm = v_norm;
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
         AMP::pout << "GMRESSolver<T>::apply: final L2Norm of solution: " << u->L2Norm()
                   << std::endl;
-        AMP::pout << "GMRESSolver<T>::apply: final L2Norm of residual: " << v_norm << std::endl;
+        AMP::pout << "GMRESSolver<T>::apply: final L2Norm of residual: " << d_dResidualNorm
+                  << std::endl;
         AMP::pout << "GMRESSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
         AMP::pout << "GMRESSolver<T>::apply: convergence reason: "
                   << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
