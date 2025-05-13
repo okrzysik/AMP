@@ -39,6 +39,8 @@ responsibility for the use of this software.
 
 #ifdef AMP_USE_HYPRE
     #include "AMP/solvers/hypre/BoomerAMGSolver.h"
+    #include "AMP/solvers/hypre/HypreBiCGSTABSolver.h"
+    #include "AMP/solvers/hypre/HypreGMRESSolver.h"
     #include "AMP/solvers/hypre/HyprePCGSolver.h"
 #endif
 
@@ -91,8 +93,10 @@ void AMP::FactoryStrategy<AMP::Solver::SolverStrategy,
 #endif
 
 #ifdef AMP_USE_HYPRE
-    d_factories["BoomerAMGSolver"] = BoomerAMGSolver::createSolver;
-    d_factories["HyprePCGSolver"]  = HyprePCGSolver::createSolver;
+    d_factories["BoomerAMGSolver"]     = BoomerAMGSolver::createSolver;
+    d_factories["HyprePCGSolver"]      = HyprePCGSolver::createSolver;
+    d_factories["HypreGMRESSolver"]    = HypreGMRESSolver::createSolver;
+    d_factories["HypreBiCGSTABSolver"] = HypreBiCGSTABSolver::createSolver;
 #endif
 
 #ifdef AMP_USE_PETSC
