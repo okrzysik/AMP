@@ -92,6 +92,12 @@ public:
     }
 
     /**
+     * Register the operator that the solver will use during solves
+     * @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$
+     */
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
+
+    /**
      * Resets the registered operator internally with new parameters if necessary
      * @param params    OperatorParameters object that is NULL by default
      */
@@ -104,6 +110,18 @@ private:
     bool d_bUsesPreconditioner = false;
 
     std::string d_preconditioner_side;
+
+    //! scratch vectors required for TFQMR
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_r;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_z;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_delta;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_w;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_d;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_v;
+
+    std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> d_u;
+    std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> d_y;
+
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
