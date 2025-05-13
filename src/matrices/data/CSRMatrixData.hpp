@@ -285,6 +285,18 @@ std::shared_ptr<DiagMatrixData> CSRMatrixData<Policy, Allocator, DiagMatrixData>
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
+void CSRMatrixData<Policy, Allocator, DiagMatrixData>::setNNZ( lidx_t tot_nnz_diag,
+                                                               lidx_t tot_nnz_offd )
+{
+    PROFILE( "CSRMatrixData::setNNZ" );
+
+    // forward to internal blocks to get the internals allocated
+    d_diag_matrix->setNNZ( tot_nnz_diag );
+    d_offd_matrix->setNNZ( tot_nnz_offd );
+    d_nnz = d_diag_matrix->d_nnz + d_offd_matrix->d_nnz;
+}
+
+template<typename Policy, class Allocator, class DiagMatrixData>
 void CSRMatrixData<Policy, Allocator, DiagMatrixData>::setNNZ( const std::vector<lidx_t> &nnz_diag,
                                                                const std::vector<lidx_t> &nnz_offd )
 {

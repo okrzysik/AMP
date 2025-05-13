@@ -224,6 +224,12 @@ public:
     auto getMemoryLocation() const { return d_memory_location; }
 
     /** \brief  Set the number of nonzeros in each block and allocate space internally
+     * \param[in] tot_nnz_diag   Number of nonzeros in whole diagonal block
+     * \param[in] tot_nnz_offd   Number of nonzeros in whole off-diagonal block
+     */
+    void setNNZ( lidx_t tot_nnz_diag, lidx_t tot_nnz_offd );
+
+    /** \brief  Set the number of nonzeros in each block and allocate space internally
      * \param[in] nnz_diag   Number of nonzeros in each row of diagonal block
      * \param[in] nnz_offd   Number of nonzeros in each row of off-diagonal block
      */

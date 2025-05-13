@@ -21,10 +21,17 @@ class CSRMatrixSpGEMMHelperDefault
 
 public:
     CSRMatrixSpGEMMHelperDefault() = default;
-    CSRMatrixSpGEMMHelperDefault( CSRData *A_, CSRData *B_, CSRData *C_ )
+    CSRMatrixSpGEMMHelperDefault( CSRData *A_, CSRData *B_, CSRData *C_, bool overlap_comms_ )
         : A( A_ ),
           B( B_ ),
           C( C_ ),
+          A_diag( A->getDiagMatrix() ),
+          A_offd( A->getOffdMatrix() ),
+          B_diag( B->getDiagMatrix() ),
+          B_offd( B->getOffdMatrix() ),
+          C_diag( C->getDiagMatrix() ),
+          C_offd( C->getOffdMatrix() ),
+          d_overlap_comms( ( A->getComm().getSize() > 1 ) && overlap_comms_ ),
           comm( A->getComm() ),
           d_csr_comm( A->getRightCommList() ),
           d_need_comms( true )
@@ -41,11 +48,21 @@ public:
     void numericMultiplyReuse();
 
 protected:
+    void symbolicMultiply_NonOverlapped();
+    void numericMultiply_NonOverlapped();
+    void symbolicMultiply_Overlapped();
+    void numericMultiply_Overlapped();
+
     template<class Accumulator, bool IsSymbolic>
     void multiply( std::shared_ptr<DiagMatrixData> A_data,
                    std::shared_ptr<DiagMatrixData> B_data,
                    std::shared_ptr<DiagMatrixData> C_data,
                    lidx_t *ctr );
+
+    template<class Accumulator, bool IsSymbolic>
+    void multiplyFused( std::shared_ptr<DiagMatrixData> B0_data,
+                        std::shared_ptr<DiagMatrixData> B1_data,
+                        std::shared_ptr<DiagMatrixData> C_data );
 
     void setupBRemoteComm();
     void startBRemoteComm();
@@ -57,9 +74,15 @@ protected:
     template<class Accumulator>
     void mergeOffd();
 
-    // This only (re-)fills the coefficients in BRemote
-    // the comm info and symbolic creation must have already happened
-    // void fillBRemoteNumeric();
+    // Useful constants for supporting operations
+    // Fill factor used to estimate size of output matrix NZs prior to
+    // symbolic phase. This is applied *before* BRemote is gathered
+    // from other ranks, so make it a little higher than perhaps expected
+    static constexpr scalar_t C_FILL_MULT   = 1.5;
+    static constexpr scalar_t C_FILL_ADD    = 0.75;
+    static constexpr scalar_t C_GROW_FACTOR = 1.5;
+    // default starting size for sparse accumulators
+    static constexpr lidx_t SPACC_SIZE = 256;
 
     // Matrix data of operands and output
     // these are non-owning pointers
@@ -67,14 +90,27 @@ protected:
     CSRData *B;
     CSRData *C;
 
-    // Communicator
-    AMP_MPI comm;
-    CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData> d_csr_comm;
-    bool d_need_comms;
+    // diag and offd blocks of input matrices
+    std::shared_ptr<DiagMatrixData> A_diag;
+    std::shared_ptr<DiagMatrixData> A_offd;
+    std::shared_ptr<DiagMatrixData> B_diag;
+    std::shared_ptr<DiagMatrixData> B_offd;
 
     // Matrix data formed from remote rows of B that get pulled to each process
     std::shared_ptr<DiagMatrixData> BR_diag;
     std::shared_ptr<DiagMatrixData> BR_offd;
+
+    // Blocks of C matrix
+    std::shared_ptr<DiagMatrixData> C_diag;
+    std::shared_ptr<DiagMatrixData> C_offd;
+
+    // flag for whether overlapped communication/computation should be done
+    bool d_overlap_comms;
+
+    // Communicator
+    AMP_MPI comm;
+    CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData> d_csr_comm;
+    bool d_need_comms;
 
     // To overlap comms and calcs it is easiest to form the output in four
     // blocks and merge them together at the end
@@ -111,8 +147,9 @@ protected:
 
     // Internal row accumlator classes
     struct DenseAccumulator {
-        DenseAccumulator( int capacity_ )
+        DenseAccumulator( int capacity_, gidx_t offset_ )
             : capacity( capacity_ ),
+              offset( offset_ ),
               num_inserted( 0 ),
               total_inserted( 0 ),
               total_collisions( 0 ),
@@ -123,16 +160,13 @@ protected:
         {
         }
 
-        void insert_or_append( lidx_t loc, gidx_t gbl );
-        void insert_or_append( lidx_t loc,
-                               gidx_t gbl,
-                               scalar_t val,
-                               gidx_t *col_space,
-                               scalar_t *val_space,
-                               lidx_t max_pos );
+        void insert_or_append( gidx_t gbl );
+        void insert_or_append(
+            gidx_t gbl, scalar_t val, gidx_t *col_space, scalar_t *val_space, lidx_t max_pos );
         void clear();
 
         const lidx_t capacity;
+        const gidx_t offset;
         lidx_t num_inserted;
         size_t total_inserted;
         size_t total_collisions;
@@ -144,12 +178,10 @@ protected:
         std::vector<gidx_t> cols;
     };
 
-    // default starting size for sparse accumulators
-    static constexpr lidx_t SPACC_SIZE = 512;
-
     struct SparseAccumulator {
-        SparseAccumulator( int capacity_ )
+        SparseAccumulator( int capacity_, gidx_t offset_ )
             : capacity( capacity_ ),
+              offset( offset_ ),
               num_inserted( 0 ),
               total_inserted( 0 ),
               total_collisions( 0 ),
@@ -162,16 +194,13 @@ protected:
         }
 
         uint16_t hash( gidx_t gbl ) const;
-        void insert_or_append( lidx_t, gidx_t gbl );
-        void insert_or_append( lidx_t,
-                               gidx_t gbl,
-                               scalar_t val,
-                               gidx_t *col_space,
-                               scalar_t *val_space,
-                               lidx_t max_pos );
+        void insert_or_append( gidx_t gbl );
+        void insert_or_append(
+            gidx_t gbl, scalar_t val, gidx_t *col_space, scalar_t *val_space, lidx_t max_pos );
         void clear();
 
         uint16_t capacity;
+        const gidx_t offset;
         uint16_t num_inserted;
         size_t total_inserted;
         size_t total_collisions;

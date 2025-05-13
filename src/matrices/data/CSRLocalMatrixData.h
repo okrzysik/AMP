@@ -161,6 +161,9 @@ public:
         }
     }
 
+    //! Set total number of nonzeros and allocate space accordingly
+    void setNNZ( lidx_t tot_nnz );
+
     //! Set number of nonzeros in each row and allocate space accordingly
     void setNNZ( const std::vector<lidx_t> &nnz );
 

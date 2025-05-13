@@ -66,7 +66,25 @@ void NativePetscMatrixOperations::matMultiply( MatrixData const &Am,
     AMP_ASSERT( Am.numGlobalColumns() == Bm.numGlobalRows() );
 
     Mat resMat;
-    MatMatMult( getMat( Am ), getMat( Bm ), MAT_INITIAL_MATRIX, PETSC_DEFAULT, &resMat );
+
+    MatProductCreate( getMat( Am ), getMat( Bm ), nullptr, &resMat );
+    MatProductSetType( resMat, MATPRODUCT_AB );
+    // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMDEFAULT );
+    MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMSCALABLE );
+    // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMSCALABLEFAST );
+    // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMOVERLAPPING );
+    MatProductSetFill( resMat, 1.5 );
+    MatProductSetFromOptions( resMat );
+    {
+        PROFILE( "NativePetscMatrixOperations::matMultiply (symbolic)" );
+        MatProductSymbolic( resMat );
+    }
+    {
+        PROFILE( "NativePetscMatrixOperations::matMultiply (numeric)" );
+        MatProductNumeric( resMat );
+    }
+    MatProductClear( resMat );
+
     auto data = dynamic_cast<NativePetscMatrixData *>( &Cm );
     AMP_ASSERT( data );
     data->setMat( resMat );

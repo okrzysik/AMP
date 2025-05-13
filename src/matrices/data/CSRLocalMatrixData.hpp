@@ -604,6 +604,31 @@ CSRLocalMatrixData<Policy, Allocator>::transpose(
 }
 
 template<typename Policy, class Allocator>
+void CSRLocalMatrixData<Policy, Allocator>::setNNZ( lidx_t tot_nnz )
+{
+    AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRLocalMatrixData::setNNZ not implemented on device yet" );
+
+    d_nnz = tot_nnz;
+
+    if ( d_nnz == 0 ) {
+        d_is_empty = true;
+        // nothing to do, block stays empty
+        return;
+    }
+
+    // allocate and fill remaining arrays
+    d_is_empty = false;
+    d_cols     = sharedArrayBuilder( d_nnz, d_gidxAllocator );
+    d_cols_loc = sharedArrayBuilder( d_nnz, d_lidxAllocator );
+    d_coeffs   = sharedArrayBuilder( d_nnz, d_scalarAllocator );
+
+    std::fill( d_cols.get(), d_cols.get() + d_nnz, 0 );
+    std::fill( d_cols_loc.get(), d_cols_loc.get() + d_nnz, 0 );
+    std::fill( d_coeffs.get(), d_coeffs.get() + d_nnz, static_cast<scalar_t>( 0.0 ) );
+}
+
+template<typename Policy, class Allocator>
 void CSRLocalMatrixData<Policy, Allocator>::setNNZ( bool do_accum )
 {
     if ( do_accum ) {
