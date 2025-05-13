@@ -5,6 +5,7 @@
 
 
 #include <cmath>
+#include <iomanip>
 #include <limits>
 
 namespace AMP::Solver {
@@ -150,14 +151,14 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // here to potentially handle singular systems
     d_dInitialResidual = beta > std::numeric_limits<T>::epsilon() ? beta : 1.0;
 
-    if ( d_iDebugPrintInfoLevel > 0 ) {
-
-        AMP::pout << "GMRES: initial residual L2Norm: " << d_dInitialResidual << std::endl;
-    }
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         AMP::pout << "GMRES: initial solution L2Norm: " << u->L2Norm() << std::endl;
         AMP::pout << "GMRES: initial rhs L2Norm: " << f->L2Norm() << std::endl;
+    }
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        AMP::pout << "GMRES: initial residual " << std::setw( 19 ) << d_dInitialResidual
+                  << std::endl;
     }
 
     // return if the residual is already low enough
@@ -254,8 +255,8 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_dResidualNorm = v_norm = std::fabs( d_dw[k + 1] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "GMRES: iteration " << d_iNumberIterations << ", residual " << v_norm
-                      << std::endl;
+            AMP::pout << "GMRES: iteration " << std::setw( 8 ) << d_iNumberIterations
+                      << ", residual " << v_norm << std::endl;
         }
 
         ++k;
@@ -314,14 +315,13 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         checkStoppingCriteria( d_dResidualNorm );
     }
 
-    if ( d_iDebugPrintInfoLevel > 2 ) {
-        AMP::pout << "GMRES: final L2Norm of solution: " << u->L2Norm() << std::endl;
-    }
     if ( d_iDebugPrintInfoLevel > 0 ) {
-        AMP::pout << "GMRES:: final residual L2Norm: " << d_dResidualNorm << std::endl;
-        AMP::pout << "GMRES:: iterations: " << d_iNumberIterations << std::endl;
-        AMP::pout << "GMRES:: convergence reason: "
+        AMP::pout << "GMRES: final residual: " << d_dResidualNorm
+                  << ", iterations: " << d_iNumberIterations << ", convergence reason: "
                   << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
+    }
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        AMP::pout << "GMRES: final solution L2Norm: " << u->L2Norm() << std::endl;
     }
 }
 

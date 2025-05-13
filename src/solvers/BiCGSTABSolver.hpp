@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <limits>
+#include <iomanip>
 
 namespace AMP::Solver {
 
@@ -138,11 +139,11 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         d_dResidualNorm > std::numeric_limits<T>::epsilon() ? d_dResidualNorm : 1.0;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
-                  << std::endl;
-        AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of rhs vector: " << f->L2Norm()
-                  << std::endl;
-        AMP::pout << "BiCGSTABSolver<T>::solve: initial L2Norm of residual " << d_dResidualNorm
+        AMP::pout << "BiCGSTAB: initial solution L2Norm: " << u->L2Norm() << std::endl;
+        AMP::pout << "BiCGSTAB: initial rhs L2Norm: " << f->L2Norm() << std::endl;
+    }
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        AMP::pout << "BiCGSTAB: initial residual " << std::setw( 19 ) << d_dResidualNorm
                   << std::endl;
     }
 
@@ -255,9 +256,9 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         // compute the current residual norm
         d_dResidualNorm = static_cast<T>( d_r->L2Norm() );
 
-        if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "BiCGSTAB: iteration " << d_iNumberIterations << ", residual "
-                      << d_dResidualNorm << std::endl;
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            AMP::pout << "BiCGSTAB: iteration " << std::setw( 8 ) << d_iNumberIterations
+                      << ", residual " << d_dResidualNorm << std::endl;
         }
 
         // break if the residual is low enough
@@ -267,7 +268,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
         if ( omega == static_cast<T>( 0.0 ) ) {
             d_ConvergenceStatus = SolverStatus::DivergedOther;
-            AMP_WARNING( "BiCGSTABSolver<T>::solve: breakdown encountered, omega == 0" );
+            AMP_WARNING( "BiCGSTAB: breakdown encountered, omega == 0" );
             break;
         }
 
@@ -284,13 +285,13 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     }
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
-        AMP::pout << "BiCGSTABSolver<T>::apply: final L2Norm of solution: " << u->L2Norm()
-                  << std::endl;
-        AMP::pout << "BiCGSTABSolver<T>::apply: final L2Norm of residual: " << d_dResidualNorm
-                  << std::endl;
-        AMP::pout << "BiCGSTABSolver<T>::apply: iterations: " << d_iNumberIterations << std::endl;
-        AMP::pout << "BiCGSTABSolver<T>::apply: convergence reason: "
+        AMP::pout << "BiCGSTAB: final residual: " << d_dResidualNorm
+                  << ", iterations: " << d_iNumberIterations << ", convergence reason: "
                   << SolverStrategy::statusToString( d_ConvergenceStatus ) << std::endl;
+    }
+
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "BiCGSTAB: final solution L2Norm: " << u->L2Norm() << std::endl;
     }
 }
 
