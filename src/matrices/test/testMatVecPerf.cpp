@@ -53,8 +53,8 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
     auto outVec = AMP::LinearAlgebra::createVector(
         dofManager, outVar, true, AMP::Utilities::MemoryType::managed );
 #else
-    auto inVec     = AMP::LinearAlgebra::createVector( dofManager, inVar );
-    auto outVec    = AMP::LinearAlgebra::createVector( dofManager, outVar );
+    auto inVec  = AMP::LinearAlgebra::createVector( dofManager, inVar );
+    auto outVec = AMP::LinearAlgebra::createVector( dofManager, outVar );
 #endif
 
     // Create the matrix
@@ -149,7 +149,9 @@ size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
         backends.emplace_back( input_db->getString( "MatrixAccelerationBackend" ) );
     } else {
         backends.emplace_back( "serial" );
+#if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
         backends.emplace_back( "kokkos" );
+#endif
 #ifdef USE_DEVICE
         backends.emplace_back( "hip_cuda" );
 #endif
