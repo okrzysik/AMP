@@ -505,7 +505,7 @@ PetscErrorCode _AMP_l2normanddot( Vec a, Vec b, PetscScalar *dp, PetscReal *nm )
 {
     auto x     = getAMP( a );
     auto y     = getAMP( b );
-    auto rvals = x->L2NormAndDot( *y );
+    auto rvals = y->L2NormAndDot( *x );
     *dp        = static_cast<PetscScalar>( rvals.second );
     *nm        = static_cast<PetscReal>( rvals.first );
     return 0;

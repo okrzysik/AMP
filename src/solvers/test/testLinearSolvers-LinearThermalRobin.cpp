@@ -167,6 +167,7 @@ int main( int argc, char *argv[] )
 #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscBiCGSTAB" );
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML
@@ -181,6 +182,7 @@ int main( int argc, char *argv[] )
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscBiCGSTAB" );
     #endif
 #endif
 
@@ -196,6 +198,7 @@ int main( int argc, char *argv[] )
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-PetscFGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-PetscBiCGSTAB" );
     #endif
 #endif
     }

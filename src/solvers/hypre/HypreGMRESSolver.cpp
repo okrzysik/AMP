@@ -153,7 +153,7 @@ void HypreGMRESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 }
 
 void HypreGMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                            std::shared_ptr<AMP::LinearAlgebra::Vector> u )
+                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE( "HypreGMRESSolver::apply" );
 
@@ -197,7 +197,8 @@ void HypreGMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         AMP::pout << "HypreGMRESSolver::apply: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
-        AMP::pout << "HypreGMRESSolver::apply: initial L2Norm of rhs vector: " << f_norm << std::endl;
+        AMP::pout << "HypreGMRESSolver::apply: initial L2Norm of rhs vector: " << f_norm
+                  << std::endl;
         AMP::pout << "HypreGMRESSolver::apply: initial L2Norm of residual: " << current_res
                   << std::endl;
     }
@@ -219,11 +220,11 @@ void HypreGMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     HYPRE_ParVector par_x;
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
-
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );
 
-    HYPRE_GMRESSolve( d_solver, (HYPRE_Matrix) parcsr_A, (HYPRE_Vector) par_b, (HYPRE_Vector) par_x );
+    HYPRE_GMRESSolve(
+        d_solver, (HYPRE_Matrix) parcsr_A, (HYPRE_Vector) par_b, (HYPRE_Vector) par_x );
 
     copyFromHypre( d_hypre_sol, u );
 
