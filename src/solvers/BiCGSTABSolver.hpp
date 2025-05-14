@@ -5,8 +5,8 @@
 #include "ProfilerApp.h"
 
 #include <cmath>
-#include <limits>
 #include <iomanip>
+#include <limits>
 
 namespace AMP::Solver {
 
@@ -240,9 +240,9 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
         // the L2NormAndDot is not optimized in vectors and needs to be
         // if BiCGSTAB becomes a priority
-        auto [norm, dot] = d_t->L2NormAndDot( *d_s );
-        auto t_sqnorm    = static_cast<T>( norm * norm );
-        auto t_dot_s     = static_cast<T>( dot );
+        auto [norm_sq, dot] = d_t->L2NormAndDot( *d_s );
+        auto t_sqnorm       = static_cast<T>( norm_sq );
+        auto t_dot_s        = static_cast<T>( dot );
 
         // note the choice of omega below corresponds to what van der Vorst calls BiCGSTAB-P
         omega = ( t_sqnorm == static_cast<T>( 0.0 ) ) ? static_cast<T>( 0.0 ) : t_dot_s / t_sqnorm;

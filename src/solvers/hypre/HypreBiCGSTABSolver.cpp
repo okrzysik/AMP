@@ -67,9 +67,9 @@ void HypreBiCGSTABSolver::setupHypreSolver(
         if ( d_bDiagScalePC ) {
             HYPRE_Solver bicgstab_precond = NULL;
             HYPRE_BiCGSTABSetPrecond( d_solver,
-                                   (HYPRE_PtrToSolverFcn) HYPRE_ParCSRDiagScale,
-                                   (HYPRE_PtrToSolverFcn) HYPRE_ParCSRDiagScaleSetup,
-                                   bicgstab_precond );
+                                      (HYPRE_PtrToSolverFcn) HYPRE_ParCSRDiagScale,
+                                      (HYPRE_PtrToSolverFcn) HYPRE_ParCSRDiagScaleSetup,
+                                      bicgstab_precond );
         } else {
             auto pc = std::dynamic_pointer_cast<HypreSolver>( d_pPreconditioner );
             if ( pc ) {
@@ -79,9 +79,9 @@ void HypreBiCGSTABSolver::setupHypreSolver(
 
                 if ( pc->type() == "BoomerAMGSolver" ) {
                     HYPRE_BiCGSTABSetPrecond( d_solver,
-                                           (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
-                                           (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup,
-                                           bicgstab_precond );
+                                              (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
+                                              (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup,
+                                              bicgstab_precond );
                 } else {
                     AMP_ERROR( "Currently only diagonal scaling and Boomer AMG preconditioners are "
                                "supported" );
@@ -147,7 +147,7 @@ void HypreBiCGSTABSolver::getFromInput( std::shared_ptr<const AMP::Database> db 
 }
 
 void HypreBiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
-                            std::shared_ptr<AMP::LinearAlgebra::Vector> u )
+                                 std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE( "HypreBiCGSTABSolver::apply" );
 
@@ -189,9 +189,10 @@ void HypreBiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     d_dInitialResidual = current_res;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        AMP::pout << "HypreBiCGSTABSolver::apply: initial L2Norm of solution vector: " << u->L2Norm()
+        AMP::pout << "HypreBiCGSTABSolver::apply: initial L2Norm of solution vector: "
+                  << u->L2Norm() << std::endl;
+        AMP::pout << "HypreBiCGSTABSolver::apply: initial L2Norm of rhs vector: " << f_norm
                   << std::endl;
-        AMP::pout << "HypreBiCGSTABSolver::apply: initial L2Norm of rhs vector: " << f_norm << std::endl;
         AMP::pout << "HypreBiCGSTABSolver::apply: initial L2Norm of residual: " << current_res
                   << std::endl;
     }
@@ -200,7 +201,8 @@ void HypreBiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     // checkStoppingCriteria responsible for setting flags on convergence reason
     if ( checkStoppingCriteria( current_res ) ) {
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            AMP::pout << "HypreBiCGSTABSolver::apply: initial residual below tolerance" << std::endl;
+            AMP::pout << "HypreBiCGSTABSolver::apply: initial residual below tolerance"
+                      << std::endl;
         }
         return;
     }
@@ -217,7 +219,8 @@ void HypreBiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );
 
-    HYPRE_BiCGSTABSolve( d_solver, (HYPRE_Matrix) parcsr_A, (HYPRE_Vector) par_b, (HYPRE_Vector) par_x );
+    HYPRE_BiCGSTABSolve(
+        d_solver, (HYPRE_Matrix) parcsr_A, (HYPRE_Vector) par_b, (HYPRE_Vector) par_x );
 
     copyFromHypre( d_hypre_sol, u );
 
