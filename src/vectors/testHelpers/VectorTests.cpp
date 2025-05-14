@@ -366,7 +366,7 @@ void VectorTests::Bug_491( [[maybe_unused]] AMP::UnitTest *ut )
 #ifdef AMP_USE_PETSC
     PROFILE( "Bug_491" );
     auto vector1( d_factory->getVector() );
-    if ( vector1->getVectorData()->isType<double>() ) {
+    if ( vector1->getVectorData()->isType<PetscReal>() ) {
         vector1->setRandomValues();
         auto managed_petsc = AMP::LinearAlgebra::PetscVector::view( vector1 );
         auto petsc_vec =
@@ -375,7 +375,7 @@ void VectorTests::Bug_491( [[maybe_unused]] AMP::UnitTest *ut )
 
 
         // This sets the petsc cache
-        double n1, n2, ninf;
+        PetscReal n1, n2, ninf;
         VecNormBegin( managed_vec, NORM_1, &n1 );
         VecNormBegin( managed_vec, NORM_2, &n2 );
         VecNormBegin( managed_vec, NORM_INFINITY, &ninf );
@@ -388,9 +388,9 @@ void VectorTests::Bug_491( [[maybe_unused]] AMP::UnitTest *ut )
 
         // Now, we perform some math on vector1
         vector1->scale( 100000 );
-        double sp_n1  = static_cast<double>( vector1->L1Norm().get<double>() );
-        double sp_n2  = static_cast<double>( vector1->L2Norm().get<double>() );
-        double sp_inf = static_cast<double>( vector1->maxNorm().get<double>() );
+        auto sp_n1  = static_cast<PetscReal>( vector1->L1Norm() );
+        auto sp_n2  = static_cast<PetscReal>( vector1->L2Norm() );
+        auto sp_inf = static_cast<PetscReal>( vector1->maxNorm() );
 
         // Check to see if petsc cache has been invalidated
         VecNormBegin( managed_vec, NORM_1, &n1 );
@@ -400,7 +400,7 @@ void VectorTests::Bug_491( [[maybe_unused]] AMP::UnitTest *ut )
         VecNormEnd( managed_vec, NORM_2, &n2 );
         VecNormEnd( managed_vec, NORM_INFINITY, &ninf );
 
-        double tol = 0.00000001 * n1;
+        PetscReal tol = 0.00000001 * n1;
         PASS_FAIL( fabs( n1 - sp_n1 ) < tol, "L1 norm -- Petsc interface begin/end" );
         PASS_FAIL( fabs( n2 - sp_n2 ) < tol, "L2 norm -- Petsc interface begin/end" );
         PASS_FAIL( fabs( ninf - sp_inf ) < tol, "Linf norm -- Petsc interface begin/end" );
@@ -409,9 +409,9 @@ void VectorTests::Bug_491( [[maybe_unused]] AMP::UnitTest *ut )
         VecNorm( managed_vec, NORM_2, &n2 );
         VecNorm( managed_vec, NORM_INFINITY, &ninf );
 
-        double L1Norm( vector1->L1Norm() );
-        double L2Norm( vector1->L2Norm() );
-        double maxNorm( vector1->maxNorm() );
+        PetscReal L1Norm( vector1->L1Norm() );
+        PetscReal L2Norm( vector1->L2Norm() );
+        PetscReal maxNorm( vector1->maxNorm() );
         PASS_FAIL( fabs( n1 - L1Norm ) < tol, "L1 norm -- Petsc interface begin/end " );
         PASS_FAIL( fabs( n2 - L2Norm ) < tol, "L2 norm -- Petsc interface begin/end " );
         PASS_FAIL( fabs( ninf - maxNorm ) < tol, "inf norm -- Petsc interface begin/end " );

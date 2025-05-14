@@ -53,10 +53,9 @@ void NativePetscMatrixOperations::multTranspose( std::shared_ptr<const Vector> i
     MatMultTranspose( getMat( A ), *getVec( in ), *getVec( out ) );
 }
 
-void NativePetscMatrixOperations::scale( AMP::Scalar alpha_in, MatrixData &A )
+void NativePetscMatrixOperations::scale( AMP::Scalar alpha, MatrixData &A )
 {
-    const auto alpha = static_cast<double>( alpha_in );
-    MatScale( getMat( A ), alpha );
+    MatScale( getMat( A ), static_cast<PetscScalar>( alpha ) );
 }
 
 void NativePetscMatrixOperations::matMultiply( MatrixData const &Am,
@@ -72,17 +71,16 @@ void NativePetscMatrixOperations::matMultiply( MatrixData const &Am,
     data->setMat( resMat );
 }
 
-void NativePetscMatrixOperations::axpy( AMP::Scalar alpha_in, const MatrixData &X, MatrixData &Y )
+void NativePetscMatrixOperations::axpy( AMP::Scalar alpha, const MatrixData &X, MatrixData &Y )
 {
-    const auto alpha = static_cast<double>( alpha_in );
     AMP_ASSERT( X.numGlobalRows() == Y.numGlobalRows() );
     AMP_ASSERT( X.numGlobalColumns() == Y.numGlobalColumns() );
-    MatAXPY( getMat( X ), alpha, getMat( Y ), SAME_NONZERO_PATTERN );
+    MatAXPY( getMat( X ), static_cast<PetscReal>( alpha ), getMat( Y ), SAME_NONZERO_PATTERN );
 }
 
 void NativePetscMatrixOperations::setScalar( AMP::Scalar alpha_in, MatrixData &A )
 {
-    const auto alpha = static_cast<double>( alpha_in );
+    const auto alpha = static_cast<PetscScalar>( alpha_in );
     if ( alpha != 0.0 )
         AMP_ERROR( "Cannot perform operation on NativePetscMatrix yet!" );
     MatZeroEntries( getMat( A ) );
@@ -110,7 +108,7 @@ void NativePetscMatrixOperations::extractDiagonal( MatrixData const &A,
 
 AMP::Scalar NativePetscMatrixOperations::LinfNorm( MatrixData const &A ) const
 {
-    double retVal;
+    PetscReal retVal;
     MatNorm( getMat( A ), NORM_INFINITY, &retVal );
     return retVal;
 }

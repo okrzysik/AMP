@@ -245,10 +245,10 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         registerOperator( d_pOperator );
     }
 
-    const auto f_norm = static_cast<double>( f->L2Norm() );
+    const auto f_norm = static_cast<PetscReal>( f->L2Norm() );
 
     // Zero rhs implies zero solution, bail out early
-    if ( f_norm == static_cast<double>( 0.0 ) ) {
+    if ( f_norm == static_cast<PetscReal>( 0.0 ) ) {
         u->zero();
         d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
         d_dResidualNorm     = 0.0;
@@ -262,14 +262,14 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // since Petsc tracks this internally
     // Can we get that value from Petsc and remove one global reduce?
     std::shared_ptr<AMP::LinearAlgebra::Vector> r;
-    double current_res;
+    PetscReal current_res;
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
         current_res = f_norm;
     } else {
         r = f->clone();
         d_pOperator->residual( f, u, r );
-        current_res = static_cast<double>( r->L2Norm() );
+        current_res = static_cast<PetscReal>( r->L2Norm() );
     }
     d_dInitialResidual = current_res;
 
@@ -305,12 +305,13 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Query iteration count and store on AMP side
-    KSPGetIterationNumber( d_KrylovSolver, &d_iNumberIterations );
-
+    PetscInt iters;
+    KSPGetIterationNumber( d_KrylovSolver, &iters );
+    d_iNumberIterations = iters;
     // Re-compute or query final residual
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, r );
-        current_res = static_cast<double>( r->L2Norm() );
+        current_res = static_cast<PetscReal>( r->L2Norm() );
     } else {
         KSPGetResidualNorm( d_KrylovSolver, &current_res );
     }
@@ -521,9 +522,9 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 
     // these tests were helpful in finding a bug
     if ( solver->getDebugPrintInfoLevel() > 5 ) {
-        double norm = 0.0;
+        PetscReal norm = 0.0;
         VecNorm( r, NORM_2, &norm );
-        double sp_r_norm = static_cast<double>( sp_r->L2Norm() );
+        auto sp_r_norm = static_cast<PetscReal>( sp_r->L2Norm() );
         AMP_ASSERT( AMP::Utilities::approx_equal( norm, sp_r_norm ) );
     }
 
@@ -537,8 +538,8 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     }
 
     // Check for nans (no communication necessary)
-    double localNorm =
-        static_cast<double>( sp_z->getVectorOperations()->localL2Norm( *sp_z->getVectorData() ) );
+    auto localNorm = static_cast<PetscReal>(
+        sp_z->getVectorOperations()->localL2Norm( *sp_z->getVectorData() ) );
     AMP_INSIST( localNorm == localNorm, "NaNs detected in preconditioner" );
 
     // not sure why, but the state of sp_z is not updated and petsc uses the cached norm
@@ -546,7 +547,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 
     // these tests were helpful in finding a bug
     if ( solver->getDebugPrintInfoLevel() > 5 ) {
-        double norm = 0.0;
+        PetscReal norm = 0.0;
         AMP::pout << "L2 Norm of sp_z " << sp_z->L2Norm() << std::endl;
         VecNorm( z, NORM_2, &norm );
         AMP::pout << "L2 Norm of z " << norm << std::endl;
