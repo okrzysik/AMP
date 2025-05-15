@@ -29,6 +29,7 @@ public:
 
     /** \brief Constructor, variable names set to default
      * \param[in] comm     Communicator for the matrix
+     * \param[in] backend  Acceleration backend for matrix operations
      */
     explicit MatrixParametersBase( const AMP_MPI &comm, AMP::Utilities::Backend backend )
         : d_comm( comm ),
@@ -57,6 +58,7 @@ public:
      * \param[in] comm      Communicator for the matrix
      * \param[in] varLeft   pointer to left variable
      * \param[in] varRight  pointer to right variable
+     * \param[in] backend   Acceleration backend for matrix operations
      */
     explicit MatrixParametersBase( const AMP_MPI &comm,
                                    std::shared_ptr<Variable> varLeft,

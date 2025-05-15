@@ -28,6 +28,7 @@ public:
      * \f$x\f$ is a right
      * vector )
      * \param[in] comm     Communicator for the matrix
+     * \param[in] backend  Acceleration backend for matrix operations
      */
     explicit AMPCSRMatrixParameters(
         std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,

@@ -64,6 +64,7 @@ public:
      * \param[in] diag          Parameters for diag block
      * \param[in] off_diag      Parameters for offd block
      * \param[in] comm          Communicator for the matrix
+     * \param[in] backend       Acceleration backend for matrix operations
      */
     explicit RawCSRMatrixParameters( gidx_t first_row,
                                      gidx_t last_row,
@@ -123,6 +124,7 @@ public:
      * \param[in] comm          Communicator for the matrix
      * \param[in] var_left      Variable for left vector
      * \param[in] var_right     Variable for right vector
+     * \param[in] backend       Acceleration backend for matrix operations
      */
     explicit RawCSRMatrixParameters( gidx_t first_row,
                                      gidx_t last_row,
