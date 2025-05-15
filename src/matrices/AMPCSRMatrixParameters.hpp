@@ -191,7 +191,8 @@ AMPCSRMatrixParameters<Policy>::AMPCSRMatrixParameters(
     const std::function<void( const typename Policy::gidx_t,
                               typename Policy::gidx_t *,
                               typename Policy::gidx_t * )> getRowCols )
-    : MatrixParameters( dofLeft, dofRight, comm, varLeft, varRight, commListLeft, commListRight, backend ),
+    : MatrixParameters(
+          dofLeft, dofRight, comm, varLeft, varRight, commListLeft, commListRight, backend ),
       d_getRowNNZ( getRowNNZ ),
       d_getRowCols( getRowCols )
 {
