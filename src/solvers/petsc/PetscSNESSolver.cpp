@@ -567,10 +567,12 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // but some care is required to re-initialize SNES so that cached
     // vectors are not kept. A refactor at some future point should
     // address this and other issues that the present implementation has
-    checkErr( SNESGetIterationNumber( d_SNESSolver, &d_iNumberIterations ) );
+    PetscInt iters = 0;
+    checkErr( SNESGetIterationNumber( d_SNESSolver, &iters ) );
+    d_iNumberIterations = static_cast<int>( iters );
     d_iterationHistory.push_back( d_iNumberIterations );
 
-    int iLinearIterations = 0;
+    PetscInt iLinearIterations = 0;
     checkErr( SNESGetLinearSolveIterations( d_SNESSolver, &iLinearIterations ) );
     d_iLinearIterationHistory.push_back( iLinearIterations );
 
@@ -848,18 +850,18 @@ PetscErrorCode PetscSNESSolver::KSPPreSolve_SNESEW( KSP ksp, Vec, Vec, SNES snes
         } else
             SETERRQ( PETSC_COMM_SELF,
                      PETSC_ERR_ARG_OUTOFRANGE,
-                     "Only versions 1, 2 or 3 are supported: %i",
-                     kctx->version );
+                     "Only versions 1, 2 or 3 are supported: %li",
+                     static_cast<long>( kctx->version ) );
     }
     /* safeguard: avoid rtol greater than one */
     rtol = PetscMin( rtol, kctx->rtol_max );
     ierr = KSPSetTolerances( ksp, rtol, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT );
     CHKERRQ( ierr );
     ierr = PetscInfo( snes,
-                      "iter %i, Eisenstat-Walker (version %i) KSP rtol=%g\n",
-                      snes->iter,
-                      kctx->version,
-                      (double) rtol );
+                      "iter %li, Eisenstat-Walker (version %li) KSP rtol=%g\n",
+                      static_cast<long>( snes->iter ),
+                      static_cast<long>( kctx->version ),
+                      static_cast<PetscReal>( rtol ) );
     CHKERRQ( ierr );
     PetscFunctionReturn( 0 );
 }
@@ -1055,9 +1057,9 @@ PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
 
     // these tests were helpful in finding a bug
     if ( preconditioner->getDebugPrintInfoLevel() > 5 ) {
-        double norm = 0.0;
+        PetscReal norm = 0.0;
         VecNorm( xin, NORM_2, &norm );
-        double rhs_norm = static_cast<double>( rhs->L2Norm() );
+        auto rhs_norm = static_cast<PetscReal>( rhs->L2Norm() );
         AMP_ASSERT( AMP::Utilities::approx_equal( norm, rhs_norm ) );
     }
 
@@ -1079,9 +1081,9 @@ PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
 
     // these tests were helpful in finding a bug
     if ( preconditioner->getDebugPrintInfoLevel() > 5 ) {
-        auto ampSolnNorm = static_cast<double>( soln->L2Norm() );
+        auto ampSolnNorm = static_cast<PetscReal>( soln->L2Norm() );
         AMP::pout << "L2 Norm of soln " << ampSolnNorm << std::endl;
-        double petscSolnNorm = 0.0;
+        PetscReal petscSolnNorm = 0.0;
         VecNorm( xout, NORM_2, &petscSolnNorm );
         AMP::pout << "L2 Norm of xout " << petscSolnNorm << std::endl;
         AMP_ASSERT( petscSolnNorm == ampSolnNorm );
