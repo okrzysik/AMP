@@ -12,11 +12,15 @@ template<class TYPE = double, class Allocator = AMP::HostAllocator<void>>
 class GhostDataHelper : public VectorData
 {
 public:
+    using scalarAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<TYPE>;
+
     GhostDataHelper();
     GhostDataHelper( std::shared_ptr<CommunicationList> );
+    ~GhostDataHelper();
 
 public: // Functions overloaded from VectorData
-    bool hasGhosts() const override { return ( d_Ghosts.empty() ); }
+    bool hasGhosts() const override { return d_ghostSize > 0; }
     std::shared_ptr<CommunicationList> getCommunicationList() const override;
     void setCommunicationList( std::shared_ptr<CommunicationList> comm ) override;
     void aliasGhostBuffer( std::shared_ptr<VectorData> in ) override;
@@ -53,12 +57,17 @@ public: // Write/read restart data
 protected:
     void scatter_set();
     void scatter_add();
+    void deallocateBuffers();
+    void allocateBuffers( size_t len );
 
 protected:
     std::shared_ptr<CommunicationList> d_CommList = nullptr;
     std::shared_ptr<UpdateState> d_UpdateState    = nullptr;
-    std::vector<TYPE> d_Ghosts;
-    std::vector<TYPE> d_AddBuffer;
+
+    scalarAllocator_t d_alloc;
+    TYPE *d_Ghosts    = nullptr;
+    TYPE *d_AddBuffer = nullptr;
+    size_t d_ghostSize; //! size/length of ghost and add buffers
 };
 
 

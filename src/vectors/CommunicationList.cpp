@@ -213,6 +213,7 @@ void CommunicationList::clearBuffers()
     d_SendSizes.clear();
     d_SendDisp.clear();
     d_SendDOFList.clear();
+    d_ReceiveDOFList.clear();
 }
 
 size_t CommunicationList::getVectorSendBufferSize() const

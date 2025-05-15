@@ -916,7 +916,7 @@ void VectorTests::VerifyVectorSetZeroGhosts( AMP::UnitTest *ut )
     auto vector = d_factory->getVector();
     vector->setNoGhosts();
     int num_ghosts = vector->getGhostSize();
-    bool no_ghosts = vector->getVectorData()->hasGhosts();
+    bool no_ghosts = !vector->getVectorData()->hasGhosts();
     num_ghosts     = globalComm.sumReduce( num_ghosts );
     PASS_FAIL( no_ghosts && num_ghosts == 0, "verify setNoGhosts " );
 }
