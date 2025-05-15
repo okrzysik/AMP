@@ -36,6 +36,14 @@ public:
         const std::function<void( const gidx_t, lidx_t &, lidx_t & )> = {},
         const std::function<void( const gidx_t, gidx_t *, gidx_t * )> = {} );
 
+    explicit AMPCSRMatrixParameters(
+        std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+        std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+        const AMP_MPI &comm,
+        AMP::Utilities::Backend backend,
+        const std::function<void( const gidx_t, lidx_t &, lidx_t & )> = {},
+        const std::function<void( const gidx_t, gidx_t *, gidx_t * )> = {} );
+
     /** \brief Constructor
      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$y\f$ is a left
@@ -51,6 +59,16 @@ public:
         const AMP_MPI &comm,
         std::shared_ptr<Variable> varLeft,
         std::shared_ptr<Variable> varRight,
+        const std::function<void( const gidx_t, lidx_t &, lidx_t & )> = {},
+        const std::function<void( const gidx_t, gidx_t *, gidx_t * )> = {} );
+
+    explicit AMPCSRMatrixParameters(
+        std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+        std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+        const AMP_MPI &comm,
+        std::shared_ptr<Variable> varLeft,
+        std::shared_ptr<Variable> varRight,
+        AMP::Utilities::Backend backend,
         const std::function<void( const gidx_t, lidx_t &, lidx_t & )> = {},
         const std::function<void( const gidx_t, gidx_t *, gidx_t * )> = {} );
 
@@ -72,6 +90,16 @@ public:
         const std::function<void( const gidx_t, lidx_t &, lidx_t & )> = {},
         const std::function<void( const gidx_t, gidx_t *, gidx_t * )> = {} );
 
+    explicit AMPCSRMatrixParameters(
+        std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+        std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+        const AMP_MPI &comm,
+        std::shared_ptr<CommunicationList> commListLeft,
+        std::shared_ptr<CommunicationList> commListRight,
+        AMP::Utilities::Backend backend,
+        const std::function<void( const gidx_t, lidx_t &, lidx_t & )> = {},
+        const std::function<void( const gidx_t, gidx_t *, gidx_t * )> = {} );
+
     /** \brief Constructor
      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$y\f$ is a left
@@ -89,6 +117,19 @@ public:
         std::shared_ptr<Variable> varRight,
         std::shared_ptr<CommunicationList> commListLeft,
         std::shared_ptr<CommunicationList> commListRight,
+        const std::function<void( const gidx_t, lidx_t &, lidx_t & )> = {},
+        const std::function<void( const gidx_t, gidx_t *, gidx_t * )> = {} );
+
+
+    explicit AMPCSRMatrixParameters(
+        std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+        std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+        const AMP_MPI &comm,
+        std::shared_ptr<Variable> varLeft,
+        std::shared_ptr<Variable> varRight,
+        std::shared_ptr<CommunicationList> commListLeft,
+        std::shared_ptr<CommunicationList> commListRight,
+        AMP::Utilities::Backend backend,
         const std::function<void( const gidx_t, lidx_t &, lidx_t & )> = {},
         const std::function<void( const gidx_t, gidx_t *, gidx_t * )> = {} );
 

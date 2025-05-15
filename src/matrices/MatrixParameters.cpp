@@ -28,10 +28,47 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
 MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
                                     std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
                                     const AMP_MPI &comm,
+                                    AMP::Utilities::Backend backend,
+                                    const std::function<std::vector<size_t>( size_t )> getRow )
+    : MatrixParametersBase( comm, backend ),
+      d_DOFManagerLeft( dofLeft ),
+      d_DOFManagerRight( dofRight ),
+      d_getRow( getRow )
+{
+    AMP_ASSERT( d_DOFManagerLeft );
+    AMP_ASSERT( d_DOFManagerRight );
+
+    // comm lists not provided, generate from dof managers
+    generateCommLists();
+}
+
+MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                                    std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                                    const AMP_MPI &comm,
                                     std::shared_ptr<Variable> varLeft,
                                     std::shared_ptr<Variable> varRight,
                                     const std::function<std::vector<size_t>( size_t )> getRow )
     : MatrixParametersBase( comm, varLeft, varRight ),
+      d_DOFManagerLeft( dofLeft ),
+      d_DOFManagerRight( dofRight ),
+      d_getRow( getRow )
+{
+    AMP_ASSERT( d_DOFManagerLeft );
+    AMP_ASSERT( d_DOFManagerRight );
+
+    // comm lists not provided, generate from dof managers
+    generateCommLists();
+}
+
+
+MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                                    std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                                    const AMP_MPI &comm,
+                                    std::shared_ptr<Variable> varLeft,
+                                    std::shared_ptr<Variable> varRight,
+                                    AMP::Utilities::Backend backend,
+                                    const std::function<std::vector<size_t>( size_t )> getRow )
+    : MatrixParametersBase( comm, varLeft, varRight, backend ),
       d_DOFManagerLeft( dofLeft ),
       d_DOFManagerRight( dofRight ),
       d_getRow( getRow )
@@ -60,6 +97,25 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
     AMP_ASSERT( d_DOFManagerRight );
 }
 
+
+MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                                    std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                                    const AMP_MPI &comm,
+                                    std::shared_ptr<CommunicationList> commListLeft,
+                                    std::shared_ptr<CommunicationList> commListRight,
+                                    AMP::Utilities::Backend backend,
+                                    const std::function<std::vector<size_t>( size_t )> getRow )
+    : MatrixParametersBase( comm, backend ),
+      d_DOFManagerLeft( dofLeft ),
+      d_DOFManagerRight( dofRight ),
+      d_CommListLeft( commListLeft ),
+      d_CommListRight( commListRight ),
+      d_getRow( getRow )
+{
+    AMP_ASSERT( d_DOFManagerLeft );
+    AMP_ASSERT( d_DOFManagerRight );
+}
+
 MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
                                     std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
                                     const AMP_MPI &comm,
@@ -69,6 +125,26 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
                                     std::shared_ptr<CommunicationList> commListRight,
                                     const std::function<std::vector<size_t>( size_t )> getRow )
     : MatrixParametersBase( comm, varLeft, varRight ),
+      d_DOFManagerLeft( dofLeft ),
+      d_DOFManagerRight( dofRight ),
+      d_CommListLeft( commListLeft ),
+      d_CommListRight( commListRight ),
+      d_getRow( getRow )
+{
+    AMP_ASSERT( d_DOFManagerLeft );
+    AMP_ASSERT( d_DOFManagerRight );
+}
+
+MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                                    std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                                    const AMP_MPI &comm,
+                                    std::shared_ptr<Variable> varLeft,
+                                    std::shared_ptr<Variable> varRight,
+                                    std::shared_ptr<CommunicationList> commListLeft,
+                                    std::shared_ptr<CommunicationList> commListRight,
+                                    AMP::Utilities::Backend backend,
+                                    const std::function<std::vector<size_t>( size_t )> getRow )
+    : MatrixParametersBase( comm, varLeft, varRight, backend ),
       d_DOFManagerLeft( dofLeft ),
       d_DOFManagerRight( dofRight ),
       d_CommListLeft( commListLeft ),

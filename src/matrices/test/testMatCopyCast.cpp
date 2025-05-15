@@ -79,9 +79,7 @@ void createMatrixAndVectors(
 
     // Create the matrix parameters
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        leftDOF, rightDOF, comm, inVar, outVar, getRow );
-
-    params->d_backend = backend;
+        leftDOF, rightDOF, comm, inVar, outVar, backend, getRow );
 
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );

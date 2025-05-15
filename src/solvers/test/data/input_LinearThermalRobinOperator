@@ -22,7 +22,6 @@ DiffusionBVPOperator {
    name="LinearBVPOperator"
    VolumeOperator = "DiffusionLinearFEOperator1"
    BoundaryOperator = "ColumnBoundaryOperator1"
-   AccelerationBackend = "kokkos"
 }
 
 DiffusionLinearFEOperator1{

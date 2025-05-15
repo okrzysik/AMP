@@ -31,6 +31,12 @@ public:
                                const AMP_MPI &comm,
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               AMP::Utilities::Backend backend,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
     /** \brief Constructor
      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$y\f$ is a left
@@ -45,6 +51,14 @@ public:
                                const AMP_MPI &comm,
                                std::shared_ptr<Variable> varLeft,
                                std::shared_ptr<Variable> varRight,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               std::shared_ptr<Variable> varLeft,
+                               std::shared_ptr<Variable> varRight,
+                               AMP::Utilities::Backend backend,
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
     /** \brief Constructor
@@ -63,6 +77,14 @@ public:
                                std::shared_ptr<CommunicationList> commListRight,
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               std::shared_ptr<CommunicationList> commListLeft,
+                               std::shared_ptr<CommunicationList> commListRight,
+                               AMP::Utilities::Backend backend,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
     /** \brief Constructor
      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$y\f$ is a left
@@ -79,6 +101,16 @@ public:
                                std::shared_ptr<Variable> varRight,
                                std::shared_ptr<CommunicationList> commListLeft,
                                std::shared_ptr<CommunicationList> commListRight,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               std::shared_ptr<Variable> varLeft,
+                               std::shared_ptr<Variable> varRight,
+                               std::shared_ptr<CommunicationList> commListLeft,
+                               std::shared_ptr<CommunicationList> commListRight,
+                               AMP::Utilities::Backend backend,
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
     //! Destructor

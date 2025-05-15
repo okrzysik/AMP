@@ -15,7 +15,9 @@
 #include <memory>
 #include <string>
 
-void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
+void linearThermalTest( AMP::UnitTest *ut,
+                        const std::string &inputFileName,
+                        std::string &accelerationBackend )
 {
     PROFILE( "DRIVER::linearThermalTest" );
 
@@ -38,6 +40,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     const auto meshAdapter = createMesh( input_db );
 
     auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, meshAdapter );
+
+    // Set appropriate acceleration backend
+    auto op_db = input_db->getDatabase( "DiffusionBVPOperator" );
+    op_db->putScalar( "AccelerationBackend", accelerationBackend );
 
     // Create the Thermal BVP Operator
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -203,10 +209,20 @@ int main( int argc, char *argv[] )
 #endif
     }
 
+    std::vector<std::string> backends;
+    backends.emplace_back( "serial" );
+#if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+    backends.emplace_back( "kokkos" );
+#endif
+#ifdef USE_DEVICE
+    backends.emplace_back( "hip_cuda" );
+#endif
+
     {
         PROFILE( "DRIVER::main(test loop)" );
         for ( auto &file : files ) {
-            linearThermalTest( &ut, file );
+            for ( auto &backend : backends )
+                linearThermalTest( &ut, file, backend );
         }
     }
 

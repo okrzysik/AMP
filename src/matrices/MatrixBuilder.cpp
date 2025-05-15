@@ -133,6 +133,7 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
             rightVec->getVariable(),
             leftVec->getCommunicationList(),
             rightVec->getCommunicationList(),
+            accelerationBackend,
             getRow );
     } else {
         // no getRow function available
@@ -155,11 +156,11 @@ createCSRMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
             rightVec->getVariable(),
             leftVec->getCommunicationList(),
             rightVec->getCommunicationList(),
+            accelerationBackend,
             getRowNNZ,
             getRowCols );
     }
 
-    params->d_backend = accelerationBackend;
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( data );

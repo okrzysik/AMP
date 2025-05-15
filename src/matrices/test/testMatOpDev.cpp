@@ -79,17 +79,18 @@ void createMatrixAndVectors(
         return _rightDOF->getRowDOFs( id );
     };
 
-    // Create the matrix parameters
-    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        leftDOF, rightDOF, comm, inVar, outVar, getRow );
-
-    // clang-format off
+// clang-format off
 #ifdef USE_DEVICE
-    params->d_backend = AMP::Utilities::Backend::hip_cuda;
+    auto backend = AMP::Utilities::Backend::hip_cuda;
 #else
-    params->d_backend = AMP::Utilities::Backend::serial;
+    auto backend = AMP::Utilities::Backend::serial;
 #endif
     // clang-format on
+
+    // Create the matrix parameters
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        leftDOF, rightDOF, comm, inVar, outVar, backend, getRow );
+
 
     // Create the matrix
     auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
