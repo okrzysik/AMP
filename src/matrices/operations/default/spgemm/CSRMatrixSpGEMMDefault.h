@@ -32,6 +32,7 @@ public:
           C_diag( C->getDiagMatrix() ),
           C_offd( C->getOffdMatrix() ),
           d_overlap_comms( ( A->getComm().getSize() > 1 ) && overlap_comms_ ),
+          d_num_rows( static_cast<lidx_t>( A->numLocalRows() ) ),
           comm( A->getComm() ),
           d_csr_comm( A->getRightCommList() ),
           d_need_comms( true )
@@ -56,12 +57,15 @@ protected:
     template<class Accumulator, bool IsSymbolic>
     void multiply( std::shared_ptr<DiagMatrixData> A_data,
                    std::shared_ptr<DiagMatrixData> B_data,
-                   std::shared_ptr<DiagMatrixData> C_data,
-                   lidx_t *ctr );
+                   std::shared_ptr<DiagMatrixData> C_data );
 
-    template<class Accumulator, bool IsSymbolic>
-    void multiplyFused( std::shared_ptr<DiagMatrixData> B0_data,
-                        std::shared_ptr<DiagMatrixData> B1_data,
+    template<class Accumulator, bool IsDiag, bool IsSymbolic>
+    void multiplyFused( std::shared_ptr<DiagMatrixData> B_data,
+                        std::shared_ptr<DiagMatrixData> BR_data,
+                        std::shared_ptr<DiagMatrixData> C_data );
+
+    void multiplyReuse( std::shared_ptr<DiagMatrixData> A_data,
+                        std::shared_ptr<DiagMatrixData> B_data,
                         std::shared_ptr<DiagMatrixData> C_data );
 
     void setupBRemoteComm();
@@ -74,13 +78,6 @@ protected:
     template<class Accumulator>
     void mergeOffd();
 
-    // Useful constants for supporting operations
-    // Fill factor used to estimate size of output matrix NZs prior to
-    // symbolic phase. This is applied *before* BRemote is gathered
-    // from other ranks, so make it a little higher than perhaps expected
-    static constexpr scalar_t C_FILL_MULT   = 1.5;
-    static constexpr scalar_t C_FILL_ADD    = 0.75;
-    static constexpr scalar_t C_GROW_FACTOR = 1.5;
     // default starting size for sparse accumulators
     static constexpr lidx_t SPACC_SIZE = 256;
 
@@ -106,6 +103,10 @@ protected:
 
     // flag for whether overlapped communication/computation should be done
     bool d_overlap_comms;
+
+    // number of local rows in A and C are the same, and many loops
+    // run over this range
+    lidx_t d_num_rows;
 
     // Communicator
     AMP_MPI comm;
@@ -161,9 +162,9 @@ protected:
         }
 
         void insert_or_append( gidx_t gbl );
-        void insert_or_append(
-            gidx_t gbl, scalar_t val, gidx_t *col_space, scalar_t *val_space, lidx_t max_pos );
+        void insert_or_append( gidx_t gbl, scalar_t val, gidx_t *col_space, scalar_t *val_space );
         void clear();
+        bool contains( gidx_t gbl ) const;
 
         const lidx_t capacity;
         const gidx_t offset;
@@ -195,9 +196,9 @@ protected:
 
         uint16_t hash( gidx_t gbl ) const;
         void insert_or_append( gidx_t gbl );
-        void insert_or_append(
-            gidx_t gbl, scalar_t val, gidx_t *col_space, scalar_t *val_space, lidx_t max_pos );
+        void insert_or_append( gidx_t gbl, scalar_t val, gidx_t *col_space, scalar_t *val_space );
         void clear();
+        bool contains( gidx_t gbl ) const;
 
         uint16_t capacity;
         const gidx_t offset;

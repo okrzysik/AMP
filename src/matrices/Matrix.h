@@ -102,11 +102,18 @@ public:
     AMP::Scalar LinfNorm() const;
 
     /** \brief  Compute the product of two matrices
-     * \param[in] A  A multiplicand
-     * \param[in] B  A multiplicand
+     * \param[in] A  Left multiplicand
+     * \param[in] B  Right multiplicand
      * \return The product \f$\mathbf{AB}\f$.
      */
     static shared_ptr matMultiply( shared_ptr A, shared_ptr B );
+
+    /** \brief  Compute the product of two matrices
+     * \param[in] A  Left multiplicand
+     * \param[in] B  Right multiplicand
+     * \param[inout] C  Result matrix
+     */
+    static void matMultiply( shared_ptr A, shared_ptr B , shared_ptr c );
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar

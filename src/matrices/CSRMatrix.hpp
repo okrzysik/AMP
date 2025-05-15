@@ -114,8 +114,8 @@ std::shared_ptr<Matrix> CSRMatrix<Policy, Allocator>::transpose() const
 }
 
 /********************************************************
- * Multiply two matricies                                *
- * result = this * other_op                              *
+ * Multiply two matrices                                *
+ * result = this * other_op                             *
  * C(N,M) = A(N,K)*B(K,M)
  ********************************************************/
 template<typename Policy, typename Allocator>
@@ -124,29 +124,37 @@ void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
 {
     PROFILE( "CSRMatrix<Policy, Allocator>::multiply" );
 
-    // pull out matrix data objects and ensure they are of correct type
-    auto thisData = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData );
-    auto otherData =
-        std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( other_op->getMatrixData() );
-    AMP_DEBUG_INSIST( thisData && otherData,
-                      "CSRMatrix::multiply received invalid MatrixData types" );
+    // if the result is empty then create it
+    if ( result.get() == nullptr ) {
+        // pull out matrix data objects and ensure they are of correct type
+        auto thisData = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData );
+        auto otherData = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>(
+            other_op->getMatrixData() );
+        AMP_DEBUG_INSIST( thisData && otherData,
+                          "CSRMatrix::multiply received invalid MatrixData types" );
 
-    // Build matrix parameters object for result from this op and the other op
-    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        getLeftDOFManager(),
-        other_op->getRightDOFManager(),
-        getComm(),
-        thisData->getLeftVariable(),
-        otherData->getRightVariable(),
-        std::function<std::vector<size_t>( size_t )>() );
+        // Build matrix parameters object for result from this op and the other op
+        auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+            getLeftDOFManager(),
+            other_op->getRightDOFManager(),
+            getComm(),
+            thisData->getLeftVariable(),
+            otherData->getRightVariable(),
+            std::function<std::vector<size_t>( size_t )>() );
 
-    // Create the matrix
-    auto newData = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( newData );
-    AMP_ASSERT( newMatrix );
-    result = newMatrix;
+        // Create the matrix
+        auto newData =
+            std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
+        std::shared_ptr<Matrix> newMatrix =
+            std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( newData );
+        AMP_ASSERT( newMatrix );
+        result.swap( newMatrix );
+    } else {
+        // do something to check that result is compatible with this and other_op?
+    }
 
-    d_matrixOps->matMultiply( *getMatrixData(), *other_op->getMatrixData(), *newData );
+    d_matrixOps->matMultiply(
+        *getMatrixData(), *other_op->getMatrixData(), *result->getMatrixData() );
 }
 
 /********************************************************

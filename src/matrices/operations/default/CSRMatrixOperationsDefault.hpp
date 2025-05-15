@@ -186,6 +186,10 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData>::matMultiply(
     AMP_INSIST( memLocA == memLocC,
                 "CSRMatrixOperationsDefault::matMultiply A and C must have the same memory type" );
 
+    // Re-use of helper class instances disabled for now. These actually
+    // need to be attached to the result matrix, not the first operand.
+    // The main interface will need to change to make that possible though...
+#if 0
     // Check if an SpGEMM helper has already been constructed for this combination
     // of matrices. If not create it first and do symbolic phase, otherwise skip
     // ahead to numeric phase
@@ -198,6 +202,21 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData>::matMultiply(
     } else {
         d_SpGEMMHelpers[bcPair].numericMultiplyReuse();
     }
+#else
+    // auto bcPair = std::make_pair( csrDataB, csrDataC );
+    // if ( d_SpGEMMHelpers.find( bcPair ) == d_SpGEMMHelpers.end() ) {
+    //     d_SpGEMMHelpers[bcPair] =
+    //         CSRMatrixSpGEMMHelperDefault( csrDataA, csrDataB, csrDataC, false );
+    //     AMP::pout << "Didn't find pair" << std::endl;
+    // } else {
+    //     AMP::pout << "Found pair" << std::endl;
+    // }
+
+    auto spgemmHelper = CSRMatrixSpGEMMHelperDefault( csrDataA, csrDataB, csrDataC, false );
+    spgemmHelper.symbolicMultiply();
+    spgemmHelper.numericMultiply();
+    // spgemmHelper.numericMultiplyReuse();
+#endif
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>

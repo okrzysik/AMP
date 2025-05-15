@@ -47,7 +47,8 @@ void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
     auto other = std::dynamic_pointer_cast<NativePetscMatrix>( other_op );
     AMP_INSIST( other != nullptr, "Incompatible matrix types" );
 
-    result = std::make_shared<NativePetscMatrix>();
+    std::shared_ptr<Matrix> newMatrix = std::make_shared<NativePetscMatrix>();
+    result.swap( newMatrix );
 
     d_matrixOps->matMultiply(
         *d_matrixData, *( other_op->getMatrixData() ), *result->getMatrixData() );
