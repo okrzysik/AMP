@@ -97,6 +97,12 @@ public:
     }
 
     /**
+     * Register the operator that the solver will use during solves
+     * @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$
+     */
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
+
+    /**
      * Resets the registered operator internally with new parameters if necessary
      * @param params    OperatorParameters object that is NULL by default
      */
@@ -112,6 +118,19 @@ protected:
     // stored internally. Store the coefficients of the Arnoldi
     // iteration internally in a upper Hessenberg matrix
     virtual void orthogonalize( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v );
+
+    //! return the inner products of v against the first k basis vectors
+    std::vector<T> basisInnerProducts( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v );
+
+    //! orthogonalize the vector against the existing vectors in the basis
+    // stored internally using classical Gram-Schmidt. Store the coefficients of the Arnoldi
+    // iteration internally in a upper Hessenberg matrix
+    void cgs( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v );
+
+    //! orthogonalize the vector against the existing vectors in the basis
+    // stored internally using classical Gram-Schmidt with re-orthogonalization. Store the
+    // coefficients of the Arnoldi iteration internally in a upper Hessenberg matrix
+    void cgs2( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v );
 
     //! apply the i-th Givens rotation to the k-th column of the Hessenberg matrix
     void applyGivensRotation( const int i, const int k );
@@ -158,7 +177,7 @@ private:
     /**
      * Allocate the vector basis in d_iBasisAllocSize chunks (d_vBasis & d_zBasis)
      */
-    void allocate_basis( const std::shared_ptr<AMP::LinearAlgebra::Vector> u );
+    void allocateBasis();
 
     bool d_bRestart = false; //! whether to restart
 
@@ -208,15 +227,15 @@ private:
 
     //! stores the orthonormal basis for the Krylov space
     //! we do not preallocate by default
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vBasis;
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vBasis;
 
     //! stores the orthonormal basis for the Krylov space in case of FGMRES
     //! we do not preallocate by default
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_zBasis;
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_zBasis;
 
     //! stores the vectors needed for right and left preconditioning
-    AMP::LinearAlgebra::Vector::shared_ptr d_z;
-    AMP::LinearAlgebra::Vector::shared_ptr d_z1;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_z;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_z1;
 };
 } // namespace AMP::Solver
 

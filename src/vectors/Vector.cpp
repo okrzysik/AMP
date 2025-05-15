@@ -200,6 +200,7 @@ Vector::shared_ptr Vector::clone( const std::shared_ptr<Variable> name ) const
 }
 std::unique_ptr<Vector> Vector::rawClone( const std::shared_ptr<Variable> name ) const
 {
+    PROFILE( "Vector::clone" );
     auto vec          = std::make_unique<Vector>();
     vec->d_units      = d_units;
     vec->d_Variable   = name;
@@ -308,7 +309,7 @@ std::pair<Scalar, Scalar> Vector::L2NormAndDot( const Vector &x ) const
 {
     auto L2  = this->L2Norm();
     auto dot = this->dot( x );
-    return std::make_pair( L2, dot );
+    return std::make_pair( L2 * L2, dot );
 }
 bool Vector::equals( const Vector &a, const Scalar &tol ) const
 {

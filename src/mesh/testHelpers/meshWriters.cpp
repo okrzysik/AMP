@@ -1334,9 +1334,10 @@ readTestMeshLibMesh( const std::string &file, const AMP_MPI &comm, const std::st
     auto db = readTestMesh( file );
     return readTestMeshLibMesh( db, comm, name );
 }
-std::shared_ptr<libmeshMesh> readTestMeshLibMesh( std::shared_ptr<AMP::Database> db,
-                                                  const AMP_MPI &comm,
-                                                  const std::string &name )
+std::shared_ptr<libmeshMesh>
+readTestMeshLibMesh( [[maybe_unused]] std::shared_ptr<AMP::Database> db,
+                     [[maybe_unused]] const AMP_MPI &comm,
+                     [[maybe_unused]] const std::string &name )
 {
     AMP_ASSERT( db );
 #ifdef AMP_USE_LIBMESH

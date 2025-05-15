@@ -78,8 +78,7 @@ public:
      */
     typeID getCoeffType() const override
     {
-        // Petsc matrices are double only for the moment
-        constexpr auto type = getTypeID<double>();
+        constexpr auto type = getTypeID<PetscScalar>();
         return type;
     }
 

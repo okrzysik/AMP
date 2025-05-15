@@ -122,6 +122,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFile, bool al
             { "BoomerAMG", "NoPC" },
             { "HyprePCG", "NoPC" },
             { "HyprePCG", "BoomerAMG" },
+            { "HypreGMRES", "NoPC" },
+            { "HypreGMRES", "BoomerAMG" },
+            { "HypreBiCGSTAB", "NoPC" },
+            { "HypreBiCGSTAB", "BoomerAMG" },
     #ifdef AMP_USE_PETSC
             { "PetscFGMRES", "BoomerAMG" },
     #endif

@@ -51,7 +51,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     // Create variables and vectors
     auto inVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
-    auto outVar = std::make_shared<AMP::LinearAlgebra::Variable>( "outputVar" );
+    auto outVar = inVar;
+
 #ifdef USE_DEVICE
     auto inVec = AMP::LinearAlgebra::createVector(
         scalarDOFs, inVar, true, AMP::Utilities::MemoryType::managed );
