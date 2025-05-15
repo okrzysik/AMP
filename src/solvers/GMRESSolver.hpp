@@ -78,6 +78,8 @@ void GMRESSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
     // in the case of restarted GMRES so we allow specification separately
     d_iMaxKrylovDimension      = db->getWithDefault<int>( "max_dimension", 100 );
     d_sOrthogonalizationMethod = db->getWithDefault<std::string>( "ortho_method", "MGS" );
+    // uncomment once we optimize vec ops
+    //    d_sOrthogonalizationMethod = db->getWithDefault<std::string>( "ortho_method", "CGS2" );
 
     // default is right preconditioning, options are right, left, both
     d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
@@ -180,6 +182,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     int k = 0;
     for ( d_iNumberIterations = 1; d_iNumberIterations <= d_iMaxIterations;
           ++d_iNumberIterations ) {
+        PROFILE( "GMRESSolver<T>::apply: main loop" );
 
         AMP::LinearAlgebra::Vector::shared_ptr v;
         AMP::LinearAlgebra::Vector::shared_ptr zb;
@@ -210,6 +213,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 AMP_ERROR( "Left and right preconditioning not enabled" );
             }
         } else {
+            PROFILE( "GMRESSolver<T>::apply: v = Az" );
             d_z = d_vBasis[k];
             d_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             d_pOperator->apply( d_z, v );
@@ -229,10 +233,12 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // apply all previous Givens rotations to
         // the k-th column of the Hessenberg matrix
         for ( int i = 0; i < k; ++i ) {
+            PROFILE( "GMRESSolver<T>::apply: Givens rotations on previous cols" );
             applyGivensRotation( i, k );
         }
 
         if ( v_norm != static_cast<T>( 0.0 ) ) {
+            PROFILE( "GMRESSolver<T>::apply: Givens on current col" );
             // compute and store the Givens rotation that zeroes out
             // the subdiagonal for the current column
             computeGivensRotation( k );
@@ -326,15 +332,73 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 }
 
 template<typename T>
+std::vector<T> GMRESSolver<T>::basisInnerProducts( const int k,
+                                                   std::shared_ptr<AMP::LinearAlgebra::Vector> v )
+{
+    std::vector<T> hcol( k );
+
+    auto vecOps = v->getVectorOperations();
+    AMP_ASSERT( vecOps );
+    {
+        PROFILE( "GMRESSolver<T>::basisInnerProducts::localDots" );
+
+        for ( int j = 0; j < k; ++j ) {
+            hcol[j] = static_cast<T>(
+                vecOps->localDot( *( v->getVectorData() ), *( d_vBasis[j]->getVectorData() ) ) );
+        }
+    }
+    {
+        PROFILE( "GMRESSolver<T>::basisInnerProducts::sumReduce" );
+        const auto &comm = v->getComm();
+        comm.sumReduce( hcol.data(), k );
+    }
+    return hcol;
+}
+
+template<typename T>
+void GMRESSolver<T>::cgs( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v )
+{
+    auto hcol = basisInnerProducts( k, v );
+
+    for ( int j = 0; j < k; ++j ) {
+        v->axpy( -hcol[j], *d_vBasis[j], *v );
+        d_dHessenberg( j, k - 1 ) = hcol[j];
+    }
+}
+
+template<typename T>
+void GMRESSolver<T>::cgs2( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v )
+{
+    auto hcol = basisInnerProducts( k, v );
+
+    for ( int j = 0; j < k; ++j ) {
+        PROFILE( "GMRESSolver<T>::cgs2: axpy1" );
+        v->axpy( -hcol[j], *d_vBasis[j], *v );
+    }
+
+    auto scol = basisInnerProducts( k, v );
+
+    for ( int j = 0; j < k; ++j ) {
+        PROFILE( "GMRESSolver<T>::cgs2: axpy2" );
+        v->axpy( -scol[j], *d_vBasis[j], *v );
+    }
+
+    for ( int j = 0; j < k; ++j ) {
+        d_dHessenberg( j, k - 1 ) = hcol[j] + scol[j];
+    }
+}
+
+template<typename T>
 void GMRESSolver<T>::orthogonalize( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v )
 {
+    PROFILE( "GMRESSolver<T>::orthogonalize" );
     if ( d_sOrthogonalizationMethod == "CGS" ) {
-
-        AMP_ERROR( "Classical Gram-Schmidt not implemented as yet" );
+        this->cgs( k, v );
+    } else if ( d_sOrthogonalizationMethod == "CGS2" ) {
+        this->cgs2( k, v );
     } else if ( d_sOrthogonalizationMethod == "MGS" ) {
 
         for ( int j = 0; j < k; ++j ) {
-
             const auto h_jk = static_cast<T>( v->dot( *d_vBasis[j] ) );
             v->axpy( -h_jk, *d_vBasis[j], *v );
             d_dHessenberg( j, k - 1 ) = h_jk;
@@ -343,8 +407,6 @@ void GMRESSolver<T>::orthogonalize( const int k, std::shared_ptr<AMP::LinearAlge
 
         AMP_ERROR( "Unknown orthogonalization method in GMRES" );
     }
-
-    //    v->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // h_{k+1, k}
     const auto v_norm         = static_cast<T>( v->L2Norm() );
@@ -439,6 +501,7 @@ void GMRESSolver<T>::computeInitialResidual( bool use_zero_guess,
                                              std::shared_ptr<AMP::LinearAlgebra::Vector> tmp,
                                              std::shared_ptr<AMP::LinearAlgebra::Vector> res )
 {
+    PROFILE( "GMRESSolver<T>::compute initial residual" );
     if ( use_zero_guess ) {
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
             d_pPreconditioner->apply( f, res );
@@ -447,6 +510,7 @@ void GMRESSolver<T>::computeInitialResidual( bool use_zero_guess,
         }
         u->zero();
     } else {
+        u->makeConsistent();
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
             d_pOperator->residual( f, u, tmp );
             d_pPreconditioner->apply( tmp, res );
@@ -496,13 +560,19 @@ void GMRESSolver<T>::addCorrection( const int nr,
 template<typename T>
 void GMRESSolver<T>::allocateBasis()
 {
+    PROFILE( "GMRESSolver<T>::allocateBasis" );
     AMP_ASSERT( d_pOperator );
     auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_ASSERT( linearOp );
-    for ( auto i = 0; i < d_iBasisAllocSize; i++ ) {
-        d_vBasis.push_back( linearOp->getRightVector() );
+    auto v = linearOp->getRightVector();
+    d_vBasis.push_back( v );
+    if ( d_bFlexibleGMRES )
+        d_zBasis.push_back( v->clone() );
+
+    for ( auto i = 1; i < d_iBasisAllocSize; i++ ) {
+        d_vBasis.push_back( v->clone() );
         if ( d_bFlexibleGMRES )
-            d_zBasis.push_back( linearOp->getRightVector() );
+            d_zBasis.push_back( v->clone() );
     }
 }
 

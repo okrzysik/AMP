@@ -119,6 +119,19 @@ protected:
     // iteration internally in a upper Hessenberg matrix
     virtual void orthogonalize( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v );
 
+    //! return the inner products of v against the first k basis vectors
+    std::vector<T> basisInnerProducts( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v );
+
+    //! orthogonalize the vector against the existing vectors in the basis
+    // stored internally using classical Gram-Schmidt. Store the coefficients of the Arnoldi
+    // iteration internally in a upper Hessenberg matrix
+    void cgs( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v );
+
+    //! orthogonalize the vector against the existing vectors in the basis
+    // stored internally using classical Gram-Schmidt with re-orthogonalization. Store the
+    // coefficients of the Arnoldi iteration internally in a upper Hessenberg matrix
+    void cgs2( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v );
+
     //! apply the i-th Givens rotation to the k-th column of the Hessenberg matrix
     void applyGivensRotation( const int i, const int k );
 

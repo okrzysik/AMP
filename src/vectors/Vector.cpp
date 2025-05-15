@@ -200,6 +200,7 @@ Vector::shared_ptr Vector::clone( const std::shared_ptr<Variable> name ) const
 }
 std::unique_ptr<Vector> Vector::rawClone( const std::shared_ptr<Variable> name ) const
 {
+    PROFILE( "Vector::clone" );
     auto vec          = std::make_unique<Vector>();
     vec->d_units      = d_units;
     vec->d_Variable   = name;
