@@ -27,7 +27,8 @@ void linearThermalTest( AMP::UnitTest *ut,
     ss << "output_testLinSolveRobin_r" << std::setw( 3 ) << std::setfill( '0' )
        << AMP::AMPManager::getCommWorld().getSize();
 
-    AMP::pout << "Running linearThermalTest with input " << input_file << std::endl;
+    AMP::pout << "Running linearThermalTest with input " << input_file << " with "
+              << accelerationBackend << " backend" << std::endl;
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
