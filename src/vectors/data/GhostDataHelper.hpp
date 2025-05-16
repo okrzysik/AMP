@@ -262,21 +262,29 @@ bool GhostDataHelper<TYPE, Allocator>::containsGlobalElement( size_t i ) const
  * Get/Set ghost values by global id                             *
  ****************************************************************/
 template<class TYPE, class Allocator>
+bool GhostDataHelper<TYPE, Allocator>::allGhostIndices( size_t N, const size_t *ndx ) const
+{
+    bool pass = true;
+    for ( size_t i = 0; i < N; i++ ) {
+        pass =
+            pass && ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) );
+    }
+    return pass;
+}
+
+template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::setGhostValuesByGlobalID( size_t N,
                                                                  const size_t *ndx,
                                                                  const void *vals,
                                                                  const typeID &id )
 {
     if ( id == AMP::getTypeID<TYPE>() ) {
-        auto data = reinterpret_cast<const TYPE *>( vals );
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
         *d_UpdateState = UpdateState::SETTING;
+        AMP_INSIST( allGhostIndices( N, ndx ), "Non ghost index encountered" );
+        auto data = reinterpret_cast<const TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
-            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] = data[i];
-            } else {
-                AMP_ERROR( "Non ghost index" );
-            }
+            this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] = data[i];
         }
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );
@@ -289,15 +297,12 @@ void GhostDataHelper<TYPE, Allocator>::addGhostValuesByGlobalID( size_t N,
                                                                  const typeID &id )
 {
     if ( id == AMP::getTypeID<TYPE>() ) {
-        auto data = reinterpret_cast<const TYPE *>( vals );
         AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
         *d_UpdateState = UpdateState::ADDING;
+        AMP_INSIST( allGhostIndices( N, ndx ), "Non ghost index encountered" );
+        auto data = reinterpret_cast<const TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
-            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )] += data[i];
-            } else {
-                AMP_ERROR( "Non ghost index" );
-            }
+            this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )] += data[i];
         }
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );
@@ -310,14 +315,11 @@ void GhostDataHelper<TYPE, Allocator>::getGhostValuesByGlobalID( size_t N,
                                                                  const typeID &id ) const
 {
     if ( id == AMP::getTypeID<TYPE>() ) {
+        AMP_INSIST( allGhostIndices( N, ndx ), "Non ghost index encountered" );
         auto data = reinterpret_cast<TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
-            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                data[i] = this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] +
-                          this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
-            } else {
-                AMP_ERROR( "Tried to get a non-ghost ghost value" );
-            }
+            data[i] = this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] +
+                      this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
         }
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );
@@ -330,13 +332,10 @@ void GhostDataHelper<TYPE, Allocator>::getGhostAddValuesByGlobalID( size_t N,
                                                                     const typeID &id ) const
 {
     if ( id == AMP::getTypeID<TYPE>() ) {
+        AMP_INSIST( allGhostIndices( N, ndx ), "Non ghost index encountered" );
         auto data = reinterpret_cast<TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
-            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                data[i] = this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
-            } else {
-                AMP_ERROR( "Tried to get a non-ghost ghost value" );
-            }
+            data[i] = this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
         }
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );

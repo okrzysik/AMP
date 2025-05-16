@@ -59,6 +59,7 @@ protected:
     void scatter_add();
     void deallocateBuffers();
     void allocateBuffers( size_t len );
+    bool allGhostIndices( size_t N, const size_t *ndx ) const;
 
 protected:
     std::shared_ptr<CommunicationList> d_CommList = nullptr;
