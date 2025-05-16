@@ -78,15 +78,12 @@ void GhostDataHelper<TYPE, Allocator>::setCommunicationList(
     std::shared_ptr<CommunicationList> comm )
 {
     AMP_ASSERT( comm );
+    // deallocate any existing buffers
+    deallocateBuffers();
     d_CommList = comm;
-    if ( d_CommList ) {
-        // deallocate any existing space
-        deallocateBuffers();
-
-        // reallocate buffers
-        const auto len = d_CommList->getVectorReceiveBufferSize();
-        allocateBuffers( len );
-    }
+    // reallocate buffers based on new comm list
+    const auto len = d_CommList->getVectorReceiveBufferSize();
+    allocateBuffers( len );
 }
 
 
