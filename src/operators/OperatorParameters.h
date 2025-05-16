@@ -34,9 +34,10 @@ public:
     explicit OperatorParameters( std::shared_ptr<AMP::Database> db ) : ParameterBase( db )
     {
         if ( db ) {
-
             auto memLoc       = db->getWithDefault<std::string>( "MemoryLocation", "host" );
             d_memory_location = memoryLocationFromString( memLoc );
+        } else if ( d_memory_location == AMP::Utilities::MemoryType::none ) {
+            d_memory_location = AMP::Utilities::MemoryType::host;
         }
     }
 
@@ -70,7 +71,7 @@ public:
      * work. More specialized parameter classes can overwrite this
      * if supported.
      */
-    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
+    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::none;
 };
 
 

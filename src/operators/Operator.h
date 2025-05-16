@@ -167,7 +167,7 @@ protected:
 
     std::shared_ptr<AMP::Mesh::Mesh> d_Mesh;
 
-    AMP::Utilities::MemoryType d_memory_location;
+    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::none;
 
     AMP::Utilities::Backend d_backend = AMP::Utilities::Backend::none;
 

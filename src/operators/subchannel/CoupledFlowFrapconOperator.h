@@ -20,7 +20,8 @@ public:
     void reset( std::shared_ptr<const OperatorParameters> params ) override
     {
         AMP_ASSERT( params );
-        d_memory_location = params->d_memory_location;
+        if ( d_memory_location == AMP::Utilities::MemoryType::none )
+            d_memory_location = params->d_memory_location;
         d_operators[2]->reset( params );
     }
 

@@ -15,7 +15,7 @@
 namespace AMP::Utilities {
 
 //! Enum to store pointer type
-enum class MemoryType : uint8_t { unregistered = 0, host = 1, managed = 2, device = 3 };
+enum class MemoryType : int8_t { none = -1, unregistered = 0, host = 1, managed = 2, device = 3 };
 
 //! Return the pointer type
 MemoryType getMemoryType( const void *ptr );

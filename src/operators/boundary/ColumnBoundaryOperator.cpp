@@ -48,7 +48,8 @@ ColumnBoundaryOperator::getParameters( const std::string &type,
 void ColumnBoundaryOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_ASSERT( params );
-    d_memory_location = params->d_memory_location;
+    if ( d_memory_location == AMP::Utilities::MemoryType::none )
+        d_memory_location = params->d_memory_location;
     Operator::getFromInput( params->d_db );
     auto columnParameters =
         std::dynamic_pointer_cast<const ColumnBoundaryOperatorParameters>( params );
