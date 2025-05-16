@@ -91,8 +91,8 @@ void VectorOperationsDefault<TYPE>::setToScalar( const Scalar &alpha_in, VectorD
     auto const alpha = alpha_in.get<TYPE>();
 
     if ( allDefaultDataType( x ) ) {
-        auto xdata = x.getRawDataBlock<TYPE>();
-        auto N     = x.sizeOfDataBlock( 0 );
+        auto xdata   = x.getRawDataBlock<TYPE>();
+        const auto N = x.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             xdata[i] = alpha;
         }
@@ -151,8 +151,8 @@ void VectorOperationsDefault<TYPE>::copyCast( const VectorData &x, VectorData &y
     using DefaultBackend = AMP::Utilities::PortabilityBackend::Serial;
     if ( x.numberOfDataBlocks() == y.numberOfDataBlocks() ) {
         for ( size_t block_id = 0; block_id < y.numberOfDataBlocks(); block_id++ ) {
-            auto ydata = y.getRawDataBlock<TYPE>( block_id );
-            auto N     = y.sizeOfDataBlock( block_id );
+            auto ydata   = y.getRawDataBlock<TYPE>( block_id );
+            const auto N = y.sizeOfDataBlock( block_id );
             AMP_ASSERT( N == x.sizeOfDataBlock( block_id ) );
             if ( x.getType( 0 ) == getTypeID<float>() ) {
                 auto xdata = x.getRawDataBlock<float>( block_id );
@@ -177,8 +177,8 @@ void VectorOperationsDefault<TYPE>::scale( const Scalar &alpha_in, VectorData &x
     auto const alpha = alpha_in.get<TYPE>();
 
     if ( allDefaultDataType( x ) ) {
-        auto xdata = x.getRawDataBlock<TYPE>();
-        auto N     = x.sizeOfDataBlock( 0 );
+        auto xdata   = x.getRawDataBlock<TYPE>();
+        const auto N = x.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             xdata[i] *= alpha;
         }
@@ -204,7 +204,7 @@ void VectorOperationsDefault<TYPE>::scale( const Scalar &alpha_in,
     if ( allDefaultDataType( x, y ) ) {
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto ydata       = y.getRawDataBlock<TYPE>();
-        auto N           = y.sizeOfDataBlock( 0 );
+        const auto N     = y.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             ydata[i] = alpha * xdata[i];
         }
@@ -230,7 +230,7 @@ void VectorOperationsDefault<TYPE>::add( const VectorData &x, const VectorData &
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto const ydata = y.getRawDataBlock<TYPE>();
         auto zdata       = z.getRawDataBlock<TYPE>();
-        auto N           = z.sizeOfDataBlock( 0 );
+        const auto N     = z.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             zdata[i] = xdata[i] + ydata[i];
         }
@@ -261,7 +261,7 @@ void VectorOperationsDefault<TYPE>::subtract( const VectorData &x,
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto const ydata = y.getRawDataBlock<TYPE>();
         auto zdata       = z.getRawDataBlock<TYPE>();
-        auto N           = z.sizeOfDataBlock( 0 );
+        const auto N     = z.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             zdata[i] = xdata[i] - ydata[i];
         }
@@ -292,7 +292,7 @@ void VectorOperationsDefault<TYPE>::multiply( const VectorData &x,
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto const ydata = y.getRawDataBlock<TYPE>();
         auto zdata       = z.getRawDataBlock<TYPE>();
-        auto N           = z.sizeOfDataBlock( 0 );
+        const auto N     = z.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             zdata[i] = xdata[i] * ydata[i];
         }
@@ -323,7 +323,7 @@ void VectorOperationsDefault<TYPE>::divide( const VectorData &x,
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto const ydata = y.getRawDataBlock<TYPE>();
         auto zdata       = z.getRawDataBlock<TYPE>();
-        auto N           = z.sizeOfDataBlock( 0 );
+        const auto N     = z.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             zdata[i] = xdata[i] / ydata[i];
         }
@@ -351,7 +351,7 @@ void VectorOperationsDefault<TYPE>::reciprocal( const VectorData &x, VectorData 
     if ( allDefaultDataType( x, y ) ) {
         auto const xdata   = x.getRawDataBlock<TYPE>();
         auto ydata         = y.getRawDataBlock<TYPE>();
-        auto N             = y.sizeOfDataBlock( 0 );
+        const auto N       = y.sizeOfDataBlock( 0 );
         constexpr auto one = static_cast<TYPE>( 1.0 );
         for ( size_t i = 0; i < N; ++i ) {
             ydata[i] = one / xdata[i];
@@ -386,7 +386,7 @@ void VectorOperationsDefault<TYPE>::linearSum( const Scalar &alpha_in,
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto const ydata = y.getRawDataBlock<TYPE>();
         auto zdata       = z.getRawDataBlock<TYPE>();
-        auto N           = z.sizeOfDataBlock( 0 );
+        const auto N     = z.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             zdata[i] = alpha * xdata[i] + beta * ydata[i];
         }
@@ -419,7 +419,7 @@ void VectorOperationsDefault<TYPE>::axpy( const Scalar &alpha_in,
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto const ydata = y.getRawDataBlock<TYPE>();
         auto zdata       = z.getRawDataBlock<TYPE>();
-        auto N           = z.sizeOfDataBlock( 0 );
+        const auto N     = z.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             zdata[i] = alpha * xdata[i] + ydata[i];
         }
@@ -451,7 +451,7 @@ void VectorOperationsDefault<TYPE>::axpby( const Scalar &alpha_in,
     if ( allDefaultDataType( x, y ) ) {
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto ydata       = y.getRawDataBlock<TYPE>();
-        auto N           = y.sizeOfDataBlock( 0 );
+        const auto N     = y.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             ydata[i] = alpha * xdata[i] + beta * ydata[i];
         }
@@ -476,7 +476,7 @@ void VectorOperationsDefault<TYPE>::abs( const VectorData &x, VectorData &y )
     if ( allDefaultDataType( x, y ) ) {
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto ydata       = y.getRawDataBlock<TYPE>();
-        auto N           = y.sizeOfDataBlock( 0 );
+        const auto N     = y.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             ydata[i] = std::abs( xdata[i] );
         }
@@ -504,7 +504,7 @@ void VectorOperationsDefault<TYPE>::addScalar( const VectorData &x,
     if ( allDefaultDataType( x, y ) ) {
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto ydata       = y.getRawDataBlock<TYPE>();
-        auto N           = y.sizeOfDataBlock( 0 );
+        const auto N     = y.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             ydata[i] = alpha + xdata[i];
         }
@@ -548,11 +548,11 @@ void VectorOperationsDefault<TYPE>::setMin( const Scalar &val, VectorData &x )
 template<typename TYPE>
 Scalar VectorOperationsDefault<TYPE>::localMin( const VectorData &x ) const
 {
-    size_t N_blocks = x.numberOfDataBlocks();
-    TYPE ans        = std::numeric_limits<TYPE>::max();
+    const size_t N_blocks = x.numberOfDataBlocks();
+    TYPE ans              = std::numeric_limits<TYPE>::max();
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = x.sizeOfDataBlock( i );
-        const TYPE *data = x.getRawDataBlock<TYPE>( i );
+        const size_t size = x.sizeOfDataBlock( i );
+        const TYPE *data  = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
             ans = std::min( data[j], ans );
     }
@@ -562,11 +562,11 @@ Scalar VectorOperationsDefault<TYPE>::localMin( const VectorData &x ) const
 template<typename TYPE>
 Scalar VectorOperationsDefault<TYPE>::localMax( const VectorData &x ) const
 {
-    size_t N_blocks = x.numberOfDataBlocks();
-    TYPE ans        = std::numeric_limits<TYPE>::lowest();
+    const size_t N_blocks = x.numberOfDataBlocks();
+    TYPE ans              = std::numeric_limits<TYPE>::lowest();
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = x.sizeOfDataBlock( i );
-        const TYPE *data = x.getRawDataBlock<TYPE>( i );
+        const size_t size = x.sizeOfDataBlock( i );
+        const TYPE *data  = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( data[j], ans );
     }
@@ -576,11 +576,11 @@ Scalar VectorOperationsDefault<TYPE>::localMax( const VectorData &x ) const
 template<typename TYPE>
 Scalar VectorOperationsDefault<TYPE>::localSum( const VectorData &x ) const
 {
-    size_t N_blocks = x.numberOfDataBlocks();
-    TYPE ans        = 0;
+    const size_t N_blocks = x.numberOfDataBlocks();
+    TYPE ans              = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = x.sizeOfDataBlock( i );
-        const TYPE *data = x.getRawDataBlock<TYPE>( i );
+        const size_t size = x.sizeOfDataBlock( i );
+        const TYPE *data  = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
             ans += data[j];
     }
@@ -604,11 +604,11 @@ Scalar VectorOperationsDefault<TYPE>::localL1Norm( const VectorData &x ) const
 template<typename TYPE>
 Scalar VectorOperationsDefault<TYPE>::localL2Norm( const VectorData &x ) const
 {
-    size_t N_blocks = x.numberOfDataBlocks();
-    TYPE ans        = 0;
+    const size_t N_blocks = x.numberOfDataBlocks();
+    TYPE ans              = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = x.sizeOfDataBlock( i );
-        const TYPE *data = x.getRawDataBlock<TYPE>( i );
+        const size_t size = x.sizeOfDataBlock( i );
+        const TYPE *data  = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
             ans += data[j] * data[j];
     }
@@ -618,11 +618,11 @@ Scalar VectorOperationsDefault<TYPE>::localL2Norm( const VectorData &x ) const
 template<typename TYPE>
 Scalar VectorOperationsDefault<TYPE>::localMaxNorm( const VectorData &x ) const
 {
-    size_t N_blocks = x.numberOfDataBlocks();
-    TYPE ans        = 0;
+    const size_t N_blocks = x.numberOfDataBlocks();
+    TYPE ans              = 0;
     for ( size_t i = 0; i < N_blocks; i++ ) {
-        size_t size      = x.sizeOfDataBlock( i );
-        const TYPE *data = x.getRawDataBlock<TYPE>( i );
+        const size_t size = x.sizeOfDataBlock( i );
+        const TYPE *data  = x.getRawDataBlock<TYPE>( i );
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( std::abs( data[j] ), ans );
     }
@@ -639,7 +639,7 @@ Scalar VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const Vecto
     if ( allDefaultDataType( x, y ) ) {
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto const ydata = y.getRawDataBlock<TYPE>();
-        auto N           = x.sizeOfDataBlock( 0 );
+        const auto N     = x.sizeOfDataBlock( 0 );
         for ( size_t i = 0; i < N; ++i ) {
             ans += xdata[i] * ydata[i];
         }
