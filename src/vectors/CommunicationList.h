@@ -74,13 +74,25 @@ public:
     CommunicationList( size_t local, const AMP_MPI &comm );
 
     /**
-     * \brief  Construct a CommunicationList with no comunication
+     * \brief  Construct a CommunicationList with comunication
      * \param[in]  comm     The AMP_MPI for the vector.
      * \param[in]  local    The number of local elements for each rank
      * \param[in]  remote   The remote DOFs that we need to receive on this rank
      * \details  Create a communication list (advanced interface)
      */
     CommunicationList( const AMP_MPI &comm, std::vector<size_t> local, std::vector<size_t> remote );
+
+    /**
+     * Constructor for creating CommunicationLists with no communication
+     * from an existing CommunicationList object without incurring global communication
+     * (meant for internal use only)
+     */
+    CommunicationList( const std::vector<size_t> &d_partition, const AMP_MPI &comm );
+
+    /**
+     * \brief Returns a shared_ptr to a CommunicationList with no data communication.
+     */
+    std::shared_ptr<CommunicationList> getNoCommunicationList();
 
     /**
      * \brief Subset a communication list based on a VectorIndexer

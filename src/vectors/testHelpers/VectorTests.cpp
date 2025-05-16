@@ -919,6 +919,19 @@ void VectorTests::VerifyVectorSetZeroGhosts( AMP::UnitTest *ut )
     bool no_ghosts = !vector->getVectorData()->hasGhosts();
     num_ghosts     = globalComm.sumReduce( num_ghosts );
     PASS_FAIL( no_ghosts && num_ghosts == 0, "verify setNoGhosts " );
+
+    // Test vectors sharing communication lists
+    auto v1            = d_factory->getVector();
+    auto v2            = v1->clone();
+    auto v2_has_ghosts = v2->getVectorData()->hasGhosts();
+    v1->setNoGhosts();
+    auto nghosts_v1         = v1->getGhostSize();
+    nghosts_v1              = globalComm.sumReduce( nghosts_v1 );
+    const bool no_ghosts_v1 = !v1->getVectorData()->hasGhosts();
+    // if v2 originally had ghosts check again to ensure it still has ghosts, if not set to true for
+    // vectors with no ghosts
+    v2_has_ghosts = v2_has_ghosts ? v2->getVectorData()->hasGhosts() : true;
+    PASS_FAIL( no_ghosts_v1 && nghosts_v1 == 0 && v2_has_ghosts, "verify setNoGhosts " );
 }
 
 

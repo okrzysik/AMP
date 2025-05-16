@@ -52,6 +52,18 @@ CommunicationList::CommunicationList( size_t local, const AMP_MPI &comm ) : d_co
     d_SendDOFList  = {};
     d_initialized  = true;
 }
+CommunicationList::CommunicationList( const std::vector<size_t> &partition, const AMP_MPI &comm )
+    : d_comm( comm ), d_partition{ partition }
+{
+    const int size = std::max( d_comm.getSize(), 1 );
+    d_ReceiveSizes = std::vector<int>( size, 0 );
+    d_ReceiveDisp  = std::vector<int>( size, 0 );
+    d_SendSizes    = std::vector<int>( size, 0 );
+    d_SendDisp     = std::vector<int>( size, 0 );
+    d_SendDOFList  = {};
+    d_initialized  = true;
+}
+
 CommunicationList::CommunicationList( const AMP_MPI &comm,
                                       std::vector<size_t> local,
                                       std::vector<size_t> remote )
@@ -63,6 +75,10 @@ CommunicationList::CommunicationList( const AMP_MPI &comm,
     AMP::Utilities::quicksort( d_ReceiveDOFList );
 }
 
+std::shared_ptr<CommunicationList> CommunicationList::getNoCommunicationList()
+{
+    return std::make_shared<CommunicationList>( d_partition, d_comm );
+}
 
 /************************************************************************
  * Subset                                                                *

@@ -237,8 +237,11 @@ template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::setNoGhosts()
 {
     deallocateBuffers();
+    // the current communication list is shared with other vectors and
+    // should not be modified. Instead create a communication list with
+    // no ghost values
     if ( this->d_CommList ) {
-        this->d_CommList->clearBuffers();
+        d_CommList = d_CommList->getNoCommunicationList();
     }
 }
 
