@@ -633,11 +633,10 @@ template<typename TYPE>
 Scalar VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
 {
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
-    const auto xtype = x.VectorDataName();
-    const auto ytype = y.VectorDataName();
-    const auto xbase = xtype.substr( 0, 17 );
-    TYPE ans         = 0;
-    if ( xtype == ytype && xbase == "VectorDataDefault" ) {
+
+    TYPE ans = 0;
+
+    if ( allDefaultDataType( x, y ) ) {
         auto const xdata = x.getRawDataBlock<TYPE>();
         auto const ydata = y.getRawDataBlock<TYPE>();
         auto N           = x.sizeOfDataBlock( 0 );
