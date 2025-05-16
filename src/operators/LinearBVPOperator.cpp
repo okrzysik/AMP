@@ -54,7 +54,8 @@ LinearBVPOperator::LinearBVPOperator( std::shared_ptr<const OperatorParameters> 
 
 void LinearBVPOperator::reset( std::shared_ptr<const OperatorParameters> inParams )
 {
-    d_memory_location = inParams->d_memory_location;
+    if ( d_memory_location == AMP::Utilities::MemoryType::none )
+        d_memory_location = inParams->d_memory_location;
     Operator::getFromInput( inParams->d_db );
     auto params = std::dynamic_pointer_cast<const BVPOperatorParameters>( inParams );
 
