@@ -68,7 +68,8 @@ protected:
     ScalarAllocator_t d_alloc;
     TYPE *d_Ghosts    = nullptr;
     TYPE *d_AddBuffer = nullptr;
-    size_t d_ghostSize = 0; //! size/length of ghost and add buffers
+    //! size/length of ghost and add buffers
+    size_t d_ghostSize = 0;
 };
 
 
