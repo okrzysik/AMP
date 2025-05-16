@@ -171,7 +171,7 @@ size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
 #if defined( AMP_USE_PETSC )
     // matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, true );
 #endif
-    size_t nGlobal;
+    size_t nGlobal = 0;
     for ( auto &backend : backends ) {
         nGlobal = matVecTestWithDOFs(
             ut, "CSRMatrix", scalarDOFs, backend == "hip_cuda" ? false : true, backend );
