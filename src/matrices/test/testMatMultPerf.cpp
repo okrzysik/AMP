@@ -33,7 +33,7 @@
 // profiling information regarding SpGEMMs with different matrix classes
 
 // Number of products to evaluate to average out timings
-#define NUM_PRODUCTS 100
+#define NUM_PRODUCTS 10
 
 size_t matVecTestWithDOFs( AMP::UnitTest *ut,
                            std::string type,

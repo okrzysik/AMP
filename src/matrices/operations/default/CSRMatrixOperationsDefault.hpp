@@ -215,7 +215,7 @@ void CSRMatrixOperationsDefault<Policy, Allocator, DiagMatrixData>::matMultiply(
     auto spgemmHelper = CSRMatrixSpGEMMHelperDefault( csrDataA, csrDataB, csrDataC, false );
     spgemmHelper.symbolicMultiply();
     spgemmHelper.numericMultiply();
-    // spgemmHelper.numericMultiplyReuse();
+    spgemmHelper.numericMultiplyReuse();
 #endif
 }
 

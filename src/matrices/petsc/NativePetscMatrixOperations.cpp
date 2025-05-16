@@ -68,8 +68,8 @@ void NativePetscMatrixOperations::matMultiply( MatrixData const &Am,
 
     MatProductCreate( getMat( Am ), getMat( Bm ), nullptr, &resMat );
     MatProductSetType( resMat, MATPRODUCT_AB );
-    // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMDEFAULT );
-    MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMSCALABLE );
+    MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMDEFAULT );
+    // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMSCALABLE );
     // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMSCALABLEFAST );
     // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMOVERLAPPING );
     MatProductSetFill( resMat, 1.5 );

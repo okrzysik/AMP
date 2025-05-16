@@ -113,7 +113,7 @@ public:
      * \param[in] B  Right multiplicand
      * \param[inout] C  Result matrix
      */
-    static void matMultiply( shared_ptr A, shared_ptr B , shared_ptr c );
+    static void matMultiply( shared_ptr A, shared_ptr B, shared_ptr c );
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar
