@@ -15,6 +15,27 @@ namespace AMP::LinearAlgebra {
 extern template class VectorOperationsDefault<double>; // Suppresses implicit instantiation below --
 extern template class VectorOperationsDefault<float>;  // Suppresses implicit instantiation below --
 
+static bool allDefaultDataType( const VectorData &x )
+{
+    const auto xtype = x.VectorDataName();
+    const auto xbase = xtype.substr( 0, 17 );
+    return ( xbase == "VectorDataDefault" );
+}
+static bool allDefaultDataType( const VectorData &x, const VectorData &y )
+{
+    const auto xtype = x.VectorDataName();
+    const auto ytype = y.VectorDataName();
+    const auto xbase = xtype.substr( 0, 17 );
+    return ( xtype == ytype && xbase == "VectorDataDefault" );
+}
+static bool allDefaultDataType( const VectorData &x, const VectorData &y, VectorData &z )
+{
+    const auto xtype = x.VectorDataName();
+    const auto ytype = y.VectorDataName();
+    const auto ztype = z.VectorDataName();
+    const auto xbase = xtype.substr( 0, 17 );
+    return ( xtype == ytype && ytype == ztype && xbase == "VectorDataDefault" );
+}
 
 /****************************************************************
  * Constructors                                                  *
@@ -44,13 +65,22 @@ std::string VectorOperationsDefault<TYPE>::VectorOpName() const
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::zero( VectorData &x )
 {
-    auto curMe = x.begin<TYPE>();
-    auto last  = x.end<TYPE>();
-    while ( curMe != last ) {
-        *curMe = 0;
-        ++curMe;
+    constexpr auto zro = static_cast<TYPE>( 0.0 );
+    if ( allDefaultDataType( x ) ) {
+        auto xdata = x.getRawDataBlock<TYPE>();
+        auto N     = x.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            xdata[i] = zro;
+        }
+    } else {
+        auto curMe = x.begin<TYPE>();
+        auto last  = x.end<TYPE>();
+        while ( curMe != last ) {
+            *curMe = 0;
+            ++curMe;
+        }
     }
-    x.fillGhosts( 0 );
+    x.fillGhosts( zro );
     // Override the status state since we set the ghost values
     x.setUpdateStatus( UpdateState::UNCHANGED );
 }
@@ -58,12 +88,21 @@ void VectorOperationsDefault<TYPE>::zero( VectorData &x )
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::setToScalar( const Scalar &alpha_in, VectorData &x )
 {
-    auto curMe = x.begin<TYPE>();
-    auto last  = x.end<TYPE>();
-    auto alpha = alpha_in.get<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha;
-        ++curMe;
+    auto const alpha = alpha_in.get<TYPE>();
+
+    if ( allDefaultDataType( x ) ) {
+        auto xdata = x.getRawDataBlock<TYPE>();
+        auto N     = x.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            xdata[i] = alpha;
+        }
+    } else {
+        auto curMe = x.begin<TYPE>();
+        auto last  = x.end<TYPE>();
+        while ( curMe != last ) {
+            *curMe = alpha;
+            ++curMe;
+        }
     }
     x.fillGhosts( alpha_in );
     // Override the status state since we set the ghost values
@@ -135,12 +174,22 @@ void VectorOperationsDefault<TYPE>::copyCast( const VectorData &x, VectorData &y
 template<typename TYPE>
 void VectorOperationsDefault<TYPE>::scale( const Scalar &alpha_in, VectorData &x )
 {
-    auto curMe = x.begin<TYPE>();
-    auto last  = x.end<TYPE>();
-    auto alpha = alpha_in.get<TYPE>();
-    while ( curMe != last ) {
-        *curMe *= alpha;
-        ++curMe;
+    auto const alpha = alpha_in.get<TYPE>();
+
+    if ( allDefaultDataType( x ) ) {
+        auto xdata = x.getRawDataBlock<TYPE>();
+        auto N     = x.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            xdata[i] *= alpha;
+        }
+        x.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe = x.begin<TYPE>();
+        auto last  = x.end<TYPE>();
+        while ( curMe != last ) {
+            *curMe *= alpha;
+            ++curMe;
+        }
     }
 }
 
@@ -150,15 +199,26 @@ void VectorOperationsDefault<TYPE>::scale( const Scalar &alpha_in,
                                            VectorData &y )
 {
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
-    auto curMe  = y.begin<TYPE>();
-    auto last   = y.end<TYPE>();
-    auto curRhs = x.begin<TYPE>();
-    auto alpha  = alpha_in.get<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha * *curRhs;
-        ++curRhs;
-        ++curMe;
+    auto const alpha = alpha_in.get<TYPE>();
+
+    if ( allDefaultDataType( x, y ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto ydata       = y.getRawDataBlock<TYPE>();
+        auto N           = y.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            ydata[i] = alpha * xdata[i];
+        }
+    } else {
+        auto curMe  = y.begin<TYPE>();
+        auto last   = y.end<TYPE>();
+        auto curRhs = x.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = alpha * *curRhs;
+            ++curRhs;
+            ++curMe;
+        }
     }
+    y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
 }
 
 template<typename TYPE>
@@ -166,15 +226,26 @@ void VectorOperationsDefault<TYPE>::add( const VectorData &x, const VectorData &
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
-    auto curMe   = z.begin<TYPE>();
-    auto last    = z.end<TYPE>();
-    auto curXRhs = x.begin<TYPE>();
-    auto curYRhs = y.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs + *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
+    if ( allDefaultDataType( x, y, z ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto const ydata = y.getRawDataBlock<TYPE>();
+        auto zdata       = z.getRawDataBlock<TYPE>();
+        auto N           = z.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            zdata[i] = xdata[i] + ydata[i];
+        }
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe   = z.begin<TYPE>();
+        auto last    = z.end<TYPE>();
+        auto curXRhs = x.begin<TYPE>();
+        auto curYRhs = y.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = *curXRhs + *curYRhs;
+            ++curXRhs;
+            ++curYRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -185,15 +256,27 @@ void VectorOperationsDefault<TYPE>::subtract( const VectorData &x,
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
-    auto curMe   = z.begin<TYPE>();
-    auto last    = z.end<TYPE>();
-    auto curXRhs = x.begin<TYPE>();
-    auto curYRhs = y.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs - *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
+
+    if ( allDefaultDataType( x, y, z ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto const ydata = y.getRawDataBlock<TYPE>();
+        auto zdata       = z.getRawDataBlock<TYPE>();
+        auto N           = z.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            zdata[i] = xdata[i] - ydata[i];
+        }
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe   = z.begin<TYPE>();
+        auto last    = z.end<TYPE>();
+        auto curXRhs = x.begin<TYPE>();
+        auto curYRhs = y.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = *curXRhs - *curYRhs;
+            ++curXRhs;
+            ++curYRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -204,15 +287,27 @@ void VectorOperationsDefault<TYPE>::multiply( const VectorData &x,
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
-    auto curMe   = z.begin<TYPE>();
-    auto last    = z.end<TYPE>();
-    auto curXRhs = x.begin<TYPE>();
-    auto curYRhs = y.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs * *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
+
+    if ( allDefaultDataType( x, y, z ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto const ydata = y.getRawDataBlock<TYPE>();
+        auto zdata       = z.getRawDataBlock<TYPE>();
+        auto N           = z.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            zdata[i] = xdata[i] * ydata[i];
+        }
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe   = z.begin<TYPE>();
+        auto last    = z.end<TYPE>();
+        auto curXRhs = x.begin<TYPE>();
+        auto curYRhs = y.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = *curXRhs * *curYRhs;
+            ++curXRhs;
+            ++curYRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -223,15 +318,27 @@ void VectorOperationsDefault<TYPE>::divide( const VectorData &x,
 {
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
-    auto curMe   = z.begin<TYPE>();
-    auto last    = z.end<TYPE>();
-    auto curXRhs = x.begin<TYPE>();
-    auto curYRhs = y.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs / *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
+
+    if ( allDefaultDataType( x, y, z ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto const ydata = y.getRawDataBlock<TYPE>();
+        auto zdata       = z.getRawDataBlock<TYPE>();
+        auto N           = z.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            zdata[i] = xdata[i] / ydata[i];
+        }
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe   = z.begin<TYPE>();
+        auto last    = z.end<TYPE>();
+        auto curXRhs = x.begin<TYPE>();
+        auto curYRhs = y.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = *curXRhs / *curYRhs;
+            ++curXRhs;
+            ++curYRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -240,13 +347,25 @@ template<typename TYPE>
 void VectorOperationsDefault<TYPE>::reciprocal( const VectorData &x, VectorData &y )
 {
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
-    auto curMe  = y.begin<TYPE>();
-    auto last   = y.end<TYPE>();
-    auto curRhs = x.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = static_cast<TYPE>( 1.0 ) / *curRhs;
-        ++curRhs;
-        ++curMe;
+
+    if ( allDefaultDataType( x, y ) ) {
+        auto const xdata   = x.getRawDataBlock<TYPE>();
+        auto ydata         = y.getRawDataBlock<TYPE>();
+        auto N             = y.sizeOfDataBlock( 0 );
+        constexpr auto one = static_cast<TYPE>( 1.0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            ydata[i] = one / xdata[i];
+        }
+        y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe  = y.begin<TYPE>();
+        auto last   = y.end<TYPE>();
+        auto curRhs = x.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = static_cast<TYPE>( 1.0 ) / *curRhs;
+            ++curRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -258,19 +377,31 @@ void VectorOperationsDefault<TYPE>::linearSum( const Scalar &alpha_in,
                                                const VectorData &y,
                                                VectorData &z )
 {
-    auto alpha = alpha_in.get<TYPE>();
-    auto beta  = beta_in.get<TYPE>();
+    const auto alpha = alpha_in.get<TYPE>();
+    const auto beta  = beta_in.get<TYPE>();
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
-    auto curMe   = z.begin<TYPE>();
-    auto last    = z.end<TYPE>();
-    auto curXRhs = x.begin<TYPE>();
-    auto curYRhs = y.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha * *curXRhs + beta * *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
+
+    if ( allDefaultDataType( x, y, z ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto const ydata = y.getRawDataBlock<TYPE>();
+        auto zdata       = z.getRawDataBlock<TYPE>();
+        auto N           = z.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            zdata[i] = alpha * xdata[i] + beta * ydata[i];
+        }
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe   = z.begin<TYPE>();
+        auto last    = z.end<TYPE>();
+        auto curXRhs = x.begin<TYPE>();
+        auto curYRhs = y.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = alpha * *curXRhs + beta * *curYRhs;
+            ++curXRhs;
+            ++curYRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -280,18 +411,30 @@ void VectorOperationsDefault<TYPE>::axpy( const Scalar &alpha_in,
                                           const VectorData &y,
                                           VectorData &z )
 {
-    auto alpha = alpha_in.get<TYPE>();
+    const auto alpha = alpha_in.get<TYPE>();
     AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
     AMP_ASSERT( z.getLocalSize() == y.getLocalSize() );
-    auto curMe   = z.begin<TYPE>();
-    auto last    = z.end<TYPE>();
-    auto curXRhs = x.begin<TYPE>();
-    auto curYRhs = y.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha * *curXRhs + *curYRhs;
-        ++curXRhs;
-        ++curYRhs;
-        ++curMe;
+
+    if ( allDefaultDataType( x, y, z ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto const ydata = y.getRawDataBlock<TYPE>();
+        auto zdata       = z.getRawDataBlock<TYPE>();
+        auto N           = z.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            zdata[i] = alpha * xdata[i] + ydata[i];
+        }
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe   = z.begin<TYPE>();
+        auto last    = z.end<TYPE>();
+        auto curXRhs = x.begin<TYPE>();
+        auto curYRhs = y.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = alpha * *curXRhs + *curYRhs;
+            ++curXRhs;
+            ++curYRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -299,18 +442,29 @@ template<typename TYPE>
 void VectorOperationsDefault<TYPE>::axpby( const Scalar &alpha_in,
                                            const Scalar &beta_in,
                                            const VectorData &x,
-                                           VectorData &z )
+                                           VectorData &y )
 {
-    auto alpha = alpha_in.get<TYPE>();
-    auto beta  = beta_in.get<TYPE>();
-    AMP_ASSERT( z.getLocalSize() == x.getLocalSize() );
-    auto curMe   = z.begin<TYPE>();
-    auto last    = z.end<TYPE>();
-    auto curXRhs = x.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = alpha * *curXRhs + beta * *curMe;
-        ++curXRhs;
-        ++curMe;
+    const auto alpha = alpha_in.get<TYPE>();
+    const auto beta  = beta_in.get<TYPE>();
+    AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
+
+    if ( allDefaultDataType( x, y ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto ydata       = y.getRawDataBlock<TYPE>();
+        auto N           = y.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            ydata[i] = alpha * xdata[i] + beta * ydata[i];
+        }
+        y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe   = y.begin<TYPE>();
+        auto last    = y.end<TYPE>();
+        auto curXRhs = x.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = alpha * *curXRhs + beta * *curMe;
+            ++curXRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -318,13 +472,24 @@ template<typename TYPE>
 void VectorOperationsDefault<TYPE>::abs( const VectorData &x, VectorData &y )
 {
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
-    auto curMe  = y.begin<TYPE>();
-    auto last   = y.end<TYPE>();
-    auto curRhs = x.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = fabs( *curRhs );
-        ++curRhs;
-        ++curMe;
+
+    if ( allDefaultDataType( x, y ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto ydata       = y.getRawDataBlock<TYPE>();
+        auto N           = y.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            ydata[i] = std::abs( xdata[i] );
+        }
+        y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe  = y.begin<TYPE>();
+        auto last   = y.end<TYPE>();
+        auto curRhs = x.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = fabs( *curRhs );
+            ++curRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -333,15 +498,26 @@ void VectorOperationsDefault<TYPE>::addScalar( const VectorData &x,
                                                const Scalar &alpha_in,
                                                VectorData &y )
 {
-    auto alpha = alpha_in.get<TYPE>();
+    const auto alpha = alpha_in.get<TYPE>();
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
-    auto curMe   = y.begin<TYPE>();
-    auto last    = y.end<TYPE>();
-    auto curXRhs = x.begin<TYPE>();
-    while ( curMe != last ) {
-        *curMe = *curXRhs + alpha;
-        ++curXRhs;
-        ++curMe;
+
+    if ( allDefaultDataType( x, y ) ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto ydata       = y.getRawDataBlock<TYPE>();
+        auto N           = y.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            ydata[i] = alpha + xdata[i];
+        }
+        y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
+    } else {
+        auto curMe   = y.begin<TYPE>();
+        auto last    = y.end<TYPE>();
+        auto curXRhs = x.begin<TYPE>();
+        while ( curMe != last ) {
+            *curMe = *curXRhs + alpha;
+            ++curXRhs;
+            ++curMe;
+        }
     }
 }
 
@@ -457,16 +633,28 @@ template<typename TYPE>
 Scalar VectorOperationsDefault<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
 {
     AMP_ASSERT( y.getLocalSize() == x.getLocalSize() );
-    auto curMe   = y.constBegin<TYPE>();
-    auto last    = y.constEnd<TYPE>();
-    auto curXRhs = x.constBegin<TYPE>();
-    TYPE ans     = 0;
-    while ( curMe != last ) {
-        TYPE v1 = *curMe;
-        TYPE v2 = *curXRhs;
-        ans += v1 * v2;
-        ++curXRhs;
-        ++curMe;
+    const auto xtype = x.VectorDataName();
+    const auto ytype = y.VectorDataName();
+    const auto xbase = xtype.substr( 0, 17 );
+    TYPE ans         = 0;
+    if ( xtype == ytype && xbase == "VectorDataDefault" ) {
+        auto const xdata = x.getRawDataBlock<TYPE>();
+        auto const ydata = y.getRawDataBlock<TYPE>();
+        auto N           = x.sizeOfDataBlock( 0 );
+        for ( size_t i = 0; i < N; ++i ) {
+            ans += xdata[i] * ydata[i];
+        }
+    } else {
+        auto curMe   = y.constBegin<TYPE>();
+        auto last    = y.constEnd<TYPE>();
+        auto curXRhs = x.constBegin<TYPE>();
+        while ( curMe != last ) {
+            TYPE v1 = *curMe;
+            TYPE v2 = *curXRhs;
+            ans += v1 * v2;
+            ++curXRhs;
+            ++curMe;
+        }
     }
     return ans;
 }
