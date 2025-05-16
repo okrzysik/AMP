@@ -7,7 +7,7 @@
 #include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 
 #include <random>
-
+#include <string_view>
 
 namespace AMP::LinearAlgebra {
 
@@ -17,24 +17,32 @@ extern template class VectorOperationsDefault<float>;  // Suppresses implicit in
 
 static bool allDefaultDataType( const VectorData &x )
 {
-    const auto xtype = x.VectorDataName();
-    const auto xbase = xtype.substr( 0, 17 );
-    return ( xbase == "VectorDataDefault" );
+    constexpr std::string_view type( "VectorDataDefault", 17 );
+    const auto xtype               = x.VectorDataName();
+    const std::string_view xtype_s = xtype;
+    return ( xtype_s.compare( 0, 17, type ) == 0 );
 }
 static bool allDefaultDataType( const VectorData &x, const VectorData &y )
 {
-    const auto xtype = x.VectorDataName();
-    const auto ytype = y.VectorDataName();
-    const auto xbase = xtype.substr( 0, 17 );
-    return ( xtype == ytype && xbase == "VectorDataDefault" );
+    constexpr std::string_view type( "VectorDataDefault", 17 );
+    const auto xtype               = x.VectorDataName();
+    const auto ytype               = y.VectorDataName();
+    const std::string_view xtype_s = xtype;
+    const std::string_view ytype_s = ytype;
+    return ( xtype_s.compare( ytype_s ) == 0 && xtype_s.compare( 0, 17, type ) == 0 );
 }
 static bool allDefaultDataType( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    const auto xtype = x.VectorDataName();
-    const auto ytype = y.VectorDataName();
-    const auto ztype = z.VectorDataName();
-    const auto xbase = xtype.substr( 0, 17 );
-    return ( xtype == ytype && ytype == ztype && xbase == "VectorDataDefault" );
+    constexpr std::string_view type( "VectorDataDefault", 17 );
+    const auto xtype               = x.VectorDataName();
+    const auto ytype               = y.VectorDataName();
+    const auto ztype               = z.VectorDataName();
+    const std::string_view xtype_s = xtype;
+    const std::string_view ytype_s = ytype;
+    const std::string_view ztype_s = ztype;
+
+    return ( xtype_s.compare( ytype_s ) == 0 && ytype_s.compare( ztype_s ) == 0 &&
+             xtype_s.compare( 0, 17, type ) == 0 );
 }
 
 /****************************************************************
