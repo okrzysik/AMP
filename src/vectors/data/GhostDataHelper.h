@@ -12,7 +12,7 @@ template<class TYPE = double, class Allocator = AMP::HostAllocator<void>>
 class GhostDataHelper : public VectorData
 {
 public:
-    using scalarAllocator_t =
+    using ScalarAllocator_t =
         typename std::allocator_traits<Allocator>::template rebind_alloc<TYPE>;
 
     GhostDataHelper();
@@ -64,7 +64,7 @@ protected:
     std::shared_ptr<CommunicationList> d_CommList = nullptr;
     std::shared_ptr<UpdateState> d_UpdateState    = nullptr;
 
-    scalarAllocator_t d_alloc;
+    ScalarAllocator_t d_alloc;
     TYPE *d_Ghosts    = nullptr;
     TYPE *d_AddBuffer = nullptr;
     size_t d_ghostSize; //! size/length of ghost and add buffers
