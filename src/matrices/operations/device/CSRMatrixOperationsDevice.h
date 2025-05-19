@@ -10,7 +10,7 @@ namespace AMP::LinearAlgebra {
 
 template<typename Policy,
          class Allocator,
-         class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+         class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixOperationsDevice : public MatrixOperations
 {
 
@@ -103,7 +103,7 @@ class CSRMatrixOperationsDevice : public MatrixOperations
     template<typename PolicyIn>
     static void
     copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-              CSRMatrixData<Policy, Allocator, DiagMatrixData> *Y );
+              CSRMatrixData<Policy, Allocator, LocalMatrixData> *Y );
 };
 
 } // namespace AMP::LinearAlgebra

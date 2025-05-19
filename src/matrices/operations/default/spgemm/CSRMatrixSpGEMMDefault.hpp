@@ -303,10 +303,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
     auto B_colmap        = B_data->getColumnMap();
     const auto first_col = B_data->beginCol();
 
-    // DenseAcc's act on assembled blocks that have global columns removed
+    // DenseAcc's act on assembled blocks that may have global columns removed
     // set up conversion for that case
-    auto B_to_global =
-        [B_cols, B_cols_loc, first_col, B_colmap, is_diag]( const lidx_t k ) -> gidx_t {
+    auto B_to_global = [B_cols, B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
         if ( B_cols != nullptr ) {
             return B_cols[k];
         }
@@ -426,8 +425,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyF
     auto B_colmap    = B_offd->getColumnMap();
     auto B_to_global = [B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
         if constexpr ( is_diag ) {
+            (void) B_colmap;
             return first_col + B_cols_loc[k];
         } else {
+            (void) first_col;
             return B_colmap[B_cols_loc[k]];
         }
     };
@@ -562,19 +563,25 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyR
     // depending on the output block type need either
     // local or global column indices from B_data, but
     // could have either ones present or not
-    auto B_to_global =
-        [is_diag, is_remote, B_cols, B_cols_loc, first_col, B_colmap]( lidx_t k ) -> gidx_t {
+    auto B_to_global = [is_remote, B_cols, B_cols_loc, B_colmap]( lidx_t k ) -> gidx_t {
         if constexpr ( is_diag ) {
+            (void) is_remote;
+            (void) B_cols;
+            (void) B_cols_loc;
+            (void) B_colmap;
             AMP_ERROR( "multiplyReuse: B_to_global called on diag" );
         } else {
             return is_remote ? B_cols[k] : B_colmap[B_cols_loc[k]];
         }
     };
-    auto B_to_local =
-        [is_diag, is_remote, B_cols, B_cols_loc, first_col, B_colmap]( lidx_t k ) -> lidx_t {
+    auto B_to_local = [is_remote, B_cols, B_cols_loc, first_col]( lidx_t k ) -> lidx_t {
         if constexpr ( is_diag ) {
             return is_remote ? static_cast<lidx_t>( B_cols[k] - first_col ) : B_cols_loc[k];
         } else {
+            (void) is_remote;
+            (void) B_cols;
+            (void) B_cols_loc;
+            (void) first_col;
             AMP_ERROR( "multiplyReuse: B_to_local called on offd" );
         }
     };

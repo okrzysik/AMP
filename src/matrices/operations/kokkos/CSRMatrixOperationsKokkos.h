@@ -24,7 +24,7 @@ template<
     class ViewSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<void>>,
                                                 Kokkos::HostSpace,
                                                 Kokkos::SharedSpace>::type,
-    class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+    class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
 public:
@@ -35,13 +35,13 @@ public:
                                                               Allocator,
                                                               ExecSpace,
                                                               ViewSpace,
-                                                              DiagMatrixData>>( d_exec_space ) ),
+                                                              LocalMatrixData>>( d_exec_space ) ),
           d_localops_offd(
               std::make_shared<CSRLocalMatrixOperationsKokkos<Policy,
                                                               Allocator,
                                                               ExecSpace,
                                                               ViewSpace,
-                                                              DiagMatrixData>>( d_exec_space ) )
+                                                              LocalMatrixData>>( d_exec_space ) )
     {
     }
 
@@ -132,12 +132,12 @@ public:
     template<typename PolicyIn>
     static void
     copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-              CSRMatrixData<Policy, Allocator, DiagMatrixData> *Y );
+              CSRMatrixData<Policy, Allocator, LocalMatrixData> *Y );
 
 protected:
     ExecSpace d_exec_space;
     std::shared_ptr<
-        CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, DiagMatrixData>>
+        CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>>
         d_localops_diag;
     std::shared_ptr<CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>>
         d_localops_offd;
