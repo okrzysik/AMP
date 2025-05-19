@@ -93,13 +93,13 @@ void DenseSerialMatrixOperations::scale( AMP::Scalar alpha_in, MatrixData &A )
         m1RawData[i] *= alpha;
 }
 
-void DenseSerialMatrixOperations::matMultiply( MatrixData const &Am,
-                                               MatrixData const &Bm,
-                                               MatrixData &Cm )
+void DenseSerialMatrixOperations::matMatMult( std::shared_ptr<MatrixData> Am,
+                                              std::shared_ptr<MatrixData> Bm,
+                                              std::shared_ptr<MatrixData> Cm )
 {
-    auto Amat = getDenseSerialMatrixData( Am );
-    auto Bmat = getDenseSerialMatrixData( Bm );
-    auto Cmat = getDenseSerialMatrixData( Cm );
+    auto Amat = getDenseSerialMatrixData( *Am );
+    auto Bmat = getDenseSerialMatrixData( *Bm );
+    auto Cmat = getDenseSerialMatrixData( *Cm );
 
     size_t N = Amat->numGlobalRows();
     size_t K = Amat->numGlobalColumns();

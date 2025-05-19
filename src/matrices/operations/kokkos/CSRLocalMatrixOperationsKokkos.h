@@ -62,9 +62,9 @@ public:
      * \param[in] B  A multiplicand
      * \param[in] C  The product \f$\mathbf{AB}\f$.
      */
-    void matMultiply( std::shared_ptr<LocalMatrixData>,
-                      std::shared_ptr<LocalMatrixData>,
-                      std::shared_ptr<LocalMatrixData> );
+    void matMatMult( std::shared_ptr<LocalMatrixData>,
+                     std::shared_ptr<LocalMatrixData>,
+                     std::shared_ptr<LocalMatrixData> );
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar

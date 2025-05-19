@@ -122,13 +122,15 @@ AMP::Scalar EpetraMatrixOperations::LinfNorm( MatrixData const &A ) const
     return getEpetra_CrsMatrix( A ).NormInf();
 }
 
-void EpetraMatrixOperations::matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C )
+void EpetraMatrixOperations::matMatMult( std::shared_ptr<MatrixData> A,
+                                         std::shared_ptr<MatrixData> B,
+                                         std::shared_ptr<MatrixData> C )
 {
-    int ierr = EpetraExt::MatrixMatrix::Multiply( getEpetra_CrsMatrix( A ),
+    int ierr = EpetraExt::MatrixMatrix::Multiply( getEpetra_CrsMatrix( *A ),
                                                   false,
-                                                  getEpetra_CrsMatrix( B ),
+                                                  getEpetra_CrsMatrix( *B ),
                                                   false,
-                                                  getEpetra_CrsMatrix( C ),
+                                                  getEpetra_CrsMatrix( *C ),
                                                   true );
     AMP_ASSERT( ierr == 0 );
 }
