@@ -518,7 +518,7 @@ static inline std::string getString( const Backend backend )
         return "raja";
     }
     AMP_ERROR( "Unknown backend" );
-    return Backend::none;
+    return "none";
 }
 
 static inline Backend backendFromString( const std::string &name )
