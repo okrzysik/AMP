@@ -371,6 +371,7 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
     vectorlhs->setToScalar( 1.0 );
     matrix->setDiagonal( vectorlhs );
     vectorlhs->setRandomValues();
+    vectorlhs->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     matrix->mult( vectorlhs, vectorrhs );
     normlhs = static_cast<double>( vectorlhs->L2Norm() );
     vectorrhs->subtract( *vectorlhs, *vectorrhs );
@@ -383,6 +384,7 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
     // Try the non-trivial matrix
     fillWithPseudoLaplacian( matrix, d_factory );
     vectorlhs->setRandomValues();
+    vectorlhs->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     matrix->mult( vectorlhs, vectorrhs );
     normlhs = static_cast<double>( vectorlhs->L2Norm() );
     normrhs = static_cast<double>( vectorrhs->L2Norm() );

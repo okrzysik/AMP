@@ -1,6 +1,5 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/IO/PIO.h"
-#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/solvers/SolverFactory.h"
@@ -44,16 +43,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "DiffusionBVPOperator", input_db ) );
 
-    auto nodalDofMap    = PowerInWattsVec->getDOFManager();
-    auto inputVariable  = diffusionOperator->getInputVariable();
-    auto outputVariable = diffusionOperator->getOutputVariable();
-    auto memoryLocation = diffusionOperator->getMemoryLocation();
-
-    auto TemperatureInKelvinVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, inputVariable, true, memoryLocation );
-
-    auto RightHandSideVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, outputVariable, true, memoryLocation );
+    auto linearOp               = diffusionOperator->getVolumeOperator();
+    auto TemperatureInKelvinVec = linearOp->getLeftVector();
+    auto RightHandSideVec       = linearOp->getRightVector();
 
     auto boundaryOpCorrectionVec = RightHandSideVec->clone();
 
