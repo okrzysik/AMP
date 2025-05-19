@@ -84,8 +84,8 @@ void GaussPointToGaussPointMap::correctLocalOrdering()
                     &localDofs[( j * DofsPerGaussPt ) + k],
                     &vals[( ( d_idxMap[i][j] ) * DofsPerGaussPt ) + k] );
             } // end k
-        } // end j
-    } // end i
+        }     // end j
+    }         // end i
 }
 
 
@@ -170,7 +170,7 @@ void GaussPointToGaussPointMap::createIdxMap(
             for ( int k = 0; k < dim; ++k ) {
                 inVec->setLocalValuesByGlobalID( 1, &localDofs[( j * dim ) + k], &xyz[j]( k ) );
             } // end for k
-        } // end for j
+        }     // end for j
 
         for ( unsigned int j = 0; j < elem->n_nodes(); ++j ) {
             delete ( elem->node_ptr( j ) );
@@ -231,7 +231,7 @@ void GaussPointToGaussPointMap::createIdxMap(
                     break;
                 }
             } // end k
-        } // end j
+        }     // end j
 
         d_idxMap.push_back( locMap );
 

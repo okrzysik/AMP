@@ -118,10 +118,8 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
         d_refXYZ->zero();
         for ( unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++ ) {
             if ( d_isActive[i] ) {
-                d_inVec_pre[i] = AMP::LinearAlgebra::createVector( d_dofMap[i],
-                                                                   d_inpVariables->getVariable( i ),
-                                                                   true,
-                                                                   d_memory_location );
+                d_inVec_pre[i] = AMP::LinearAlgebra::createVector(
+                    d_dofMap[i], d_inpVariables->getVariable( i ), true, d_memory_location );
                 d_inVec_pre[i]->zero();
             }
         }
