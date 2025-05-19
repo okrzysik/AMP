@@ -27,9 +27,6 @@ ENABLE_WARNINGS
 #include "ProfilerApp.h"
 
 
-static constexpr double PI = 3.1415926535897932;
-
-
 namespace AMP::Mesh::MeshWriters {
 
 
@@ -226,6 +223,8 @@ DatabasePtr createDistortedElement()
 DatabasePtr
 createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double c, double r )
 {
+    constexpr double PI = 3.1415926535897932;
+
     int const ze[] = { ne, pe, me, ne, me, ne, ne, pe };
     int const xe[] = { me, ne, ne, pe, ne, pe, me, ne };
 
@@ -239,29 +238,27 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
     std::vector<double> rPxArr( pe + 1 );
     std::vector<double> rPzArr( pe + 1 );
 
-    for ( int li = 0; li <= le; li++ ) {
-        lYarr[li] = static_cast<double>( li ) * c / static_cast<double>( le );
-    } // end for li
+    for ( int li = 0; li <= le; li++ )
+        lYarr[li] = li * c / static_cast<double>( le );
 
     for ( int mi = 0; mi <= me; mi++ ) {
-        mXarr[mi] = static_cast<double>( mi ) * a / static_cast<double>( me );
-        double th = ( PI / 2.0 ) -
-                    ( static_cast<double>( mi ) * ( PI ) / ( 4.0 * static_cast<double>( me ) ) );
+        mXarr[mi]  = mi * a / static_cast<double>( me );
+        double th  = ( 0.5 * PI ) - ( mi * PI / ( 4.0 * static_cast<double>( me ) ) );
         rMxArr[mi] = r * cos( th );
         rMzArr[mi] = r * sin( th );
-    } // end for mi
+    }
 
     for ( int ni = 0; ni <= ne; ni++ ) {
-        nXarr[ni] = r + ( static_cast<double>( ni ) * ( a - r ) / static_cast<double>( ne ) );
-        nZarr[ni] = r + ( static_cast<double>( ni ) * ( b - r ) / static_cast<double>( ne ) );
-    } // end for ni
+        nXarr[ni] = r + ( ni * ( a - r ) / static_cast<double>( ne ) );
+        nZarr[ni] = r + ( ni * ( b - r ) / static_cast<double>( ne ) );
+    }
 
     for ( int pi = 0; pi <= pe; pi++ ) {
-        pZarr[pi]  = static_cast<double>( pi ) * b / static_cast<double>( pe );
-        double th  = static_cast<double>( pi ) * ( PI ) / ( 4.0 * static_cast<double>( pe ) );
+        pZarr[pi]  = pi * b / static_cast<double>( pe );
+        double th  = pi * PI / ( 4.0 * static_cast<double>( pe ) );
         rPxArr[pi] = r * cos( th );
         rPzArr[pi] = r * sin( th );
-    } // end for pi
+    }
 
 
     std::vector<std::vector<std::vector<std::vector<int>>>> uniqueNodeId( 8 );
@@ -269,11 +266,10 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
         uniqueNodeId[ei].resize( le + 1 );
         for ( int li = 0; li <= le; li++ ) {
             uniqueNodeId[ei][li].resize( ze[ei] + 1 );
-            for ( int k = 0; k < ( ze[ei] + 1 ); k++ ) {
+            for ( int k = 0; k < ( ze[ei] + 1 ); k++ )
                 uniqueNodeId[ei][li][k].resize( xe[ei] + 1 );
-            } // end for k
-        }     // end for li
-    }         // end for ei
+        }
+    }
 
     int nodeCnt = 0;
     int numPts  = 4 * ( le + 1 ) * ( ne + 1 ) * ( me + pe );
@@ -285,57 +281,50 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
             uniqueNodeId[0][li][ni][0] = nodeCnt;
             uniqueNodeId[4][li][0][ni] = nodeCnt;
             nodes[nodeCnt++]           = { 0.0, lYarr[li], nZarr[ni] };
-        } // end for ni
+        }
 
         // Node zone 2
         for ( int ni = 0; ni <= ne; ni++ ) {
             uniqueNodeId[2][li][0][ni] = nodeCnt;
             uniqueNodeId[6][li][ni][0] = nodeCnt;
             nodes[nodeCnt++]           = { 0.0, lYarr[li], -nZarr[ni] };
-        } // end for ni
+        }
 
         // Node zone 3
         for ( int ni = 0; ni <= ne; ni++ ) {
             uniqueNodeId[1][li][0][ni] = nodeCnt;
             uniqueNodeId[3][li][ni][0] = nodeCnt;
             nodes[nodeCnt++]           = { nXarr[ni], lYarr[li], 0.0 };
-        } // end for ni
+        }
 
         // Node zone 4
         for ( int ni = 0; ni <= ne; ni++ ) {
             uniqueNodeId[5][li][ni][0] = nodeCnt;
             uniqueNodeId[7][li][0][ni] = nodeCnt;
             nodes[nodeCnt++]           = { -nXarr[ni], lYarr[li], 0.0 };
-        } // end for ni
+        }
 
         // Node zone 5
         for ( int mi = 1; mi <= me; mi++ ) {
             for ( int ni = 0; ni <= ne; ni++ ) {
                 uniqueNodeId[0][li][ni][mi] = nodeCnt;
-                if ( mi == me ) {
+                if ( mi == me )
                     uniqueNodeId[1][li][pe][ni] = nodeCnt;
-                }
-                double xPos =
-                    rMxArr[mi] + ( ( mXarr[mi] - rMxArr[mi] ) * static_cast<double>( ni ) /
-                                   static_cast<double>( ne ) );
-                double zPos      = rMzArr[mi] + ( ( b - rMzArr[mi] ) * static_cast<double>( ni ) /
-                                             static_cast<double>( ne ) );
+                double xPos      = rMxArr[mi] + ( ni * ( mXarr[mi] - rMxArr[mi] ) / ne );
+                double zPos      = rMzArr[mi] + ( ni * ( b - rMzArr[mi] ) / ne );
                 nodes[nodeCnt++] = { xPos, lYarr[li], zPos };
-            } // end for ni
-        }     // end for mi
+            }
+        }
 
         // Node zone 6
         for ( int pi = 1; pi < pe; pi++ ) {
             for ( int ni = 0; ni <= ne; ni++ ) {
                 uniqueNodeId[1][li][pi][ni] = nodeCnt;
-                double xPos = rPxArr[pi] + ( ( a - rPxArr[pi] ) * static_cast<double>( ni ) /
-                                             static_cast<double>( ne ) );
-                double zPos =
-                    rPzArr[pi] + ( ( pZarr[pi] - rPzArr[pi] ) * static_cast<double>( ni ) /
-                                   static_cast<double>( ne ) );
-                nodes[nodeCnt++] = { xPos, lYarr[li], zPos };
-            } // end for ni
-        }     // end for pi
+                double xPos                 = rPxArr[pi] + ( ni * ( a - rPxArr[pi] ) / ne );
+                double zPos                 = rPzArr[pi] + ( ni * ( pZarr[pi] - rPzArr[pi] ) / ne );
+                nodes[nodeCnt++]            = { xPos, lYarr[li], zPos };
+            }
+        }
 
         // Node zone 7
         for ( int mi = 1; mi <= me; mi++ ) {
@@ -343,87 +332,66 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                 uniqueNodeId[2][li][mi][ni] = nodeCnt;
                 if ( mi == me )
                     uniqueNodeId[3][li][ni][pe] = nodeCnt;
-                double xPos =
-                    rMxArr[mi] + ( ( mXarr[mi] - rMxArr[mi] ) * static_cast<double>( ni ) /
-                                   static_cast<double>( ne ) );
-                double zPos      = rMzArr[mi] + ( ( b - rMzArr[mi] ) * static_cast<double>( ni ) /
-                                             static_cast<double>( ne ) );
+                double xPos      = rMxArr[mi] + ( ni * ( mXarr[mi] - rMxArr[mi] ) / ne );
+                double zPos      = rMzArr[mi] + ( ni * ( b - rMzArr[mi] ) / ne );
                 nodes[nodeCnt++] = { xPos, lYarr[li], -zPos };
-            } // end for ni
-        }     // end for mi
+            }
+        }
 
         // Node zone 8
         for ( int pi = 1; pi < pe; pi++ ) {
             for ( int ni = 0; ni <= ne; ni++ ) {
                 uniqueNodeId[3][li][ni][pi] = nodeCnt;
-                double xPos = rPxArr[pi] + ( ( a - rPxArr[pi] ) * static_cast<double>( ni ) /
-                                             static_cast<double>( ne ) );
-                double zPos =
-                    rPzArr[pi] + ( ( pZarr[pi] - rPzArr[pi] ) * static_cast<double>( ni ) /
-                                   static_cast<double>( ne ) );
-                nodes[nodeCnt++] = { xPos, lYarr[li], -zPos };
-            } // end for ni
-        }     // end for pi
+                double xPos                 = rPxArr[pi] + ( ni * ( a - rPxArr[pi] ) / ne );
+                double zPos                 = rPzArr[pi] + ( ni * ( pZarr[pi] - rPzArr[pi] ) / ne );
+                nodes[nodeCnt++]            = { xPos, lYarr[li], -zPos };
+            }
+        }
 
         // Node zone 9
         for ( int mi = 1; mi <= me; mi++ ) {
             for ( int ni = 0; ni <= ne; ni++ ) {
                 uniqueNodeId[4][li][mi][ni] = nodeCnt;
-                if ( mi == me ) {
+                if ( mi == me )
                     uniqueNodeId[5][li][ni][pe] = nodeCnt;
-                }
-                double xPos =
-                    rMxArr[mi] + ( ( mXarr[mi] - rMxArr[mi] ) * static_cast<double>( ni ) /
-                                   static_cast<double>( ne ) );
-                double zPos      = rMzArr[mi] + ( ( b - rMzArr[mi] ) * static_cast<double>( ni ) /
-                                             static_cast<double>( ne ) );
+                double xPos      = rMxArr[mi] + ( ni * ( mXarr[mi] - rMxArr[mi] ) / ne );
+                double zPos      = rMzArr[mi] + ( ni * ( b - rMzArr[mi] ) / ne );
                 nodes[nodeCnt++] = { -xPos, lYarr[li], zPos };
-            } // end for ni
-        }     // end for mi
+            }
+        }
 
         // Node zone 10
         for ( int pi = 1; pi < pe; pi++ ) {
             for ( int ni = 0; ni <= ne; ni++ ) {
                 uniqueNodeId[5][li][ni][pi] = nodeCnt;
-                double xPos = rPxArr[pi] + ( ( a - rPxArr[pi] ) * static_cast<double>( ni ) /
-                                             static_cast<double>( ne ) );
-                double zPos =
-                    rPzArr[pi] + ( ( pZarr[pi] - rPzArr[pi] ) * static_cast<double>( ni ) /
-                                   static_cast<double>( ne ) );
-                nodes[nodeCnt++] = { -xPos, lYarr[li], zPos };
-            } // end for ni
-        }     // end for pi
+                double xPos                 = rPxArr[pi] + ( ni * ( a - rPxArr[pi] ) / ne );
+                double zPos                 = rPzArr[pi] + ( ni * ( pZarr[pi] - rPzArr[pi] ) / ne );
+                nodes[nodeCnt++]            = { -xPos, lYarr[li], zPos };
+            }
+        }
 
         // Node zone 11
         for ( int mi = 1; mi <= me; mi++ ) {
             for ( int ni = 0; ni <= ne; ni++ ) {
                 uniqueNodeId[6][li][ni][mi] = nodeCnt;
-                if ( mi == me ) {
+                if ( mi == me )
                     uniqueNodeId[7][li][pe][ni] = nodeCnt;
-                }
-                double xPos =
-                    rMxArr[mi] + ( ( mXarr[mi] - rMxArr[mi] ) * static_cast<double>( ni ) /
-                                   static_cast<double>( ne ) );
-                double zPos      = rMzArr[mi] + ( ( b - rMzArr[mi] ) * static_cast<double>( ni ) /
-                                             static_cast<double>( ne ) );
+                double xPos      = rMxArr[mi] + ( ni * ( mXarr[mi] - rMxArr[mi] ) / ne );
+                double zPos      = rMzArr[mi] + ( ni * ( b - rMzArr[mi] ) / ne );
                 nodes[nodeCnt++] = { -xPos, lYarr[li], -zPos };
-            } // end for ni
-        }     // end for mi
+            }
+        }
 
         // Node zone 12
         for ( int pi = 1; pi < pe; pi++ ) {
             for ( int ni = 0; ni <= ne; ni++ ) {
                 uniqueNodeId[7][li][pi][ni] = nodeCnt;
-                double xPos = rPxArr[pi] + ( ( a - rPxArr[pi] ) * static_cast<double>( ni ) /
-                                             static_cast<double>( ne ) );
-                double zPos =
-                    rPzArr[pi] + ( ( pZarr[pi] - rPzArr[pi] ) * static_cast<double>( ni ) /
-                                   static_cast<double>( ne ) );
-                nodes[nodeCnt++] = { -xPos, lYarr[li], -zPos };
-            } // end for ni
-        }     // end for pi
-
-    } // end for li
+                double xPos                 = rPxArr[pi] + ( ni * ( a - rPxArr[pi] ) / ne );
+                double zPos                 = rPzArr[pi] + ( ni * ( pZarr[pi] - rPzArr[pi] ) / ne );
+                nodes[nodeCnt++]            = { -xPos, lYarr[li], -zPos };
+            }
+        }
+    }
 
 
     int numElem = 4 * le * ne * ( me + pe );
@@ -444,10 +412,10 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
                     p[6]            = uniqueNodeId[ei][li + 1][zi + 1][xi + 1];
                     p[7]            = uniqueNodeId[ei][li + 1][zi + 1][xi];
                     elem[elemCnt++] = { p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7] };
-                } // end for xi
-            }     // end for zi
-        }         // end for ei
-    }             // end for li
+                }
+            }
+        }
+    }
 
 
     std::vector<std::vector<int>> BoundaryNodes( 2 );
@@ -468,7 +436,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
         } else {
             BoundaryNodes[0].push_back( uniqueNodeId[4][li][me][ne] );
         }
-    } // end for li
+    }
 
 
     // Bottom
@@ -487,7 +455,7 @@ createPlateWithHole( int le, int me, int ne, int pe, double a, double b, double 
         } else {
             BoundaryNodes[1].push_back( uniqueNodeId[6][li][ne][me] );
         }
-    } // end for li
+    }
 
     std::vector<std::vector<int>> SideIds;
 
@@ -526,32 +494,13 @@ DatabasePtr create2elementMesh( double a, int ny, int nz, double Lx, double Ly, 
     std::vector<std::array<double, 3>> nodes( numPts );
     for ( int zi = 0, pi = 0; zi < nz; zi++ ) {
         for ( int yi = 0; yi < ny; yi++ ) {
-            {
-                int xi      = 0;
-                double px   = xi * hx;
-                double py   = yi * hy;
-                double pz   = zi * hz;
-                nodes[pi++] = { px, py, pz };
-            }
-
-            {
-                int xi      = 1;
-                double pz   = zi * hz;
-                double zTmp = ( 0.5 * Lz ) - pz;
-                double px   = ( xi * hx ) + ( 2.0 * zTmp * a / Lz );
-                double py   = yi * hy;
-                nodes[pi++] = { px, py, pz };
-            }
-
-            {
-                int xi      = 2;
-                double px   = xi * hx;
-                double py   = yi * hy;
-                double pz   = zi * hz;
-                nodes[pi++] = { px, py, pz };
-            }
-        } // end for yi
-    }     // end for zi
+            nodes[pi++] = { 0, yi * hy, zi * hz };
+            double zTmp = ( 0.5 * Lz ) - ( zi * hz );
+            double px   = hx + ( 2.0 * zTmp * a / Lz );
+            nodes[pi++] = { px, yi * hy, zi * hz };
+            nodes[pi++] = { 2 * hx, yi * hy, zi * hz };
+        }
+    }
 
     int numElem = 2 * ( ny - 1 ) * ( nz - 1 );
     std::vector<std::array<int, 8>> elem( numElem );
@@ -567,9 +516,9 @@ DatabasePtr create2elementMesh( double a, int ny, int nz, double Lx, double Ly, 
                 int p6     = NODE( ( xi + 1 ), ( yi + 1 ), ( zi + 1 ) );
                 int p7     = NODE( xi, ( yi + 1 ), ( zi + 1 ) );
                 elem[pi++] = { p0, p1, p2, p3, p4, p5, p6, p7 };
-            } // end for xi
-        }     // end for yi
-    }         // end for zi
+            }
+        }
+    }
 
     std::vector<std::vector<int>> BoundaryNodes( 4 );
 
@@ -681,9 +630,8 @@ DatabasePtr createConstrainedMesh( int nx, int ny, int nz, double Lx, double Ly,
     std::vector<std::array<double, 3>> nodes( nx * ny * nz );
     for ( int zi = 0, pi = 0; zi < nz; zi++ ) {
         for ( int yi = 0; yi < ny; yi++ ) {
-            for ( int xi = 0; xi < nx; xi++, pi++ ) {
+            for ( int xi = 0; xi < nx; xi++, pi++ )
                 nodes[pi] = { xi * hx, yi * hy, zi * hz };
-            }
         }
     }
 
@@ -712,9 +660,8 @@ DatabasePtr createConstrainedMesh( int nx, int ny, int nz, double Lx, double Ly,
     // x = Lx surface
     BoundaryNodes[0].resize( ny * nz );
     for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
-        for ( int yi = 0; yi < ny; yi++, cnt++ ) {
+        for ( int yi = 0; yi < ny; yi++, cnt++ )
             BoundaryNodes[0][cnt] = NODE( ( nx - 1 ), yi, zi );
-        }
     }
     // Center of top surface
     BoundaryNodes[1] = { NODE( ( ( nx - 1 ) / 2 ), ( ( ny - 1 ) / 2 ), ( nz - 1 ) ) };
@@ -789,18 +736,16 @@ DatabasePtr createCookMesh( int nx, int ny, int nz )
     // x = 0 surface
     BoundaryNodes[0].resize( ny * nz );
     for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
-        for ( int yi = 0; yi < ny; yi++, cnt++ ) {
+        for ( int yi = 0; yi < ny; yi++, cnt++ )
             BoundaryNodes[0][cnt] = NODE( 0, yi, zi );
-        }
     }
 
     // x = Lx surface
     BoundaryNodes[1].resize( ny * nz );
     for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
-        for ( int yi = 0; yi < ny; yi++, cnt++ ) {
+        for ( int yi = 0; yi < ny; yi++, cnt++ )
             BoundaryNodes[1][cnt] = NODE( ( nx - 1 ), yi, zi );
-        } // end for yi
-    }     // end for zi
+    }
 
     std::vector<std::vector<int>> SideIds;
 
@@ -829,9 +774,8 @@ DatabasePtr createAMGMesh( int nx, int ny, int nz, double Lx, double Ly, double 
     std::vector<std::array<double, 3>> nodes( numPts );
     for ( int zi = 0, pi = 0; zi < nz; zi++ ) {
         for ( int yi = 0; yi < ny; yi++ ) {
-            for ( int xi = 0; xi < nx; xi++, pi++ ) {
+            for ( int xi = 0; xi < nx; xi++, pi++ )
                 nodes[pi] = { xi * hx, yi * hy, zi * hz };
-            }
         }
     }
 
@@ -858,44 +802,38 @@ DatabasePtr createAMGMesh( int nx, int ny, int nz, double Lx, double Ly, double 
     // x = 0 surface
     BoundaryNodes[0].resize( ny * nz );
     for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
-        for ( int yi = 0; yi < ny; yi++, cnt++ ) {
+        for ( int yi = 0; yi < ny; yi++, cnt++ )
             BoundaryNodes[0][cnt] = NODE( 0, yi, zi );
-        }
     }
     // x = Lx surface
     BoundaryNodes[1].resize( ny * nz );
     for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
-        for ( int yi = 0; yi < ny; yi++, cnt++ ) {
+        for ( int yi = 0; yi < ny; yi++, cnt++ )
             BoundaryNodes[1][cnt] = NODE( ( nx - 1 ), yi, zi );
-        }
     }
     // y = 0 surface
     BoundaryNodes[2].resize( nx * nz );
     for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
-        for ( int xi = 0; xi < nx; xi++, cnt++ ) {
+        for ( int xi = 0; xi < nx; xi++, cnt++ )
             BoundaryNodes[2][cnt] = NODE( xi, 0, zi );
-        }
     }
     // y = Ly surface
     BoundaryNodes[3].resize( nx * nz );
     for ( int zi = 0, cnt = 0; zi < nz; zi++ ) {
-        for ( int xi = 0; xi < nx; xi++, cnt++ ) {
+        for ( int xi = 0; xi < nx; xi++, cnt++ )
             BoundaryNodes[3][cnt] = NODE( xi, ( ny - 1 ), zi );
-        }
     }
     // z = 0 surface
     BoundaryNodes[4].resize( nx * ny );
     for ( int yi = 0, cnt = 0; yi < ny; yi++ ) {
-        for ( int xi = 0; xi < nx; xi++, cnt++ ) {
+        for ( int xi = 0; xi < nx; xi++, cnt++ )
             BoundaryNodes[4][cnt] = NODE( xi, yi, 0 );
-        }
     }
     // z = Lz surface
     BoundaryNodes[5].resize( nx * ny );
     for ( int yi = 0, cnt = 0; yi < ny; yi++ ) {
-        for ( int xi = 0; xi < nx; xi++, cnt++ ) {
+        for ( int xi = 0; xi < nx; xi++, cnt++ )
             BoundaryNodes[5][cnt] = NODE( xi, yi, ( nz - 1 ) );
-        }
     }
 
     std::vector<std::vector<int>> SideIds;
@@ -1026,6 +964,34 @@ std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
         return createLUML( 49, 9, 9, 6, 0.1, 0.2 );
     } else if ( name == "mesh4" ) {
         return createLUML( 97, 17, 17, 6, 0.1, 0.2 );
+    } else if ( name == "mesh3_mod" ) {
+        auto db                              = generateTestMesh( "mesh3" );
+        auto mesh                            = db->getDatabase( "Mesh" );
+        auto bnd                             = getVector( *mesh, "BoundaryNodes" );
+        std::vector<std::vector<int>> newBnd = { { 0 }, { 98 } };
+        bnd.insert( ++bnd.begin(), newBnd.begin(), newBnd.end() );
+        putVector( *mesh, "BoundaryNodes", bnd );
+        return db;
+    } else if ( name == "mesh2_mod" ) {
+        auto db                              = generateTestMesh( "mesh2" );
+        auto mesh                            = db->getDatabase( "Mesh" );
+        auto bnd                             = getVector( *mesh, "BoundaryNodes" );
+        std::vector<std::vector<int>> newBnd = { { 0 }, { 50 } };
+        bnd.insert( ++bnd.begin(), newBnd.begin(), newBnd.end() );
+        bnd.insert( bnd.end(), { 324, 349, 449, 474 } );
+        bnd.insert( bnd.end(), { 374 } );
+        putVector( *mesh, "BoundaryNodes", bnd );
+        return db;
+    } else if ( name == "mesh2_mod_1" ) {
+        auto db   = generateTestMesh( "mesh2_mod" );
+        auto mesh = db->getDatabase( "Mesh" );
+        auto elem = getVector<int, 8>( *mesh, "Elems" );
+        elem.erase( elem.begin() + 375 );
+        putVector( *mesh, "Elems", elem );
+        auto bnd = getVector( *mesh, "BoundaryNodes" );
+        bnd.resize( 8 );
+        putVector( *mesh, "BoundaryNodes", bnd );
+        return db;
     }
     return {};
 }
@@ -1037,31 +1003,34 @@ std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
 void generateAll()
 {
     const char *ascii[]  = { "distortedElementMesh",
-                            "cookMesh0",
-                            "cookMesh1",
-                            "cookMesh2",
-                            "cookMesh3",
-                            "cookMesh4",
-                            "regPlateWithHole1",
-                            "regPlateWithHole2",
-                            "mesh7elem-1",
-                            "mesh7elem-2",
-                            "boxMesh-1",
-                            "boxMesh-2",
-                            "boxMesh-3",
-                            "boxMesh-4",
-                            "boxMesh-5",
-                            "mesh0",
-                            "mesh1",
-                            "mesh2",
-                            "mesh3",
-                            "mesh4",
-                            "mesh2elem-1",
-                            "mesh2elem-2",
-                            "mesh2elem-3",
-                            "mesh2elem-4",
-                            "mesh2elem-5",
-                            "mesh2elem-6" };
+                             "cookMesh0",
+                             "cookMesh1",
+                             "cookMesh2",
+                             "cookMesh3",
+                             "cookMesh4",
+                             "regPlateWithHole1",
+                             "regPlateWithHole2",
+                             "mesh7elem-1",
+                             "mesh7elem-2",
+                             "boxMesh-1",
+                             "boxMesh-2",
+                             "boxMesh-3",
+                             "boxMesh-4",
+                             "boxMesh-5",
+                             "mesh0",
+                             "mesh1",
+                             "mesh2",
+                             "mesh3",
+                             "mesh4",
+                             "mesh2elem-1",
+                             "mesh2elem-2",
+                             "mesh2elem-3",
+                             "mesh2elem-4",
+                             "mesh2elem-5",
+                             "mesh2elem-6",
+                             "mesh3_mod",
+                             "mesh2_mod",
+                             "mesh2_mod_1" };
     const char *binary[] = { "lumlmesh1", "lumlmesh2", "lumlmesh3", "lumlmesh4",
                              "lumlmesh5", "lumlmesh6", "lumlmesh7", "lumlmesh8" };
     for ( auto name : ascii ) {
