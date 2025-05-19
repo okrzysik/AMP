@@ -79,13 +79,12 @@ VectorDataDefault<TYPE, Allocator>::cloneData( const std::string & ) const
     if ( comm )
         retVal->setCommunicationList( comm );
 
-    if ( !this->d_Ghosts.empty() ) {
-        retVal->d_Ghosts.resize( this->d_Ghosts.size() );
+    if ( this->hasGhosts() ) {
+        retVal->allocateBuffers( this->d_ghostSize );
         retVal->copyGhostValues( *this );
-    }
-    if ( !this->d_AddBuffer.empty() ) {
-        retVal->d_AddBuffer.resize( this->d_AddBuffer.size() );
-        retVal->d_AddBuffer = this->d_AddBuffer;
+        for ( size_t i = 0; i < this->d_ghostSize; ++i ) {
+            retVal->d_AddBuffer[i] = this->d_AddBuffer[i];
+        }
     }
 
     return retVal;
@@ -277,6 +276,7 @@ void VectorDataDefault<TYPE, Allocator>::swapData( VectorData &rhs )
     AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
     std::swap( this->d_CommList, rhs2->d_CommList );
     std::swap( this->d_UpdateState, rhs2->d_UpdateState );
+    std::swap( this->d_ghostSize, rhs2->d_ghostSize );
     std::swap( this->d_Ghosts, rhs2->d_Ghosts );
     std::swap( this->d_AddBuffer, rhs2->d_AddBuffer );
     std::swap( this->d_data, rhs2->d_data );

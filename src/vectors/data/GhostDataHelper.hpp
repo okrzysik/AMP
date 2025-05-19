@@ -24,6 +24,12 @@ GhostDataHelper<TYPE, Allocator>::GhostDataHelper( std::shared_ptr<Communication
     setCommunicationList( list );
 }
 
+template<class TYPE, class Allocator>
+GhostDataHelper<TYPE, Allocator>::~GhostDataHelper()
+{
+    deallocateBuffers();
+}
+
 
 /****************************************************************
  * Get/Set the communication list                                *
@@ -33,16 +39,51 @@ std::shared_ptr<CommunicationList> GhostDataHelper<TYPE, Allocator>::getCommunic
 {
     return d_CommList;
 }
+
+template<class TYPE, class Allocator>
+void GhostDataHelper<TYPE, Allocator>::allocateBuffers( size_t len )
+{
+    d_ghostSize = len;
+    // allocate space for ghost buffer
+    this->d_Ghosts = d_alloc.allocate( d_ghostSize );
+    for ( size_t i = 0; i < d_ghostSize; ++i )
+        new ( this->d_Ghosts + i ) TYPE();
+
+    // allocate space for add buffer
+    this->d_AddBuffer = d_alloc.allocate( d_ghostSize );
+    for ( size_t i = 0; i < d_ghostSize; ++i )
+        new ( this->d_AddBuffer + i ) TYPE();
+}
+
+template<class TYPE, class Allocator>
+void GhostDataHelper<TYPE, Allocator>::deallocateBuffers()
+{
+    if ( this->d_Ghosts ) {
+        for ( size_t i = 0; i < this->d_ghostSize; ++i )
+            this->d_Ghosts[i].~TYPE();
+        this->d_alloc.deallocate( this->d_Ghosts, this->d_ghostSize );
+    }
+    if ( this->d_AddBuffer ) {
+        for ( size_t i = 0; i < this->d_ghostSize; ++i )
+            this->d_AddBuffer[i].~TYPE();
+        this->d_alloc.deallocate( this->d_AddBuffer, this->d_ghostSize );
+    }
+    this->d_Ghosts    = nullptr;
+    this->d_AddBuffer = nullptr;
+    this->d_ghostSize = 0;
+}
+
 template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::setCommunicationList(
     std::shared_ptr<CommunicationList> comm )
 {
     AMP_ASSERT( comm );
+    // deallocate any existing buffers
+    deallocateBuffers();
     d_CommList = comm;
-    if ( d_CommList ) {
-        this->d_Ghosts.resize( d_CommList->getVectorReceiveBufferSize() );
-        this->d_AddBuffer.resize( d_CommList->getVectorReceiveBufferSize() );
-    }
+    // reallocate buffers based on new comm list
+    const auto len = d_CommList->getVectorReceiveBufferSize();
+    allocateBuffers( len );
 }
 
 
@@ -84,8 +125,8 @@ void GhostDataHelper<TYPE, Allocator>::makeConsistent( ScatterType t )
         if ( t == ScatterType::CONSISTENT_ADD ) {
             AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
             scatter_add();
-            for ( auto &elem : this->d_AddBuffer )
-                elem = 0.0;
+            for ( size_t i = 0; i < d_ghostSize; ++i )
+                this->d_AddBuffer[i] = 0.0;
         }
         *d_UpdateState = UpdateState::SETTING;
         scatter_set();
@@ -152,7 +193,7 @@ void GhostDataHelper<TYPE, Allocator>::scatter_add()
 template<class TYPE, class Allocator>
 size_t GhostDataHelper<TYPE, Allocator>::getGhostSize() const
 {
-    return this->d_Ghosts.size();
+    return this->d_ghostSize;
 }
 
 
@@ -179,8 +220,10 @@ template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::fillGhosts( const Scalar &scalar )
 {
     const auto y = static_cast<TYPE>( scalar );
-    std::fill( this->d_Ghosts.begin(), this->d_Ghosts.end(), y );
-    std::fill( this->d_AddBuffer.begin(), this->d_AddBuffer.end(), static_cast<TYPE>( 0 ) );
+    for ( size_t i = 0; i < d_ghostSize; ++i ) {
+        this->d_Ghosts[i]    = y;
+        this->d_AddBuffer[i] = static_cast<TYPE>( 0 );
+    }
 }
 
 
@@ -190,10 +233,12 @@ void GhostDataHelper<TYPE, Allocator>::fillGhosts( const Scalar &scalar )
 template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::setNoGhosts()
 {
-    this->d_Ghosts.clear();
-    this->d_AddBuffer.clear();
+    deallocateBuffers();
+    // the current communication list is shared with other vectors and
+    // should not be modified. Instead create a communication list with
+    // no ghost values
     if ( this->d_CommList ) {
-        this->d_CommList->clearBuffers();
+        d_CommList = d_CommList->getNoCommunicationList();
     }
 }
 
@@ -217,21 +262,29 @@ bool GhostDataHelper<TYPE, Allocator>::containsGlobalElement( size_t i ) const
  * Get/Set ghost values by global id                             *
  ****************************************************************/
 template<class TYPE, class Allocator>
+bool GhostDataHelper<TYPE, Allocator>::allGhostIndices( size_t N, const size_t *ndx ) const
+{
+    bool pass = true;
+    for ( size_t i = 0; i < N; i++ ) {
+        pass =
+            pass && ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) );
+    }
+    return pass;
+}
+
+template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::setGhostValuesByGlobalID( size_t N,
                                                                  const size_t *ndx,
                                                                  const void *vals,
                                                                  const typeID &id )
 {
     if ( id == AMP::getTypeID<TYPE>() ) {
-        auto data = reinterpret_cast<const TYPE *>( vals );
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
         *d_UpdateState = UpdateState::SETTING;
+        AMP_INSIST( allGhostIndices( N, ndx ), "Non ghost index encountered" );
+        auto data = reinterpret_cast<const TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
-            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] = data[i];
-            } else {
-                AMP_ERROR( "Non ghost index" );
-            }
+            this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] = data[i];
         }
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );
@@ -244,15 +297,12 @@ void GhostDataHelper<TYPE, Allocator>::addGhostValuesByGlobalID( size_t N,
                                                                  const typeID &id )
 {
     if ( id == AMP::getTypeID<TYPE>() ) {
-        auto data = reinterpret_cast<const TYPE *>( vals );
         AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
         *d_UpdateState = UpdateState::ADDING;
+        AMP_INSIST( allGhostIndices( N, ndx ), "Non ghost index encountered" );
+        auto data = reinterpret_cast<const TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
-            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )] += data[i];
-            } else {
-                AMP_ERROR( "Non ghost index" );
-            }
+            this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )] += data[i];
         }
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );
@@ -265,14 +315,11 @@ void GhostDataHelper<TYPE, Allocator>::getGhostValuesByGlobalID( size_t N,
                                                                  const typeID &id ) const
 {
     if ( id == AMP::getTypeID<TYPE>() ) {
+        AMP_INSIST( allGhostIndices( N, ndx ), "Non ghost index encountered" );
         auto data = reinterpret_cast<TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
-            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                data[i] = this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] +
-                          this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
-            } else {
-                AMP_ERROR( "Tried to get a non-ghost ghost value" );
-            }
+            data[i] = this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] +
+                      this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
         }
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );
@@ -285,13 +332,10 @@ void GhostDataHelper<TYPE, Allocator>::getGhostAddValuesByGlobalID( size_t N,
                                                                     const typeID &id ) const
 {
     if ( id == AMP::getTypeID<TYPE>() ) {
+        AMP_INSIST( allGhostIndices( N, ndx ), "Non ghost index encountered" );
         auto data = reinterpret_cast<TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
-            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-                data[i] = this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
-            } else {
-                AMP_ERROR( "Tried to get a non-ghost ghost value" );
-            }
+            data[i] = this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
         }
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );
@@ -308,10 +352,8 @@ void GhostDataHelper<TYPE, Allocator>::dumpGhostedData( std::ostream &out, size_
     if ( !getCommunicationList() )
         return;
     const std::vector<size_t> &ghosts = getCommunicationList()->getGhostIDList();
-    auto curVal                       = this->d_Ghosts.begin();
-    for ( auto &ghost : ghosts ) {
-        out << "  GID: " << ( ghost + offset ) << "  Value: " << ( *curVal ) << "\n";
-        ++curVal;
+    for ( size_t i = 0; i < d_ghostSize; ++i ) {
+        out << "  GID: " << ( ghosts[i] + offset ) << "  Value: " << d_Ghosts[i] << "\n";
     }
 }
 
@@ -381,16 +423,32 @@ void GhostDataHelper<TYPE, Allocator>::writeRestart( int64_t fid ) const
     uint64_t updateID   = reinterpret_cast<uint64_t>( d_UpdateState.get() );
     IO::writeHDF5( fid, "commListID", commListID );
     IO::writeHDF5( fid, "updateID", updateID );
-    IO::writeHDF5( fid, "ghosts", this->d_Ghosts );
-    IO::writeHDF5( fid, "addBuffer", this->d_AddBuffer );
+
+    AMP::Array<TYPE> ghostData( this->d_ghostSize ), addData( this->d_ghostSize );
+    for ( size_t i = 0; i < this->d_ghostSize; ++i ) {
+        ghostData( i ) = this->d_Ghosts[i];
+        addData( i )   = this->d_AddBuffer[i];
+    }
+
+    IO::writeHDF5( fid, "ghosts", ghostData );
+    IO::writeHDF5( fid, "addBuffer", addData );
 }
 template<class TYPE, class Allocator>
 GhostDataHelper<TYPE, Allocator>::GhostDataHelper( int64_t fid, AMP::IO::RestartManager *manager )
     : VectorData( fid, manager )
 {
     uint64_t commListID, updateID;
-    IO::readHDF5( fid, "ghosts", this->d_Ghosts );
-    IO::readHDF5( fid, "addBuffer", this->d_AddBuffer );
+    AMP::Array<TYPE> ghostData, addData;
+    IO::readHDF5( fid, "ghosts", ghostData );
+    IO::readHDF5( fid, "addBuffer", addData );
+
+    this->d_ghostSize = ghostData.length();
+    this->d_Ghosts    = d_alloc.allocate( this->d_ghostSize );
+    this->d_AddBuffer = d_alloc.allocate( this->d_ghostSize );
+    for ( size_t i = 0; i < this->d_ghostSize; ++i ) {
+        this->d_Ghosts[i]    = ghostData( i );
+        this->d_AddBuffer[i] = addData( i );
+    }
 
     IO::readHDF5( fid, "commListID", commListID );
     IO::readHDF5( fid, "updateID", updateID );
