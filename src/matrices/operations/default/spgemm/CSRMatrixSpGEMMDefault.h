@@ -11,17 +11,20 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator, class DiagMatrixData>
+template<typename Policy, class Allocator, class LocalMatrixData>
 class CSRMatrixSpGEMMHelperDefault
 {
-    using CSRData  = CSRMatrixData<Policy, Allocator, DiagMatrixData>;
+    using CSRData  = CSRMatrixData<Policy, Allocator, LocalMatrixData>;
     using lidx_t   = typename Policy::lidx_t;
     using gidx_t   = typename Policy::gidx_t;
     using scalar_t = typename Policy::scalar_t;
 
 public:
     CSRMatrixSpGEMMHelperDefault() = default;
-    CSRMatrixSpGEMMHelperDefault( CSRData *A_, CSRData *B_, CSRData *C_, bool overlap_comms_ )
+    CSRMatrixSpGEMMHelperDefault( std::shared_ptr<CSRData> A_,
+                                  std::shared_ptr<CSRData> B_,
+                                  std::shared_ptr<CSRData> C_,
+                                  bool overlap_comms_ )
         : A( A_ ),
           B( B_ ),
           C( C_ ),
@@ -58,19 +61,19 @@ protected:
     enum class BlockType { DIAG, OFFD };
 
     template<Mode mode_t, BlockType block_t>
-    void multiply( std::shared_ptr<DiagMatrixData> A_data,
-                   std::shared_ptr<DiagMatrixData> B_data,
-                   std::shared_ptr<DiagMatrixData> C_data );
+    void multiply( std::shared_ptr<LocalMatrixData> A_data,
+                   std::shared_ptr<LocalMatrixData> B_data,
+                   std::shared_ptr<LocalMatrixData> C_data );
 
     template<Mode mode_t, BlockType block_t>
-    void multiplyFused( std::shared_ptr<DiagMatrixData> B_data,
-                        std::shared_ptr<DiagMatrixData> BR_data,
-                        std::shared_ptr<DiagMatrixData> C_data );
+    void multiplyFused( std::shared_ptr<LocalMatrixData> B_data,
+                        std::shared_ptr<LocalMatrixData> BR_data,
+                        std::shared_ptr<LocalMatrixData> C_data );
 
     template<BlockType block_t>
-    void multiplyReuse( std::shared_ptr<DiagMatrixData> A_data,
-                        std::shared_ptr<DiagMatrixData> B_data,
-                        std::shared_ptr<DiagMatrixData> C_data );
+    void multiplyReuse( std::shared_ptr<LocalMatrixData> A_data,
+                        std::shared_ptr<LocalMatrixData> B_data,
+                        std::shared_ptr<LocalMatrixData> C_data );
 
     void setupBRemoteComm();
     void startBRemoteComm();
@@ -83,24 +86,23 @@ protected:
     static constexpr lidx_t SPACC_SIZE = 256;
 
     // Matrix data of operands and output
-    // these are non-owning pointers
-    CSRData *A;
-    CSRData *B;
-    CSRData *C;
+    std::shared_ptr<CSRData> A;
+    std::shared_ptr<CSRData> B;
+    std::shared_ptr<CSRData> C;
 
     // diag and offd blocks of input matrices
-    std::shared_ptr<DiagMatrixData> A_diag;
-    std::shared_ptr<DiagMatrixData> A_offd;
-    std::shared_ptr<DiagMatrixData> B_diag;
-    std::shared_ptr<DiagMatrixData> B_offd;
+    std::shared_ptr<LocalMatrixData> A_diag;
+    std::shared_ptr<LocalMatrixData> A_offd;
+    std::shared_ptr<LocalMatrixData> B_diag;
+    std::shared_ptr<LocalMatrixData> B_offd;
 
     // Matrix data formed from remote rows of B that get pulled to each process
-    std::shared_ptr<DiagMatrixData> BR_diag;
-    std::shared_ptr<DiagMatrixData> BR_offd;
+    std::shared_ptr<LocalMatrixData> BR_diag;
+    std::shared_ptr<LocalMatrixData> BR_offd;
 
     // Blocks of C matrix
-    std::shared_ptr<DiagMatrixData> C_diag;
-    std::shared_ptr<DiagMatrixData> C_offd;
+    std::shared_ptr<LocalMatrixData> C_diag;
+    std::shared_ptr<LocalMatrixData> C_offd;
 
     // flag for whether overlapped communication/computation should be done
     bool d_overlap_comms;
@@ -111,15 +113,15 @@ protected:
 
     // Communicator
     AMP_MPI comm;
-    CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData> d_csr_comm;
+    CSRMatrixCommunicator<Policy, Allocator, LocalMatrixData> d_csr_comm;
     bool d_need_comms;
 
     // To overlap comms and calcs it is easiest to form the output in four
     // blocks and merge them together at the end
-    std::shared_ptr<DiagMatrixData> C_diag_diag; // from A_diag * B_diag
-    std::shared_ptr<DiagMatrixData> C_diag_offd; // from A_diag * B_offd
-    std::shared_ptr<DiagMatrixData> C_offd_diag; // from A_offd * BR_diag
-    std::shared_ptr<DiagMatrixData> C_offd_offd; // from A_offd * BR_offd
+    std::shared_ptr<LocalMatrixData> C_diag_diag; // from A_diag * B_diag
+    std::shared_ptr<LocalMatrixData> C_diag_offd; // from A_diag * B_offd
+    std::shared_ptr<LocalMatrixData> C_offd_diag; // from A_offd * BR_diag
+    std::shared_ptr<LocalMatrixData> C_offd_offd; // from A_offd * BR_offd
 
     // The following all support the communication needed to build BRemote
     // these are worth preserving to allow repeated SpGEMMs to re-use the
@@ -144,8 +146,8 @@ protected:
     // Destination information, things sent to other ranks
     std::map<int, SpGEMMCommInfo> d_dest_info;
 
-    std::map<int, std::shared_ptr<DiagMatrixData>> d_send_matrices;
-    std::map<int, std::shared_ptr<DiagMatrixData>> d_recv_matrices;
+    std::map<int, std::shared_ptr<LocalMatrixData>> d_send_matrices;
+    std::map<int, std::shared_ptr<LocalMatrixData>> d_recv_matrices;
 
     // Internal row accumlator classes
     template<typename col_t>

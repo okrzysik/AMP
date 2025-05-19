@@ -208,6 +208,9 @@ public:
     //! Check if matrix is globally square
     bool isSquare() const noexcept { return d_is_square; }
 
+    //! Check if matrix is globally square
+    bool isEmpty() const noexcept { return d_diag_matrix->d_is_empty && d_offd_matrix->d_is_empty; }
+
     //! Get total number of nonzeros in both blocks
     auto numberOfNonZeros() const { return d_nnz; }
 

@@ -58,15 +58,20 @@ void NativePetscMatrixOperations::scale( AMP::Scalar alpha, MatrixData &A )
     MatScale( getMat( A ), static_cast<PetscScalar>( alpha ) );
 }
 
-void NativePetscMatrixOperations::matMultiply( MatrixData const &Am,
-                                               MatrixData const &Bm,
-                                               MatrixData &Cm )
+void NativePetscMatrixOperations::matMatMult( std::shared_ptr<MatrixData> Am,
+                                              std::shared_ptr<MatrixData> Bm,
+                                              std::shared_ptr<MatrixData> Cm )
 {
-    AMP_ASSERT( Am.numGlobalColumns() == Bm.numGlobalRows() );
+    AMP_ASSERT( Am->numGlobalColumns() == Bm->numGlobalRows() );
+
+    if ( getMat( *Cm ) != nullptr ) {
+        AMP_WARN_ONCE( "NativePetscMatrixOperations::matMatMult does not support re-use of result "
+                       "data yet. A new result matrix will be created." );
+    }
 
     Mat resMat;
 
-    MatProductCreate( getMat( Am ), getMat( Bm ), nullptr, &resMat );
+    MatProductCreate( getMat( *Am ), getMat( *Bm ), nullptr, &resMat );
     MatProductSetType( resMat, MATPRODUCT_AB );
     MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMDEFAULT );
     // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMSCALABLE );
@@ -75,16 +80,16 @@ void NativePetscMatrixOperations::matMultiply( MatrixData const &Am,
     MatProductSetFill( resMat, 1.5 );
     MatProductSetFromOptions( resMat );
     {
-        PROFILE( "NativePetscMatrixOperations::matMultiply (symbolic)" );
+        PROFILE( "NativePetscMatrixOperations::matMatMult (symbolic)" );
         MatProductSymbolic( resMat );
     }
     {
-        PROFILE( "NativePetscMatrixOperations::matMultiply (numeric)" );
+        PROFILE( "NativePetscMatrixOperations::matMatMult (numeric)" );
         MatProductNumeric( resMat );
     }
     MatProductClear( resMat );
 
-    auto data = dynamic_cast<NativePetscMatrixData *>( &Cm );
+    auto data = dynamic_cast<NativePetscMatrixData *>( Cm.get() );
     AMP_ASSERT( data );
     data->setMat( resMat );
 }

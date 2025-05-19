@@ -131,9 +131,10 @@ CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::recvMatrices(
         d_comm.recv( block->d_coeffs.get(), block->d_nnz, source, COEFF_TAG );
     }
 
-    // enaure that any outstanding sends complete
+    // ensure that any outstanding sends complete
     if ( d_send_requests.size() > 0 ) {
         d_comm.waitAll( static_cast<int>( d_send_requests.size() ), d_send_requests.data() );
+        d_send_requests.clear();
     }
 
     // comm done, reset send flag in case this gets re-used

@@ -66,11 +66,7 @@ public:
 
     Mat getMat() { return d_Mat; }
 
-    void setMat( Mat mat, bool manage = true )
-    {
-        d_Mat                  = mat;
-        d_MatCreatedInternally = manage;
-    }
+    void setMat( Mat mat, bool manage = true );
 
     AMP_MPI getComm() const override;
 

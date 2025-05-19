@@ -122,11 +122,10 @@ void CSRMatrixOperationsDevice<Policy, Allocator, DiagMatrixData>::scale( AMP::S
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, DiagMatrixData>::matMultiply( MatrixData const &,
-                                                                                MatrixData const &,
-                                                                                MatrixData & )
+void CSRMatrixOperationsDevice<Policy, Allocator, DiagMatrixData>::matMatMult(
+    std::shared_ptr<MatrixData>, std::shared_ptr<MatrixData>, std::shared_ptr<MatrixData> )
 {
-    AMP_WARNING( "SpGEMM for CSRMatrixOperationsDevice not implemented" );
+    AMP_WARNING( "matMatMult for CSRMatrixOperationsDevice not implemented" );
 }
 
 template<typename Policy, class Allocator, class DiagMatrixData>

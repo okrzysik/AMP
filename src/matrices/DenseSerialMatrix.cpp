@@ -72,7 +72,7 @@ void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
     AMP_ASSERT( newMatrix );
     result.swap( newMatrix );
 
-    d_matrixOps->matMultiply( *getMatrixData(), *other_op->getMatrixData(), *newData );
+    d_matrixOps->matMatMult( getMatrixData(), other_op->getMatrixData(), newData );
 }
 
 

@@ -33,9 +33,10 @@
 // profiling information regarding SpGEMMs with different matrix classes
 
 // Number of products to evaluate to average out timings
-#define NUM_PRODUCTS 10
+#define NUM_PRODUCTS_NOREUSE 10
+#define NUM_PRODUCTS_REUSE 10
 
-size_t matVecTestWithDOFs( AMP::UnitTest *ut,
+size_t matMatTestWithDOFs( AMP::UnitTest *ut,
                            std::string type,
                            std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
@@ -76,12 +77,15 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
     using scalar_t = double;
 #endif
 
+    // First do products without allowing reuse of result matrix
+    // skip one and do it outside the loop to produce a result
+    // matrix for the next phase with reuse
     const auto yNormExpect = static_cast<scalar_t>( A->numGlobalRows() );
     scalar_t yNormFail     = 0.0;
     bool allPass           = true;
-    for ( int nProd = 0; nProd < NUM_PRODUCTS; ++nProd ) {
-        PROFILE( "SpGEMM test pass" );
-        auto Asq = AMP::LinearAlgebra::Matrix::matMultiply( A, A );
+    for ( int nProd = 1; nProd < NUM_PRODUCTS_NOREUSE; ++nProd ) {
+        PROFILE( "SpGEMM test no reuse" );
+        auto Asq = AMP::LinearAlgebra::Matrix::matMatMult( A, A );
         auto x   = Asq->getRightVector();
         auto y   = Asq->getLeftVector();
         x->setToScalar( 1.0 );
@@ -94,19 +98,56 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
             yNormFail = yNorm;
         }
     }
+    auto Asq = AMP::LinearAlgebra::Matrix::matMatMult( A, A );
+    auto x   = Asq->getRightVector();
+    auto y   = Asq->getLeftVector();
+    x->setToScalar( 1.0 );
+    x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    y->zero();
+    Asq->mult( x, y );
+    auto yNorm = static_cast<scalar_t>( y->L1Norm() );
+    if ( yNorm != yNormExpect ) {
+        allPass   = false;
+        yNormFail = yNorm;
+    }
 
     if ( allPass ) {
-        ut->passes( type + ": Passes 1 norm test with squared pseudo Laplacian" );
+        ut->passes( type + ": Passes 1 norm test with squared pseudo Laplacian, no re-use" );
     } else {
         AMP::pout << "1 Norm " << yNormFail << ", number of rows " << A->numGlobalRows()
                   << std::endl;
-        ut->failure( type + ": Fails 1 norm test with squared pseudo Laplacian" );
+        ut->failure( type + ": Fails 1 norm test with squared pseudo Laplacian, no re-use" );
+    }
+
+    // now do products where reuse of result matrix is supported
+    yNormFail = 0.0;
+    allPass   = true;
+    for ( int nProd = 0; nProd < NUM_PRODUCTS_REUSE; ++nProd ) {
+        PROFILE( "SpGEMM test reuse" );
+        AMP::LinearAlgebra::Matrix::matMatMult( A, A, Asq );
+        x->setToScalar( 1.0 );
+        x->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        y->zero();
+        Asq->mult( x, y );
+        const auto yNorm = static_cast<scalar_t>( y->L1Norm() );
+        if ( yNorm != yNormExpect ) {
+            allPass   = false;
+            yNormFail = yNorm;
+        }
+    }
+
+    if ( allPass ) {
+        ut->passes( type + ": Passes 1 norm test with squared pseudo Laplacian, with re-use" );
+    } else {
+        AMP::pout << "1 Norm " << yNormFail << ", number of rows " << A->numGlobalRows()
+                  << std::endl;
+        ut->failure( type + ": Fails 1 norm test with squared pseudo Laplacian, with re-use" );
     }
 
     return nGlobalRows;
 }
 
-size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
+size_t matMatTest( AMP::UnitTest *ut, std::string input_file )
 {
     std::string log_file = "output_testMatVecPerf";
     AMP::logOnlyNodeZero( log_file );
@@ -129,12 +170,12 @@ size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
 
     // Test on defined matrix types
 #if defined( AMP_USE_TRILINOS )
-    // matVecTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs, true );
+    // matMatTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs, true );
 #endif
 #if defined( AMP_USE_PETSC )
-    matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs );
+    matMatTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs );
 #endif
-    return matVecTestWithDOFs( ut, "CSRMatrix", scalarDOFs );
+    return matMatTestWithDOFs( ut, "CSRMatrix", scalarDOFs );
 }
 
 int main( int argc, char *argv[] )
@@ -155,7 +196,7 @@ int main( int argc, char *argv[] )
 
     size_t nGlobal = 0;
     for ( auto &file : files )
-        nGlobal = matVecTest( &ut, file );
+        nGlobal = matMatTest( &ut, file );
 
     ut.report();
 

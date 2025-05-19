@@ -211,10 +211,10 @@ template<typename Policy,
          class ExecSpace,
          class ViewSpace,
          class DiagMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, DiagMatrixData>::
-    matMultiply( MatrixData const &, MatrixData const &, MatrixData & )
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, DiagMatrixData>::matMatMult(
+    std::shared_ptr<MatrixData>, std::shared_ptr<MatrixData>, std::shared_ptr<MatrixData> )
 {
-    AMP_WARNING( "SpGEMM for CSRMatrixOperationsKokkos not implemented" );
+    AMP_WARNING( "matMatMult for CSRMatrixOperationsKokkos not implemented" );
 }
 
 template<typename Policy,

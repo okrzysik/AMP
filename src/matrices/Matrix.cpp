@@ -23,7 +23,7 @@ Matrix::~Matrix() {}
 /********************************************************
  * multiply                                             *
  ********************************************************/
-std::shared_ptr<Matrix> Matrix::matMultiply( shared_ptr A, shared_ptr B )
+std::shared_ptr<Matrix> Matrix::matMatMult( shared_ptr A, shared_ptr B )
 {
     if ( A->numGlobalColumns() != B->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );
@@ -32,7 +32,7 @@ std::shared_ptr<Matrix> Matrix::matMultiply( shared_ptr A, shared_ptr B )
     return retVal;
 }
 
-void Matrix::matMultiply( shared_ptr A, shared_ptr B, shared_ptr C )
+void Matrix::matMatMult( shared_ptr A, shared_ptr B, shared_ptr C )
 {
     if ( A->numGlobalColumns() != B->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );

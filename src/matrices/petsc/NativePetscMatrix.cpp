@@ -50,8 +50,7 @@ void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
     std::shared_ptr<Matrix> newMatrix = std::make_shared<NativePetscMatrix>();
     result.swap( newMatrix );
 
-    d_matrixOps->matMultiply(
-        *d_matrixData, *( other_op->getMatrixData() ), *result->getMatrixData() );
+    d_matrixOps->matMatMult( d_matrixData, other_op->getMatrixData(), result->getMatrixData() );
 }
 
 Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) const

@@ -63,7 +63,6 @@ protected:
     std::vector<int> d_allowed_dest;
 
     std::vector<AMP_MPI::Request> d_send_requests;
-    std::vector<AMP_MPI::Request> d_recv_requests;
 
     // tags for each type of message to send/recv
     static constexpr int COMM_TEST = 5600;
