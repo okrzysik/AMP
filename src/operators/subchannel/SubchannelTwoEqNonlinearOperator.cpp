@@ -497,6 +497,7 @@ std::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator::getJacobia
     AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
     std::shared_ptr<AMP::Database> tmp_db = d_params->d_db->cloneDatabase();
+    Operator::setMemoryAndBackendParameters( tmp_db );
     tmp_db->putScalar( "name", "SubchannelTwoEqLinearOperator" );
     tmp_db->putScalar( "InputVariable", d_inpVariable->getName() );
     tmp_db->putScalar( "OutputVariable", d_outVariable->getName() );

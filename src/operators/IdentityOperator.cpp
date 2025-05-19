@@ -73,10 +73,9 @@ IdentityOperator::getParameters( const std::string &type,
     std::shared_ptr<OperatorParameters> params;
     if ( type == "Jacobian" ) {
         std::shared_ptr<AMP::Database> db = AMP::Database::create( "name", "IdentityOperator" );
-        params                            = std::make_shared<OperatorParameters>( db );
-        if ( d_memory_location != AMP::Utilities::MemoryType::none )
-            db->putScalar<std::string>( "MemoryLocation",
-                                        AMP::Utilities::getString( d_memory_location ) );
+        Operator::setMemoryAndBackendParameters( db );
+
+        params = std::make_shared<OperatorParameters>( db );
         if ( d_inputVariable )
             db->putScalar<std::string>( "InputVariable", d_inputVariable->getName() );
         if ( d_outputVariable )

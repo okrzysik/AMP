@@ -82,6 +82,7 @@ NonlinearBVPOperator::getParameters( const std::string &type,
     PROFILE( "getParameters" );
     auto db = std::make_shared<Database>();
     db->putScalar( "name", "LinearBVPOperator" );
+    Operator::setMemoryAndBackendParameters( db );
     auto outParams                      = std::make_shared<BVPOperatorParameters>( db );
     outParams->d_Mesh                   = d_Mesh;
     outParams->d_volumeOperatorParams   = d_volumeOperator->getParameters( type, u, params );

@@ -500,6 +500,27 @@ static inline Backend getDefaultBackend( const MemoryType memory_location )
     return Backend::none;
 }
 
+static inline std::string getString( const Backend backend )
+{
+    if ( backend == Backend::serial ) {
+        return "serial";
+    } else if ( backend == Backend::hip_cuda ) {
+        return "hip_cuda";
+    } else if ( backend == Backend::kokkos ) {
+        return "kokkos";
+    } else if ( backend == Backend::openMP ) {
+        return "openMP";
+    } else if ( backend == Backend::openACC ) {
+        return "openACC";
+    } else if ( backend == Backend::openCL ) {
+        return "openCL";
+    } else if ( backend == Backend::raja ) {
+        return "raja";
+    }
+    AMP_ERROR( "Unknown backend" );
+    return Backend::none;
+}
+
 static inline Backend backendFromString( const std::string &name )
 {
     auto lcname( name );

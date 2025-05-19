@@ -107,6 +107,7 @@ FlowFrapconOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_sh
 {
     auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
 
+    Operator::setMemoryAndBackendParameters( tmp_db );
     tmp_db->putScalar( "name", "FlowFrapconJacobian" );
     tmp_db->putScalar( "InputVariable", d_inpVariable->getName() );
     tmp_db->putScalar( "OutputVariable", d_outVariable->getName() );

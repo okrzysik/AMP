@@ -159,6 +159,8 @@ protected:
         return nullptr;
     }
 
+    void setMemoryAndBackendParameters( std::shared_ptr<AMP::Database> db );
+
     int d_iDebugPrintInfoLevel = 0;
 
     int d_iObject_id;

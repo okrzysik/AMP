@@ -81,6 +81,7 @@ ColumnOperator::getParameters( const std::string &type,
 {
     std::shared_ptr<AMP::Database> db;
     auto opParameters    = std::make_shared<ColumnOperatorParameters>( db );
+    Operator::setMemoryAndBackendParameters( opParameters->db );
     opParameters->d_Mesh = d_Mesh;
     opParameters->d_db   = std::make_shared<AMP::Database>( "ColumnOperator" );
     opParameters->d_db->putScalar( "name", "ColumnOperator" );

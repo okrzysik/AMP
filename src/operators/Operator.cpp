@@ -107,6 +107,14 @@ void Operator::getFromInput( std::shared_ptr<AMP::Database> db )
     }
 }
 
+void Operator::setMemoryAndBackendParameters( std::shared_ptr<AMP::Database> db )
+{
+    if ( d_memory_location != AMP::Utilities::MemoryType::none )
+        db->putScalar<std::string>( "MemoryLocation",
+                                    AMP::Utilities::getString( d_memory_location ) );
+    if ( d_backend != AMP::Utilities::Backend::none )
+        db->putScalar<std::string>( "AccelerationBackend", AMP::Utilities::getString( d_backend ) );
+}
 
 AMP::LinearAlgebra::Vector::shared_ptr
 Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )

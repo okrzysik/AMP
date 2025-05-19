@@ -34,8 +34,8 @@ ColumnBoundaryOperator::getParameters( const std::string &type,
                                        AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                        std::shared_ptr<OperatorParameters> params )
 {
-
-    std::shared_ptr<AMP::Database> db;
+    auto db = std::make_shared<Database>();
+    Operator::setMemoryAndBackendParameters( db );
     auto opParameters  = std::make_shared<ColumnBoundaryOperatorParameters>( db );
     opParameters->d_db = std::make_shared<AMP::Database>( "ColumnBoundaryOperator" );
     opParameters->d_db->putScalar( "name", "ColumnBoundaryOperator" );
