@@ -40,7 +40,9 @@ class EpetraMatrixOperations : public MatrixOperations
      * \param[in] B  A multiplicand
      * \param[in] C  The product \f$\mathbf{AB}\f$.
      */
-    void matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C ) override;
+    void matMatMult( std::shared_ptr<MatrixData> A,
+                     std::shared_ptr<MatrixData> B,
+                     std::shared_ptr<MatrixData> C ) override;
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar

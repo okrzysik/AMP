@@ -344,11 +344,11 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, Loc
 
 template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, class LocalMatrixData>
 void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
-    matMultiply( std::shared_ptr<LocalMatrixData>,
-                 std::shared_ptr<LocalMatrixData>,
-                 std::shared_ptr<LocalMatrixData> )
+    matMatMult( std::shared_ptr<LocalMatrixData>,
+                std::shared_ptr<LocalMatrixData>,
+                std::shared_ptr<LocalMatrixData> )
 {
-    AMP_WARNING( "SpGEMM for CSRLocalMatrixOperationsKokkos not implemented" );
+    AMP_WARNING( "matMatMult for CSRLocalMatrixOperationsKokkos not implemented" );
 }
 
 template<typename Policy, class Allocator, class ExecSpace, class ViewSpace, class LocalMatrixData>

@@ -371,6 +371,7 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
     vectorlhs->setToScalar( 1.0 );
     matrix->setDiagonal( vectorlhs );
     vectorlhs->setRandomValues();
+    vectorlhs->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     matrix->mult( vectorlhs, vectorrhs );
     normlhs = static_cast<double>( vectorlhs->L2Norm() );
     vectorrhs->subtract( *vectorlhs, *vectorrhs );
@@ -383,6 +384,7 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
     // Try the non-trivial matrix
     fillWithPseudoLaplacian( matrix, d_factory );
     vectorlhs->setRandomValues();
+    vectorlhs->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     matrix->mult( vectorlhs, vectorrhs );
     normlhs = static_cast<double>( vectorlhs->L2Norm() );
     normrhs = static_cast<double>( vectorrhs->L2Norm() );
@@ -415,7 +417,7 @@ void MatrixTests::VerifyMatMultMatrix_IA( AMP::UnitTest *utils )
     matLap->mult( x, y );
     const auto l1y = static_cast<double>( y->L1Norm() );
 
-    auto matProd = AMP::LinearAlgebra::Matrix::matMultiply( matId, matLap );
+    auto matProd = AMP::LinearAlgebra::Matrix::matMatMult( matId, matLap );
     auto xp      = matProd->getRightVector();
     auto yp      = matProd->getLeftVector();
     xp->setToScalar( 1.0 );
@@ -423,11 +425,11 @@ void MatrixTests::VerifyMatMultMatrix_IA( AMP::UnitTest *utils )
     auto l1yp = static_cast<double>( yp->L1Norm() );
 
     if ( AMP::Utilities::approx_equal( l1y, l1yp ) ) {
-        utils->passes( "matMultiply I*A " + matProd->type() );
+        utils->passes( "matMatMult I*A " + matProd->type() );
     } else {
-        AMP::pout << "matMultiply I*A(" << matProd->type() << "), || A * x || = " << l1y
+        AMP::pout << "matMatMult I*A(" << matProd->type() << "), || A * x || = " << l1y
                   << ", || (I * A) * x || = " << l1yp << ", || x || = " << l1x << std::endl;
-        utils->failure( "matMultiply I*A  " + matProd->type() );
+        utils->failure( "matMatMult I*A  " + matProd->type() );
     }
 }
 
@@ -454,7 +456,7 @@ void MatrixTests::VerifyMatMultMatrix_AI( AMP::UnitTest *utils )
     matLap->mult( x, y );
     const auto l1y = static_cast<double>( y->L1Norm() );
 
-    auto matProd = AMP::LinearAlgebra::Matrix::matMultiply( matLap, matId );
+    auto matProd = AMP::LinearAlgebra::Matrix::matMatMult( matLap, matId );
     auto xp      = matProd->getRightVector();
     auto yp      = matProd->getLeftVector();
     xp->setToScalar( 1.0 );
@@ -462,11 +464,11 @@ void MatrixTests::VerifyMatMultMatrix_AI( AMP::UnitTest *utils )
     auto l1yp = static_cast<double>( yp->L1Norm() );
 
     if ( AMP::Utilities::approx_equal( l1y, l1yp ) ) {
-        utils->passes( "matMultiply A*I " + matProd->type() );
+        utils->passes( "matMatMult A*I " + matProd->type() );
     } else {
-        AMP::pout << "matMultiply A*I(" << matProd->type() << "), || A * x || = " << l1y
+        AMP::pout << "matMatMult A*I(" << matProd->type() << "), || A * x || = " << l1y
                   << ", || (A * I) * x || = " << l1yp << ", || x || = " << l1x << std::endl;
-        utils->failure( "matMultiply A*I  " + matProd->type() );
+        utils->failure( "matMatMult A*I  " + matProd->type() );
     }
 }
 
@@ -488,7 +490,7 @@ void MatrixTests::VerifyMatMultMatrix_AA( AMP::UnitTest *utils )
     matLap->mult( x, y );
     const auto l1y = static_cast<double>( y->L1Norm() );
 
-    auto matProd = AMP::LinearAlgebra::Matrix::matMultiply( matLap, matLap );
+    auto matProd = AMP::LinearAlgebra::Matrix::matMatMult( matLap, matLap );
     auto xp      = matProd->getRightVector();
     auto yp      = matProd->getLeftVector();
     xp->setToScalar( 1.0 );
@@ -496,11 +498,11 @@ void MatrixTests::VerifyMatMultMatrix_AA( AMP::UnitTest *utils )
     auto l1yp = static_cast<double>( yp->L1Norm() );
 
     if ( AMP::Utilities::approx_equal( l1y, l1yp ) ) {
-        utils->passes( "matMultiply A*A " + matProd->type() );
+        utils->passes( "matMatMult A*A " + matProd->type() );
     } else {
-        AMP::pout << "matMultiply(" << matProd->type() << ") A*A, || A * ( A * x ) || = " << l1y
+        AMP::pout << "matMatMult(" << matProd->type() << ") A*A, || A * ( A * x ) || = " << l1y
                   << ", || ( A * A ) * x || = " << l1yp << ", || x || = " << l1x << std::endl;
-        utils->failure( "matMultiply A*A  " + matProd->type() );
+        utils->failure( "matMatMult A*A  " + matProd->type() );
     }
 }
 
@@ -522,12 +524,12 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     fillWithPseudoLaplacian( matLaplac, d_factory );
     matLaplac = getCopyMatrix( matLaplac );
 
-    // Verify matMultiply with 0 matrix
-    auto matProd = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
+    // Verify matMatMult with 0 matrix
+    auto matProd = AMP::LinearAlgebra::Matrix::matMatMult( matZero, matLaplac );
     if ( matProd->LinfNorm() == 0.0 ) {
-        utils->passes( "matMultiply 0*A " + matZero->type() );
+        utils->passes( "matMatMult 0*A " + matZero->type() );
     } else {
-        utils->failure( "matMultiply 0*A " + matZero->type() );
+        utils->failure( "matMatMult 0*A " + matZero->type() );
     }
 
     // Verify mult with identity on left
