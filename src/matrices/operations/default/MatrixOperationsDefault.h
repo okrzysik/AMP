@@ -12,7 +12,7 @@ struct MatrixOperationsDefault {
      * \param[in] B  A multiplicand
      * \param[in] C  The product \f$\mathbf{AB}\f$.
      */
-    static void matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C );
+    static void matMatMult( MatrixData const &A, MatrixData const &B, MatrixData &C );
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar

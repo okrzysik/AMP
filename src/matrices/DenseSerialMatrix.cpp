@@ -66,12 +66,13 @@ void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
                                                                 otherData->getRightVariable() );
 
     // Create the matrix
-    auto newData   = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrixData>( params );
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( newData );
+    auto newData = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrixData>( params );
+    std::shared_ptr<Matrix> newMatrix =
+        std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( newData );
     AMP_ASSERT( newMatrix );
-    result = newMatrix;
+    result.swap( newMatrix );
 
-    d_matrixOps->matMultiply( *getMatrixData(), *other_op->getMatrixData(), *newData );
+    d_matrixOps->matMatMult( getMatrixData(), other_op->getMatrixData(), newData );
 }
 
 

@@ -14,13 +14,13 @@ namespace AMP::LinearAlgebra {
 
 template<typename Policy,
          class Allocator,
-         class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+         class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixOperationsDefault : public MatrixOperations
 {
 public:
     CSRMatrixOperationsDefault()
         : d_localops_diag( std::make_shared<
-                           CSRLocalMatrixOperationsDefault<Policy, Allocator, DiagMatrixData>>() ),
+                           CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>>() ),
           d_localops_offd( std::make_shared<CSRLocalMatrixOperationsDefault<Policy, Allocator>>() )
     {
     }
@@ -57,7 +57,9 @@ public:
      * \param[in] B  A multiplicand
      * \param[in] C  The product \f$\mathbf{AB}\f$.
      */
-    void matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C ) override;
+    void matMatMult( std::shared_ptr<MatrixData> A,
+                     std::shared_ptr<MatrixData> B,
+                     std::shared_ptr<MatrixData> C ) override;
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar
@@ -119,15 +121,15 @@ public:
     template<typename PolicyIn>
     static void
     copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-              CSRMatrixData<Policy, Allocator, DiagMatrixData> *Y );
+              CSRMatrixData<Policy, Allocator, LocalMatrixData> *Y );
 
 protected:
-    std::shared_ptr<CSRLocalMatrixOperationsDefault<Policy, Allocator, DiagMatrixData>>
+    std::shared_ptr<CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>>
         d_localops_diag;
     std::shared_ptr<CSRLocalMatrixOperationsDefault<Policy, Allocator>> d_localops_offd;
-    std::map<std::pair<CSRMatrixData<Policy, Allocator, DiagMatrixData> *,
-                       CSRMatrixData<Policy, Allocator, DiagMatrixData> *>,
-             CSRMatrixSpGEMMHelperDefault<Policy, Allocator, DiagMatrixData>>
+    std::map<std::pair<std::shared_ptr<CSRMatrixData<Policy, Allocator, LocalMatrixData>>,
+                       std::shared_ptr<CSRMatrixData<Policy, Allocator, LocalMatrixData>>>,
+             CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>>
         d_SpGEMMHelpers;
 };
 

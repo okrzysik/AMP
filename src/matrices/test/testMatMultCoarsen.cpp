@@ -194,7 +194,7 @@ size_t matMultTestWithDOFs( AMP::UnitTest *ut,
     auto P = createAggregateMatrix( Acsr );
 
     // perform A*P SpGEMM
-    auto AP = AMP::LinearAlgebra::Matrix::matMultiply( A, P );
+    auto AP = AMP::LinearAlgebra::Matrix::matMatMult( A, P );
 
     // vectors of ones to apply operators to
     auto xa  = A->getRightVector();
@@ -226,11 +226,11 @@ size_t matMultTestWithDOFs( AMP::UnitTest *ut,
 
     if ( AMP::Utilities::approx_equal( l1ya, l1yap ) &&
          AMP::Utilities::approx_equal( l1yp, nrows_d ) ) {
-        ut->passes( "matMultiply A*P CSRMatrix" );
+        ut->passes( "matMatMult A*P CSRMatrix" );
     } else {
-        AMP::pout << "matMultiply A*P CSRMatrix fails with l1ya = " << l1ya << ", l1yp = " << l1yp
+        AMP::pout << "matMatMult A*P CSRMatrix fails with l1ya = " << l1ya << ", l1yp = " << l1yp
                   << ", l1yap = " << l1yap << std::endl;
-        ut->failure( "matMultiply A*P CSRMatrix" );
+        ut->failure( "matMatMult A*P CSRMatrix" );
     }
 
     return nGlobalRows;
