@@ -31,28 +31,7 @@ public:
      * Construct and initialize a parameter list according to input
      * data.  Guess what the required and optional keywords are.
      */
-    explicit OperatorParameters( std::shared_ptr<AMP::Database> db ) : ParameterBase( db )
-    {
-        if ( db ) {
-            auto memLoc       = db->getWithDefault<std::string>( "MemoryLocation", "host" );
-            d_memory_location = memoryLocationFromString( memLoc );
-        } else if ( d_memory_location == AMP::Utilities::MemoryType::none ) {
-            d_memory_location = AMP::Utilities::MemoryType::host;
-        }
-    }
-
-    static AMP::Utilities::MemoryType memoryLocationFromString( const std::string &name )
-    {
-#ifdef USE_DEVICE
-        if ( name == "managed" || name == "Managed" ) {
-            return AMP::Utilities::MemoryType::managed;
-        } else if ( name == "device" || name == "Device" ) {
-            return AMP::Utilities::MemoryType::device;
-        }
-#endif
-        (void) name;
-        return AMP::Utilities::MemoryType::host;
-    }
+    explicit OperatorParameters( std::shared_ptr<AMP::Database> db ) : ParameterBase( db ) {}
 
     /**
      * Destructor.
@@ -64,14 +43,6 @@ public:
      * Allow for the case that a fully constructed operator is returned
      */
     std::shared_ptr<AMP::Operator::Operator> d_pOperator;
-
-    /**
-     * Location (host/managed/device) where internally created
-     * vectors and matrices should live. Host memory should always
-     * work. More specialized parameter classes can overwrite this
-     * if supported.
-     */
-    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::none;
 };
 
 

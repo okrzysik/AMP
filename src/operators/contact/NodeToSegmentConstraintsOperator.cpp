@@ -19,7 +19,6 @@ void NodeToSegmentConstraintsOperator::reset( std::shared_ptr<const OperatorPara
 
     AMP_INSIST( ( params != NULL ), "NULL parameter" );
     AMP_INSIST( ( ( params->d_db ) != NULL ), "NULL database" );
-    Operator::getFromInput( params->d_db );
 
     std::shared_ptr<AMP::Mesh::Mesh> mesh = params->d_Mesh;
     //  AMP::AMP_MPI comm = mesh->getComm();

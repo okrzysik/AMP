@@ -68,7 +68,6 @@ NeutronicsRhsExtras::~NeutronicsRhsExtras() = default;
 void NeutronicsRhsExtras::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( db );
-    Operator::getFromInput( db );
 
     // define the source type and create the output variable.
     auto str = db->getWithDefault<std::string>( "type", "Power" );
@@ -141,13 +140,9 @@ void NeutronicsRhsExtras::reset( std::shared_ptr<const OperatorParameters> param
 {
 
     AMP_ASSERT( parameters );
-    if ( d_memory_location == AMP::Utilities::MemoryType::none )
-        d_memory_location = parameters->d_memory_location;
-    d_db        = parameters->d_db;
     auto params = std::dynamic_pointer_cast<const NeutronicsRhsExtrasParameters>( parameters );
     AMP_ASSERT( params );
     AMP_ASSERT( ( ( params->d_db ).get() ) != nullptr );
-    getFromInput( params->d_db );
 
     if ( !d_useFixedValue ) {
         int numValues;

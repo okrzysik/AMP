@@ -30,9 +30,6 @@ DirichletVectorCorrection::DirichletVectorCorrection(
 void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters> tmpParams )
 {
     AMP_ASSERT( tmpParams );
-    if ( d_memory_location == AMP::Utilities::MemoryType::none )
-        d_memory_location = tmpParams->d_memory_location;
-    Operator::getFromInput( tmpParams->d_db );
     auto params = std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( tmpParams );
 
     AMP_INSIST( params, "NULL parameters" );

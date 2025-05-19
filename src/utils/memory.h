@@ -23,6 +23,20 @@ MemoryType getMemoryType( const void *ptr );
 //! Return a string for the memory type
 std::string getString( MemoryType );
 
+//! Return the memory type from a string
+static inline MemoryType memoryLocationFromString( const std::string &name )
+{
+#ifdef USE_DEVICE
+    if ( name == "managed" || name == "Managed" ) {
+        return MemoryType::managed;
+    } else if ( name == "device" || name == "Device" ) {
+        return MemoryType::device;
+    }
+#endif
+    (void) name;
+    return MemoryType::host;
+}
+
 } // namespace AMP::Utilities
 
 

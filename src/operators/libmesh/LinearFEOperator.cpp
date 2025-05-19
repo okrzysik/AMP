@@ -36,10 +36,8 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
     AMP_INSIST( params, "NULL parameter" );
     AMP_INSIST( params->d_db, "NULL database" );
 
-    d_memory_location       = params->d_memory_location;
     const bool reuse_matrix = params->d_db->getWithDefault<bool>( "reset_reuses_matrix", true );
     auto lfeparams          = std::dynamic_pointer_cast<const LinearFEOperatorParameters>( params );
-    Operator::getFromInput( params->d_db );
 
     if ( !d_matrix || !reuse_matrix ) {
         auto matrix_type = params->d_db->getWithDefault<std::string>( "matrix_type", "auto" );

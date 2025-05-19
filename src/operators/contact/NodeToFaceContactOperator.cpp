@@ -756,7 +756,6 @@ void NodeToGeomType::FaceContactOperator::reset( std::shared_ptr<const OperatorP
 {
     AMP_INSIST( ( params != NULL ), "NULL parameter" );
     AMP_INSIST( ( ( params->d_db ) != NULL ), "NULL database" );
-    Operator::getFromInput( params->d_db );
 }
 
 void NodeToGeomType::FaceContactOperator::getVectorIndicesFromGlobalIDs(

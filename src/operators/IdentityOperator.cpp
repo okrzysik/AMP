@@ -17,9 +17,6 @@ IdentityOperator::IdentityOperator( std::shared_ptr<const OperatorParameters> pa
 
 void IdentityOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    if ( d_memory_location == AMP::Utilities::MemoryType::none )
-        d_memory_location = params->d_memory_location;
-    Operator::getFromInput( params->d_db );
     if ( params->d_db ) {
         if ( params->d_db->keyExists( "InputVariable" ) ) {
             std::string inpVar = params->d_db->getString( "InputVariable" );
@@ -77,7 +74,8 @@ IdentityOperator::getParameters( const std::string &type,
     if ( type == "Jacobian" ) {
         std::shared_ptr<AMP::Database> db = AMP::Database::create( "name", "IdentityOperator" );
         params                            = std::make_shared<OperatorParameters>( db );
-        params->d_memory_location         = d_memory_location;
+        db->putScalar<std::string>( "MemoryLocation",
+                                    AMP::Utilities::getString( d_memory_location ) );
         if ( d_inputVariable )
             db->putScalar<std::string>( "InputVariable", d_inputVariable->getName() );
         if ( d_outputVariable )

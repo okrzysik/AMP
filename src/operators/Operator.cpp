@@ -28,7 +28,6 @@ Operator::Operator( std::shared_ptr<const OperatorParameters> params )
     d_iObject_id           = Operator::d_iInstance_id;
     d_iDebugPrintInfoLevel = 0;
     Operator::d_iInstance_id++;
-    d_memory_location = params->d_memory_location;
 
     // try and keep the next call the last in the function
     // so as not to override any parameters set through it
@@ -40,8 +39,6 @@ Operator::Operator( std::shared_ptr<const OperatorParameters> params )
 void Operator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_INSIST( params, "NULL parameter" );
-    if ( d_memory_location == AMP::Utilities::MemoryType::none )
-        d_memory_location = params->d_memory_location;
 
     // try and keep the next call the last in the function
     // so as not to override any parameters set through it
@@ -95,11 +92,18 @@ void Operator::getFromInput( std::shared_ptr<AMP::Database> db )
     AMP_INSIST( db, "NULL database" );
 
     d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
-    if ( db->keyExists( "AccelerationBackend" ) ) {
-        auto bcknd = db->getString( "AccelerationBackend" );
-        d_backend  = AMP::Utilities::backendFromString( bcknd );
-    } else if ( d_backend == AMP::Utilities::Backend::none ) {
-        d_backend = AMP::Utilities::getDefaultBackend( d_memory_location );
+
+    if ( d_memory_location == AMP::Utilities::MemoryType::none ) {
+        auto memLoc       = db->getWithDefault<std::string>( "MemoryLocation", "host" );
+        d_memory_location = AMP::Utilities::memoryLocationFromString( memLoc );
+    }
+    if ( d_backend == AMP::Utilities::Backend::none ) {
+        if ( db->keyExists( "AccelerationBackend" ) ) {
+            auto bcknd = db->getString( "AccelerationBackend" );
+            d_backend  = AMP::Utilities::backendFromString( bcknd );
+        } else {
+            d_backend = AMP::Utilities::getDefaultBackend( d_memory_location );
+        }
     }
 }
 
