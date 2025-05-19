@@ -493,7 +493,11 @@ struct RAJA {
 static inline Backend getDefaultBackend( const MemoryType memory_location )
 {
     if ( memory_location == MemoryType::unregistered || memory_location == MemoryType::host ) {
-        return Backend::openMP; // ? or should it be serial?
+#ifdef USE_OPENMP
+        return Backend::openMP;
+#else
+        return Backend::serial;
+#endif
     } else if ( memory_location == MemoryType::managed || memory_location == MemoryType::device ) {
         return Backend::hip_cuda;
     }
