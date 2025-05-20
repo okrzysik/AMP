@@ -2,15 +2,13 @@
 InitialGuess = 310.0
 
 Mesh{
-    // This is the main multimesh that will contain all meshes
     MeshName = "cylinder"
-    MeshType = "libMesh"
-    FileName = "cylinder.e"
-    dim = 3
-    x_offset = 0.0
-    y_offset = 0.0
-    z_offset = 0.0
-    NumberOfElements = 5226
+    MeshType = "AMP"
+    Generator = "cylinder"
+    Size = 16, 5
+    Range = 3, -5, 5
+    surfaceIds = 1, 1, 1, 1, 2, 3
+    static = TRUE
 }
 
 

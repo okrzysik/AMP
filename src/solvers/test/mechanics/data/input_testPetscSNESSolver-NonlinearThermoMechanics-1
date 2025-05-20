@@ -1,13 +1,12 @@
 
 Mesh{
-    FileName = "cylinder4K.e"
     MeshName = "cylinder"
-    MeshType = "libMesh"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 4088
+    MeshType = "AMP"
+    Generator = "cylinder"
+    Size = 1, 8
+    Range = 1, -2, 2
+    surfaceIds = 1, 1, 1, 1, 2, 3
+    static = TRUE
 }
 
 NumberOfLoadingSteps = 1
