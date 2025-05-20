@@ -45,7 +45,8 @@ void linearThermalTest( AMP::UnitTest *ut,
     auto op_db = input_db->getDatabase( "DiffusionBVPOperator" );
     op_db->putScalar( "AccelerationBackend", accelerationBackend );
 #ifdef USE_DEVICE
-    op_db->putScalar( "MemoryLocation", "managed" );
+    if ( accelerationBackend != "serial" )
+        op_db->putScalar( "MemoryLocation", "managed" );
 #endif
     // Create the Thermal BVP Operator
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
