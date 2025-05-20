@@ -13,6 +13,20 @@
 #include "ProfilerApp.h"
 
 
+namespace AMP::unit_test {
+class ExodusReaderGenerator1 : public ExodusReaderGenerator
+{
+public:
+    ExodusReaderGenerator1() : ExodusReaderGenerator( "clad_1x_1pellet.e" ) {}
+};
+class ExodusReaderGenerator2 : public ExodusReaderGenerator
+{
+public:
+    ExodusReaderGenerator2() : ExodusReaderGenerator( "pellet_1x.e" ) {}
+};
+} // namespace AMP::unit_test
+
+
 template<class GENERATOR>
 void runTest( AMP::UnitTest &ut )
 {
@@ -35,8 +49,8 @@ void testMeshGenerators( AMP::UnitTest &ut )
     runTest<AMP::unit_test::LibMeshCubeGenerator<5>>( ut );
     runTest<AMP::unit_test::libMeshThreeElementGenerator>( ut );
     #ifdef USE_AMP_DATA
-    runTest<AMP::unit_test::ExodusReaderGenerator<>>( ut );
-    runTest<AMP::unit_test::ExodusReaderGenerator<2>>( ut );
+    runTest<AMP::unit_test::ExodusReaderGenerator1>( ut );
+    runTest<AMP::unit_test::ExodusReaderGenerator2>( ut );
     #endif
 #endif
 }

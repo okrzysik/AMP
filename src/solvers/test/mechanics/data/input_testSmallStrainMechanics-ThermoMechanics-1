@@ -1,7 +1,6 @@
 
 Mesh{
     FileName = "cylinder1K.e"
-    //FileName = "halden_1_pellet_9mil.e"
     MeshType = "libMesh"
     MeshName = "cylinder"
     dim      = 3

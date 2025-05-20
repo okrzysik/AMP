@@ -12,6 +12,20 @@
 #define to_ms( x ) std::chrono::duration_cast<std::chrono::milliseconds>( x ).count()
 
 
+namespace AMP::unit_test {
+class ExodusReaderGenerator1 : public ExodusReaderGenerator
+{
+public:
+    ExodusReaderGenerator1() : ExodusReaderGenerator( "clad_1x_1pellet.e" ) {}
+};
+class ExodusReaderGenerator2 : public ExodusReaderGenerator
+{
+public:
+    ExodusReaderGenerator2() : ExodusReaderGenerator( "pellet_1x.e" ) {}
+};
+} // namespace AMP::unit_test
+
+
 using namespace AMP::LinearAlgebra;
 
 
@@ -53,7 +67,7 @@ int main( int argc, char **argv )
         test_matrix_loop( ut, std::make_shared<DOF1>( type ) );
         test_matrix_loop( ut, std::make_shared<DOF3>( type ) );
 #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA ) && !defined( _GLIBCXX_DEBUG )
-        using libmeshFactory = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>>;
+        using libmeshFactory = DOFMatrixTestFactory<3, 3, ExodusReaderGenerator1>;
         test_matrix_loop( ut, std::make_shared<libmeshFactory>( type ) );
 #endif
         auto t2 = std::chrono::high_resolution_clock::now();

@@ -954,6 +954,8 @@ std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
         return createLUML( 33, 33, 33, 10, 10, 10 );
     } else if ( name == "lumlmesh8" ) {
         return createLUML( 65, 33, 33, 20, 10, 10 );
+    } else if ( name == "fullMpcMesh-3" ) {
+        return createLUML( 17, 9, 9, 4, 2, 2 );
     } else if ( name == "mesh0" ) {
         return createLUML( 7, 2, 2, 6, 0.1, 0.2 );
     } else if ( name == "mesh1" ) {
@@ -1003,34 +1005,35 @@ std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
 void generateAll()
 {
     const char *ascii[]  = { "distortedElementMesh",
-                            "cookMesh0",
-                            "cookMesh1",
-                            "cookMesh2",
-                            "cookMesh3",
-                            "cookMesh4",
-                            "regPlateWithHole1",
-                            "regPlateWithHole2",
-                            "mesh7elem-1",
-                            "mesh7elem-2",
-                            "boxMesh-1",
-                            "boxMesh-2",
-                            "boxMesh-3",
-                            "boxMesh-4",
-                            "boxMesh-5",
-                            "mesh0",
-                            "mesh1",
-                            "mesh2",
-                            "mesh3",
-                            "mesh4",
-                            "mesh2elem-1",
-                            "mesh2elem-2",
-                            "mesh2elem-3",
-                            "mesh2elem-4",
-                            "mesh2elem-5",
-                            "mesh2elem-6",
-                            "mesh3_mod",
-                            "mesh2_mod",
-                            "mesh2_mod_1" };
+                             "cookMesh0",
+                             "cookMesh1",
+                             "cookMesh2",
+                             "cookMesh3",
+                             "cookMesh4",
+                             "regPlateWithHole1",
+                             "regPlateWithHole2",
+                             "mesh7elem-1",
+                             "mesh7elem-2",
+                             "boxMesh-1",
+                             "boxMesh-2",
+                             "boxMesh-3",
+                             "boxMesh-4",
+                             "boxMesh-5",
+                             "fullMpcMesh-3",
+                             "mesh0",
+                             "mesh1",
+                             "mesh2",
+                             "mesh3",
+                             "mesh4",
+                             "mesh2elem-1",
+                             "mesh2elem-2",
+                             "mesh2elem-3",
+                             "mesh2elem-4",
+                             "mesh2elem-5",
+                             "mesh2elem-6",
+                             "mesh3_mod",
+                             "mesh2_mod",
+                             "mesh2_mod_1" };
     const char *binary[] = { "lumlmesh1", "lumlmesh2", "lumlmesh3", "lumlmesh4",
                              "lumlmesh5", "lumlmesh6", "lumlmesh7", "lumlmesh8" };
     for ( auto name : ascii ) {
