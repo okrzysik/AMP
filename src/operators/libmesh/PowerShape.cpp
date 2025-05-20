@@ -58,7 +58,7 @@ PowerShape::~PowerShape() = default;
  *  default values.                                                      *
  *************************************************************************
  */
-void PowerShape::reset( std::shared_ptr<const OperatorParameters> parameters )
+void PowerShape::reset( std::shared_ptr<const OperatorParameters> )
 {
     if ( d_coordinateSystem == "cartesian" ) {
 
