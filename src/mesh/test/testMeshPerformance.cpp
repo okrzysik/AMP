@@ -13,6 +13,7 @@
 #include "ProfilerApp.h"
 
 
+#ifdef AMP_USE_LIBMESH
 namespace AMP::unit_test {
 class ExodusReaderGenerator1 : public ExodusReaderGenerator
 {
@@ -25,6 +26,7 @@ public:
     ExodusReaderGenerator2() : ExodusReaderGenerator( "pellet_1x.e" ) {}
 };
 } // namespace AMP::unit_test
+#endif
 
 
 template<class GENERATOR>
