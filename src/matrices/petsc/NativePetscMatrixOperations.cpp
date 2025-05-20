@@ -58,15 +58,38 @@ void NativePetscMatrixOperations::scale( AMP::Scalar alpha, MatrixData &A )
     MatScale( getMat( A ), static_cast<PetscScalar>( alpha ) );
 }
 
-void NativePetscMatrixOperations::matMultiply( MatrixData const &Am,
-                                               MatrixData const &Bm,
-                                               MatrixData &Cm )
+void NativePetscMatrixOperations::matMatMult( std::shared_ptr<MatrixData> Am,
+                                              std::shared_ptr<MatrixData> Bm,
+                                              std::shared_ptr<MatrixData> Cm )
 {
-    AMP_ASSERT( Am.numGlobalColumns() == Bm.numGlobalRows() );
+    AMP_ASSERT( Am->numGlobalColumns() == Bm->numGlobalRows() );
+
+    if ( getMat( *Cm ) != nullptr ) {
+        AMP_WARN_ONCE( "NativePetscMatrixOperations::matMatMult does not support re-use of result "
+                       "data yet. A new result matrix will be created." );
+    }
 
     Mat resMat;
-    MatMatMult( getMat( Am ), getMat( Bm ), MAT_INITIAL_MATRIX, PETSC_DEFAULT, &resMat );
-    auto data = dynamic_cast<NativePetscMatrixData *>( &Cm );
+
+    MatProductCreate( getMat( *Am ), getMat( *Bm ), nullptr, &resMat );
+    MatProductSetType( resMat, MATPRODUCT_AB );
+    MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMDEFAULT );
+    // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMSCALABLE );
+    // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMSCALABLEFAST );
+    // MatProductSetAlgorithm( resMat, MATPRODUCTALGORITHMOVERLAPPING );
+    MatProductSetFill( resMat, 1.5 );
+    MatProductSetFromOptions( resMat );
+    {
+        PROFILE( "NativePetscMatrixOperations::matMatMult (symbolic)" );
+        MatProductSymbolic( resMat );
+    }
+    {
+        PROFILE( "NativePetscMatrixOperations::matMatMult (numeric)" );
+        MatProductNumeric( resMat );
+    }
+    MatProductClear( resMat );
+
+    auto data = dynamic_cast<NativePetscMatrixData *>( Cm.get() );
     AMP_ASSERT( data );
     data->setMat( resMat );
 }

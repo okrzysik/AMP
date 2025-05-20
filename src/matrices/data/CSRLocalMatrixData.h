@@ -76,6 +76,9 @@ public:
             d_row_starts.get(), d_cols.get(), d_cols_loc.get(), d_coeffs.get() );
     }
 
+    //! Swap data fields with another CSRLocalMatrix
+    void swapDataFields( CSRLocalMatrixData<Policy, Allocator> &other );
+
     //! Get row pointers
     lidx_t *getRowStarts() { return d_row_starts.get(); }
 
@@ -84,6 +87,9 @@ public:
 
     //! Check if this is a diagonal block
     bool isDiag() const { return d_is_diag; }
+
+    //! Check if empty
+    bool isEmpty() const { return d_is_empty; }
 
     //! Get total number of nonzeros in block
     lidx_t numberOfNonZeros() const { return d_nnz; }
@@ -155,6 +161,9 @@ public:
         }
     }
 
+    //! Set total number of nonzeros and allocate space accordingly
+    void setNNZ( lidx_t tot_nnz );
+
     //! Set number of nonzeros in each row and allocate space accordingly
     void setNNZ( const std::vector<lidx_t> &nnz );
 
@@ -199,11 +208,22 @@ public:
 
     static std::shared_ptr<CSRLocalMatrixData>
     ConcatVertical( std::shared_ptr<MatrixParametersBase> params,
-                    std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks );
+                    std::map<int, std::shared_ptr<CSRLocalMatrixData>> blocks,
+                    const gidx_t first_col,
+                    const gidx_t last_col,
+                    const bool is_diag );
 
 protected:
     //! Helper function for getting a global col idx from local depending on diag/offd case
     gidx_t localToGlobal( const lidx_t loc_id ) const;
+
+    /** \brief  Sort the columns/values within each row
+     * \details  This sorts within each row using the same ordering as
+     * Hypre. Diagonal blocks will have the diagonal entry first, and
+     * keep columns in ascending order after that. Off-diagonal blocks
+     * have *local* columns in ascending order.
+     */
+    void sortColumns();
 
     //! Make a clone of this matrix data
     std::shared_ptr<CSRLocalMatrixData> cloneMatrixData();
@@ -264,14 +284,6 @@ protected:
      * \param[out] values    Vector of values to push onto
      */
     std::vector<size_t> getColumnIDs( const size_t local_row ) const;
-
-    /** \brief  Sort the columns/values within each row
-     * \details  This sorts within each row using the same ordering as
-     * Hypre. Diagonal blocks will have the diagonal entry first, and
-     * keep columns in ascending order after that. Off-diagonal blocks
-     * have *local* columns in ascending order.
-     */
-    void sortColumns();
 
     // Data members passed from outer CSRMatrixData object
     //! Memory space where data lives, compatible with allocator template parameter

@@ -46,7 +46,9 @@ public:
      * \param[in] B  A multiplicand
      * \param[out] C The product \f$\mathbf{AB}\f$.
      */
-    virtual void matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C ) = 0;
+    virtual void matMatMult( std::shared_ptr<MatrixData> A,
+                             std::shared_ptr<MatrixData> B,
+                             std::shared_ptr<MatrixData> C ) = 0;
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar
