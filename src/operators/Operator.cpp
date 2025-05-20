@@ -78,7 +78,11 @@ Operator::getParameters( const std::string &type,
                          std::shared_ptr<OperatorParameters> )
 {
     if ( type == "Jacobian" ) {
-        return getJacobianParameters( u );
+        auto params = getJacobianParameters( u );
+        if ( params ) {
+            setMemoryAndBackendParameters( parms->d_db );
+        }
+        return params;
     } else {
         // Derived class should implement this
         AMP_ERROR( "Unknown OperatorParameters type specified" );
