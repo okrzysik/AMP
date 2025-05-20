@@ -50,7 +50,7 @@ int main( int argc, char **argv )
         generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator>( "clad_1x_1pellet.e" );
         generator->build_mesh();
         testLibmeshElement( &ut, generator->getMesh() );
-        generator = std::make_shared<AMP::unit_test::AMPCubeGenerator<5>>();
+        generator = std::make_shared<AMP::unit_test::AMPCubeGenerator>( 5 );
         generator->build_mesh();
         testLibmeshElement( &ut, generator->getMesh() );
         generator = std::make_shared<AMP::unit_test::AMPMultiMeshGenerator>();
