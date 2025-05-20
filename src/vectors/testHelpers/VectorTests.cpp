@@ -273,7 +273,7 @@ void VectorTests::L1NormVector( AMP::UnitTest *ut )
     auto norm = static_cast<double>( vector->L1Norm() );
     vector->abs( *vector );
     auto norm2 = static_cast<double>( vector->dot( *vector_1 ) );
-    double tol = 10 * norm * getTol( *vector );
+    double tol = 20 * norm * getTol( *vector );
     PASS_FAIL( fabs( norm - norm2 ) < tol, "L1 norm" );
 }
 

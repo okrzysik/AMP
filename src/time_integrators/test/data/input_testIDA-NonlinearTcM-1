@@ -7,12 +7,13 @@ TemperatureInitialGuess = 400.00
 referenceTemperature=400.0
 
 Mesh_1{
-  Filename = "halden_1_pellet_9mil.e"
-  MeshName = "pellet"
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 5226
+    MeshName = "pellet"
+    MeshType = "AMP"
+    Generator = "cylinder"
+    Size = 13, 8
+    Range = 0.00533908, 0, 0.0127
+    surfaceIds = 4, 4, 4, 4, 1, 2
+    static = TRUE
 }
 
 NeutronicsOperator{

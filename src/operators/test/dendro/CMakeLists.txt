@@ -11,7 +11,6 @@ COPY_TEST_FILE( input_testNodeToFaceContactOperator-2 )
 COPY_TEST_FILE( input_testNodeToFaceContactOperator-2bis )
 COPY_TEST_FILE( input_testNodeToFaceContactOperator-3 )
 COPY_TEST_FILE( input_testNodeToFaceContactOperator-4 )
-COPY_TEST_FILE( input_testNodeToFaceContactOperator-4bis )
 COPY_TEST_FILE( input_testNodeToFaceContactOperator-5 )
 
 
@@ -19,7 +18,6 @@ COPY_TEST_FILE( input_testNodeToFaceContactOperator-5 )
 IF ( AMP_DATA )
     COPY_MESH_FILE( simple_pellet_1x.e )
     COPY_MESH_FILE( two_fused_simple_pellets_1x.e )
-    COPY_MESH_FILE(my_cylinder.e)
 ENDIF()
 
 

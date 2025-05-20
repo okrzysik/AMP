@@ -122,12 +122,15 @@ int main( int argc, char **argv )
         AMP_ASSERT( argc == 4 );
         auto db = AMP::Mesh::MeshWriters::readBinaryTestMesh( argv[2] );
         AMP::Mesh::MeshWriters::writeTestMesh( *db, argv[3] );
-    } else {
+    } else if ( argc >= 3 ) {
         std::string exe( argv[1] );
         std::vector<double> args2( argc - 3 );
         for ( size_t i = 0; i < args2.size(); i++ )
             args2[i] = atof( argv[i + 2] );
         run( exe, args2, argv[argc - 1] );
+    } else {
+        std::cerr << "Invalid call\n";
+        return -1;
     }
     PROFILE_SAVE( "writeMesh" );
     return 0;
