@@ -13,7 +13,6 @@ Mesh{
     Mesh_1 {
         MeshName = "pellet"
         MeshType = "AMP"
-        FileName = "halden_1_pellet_9mil.e"
         Generator = "cylinder"
         Size = 13, 8
         Range = 0.00533908, 0, 0.0127

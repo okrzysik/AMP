@@ -23,18 +23,13 @@ IF ( AMP_DATA AND USE_LIBMESH )
 
     # Test ScalarZAxis map
     ADD_TB_TEST_1_2_4( testScalarZAxisMap )
-    COPY_MESH_FILE( TC1-PELL-COARSE.e )
-    COPY_MESH_FILE( CLAD-COARSE.e )
     COPY_TEST_FILE( inputScalarZAxisMap-1 )
-    COPY_MESH_FILE( pellet_coarse.e )
     COPY_MESH_FILE( pellet_1x.e )
     COPY_MESH_FILE( clad_1x_1pellet.e )
 
     # Test map operators
     ADD_TB_TEST_1_2_4( testMapOperator )
     COPY_TEST_FILE( input_testMapOperator )
-    COPY_MESH_FILE( halden_1_pellet_9mil.e )
-    COPY_MESH_FILE( halden_1_clad.e )
 
     # Test CladToSubchannel map
     ADD_TB_TEST_1_2_4( testCladToSubchannelMap )

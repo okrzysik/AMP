@@ -330,7 +330,7 @@ void testDefaults( AMP::UnitTest &ut )
 
 #if defined( AMP_USE_LIBMESH )
     // Run tests on the input file
-    testInputMesh( ut, "input_Mesh" );
+    testInputMesh( ut, "input_libMesh" );
 #endif
 
     // Run the basic tests on all mesh generators
