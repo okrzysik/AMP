@@ -1,13 +1,12 @@
 
 Mesh{
-  FileName = "multiElementMesh.e"
-  MeshName = "ida"
-  MeshType = "libMesh"
-  dim      = 3        
-  x_offset = 0.0
-  y_offset = 0.0
-  z_offset = 0.0
-  NumberOfElements = 1000
+    MeshName = "ida"
+    MeshType = "AMP"
+    Generator = "cube"
+    dim = 3
+    Size = 13, 13, 13
+    Range = -5, 5, -5, 5, -5, 5
+    static = TRUE
 }
 
 LinearOperator {
