@@ -80,7 +80,7 @@ Operator::getParameters( const std::string &type,
     if ( type == "Jacobian" ) {
         auto params = getJacobianParameters( u );
         if ( params ) {
-            setMemoryAndBackendParameters( parms->d_db );
+            setMemoryAndBackendParameters( params->d_db );
         }
         return params;
     } else {
