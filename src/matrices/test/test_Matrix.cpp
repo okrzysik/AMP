@@ -13,6 +13,12 @@
 
 
 namespace AMP::unit_test {
+class AMPCubeGenerator5 : public AMPCubeGenerator
+{
+public:
+    AMPCubeGenerator5() : AMPCubeGenerator( 5 ) {}
+};
+#ifdef AMP_USE_LIBMESH
 class ExodusReaderGenerator1 : public ExodusReaderGenerator
 {
 public:
@@ -23,6 +29,7 @@ class ExodusReaderGenerator2 : public ExodusReaderGenerator
 public:
     ExodusReaderGenerator2() : ExodusReaderGenerator( "pellet_1x.e" ) {}
 };
+#endif
 } // namespace AMP::unit_test
 
 
@@ -62,8 +69,8 @@ int main( int argc, char **argv )
     for ( auto type : types ) {
         AMP::pout << "Running tests for " << type;
         auto t1    = std::chrono::high_resolution_clock::now();
-        using DOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>>;
-        using DOF3 = DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>>;
+        using DOF1 = DOFMatrixTestFactory<1, 1, AMPCubeGenerator5>;
+        using DOF3 = DOFMatrixTestFactory<3, 3, AMPCubeGenerator5>;
         test_matrix_loop( ut, std::make_shared<DOF1>( type ) );
         test_matrix_loop( ut, std::make_shared<DOF3>( type ) );
 #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA ) && !defined( _GLIBCXX_DEBUG )
@@ -83,7 +90,7 @@ int main( int argc, char **argv )
                 continue;
             AMP::pout << "Running copy tests for " << type1 << " --> " << type2;
             auto t1       = std::chrono::high_resolution_clock::now();
-            using DOF     = DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>>;
+            using DOF     = DOFMatrixTestFactory<3, 3, AMPCubeGenerator5>;
             auto factory1 = std::make_shared<DOF>( type1 );
             auto factory2 = std::make_shared<DOF>( type2 );
             test_matrix_loop( ut, factory1, factory2 );

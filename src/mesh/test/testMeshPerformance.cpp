@@ -13,26 +13,10 @@
 #include "ProfilerApp.h"
 
 
-#ifdef AMP_USE_LIBMESH
-namespace AMP::unit_test {
-class ExodusReaderGenerator1 : public ExodusReaderGenerator
+template<class GENERATOR, class... Args>
+void runTest( AMP::UnitTest &ut, Args... ts )
 {
-public:
-    ExodusReaderGenerator1() : ExodusReaderGenerator( "clad_1x_1pellet.e" ) {}
-};
-class ExodusReaderGenerator2 : public ExodusReaderGenerator
-{
-public:
-    ExodusReaderGenerator2() : ExodusReaderGenerator( "pellet_1x.e" ) {}
-};
-} // namespace AMP::unit_test
-#endif
-
-
-template<class GENERATOR>
-void runTest( AMP::UnitTest &ut )
-{
-    auto generator = std::make_shared<GENERATOR>();
+    auto generator = std::make_shared<GENERATOR>( ts... );
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshPerformance( ut, generator->getMesh() );
 }
@@ -42,17 +26,17 @@ void testMeshGenerators( AMP::UnitTest &ut )
 {
     PROFILE( "testMeshGenerators" );
     // AMP mesh generators
-    runTest<AMP::unit_test::AMPCubeGenerator<4>>( ut );
+    runTest<AMP::unit_test::AMPCubeGenerator>( ut, 4 );
     runTest<AMP::unit_test::AMPCylinderGenerator>( ut );
     runTest<AMP::unit_test::AMPMultiMeshGenerator>( ut );
-    runTest<AMP::unit_test::AMPCubeGenerator<4>>( ut );
+    runTest<AMP::unit_test::AMPCubeGenerator>( ut, 4 );
 // libMesh generators
 #ifdef AMP_USE_LIBMESH
-    runTest<AMP::unit_test::LibMeshCubeGenerator<5>>( ut );
+    runTest<AMP::unit_test::LibMeshCubeGenerator>( ut, 5 );
     runTest<AMP::unit_test::libMeshThreeElementGenerator>( ut );
     #ifdef USE_AMP_DATA
-    runTest<AMP::unit_test::ExodusReaderGenerator1>( ut );
-    runTest<AMP::unit_test::ExodusReaderGenerator2>( ut );
+    runTest<AMP::unit_test::ExodusReaderGenerator>( ut, "clad_1x_1pellet.e" );
+    runTest<AMP::unit_test::ExodusReaderGenerator>( ut, "pellet_1x.e" );
     #endif
 #endif
 }
@@ -74,7 +58,6 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshPerformance( ut, mesh );
-    ;
 }
 
 
