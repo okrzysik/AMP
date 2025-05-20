@@ -10,7 +10,7 @@ namespace AMP::LinearAlgebra {
 
 template<typename Policy,
          class Allocator,
-         class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+         class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixOperationsDevice : public MatrixOperations
 {
 
@@ -43,7 +43,9 @@ class CSRMatrixOperationsDevice : public MatrixOperations
      * \param[in] B  A multiplicand
      * \return The product \f$\mathbf{AB}\f$.
      */
-    void matMultiply( MatrixData const &A, MatrixData const &B, MatrixData &C ) override;
+    void matMatMult( std::shared_ptr<MatrixData> A,
+                     std::shared_ptr<MatrixData> B,
+                     std::shared_ptr<MatrixData> C ) override;
 
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar
@@ -101,7 +103,7 @@ class CSRMatrixOperationsDevice : public MatrixOperations
     template<typename PolicyIn>
     static void
     copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-              CSRMatrixData<Policy, Allocator, DiagMatrixData> *Y );
+              CSRMatrixData<Policy, Allocator, LocalMatrixData> *Y );
 };
 
 } // namespace AMP::LinearAlgebra

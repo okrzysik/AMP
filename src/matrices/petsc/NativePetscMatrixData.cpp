@@ -113,6 +113,15 @@ AMP_MPI NativePetscMatrixData::getComm() const
     return AMP_MPI( comm );
 }
 
+void NativePetscMatrixData::setMat( Mat mat, bool manage )
+{
+    if ( d_MatCreatedInternally && d_Mat != nullptr ) {
+        PETSC::matDestroy( &d_Mat );
+    }
+    d_Mat                  = mat;
+    d_MatCreatedInternally = manage;
+}
+
 /********************************************************
  * Get the left/right Vector/DOFManager                  *
  ********************************************************/

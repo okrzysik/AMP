@@ -63,12 +63,12 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::scale(
     DeviceMatrixOperations<gidx_t, lidx_t, scalar_t>::scale( tnnz_d, coeffs_d, alpha );
 }
 template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::matMultiply(
+void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::matMatMult(
     std::shared_ptr<LocalMatrixData>,
     std::shared_ptr<LocalMatrixData>,
     std::shared_ptr<LocalMatrixData> )
 {
-    AMP_WARNING( "SpGEMM for CSRLocalMatrixOperationsDevice not implemented" );
+    AMP_WARNING( "matMatMult for CSRLocalMatrixOperationsDevice not implemented" );
 }
 
 template<typename Policy, class Allocator, class LocalMatrixData>

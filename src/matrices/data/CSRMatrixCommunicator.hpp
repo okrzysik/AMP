@@ -3,12 +3,16 @@
 
 #include "AMP/matrices/data/CSRMatrixCommunicator.h"
 
+#include "ProfilerApp.h"
+
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::sendMatrices(
-    const std::map<int, std::shared_ptr<DiagMatrixData>> &matrices )
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixCommunicator<Policy, Allocator, LocalMatrixData>::sendMatrices(
+    const std::map<int, std::shared_ptr<LocalMatrixData>> &matrices )
 {
+    PROFILE( "CSRMatrixCommunicator::sendMatrices" );
+
     // At present we allow that the held communication list refer to a
     // super-set of the communications that need to be sent. First count
     // how many sources we actually expect
@@ -31,10 +35,12 @@ void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::sendMatrices(
     d_send_called = true;
 }
 
-template<typename Policy, class Allocator, class DiagMatrixData>
-void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::countSources(
-    const std::map<int, std::shared_ptr<DiagMatrixData>> &matrices )
+template<typename Policy, class Allocator, class LocalMatrixData>
+void CSRMatrixCommunicator<Policy, Allocator, LocalMatrixData>::countSources(
+    const std::map<int, std::shared_ptr<LocalMatrixData>> &matrices )
 {
+    PROFILE( "CSRMatrixCommunicator::countSources" );
+
     // verify that send list actually contains all destinations
     for ( [[maybe_unused]] const auto &it : matrices ) {
         AMP_DEBUG_INSIST( std::find( d_allowed_dest.begin(), d_allowed_dest.end(), it.first ) !=
@@ -72,21 +78,23 @@ void CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::countSources(
     }
 }
 
-template<typename Policy, class Allocator, class DiagMatrixData>
-std::map<int, std::shared_ptr<DiagMatrixData>>
-CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::recvMatrices(
+template<typename Policy, class Allocator, class LocalMatrixData>
+std::map<int, std::shared_ptr<LocalMatrixData>>
+CSRMatrixCommunicator<Policy, Allocator, LocalMatrixData>::recvMatrices(
     typename Policy::gidx_t first_row,
     typename Policy::gidx_t last_row,
     typename Policy::gidx_t first_col,
     typename Policy::gidx_t last_col )
 {
+    PROFILE( "CSRMatrixCommunicator::recvMatrices" );
+
     using lidx_t = typename Policy::lidx_t;
     using gidx_t = typename Policy::gidx_t;
 
     AMP_INSIST( d_send_called,
                 "CSRMatrixCommunicator::sendMatrices must be called before recvMatrices" );
 
-    std::map<int, std::shared_ptr<DiagMatrixData>> blocks;
+    std::map<int, std::shared_ptr<LocalMatrixData>> blocks;
     const auto mem_loc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
 
     // there are d_num_sources matrices to recieve
@@ -111,7 +119,7 @@ CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::recvMatrices(
         }
         auto [it, inserted] =
             blocks.insert( { source,
-                             std::make_shared<DiagMatrixData>(
+                             std::make_shared<LocalMatrixData>(
                                  nullptr, mem_loc, fr, lr, first_col, last_col, false ) } );
         AMP_ASSERT( inserted );
         auto block = ( *it ).second;
@@ -123,9 +131,10 @@ CSRMatrixCommunicator<Policy, Allocator, DiagMatrixData>::recvMatrices(
         d_comm.recv( block->d_coeffs.get(), block->d_nnz, source, COEFF_TAG );
     }
 
-    // enaure that any outstanding sends complete
+    // ensure that any outstanding sends complete
     if ( d_send_requests.size() > 0 ) {
         d_comm.waitAll( static_cast<int>( d_send_requests.size() ), d_send_requests.data() );
+        d_send_requests.clear();
     }
 
     // comm done, reset send flag in case this gets re-used

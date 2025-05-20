@@ -12,8 +12,8 @@
 namespace AMP::LinearAlgebra {
 
 template<typename Policy,
-         class Allocator      = AMP::HostAllocator<void>,
-         class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+         class Allocator       = AMP::HostAllocator<void>,
+         class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixCommunicator
 {
 public:
@@ -49,12 +49,12 @@ public:
         }
     }
 
-    void sendMatrices( const std::map<int, std::shared_ptr<DiagMatrixData>> &matrices );
-    std::map<int, std::shared_ptr<DiagMatrixData>>
+    void sendMatrices( const std::map<int, std::shared_ptr<LocalMatrixData>> &matrices );
+    std::map<int, std::shared_ptr<LocalMatrixData>>
     recvMatrices( gidx_t first_row, gidx_t last_row, gidx_t first_col, gidx_t last_col );
 
 protected:
-    void countSources( const std::map<int, std::shared_ptr<DiagMatrixData>> &matrices );
+    void countSources( const std::map<int, std::shared_ptr<LocalMatrixData>> &matrices );
 
     AMP_MPI d_comm;
     bool d_send_called;
@@ -63,7 +63,6 @@ protected:
     std::vector<int> d_allowed_dest;
 
     std::vector<AMP_MPI::Request> d_send_requests;
-    std::vector<AMP_MPI::Request> d_recv_requests;
 
     // tags for each type of message to send/recv
     static constexpr int COMM_TEST = 5600;

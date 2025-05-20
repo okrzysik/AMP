@@ -23,8 +23,8 @@ template<typename P, class A, class DIAG>
 class CSRMatrixSpGEMMDefault;
 
 template<typename Policy,
-         class Allocator      = AMP::HostAllocator<void>,
-         class DiagMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+         class Allocator       = AMP::HostAllocator<void>,
+         class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
 class CSRMatrixData : public MatrixData
 {
 public:
@@ -194,10 +194,10 @@ public:
     }
 
     //! Get pointer to diagonal block
-    std::shared_ptr<DiagMatrixData> getDiagMatrix() { return d_diag_matrix; }
+    std::shared_ptr<LocalMatrixData> getDiagMatrix() { return d_diag_matrix; }
 
     //! Get pointer to off-diagonal block
-    std::shared_ptr<DiagMatrixData> getOffdMatrix() { return d_offd_matrix; }
+    std::shared_ptr<LocalMatrixData> getOffdMatrix() { return d_offd_matrix; }
 
     //! Get row pointers from diagonal block
     lidx_t *getDiagRowStarts() { return d_diag_matrix->d_row_starts.get(); }
@@ -207,6 +207,9 @@ public:
 
     //! Check if matrix is globally square
     bool isSquare() const noexcept { return d_is_square; }
+
+    //! Check if matrix is globally square
+    bool isEmpty() const noexcept { return d_diag_matrix->d_is_empty && d_offd_matrix->d_is_empty; }
 
     //! Get total number of nonzeros in both blocks
     auto numberOfNonZeros() const { return d_nnz; }
@@ -224,10 +227,24 @@ public:
     auto getMemoryLocation() const { return d_memory_location; }
 
     /** \brief  Set the number of nonzeros in each block and allocate space internally
+     * \param[in] tot_nnz_diag   Number of nonzeros in whole diagonal block
+     * \param[in] tot_nnz_offd   Number of nonzeros in whole off-diagonal block
+     */
+    void setNNZ( lidx_t tot_nnz_diag, lidx_t tot_nnz_offd );
+
+    /** \brief  Set the number of nonzeros in each block and allocate space internally
      * \param[in] nnz_diag   Number of nonzeros in each row of diagonal block
      * \param[in] nnz_offd   Number of nonzeros in each row of off-diagonal block
      */
     void setNNZ( const std::vector<lidx_t> &nnz_diag, const std::vector<lidx_t> &nnz_offd );
+
+    /** \brief  Set the number of nonzeros in each block and allocate space internally
+     * \param[in] do_accum  Flag for whether entries in row pointers need to be accumulated
+     * \details This version assumes that either the nnz per row have been written into the
+     * row_pointer fields of the individual blocks, or the accumulated row pointers have been
+     * written.
+     */
+    void setNNZ( bool do_accum );
 
     //! Convert global columns in blocks to local columns and free global columns
     void globalToLocalColumns();
@@ -253,7 +270,7 @@ public:
      * offd components. Row extents are set to [0,rows.size) and column extents
      * are set to [0,numGlobalColumns).
      */
-    std::shared_ptr<DiagMatrixData> subsetRows( const std::vector<gidx_t> &rows ) const;
+    std::shared_ptr<LocalMatrixData> subsetRows( const std::vector<gidx_t> &rows ) const;
 
     /** \brief  Extract subset of each row containing global columns in some range
      * \param[in] idx_lo  Lower global column index (inclusive)
@@ -263,7 +280,7 @@ public:
      * offd components. Row and column extents are inherited from this matrix,
      * but are neither sorted nor converted to local indices.
      */
-    std::shared_ptr<DiagMatrixData> subsetCols( const gidx_t idx_lo, const gidx_t idx_up ) const;
+    std::shared_ptr<LocalMatrixData> subsetCols( const gidx_t idx_lo, const gidx_t idx_up ) const;
 
 protected:
     bool d_is_square = true;
@@ -286,9 +303,9 @@ protected:
     scalarAllocator_t d_scalarAllocator;
 
     //! Diagonal matrix block [d_first_row,d_last_row] x [d_first_col,d_last_col]
-    std::shared_ptr<DiagMatrixData> d_diag_matrix;
+    std::shared_ptr<LocalMatrixData> d_diag_matrix;
     //! Diagonal matrix block [d_first_row,d_last_row] x ]d_first_col,d_last_col[
-    std::shared_ptr<DiagMatrixData> d_offd_matrix;
+    std::shared_ptr<LocalMatrixData> d_offd_matrix;
 
     //! DOFManager for left vectors
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
@@ -310,23 +327,23 @@ protected:
     void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &,
                        AMP::LinearAlgebra::ScatterType );
 
-    std::shared_ptr<DiagMatrixData>
+    std::shared_ptr<LocalMatrixData>
     transposeOffd( std::shared_ptr<MatrixParametersBase> params ) const;
 };
 
-template<typename Policy, class Allocator, class DiagMatrixData>
-static CSRMatrixData<Policy, Allocator, DiagMatrixData> const *
+template<typename Policy, class Allocator, class LocalMatrixData>
+static CSRMatrixData<Policy, Allocator, LocalMatrixData> const *
 getCSRMatrixData( MatrixData const &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator, DiagMatrixData> const *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator, LocalMatrixData> const *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
 
-template<typename Policy, class Allocator, class DiagMatrixData>
-static CSRMatrixData<Policy, Allocator, DiagMatrixData> *getCSRMatrixData( MatrixData &A )
+template<typename Policy, class Allocator, class LocalMatrixData>
+static CSRMatrixData<Policy, Allocator, LocalMatrixData> *getCSRMatrixData( MatrixData &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator, DiagMatrixData> *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator, LocalMatrixData> *>( &A );
     AMP_INSIST( ptr, "dynamic cast from MatrixData to CSRMatrixData failed" );
     return ptr;
 }
