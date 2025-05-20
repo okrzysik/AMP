@@ -86,9 +86,9 @@ void myTest( AMP::UnitTest *ut, const std::string &inputName )
     auto referenceSolutionNorm = input_db->getScalar<double>( "referenceSolutionNorm" );
 
     if ( fabs( finalResidualNorm ) > 1e-8 )
-        ut->failure( "the Final Residual is larger than the tolerance" );
+        ut->failure( "the Final Residual is larger than the tolerance: " + inputName );
     if ( !AMP::Utilities::approx_equal( referenceSolutionNorm, finalSolutionNorm, 1e-5 ) )
-        ut->failure( "the Final Solution Norm has changed." );
+        ut->failure( "the Final Solution Norm has changed: " + inputName );
     if ( N_error0 == ut->NumFailLocal() )
         ut->passes( inputName );
     else

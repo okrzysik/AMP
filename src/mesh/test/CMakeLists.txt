@@ -11,7 +11,7 @@ ENDIF()
 
 
 # Copy input files
-COPY_TEST_FILE( input_Mesh )
+COPY_TEST_FILE( input_libMesh )
 COPY_TEST_FILE( input_crystal )
 COPY_TEST_FILE( input_crystal_mesh )
 COPY_TEST_FILE( input_crystal_triangle )
@@ -51,7 +51,7 @@ ADD_AMP_TEST( test_LoadBalance 512 inputMultiPellet348 NO_RESOURCES )
 ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 NO_RESOURCES )
 ADD_AMP_TEST( test_LoadBalance 1000000 17x17_denovo_thermal_1x NO_RESOURCES )
 IF ( USE_LIBMESH AND AMP_DATA )
-    ADD_AMP_TEST( test_LoadBalance 4 input_Mesh )
+    ADD_AMP_TEST( test_LoadBalance 4 input_libMesh )
 ENDIF()
 
 

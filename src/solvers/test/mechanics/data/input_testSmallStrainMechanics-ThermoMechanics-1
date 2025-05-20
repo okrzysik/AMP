@@ -1,14 +1,12 @@
 
 Mesh{
-    FileName = "cylinder1K.e"
-    //FileName = "halden_1_pellet_9mil.e"
-    MeshType = "libMesh"
     MeshName = "cylinder"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 5226
+    MeshType = "AMP"
+    Generator = "cylinder"
+    Size = 4, 8
+    Range = 1, -2, 2
+    surfaceIds = 1, 1, 1, 1, 2, 3
+    static = TRUE
 }
 
 NumberOfLoadingSteps = 10
