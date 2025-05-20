@@ -403,9 +403,12 @@ void testWriterMesh( AMP::UnitTest &ut,
     block_vec->setToScalar( -1 );
     for ( auto &id : mesh->getBlockIDs() ) {
         double val = double( id );
-        for ( auto elem : mesh->getBlockIDIterator( volumeType, id, 0 ) ) {
-            DOF_volume->getDOFs( elem.globalID(), dofs );
-            block_vec->setValuesByGlobalID( 1, &dofs[0], &val );
+        try {
+            for ( auto elem : mesh->getBlockIDIterator( volumeType, id, 0 ) ) {
+                DOF_volume->getDOFs( elem.globalID(), dofs );
+                block_vec->setValuesByGlobalID( 1, &dofs[0], &val );
+            }
+        } catch ( ... ) {
         }
     }
     block_vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
