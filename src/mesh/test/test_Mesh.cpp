@@ -14,6 +14,20 @@
 #include "ProfilerApp.h"
 
 
+namespace AMP::unit_test {
+class ExodusReaderGenerator1 : public ExodusReaderGenerator
+{
+public:
+    ExodusReaderGenerator1() : ExodusReaderGenerator( "clad_1x_1pellet.e" ) {}
+};
+class ExodusReaderGenerator2 : public ExodusReaderGenerator
+{
+public:
+    ExodusReaderGenerator2() : ExodusReaderGenerator( "pellet_1x.e" ) {}
+};
+} // namespace AMP::unit_test
+
+
 // Function to test the creation/destruction of a mesh with the mesh generators
 // Note: this only runs the mesh tests, not the vector or matrix tests
 void testMeshGenerators( AMP::UnitTest &ut )
@@ -48,10 +62,10 @@ void testMeshGenerators( AMP::UnitTest &ut )
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the libmesh reader generator
     #ifdef USE_AMP_DATA
-    generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator<>>();
+    generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator>( "clad_1x_1pellet.e" );
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
-    generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator<2>>();
+    generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator>( "pellet_1x.e" );
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the ThreeElementLGenerator generator
@@ -265,7 +279,7 @@ void testSubsetMesh( [[maybe_unused]] AMP::UnitTest &ut )
     std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
     // Subset a mesh for a surface without ghost cells and test
     generator = std::make_shared<
-        AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<>, 0>>();
+        AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator1, 0>>();
     generator->build_mesh();
     auto mesh = generator->getMesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
@@ -273,7 +287,7 @@ void testSubsetMesh( [[maybe_unused]] AMP::UnitTest &ut )
     // MeshMatrixTestLoop( ut, mesh );
     // Subset a mesh for a surface with ghost cells and test
     generator = std::make_shared<
-        AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<3>, 1>>();
+        AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator2, 1>>();
     generator->build_mesh();
     mesh = generator->getMesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );

@@ -23,8 +23,8 @@ int main( int argc, char **argv )
     testSimpleDOFManager( std::make_shared<AMPMultiMeshGenerator>(), ut );
 #ifdef AMP_USE_LIBMESH
     testSimpleDOFManager( std::make_shared<LibMeshCubeGenerator<5>>(), ut );
-    testSimpleDOFManager( std::make_shared<ExodusReaderGenerator<1>>(), ut );
-    testSimpleDOFManager( std::make_shared<ExodusReaderGenerator<3>>(), ut );
+    testSimpleDOFManager( std::make_shared<ExodusReaderGenerator>( "clad_1x_1pellet.e" ), ut );
+    testSimpleDOFManager( std::make_shared<ExodusReaderGenerator>( "pellet_1x.e" ), ut );
     testSimpleDOFManager( std::make_shared<MultiMeshGenerator>(), ut );
 #endif
 
@@ -40,7 +40,7 @@ int main( int argc, char **argv )
     testSubsetDOFManager( std::make_shared<AMPMultiMeshGenerator>(), false, ut );
     testSubsetDOFManager( std::make_shared<AMPMultiMeshGenerator>(), true, ut );
 #ifdef AMP_USE_LIBMESH
-    testSubsetDOFManager( std::make_shared<ExodusReaderGenerator<3>>(), false, ut );
+    testSubsetDOFManager( std::make_shared<ExodusReaderGenerator>( "pellet_1x.e" ), false, ut );
     testSubsetDOFManager( std::make_shared<MultiMeshGenerator>(), false, ut );
     testSubsetDOFManager( std::make_shared<MultiMeshGenerator>(), true, ut );
 #endif

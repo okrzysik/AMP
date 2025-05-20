@@ -178,4 +178,19 @@ libMeshThreeElementGenerator::~libMeshThreeElementGenerator()
 }
 
 
+/********************************************************
+ * ExodusReaderGenerator                                 *
+ ********************************************************/
+void AMP::unit_test::ExodusReaderGenerator::build_mesh()
+{
+    auto database = std::make_shared<AMP::Database>( "Mesh" );
+    database->putScalar( "dim", 3 );
+    database->putScalar<std::string>( "MeshName", "exodus reader mesh" );
+    database->putScalar<std::string>( "FileName", d_file );
+    auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
+    params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
+    mesh = std::make_shared<AMP::Mesh::libmeshMesh>( params );
+}
+
+
 } // namespace AMP::unit_test

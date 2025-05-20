@@ -6,6 +6,8 @@
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/testHelpers/meshGenerators.h"
 
+#include <string>
+
 
 namespace libMesh::Parallel {
 class Communicator;
@@ -30,12 +32,14 @@ public:
 
 
 // Class to read in a default exodus file
-template<int FILE = 1>
 class ExodusReaderGenerator : public MeshGenerator
 {
 public:
+    ExodusReaderGenerator() = delete;
+    ExodusReaderGenerator( std::string_view file ) : d_file( file ) {}
     void build_mesh() override;
     std::string name() const override { return "ExodusReaderGenerator"; }
+    const std::string d_file;
 };
 
 

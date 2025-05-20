@@ -24,8 +24,6 @@ IF ( AMP_DATA AND USE_LIBMESH )
     # Test ScalarZAxis map
     ADD_TB_TEST_1_2_4( testScalarZAxisMap )
     COPY_TEST_FILE( inputScalarZAxisMap-1 )
-    COPY_MESH_FILE( pellet_1x.e )
-    COPY_MESH_FILE( clad_1x_1pellet.e )
 
     # Test map operators
     ADD_TB_TEST_1_2_4( testMapOperator )
