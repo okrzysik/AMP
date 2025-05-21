@@ -128,7 +128,6 @@ int main( int argc, char **argv )
         AMP::Mesh::MeshWriters::writeTestMesh( *db, argv[3] );
     } else if ( std::string_view( argv[1] ) == "copyExodus" ) {
         // Copy an exodus file to the test mesh format
-
         AMP_ASSERT( argc == 4 );
         auto db0 = AMP::Database::create(
             "MeshName", "mesh", "MeshType", "libMesh", "FileName", argv[2], "dim", 3 );

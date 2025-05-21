@@ -10,6 +10,9 @@
 namespace AMP::Geometry {
 
 
+std::unique_ptr<AMP::Geometry::Geometry> buildBox( std::shared_ptr<const AMP::Database> db );
+
+
 /**
  * \class Geometry
  * \brief A class used to abstract away geometry information from an application or mesh.
@@ -35,9 +38,9 @@ public:
     Box( int64_t );
 
 public: // Default constructors
-    explicit Box( Box<NDIM> &&range )      = default;
-    explicit Box( const Box<NDIM> &range ) = default;
-    Box<NDIM> &operator=( Box<NDIM> &&range ) = default;
+    explicit Box( Box<NDIM> &&range )              = default;
+    explicit Box( const Box<NDIM> &range )         = default;
+    Box<NDIM> &operator=( Box<NDIM> &&range )      = default;
     Box<NDIM> &operator=( const Box<NDIM> &range ) = default;
 
 public: // Functions inherited from Geometry
@@ -95,9 +98,9 @@ public:
     Grid( int64_t );
 
 public: // Default constructors
-    explicit Grid( Grid<NDIM> &&rhs )      = default;
-    explicit Grid( const Grid<NDIM> &rhs ) = default;
-    Grid<NDIM> &operator=( Grid<NDIM> &&rhs ) = default;
+    explicit Grid( Grid<NDIM> &&rhs )              = default;
+    explicit Grid( const Grid<NDIM> &rhs )         = default;
+    Grid<NDIM> &operator=( Grid<NDIM> &&rhs )      = default;
     Grid<NDIM> &operator=( const Grid<NDIM> &rhs ) = default;
 
 public: // Functions inherited from Geometry

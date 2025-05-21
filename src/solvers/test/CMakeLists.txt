@@ -194,8 +194,6 @@ IF ( AMP_DATA )
     COPY_MESH_FILE( pellet_lo_res.e )
     COPY_MESH_FILE( halden_1_pellet_9mil.e )
     COPY_MESH_FILE( cylinder4K.e )
-    COPY_MESH_FILE( cube.with.12.boundaries.e )
-    COPY_MESH_FILE( cube.with.12.boundaries.2.e )
 ENDIF()
 
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 1 )

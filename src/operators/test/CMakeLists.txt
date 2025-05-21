@@ -107,8 +107,6 @@ COPY_TEST_FILE( input_linearMechanics+ThermalDiffusion+FickDiffusion-UO2MSRZC09-
 # Copy test data
 IF ( AMP_DATA )
     COPY_MESH_FILE( pellet_1x.e )
-    COPY_MESH_FILE( cube.with.12.boundaries.e )
-    COPY_MESH_FILE( cube64.with.boundary.labels.e )
 ENDIF()
 
 
