@@ -122,18 +122,18 @@ COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermoMechanics-1c )
 COPY_TEST_FILE( input_NKASolver-ML-NonlinearMechanics-1-normal )
 
 
-# Copy test data
+# Copy meshes stored in the data folder
+COPY_TEST_FILE( oneBrick0 )
+COPY_TEST_FILE( tenBrick0 )
+COPY_TEST_FILE( twentyBrick0 )
+COPY_TEST_FILE( sixteenBrick0 )
+COPY_TEST_FILE( distortedBrick0 )
+
+
+# Copy meshes in AMP_Data folder
 IF ( AMP_DATA )
     COPY_MESH_FILE( simple_pellet_1x.e )
     COPY_MESH_FILE( tiedContactV1_fusedpelletclad.e )
-    COPY_MESH_FILE( halden_1_pellet_9mil.e )
-    COPY_MESH_FILE( cube343H8.e )
-    COPY_MESH_FILE( thick_walled_cylinder_ver2.e )
-    COPY_MESH_FILE( oneBrick0)
-    COPY_MESH_FILE( distortedBrick0)
-    COPY_MESH_FILE( tenBrick0)
-    COPY_MESH_FILE( twentyBrick0)
-    COPY_MESH_FILE( sixteenBrick0)
     COPY_MESH_FILE( halden_1_pellet_9mil.e )
     COPY_MESH_FILE( PlateWithHole-1.e )
     COPY_MESH_FILE( PlateWithHole-SimoExact-1.e )

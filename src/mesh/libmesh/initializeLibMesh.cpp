@@ -61,6 +61,7 @@ initializeLibMesh::initializeLibMesh( const AMP_MPI &comm )
         argv[argc++]           = disableRefCount;
         argv[argc++]           = syncWithStdio;
         argv[argc++]           = sepOutput;
+        auto terminate         = std::get_terminate();
 #ifdef AMP_USE_MPI
     #ifdef AMP_USE_PETSC
         MPI_Comm petsc_comm = PETSC_COMM_WORLD;
@@ -74,6 +75,7 @@ initializeLibMesh::initializeLibMesh( const AMP_MPI &comm )
 #endif
         // Reset the error handlers
         StackTrace::setMPIErrorHandler( d_comm.getCommunicator() );
+        std::set_terminate( terminate );
     }
 }
 

@@ -938,6 +938,8 @@ std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
         return createAMGMesh( 9, 9, 9, 10, 10, 10 );
     } else if ( name == "boxMesh-5" ) {
         return createAMGMesh( 17, 17, 17, 10, 10, 10 );
+    } else if ( name == "testAMGmesh5" ) {
+        return createAMGMesh( 5, 5, 5, 1, 1, 1 );
     } else if ( name == "lumlmesh1" ) {
         return createLUML( 9, 9, 9, 10, 10, 10 );
     } else if ( name == "lumlmesh2" ) {
@@ -1049,7 +1051,8 @@ void generateAll()
                              "mesh3_mod",
                              "mesh2_mod",
                              "mesh2_mod_1",
-                             "brick" };
+                             "brick",
+                             "testAMGmesh5" };
     const char *binary[] = { "lumlmesh1", "lumlmesh2", "lumlmesh3", "lumlmesh4",
                              "lumlmesh5", "lumlmesh6", "lumlmesh7", "lumlmesh8" };
     for ( auto name : ascii ) {
