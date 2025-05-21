@@ -61,7 +61,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcLogical( std::shared_ptr<AMP::Mesh::M
     if ( !geom )
         return nullptr;
     auto DOF = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 0, mesh->getDim(), false );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, mesh->getDim(), false );
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "logical" );
     auto vec = AMP::LinearAlgebra::createVector( DOF, var, true );
     vec->zero();
@@ -75,6 +75,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcLogical( std::shared_ptr<AMP::Mesh::M
         AMP_ASSERT( dofs.size() == ndim );
         vec->addLocalValuesByGlobalID( ndim, &dofs[0], p );
     }
+    vec->makeConsistent();
     return vec;
 }
 

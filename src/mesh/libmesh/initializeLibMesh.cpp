@@ -3,6 +3,8 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
 
+#include "StackTrace/ErrorHandlers.h"
+
 #include <cstring>
 
 // LibMesh include
@@ -70,10 +72,8 @@ initializeLibMesh::initializeLibMesh( const AMP_MPI &comm )
 #else
         lminit = new libMesh::LibMeshInit( argc, argv );
 #endif
-        // Initialize libmesh MPI types so we can safely free them
-        // type_hilbert.reset( new libMeshWrapperType<Hilbert::HilbertIndices>() );
         // Reset the error handlers
-        AMP::AMPManager::setHandlers();
+        StackTrace::setMPIErrorHandler( d_comm.getCommunicator() );
     }
 }
 
