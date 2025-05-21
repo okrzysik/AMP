@@ -32,11 +32,14 @@ Mesh{
     // The mesh for the clad
     Mesh_2 {
         MeshName = "clad"
-        MeshType = "AMP"
-        Generator = "tube"
-        Size = 3, 36, 40
-        Range = 4.11e-3, 4.75e-3, 0, 0.0210
-        static = TRUE
+        MeshType = "libMesh"
+        FileName = "clad_1x_2pellet.e"
+        dim = 3
+        //MeshType = "AMP"
+        //Generator = "tube"
+        //Size = 3, 36, 40
+        //Range = 4.11e-3, 4.75e-3, 0, 0.0210
+        //static = TRUE
     }
 }
 

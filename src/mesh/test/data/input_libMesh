@@ -33,11 +33,14 @@ Mesh{
     // The mesh for the clad
     Mesh_2 {
         MeshName = "clad"
-        MeshType = "AMP"
-        Generator = "tube"
-        Size = 3, 10, 15
-        Range = 0.00411, 0.00475, 0, 0.042
-        Weight = 1.0
+        dim = 3
+        MeshType = "libMesh"
+        FileName = "clad_lo_res_4pellet.e"
+        //MeshName = "clad"
+        //MeshType = "AMP"
+        //Generator = "tube"
+        //Size = 3, 10, 15
+        //Range = 0.00411, 0.00475, 0, 0.042
     }
 }
 

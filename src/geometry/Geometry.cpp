@@ -37,7 +37,7 @@ Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
     std::for_each( generator.begin(), generator.end(), []( char &c ) { c = ::tolower( c ); } );
     std::shared_ptr<AMP::Geometry::Geometry> geom;
     if ( generator == "cube" ) {
-        int dim = db->getWithDefault<int>( "dim", db->getVector<int>( "Size" ).size() );
+        int dim = db->getScalar<int>( "dim" );
         if ( db->keyExists( "Range" ) ) {
             if ( dim == 1 ) {
                 geom = std::make_shared<Box<1>>( db );
