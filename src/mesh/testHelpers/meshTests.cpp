@@ -100,7 +100,7 @@ std::pair<size_t, size_t> meshTests::ElementIteratorTest( AMP::UnitTest &ut,
         ut.failure( name + " uniqueness" );
 
     // Check that we can increment and decrement properly
-    if ( iterator.size() >= 2 ) {
+    if ( iterator.size() >= 4 ) {
         bool pass = true;
         auto it1  = iterator.begin();
         auto it2  = iterator.begin();

@@ -21,7 +21,7 @@ Mesh{
             indicies = 1, 2, 3, 4
             MeshName = "pellet_%i"
             MeshType = "libMesh"
-            FileName = "pellet_lo_res.e"
+            FileName = "pellet_1x.e"
             dim = 3
             x_offset = 0.0
             y_offset = 0.0
@@ -35,7 +35,7 @@ Mesh{
         MeshName = "clad"
         MeshType = "AMP"
         Generator = "tube"
-        Size = 3, 10, 15
+        Size = 3, 36, 80
         Range = 0.00411, 0.00475, 0, 0.042
         Weight = 1.0
     }

@@ -12,7 +12,6 @@ FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D_hires" DESTIN
 # Copy meshes
 IF ( AMP_DATA )
     COPY_MESH_FILE( pellet_1x.e )
-    COPY_MESH_FILE( clad_1x_1pellet.e )
 ENDIF()
 
 
