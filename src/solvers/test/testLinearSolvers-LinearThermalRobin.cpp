@@ -16,7 +16,8 @@
 
 void linearThermalTest( AMP::UnitTest *ut,
                         const std::string &inputFileName,
-                        std::string &accelerationBackend )
+                        std::string &accelerationBackend,
+                        std::string &memoryLocation )
 {
     PROFILE( "DRIVER::linearThermalTest" );
 
@@ -27,7 +28,7 @@ void linearThermalTest( AMP::UnitTest *ut,
        << AMP::AMPManager::getCommWorld().getSize();
 
     AMP::pout << "Running linearThermalTest with input " << input_file << " with "
-              << accelerationBackend << " backend" << std::endl;
+              << accelerationBackend << " backend on " << memoryLocation << " memory" << std::endl;
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -44,10 +45,7 @@ void linearThermalTest( AMP::UnitTest *ut,
     // Set appropriate acceleration backend
     auto op_db = input_db->getDatabase( "DiffusionBVPOperator" );
     op_db->putScalar( "AccelerationBackend", accelerationBackend );
-#ifdef USE_DEVICE
-    if ( accelerationBackend != "serial" )
-        op_db->putScalar( "MemoryLocation", "managed" );
-#endif
+    op_db->putScalar( "MemoryLocation", memoryLocation );
     // Create the Thermal BVP Operator
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -205,20 +203,27 @@ int main( int argc, char *argv[] )
 #endif
     }
 
-    std::vector<std::string> backends;
-    backends.emplace_back( "serial" );
-#if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
-    backends.emplace_back( "kokkos" );
+    std::vector<std::pair<std::string, std::string>> backendsAndMemory;
+    backendsAndMemory.emplace_back( std::make_pair( "serial", "host" ) );
+#ifdef USE_OPENMP
+    backendsAndMemory.emplace_back( std::make_pair( "openmp", "host" ) );
 #endif
+#if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+    backendsAndMemory.emplace_back( std::make_pair( "kokkos", "host" ) );
+#endif
+#if ( ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) ) && \
+      ( defined( USE_DEVICE ) ) )
+#endif
+    backendsAndMemory.emplace_back( std::make_pair( "kokkos", "managed" ) );
 #ifdef USE_DEVICE
-    backends.emplace_back( "hip_cuda" );
+    backendsAndMemory.emplace_back( std::make_pair( "hip_cuda", "managed" ) );
 #endif
 
     {
         PROFILE( "DRIVER::main(test loop)" );
         for ( auto &file : files ) {
-            for ( auto &backend : backends )
-                linearThermalTest( &ut, file, backend );
+            for ( auto &[backend, memory] : backendsAndMemory )
+                linearThermalTest( &ut, file, backend, memory );
         }
     }
 
