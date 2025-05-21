@@ -1,6 +1,7 @@
 #ifndef included_AMP_MeshWriters
 #define included_AMP_MeshWriters
 
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"
 
 
@@ -30,6 +31,8 @@ DatabasePtr createConstrainedMesh( int nx, int ny, int nz, double Lx, double Ly,
 DatabasePtr createCookMesh( int nx, int ny, int nz );
 DatabasePtr createAMGMesh( int nx, int ny, int nz, double Lx, double Ly, double Lz );
 DatabasePtr createLUML( int Nx, int Ny, int Nz, double Lx, double Ly, double Lz );
+DatabasePtr createDatabase( const AMP::Mesh::Mesh &mesh );
+
 
 // LibMesh generators
 std::shared_ptr<libmeshMesh> readTestMeshLibMesh( std::shared_ptr<AMP::Database> db,

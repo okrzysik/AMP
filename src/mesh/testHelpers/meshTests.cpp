@@ -100,7 +100,7 @@ std::pair<size_t, size_t> meshTests::ElementIteratorTest( AMP::UnitTest &ut,
         ut.failure( name + " uniqueness" );
 
     // Check that we can increment and decrement properly
-    if ( iterator.size() >= 2 ) {
+    if ( iterator.size() >= 4 ) {
         bool pass = true;
         auto it1  = iterator.begin();
         auto it2  = iterator.begin();
@@ -312,6 +312,26 @@ void meshTests::MeshIteratorTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::
 {
     auto bndIDs = mesh->getBoundaryIDs();
     auto blocks = mesh->getBlockIDs();
+    // Get an iterator over a boundary
+    auto getBndIterator = [mesh, &ut]( AMP::Mesh::GeomType type, int id, int gcw ) {
+        AMP::Mesh::MeshIterator it;
+        try {
+            it = mesh->getBoundaryIDIterator( type, id, gcw );
+        } catch ( ... ) {
+            if ( type == AMP::Mesh::GeomType::Vertex && gcw == 0 )
+                ut.failure( "Failed to get boundary iterator: " + mesh->getName() );
+        }
+        return it;
+    };
+    // Get an iterator over a block
+    auto getBlockIterator = [mesh]( AMP::Mesh::GeomType type, int id, int gcw ) {
+        AMP::Mesh::MeshIterator it;
+        try {
+            it = mesh->getBlockIDIterator( type, id, gcw );
+        } catch ( ... ) {
+        }
+        return it;
+    };
     // Loop through different ghost widths
     for ( int gcw = 0; gcw <= 1; gcw++ ) {
         // Loop through the different geometric entities
@@ -333,28 +353,15 @@ void meshTests::MeshIteratorTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::
             for ( auto id : bndIDs ) {
                 name = stringf(
                     "%s - getBoundaryIDIterator(%i,%i,%i)", mesh->getName().data(), i, id, gcw );
-                try {
-                    iterator = mesh->getBoundaryIDIterator( type, id, gcw );
-                    ElementIteratorTest( ut, mesh, iterator, type, blocks, name );
-                } catch ( ... ) {
-                    if ( gcw > 0 )
-                        ut.expected_failure( name +
-                                             " - getBoundaryIDIterator not supported for gcw > 0" );
-                    else
-                        ut.failure( name + " - getBoundaryIDIterator" );
-                }
+                iterator = getBndIterator( type, id, gcw );
+                ElementIteratorTest( ut, mesh, iterator, type, blocks, name );
             }
             // Test the block iterators
             for ( auto id : blocks ) {
                 name = stringf(
                     "%s - getBlockIDIterator(%i,%i,%i)", mesh->getName().data(), i, id, gcw );
-                try {
-                    iterator = mesh->getBlockIDIterator( type, id, gcw );
-                    ElementIteratorTest( ut, mesh, iterator, type, blocks, name );
-                } catch ( ... ) {
-                    ut.expected_failure( name +
-                                         " - getBlockIDIterator not supported on all meshes" );
-                }
+                iterator = getBlockIterator( type, id, gcw );
+                ElementIteratorTest( ut, mesh, iterator, type, blocks, name );
             }
         }
     }

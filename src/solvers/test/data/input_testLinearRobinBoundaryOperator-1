@@ -1,13 +1,11 @@
 
 Mesh{
-    FileName = "cube.with.12.boundaries.2.e"
     MeshName = "brick"
-    MeshType = "libMesh"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1000
+    MeshType = "AMP"
+    Generator = "cube"
+    Size = 10, 10, 10
+    Range = -1, 1, -1, 1, -1, 1
+    static = TRUE
 }
 
 DiffusionBVPOperator {

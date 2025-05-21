@@ -338,7 +338,7 @@ public: // Default constructors
     MultiMesh()                           = delete;
     explicit MultiMesh( MultiMesh &&rhs ) = default;
     explicit MultiMesh( const MultiMesh &rhs );
-    MultiMesh &operator=( MultiMesh &&rhs ) = delete;
+    MultiMesh &operator=( MultiMesh &&rhs )      = delete;
     MultiMesh &operator=( const MultiMesh &rhs ) = delete;
 
 public: // Functions to help with load balancing
@@ -368,8 +368,8 @@ private:
     void initialize();
 
 private:
-    //! A list of all meshes in the multimesh
-    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> d_meshes;
+    std::vector<std::shared_ptr<Mesh>> d_meshes;       //!< A list of all meshes in the multimesh
+    Mesh::Movable d_isMovable = Mesh::Movable::Deform; //!< Are all meshes movable
 };
 
 } // namespace AMP::Mesh

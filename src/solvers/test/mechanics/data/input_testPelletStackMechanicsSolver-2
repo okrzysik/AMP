@@ -34,13 +34,10 @@ Mesh{
             iterator = "%i"
             indicies = 1
             MeshName = "pellet_%i"
-            MeshType = "libMesh"
-            FileName = "simple_pellet_1x.e"
-            dim = 3
-            x_offset = 0.0
-            y_offset = 0.0
-            z_offset = 0.0
-            NumberOfElements = 1300
+            MeshType = "AMP"
+            Generator = "cylinder"
+            Size = 15, 6
+            Range = 0.004022, 0, 0.0105
         }
     }
 }

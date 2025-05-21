@@ -2,7 +2,7 @@ Mesh {
     MeshType = "libMesh"
     dim = 3
     MeshName = "TestMesh"
-    FileName = "brick.e"
+    ReadTestMesh = "brick"
 }
 
 BVPOperator {

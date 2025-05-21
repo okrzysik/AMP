@@ -192,7 +192,7 @@ void computeL2Norm( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                 double computedAtNode = TemperatureVec->getValueByGlobalID( bndGlobalIds[j] );
                 computedAtGauss[qp] += computedAtNode * phi[j][qp];
             } // end for j
-        }     // end for qp
+        } // end for qp
 
         for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
             double px                  = coordinates[qp]( 0 );
@@ -416,9 +416,6 @@ void myTest( AMP::UnitTest *ut,
     integratedRHSVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // modify the RHS to take into account boundary conditions
-    //  for(int id = 0; id !=
-    //  std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(nonlinearThermalColumnOperator)->getNumberOfOperators();
-    //  id++)
     for ( int i = 0; i < 1; i++ ) {
         auto nonlinearThermalOperator = ( std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>(
                                               nonlinearThermalColumnOperator ) )
@@ -495,15 +492,11 @@ void multiMeshLoop( AMP::UnitTest *ut, const std::string &exeName )
 
 
     std::string str1 = "butterfly_pellet_1x.e";
-    // std::string str2="cube64.with.boundary.labels.e";
-    // std::string str3="cube256.with.boundary.labels.e";
 
     auto mesh_db       = input_db->getDatabase( "Mesh" );
     auto bottomMesh_db = mesh_db->getDatabase( "Mesh_1" );
-    // auto topMesh_db = mesh_db->getDatabase( "Mesh_2" );
 
     bottomMesh_db->putScalar( "FileName", str1 );
-    // topMesh_db->putScalar("FileName",str1);
 
     myTest( ut, input_db, globalComm );
 }
