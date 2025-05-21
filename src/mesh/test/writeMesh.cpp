@@ -1,4 +1,7 @@
+#include "AMP/mesh/MeshFactory.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/testHelpers/meshWriters.h"
+#include "AMP/utils/Database.hpp"
 
 #include "ProfilerApp.h"
 
@@ -102,6 +105,7 @@ void run( const std::string &exe, const std::vector<double> &args, const std::st
 
 int main( int argc, char **argv )
 {
+    AMP::AMPManager::startup( argc, argv );
     PROFILE_ENABLE();
     if ( argc == 1 ) {
         // Generate all known meshes
@@ -122,6 +126,17 @@ int main( int argc, char **argv )
         AMP_ASSERT( argc == 4 );
         auto db = AMP::Mesh::MeshWriters::readBinaryTestMesh( argv[2] );
         AMP::Mesh::MeshWriters::writeTestMesh( *db, argv[3] );
+    } else if ( std::string_view( argv[1] ) == "copyExodus" ) {
+        // Copy an exodus file to the test mesh format
+
+        AMP_ASSERT( argc == 4 );
+        auto db0 = AMP::Database::create(
+            "MeshName", "mesh", "MeshType", "libMesh", "FileName", argv[2], "dim", 3 );
+        auto params = std::make_shared<AMP::Mesh::MeshParameters>( std::move( db0 ) );
+        params->setComm( AMP_COMM_SELF );
+        auto mesh = AMP::Mesh::MeshFactory::create( params );
+        auto db   = AMP::Mesh::MeshWriters::createDatabase( *mesh );
+        AMP::Mesh::MeshWriters::writeTestMesh( *db, argv[3] );
     } else if ( argc >= 3 ) {
         std::string exe( argv[1] );
         std::vector<double> args2( argc - 3 );
@@ -133,5 +148,6 @@ int main( int argc, char **argv )
         return -1;
     }
     PROFILE_SAVE( "writeMesh" );
+    AMP::AMPManager::shutdown();
     return 0;
 }

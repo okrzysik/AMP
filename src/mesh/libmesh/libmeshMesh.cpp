@@ -8,6 +8,7 @@
 #include "AMP/mesh/libmesh/libmeshElemIterator.h"
 #include "AMP/mesh/libmesh/libmeshMeshElement.h"
 #include "AMP/mesh/libmesh/libmeshNodeIterator.h"
+#include "AMP/mesh/testHelpers/meshWriters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
@@ -16,6 +17,8 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 #include "ProfilerApp.h"
+
+#include <algorithm>
 
 
 // LibMesh include
@@ -31,6 +34,15 @@ DISABLE_WARNINGS
 #include "libmesh/node.h"
 #include "libmesh/parallel.h"
 ENABLE_WARNINGS
+
+
+template<class T>
+void byteswap( T &a, T &b )
+{
+    auto &x = reinterpret_cast<std::array<char, sizeof( T )> &>( a );
+    auto &y = reinterpret_cast<std::array<char, sizeof( T )> &>( b );
+    std::swap( x, y );
+}
 
 
 namespace AMP::Mesh {
@@ -54,7 +66,7 @@ libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params )
     auto db = params->getDatabase();
     AMP_INSIST( db.get(), "Database must exist" );
     if ( db.get() ) {
-        // Database exists
+        // Database
         AMP_INSIST( db->keyExists( "dim" ), "Variable 'dim' must be set in the database" );
         AMP_INSIST( db->keyExists( "MeshName" ), "MeshName must exist in input database" );
         PhysicalDim = db->getScalar<int>( "dim" );
@@ -66,6 +78,14 @@ libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params )
         if ( db->keyExists( "FileName" ) ) {
             // Read an existing mesh
             d_libMesh->read( db->getString( "FileName" ) );
+        } else if ( db->keyExists( "ReadTestMesh" ) ) {
+            // Use the mesh generators
+            auto db2      = MeshWriters::readTestMesh( db->getString( "ReadTestMesh" ) );
+            auto name     = db->getScalar<std::string>( "MeshName" );
+            auto tmp      = MeshWriters::readTestMeshLibMesh( db2, d_comm, name );
+            d_libMesh     = tmp->d_libMesh;
+            d_libMeshComm = tmp->d_libMeshComm;
+            libmeshInit   = tmp->libmeshInit;
         } else if ( db->keyExists( "Generator" ) ) {
             // Generate a new mesh
             std::string generator = db->getString( "Generator" );
@@ -624,6 +644,12 @@ size_t libmeshMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> para
         } else {
             AMP_ERROR( std::string( "Unknown libmesh generator: " ) + generator );
         }
+    } else if ( database->keyExists( "ReadTestMesh" ) ) {
+        // Use the mesh generators
+        auto db2         = MeshWriters::readTestMesh( database->getString( "ReadTestMesh" ) );
+        auto name        = database->getScalar<std::string>( "MeshName" );
+        auto tmp         = MeshWriters::readTestMeshLibMesh( db2, AMP_COMM_SELF, name );
+        NumberOfElements = tmp->numGlobalElements( tmp->getGeomType() );
     } else {
         AMP_ERROR( "Unable to construct mesh with given parameters" );
     }

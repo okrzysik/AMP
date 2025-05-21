@@ -13,8 +13,6 @@ COPY_TEST_FILE( input_RK12-1 ${AMP_SOURCE_DIR}/time_integrators/test/data )
 # Copy meshes
 IF ( AMP_DATA )
     COPY_MESH_FILE( pellet_1x.e )
-    COPY_MESH_FILE( clad_1x_1pellet.e )
-    COPY_MESH_FILE( clad_1x_2pellet.e )
     COPY_MESH_FILE( Utah_teapot.stl )
 ENDIF()
 
