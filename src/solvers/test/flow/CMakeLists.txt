@@ -10,12 +10,6 @@ COPY_TEST_FILE( input_testFlowSolver )
 COPY_TEST_FILE( input_testThermalRobinFlow-2 )
 
 
-# Copy test data
-IF ( AMP_DATA )
-    COPY_MESH_FILE( halden_1_pellet_9mil.e )
-ENDIF()
-
-
 # Add the tests
 INITIALIZE_TESTBUILDER()
 IF( USE_PETSC AND USE_LIBMESH AND USE_TRILINOS AND AMP_DATA )
