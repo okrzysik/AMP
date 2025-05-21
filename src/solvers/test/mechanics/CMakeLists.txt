@@ -132,7 +132,6 @@ COPY_TEST_FILE( distortedBrick0 )
 
 # Copy meshes in AMP_Data folder
 IF ( AMP_DATA )
-    COPY_MESH_FILE( simple_pellet_1x.e )
     COPY_MESH_FILE( tiedContactV1_fusedpelletclad.e )
     COPY_MESH_FILE( halden_1_pellet_9mil.e )
     COPY_MESH_FILE( PlateWithHole-1.e )
