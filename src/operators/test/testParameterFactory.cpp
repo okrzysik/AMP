@@ -5,6 +5,7 @@
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ParameterFactory.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrectionParameters.h"
+#include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -12,6 +13,14 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <memory>
+
+
+static void ParameterUnitTest( AMP::UnitTest *ut )
+{
+    auto new_db = std::make_shared<AMP::Database>( "Dummy db" );
+    AMP::Operator::OperatorParameters params( new_db );
+    ut->passes( "instantiate OperatorParameters" );
+}
 
 
 static void ParameterFactoryTest( AMP::UnitTest *ut )
@@ -57,6 +66,7 @@ int testParameterFactory( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
+    ParameterUnitTest( &ut );
     ParameterFactoryTest( &ut );
 
     ut.report();
