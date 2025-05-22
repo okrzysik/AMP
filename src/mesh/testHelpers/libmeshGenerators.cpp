@@ -41,7 +41,7 @@ void MultiMeshGenerator::build_mesh()
     meshArrayDatabase->putVector<int>( "indicies", indexArray );
     meshArrayDatabase->putScalar<std::string>( "MeshName", "pellet_%i" );
 #ifdef AMP_USE_LIBMESH
-    meshArrayDatabase->putScalar<std::string>( "FileName", "pellet_lo_res.e" );
+    meshArrayDatabase->putScalar<std::string>( "FileName", "pellet_1x.e" );
     meshArrayDatabase->putScalar<std::string>( "MeshType", "libMesh" );
 #else
     std::vector<int> size( 3, 10 );

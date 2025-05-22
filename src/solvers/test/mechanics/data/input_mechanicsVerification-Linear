@@ -4,14 +4,12 @@ mesh_file = "boxMesh-4"
 BinaryMeshes = FALSE
 
 Mesh {
-    dim = 3
     MeshName = "pellet"
-    MeshType = "libMesh"
-    FileName = "halden_1_pellet_9mil.e"
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1080
+    MeshType = "AMP"
+    Generator = "cylinder"
+    Size = 13, 8
+    Range = 0.00533908, 0, 0.0127
+    surfaceIds = 4, 4, 4, 4, 1, 2
 }
 
 scale_mesh = 1.0e-1 // box meshes are 10x10x10

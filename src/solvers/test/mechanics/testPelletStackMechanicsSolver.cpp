@@ -128,15 +128,10 @@ int testPelletStackMechanicsSolver( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    int inp = 1;
-    if ( argc > 1 ) {
-        inp = atoi( argv[1] );
-    }
-
-    char exeName[200];
-    snprintf( exeName, sizeof exeName, "testPelletStackMechanicsSolver-%d", inp );
-
-    myTest( &ut, exeName );
+    const char *exeName[] = { "testPelletStackMechanicsSolver-1",
+                              "testPelletStackMechanicsSolver-2" };
+    for ( auto exe : exeName )
+        myTest( &ut, exe );
 
     ut.report();
 

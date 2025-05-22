@@ -1,4 +1,4 @@
-// Database for all the meshes2
+// Database for the meshes
 Mesh{
     // This is the main multimesh that will contain all meshes
     MeshName = "MainMesh"
@@ -32,12 +32,11 @@ Mesh{
     // The mesh for the clad
     Mesh_2 {
         MeshName = "clad"
-        MeshType = "libMesh"
-        FileName = "clad_1x_2pellet.e"
-        dim = 3
-        x_offset = 0.0
-        y_offset = 0.0
-        z_offset = 0.0
+        MeshType = "AMP"
+        Generator = "tube"
+        Size = 3, 36, 40
+        Range = 4.11e-3, 4.75e-3, 0, 0.0210
+        static = TRUE
     }
 }
 

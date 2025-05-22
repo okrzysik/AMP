@@ -1,13 +1,10 @@
 
 Mesh{
-    FileName = "cube.with.12.boundaries.2.e"
     MeshName = "brick"
-    MeshType = "libMesh"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 1000
+    MeshType = "AMP"
+    Generator = "cube"
+    Size = 10, 10, 10
+    Range = -1, 1, -1, 1, -1, 1
 }
 
 MechanicsBVPOperator {
@@ -99,18 +96,6 @@ DirichletMatrixCorrection{
       symmetric_correction = TRUE
       zero_dirichlet_block = FALSE
       skip_rhs_correction = TRUE
-
-      //number_of_ids = 2
-      //id_0 = 2
-      //number_of_dofs_0 = 1
-      //dof_0_0 = 2
-      //value_0_0 = 0.0
-      //id_1 = 13
-      //number_of_dofs_1 = 2
-      //dof_1_0 = 0
-      //dof_1_1 = 1
-      //value_1_0 = 0.0
-      //value_1_1 = 0.0
       
       number_of_ids = 1
       id_0 = 2
