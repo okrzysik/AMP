@@ -1,6 +1,6 @@
 // Sample input file to test thermal solve
 
-referenceSolutionNorm = 45431.3
+referenceSolutionNorm = 3.719772968711e+04
 
 
 Mesh{
