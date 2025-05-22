@@ -128,7 +128,9 @@ int testPelletStackMechanicsSolver( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    const char* exeName[] = { "testPelletStackMechanicsSolver-1", "testPelletStackMechanicsSolver-2" };
+    const char *exeName[] = { "testPelletStackMechanicsSolver-1",
+                              "testPelletStackMechanicsSolver-2" };
+
     for ( auto exe : exeName )
         myTest( &ut, exe );
 
