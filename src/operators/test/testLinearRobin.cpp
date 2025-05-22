@@ -53,21 +53,18 @@ static void bcTests( AMP::UnitTest *ut,
         auto bcParameters =
             std::make_shared<AMP::Operator::RobinMatrixCorrectionParameters>( bcDatabase );
         bcParameters->d_inputMatrix =
-            ( std::dynamic_pointer_cast<AMP::Operator::LinearFEOperator>( feOperator ) )
-                ->getMatrix();
+            std::dynamic_pointer_cast<AMP::Operator::LinearFEOperator>( feOperator )->getMatrix();
         bcParameters->d_variable = feOperator->getOutputVariable();
         bcOperator->reset( bcParameters );
 
         bcCorrectionVec->setToScalar( 0.0 );
-        ( std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( bcOperator ) )
+        std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( bcOperator )
             ->addRHScorrection( bcCorrectionVec );
-        AMP_INSIST( ( ( bcCorrectionVec.get() ) != nullptr ), "NULL rhs correction vector" );
+        AMP_INSIST( bcCorrectionVec, "NULL rhs correction vector" );
 
         ut->passes( msgPrefix + ": Robin returns a rhs correction vector " );
 
-        // ut.failure(msgPrefix+": BoundaryOperators have changed and this needs to be updated.");
     } catch ( ... ) {
-
         ut->failure( "Exception" );
     }
 
@@ -90,20 +87,11 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    // Get the mesh name
-    AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::string mesh_file = input_db->getString( "Mesh" );
-
-    // Create the mesh parameter object
-    auto database = std::make_shared<AMP::Database>( "Mesh" );
-    database->putScalar( "dim", 3 );
-    database->putScalar( "MeshName", "mesh" );
-    database->putScalar( "MeshType", "libMesh" );
-    database->putScalar( "FileName", mesh_file );
-    auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
-    params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-
     // Create the mesh
+    AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
+    auto mesh_db = input_db->getDatabase( "Mesh" );
+    auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
 
     //   CREATE THE LINEAR DIFFUSION BVP OPERATOR

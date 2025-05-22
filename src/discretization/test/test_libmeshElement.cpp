@@ -47,7 +47,7 @@ int main( int argc, char **argv )
     // Run the tests
     {
         std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
-        generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator>( "clad_1x_1pellet.e" );
+        generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator>( "pellet_1x.e" );
         generator->build_mesh();
         testLibmeshElement( &ut, generator->getMesh() );
         generator = std::make_shared<AMP::unit_test::AMPCubeGenerator>( 5 );

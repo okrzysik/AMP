@@ -187,24 +187,11 @@ COPY_TEST_FILE( input_testLinearSolvers-PL-CylMesh-CG )
 
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermalOxygenDiffusion-2 )
 
-# Copy test data
-IF ( AMP_DATA )
-    COPY_MESH_FILE( testAMGmesh5 )
-    COPY_MESH_FILE( simple_pellet_1x.e )
-    COPY_MESH_FILE( pellet_lo_res.e )
-    COPY_MESH_FILE( halden_1_pellet_9mil.e )
-    COPY_MESH_FILE( cylinder270.e )
-    COPY_MESH_FILE( cylinder4K.e )
-    COPY_MESH_FILE( cube27.e )
-    COPY_MESH_FILE( cube.with.12.boundaries.e )
-    COPY_MESH_FILE( cube.with.12.boundaries.2.e )
-ENDIF()
-
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 1 )
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 2 )
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 4 )
 
-IF ( USE_LIBMESH AND AMP_DATA )
+IF ( USE_LIBMESH )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 1 )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 2 )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 4 )
@@ -269,7 +256,7 @@ ADD_AMP_TEST( testNewFrozenVectorDesign )
 
 # Add the tests
 INITIALIZE_TESTBUILDER()
-IF ( USE_LIBMESH AND USE_PETSC AND USE_HYPRE AND AMP_DATA )
+IF ( USE_LIBMESH AND USE_PETSC AND USE_HYPRE )
     ADD_TB_TEST( testNonlinearSolvers_NonlinearFickSoret_1 )
     ADD_TB_TEST( testNonlinearSolvers_NonlinearFickSoret_1 PROCS 2)
     ADD_TB_TEST( testNonlinearSolvers_NonlinearFickSoret_1 PROCS 4 )

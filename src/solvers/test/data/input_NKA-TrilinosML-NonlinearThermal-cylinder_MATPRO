@@ -1,13 +1,15 @@
 // Sample input file to test thermal solve
 
-referenceSolutionNorm = 45431.3
-
+referenceSolutionNorm = 3.719772968711e+04
 
 Mesh{
-    FileName = "halden_1_pellet_9mil.e"
-    MeshType = "libMesh"
-    MeshName = "Pellet"
-    dim      = 3
+MeshType = "AMP"
+MeshName = "Pellet"
+Generator = "cylinder"
+Size = 13, 8
+Range = 0.00533908, 0, 0.0127
+surfaceIds = 4, 4, 4, 4, 1, 2
+static = TRUE
 }
 
 NeutronicsOperator{

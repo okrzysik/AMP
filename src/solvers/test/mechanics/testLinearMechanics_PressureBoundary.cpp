@@ -163,7 +163,6 @@ int testLinearMechanics_PressureBoundary( int argc, char *argv[] )
 
     if ( argc == 1 ) {
         exeNames.emplace_back( "testLinearMechanics-PressureBoundary-1" );
-        exeNames.emplace_back( "testLinearMechanics-PressureBoundary-HaldenPellet" );
     } else {
         for ( int i = 1; i < argc; ++i ) {
             auto inpName =

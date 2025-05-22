@@ -16,9 +16,10 @@ Mesh{
         iterator = "%p"
         indicies = 1, 2
         MeshName = "pellet_%p"
-        MeshType = "libMesh"
-        FileName = "simple_pellet_1x.e"
-        dim = 3
+        MeshType = "AMP"
+        Generator = "cylinder"
+        Size = 15, 6
+        Range = 0.004022, 0, 0.0105
         x_offset = 0.0, 0.0
         y_offset = 0.0, 0.001
         z_offset = 0.0, 0.0105
