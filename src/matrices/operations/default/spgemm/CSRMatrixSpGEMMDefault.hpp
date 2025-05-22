@@ -563,9 +563,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyR
     // depending on the output block type need either
     // local or global column indices from B_data, but
     // could have either ones present or not
-    auto B_to_global = [is_remote, B_cols, B_cols_loc, B_colmap]( lidx_t k ) -> gidx_t {
+    auto B_to_global = [is_remote, is_diag, B_cols, B_cols_loc, B_colmap]( lidx_t k ) -> gidx_t {
         if constexpr ( is_diag ) {
             (void) is_remote;
+            (void) is_diag;
             (void) B_cols;
             (void) B_cols_loc;
             (void) B_colmap;

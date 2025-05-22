@@ -16,7 +16,6 @@ COPY_TEST_FILE( input_testNodeToFaceContactOperator-5 )
 
 # Copy test data
 IF ( AMP_DATA )
-    COPY_MESH_FILE( simple_pellet_1x.e )
     COPY_MESH_FILE( two_fused_simple_pellets_1x.e )
 ENDIF()
 

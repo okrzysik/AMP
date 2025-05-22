@@ -45,14 +45,6 @@ COPY_TEST_FILE(input_testMaterialModels_ElasticDamageThermalStrain-1 )
 COPY_TEST_FILE( input_testConstraintsEliminationOperator )
 
 
-# Copy test data
-IF ( AMP_DATA )
-    COPY_MESH_FILE( brick.e )
-    COPY_MESH_FILE ( cylinder270.e )
-    COPY_MESH_FILE ( cylinder270.e )
-ENDIF()
-
-
 # Add the tests
 INITIALIZE_TESTBUILDER()
 # We need to sort out which tests rely on AMP_DATA

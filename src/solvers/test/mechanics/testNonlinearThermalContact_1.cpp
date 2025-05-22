@@ -398,7 +398,7 @@ int testNonlinearThermalContact_1( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    thermalContactTest( &ut, "testNonlinearThermalContactPicard_HALDEN" );
+    thermalContactTest( &ut, "testNonlinearThermalContactPicard" );
 
     ut.report();
 

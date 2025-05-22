@@ -455,7 +455,6 @@ int mechanicsVerification( int argc, char *argv[] )
 
     if ( argc == 1 ) {
         exeNames.emplace_back( "mechanicsVerification-Linear" );
-        // exeNames.push_back("mechanicsVerification-HaldenPellet");
     } else {
         for ( int i = 1; i < argc; i++ )
             exeNames.emplace_back( "mechanicsVerification-" + std::string( argv[i] ) );

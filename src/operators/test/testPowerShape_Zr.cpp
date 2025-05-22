@@ -21,13 +21,12 @@ static void test_with_shape( AMP::UnitTest *ut )
     //  Read Input File
     auto input_db = std::make_shared<AMP::Database>();
     auto mesh_db  = input_db->putDatabase( "Mesh" );
-    mesh_db->putScalar( "FileName", "cylinder270.e" );
-    mesh_db->putScalar( "MeshType", "libMesh" );
     mesh_db->putScalar( "MeshName", "fuel" );
-    mesh_db->putScalar( "dim", 3 );
-    mesh_db->putScalar( "x_offset", 0. );
-    mesh_db->putScalar( "y_offset", 0. );
-    mesh_db->putScalar( "z_offset", 0. );
+    mesh_db->putScalar( "MeshType", "AMP" );
+    mesh_db->putScalar( "Generator", "cylinder" );
+    mesh_db->putVector<int>( "Size", { 1, 8 } );
+    mesh_db->putVector<double>( "Range", { 1, -2, 2 } );
+    mesh_db->putVector<int>( "surfaceIds", { 1, 1, 1, 1, 2, 3 } );
 
     //   Create the Mesh
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );

@@ -1,4 +1,11 @@
-Mesh = "cube.with.12.boundaries.e"
+Mesh {
+    MeshName = "bar"
+    MeshType = "AMP"
+    Generator = "cube"
+    Size = 10, 10, 10
+    Range = -1, 1, -1, 1, -1, 1
+    static = TRUE
+}
 
 DiffusionBVPOperator{
    name="LinearBVPOperator"
