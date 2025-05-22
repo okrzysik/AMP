@@ -43,6 +43,9 @@ void linearThermalTest( AMP::UnitTest *ut,
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
     neutronicsOp_db->putScalar( "AccelerationBackend", accelerationBackend );
     neutronicsOp_db->putScalar( "MemoryLocation", memoryLocation );
+    auto volumeOp_db = input_db->getDatabase( "VolumeIntegralOperator" );
+    volumeOp_db->putScalar( "AccelerationBackend", accelerationBackend );
+    volumeOp_db->putScalar( "MemoryLocation", memoryLocation );
 
     auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, meshAdapter );
 
