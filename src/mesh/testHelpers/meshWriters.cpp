@@ -1021,7 +1021,7 @@ std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
  ********************************************************/
 void generateAll()
 {
-    const char *ascii[]  = { "distortedElementMesh",
+    const char *ascii[] = { "distortedElementMesh",
                             "cookMesh0",
                             "cookMesh1",
                             "cookMesh2",
@@ -1053,6 +1053,7 @@ void generateAll()
                             "mesh2_mod_1",
                             "brick",
                             "testAMGmesh5" };
+
     const char *binary[] = { "lumlmesh1", "lumlmesh2", "lumlmesh3", "lumlmesh4",
                              "lumlmesh5", "lumlmesh6", "lumlmesh7", "lumlmesh8" };
     for ( auto name : ascii ) {

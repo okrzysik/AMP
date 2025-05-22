@@ -130,6 +130,7 @@ int testPelletStackMechanicsSolver( int argc, char *argv[] )
 
     const char *exeName[] = { "testPelletStackMechanicsSolver-1",
                               "testPelletStackMechanicsSolver-2" };
+
     for ( auto exe : exeName )
         myTest( &ut, exe );
 
