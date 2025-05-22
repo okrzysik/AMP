@@ -72,6 +72,28 @@ void BiCGSTABSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
 }
 
 template<typename T>
+void BiCGSTABSolver<T>::allocateScratchVectors(
+    std::shared_ptr<const AMP::LinearAlgebra::Vector> u )
+{
+    // allocates d_p, d_w, d_z (if necessary)
+    AMP_INSIST( u, "Input to BiCGSTABSolver::allocateScratchVectors must be non-null" );
+    d_r_tilde = u->clone();
+    d_p       = u->clone();
+    d_s       = u->clone();
+    d_t       = u->clone();
+    d_v       = u->clone();
+
+    // ensure t, v do no communication
+    d_t->setNoGhosts();
+    d_v->setNoGhosts();
+
+    if ( d_bUsesPreconditioner ) {
+        d_p_hat = u->clone();
+        d_s_hat = u->clone();
+    }
+}
+
+template<typename T>
 void BiCGSTABSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     // not sure about excluding op == d_pOperator
@@ -79,21 +101,9 @@ void BiCGSTABSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operato
 
     if ( d_pOperator ) {
         auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-        AMP_ASSERT( linearOp );
-        d_r       = linearOp->getRightVector();
-        d_r_tilde = d_r->clone();
-        d_p       = d_r->clone();
-        d_s       = d_r->clone();
-        d_t       = d_r->clone();
-        d_v       = d_r->clone();
-
-        // ensure t, v do no communication
-        d_t->setNoGhosts();
-        d_v->setNoGhosts();
-
-        if ( d_bUsesPreconditioner ) {
-            d_p_hat = d_r->clone();
-            d_s_hat = d_r->clone();
+        if ( linearOp ) {
+            d_r = linearOp->getRightVector();
+            allocateScratchVectors( d_r );
         }
     }
 }
@@ -114,6 +124,11 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // 5. This implementation is both BiCGSTAB & Flexible BiCGSTAB with right preconditioning
     //    See J. Vogels paper
     PROFILE( "BiCGSTABSolver<T>::apply" );
+
+    if ( !d_r ) {
+        d_r = u->clone();
+        allocateScratchVectors( d_r );
+    }
 
     // Always zero before checking stopping criteria for any reason
     d_iNumberIterations = 1;

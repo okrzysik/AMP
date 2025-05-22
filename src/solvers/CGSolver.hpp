@@ -75,6 +75,21 @@ void CGSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
 }
 
 template<typename T>
+void CGSolver<T>::allocateScratchVectors( std::shared_ptr<const AMP::LinearAlgebra::Vector> u )
+{
+    // allocates d_p, d_w, d_z (if necessary)
+    AMP_INSIST( u, "Input to CGSolver::allocateScratchVectors must be non-null" );
+    d_p = u->clone();
+    d_w = u->clone();
+
+    // ensure w does no communication
+    d_w->setNoGhosts();
+
+    if ( d_bUsesPreconditioner )
+        d_z = u->clone();
+}
+
+template<typename T>
 void CGSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     // not sure about excluding op == d_pOperator
@@ -82,18 +97,11 @@ void CGSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op 
 
     if ( d_pOperator ) {
         auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-        AMP_ASSERT( linearOp );
-        d_r = linearOp->getRightVector();
-        d_p = d_r->clone();
-        d_w = d_r->clone();
-
-        // ensure w does no communication
-        d_w->setNoGhosts();
-
-        if ( d_bUsesPreconditioner ) {
-            d_z = d_r->clone();
-        } else {
-            d_z = d_r;
+        if ( linearOp ) {
+            d_r = linearOp->getRightVector();
+            if ( !d_bUsesPreconditioner )
+                d_z = d_r;
+            allocateScratchVectors( d_r );
         }
     }
 }
@@ -106,6 +114,13 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                          std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE( "CGSolver<T>::apply" );
+
+    if ( !d_r ) {
+        d_r = u->clone();
+        if ( !d_bUsesPreconditioner )
+            d_z = d_r;
+        allocateScratchVectors( d_r );
+    }
 
     // Always zero before checking stopping criteria for any reason
     d_iNumberIterations = 0;

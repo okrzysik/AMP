@@ -108,15 +108,16 @@ void GMRESSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> 
 
     if ( d_pOperator ) {
         auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-        AMP_ASSERT( linearOp );
-        if ( d_bUsesPreconditioner ) {
-            d_z = linearOp->getRightVector();
-            if ( d_preconditioner_side == "right" ) {
-                d_z1 = d_z->clone();
+        if ( linearOp ) {
+            if ( d_bUsesPreconditioner ) {
+                d_z = linearOp->getRightVector();
+                if ( d_preconditioner_side == "right" ) {
+                    d_z1 = d_z->clone();
+                }
             }
-        }
 
-        allocateBasis();
+            allocateBasis();
+        }
     }
 }
 
@@ -136,9 +137,17 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
                 ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
+    if ( !d_z ) {
+        d_z = u->clone();
+
+        if ( ( !d_z1 ) && ( d_preconditioner_side == "right" ) ) {
+            d_z1 = d_z->clone();
+        }
+    }
+
     // allocate basis
     if ( d_vBasis.empty() )
-        allocateBasis();
+        allocateBasis( u );
 
     // residual vector
     AMP::LinearAlgebra::Vector::shared_ptr res = d_vBasis[0];
@@ -189,7 +198,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         // reuse basis vectors for restarts in order to avoid a clone
         if ( static_cast<int>( d_vBasis.size() ) <= k + 1 )
-            allocateBasis();
+            allocateBasis( u );
 
         v = d_vBasis[k + 1];
         if ( d_bFlexibleGMRES )
@@ -558,21 +567,31 @@ void GMRESSolver<T>::addCorrection( const int nr,
 
 
 template<typename T>
-void GMRESSolver<T>::allocateBasis()
+void GMRESSolver<T>::allocateBasis( std::shared_ptr<const AMP::LinearAlgebra::Vector> u )
 {
     PROFILE( "GMRESSolver<T>::allocateBasis" );
     AMP_ASSERT( d_pOperator );
-    auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-    AMP_ASSERT( linearOp );
-    auto v = linearOp->getRightVector();
-    d_vBasis.push_back( v );
-    if ( d_bFlexibleGMRES )
-        d_zBasis.push_back( v->clone() );
 
-    for ( auto i = 1; i < d_iBasisAllocSize; i++ ) {
-        d_vBasis.push_back( v->clone() );
+    std::shared_ptr<AMP::LinearAlgebra::Vector> v;
+
+    if ( u ) {
+        v = u->clone();
+    } else {
+        auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+        if ( linearOp )
+            v = linearOp->getRightVector();
+    }
+
+    if ( v ) {
+        d_vBasis.push_back( v );
         if ( d_bFlexibleGMRES )
             d_zBasis.push_back( v->clone() );
+
+        for ( auto i = 1; i < d_iBasisAllocSize; i++ ) {
+            d_vBasis.push_back( v->clone() );
+            if ( d_bFlexibleGMRES )
+                d_zBasis.push_back( v->clone() );
+        }
     }
 }
 
