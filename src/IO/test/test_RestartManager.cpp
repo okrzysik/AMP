@@ -112,10 +112,9 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    if ( argc == 1 )
+    if ( argc != 2 )
         std::cerr << "test_RestartManager <input>\n";
-    for ( int i=1; i<argc; i++ )
-        testRestartManager( ut, argv[i] );
+    testRestartManager( ut, argv[1] );
 
     int N_failed = ut.NumFailGlobal();
     ut.report();
