@@ -217,11 +217,10 @@ int main( int argc, char *argv[] )
 #endif
 #if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     backendsAndMemory.emplace_back( std::make_pair( "kokkos", "host" ) );
-#endif
-#if ( ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) ) && \
-      ( defined( USE_DEVICE ) ) )
-#endif
+    #ifdef USE_DEVICE
     backendsAndMemory.emplace_back( std::make_pair( "kokkos", "managed" ) );
+    #endif
+#endif
 #ifdef USE_DEVICE
     backendsAndMemory.emplace_back( std::make_pair( "hip_cuda", "managed" ) );
 #endif
