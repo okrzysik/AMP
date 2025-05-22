@@ -40,6 +40,10 @@ void linearThermalTest( AMP::UnitTest *ut,
     // Create the Mesh
     const auto meshAdapter = createMesh( input_db );
 
+    auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
+    neutronicsOp_db->putScalar( "AccelerationBackend", accelerationBackend );
+    neutronicsOp_db->putScalar( "MemoryLocation", memoryLocation );
+
     auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, meshAdapter );
 
     // Set appropriate acceleration backend
