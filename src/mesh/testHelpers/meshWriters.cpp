@@ -938,6 +938,8 @@ std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
         return createAMGMesh( 9, 9, 9, 10, 10, 10 );
     } else if ( name == "boxMesh-5" ) {
         return createAMGMesh( 17, 17, 17, 10, 10, 10 );
+    } else if ( name == "testAMGmesh5" ) {
+        return createAMGMesh( 5, 5, 5, 1, 1, 1 );
     } else if ( name == "lumlmesh1" ) {
         return createLUML( 9, 9, 9, 10, 10, 10 );
     } else if ( name == "lumlmesh2" ) {
@@ -994,6 +996,21 @@ std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
         bnd.resize( 8 );
         putVector( *mesh, "BoundaryNodes", bnd );
         return db;
+    } else if ( name == "brick" ) {
+        auto db   = createAMGMesh( 9, 9, 18, 10, 10, 20 );
+        auto mesh = db->getDatabase( "Mesh" );
+        auto node = getVector<double, 3>( *mesh, "Nodes" );
+        for ( auto &tmp : node )
+            tmp = { tmp[0] - 5, tmp[1] - 5, tmp[2] - 10 };
+        putVector( *mesh, "Nodes", node );
+        auto bnd = getVector( *mesh, "BoundaryNodes" );
+        bnd.push_back( { 1377, 1385, 1449, 1457 } );
+        bnd.push_back( bnd[0] );
+        for ( size_t i = 1; i < bnd.size() - 1; i++ )
+            bnd.back().insert( bnd.back().end(), bnd[i].begin(), bnd[i].end() );
+        AMP::Utilities::unique( bnd.back() );
+        putVector( *mesh, "BoundaryNodes", bnd );
+        return db;
     }
     return {};
 }
@@ -1005,35 +1022,37 @@ std::shared_ptr<AMP::Database> generateTestMesh( const std::string &name )
 void generateAll()
 {
     const char *ascii[]  = { "distortedElementMesh",
-                             "cookMesh0",
-                             "cookMesh1",
-                             "cookMesh2",
-                             "cookMesh3",
-                             "cookMesh4",
-                             "regPlateWithHole1",
-                             "regPlateWithHole2",
-                             "mesh7elem-1",
-                             "mesh7elem-2",
-                             "boxMesh-1",
-                             "boxMesh-2",
-                             "boxMesh-3",
-                             "boxMesh-4",
-                             "boxMesh-5",
-                             "fullMpcMesh-3",
-                             "mesh0",
-                             "mesh1",
-                             "mesh2",
-                             "mesh3",
-                             "mesh4",
-                             "mesh2elem-1",
-                             "mesh2elem-2",
-                             "mesh2elem-3",
-                             "mesh2elem-4",
-                             "mesh2elem-5",
-                             "mesh2elem-6",
-                             "mesh3_mod",
-                             "mesh2_mod",
-                             "mesh2_mod_1" };
+                            "cookMesh0",
+                            "cookMesh1",
+                            "cookMesh2",
+                            "cookMesh3",
+                            "cookMesh4",
+                            "regPlateWithHole1",
+                            "regPlateWithHole2",
+                            "mesh7elem-1",
+                            "mesh7elem-2",
+                            "boxMesh-1",
+                            "boxMesh-2",
+                            "boxMesh-3",
+                            "boxMesh-4",
+                            "boxMesh-5",
+                            "fullMpcMesh-3",
+                            "mesh0",
+                            "mesh1",
+                            "mesh2",
+                            "mesh3",
+                            "mesh4",
+                            "mesh2elem-1",
+                            "mesh2elem-2",
+                            "mesh2elem-3",
+                            "mesh2elem-4",
+                            "mesh2elem-5",
+                            "mesh2elem-6",
+                            "mesh3_mod",
+                            "mesh2_mod",
+                            "mesh2_mod_1",
+                            "brick",
+                            "testAMGmesh5" };
     const char *binary[] = { "lumlmesh1", "lumlmesh2", "lumlmesh3", "lumlmesh4",
                              "lumlmesh5", "lumlmesh6", "lumlmesh7", "lumlmesh8" };
     for ( auto name : ascii ) {
@@ -1046,6 +1065,58 @@ void generateAll()
         AMP_ASSERT( db );
         writeBinaryTestMesh( *db, name );
     }
+}
+
+
+/********************************************************
+ * Create a test mesh from an existing mesh              *
+ ********************************************************/
+DatabasePtr createDatabase( const AMP::Mesh::Mesh &mesh )
+{
+    AMP_ASSERT( mesh.getComm().getSize() == 1 );
+    AMP_ASSERT( mesh.isBaseMesh() );
+    // Get the nodes
+    auto it = mesh.getIterator( AMP::Mesh::GeomType::Vertex );
+    std::vector<std::array<double, 3>> nodes( it.size() );
+    for ( size_t i = 0; i < it.size(); i++, ++it ) {
+        auto id = it->globalID().local_id();
+        AMP_ASSERT( id <= it.size() );
+        auto pos  = it->coord();
+        nodes[id] = { pos.x(), pos.y(), pos.z() };
+    }
+    // Get the elements
+    it = mesh.getIterator( AMP::Mesh::GeomType::Cell );
+    std::vector<std::array<int, 8>> elem( it.size() );
+    std::vector<AMP::Mesh::MeshElementID> ids;
+    for ( size_t i = 0; i < it.size(); i++, ++it ) {
+        auto id = it->globalID().local_id();
+        AMP_ASSERT( id <= it.size() );
+        it->getElementsID( AMP::Mesh::GeomType::Vertex, ids );
+        AMP_ASSERT( ids.size() == 8 );
+        for ( int j = 0; j < 8; j++ )
+            elem[id][j] = ids[j].local_id();
+    }
+    // Get boundary nodes
+    auto bnd_ids = mesh.getBoundaryIDs();
+    std::vector<std::vector<int>> BoundaryNodes;
+    for ( auto bnd : bnd_ids ) {
+        AMP_ASSERT( bnd > 0 );
+        BoundaryNodes.resize( std::max<int>( bnd_ids.size(), bnd ) );
+        it = mesh.getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, bnd );
+        for ( auto &elem : it )
+            BoundaryNodes[bnd - 1].push_back( elem.globalID().local_id() );
+    }
+    // Get side ids
+    std::vector<std::vector<int>> SideIds;
+
+    // Create the database
+    auto db  = std::make_unique<AMP::Database>();
+    auto db2 = db->createAddDatabase( "Mesh" );
+    putVector( *db2, "Nodes", nodes );
+    putVector( *db2, "Elems", elem );
+    putVector( *db2, "BoundaryNodes", BoundaryNodes );
+    putVector( *db2, "SideIds", SideIds );
+    return db;
 }
 
 

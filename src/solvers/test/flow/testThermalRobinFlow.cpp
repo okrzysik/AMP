@@ -177,7 +177,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     globalRhsVec->copyVector( PowerInWattsVec );
     std::cout << "PowerInWattsVec norm  inside loop = " << globalRhsVec->L2Norm() << "\n";
-    double expectedVal   = 0.175811;
+    double expectedVal   = input_db->getScalar<double>( "RhsNorm" );
     double globalRhsNorm = static_cast<double>( globalRhsVec->L2Norm() );
     if ( !AMP::Utilities::approx_equal( expectedVal, globalRhsNorm, 1e-5 ) ) {
         ut->failure( "the PowerInWattsVec norm has changed." );
@@ -190,7 +190,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     thermalNonlinearOperator->residual( globalRhsVec, globalSolVec, globalResVec );
     AMP::pout << "Initial Residual Norm for Step is: " << globalResVec->L2Norm() << std::endl;
-    expectedVal          = 6.64841;
+    expectedVal          = input_db->getScalar<double>( "InitialResidual" );
     double globalResNorm = static_cast<double>( globalResVec->L2Norm() );
     if ( !AMP::Utilities::approx_equal( expectedVal, globalResNorm, 1e-5 ) ) {
         ut->failure( "the Initial Residual Norm has changed." );
@@ -200,7 +200,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->apply( globalRhsVec, globalSolVec );
 
     std::cout << "Final Solution Norm: " << globalSolVec->L2Norm() << std::endl;
-    expectedVal        = 47924.7;
+    expectedVal        = input_db->getScalar<double>( "FinalSolution" );
     auto globalSolNorm = static_cast<double>( globalSolVec->L2Norm() );
     if ( !AMP::Utilities::approx_equal( expectedVal, globalSolNorm, 1e-5 ) ) {
         ut->failure( "the Final Solution Norm has changed." );

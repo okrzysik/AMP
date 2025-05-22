@@ -189,15 +189,8 @@ COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermalOxygenDiffusion-2 )
 
 # Copy test data
 IF ( AMP_DATA )
-    COPY_MESH_FILE( testAMGmesh5 )
-    COPY_MESH_FILE( simple_pellet_1x.e )
-    COPY_MESH_FILE( pellet_lo_res.e )
     COPY_MESH_FILE( halden_1_pellet_9mil.e )
-    COPY_MESH_FILE( cylinder270.e )
     COPY_MESH_FILE( cylinder4K.e )
-    COPY_MESH_FILE( cube27.e )
-    COPY_MESH_FILE( cube.with.12.boundaries.e )
-    COPY_MESH_FILE( cube.with.12.boundaries.2.e )
 ENDIF()
 
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 1 )

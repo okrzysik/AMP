@@ -148,17 +148,15 @@ void MultiMesh::initialize()
     AMP_ASSERT( !d_meshes.empty() );
     PhysicalDim = d_meshes[0]->getDim();
     GeomDim     = d_meshes[0]->getGeomType();
-    d_max_gcw   = 0;
+    d_max_gcw   = d_meshes[0]->getMaxGhostWidth();
     for ( size_t i = 1; i < d_meshes.size(); i++ ) {
         AMP_INSIST( PhysicalDim == d_meshes[i]->getDim(),
                     "Physical dimension must match for all meshes in multimesh" );
-        if ( d_meshes[i]->getGeomType() > GeomDim )
-            GeomDim = d_meshes[i]->getGeomType();
-        if ( d_meshes[i]->getMaxGhostWidth() > d_max_gcw )
-            d_max_gcw = d_meshes[i]->getMaxGhostWidth();
+        GeomDim   = std::max( GeomDim, d_meshes[i]->getGeomType() );
+        d_max_gcw = std::min( d_max_gcw, d_meshes[i]->getMaxGhostWidth() );
     }
     GeomDim   = (GeomType) d_comm.maxReduce( (int) GeomDim );
-    d_max_gcw = d_comm.maxReduce( d_max_gcw );
+    d_max_gcw = d_comm.minReduce( d_max_gcw );
     // Compute the bounding box of the multimesh
     d_box       = d_meshes[0]->getBoundingBox();
     d_box_local = d_meshes[0]->getLocalBoundingBox();
@@ -186,6 +184,12 @@ void MultiMesh::initialize()
     }
     if ( !geom.empty() )
         d_geometry.reset( new AMP::Geometry::MultiGeometry( geom ) );
+    // Cache key data
+    int value = 2;
+    for ( auto &mesh : d_meshes )
+        value = std::min( value, static_cast<int>( mesh->isMeshMovable() ) );
+    value       = d_comm.minReduce( value );
+    d_isMovable = static_cast<Mesh::Movable>( value );
 }
 
 
@@ -699,13 +703,7 @@ std::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
 /********************************************************
  * Displace a mesh                                       *
  ********************************************************/
-Mesh::Movable MultiMesh::isMeshMovable() const
-{
-    int value = 2;
-    for ( auto &mesh : d_meshes )
-        value = std::min( value, static_cast<int>( mesh->isMeshMovable() ) );
-    return static_cast<Mesh::Movable>( value );
-}
+Mesh::Movable MultiMesh::isMeshMovable() const { return d_isMovable; }
 uint64_t MultiMesh::positionHash() const
 {
     uint64_t hash = 0;

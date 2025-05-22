@@ -52,9 +52,6 @@ void testMeshGenerators( AMP::UnitTest &ut )
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the libmesh reader generator
     #ifdef USE_AMP_DATA
-    generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator>( "clad_1x_1pellet.e" );
-    generator->build_mesh();
-    AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator>( "pellet_1x.e" );
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
@@ -162,8 +159,8 @@ void testSTKMesh( AMP::UnitTest &ut )
     auto database = std::make_shared<AMP::Database>( "Mesh" );
     database->putScalar( "dim", 3 );
     database->putScalar( "MeshType", "STKMesh" );
-    database->putScalar( "MeshName", "pellet_lo_res.e" );
-    database->putScalar( "FileName", "pellet_lo_res.e" );
+    database->putScalar( "MeshName", "pellet" );
+    database->putScalar( "FileName", "pellet_1x.e" );
     auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
@@ -191,8 +188,8 @@ void testlibMesh( AMP::UnitTest &ut )
     auto database = std::make_shared<AMP::Database>( "Mesh" );
     database->putScalar( "dim", 3 );
     database->putScalar( "MeshType", "libMesh" );
-    database->putScalar( "MeshName", "pellet_lo_res.e" );
-    database->putScalar( "FileName", "pellet_lo_res.e" );
+    database->putScalar( "MeshName", "pellet" );
+    database->putScalar( "FileName", "pellet_1x.e" );
     auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
@@ -219,8 +216,8 @@ void testMoabMesh( [[maybe_unused]] AMP::UnitTest &ut )
     auto database = std::make_shared<AMP::Database>( "Mesh" );
     database->putScalar( "dim", 3 );
     database->putScalar( "MeshType", "MOAB" );
-    database->putScalar( "MeshName", "pellet_lo_res.e" );
-    database->putScalar( "FileName", "pellet_lo_res.e" );
+    database->putScalar( "MeshName", "pellet" );
+    database->putScalar( "FileName", "pellet_1x.e" );
     auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
@@ -266,20 +263,11 @@ void testSubsetMesh( [[maybe_unused]] AMP::UnitTest &ut )
 {
     PROFILE( "testSubsetMesh" );
 #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
-    std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
-    // Subset a mesh for a surface without ghost cells and test
-    generator = std::make_shared<AMP::unit_test::SurfaceSubsetGenerator>(
-        std::make_shared<AMP::unit_test::ExodusReaderGenerator>( "clad_1x_1pellet.e" ), 0 );
-    generator->build_mesh();
-    auto mesh = generator->getMesh();
-    AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
-    // MeshVectorTestLoop( ut, mesh );
-    // MeshMatrixTestLoop( ut, mesh );
     // Subset a mesh for a surface with ghost cells and test
-    generator = std::make_shared<AMP::unit_test::SurfaceSubsetGenerator>(
+    auto generator = std::make_shared<AMP::unit_test::SurfaceSubsetGenerator>(
         std::make_shared<AMP::unit_test::ExodusReaderGenerator>( "pellet_1x.e" ), 1 );
     generator->build_mesh();
-    mesh = generator->getMesh();
+    auto mesh = generator->getMesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );

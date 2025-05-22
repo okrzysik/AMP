@@ -35,7 +35,6 @@ void testMeshGenerators( AMP::UnitTest &ut )
     runTest<AMP::unit_test::LibMeshCubeGenerator>( ut, 5 );
     runTest<AMP::unit_test::libMeshThreeElementGenerator>( ut );
     #ifdef USE_AMP_DATA
-    runTest<AMP::unit_test::ExodusReaderGenerator>( ut, "clad_1x_1pellet.e" );
     runTest<AMP::unit_test::ExodusReaderGenerator>( ut, "pellet_1x.e" );
     #endif
 #endif

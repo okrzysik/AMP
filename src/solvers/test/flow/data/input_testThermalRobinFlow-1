@@ -3,14 +3,12 @@ regression{
 }
 
 Mesh{
-    FileName = "halden_1_pellet_9mil.e"
-    MeshType = "libMesh"
     MeshName = "Pellet"
-    dim      = 3
-    x_offset = 0
-    y_offset = 0
-    z_offset = 0
-    NumberOfElements = 5226
+    MeshType = "AMP"
+    Generator = "cylinder"
+    Size = 13, 8
+    Range = 0.00533908, 0, 0.0127
+    surfaceIds = 4, 4, 4, 4, 1, 2
 }
 
 NeutronicsOperator{
@@ -29,7 +27,7 @@ NonlinearThermalOperator {
   name="NonlinearBVPOperator"
     print_info_level = 1
     VolumeOperator = "DiffusionNonlinearFEOperator1"
-    BoundaryOperator = "RobinVectorCorrection1"
+    BoundaryOperator = "RobinVectorCorrection1"solvers/test/flow/data/input_testThermalRobinFlow-1
 }
 
 DiffusionNonlinearFEOperator1 {

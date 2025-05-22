@@ -5,16 +5,14 @@ COPY_TEST_FILE( input_testMatVecPerf-3 )
 COPY_TEST_FILE( input_testMatCreate-1 )
 COPY_TEST_FILE( input_testMatVec-1 )
 COPY_TEST_FILE( input_testMatVec-2 )
+FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D" DESTINATION . )
+FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D_hires" DESTINATION . )
 
 
 # Copy meshes
 IF ( AMP_DATA )
     COPY_MESH_FILE( pellet_1x.e )
-    COPY_MESH_FILE( clad_1x_1pellet.e )
-    COPY_MESH_FILE( cube343H27.e )
 ENDIF()
-FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D" DESTINATION . )
-FILE( COPY "${AMP_SOURCE_DIR}/mesh/test/data/input_AMP_mesh_zoo_3D_hires" DESTINATION . )
 
 
 # Add matrix test

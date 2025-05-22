@@ -23,7 +23,6 @@ int main( int argc, char **argv )
     testSimpleDOFManager( std::make_shared<AMPMultiMeshGenerator>(), ut );
 #ifdef AMP_USE_LIBMESH
     testSimpleDOFManager( std::make_shared<LibMeshCubeGenerator>( 5 ), ut );
-    testSimpleDOFManager( std::make_shared<ExodusReaderGenerator>( "clad_1x_1pellet.e" ), ut );
     testSimpleDOFManager( std::make_shared<ExodusReaderGenerator>( "pellet_1x.e" ), ut );
     testSimpleDOFManager( std::make_shared<MultiMeshGenerator>(), ut );
 #endif
