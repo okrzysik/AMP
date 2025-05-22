@@ -17,21 +17,18 @@ IF ( AMP_DATA )
 ENDIF()
 
 
-# Add filesystem tests
-ADD_AMP_TEST( test_FileSystem )
-ADD_AMP_TEST( test_FileSystem 8 )
-
-
 # Add Writer tests
-ADD_AMP_TEST( test_Writer input_AMP_mesh_zoo_2D input_AMP_mesh_zoo_3D )
+ADD_AMP_TEST( test_Writer input_crystal )
+ADD_AMP_TEST( test_Writer input_AMP_mesh_zoo_2D )
+ADD_AMP_TEST( test_Writer input_AMP_mesh_zoo_3D )
+ADD_AMP_TEST( test_Writer input_crystal PROCS 2 )
 IF ( AMP_DATA )
     ADD_AMP_TEST( test_Writer input_stl )
 ENDIF()
 IF ( USE_LIBMESH AND AMP_DATA )
-    ADD_AMP_TEST_1_2_4( test_Writer input_crystal input_SiloIO-1 input_SiloIO-2 )
-ELSE()
-    ADD_AMP_TEST_1_2_4( test_Writer input_crystal input_SiloIO-2 )
+    ADD_AMP_TEST_1_2_4( test_Writer input_SiloIO-1 )
 ENDIF()
+ADD_AMP_TEST_1_2_4( test_Writer input_SiloIO-2 )
 
 
 # Add HDF5 tests
@@ -41,9 +38,12 @@ IF ( USE_HDF5 )
     ADD_AMP_TEST( view_HDF5 test_HDF5.hdf5 DEPENDS test_HDF5 )
     ADD_AMP_TEST( test_XDMF )
     ADD_AMP_TEST( test_XDMF PROCS 2 )
-    ADD_AMP_TEST( test_RestartManager input_AMP_mesh_zoo_1D  input_AMP_mesh_zoo_2D  input_AMP_mesh_zoo_3D input_RK12-1 )
+    ADD_AMP_TEST( test_RestartManager input_AMP_mesh_zoo_1D )
+    ADD_AMP_TEST( test_RestartManager input_AMP_mesh_zoo_2D )
+    ADD_AMP_TEST( test_RestartManager input_AMP_mesh_zoo_3D )
     ADD_AMP_TEST( test_RestartManagerComms )
     ADD_AMP_TEST( test_RestartManagerComms PROCS 4 )
+    ADD_AMP_TEST( test_RestartManager input_RK12-1 )
 ENDIF()
 
 

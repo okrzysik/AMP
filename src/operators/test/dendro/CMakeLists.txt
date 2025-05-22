@@ -22,12 +22,13 @@ ENDIF()
 
 # Add the tests
 IF( USE_DENDRO AND USE_PETSC )
-   # R.S.:  Does not work in parallel.  This needs to be fixed!
+   # R.S.: This needs to be fixed!
+    ## does not work in parallel - ADD_AMP_TEST_1_2_4( testNodeToFaceContactOperator )
     ADD_AMP_TEST( testNodeToFaceContactOperator )
+    ADD_AMP_TEST_1_2_4( testNodeToSegmentConstraintsOperator )
     ADD_AMP_TEST( testNodeToFaceContactOperator-1 )
     ADD_AMP_TEST( testNodeToFaceContactOperator-2 )
     ADD_AMP_TEST( testNodeToFaceContactOperator-3 )
     ADD_AMP_TEST( testNodeToFaceContactOperator-4 1 )
     ADD_AMP_TEST( testNodeToFaceContactOperator-5 1 )
-    ADD_AMP_TEST_1_4( testNodeToSegmentConstraintsOperator )
 ENDIF()

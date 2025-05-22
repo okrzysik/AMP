@@ -163,8 +163,7 @@ void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
     auto rankStr         = std::to_string( comm.getRank() + 1 );
     std::string filename = "output_test_Writer/vector-" + writerName + "-" + rankStr + "proc";
     writer->writeFile( filename, 0, 0.0 );
-    auto filename2 = filename + "_0." + properties.extension;
-    if ( AMP::IO::exists( filename2 ) || writerName == "NULL" )
+    if ( AMP::IO::exists( filename + "_0." + properties.extension ) )
         ut.passes( writerName + " registered independent vector" );
     else
         ut.failure( writerName + " registered independent vector" );
@@ -210,8 +209,7 @@ void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
     std::string filename = "output_test_Writer/matrix-" + writerName + "-" + rankStr + "proc";
     writer->setDecomposition( 1 );
     writer->writeFile( filename, 0, 0.0 );
-    auto filename2 = filename + "_0." + properties.extension;
-    if ( AMP::IO::exists( filename2 ) || writerName == "NULL" )
+    if ( AMP::IO::exists( filename + "_0." + properties.extension ) )
         ut.passes( writerName + " registered matrix" );
     else
         ut.failure( writerName + " registered matrix" );
@@ -467,24 +465,30 @@ int main( int argc, char **argv )
     if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 )
         writers = { "NULL", "Silo", "HDF5", "Ascii" }; // HDF5 does not support parallel yet
 
-    // Get a list of input files to run
-    std::vector<std::string> inputs;
-    for ( int i = 1; i < argc; i++ )
-        inputs.push_back( argv[i] );
+    if ( argc == 1 ) {
 
-    // Run basic tests
-    for ( auto writer : writers ) {
-        testWriterVector( ut, writer );
-        testWriterMatrix( ut, writer );
-    }
+        // Run basic tests
+        for ( auto writer : writers ) {
+            testWriterVector( ut, writer );
+            testWriterMatrix( ut, writer );
+            testWriterMesh( ut, writer, "input_SiloIO-1" );
+        }
 
-    // Test input files
-    for ( auto &input : inputs ) {
-        if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() == 0 )
-            std::cout << "Testing " << input << std::endl;
-        printMeshNames( input );
-        for ( auto writer : writers )
-            testWriterMesh( ut, writer, input );
+    } else {
+
+        // Test the provided input files
+        for ( int i = 1; i < argc; i++ ) {
+
+            if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() == 0 )
+                std::cout << "Testing " << argv[i] << std::endl;
+
+            // Print the mesh names (rank 0)
+            printMeshNames( argv[i] );
+
+            // Run the tests
+            for ( auto writer : writers )
+                testWriterMesh( ut, writer, argv[i] );
+        }
     }
 
     int N_failed = ut.NumFailGlobal();
