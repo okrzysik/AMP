@@ -424,13 +424,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyF
     // but generally not both. If only local available need conversion to global
     auto B_colmap    = B_offd->getColumnMap();
     auto B_to_global = [B_cols_loc, first_col, B_colmap, is_diag]( const lidx_t k ) -> gidx_t {
-        if constexpr ( is_diag ) {
-            (void) B_colmap;
+        if ( is_diag )
             return first_col + B_cols_loc[k];
-        } else {
-            (void) first_col;
+        else
             return B_colmap[B_cols_loc[k]];
-        }
     };
 
     // Create accumulator with appropriate capacity
@@ -563,27 +560,11 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyR
     // depending on the output block type need either
     // local or global column indices from B_data, but
     // could have either ones present or not
-    auto B_to_global = [is_remote, is_diag, B_cols, B_cols_loc, B_colmap]( lidx_t k ) -> gidx_t {
-        if constexpr ( is_diag ) {
-            (void) is_remote;
-            (void) B_cols;
-            (void) B_cols_loc;
-            (void) B_colmap;
-            AMP_ERROR( "multiplyReuse: B_to_global called on diag" );
-        } else {
-            return is_remote ? B_cols[k] : B_colmap[B_cols_loc[k]];
-        }
+    auto B_to_global = [is_remote, B_cols, B_cols_loc, B_colmap]( lidx_t k ) -> gidx_t {
+        return is_remote ? B_cols[k] : B_colmap[B_cols_loc[k]];
     };
-    auto B_to_local = [is_remote, is_diag, B_cols, B_cols_loc, first_col]( lidx_t k ) -> lidx_t {
-        if constexpr ( is_diag ) {
-            return is_remote ? static_cast<lidx_t>( B_cols[k] - first_col ) : B_cols_loc[k];
-        } else {
-            (void) is_remote;
-            (void) B_cols;
-            (void) B_cols_loc;
-            (void) first_col;
-            AMP_ERROR( "multiplyReuse: B_to_local called on offd" );
-        }
+    auto B_to_local = [is_remote, B_cols, B_cols_loc, first_col]( lidx_t k ) -> lidx_t {
+        return is_remote ? static_cast<lidx_t>( B_cols[k] - first_col ) : B_cols_loc[k];
     };
 
     // Finally, after all the setup do the actual computation
