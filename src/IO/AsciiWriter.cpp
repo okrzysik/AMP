@@ -1,4 +1,5 @@
 #include "AMP/IO/AsciiWriter.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -30,6 +31,7 @@ Writer::WriterProperties AsciiWriter::getProperties() const
     properties.extension      = "ascii";
     properties.registerVector = true;
     properties.registerMatrix = true;
+    properties.enabled        = true;
     return properties;
 }
 
@@ -61,6 +63,8 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     // Open the file for writing
     FILE *fid = nullptr;
     if ( d_comm.getRank() == 0 ) {
+        auto pwd = IO::path( fname_in );
+        IO::recursiveMkdir( pwd );
         auto fname = fname_in + "_" + std::to_string( iteration_count ) + "." + getExtension();
         fid        = fopen( fname.c_str(), "w" );
         AMP_ASSERT( fid );

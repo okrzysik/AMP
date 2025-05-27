@@ -166,6 +166,8 @@ void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
     auto filename2 = filename + "_0." + properties.extension;
     if ( AMP::IO::exists( filename2 ) || writerName == "NULL" )
         ut.passes( writerName + " registered independent vector" );
+    else if ( !properties.enabled )
+        ut.expected_failure( writerName + " is disabled" );
     else
         ut.failure( writerName + " registered independent vector" );
 }
