@@ -217,14 +217,14 @@ int main( int argc, char *argv[] )
 #ifdef USE_OPENMP
     backendsAndMemory.emplace_back( std::make_pair( "openmp", "host" ) );
 #endif
+#ifdef USE_DEVICE
+    backendsAndMemory.emplace_back( std::make_pair( "hip_cuda", "managed" ) );
+#endif
 #if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
     backendsAndMemory.emplace_back( std::make_pair( "kokkos", "host" ) );
     #ifdef USE_DEVICE
     backendsAndMemory.emplace_back( std::make_pair( "kokkos", "managed" ) );
     #endif
-#endif
-#ifdef USE_DEVICE
-    backendsAndMemory.emplace_back( std::make_pair( "hip_cuda", "managed" ) );
 #endif
 
     {
