@@ -293,12 +293,12 @@ template<typename TYPE, class Allocator>
 void VectorDataDefault<TYPE, Allocator>::registerChildObjects(
     AMP::IO::RestartManager *manager ) const
 {
-    GhostDataHelper<TYPE>::registerChildObjects( manager );
+    GhostDataHelper<TYPE, Allocator>::registerChildObjects( manager );
 }
 template<typename TYPE, class Allocator>
 void VectorDataDefault<TYPE, Allocator>::writeRestart( int64_t fid ) const
 {
-    GhostDataHelper<TYPE>::writeRestart( fid );
+    GhostDataHelper<TYPE, Allocator>::writeRestart( fid );
     AMP::Array<TYPE> data( this->d_localSize );
     getRawData( data.data(), getTypeID<TYPE>() );
     IO::writeHDF5( fid, "data", data );
@@ -306,7 +306,7 @@ void VectorDataDefault<TYPE, Allocator>::writeRestart( int64_t fid ) const
 template<typename TYPE, class Allocator>
 VectorDataDefault<TYPE, Allocator>::VectorDataDefault( int64_t fid,
                                                        AMP::IO::RestartManager *manager )
-    : GhostDataHelper<TYPE>( fid, manager )
+    : GhostDataHelper<TYPE, Allocator>( fid, manager )
 {
     AMP::Array<TYPE> data;
     IO::readHDF5( fid, "data", data );
