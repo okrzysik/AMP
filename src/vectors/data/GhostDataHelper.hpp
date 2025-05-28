@@ -43,16 +43,18 @@ std::shared_ptr<CommunicationList> GhostDataHelper<TYPE, Allocator>::getCommunic
 template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::allocateBuffers( size_t len )
 {
-    d_ghostSize = len;
-    // allocate space for ghost buffer
-    this->d_Ghosts = d_alloc.allocate( d_ghostSize );
-    for ( size_t i = 0; i < d_ghostSize; ++i )
-        new ( this->d_Ghosts + i ) TYPE();
+    if ( len > 0 ) {
+        d_ghostSize = len;
+        // allocate space for ghost buffer
+        this->d_Ghosts = d_alloc.allocate( d_ghostSize );
+        for ( size_t i = 0; i < d_ghostSize; ++i )
+            new ( this->d_Ghosts + i ) TYPE();
 
-    // allocate space for add buffer
-    this->d_AddBuffer = d_alloc.allocate( d_ghostSize );
-    for ( size_t i = 0; i < d_ghostSize; ++i )
-        new ( this->d_AddBuffer + i ) TYPE();
+        // allocate space for add buffer
+        this->d_AddBuffer = d_alloc.allocate( d_ghostSize );
+        for ( size_t i = 0; i < d_ghostSize; ++i )
+            new ( this->d_AddBuffer + i ) TYPE();
+    }
 }
 
 template<class TYPE, class Allocator>

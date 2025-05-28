@@ -73,6 +73,27 @@ void TFQMRSolver<T>::getFromInput( std::shared_ptr<const AMP::Database> db )
 }
 
 template<typename T>
+void TFQMRSolver<T>::allocateScratchVectors( std::shared_ptr<const AMP::LinearAlgebra::Vector> u )
+{
+    AMP_INSIST( u, "Input to BiCGSTABSolver::allocateScratchVectors must be non-null" );
+    d_z     = u->clone();
+    d_delta = u->clone();
+    d_w     = u->clone();
+    d_d     = u->clone();
+    d_v     = u->clone();
+
+    d_v->setNoGhosts();
+
+    for ( size_t i = 0; i < 2; ++i ) {
+        d_u[i] = u->clone();
+        d_y[i] = u->clone();
+        // ensure d_u[i], d_y[i] do no communication
+        d_u[i]->setNoGhosts();
+        d_y[i]->setNoGhosts();
+    }
+}
+
+template<typename T>
 void TFQMRSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     // not sure about excluding op == d_pOperator
@@ -80,23 +101,9 @@ void TFQMRSolver<T>::registerOperator( std::shared_ptr<AMP::Operator::Operator> 
 
     if ( d_pOperator ) {
         auto linearOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-        AMP_ASSERT( linearOp );
-        d_r = linearOp->getRightVector();
-
-        d_z     = d_r->clone();
-        d_delta = d_r->clone();
-        d_w     = d_r->clone();
-        d_d     = d_r->clone();
-        d_v     = d_r->clone();
-
-        d_v->setNoGhosts();
-
-        for ( size_t i = 0; i < 2; ++i ) {
-            d_u[i] = d_r->clone();
-            d_y[i] = d_r->clone();
-            // ensure d_u[i], d_y[i] do no communication
-            d_u[i]->setNoGhosts();
-            d_y[i]->setNoGhosts();
+        if ( linearOp ) {
+            d_r = linearOp->getRightVector();
+            allocateScratchVectors( d_r );
         }
     }
 }
@@ -109,6 +116,11 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                             std::shared_ptr<AMP::LinearAlgebra::Vector> x )
 {
     PROFILE( "TFQMRSolver<T>::apply" );
+
+    if ( !d_r ) {
+        d_r = x->clone();
+        allocateScratchVectors( d_r );
+    }
 
     // Always zero before checking stopping criteria for any reason
     d_iNumberIterations = 1;
