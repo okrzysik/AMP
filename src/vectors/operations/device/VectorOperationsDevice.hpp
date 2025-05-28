@@ -121,6 +121,7 @@ void VectorOperationsDevice<TYPE>::copy( const VectorData &x, VectorData &y )
         DeviceOperationsHelpers<TYPE>::copy( N, xdata, ydata );
         deviceSynchronize();
         y.copyGhostValues( x );
+        y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->copy( x, y );
@@ -162,6 +163,7 @@ void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in, VectorData &x 
         TYPE alpha = alpha_in.get<TYPE>();
         DeviceOperationsHelpers<TYPE>::scale( alpha, N, data );
         deviceSynchronize();
+        x.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->scale( alpha_in, x );
@@ -180,6 +182,7 @@ void VectorOperationsDevice<TYPE>::scale( const Scalar &alpha_in,
         auto alpha = alpha_in.get<TYPE>();
         DeviceOperationsHelpers<TYPE>::scale( alpha, N, xdata, ydata );
         deviceSynchronize();
+        y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->scale( alpha_in, x, y );
@@ -196,6 +199,7 @@ void VectorOperationsDevice<TYPE>::add( const VectorData &x, const VectorData &y
         auto N     = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::add( N, xdata, ydata, zdata );
         deviceSynchronize();
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->add( x, y, z );
@@ -214,6 +218,7 @@ void VectorOperationsDevice<TYPE>::subtract( const VectorData &x,
         size_t N   = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::subtract( N, xdata, ydata, zdata );
         deviceSynchronize();
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->subtract( x, y, z );
@@ -232,6 +237,7 @@ void VectorOperationsDevice<TYPE>::multiply( const VectorData &x,
         size_t N   = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::multiply( N, xdata, ydata, zdata );
         deviceSynchronize();
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->multiply( x, y, z );
@@ -248,6 +254,7 @@ void VectorOperationsDevice<TYPE>::divide( const VectorData &x, const VectorData
         size_t N   = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::divide( N, xdata, ydata, zdata );
         deviceSynchronize();
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->divide( x, y, z );
@@ -264,6 +271,7 @@ void VectorOperationsDevice<TYPE>::reciprocal( const VectorData &x, VectorData &
         size_t N   = y.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::reciprocal( N, xdata, ydata );
         deviceSynchronize();
+        y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->reciprocal( x, y );
@@ -287,6 +295,7 @@ void VectorOperationsDevice<TYPE>::linearSum( const Scalar &alpha_in,
         size_t N   = z.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::linearSum( alpha, N, xdata, beta, ydata, zdata );
         deviceSynchronize();
+        z.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->linearSum( alpha_in, x, beta_in, y, z );
@@ -320,6 +329,7 @@ void VectorOperationsDevice<TYPE>::abs( const VectorData &x, VectorData &y )
         size_t N   = y.sizeOfDataBlock( 0 );
         DeviceOperationsHelpers<TYPE>::abs( N, xdata, ydata );
         deviceSynchronize();
+        y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->abs( x, y );
@@ -338,6 +348,7 @@ void VectorOperationsDevice<TYPE>::addScalar( const VectorData &x,
         TYPE alpha = alpha_in.get<TYPE>();
         DeviceOperationsHelpers<TYPE>::addScalar( N, xdata, alpha, ydata );
         deviceSynchronize();
+        y.setUpdateStatus( UpdateState::LOCAL_CHANGED );
     } else {
         // Default to VectorOperationsDefault (on cpu)
         getDefaultOps()->addScalar( x, alpha_in, y );
