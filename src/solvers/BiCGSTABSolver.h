@@ -106,6 +106,7 @@ public:
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
+    void allocateScratchVectors( std::shared_ptr<const AMP::LinearAlgebra::Vector> u );
 
 private:
     int d_restarts = 0; //! number of times the solver is restarted

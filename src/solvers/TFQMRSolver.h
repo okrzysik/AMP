@@ -105,6 +105,7 @@ public:
 
 protected:
     void getFromInput( std::shared_ptr<const AMP::Database> db );
+    void allocateScratchVectors( std::shared_ptr<const AMP::LinearAlgebra::Vector> u );
 
 private:
     bool d_bUsesPreconditioner = false;
