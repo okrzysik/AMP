@@ -70,7 +70,9 @@ PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> 
     d_sName = "PetscKrylovSolver";
     AMP_ASSERT( parameters );
 
+#ifdef USE_DEVICE
     deviceSynchronize();
+#endif
 
     // Create a default KrylovSolver
     d_bKSPCreatedInternally = true;
@@ -301,12 +303,15 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     auto uVecView = AMP::LinearAlgebra::PetscVector::view( u );
     Vec fVec      = fVecView->getVec();
     Vec uVec      = uVecView->getVec();
-    PetscReal   norm;
-    VecNorm(fVec, NORM_2, &norm);
+    PetscReal norm;
+    VecNorm( fVec, NORM_2, &norm );
+#ifdef USE_DEVICE
     deviceSynchronize();
+#endif
     KSPSolve( d_KrylovSolver, fVec, uVec );
+#ifdef USE_DEVICE
     deviceSynchronize();
-
+#endif
     // Manually update state, needed for mixing different (tpl) solvers
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
