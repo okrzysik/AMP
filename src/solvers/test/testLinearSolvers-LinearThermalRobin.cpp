@@ -139,8 +139,8 @@ int main( int argc, char *argv[] )
 
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreBiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreGMRES" );
 
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreGMRES" );
