@@ -53,11 +53,15 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto inVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
     auto outVar = inVar;
 
+    std::string memoryLocation      = "host";
+    std::string accelerationBackend = "serial";
 #ifdef USE_DEVICE
     auto inVec = AMP::LinearAlgebra::createVector(
         scalarDOFs, inVar, true, AMP::Utilities::MemoryType::managed );
     auto outVec = AMP::LinearAlgebra::createVector(
         scalarDOFs, outVar, true, AMP::Utilities::MemoryType::managed );
+    memoryLocation      = "managed";
+    accelerationBackend = "hip_cuda";
 #else
     auto inVec  = AMP::LinearAlgebra::createVector( scalarDOFs, inVar );
     auto outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
@@ -70,7 +74,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     // Create operator to wrap matrix
-    auto op_db          = input_db->getDatabase( "LinearOperator" );
+    auto op_db = input_db->getDatabase( "LinearOperator" );
+    op_db->putScalar<std::string>( "AccelerationBackend", accelerationBackend );
+    op_db->putScalar<std::string>( "MemoryLocation", memoryLocation );
+
     auto opParams       = std::make_shared<AMP::Operator::OperatorParameters>( op_db );
     auto linearOperator = std::make_shared<AMP::Operator::LinearOperator>( opParams );
     linearOperator->setMatrix( matrix );
