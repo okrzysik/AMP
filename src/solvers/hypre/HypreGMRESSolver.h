@@ -97,7 +97,7 @@ private:
 
     bool d_bUsesPreconditioner = false;
     bool d_bDiagScalePC        = false; //! use diagonal scaled preconditioner
-    HYPRE_Int d_iMaxKrylovDim;
+    int d_iMaxKrylovDim;
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
 } // namespace AMP::Solver
