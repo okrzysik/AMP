@@ -77,7 +77,8 @@ Writer::WriterProperties::WriterProperties()
     : registerMesh( false ),
       registerVector( false ),
       registerVectorWithMesh( false ),
-      registerMatrix( false )
+      registerMatrix( false ),
+      enabled( false )
 {
 }
 

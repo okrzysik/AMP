@@ -423,8 +423,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyF
     // The B blocks will have either local or global cols available
     // but generally not both. If only local available need conversion to global
     auto B_colmap    = B_offd->getColumnMap();
-    auto B_to_global = [B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
-        if constexpr ( is_diag ) {
+    auto B_to_global = [B_cols_loc, first_col, B_colmap, is_diag]( const lidx_t k ) -> gidx_t {
+        if ( is_diag ) {
             (void) B_colmap;
             return first_col + B_cols_loc[k];
         } else {

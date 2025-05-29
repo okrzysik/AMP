@@ -65,6 +65,11 @@ Writer::WriterProperties HDF5writer::getProperties() const
     properties.registerMesh           = true;
     properties.registerVectorWithMesh = true;
     properties.registerMatrix         = false;
+#ifdef AMP_USE_HDF5
+    properties.enabled = true;
+#else
+    properties.enabled = false;
+#endif
     return properties;
 }
 
