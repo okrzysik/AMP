@@ -274,7 +274,7 @@ void VectorTests::L1NormVector( AMP::UnitTest *ut )
     vector->abs( *vector );
     auto norm2 = static_cast<double>( vector->dot( *vector_1 ) );
     double tol = 50 * norm * getTol( *vector );
-    if ( fabs( norm - norm2 ) )
+    if ( fabs( norm - norm2 ) < tol )
         ut->passes( "L1 norm" );
     else
         ut->failure( AMP::Utilities::stringf( "L1 norm (%e) (%e)", fabs( norm - norm2 ), tol ) );
