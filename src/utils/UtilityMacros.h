@@ -201,7 +201,8 @@ static inline std::string operator+( std::string_view x, std::string_view y )
         #if defined ( __INTEL_LLVM_COMPILER )
             // have to figure these warnings out
             #define DISABLE_WARNINGS                \
-                _Pragma( "warning (push)" )
+                _Pragma( "warning (push)" )         \
+                _Pragma( "clang diagnostic ignored \"-Wunused-lambda-capture\"" )
             #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
         #else
            #define DISABLE_WARNINGS                \
