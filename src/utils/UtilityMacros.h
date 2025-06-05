@@ -183,9 +183,8 @@ static inline std::string operator+( std::string_view x, std::string_view y )
  */
 #ifndef DISABLE_WARNINGS
     #if defined( _MSC_VER )
-        #define DISABLE_WARNINGS __pragma( warning( push, 0 ) ) \
-           __pragma( warning( disable : 2124 ) )
-        #define ENABLE_WARNINGS __pragma( warning( pop ) )
+        #define DISABLE_WARNINGS
+        #define ENABLE_WARNINGS
     #elif defined( __clang__ )
         #define DISABLE_WARNINGS                                                      \
             _Pragma( "clang diagnostic push" )                                        \
