@@ -205,7 +205,7 @@ void checkConvergence( AMP::Solver::SolverStrategy *solver,
         const bool pass_norm  = strict ? std::fabs( norm_diff ) <= ref_tol : norm_diff <= 0.0;
         // Report passing or dump out information and fail
         if ( pass_iters && pass_norm && accept ) {
-            ut.passes( "Passes convergence rate test" );
+            ut.passes( "Passes convergence rate test for " + inputFile );
         } else if ( strict ) {
             AMP::pout << "FAILED: " << inputFile << std::endl;
             AMP::pout << "Iterations: " << iter << ", residual norm: " << std::setprecision( 15 )
@@ -216,7 +216,7 @@ void checkConvergence( AMP::Solver::SolverStrategy *solver,
                       << ", L2 norms: " << norm_diff << ", tolerance: " << ref_tol << std::endl;
             AMP::pout << "  Solver finished with status: " << solver->getConvergenceStatusString()
                       << std::endl;
-            ut.failure( "FAILED: convergence rate test" );
+            ut.failure( "FAILED: convergence rate test for " + inputFile );
         } else {
             AMP::pout << "FAILED: " << inputFile << std::endl;
             AMP::pout << "Iterations: " << iter << ", residual norm: " << std::setprecision( 15 )
@@ -225,7 +225,7 @@ void checkConvergence( AMP::Solver::SolverStrategy *solver,
                       << ", residual norm: " << std::setprecision( 15 ) << ref_norm << std::endl;
             AMP::pout << "  Solver finished with status: " << solver->getConvergenceStatusString()
                       << std::endl;
-            ut.failure( "FAILED: convergence rate test" );
+            ut.failure( "FAILED: convergence rate test for " + inputFile );
         }
     } else {
         if ( accept ) {
@@ -234,7 +234,7 @@ void checkConvergence( AMP::Solver::SolverStrategy *solver,
             AMP::pout << "Solver has NOT converged for " << inputFile << std::endl;
             AMP::pout << "  Solver finished with status: " << solver->getConvergenceStatusString()
                       << std::endl;
-            ut.failure( "Solver has NOT converged." );
+            ut.failure( "Solver has NOT converged for " + inputFile );
         }
     }
 }
