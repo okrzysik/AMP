@@ -415,10 +415,6 @@ void MultiVectorData::copyGhostValues( AMP::LinearAlgebra::VectorData const & )
 {
     AMP_ERROR( "Not finished" );
 }
-void MultiVectorData::aliasGhostBuffer( std::shared_ptr<AMP::LinearAlgebra::VectorData> )
-{
-    AMP_ERROR( "Not finished" );
-}
 
 
 /****************************************************************
