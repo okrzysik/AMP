@@ -21,30 +21,36 @@ template<typename T, typename FUN, typename Allocator>
 std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allocator>::create(
     const ArraySize &localSize, const ArraySize &blockIndex, AMP_MPI comm )
 {
-    size_t N_blocks[3];
-    for ( int d = 0; d < 3; d++ ) {
-        N_blocks[d] = comm.maxReduce( blockIndex[d] + 1 );
-        AMP_ASSERT( comm.maxReduce( localSize[d] ) == localSize[d] );
+    // Get the number of blocks
+    size_t tmp[10] = { 0 };
+    for ( int d = 0; d < 5; d++ ) {
+        tmp[d + 0] = blockIndex[d] + 1;
+        tmp[d + 5] = localSize[d];
     }
-    AMP_ASSERT( N_blocks[0] * N_blocks[1] * N_blocks[2] == (size_t) comm.getSize() );
+    comm.maxReduce( tmp, 10 );
+    AMP::ArraySize N_blocks( blockIndex.ndim(), tmp );
+    AMP_ASSERT( N_blocks.length() == (size_t) comm.getSize() );
+    for ( int d = 0; d < 5; d++ )
+        AMP_INSIST( tmp[d + 5] == localSize[d], "All local blocks must be the same size" );
+    // Get the global size and offset
+    for ( int d = 0; d < 5; d++ )
+        tmp[d] = localSize[d] * N_blocks[d];
+    AMP::ArraySize globalSize( localSize.ndim(), tmp );
     size_t blockOffset =
         blockIndex[0] + N_blocks[0] * ( blockIndex[1] + blockIndex[2] * N_blocks[1] );
-    std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal(
-        new ArrayVectorData<T, FUN, Allocator>() );
+    // Create the ArrayVectorData
+    auto commList = std::make_shared<CommunicationList>( localSize.length(), comm );
+    auto retVal   = std::make_shared<ArrayVectorData<T, FUN, Allocator>>();
     retVal->d_array.resize( localSize );
     retVal->d_comm            = comm;
     retVal->d_blockIndex      = blockIndex;
-    retVal->d_globalArraySize = { localSize[0] * N_blocks[0],
-                                  localSize[1] * N_blocks[1],
-                                  localSize[2] * N_blocks[2] };
+    retVal->d_globalArraySize = globalSize;
     retVal->d_offset          = blockOffset * localSize.length();
-    retVal->setCommunicationList( std::make_shared<CommunicationList>( localSize.length(), comm ) );
-    // set the state to be unchanged since setCommunicationList sets
-    // it to LOCAL_CHANGED
+    retVal->d_localSize       = localSize.length();
+    retVal->d_globalSize      = retVal->d_globalArraySize.length();
+    retVal->d_localStart      = commList->getStartGID();
+    retVal->setCommunicationList( commList );
     retVal->setUpdateStatus( UpdateState::UNCHANGED );
-    retVal->d_localSize  = localSize.length();
-    retVal->d_globalSize = retVal->d_globalArraySize.length();
-    retVal->d_localStart = retVal->d_CommList->getStartGID();
     return retVal;
 }
 

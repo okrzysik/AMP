@@ -68,8 +68,12 @@ protected:
     ScalarAllocator_t d_alloc;
     TYPE *d_Ghosts    = nullptr;
     TYPE *d_AddBuffer = nullptr;
+    //! list of local ids that are remote
+    std::vector<size_t> d_localRemote;
     //! size/length of ghost and add buffers
     size_t d_ghostSize = 0;
+    //! Buffers for sending/receiving data
+    TYPE *d_SendRecv = nullptr;
 };
 
 
