@@ -1,4 +1,5 @@
 #include "AMP/matrices/operations/default/spgemm/CSRMatrixSpGEMMDefault.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include "ProfilerApp.h"
 
@@ -307,6 +308,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
 
     // DenseAcc's act on assembled blocks that may have global columns removed
     // set up conversion for that case
+    DISABLE_WARNINGS
     auto B_to_global =
         [is_diag, B_cols, B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
         if ( B_cols != nullptr ) {
@@ -314,6 +316,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
         }
         return is_diag ? first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]];
     };
+    ENABLE_WARNINGS
 
     // Create accumulator with appropriate capacity
     const lidx_t acc_cap = is_diag ? B_data->numLocalColumns() : SPACC_SIZE;
@@ -427,9 +430,11 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyF
     // but generally not both. If only local available need conversion to global
     const bool is_diag = block_t == BlockType::DIAG;
     auto B_colmap      = B_offd->getColumnMap();
-    auto B_to_global   = [B_cols_loc, first_col, B_colmap, is_diag]( const lidx_t k ) -> gidx_t {
+    DISABLE_WARNINGS
+    auto B_to_global = [B_cols_loc, first_col, B_colmap, is_diag]( const lidx_t k ) -> gidx_t {
         return is_diag ? first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]];
     };
+    ENABLE_WARNINGS
 
     // Create accumulator with appropriate capacity
     const lidx_t acc_cap = is_diag ? B_data->numLocalColumns() : SPACC_SIZE;
