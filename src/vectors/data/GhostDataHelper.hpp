@@ -106,7 +106,8 @@ void GhostDataHelper<TYPE, Allocator>::setCommunicationList(
     size_t N              = 0;
     for ( auto size : sendSizes )
         N += size;
-    this->d_SendRecv = d_alloc.allocate( N );
+    if ( N > 0 )
+        this->d_SendRecv = d_alloc.allocate( N );
     // Get a list of the local dofs that are remote
     d_localRemote = d_CommList->getReplicatedIDList();
     AMP_ASSERT( d_localRemote.size() == N );
@@ -459,9 +460,8 @@ GhostDataHelper<TYPE, Allocator>::GhostDataHelper( int64_t fid, AMP::IO::Restart
     IO::readHDF5( fid, "ghosts", ghostData );
     IO::readHDF5( fid, "addBuffer", addData );
 
-    this->d_ghostSize = ghostData.length();
-    this->d_Ghosts    = d_alloc.allocate( this->d_ghostSize );
-    this->d_AddBuffer = d_alloc.allocate( this->d_ghostSize );
+    allocateBuffers( ghostData.length() );
+
     for ( size_t i = 0; i < this->d_ghostSize; ++i ) {
         this->d_Ghosts[i]    = ghostData( i );
         this->d_AddBuffer[i] = addData( i );
