@@ -231,22 +231,6 @@ size_t GhostDataHelper<TYPE, Allocator>::getGhostSize() const
 
 
 /****************************************************************
- * Alias ghost buffer                                            *
- ****************************************************************/
-template<class TYPE, class Allocator>
-void GhostDataHelper<TYPE, Allocator>::aliasGhostBuffer(
-    [[maybe_unused]] std::shared_ptr<VectorData> in )
-{
-    AMP_ERROR( "Not finished" );
-#if 0
-    auto ghostData = std::dynamic_pointer_cast<GhostDataHelper<TYPE, Allocator>>( in );
-    AMP_ASSERT( ghostData );
-    this->d_Ghosts = ghostData->d_Ghosts;
-#endif
-}
-
-
-/****************************************************************
  * Zero ghost buffers                                            *
  ****************************************************************/
 template<class TYPE, class Allocator>

@@ -62,7 +62,6 @@ public: // Functions inherited from VectorData
     std::shared_ptr<CommunicationList> getCommunicationList() const override { return nullptr; }
     void setCommunicationList( std::shared_ptr<CommunicationList> ) override {}
     const AMP_MPI &getComm() const override;
-    void aliasGhostBuffer( std::shared_ptr<VectorData> ) override {}
     size_t getGhostSize() const override { return 0; }
     uint64_t getDataID() const override { return 0; }
     void *getRawDataBlockAsVoid( size_t ) override { return nullptr; }

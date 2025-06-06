@@ -23,7 +23,6 @@ public: // Functions overloaded from VectorData
     bool hasGhosts() const override { return d_ghostSize > 0; }
     std::shared_ptr<CommunicationList> getCommunicationList() const override;
     void setCommunicationList( std::shared_ptr<CommunicationList> comm ) override;
-    void aliasGhostBuffer( std::shared_ptr<VectorData> in ) override;
     size_t getGhostSize() const override;
     void fillGhosts( const Scalar & ) override;
     void setNoGhosts() override;

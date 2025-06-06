@@ -64,7 +64,6 @@ public: // Basic virtual functions
     std::vector<size_t> getLocalSizes() const override;
 
 public:
-    void aliasGhostBuffer( std::shared_ptr<VectorData> in ) override;
     std::shared_ptr<CommunicationList> getCommunicationList() const override;
     void setCommunicationList( std::shared_ptr<CommunicationList> comm ) override;
     void dataChanged() override;

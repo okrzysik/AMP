@@ -426,11 +426,6 @@ public: // Advanced functions
      */
     virtual std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const = 0;
 
-    /** \brief Associate the ghost buffer of a Vector with this Vector
-     * \param in  The Vector to share a ghost buffer with
-     */
-    virtual void aliasGhostBuffer( std::shared_ptr<VectorData> in ) = 0;
-
     /** \brief Check if the two VectorData objects are alias of each other
      * \details  This function checks if two VectorData objects are alias of each other.
      *     Two VectorData objects are alias if their data blocks are the same size and

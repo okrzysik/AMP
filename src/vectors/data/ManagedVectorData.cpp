@@ -78,7 +78,6 @@ ManagedVectorData::ManagedVectorData( std::shared_ptr<VectorData> alias )
 {
     auto vec = getManaged( alias );
     d_Engine = vec->d_Engine;
-    aliasGhostBuffer( vec );
 
     auto vec2 = getVectorEngine();
     AMP_ASSERT( vec2 );
