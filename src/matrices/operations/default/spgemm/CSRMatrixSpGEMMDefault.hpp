@@ -431,7 +431,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyF
     const bool is_diag = block_t == BlockType::DIAG;
     auto B_colmap      = B_offd->getColumnMap();
     DISABLE_WARNINGS
-    auto B_to_global   = [B_cols_loc, first_col, B_colmap, is_diag]( const lidx_t k ) -> gidx_t {
+    auto B_to_global = [B_cols_loc, first_col, B_colmap, is_diag]( const lidx_t k ) -> gidx_t {
         return is_diag ? first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]];
     };
     ENABLE_WARNINGS
