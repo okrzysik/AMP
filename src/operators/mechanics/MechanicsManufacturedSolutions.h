@@ -213,7 +213,7 @@ protected:
     double ayx, byx, ayy, byy, ayz, byz;
     double azx, bzx, azy, bzy, azz, bzz;
     std::string name; ///< name/type of mechanics manufactured solution
-}; // end class MMS
+};                    // end class MMS
 
 
 /**
