@@ -29,12 +29,6 @@ public:
      */
     MMS( double YM = 0.0, double PR = 0.0 );
 
-    //! Copy constructor
-    MMS( const MMS &mms );
-
-    //! Assignment operator
-    MMS &operator=( const MMS &mms );
-
     //! Destructor
     virtual ~MMS() {}
 
@@ -219,7 +213,7 @@ protected:
     double ayx, byx, ayy, byy, ayz, byz;
     double azx, bzx, azy, bzy, azz, bzz;
     std::string name; ///< name/type of mechanics manufactured solution
-};                    // end class MMS
+}; // end class MMS
 
 
 /**
