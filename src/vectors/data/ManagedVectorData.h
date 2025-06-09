@@ -79,6 +79,8 @@ public: // Derived from VectorData
 
     std::shared_ptr<VectorData> cloneData( const std::string &name = "" ) const override;
     bool hasContiguousData() const override;
+    void makeConsistent( ScatterType t ) override;
+    using VectorData::makeConsistent;
 
 protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;

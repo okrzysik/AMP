@@ -177,7 +177,7 @@ private:
     /**
      * Allocate the vector basis in d_iBasisAllocSize chunks (d_vBasis & d_zBasis)
      */
-    void allocateBasis();
+    void allocateBasis( std::shared_ptr<const AMP::LinearAlgebra::Vector> u = nullptr );
 
     bool d_bRestart = false; //! whether to restart
 

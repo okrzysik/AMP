@@ -592,6 +592,19 @@ public: // Accessors
     }
 
     /*!
+     * Access the desired element
+     * @param i             The element index
+     */
+    ARRAY_INLINE TYPE &operator[]( size_t i ) { return d_data[i]; }
+
+    /*!
+     * Access the desired element
+     * @param i             The element index
+     */
+    ARRAY_INLINE const TYPE &operator[]( size_t i ) const { return d_data[i]; }
+
+
+    /*!
      * Access the desired element as a raw pointer
      * @param i             The global index
      */

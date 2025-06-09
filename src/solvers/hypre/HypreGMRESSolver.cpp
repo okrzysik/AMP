@@ -137,11 +137,11 @@ void HypreGMRESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
         HYPRE_GMRESSetLogging( d_solver, logging );
     }
 
-    d_iMaxKrylovDim = db->getWithDefault<HYPRE_Int>( "max_krylov_dimension", 100 );
+    d_iMaxKrylovDim = db->getWithDefault<int>( "max_krylov_dimension", 100 );
     HYPRE_GMRESSetTol( d_solver, static_cast<HYPRE_Real>( d_dRelativeTolerance ) );
     HYPRE_GMRESSetAbsoluteTol( d_solver, static_cast<HYPRE_Real>( d_dAbsoluteTolerance ) );
     HYPRE_GMRESSetMaxIter( d_solver, d_iMaxIterations );
-    HYPRE_GMRESSetKDim( d_solver, d_iMaxKrylovDim );
+    HYPRE_GMRESSetKDim( d_solver, static_cast<HYPRE_Int>( d_iMaxKrylovDim ) );
     HYPRE_GMRESSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );
 
     d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );

@@ -1,4 +1,5 @@
 #include "AMP/matrices/operations/default/spgemm/CSRMatrixSpGEMMDefault.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include "ProfilerApp.h"
 
@@ -261,12 +262,12 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
     std::shared_ptr<LocalMatrixData> B_data,
     std::shared_ptr<LocalMatrixData> C_data )
 {
-    using lidx_t           = typename Policy::lidx_t;
-    using gidx_t           = typename Policy::gidx_t;
-    using scalar_t         = typename Policy::scalar_t;
-    constexpr bool is_diag = block_t == BlockType::DIAG;
-    using acc_t            = typename std::
-        conditional<is_diag, DenseAccumulator<gidx_t>, SparseAccumulator<gidx_t>>::type;
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+    using acc_t    = typename std::conditional<block_t == BlockType::DIAG,
+                                            DenseAccumulator<gidx_t>,
+                                            SparseAccumulator<gidx_t>>::type;
 
     AMP_DEBUG_ASSERT( A_data != nullptr );
     AMP_DEBUG_ASSERT( B_data != nullptr );
@@ -275,6 +276,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
     if ( A_data->isEmpty() || B_data->isEmpty() ) {
         return;
     }
+
+    const bool is_diag = block_t == BlockType::DIAG;
 
     // all fields from blocks involved
     lidx_t *A_rs = nullptr, *A_cols_loc = nullptr;
@@ -305,12 +308,15 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
 
     // DenseAcc's act on assembled blocks that may have global columns removed
     // set up conversion for that case
-    auto B_to_global = [B_cols, B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
+    DISABLE_WARNINGS
+    auto B_to_global =
+        [is_diag, B_cols, B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
         if ( B_cols != nullptr ) {
             return B_cols[k];
         }
         return is_diag ? first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]];
     };
+    ENABLE_WARNINGS
 
     // Create accumulator with appropriate capacity
     const lidx_t acc_cap = is_diag ? B_data->numLocalColumns() : SPACC_SIZE;
@@ -380,12 +386,12 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyF
     std::shared_ptr<LocalMatrixData> BR_data,
     std::shared_ptr<LocalMatrixData> C_data )
 {
-    using lidx_t           = typename Policy::lidx_t;
-    using gidx_t           = typename Policy::gidx_t;
-    using scalar_t         = typename Policy::scalar_t;
-    constexpr bool is_diag = block_t == BlockType::DIAG;
-    using acc_t            = typename std::
-        conditional<is_diag, DenseAccumulator<gidx_t>, SparseAccumulator<gidx_t>>::type;
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+    using acc_t    = typename std::conditional<block_t == BlockType::DIAG,
+                                            DenseAccumulator<gidx_t>,
+                                            SparseAccumulator<gidx_t>>::type;
 
     if ( ( A_diag->isEmpty() || B_data->isEmpty() ) &&
          ( A_offd->isEmpty() || BR_data->isEmpty() ) ) {
@@ -422,16 +428,13 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyF
 
     // The B blocks will have either local or global cols available
     // but generally not both. If only local available need conversion to global
-    auto B_colmap    = B_offd->getColumnMap();
-    auto B_to_global = [B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
-        if constexpr ( is_diag ) {
-            (void) B_colmap;
-            return first_col + B_cols_loc[k];
-        } else {
-            (void) first_col;
-            return B_colmap[B_cols_loc[k]];
-        }
+    const bool is_diag = block_t == BlockType::DIAG;
+    auto B_colmap      = B_offd->getColumnMap();
+    DISABLE_WARNINGS
+    auto B_to_global = [B_cols_loc, first_col, B_colmap, is_diag]( const lidx_t k ) -> gidx_t {
+        return is_diag ? first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]];
     };
+    ENABLE_WARNINGS
 
     // Create accumulator with appropriate capacity
     const lidx_t acc_cap = is_diag ? B_data->numLocalColumns() : SPACC_SIZE;
@@ -563,28 +566,11 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyR
     // depending on the output block type need either
     // local or global column indices from B_data, but
     // could have either ones present or not
-    auto B_to_global = [is_remote, is_diag, B_cols, B_cols_loc, B_colmap]( lidx_t k ) -> gidx_t {
-        if constexpr ( is_diag ) {
-            (void) is_remote;
-            (void) is_diag;
-            (void) B_cols;
-            (void) B_cols_loc;
-            (void) B_colmap;
-            AMP_ERROR( "multiplyReuse: B_to_global called on diag" );
-        } else {
-            return is_remote ? B_cols[k] : B_colmap[B_cols_loc[k]];
-        }
+    auto B_to_global = [is_remote, B_cols, B_cols_loc, B_colmap]( lidx_t k ) -> gidx_t {
+        return is_remote ? B_cols[k] : B_colmap[B_cols_loc[k]];
     };
     auto B_to_local = [is_remote, B_cols, B_cols_loc, first_col]( lidx_t k ) -> lidx_t {
-        if constexpr ( is_diag ) {
-            return is_remote ? static_cast<lidx_t>( B_cols[k] - first_col ) : B_cols_loc[k];
-        } else {
-            (void) is_remote;
-            (void) B_cols;
-            (void) B_cols_loc;
-            (void) first_col;
-            AMP_ERROR( "multiplyReuse: B_to_local called on offd" );
-        }
+        return is_remote ? static_cast<lidx_t>( B_cols[k] - first_col ) : B_cols_loc[k];
     };
 
     // Finally, after all the setup do the actual computation
@@ -623,56 +609,6 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyR
             acc.clear();
         }
     }
-
-    // columns already exist in C, so need way to convert them to position to write
-    // auto diag_search = [B_cols,
-    //                     B_cols_loc]( lidx_t loc, lidx_t row_len, lidx_t *col_space ) -> lidx_t {
-    //     // special ordering on diagonal, check first entry outside of binary search
-    //     if ( col_space[0] == loc ) {
-    //         return 0;
-    //     }
-
-    //     lidx_t lo = 1, up = row_len - 1;
-    //     while ( ( up - lo ) > 1 ) {
-    //         const auto pos = ( up + lo ) / 2;
-    //         if ( col_space[pos] == loc ) {
-    //             return pos;
-    //         } else if ( col_space[pos] > loc ) {
-    //             up = pos;
-    //         } else {
-    //             lo = pos;
-    //         }
-    //     }
-    //     if ( col_space[lo] == loc ) {
-    //         return lo;
-    //     }
-    //     if ( col_space[up] == loc ) {
-    //         return up;
-    //     }
-    //     AMP_ERROR( "multiplyReuse diag_search failed" );
-    //     return -1;
-    // };
-    // auto offd_search = [C_colmap]( gidx_t gbl, lidx_t row_len, lidx_t *col_space ) -> lidx_t {
-    //     lidx_t lo = 0, up = row_len - 1;
-    //     while ( ( up - lo ) > 1 ) {
-    //         const auto pos = ( up + lo ) / 2;
-    //         if ( C_colmap[col_space[pos]] == gbl ) {
-    //             return pos;
-    //         } else if ( C_colmap[col_space[pos]] > gbl ) {
-    //             up = pos;
-    //         } else {
-    //             lo = pos;
-    //         }
-    //     }
-    //     if ( C_colmap[col_space[lo]] == gbl ) {
-    //         return lo;
-    //     }
-    //     if ( C_colmap[col_space[up]] == gbl ) {
-    //         return up;
-    //     }
-    //     AMP_ERROR( "multiplyReuse offd_search failed" );
-    //     return -1;
-    // };
 }
 
 template<typename Policy, class Allocator, class LocalMatrixData>

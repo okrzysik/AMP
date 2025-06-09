@@ -227,6 +227,7 @@ void testAXPY( AMP::UnitTest *ut,
     X->mult( rX, lX );
 
     rY->copyVector( rX );
+    rY->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     lY->zero();
     Y->mult( rY, lY );

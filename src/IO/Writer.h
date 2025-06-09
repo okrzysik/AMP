@@ -44,6 +44,7 @@ public:
         bool registerVector;         // Does the writer support registering a vector
         bool registerVectorWithMesh; // Does the writer support registering a vector with a mesh
         bool registerMatrix;         // Does the writer support registering a matrix
+        bool enabled;                // Is the current writer enabled
         WriterProperties();
     };
 
