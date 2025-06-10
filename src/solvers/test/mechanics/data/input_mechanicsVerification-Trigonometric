@@ -14,7 +14,7 @@ Mesh {
 
 scale_mesh = 1.0e-1 // box meshes are 10x10x10
 ManufacturedSolution {
-    name = "Linear"
+    name = "Trigonometric"
     type_coeff_ab = "random"
     // u_i = prod_j Mi*(aij*i/Li+bij) for Linear
     // u_i = prod_j Mi*sin((aij*i/Li+bij)*pi/2) for Trigonometric

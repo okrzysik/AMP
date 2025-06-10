@@ -175,15 +175,15 @@ template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::scatter_set()
 {
     AMP_ASSERT( d_CommList );
+    if ( !d_CommList->anyCommunication() )
+        return;
+    PROFILE( "scatter_set" );
     constexpr auto type   = getTypeID<TYPE>();
     const auto &sendSizes = d_CommList->getSendSizes();
     const auto &recvSizes = d_CommList->getReceiveSizes();
-    if ( sendSizes.empty() && recvSizes.empty() )
-        return;
-    PROFILE( "scatter_set" );
-    const auto &comm     = d_CommList->getComm();
-    const auto &sendDisp = d_CommList->getSendDisp();
-    const auto &recvDisp = d_CommList->getReceiveDisp();
+    const auto &comm      = d_CommList->getComm();
+    const auto &sendDisp  = d_CommList->getSendDisp();
+    const auto &recvDisp  = d_CommList->getReceiveDisp();
     // Pack the set buffers
     if ( !d_localRemote.empty() )
         getValuesByLocalID( d_localRemote.size(), d_localRemote.data(), d_SendRecv, type );
@@ -200,15 +200,15 @@ template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::scatter_add()
 {
     AMP_ASSERT( d_CommList );
+    if ( !d_CommList->anyCommunication() )
+        return;
+    PROFILE( "scatter_add" );
     constexpr auto type   = getTypeID<TYPE>();
     const auto &sendSizes = d_CommList->getSendSizes();
     const auto &recvSizes = d_CommList->getReceiveSizes();
-    if ( sendSizes.empty() && recvSizes.empty() )
-        return;
-    PROFILE( "scatter_add" );
-    const auto &comm     = d_CommList->getComm();
-    const auto &sendDisp = d_CommList->getSendDisp();
-    const auto &recvDisp = d_CommList->getReceiveDisp();
+    const auto &comm      = d_CommList->getComm();
+    const auto &sendDisp  = d_CommList->getSendDisp();
+    const auto &recvDisp  = d_CommList->getReceiveDisp();
     // Communicate add buffers (use add buffer directly)
     comm.allToAll<TYPE>( d_AddBuffer,
                          recvSizes.data(),
