@@ -194,6 +194,9 @@ public:
      */
     void clearBuffers();
 
+    //! Returns true if any rank has remote data
+    bool anyCommunication();
+
     /**
      * \brief  Return the local index of a shared datum.
      * \param[in] dof  The global index to get a local ghost id for
@@ -223,7 +226,8 @@ protected:
 
 private:
     AMP_MPI d_comm;                            // Communicator
-    mutable bool d_initialized = false;        // Have we initialized all of the data
+    mutable bool d_initialized   = false;      // Have we initialized all of the data
+    mutable bool d_anyRankRemote = false;      // Does any rank have remote data
     std::vector<size_t> d_ReceiveDOFList;      // Sorted DOF receive lists
     std::vector<size_t> d_partition;           // Partition info
     mutable std::vector<size_t> d_SendDOFList; // Sorted DOF send lists
