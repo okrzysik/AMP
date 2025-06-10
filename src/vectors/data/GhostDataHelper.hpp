@@ -180,6 +180,7 @@ void GhostDataHelper<TYPE, Allocator>::scatter_set()
     const auto &recvSizes = d_CommList->getReceiveSizes();
     if ( sendSizes.empty() && recvSizes.empty() )
         return;
+    PROFILE( "scatter_set" );
     const auto &comm     = d_CommList->getComm();
     const auto &sendDisp = d_CommList->getSendDisp();
     const auto &recvDisp = d_CommList->getReceiveDisp();
@@ -204,6 +205,7 @@ void GhostDataHelper<TYPE, Allocator>::scatter_add()
     const auto &recvSizes = d_CommList->getReceiveSizes();
     if ( sendSizes.empty() && recvSizes.empty() )
         return;
+    PROFILE( "scatter_add" );
     const auto &comm     = d_CommList->getComm();
     const auto &sendDisp = d_CommList->getSendDisp();
     const auto &recvDisp = d_CommList->getReceiveDisp();
