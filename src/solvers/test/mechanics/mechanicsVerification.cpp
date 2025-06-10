@@ -169,7 +169,7 @@ computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             exactSolutionsVec->setLocalValuesByGlobalID(
                 1, &globalIDs[xyz], &displacementXYZ[xyz] );
         } // end loop over the coordinates
-    }     // end soop over all nodes
+    } // end soop over all nodes
     if ( verbose ) {
         AMP::pout << "--------------------------------------------\n"
                   << "---- exact solution norm = " << std::setprecision( 15 )
@@ -326,8 +326,9 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
             std::vector<double> gradientY( 3, 1.0 );
             std::vector<double> gradientZ( 3, 1.0 );
             // The tensor is stored under the form xx yy zz yz xz xy
-            // autostressTensor = manufacturedSolution->getStressTensor(bnd->x(), bnd->y(),
-            // bnd->z());
+            auto pos = node.coord();
+            [[maybe_unused]] auto stressTensor =
+                manufacturedSolution->getStressTensor( pos.x(), pos.y(), pos.z() );
             double normalDotGradientX = 0.0;
             double normalDotGradientY = 0.0;
             double normalDotGradientZ = 0.0;
@@ -455,9 +456,10 @@ int mechanicsVerification( int argc, char *argv[] )
 
     if ( argc == 1 ) {
         exeNames.emplace_back( "mechanicsVerification-Linear" );
+        exeNames.emplace_back( "mechanicsVerification-Trigonometric" );
     } else {
         for ( int i = 1; i < argc; i++ )
-            exeNames.emplace_back( "mechanicsVerification-" + std::string( argv[i] ) );
+            exeNames.emplace_back( argv[i] );
     }
 
     for ( unsigned int i = 0; i < exeNames.size(); i++ )
