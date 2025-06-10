@@ -6,19 +6,10 @@
 #include "AMP/matrices/operations/default/spgemm/CSRMatrixSpGEMMDefault.hpp"
 #include "AMP/utils/memory.h"
 
-#define INSTANTIATE_FULL( policy, allocator )                           \
-    template class AMP::LinearAlgebra::CSRLocalMatrixOperationsDefault< \
-        policy,                                                         \
-        allocator,                                                      \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;     \
-    template class AMP::LinearAlgebra::CSRMatrixOperationsDefault<      \
-        policy,                                                         \
-        allocator,                                                      \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;     \
-    template class AMP::LinearAlgebra::CSRMatrixSpGEMMHelperDefault<    \
-        policy,                                                         \
-        allocator,                                                      \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
+#define INSTANTIATE_FULL( policy, allocator )                                              \
+    template class AMP::LinearAlgebra::CSRLocalMatrixOperationsDefault<policy, allocator>; \
+    template class AMP::LinearAlgebra::CSRMatrixOperationsDefault<policy, allocator>;      \
+    template class AMP::LinearAlgebra::CSRMatrixSpGEMMHelperDefault<policy, allocator>;
 
 // Check if device based allocators are needed
 #ifdef USE_DEVICE
@@ -48,27 +39,14 @@ INSTANTIATE_ALLOCS( HYPRECSRPolicyFloat )
 
 // Full instantiator macro is final one in the chain
 // this gives all template arguments
-#define INSTANTIATE_CC_FULL( policy, policyIn, allocator )                                  \
-    template void AMP::LinearAlgebra::CSRMatrixOperationsDefault<                           \
-        policy,                                                                             \
-        allocator,                                                                          \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>::                        \
-        copyCast<policyIn>(                                                                 \
-            CSRMatrixData<policyIn,                                                         \
-                          allocator,                                                        \
-                          AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> *    \
-                X,                                                                          \
-            CSRMatrixData<policy,                                                           \
-                          allocator,                                                        \
-                          AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> *      \
-                Y );                                                                        \
-    template void AMP::LinearAlgebra::CSRLocalMatrixOperationsDefault<                      \
-        policy,                                                                             \
-        allocator,                                                                          \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>::                        \
-        copyCast<policyIn>(                                                                 \
-            std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> X, \
-            std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> Y );
+#define INSTANTIATE_CC_FULL( policy, policyIn, allocator )                                      \
+    template void                                                                               \
+        AMP::LinearAlgebra::CSRMatrixOperationsDefault<policy, allocator>::copyCast<policyIn>(  \
+            CSRMatrixData<policyIn, allocator> * X, CSRMatrixData<policy, allocator> * Y );     \
+    template void                                                                               \
+    AMP::LinearAlgebra::CSRLocalMatrixOperationsDefault<policy, allocator>::copyCast<policyIn>( \
+        std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> X,         \
+        std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> Y );
 
 // Allocator instatiator is responsible for adding all supported
 // allocator types for a given policy and forwarding along

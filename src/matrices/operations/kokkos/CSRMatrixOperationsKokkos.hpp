@@ -17,23 +17,15 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::mult(
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::mult(
     std::shared_ptr<const Vector> in, MatrixData const &A, std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsKokkos::mult" );
     AMP_DEBUG_ASSERT( in && out );
     AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -105,15 +97,9 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     d_exec_space.fence(); // get rid of this eventually
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
-    multTranspose( std::shared_ptr<const Vector> in,
-                   MatrixData const &A,
-                   std::shared_ptr<Vector> out )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::multTranspose(
+    std::shared_ptr<const Vector> in, MatrixData const &A, std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsKokkos::multTranspose" );
 
@@ -122,10 +108,7 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
 
     out->zero();
 
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -173,18 +156,11 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     }
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::scale(
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::scale(
     AMP::Scalar alpha_in, MatrixData &A )
 {
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -206,33 +182,20 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     d_exec_space.fence();
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
-    matMatMult( std::shared_ptr<MatrixData>,
-                std::shared_ptr<MatrixData>,
-                std::shared_ptr<MatrixData> )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::matMatMult(
+    std::shared_ptr<MatrixData>, std::shared_ptr<MatrixData>, std::shared_ptr<MatrixData> )
 {
     AMP_WARNING( "matMatMult for CSRMatrixOperationsKokkos not implemented" );
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::axpy(
-    AMP::Scalar alpha_in, const MatrixData &X, MatrixData &Y )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::axpy( AMP::Scalar alpha_in,
+                                                                               const MatrixData &X,
+                                                                               MatrixData &Y )
 {
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrDataX =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( X ) );
-    auto csrDataY =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( Y ) );
+    auto csrDataX = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( X ) );
+    auto csrDataY = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( Y ) );
 
     AMP_DEBUG_ASSERT( csrDataX );
     AMP_DEBUG_ASSERT( csrDataY );
@@ -262,18 +225,11 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     d_exec_space.fence();
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::setScalar(
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::setScalar(
     AMP::Scalar alpha_in, MatrixData &A )
 {
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -295,34 +251,22 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     d_exec_space.fence();
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::zero(
-    MatrixData &A )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::zero( MatrixData &A )
 {
     setScalar( 0.0, A );
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
-    setDiagonal( std::shared_ptr<const Vector> in, MatrixData &A )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::setDiagonal(
+    std::shared_ptr<const Vector> in, MatrixData &A )
 {
-    using scalar_t = typename Policy::scalar_t;
-
     // constrain to one data block for now
     AMP_DEBUG_ASSERT( in && in->numberOfDataBlocks() == 1 && in->isType<scalar_t>( 0 ) );
 
     const scalar_t *vvals_p = in->getRawDataBlock<scalar_t>();
 
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -338,18 +282,13 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     d_exec_space.fence();
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
-    setIdentity( MatrixData &A )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::setIdentity(
+    MatrixData &A )
 {
     zero( A );
 
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -365,19 +304,11 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     d_exec_space.fence();
 }
 
-
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
-    extractDiagonal( MatrixData const &A, std::shared_ptr<Vector> buf )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::extractDiagonal(
+    MatrixData const &A, std::shared_ptr<Vector> buf )
 {
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -394,19 +325,11 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     d_exec_space.fence();
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-AMP::Scalar
-CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::LinfNorm(
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+AMP::Scalar CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::LinfNorm(
     MatrixData const &A ) const
 {
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -434,18 +357,12 @@ CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixDa
     return comm.maxReduce<scalar_t>( max_norm );
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::copy(
-    const MatrixData &X, MatrixData &Y )
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::copy( const MatrixData &X,
+                                                                               MatrixData &Y )
 {
-    auto csrDataX =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( X ) );
-    auto csrDataY =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( Y ) );
+    auto csrDataX = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( X ) );
+    auto csrDataY = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( Y ) );
 
     AMP_DEBUG_ASSERT( csrDataX );
     AMP_DEBUG_ASSERT( csrDataY );
@@ -474,31 +391,23 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     d_exec_space.fence();
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::copyCast(
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::copyCast(
     const MatrixData &X, MatrixData &Y )
 {
-    auto csrDataY = getCSRMatrixData<Policy, Allocator, LocalMatrixData>( Y );
+    auto csrDataY = getCSRMatrixData<Policy, Allocator>( Y );
     AMP_DEBUG_ASSERT( csrDataY );
     if ( X.getCoeffType() == getTypeID<double>() ) {
         using PolicyIn =
             AMP::LinearAlgebra::CSRPolicy<typename Policy::gidx_t, typename Policy::lidx_t, double>;
-        auto csrDataX =
-            getCSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>>(
-                const_cast<MatrixData &>( X ) );
+        auto csrDataX = getCSRMatrixData<PolicyIn, Allocator>( const_cast<MatrixData &>( X ) );
         AMP_DEBUG_ASSERT( csrDataX );
 
         copyCast<PolicyIn>( csrDataX, csrDataY );
     } else if ( X.getCoeffType() == getTypeID<float>() ) {
         using PolicyIn =
             AMP::LinearAlgebra::CSRPolicy<typename Policy::gidx_t, typename Policy::lidx_t, float>;
-        auto csrDataX =
-            getCSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>>(
-                const_cast<MatrixData &>( X ) );
+        auto csrDataX = getCSRMatrixData<PolicyIn, Allocator>( const_cast<MatrixData &>( X ) );
         AMP_DEBUG_ASSERT( csrDataX );
 
         copyCast<PolicyIn>( csrDataX, csrDataY );
@@ -507,15 +416,10 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     }
 }
 
-template<typename Policy,
-         typename Allocator,
-         class ExecSpace,
-         class ViewSpace,
-         class LocalMatrixData>
+template<typename Policy, typename Allocator, class ExecSpace, class ViewSpace>
 template<typename PolicyIn>
-void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::copyCast(
-    CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-    CSRMatrixData<Policy, Allocator, LocalMatrixData> *Y )
+void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::copyCast(
+    CSRMatrixData<PolicyIn, Allocator> *X, matrixdata_t *Y )
 {
 
     AMP_DEBUG_INSIST( X->d_memory_location != AMP::Utilities::MemoryType::device,
@@ -534,11 +438,9 @@ void CSRMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMat
     AMP_DEBUG_ASSERT( diagMatrixX && offdMatrixX );
     AMP_DEBUG_ASSERT( diagMatrixY && offdMatrixY );
 
-    CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>::
-        template copyCast<PolicyIn>( diagMatrixX, diagMatrixY );
+    localops_t::template copyCast<PolicyIn>( diagMatrixX, diagMatrixY );
     if ( X->hasOffDiag() ) {
-        CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::template copyCast<
-            PolicyIn>( offdMatrixX, offdMatrixY );
+        localops_t::template copyCast<PolicyIn>( offdMatrixX, offdMatrixY );
     }
 }
 

@@ -9,15 +9,9 @@
 
 // Full instantiator macro is final one in the chain
 // this gives all template arguments
-#define INSTANTIATE_FULL( policy, allocator )                          \
-    template class AMP::LinearAlgebra::CSRLocalMatrixOperationsDevice< \
-        policy,                                                        \
-        allocator,                                                     \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;    \
-    template class AMP::LinearAlgebra::CSRMatrixOperationsDevice<      \
-        policy,                                                        \
-        allocator,                                                     \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
+#define INSTANTIATE_FULL( policy, allocator )                                             \
+    template class AMP::LinearAlgebra::CSRLocalMatrixOperationsDevice<policy, allocator>; \
+    template class AMP::LinearAlgebra::CSRMatrixOperationsDevice<policy, allocator>;
 
 // Allocator instatiator is responsible for adding all supported
 // allocator types for a given policy and forwarding along
@@ -50,27 +44,14 @@ INSTANTIATE_ALLOCS( HYPRECSRPolicyFloat )
 
 // Full instantiator macro is final one in the chain
 // this gives all template arguments
-#define INSTANTIATE_CC_FULL( policy, policyIn, allocator )                                  \
-    template void AMP::LinearAlgebra::CSRMatrixOperationsDevice<                            \
-        policy,                                                                             \
-        allocator,                                                                          \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>::                        \
-        copyCast<policyIn>(                                                                 \
-            CSRMatrixData<policyIn,                                                         \
-                          allocator,                                                        \
-                          AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> *    \
-                X,                                                                          \
-            CSRMatrixData<policy,                                                           \
-                          allocator,                                                        \
-                          AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> *      \
-                Y );                                                                        \
-    template void AMP::LinearAlgebra::CSRLocalMatrixOperationsDevice<                       \
-        policy,                                                                             \
-        allocator,                                                                          \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>::                        \
-        copyCast<policyIn>(                                                                 \
-            std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> X, \
-            std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> Y );
+#define INSTANTIATE_CC_FULL( policy, policyIn, allocator )                                     \
+    template void                                                                              \
+        AMP::LinearAlgebra::CSRMatrixOperationsDevice<policy, allocator>::copyCast<policyIn>(  \
+            CSRMatrixData<policyIn, allocator> * X, CSRMatrixData<policy, allocator> * Y );    \
+    template void                                                                              \
+    AMP::LinearAlgebra::CSRLocalMatrixOperationsDevice<policy, allocator>::copyCast<policyIn>( \
+        std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> X,        \
+        std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> Y );
 
 // Allocator instatiator is responsible for adding all supported
 // allocator types for a given policy and forwarding along

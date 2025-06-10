@@ -57,7 +57,7 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
     }
 
-    d_matrixData = std::make_shared<CSRMatrixData<Policy, Allocator>>( params );
+    d_matrixData = std::make_shared<matrixdata_t>( params );
 }
 
 template<typename Policy, typename Allocator>
@@ -124,9 +124,8 @@ void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
 {
     PROFILE( "CSRMatrix<Policy, Allocator>::multiply" );
     // pull out matrix data objects and ensure they are of correct type
-    auto thisData = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData );
-    auto otherData =
-        std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( other_op->getMatrixData() );
+    auto thisData  = std::dynamic_pointer_cast<matrixdata_t>( d_matrixData );
+    auto otherData = std::dynamic_pointer_cast<matrixdata_t>( other_op->getMatrixData() );
     AMP_DEBUG_INSIST( thisData && otherData,
                       "CSRMatrix::multiply received invalid MatrixData types" );
 
@@ -142,8 +141,7 @@ void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
             std::function<std::vector<size_t>( size_t )>() );
 
         // Create the matrix
-        auto newData =
-            std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
+        auto newData = std::make_shared<matrixdata_t>( params );
         std::shared_ptr<Matrix> newMatrix =
             std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( newData );
         AMP_ASSERT( newMatrix );
@@ -151,8 +149,7 @@ void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
 
         d_matrixOps->matMatMult( thisData, otherData, newData );
     } else {
-        auto resultData =
-            std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( result->getMatrixData() );
+        auto resultData = std::dynamic_pointer_cast<matrixdata_t>( result->getMatrixData() );
         d_matrixOps->matMatMult( thisData, otherData, resultData );
     }
 }
@@ -178,8 +175,7 @@ Vector::shared_ptr CSRMatrix<Policy, Allocator>::extractDiagonal( Vector::shared
 template<typename Policy, typename Allocator>
 Vector::shared_ptr CSRMatrix<Policy, Allocator>::getRightVector() const
 {
-    auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
-                   ->getRightVariable();
+    auto var          = std::dynamic_pointer_cast<matrixdata_t>( d_matrixData )->getRightVariable();
     const auto memloc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
     return createVector( getRightDOFManager(), var, true, memloc );
 }
@@ -187,8 +183,7 @@ Vector::shared_ptr CSRMatrix<Policy, Allocator>::getRightVector() const
 template<typename Policy, typename Allocator>
 Vector::shared_ptr CSRMatrix<Policy, Allocator>::getLeftVector() const
 {
-    auto var = std::dynamic_pointer_cast<CSRMatrixData<Policy, Allocator>>( d_matrixData )
-                   ->getLeftVariable();
+    auto var          = std::dynamic_pointer_cast<matrixdata_t>( d_matrixData )->getLeftVariable();
     const auto memloc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
     return createVector( getLeftDOFManager(), var, true, memloc );
 }
