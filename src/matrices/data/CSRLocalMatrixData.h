@@ -19,12 +19,12 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-// Forward declare CSRMatrix{Data.Communicator> to make them friends
-template<typename P, class A, class DIAG>
+// Forward declare CSRMatrix{Data,Communicator,SpGEMM} to make them friends
+template<typename P, class A>
 class CSRMatrixData;
-template<typename P, class A, class DIAG>
+template<typename P, class A>
 class CSRMatrixCommunicator;
-template<typename P, class A, class DIAG>
+template<typename P, class A>
 class CSRMatrixSpGEMMDefault;
 
 template<typename Policy, class Allocator>
@@ -32,16 +32,22 @@ class CSRLocalMatrixData :
     public AMP::enable_shared_from_this<CSRLocalMatrixData<Policy, Allocator>>
 {
 public:
-    template<typename P, class A, class DIAG>
+    template<typename P, class A>
     friend class CSRMatrixData;
-    template<typename P, class A, class DIAG>
+    template<typename P, class A>
     friend class CSRMatrixCommunicator;
-    template<typename P, class A, class DIAG>
+    template<typename P, class A>
     friend class CSRMatrixSpGEMMDefault;
+
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
+    using policy_t    = Policy;
+    using allocator_t = Allocator;
 
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
+
     using gidxAllocator_t =
         typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
     using lidxAllocator_t =

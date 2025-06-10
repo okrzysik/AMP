@@ -20,19 +20,16 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::mult(
-    std::shared_ptr<const Vector> in, MatrixData const &A, std::shared_ptr<Vector> out )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::mult( std::shared_ptr<const Vector> in,
+                                                         MatrixData const &A,
+                                                         std::shared_ptr<Vector> out )
 {
     PROFILE( "CSRMatrixOperationsDevice::mult" );
     AMP_DEBUG_ASSERT( in && out );
     AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
-    using scalar_t = typename Policy::scalar_t;
-    using lidx_t   = typename Policy::lidx_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -65,7 +62,7 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::mult(
 
     {
         PROFILE( "CSRMatrixOperationsDevice::mult(local)" );
-        CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::mult(
+        CSRLocalMatrixOperationsDevice<Policy, Allocator>::mult(
             inDataBlock, diagMatrix, outDataBlock );
     }
 
@@ -88,23 +85,18 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::mult(
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::multTranspose(
-    std::shared_ptr<const Vector> in, MatrixData const &A, std::shared_ptr<Vector> out )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::multTranspose( std::shared_ptr<const Vector> in,
+                                                                  MatrixData const &A,
+                                                                  std::shared_ptr<Vector> out )
 {
     AMP_WARNING( "multTranspose not enabled for device." );
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::scale( AMP::Scalar alpha_in,
-                                                                           MatrixData &A )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::scale( AMP::Scalar alpha_in, MatrixData &A )
 {
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -112,7 +104,7 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::scale( AMP::
     AMP_DEBUG_ASSERT( diagMatrix );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
-    CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::scale( alpha, diagMatrix );
+    CSRLocalMatrixOperationsDevice<Policy, Allocator>::scale( alpha, diagMatrix );
 
     if ( csrData->hasOffDiag() ) {
         auto offdMatrix = csrData->getOffdMatrix();
@@ -121,24 +113,21 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::scale( AMP::
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::matMatMult(
-    std::shared_ptr<MatrixData>, std::shared_ptr<MatrixData>, std::shared_ptr<MatrixData> )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::matMatMult( std::shared_ptr<MatrixData>,
+                                                               std::shared_ptr<MatrixData>,
+                                                               std::shared_ptr<MatrixData> )
 {
     AMP_WARNING( "matMatMult for CSRMatrixOperationsDevice not implemented" );
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::axpy( AMP::Scalar alpha_in,
-                                                                          const MatrixData &X,
-                                                                          MatrixData &Y )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::axpy( AMP::Scalar alpha_in,
+                                                         const MatrixData &X,
+                                                         MatrixData &Y )
 {
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrDataX =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( X ) );
-    auto csrDataY =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( Y ) );
+    auto csrDataX = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( X ) );
+    auto csrDataY = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( Y ) );
 
     AMP_DEBUG_ASSERT( csrDataX );
     AMP_DEBUG_ASSERT( csrDataY );
@@ -160,21 +149,16 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::axpy( AMP::S
     AMP_DEBUG_ASSERT( diagMatrixY && offdMatrixY );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
-    CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::axpy(
-        alpha, diagMatrixX, diagMatrixY );
+    CSRLocalMatrixOperationsDevice<Policy, Allocator>::axpy( alpha, diagMatrixX, diagMatrixY );
     if ( csrDataX->hasOffDiag() ) {
         CSRLocalMatrixOperationsDevice<Policy, Allocator>::axpy( alpha, offdMatrixX, offdMatrixY );
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setScalar( AMP::Scalar alpha_in,
-                                                                               MatrixData &A )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::setScalar( AMP::Scalar alpha_in, MatrixData &A )
 {
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -188,33 +172,28 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setScalar( A
 
     auto alpha = static_cast<scalar_t>( alpha_in );
 
-    CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setScalar( alpha,
-                                                                                   diagMatrix );
+    CSRLocalMatrixOperationsDevice<Policy, Allocator>::setScalar( alpha, diagMatrix );
     if ( csrData->hasOffDiag() ) {
         CSRLocalMatrixOperationsDevice<Policy, Allocator>::setScalar( alpha, offdMatrix );
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::zero( MatrixData &A )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::zero( MatrixData &A )
 {
-    using scalar_t = typename Policy::scalar_t;
     setScalar( static_cast<scalar_t>( 0.0 ), A );
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setDiagonal(
-    std::shared_ptr<const Vector> in, MatrixData &A )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::setDiagonal( std::shared_ptr<const Vector> in,
+                                                                MatrixData &A )
 {
-    using scalar_t = typename Policy::scalar_t;
-
     // constrain to one data block for now
     AMP_DEBUG_ASSERT( in && in->numberOfDataBlocks() == 1 && in->isType<scalar_t>( 0 ) );
 
     const scalar_t *vvals_p = in->getRawDataBlock<scalar_t>();
 
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -225,19 +204,15 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setDiagonal(
     AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
                       "CSRMatrixOperationsDefault is not implemented for device memory" );
 
-    CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setDiagonal( vvals_p,
-                                                                                     diagMatrix );
+    CSRLocalMatrixOperationsDevice<Policy, Allocator>::setDiagonal( vvals_p, diagMatrix );
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::extractDiagonal(
-    MatrixData const &A, std::shared_ptr<Vector> buf )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::extractDiagonal( MatrixData const &A,
+                                                                    std::shared_ptr<Vector> buf )
 
 {
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -249,17 +224,15 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::extractDiago
                       "CSRMatrixOperationsDefault is not implemented for device memory" );
 
     scalar_t *buf_p = buf->getRawDataBlock<scalar_t>();
-    CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::extractDiagonal( diagMatrix,
-                                                                                         buf_p );
+    CSRLocalMatrixOperationsDevice<Policy, Allocator>::extractDiagonal( diagMatrix, buf_p );
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setIdentity( MatrixData &A )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::setIdentity( MatrixData &A )
 {
     zero( A );
 
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -270,18 +243,14 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setIdentity(
     AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
                       "CSRMatrixOperationsDefault is not implemented for device memory" );
 
-    CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setIdentity( diagMatrix );
+    CSRLocalMatrixOperationsDevice<Policy, Allocator>::setIdentity( diagMatrix );
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-AMP::Scalar
-CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::LinfNorm( MatrixData const &A ) const
+template<typename Policy, class Allocator>
+AMP::Scalar CSRMatrixOperationsDevice<Policy, Allocator>::LinfNorm( MatrixData const &A ) const
 
 {
-    using scalar_t = typename Policy::scalar_t;
-
-    auto csrData =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( A ) );
+    auto csrData = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( A ) );
 
     AMP_DEBUG_ASSERT( csrData );
 
@@ -296,8 +265,7 @@ CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::LinfNorm( MatrixD
     const auto nRows = csrData->numLocalRows();
     thrust::device_vector<scalar_t> rowSums( nRows, 0.0 );
 
-    CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::LinfNorm(
-        diagMatrix, rowSums.data().get() );
+    CSRLocalMatrixOperationsDevice<Policy, Allocator>::LinfNorm( diagMatrix, rowSums.data().get() );
     if ( csrData->hasOffDiag() ) {
         CSRLocalMatrixOperationsDevice<Policy, Allocator>::LinfNorm( offdMatrix,
                                                                      rowSums.data().get() );
@@ -309,14 +277,11 @@ CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::LinfNorm( MatrixD
     return comm.maxReduce<scalar_t>( max_norm );
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copy( const MatrixData &X,
-                                                                          MatrixData &Y )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::copy( const MatrixData &X, MatrixData &Y )
 {
-    auto csrDataX =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( X ) );
-    auto csrDataY =
-        getCSRMatrixData<Policy, Allocator, LocalMatrixData>( const_cast<MatrixData &>( Y ) );
+    auto csrDataX = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( X ) );
+    auto csrDataY = getCSRMatrixData<Policy, Allocator>( const_cast<MatrixData &>( Y ) );
 
     AMP_DEBUG_ASSERT( csrDataX );
     AMP_DEBUG_ASSERT( csrDataY );
@@ -337,34 +302,28 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copy( const 
     AMP_DEBUG_ASSERT( diagMatrixX && offdMatrixX );
     AMP_DEBUG_ASSERT( diagMatrixY && offdMatrixY );
 
-    CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copy( diagMatrixX,
-                                                                              diagMatrixY );
+    CSRLocalMatrixOperationsDevice<Policy, Allocator>::copy( diagMatrixX, diagMatrixY );
     if ( csrDataX->hasOffDiag() ) {
         CSRLocalMatrixOperationsDevice<Policy, Allocator>::copy( offdMatrixX, offdMatrixY );
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copyCast( const MatrixData &X,
-                                                                              MatrixData &Y )
+template<typename Policy, class Allocator>
+void CSRMatrixOperationsDevice<Policy, Allocator>::copyCast( const MatrixData &X, MatrixData &Y )
 {
-    auto csrDataY = getCSRMatrixData<Policy, Allocator, LocalMatrixData>( Y );
+    auto csrDataY = getCSRMatrixData<Policy, Allocator>( Y );
     AMP_DEBUG_ASSERT( csrDataY );
     if ( X.getCoeffType() == getTypeID<double>() ) {
         using PolicyIn =
             AMP::LinearAlgebra::CSRPolicy<typename Policy::gidx_t, typename Policy::lidx_t, double>;
-        auto csrDataX =
-            getCSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>>(
-                const_cast<MatrixData &>( X ) );
+        auto csrDataX = getCSRMatrixData<PolicyIn, Allocator>( const_cast<MatrixData &>( X ) );
         AMP_DEBUG_ASSERT( csrDataX );
 
         copyCast<PolicyIn>( csrDataX, csrDataY );
     } else if ( X.getCoeffType() == getTypeID<float>() ) {
         using PolicyIn =
             AMP::LinearAlgebra::CSRPolicy<typename Policy::gidx_t, typename Policy::lidx_t, float>;
-        auto csrDataX =
-            getCSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>>(
-                const_cast<MatrixData &>( X ) );
+        auto csrDataX = getCSRMatrixData<PolicyIn, Allocator>( const_cast<MatrixData &>( X ) );
         AMP_DEBUG_ASSERT( csrDataX );
 
         copyCast<PolicyIn>( csrDataX, csrDataY );
@@ -373,19 +332,18 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copyCast( co
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename PolicyIn>
-void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copyCast(
-    CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-    CSRMatrixData<Policy, Allocator, LocalMatrixData> *Y )
+void CSRMatrixOperationsDevice<Policy, Allocator>::copyCast( CSRMatrixData<PolicyIn, Allocator> *X,
+                                                             matrixdata_t *Y )
 {
 
     AMP_DEBUG_INSIST( X->d_memory_location != AMP::Utilities::MemoryType::device,
-                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
+                      "CSRMatrixOperationsDevice is not implemented for device memory" );
     AMP_DEBUG_INSIST( Y->d_memory_location != AMP::Utilities::MemoryType::device,
-                      "CSRMatrixOperationsKokkos is not implemented for device memory" );
+                      "CSRMatrixOperationsDevice is not implemented for device memory" );
     AMP_DEBUG_INSIST( X->d_memory_location == Y->d_memory_location,
-                      "CSRMatrixOperationsKokkos::copyCast X and Y must be in same memory space" );
+                      "CSRMatrixOperationsDevice::copyCast X and Y must be in same memory space" );
 
     auto diagMatrixX = X->getDiagMatrix();
     auto offdMatrixX = X->getOffdMatrix();
@@ -396,12 +354,9 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copyCast(
     AMP_DEBUG_ASSERT( diagMatrixX && offdMatrixX );
     AMP_DEBUG_ASSERT( diagMatrixY && offdMatrixY );
 
-
-    CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::template copyCast<PolicyIn>(
-        diagMatrixX, diagMatrixY );
+    localops_t::template copyCast<PolicyIn>( diagMatrixX, diagMatrixY );
     if ( X->hasOffDiag() ) {
-        CSRLocalMatrixOperationsDevice<Policy, Allocator>::template copyCast<PolicyIn>(
-            offdMatrixX, offdMatrixY );
+        localops_t::template copyCast<PolicyIn>( offdMatrixX, offdMatrixY );
     }
 }
 
