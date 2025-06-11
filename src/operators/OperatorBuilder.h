@@ -102,14 +102,6 @@ std::shared_ptr<BoundaryOperator> createBoundaryOperator(
 
 
 //! Advanced functions
-std::shared_ptr<Operator> createIdentityOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
-                                                  std::shared_ptr<AMP::Database> input_db );
-
-std::shared_ptr<Operator> createFlowFrapconOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
-                                                     std::shared_ptr<AMP::Database> input_db );
-
-std::shared_ptr<Operator> createFlowFrapconJacobian( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
-                                                     std::shared_ptr<AMP::Database> input_db );
 
 std::shared_ptr<Operator> createSubchannelTwoEqLinearOperator(
     std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
@@ -195,17 +187,15 @@ std::shared_ptr<Operator> createNonlinearBVPOperator(
     std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory );
 
 
-std::shared_ptr<BoundaryOperator> createDirichletMatrixCorrection(
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
-    std::shared_ptr<AMP::Database> input_db,
-    AMP::Operator::Operator::shared_ptr volumeOperator,
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel );
+std::shared_ptr<BoundaryOperator>
+createDirichletMatrixCorrection( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+                                 std::shared_ptr<AMP::Database> input_db,
+                                 AMP::Operator::Operator::shared_ptr volumeOperator );
 
-std::shared_ptr<BoundaryOperator> createMassMatrixCorrection(
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
-    std::shared_ptr<AMP::Database> input_db,
-    AMP::Operator::Operator::shared_ptr volumeOperator,
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel );
+std::shared_ptr<BoundaryOperator>
+createMassMatrixCorrection( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+                            std::shared_ptr<AMP::Database> input_db,
+                            AMP::Operator::Operator::shared_ptr volumeOperator );
 
 std::shared_ptr<BoundaryOperator> createRobinMatrixCorrection(
     std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
@@ -225,21 +215,14 @@ std::shared_ptr<BoundaryOperator> createNeumannVectorCorrection(
     AMP::Operator::Operator::shared_ptr volumeOperator,
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel );
 
-std::shared_ptr<BoundaryOperator> createDirichletVectorCorrection(
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
-    std::shared_ptr<AMP::Database> input_db,
-    AMP::Operator::Operator::shared_ptr volumeOperator,
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel );
-
 std::shared_ptr<BoundaryOperator>
 createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                  std::shared_ptr<AMP::Database> input_db,
-                                 std::shared_ptr<AMP::Operator::ElementPhysicsModel> & );
+                                 AMP::Operator::Operator::shared_ptr volumeOperator );
 
 std::shared_ptr<BoundaryOperator>
-createPressureBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
-                                std::shared_ptr<AMP::Database> input_db,
-                                std::shared_ptr<AMP::Operator::ElementPhysicsModel> & );
+createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+                                 std::shared_ptr<AMP::Database> input_db );
 
 
 void setNestedOperatorMemoryLocations( std::shared_ptr<AMP::Database> input_db,

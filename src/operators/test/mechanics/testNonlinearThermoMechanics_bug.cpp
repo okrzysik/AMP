@@ -51,21 +51,19 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create a nonlinear BVP operator for nonlinear mechanics
     AMP_INSIST( input_db->keyExists( "testNonlinearMechanicsOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
     auto nonlinearMechanicsOperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "testNonlinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+                mesh, "testNonlinearMechanicsOperator", input_db ) );
 
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
     auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
+            mesh, "testNonlinearThermalOperator", input_db ) );
 
 
     // create a column operator object for nonlinear thermomechanics

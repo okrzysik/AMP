@@ -88,10 +88,9 @@ static void myTest( AMP::UnitTest *ut )
             AMP_INSIST( innerInput_db->keyExists( testOpName ),
                         "key missing!  " + innerInput_file );
 
-            std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-            auto testOp_db    = innerInput_db->getDatabase( testOpName );
-            auto testOperator = AMP::Operator::OperatorBuilder::createOperator(
-                mesh, testOpName, innerInput_db, elementPhysicsModel );
+            auto testOp_db = innerInput_db->getDatabase( testOpName );
+            auto testOperator =
+                AMP::Operator::OperatorBuilder::createOperator( mesh, testOpName, innerInput_db );
 
             auto myLinOp = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( testOperator );
             AMP_INSIST( myLinOp != nullptr, "Is not a linear operator!" );

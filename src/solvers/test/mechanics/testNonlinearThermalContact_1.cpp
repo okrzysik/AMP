@@ -113,7 +113,6 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     auto ResidualVec1      = AMP::LinearAlgebra::createVector( nodalDofMap1, outputVariable1 );
 
     // CREATE THE LINEAR THERMAL OPERATOR 1
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel1;
     auto linearThermalOperator1 = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             mesh1, "LinearThermalOperator1", input_db, thermalTransportModel1 ) );

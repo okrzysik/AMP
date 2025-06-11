@@ -41,7 +41,6 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //   CREATE THE VOLUME INTEGRAL OPERATOR
     AMP_INSIST( input_db->keyExists( "NeutronicsRhs" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> unusedModel;
     auto ntx_db = input_db->getDatabase( "NeutronicsRhs" );
 
     // Construct stand-alone.
@@ -75,8 +74,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
     // Construct with OperatorBuilder
     {
         auto ntxBld = std::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "NeutronicsRhs", input_db, unusedModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "NeutronicsRhs", input_db ) );
         AMP_INSIST( ntxBld, "NULL rhs out of OperatorBuilder" );
         ut->passes( "NeutronicsRhs was constructed by OperatorBuilder for: " + input_file );
         // ntxBld->setTimeStep(0);

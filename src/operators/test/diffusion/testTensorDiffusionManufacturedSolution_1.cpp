@@ -61,9 +61,8 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
     //--------------------------------------------------
 
     // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "FickNonlinearBVPOperator", input_db, nonlinearPhysicsModel );
+        mesh, "FickNonlinearBVPOperator", input_db );
     auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
     auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
@@ -73,9 +72,8 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
 
     // Get source mass operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
     auto sourceOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
+        mesh, "ManufacturedSourceOperator", input_db );
     auto sourceOp =
         std::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
 

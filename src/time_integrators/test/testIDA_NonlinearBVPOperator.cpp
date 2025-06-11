@@ -96,10 +96,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     AMP_INSIST( db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "VolumeIntegralOperator", db, sourceTransportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "VolumeIntegralOperator", db ) );
 
     // Create the power (heat source) vector.
     auto powerInWattsVar = sourceOperator->getOutputVariable();

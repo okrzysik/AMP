@@ -44,24 +44,23 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
                 "Key ''NumberOfLoadingSteps'' is missing!" );
     int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto nonlinBvpOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "nonlinearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
+            mesh, "nonlinearMechanicsBVPOperator", input_db ) );
 
     auto displacementVariable = nonlinBvpOperator->getOutputVariable();
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, dummyModel ) );
+            mesh, "Load_Boundary", input_db, physicsModel ) );
     dirichletLoadVecOp->setVariable( displacementVariable );
 
     // For Initial-Guess
     auto dirichletDispInVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Displacement_Boundary", input_db, dummyModel ) );
+            mesh, "Displacement_Boundary", input_db, physicsModel ) );
     dirichletDispInVecOp->setVariable( displacementVariable );
 
     auto dofMap = AMP::Discretization::simpleDOFManager::create(

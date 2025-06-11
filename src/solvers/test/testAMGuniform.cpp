@@ -37,10 +37,8 @@ void myTest( AMP::UnitTest *ut )
     auto mesh      = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearBVPOperator", input_db, elementPhysicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearBVPOperator", input_db ) );
 
     /* auto mat     = bvpOperator->getMatrix();
     size_t matSz = mat->numGlobalRows();

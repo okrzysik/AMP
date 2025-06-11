@@ -60,9 +60,8 @@ static void linearTest( AMP::UnitTest *ut,
     auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     auto diffFEOp_db = input_db->getDatabase( "LinearDiffusionOp" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "LinearDiffusionOp", input_db, elementModel );
+    auto linearOperator =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearDiffusionOp", input_db );
     auto diffOp =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>( linearOperator );
 

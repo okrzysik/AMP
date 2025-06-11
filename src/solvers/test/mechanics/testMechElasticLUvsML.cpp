@@ -65,17 +65,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         auto mesh = AMP::Mesh::MeshWriters::readBinaryTestMeshLibMesh( meshFile, AMP_COMM_WORLD );
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "BVPOperator", input_db, elementPhysicsModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "BVPOperator", input_db ) );
 
         auto dispVar = bvpOperator->getOutputVariable();
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
         auto loadOperator = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "LoadOperator", input_db, dummyModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "LoadOperator", input_db ) );
         loadOperator->setVariable( dispVar );
 
         auto NodalVectorDOF = AMP::Discretization::simpleDOFManager::create(

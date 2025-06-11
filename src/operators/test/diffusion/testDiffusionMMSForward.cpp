@@ -51,16 +51,14 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create diffusion operator (nonlinear operator)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "NonlinearDiffusionOp", input_db, elementModel );
+    auto nonlinearOperator =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "NonlinearDiffusionOp", input_db );
     auto diffOp =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
 
     // Get source mass operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
     auto sourceOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
+        mesh, "ManufacturedSourceOperator", input_db );
     auto sourceOp =
         std::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
     auto densityModel = sourceOp->getDensityModel();

@@ -6,7 +6,6 @@
 #include "AMP/mesh/libmesh/initializeLibMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/mesh/testHelpers/meshWriters.h"
-#include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -60,15 +59,11 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD, "cook" );
     AMP_ASSERT( mesh );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "MechanicsBVPOperator", input_db ) );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, dummyModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "Load_Boundary", input_db ) );
     // This has an in-place apply. So, it has an empty input variable and
     // the output variable is the same as what it is operating on.
     dirichletVecOp->setVariable( bvpOperator->getOutputVariable() );

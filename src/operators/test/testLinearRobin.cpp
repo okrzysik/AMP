@@ -95,10 +95,8 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     //   CREATE THE LINEAR DIFFUSION BVP OPERATOR
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "DiffusionBVPOperator", input_db, elementModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "DiffusionBVPOperator", input_db ) );
 
     auto bcDatabase = input_db->getDatabase( "RobinMatrixCorrection" );
 

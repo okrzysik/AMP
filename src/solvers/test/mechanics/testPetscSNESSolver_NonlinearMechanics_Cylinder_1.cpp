@@ -72,16 +72,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto residualVariable = nonlinBvpOperator->getOutputVariable();
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, dummyModel ) );
+            mesh, "Load_Boundary", input_db, physicsModel ) );
     dirichletLoadVecOp->setVariable( residualVariable );
 
     // Pressure RHS
     auto pressureLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Pressure_Boundary", input_db, dummyModel ) );
+            mesh, "Pressure_Boundary", input_db, physicsModel ) );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     auto mechNlSolVec    = AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );

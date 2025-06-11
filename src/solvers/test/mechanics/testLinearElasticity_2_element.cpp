@@ -50,15 +50,12 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
 
         auto mesh = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+                mesh, "MechanicsBVPOperator", input_db ) );
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
         auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "Load_Boundary", input_db, dummyModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "Load_Boundary", input_db ) );
 
         auto var = bvpOperator->getOutputVariable();
 

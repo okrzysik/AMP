@@ -189,12 +189,11 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //   CREATE THE VOLUME INTEGRAL OPERATOR -----------
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto sourceDatabase = input_db->getDatabase( "VolumeIntegralOperator" );
     AMP::pout << "before sourceOp" << std::endl;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "VolumeIntegralOperator", input_db, transportModel ) );
+            mesh, "VolumeIntegralOperator", input_db ) );
     AMP::pout << "after sourceOp" << std::endl;
     auto inputVariable  = sourceOperator->getInputVariable();
     auto outputVariable = sourceOperator->getOutputVariable();

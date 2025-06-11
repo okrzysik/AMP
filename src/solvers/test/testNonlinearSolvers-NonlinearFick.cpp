@@ -49,11 +49,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
     // create a nonlinear BVP operator for nonlinear fick diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearFickOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> fickTransportModel;
-
     auto nonlinearFickOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testNonlinearFickOperator", input_db, fickTransportModel ) );
+            mesh, "testNonlinearFickOperator", input_db ) );
 
     // initialize the input variable
     auto fickVariable = nonlinearFickOperator->getOutputVariable();

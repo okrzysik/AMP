@@ -41,10 +41,9 @@ void myTest( AMP::UnitTest *ut, const std::string &inputName )
 
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
     auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
+            mesh, "testNonlinearThermalOperator", input_db ) );
 
     auto thermalVariable = nonlinearThermalOperator->getOutputVariable();
     auto nodalDofMap     = PowerInWattsVec->getDOFManager();

@@ -401,10 +401,9 @@ void myTest( AMP::UnitTest *ut,
     auto volumeIntegralColumnOperator =
         std::make_shared<AMP::Operator::ColumnOperator>( columnParams );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceModel1;
     auto sourceOperator1 = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            bottomAdapter, "BottomVolumeIntegralOperator", input_db, sourceModel1 ) );
+            bottomAdapter, "BottomVolumeIntegralOperator", input_db ) );
     volumeIntegralColumnOperator->append( sourceOperator1 );
 
     auto rhsVar           = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );

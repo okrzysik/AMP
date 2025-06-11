@@ -49,10 +49,8 @@ void myTest( AMP::UnitTest *ut, const std::string &fileName )
             mesh, "nonlinearMechanicsBVPOperator", input_db ) );
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, dummyModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "Load_Boundary", input_db ) );
 
     auto var = nonlinBvpOperator->getOutputVariable();
 

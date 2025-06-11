@@ -97,16 +97,16 @@ static void myTest( AMP::UnitTest *ut )
             mesh, "linearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, dummyModel ) );
+            mesh, "Load_Boundary", input_db, physicsModel ) );
     dirichletLoadVecOp->setVariable( displacementVariable );
 
     // For Initial-Guess
     auto dirichletDispInVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Displacement_Boundary", input_db, dummyModel ) );
+            mesh, "Displacement_Boundary", input_db, physicsModel ) );
     dirichletDispInVecOp->setVariable( displacementVariable );
 
     auto dispDofMap = AMP::Discretization::simpleDOFManager::create(

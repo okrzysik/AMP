@@ -22,7 +22,6 @@
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
-#include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/libmesh/MassLinearElement.h"
 #include "AMP/operators/libmesh/MassLinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
@@ -83,10 +82,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // CREATE THE NONLINEAR THERMAL OPERATOR 1
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
     auto thermalNonlinearOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "NonlinearThermalOperator", input_db, thermalTransportModel ) );
+            mesh, "NonlinearThermalOperator", input_db ) );
 
     // initialize the input variable
     auto thermalVolumeOperator =
@@ -104,10 +102,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // CREATE THE LINEAR THERMAL OPERATOR
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto thermalLinearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearThermalOperator", input_db, transportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearThermalOperator", input_db ) );
 
     // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
@@ -123,10 +119,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Integrate Nuclear Rhs over Desnity * GeomType::Cell
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "VolumeIntegralOperator", input_db, stransportModel ) );
+            mesh, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();

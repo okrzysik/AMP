@@ -70,21 +70,21 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             ->getOutputVariable();
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, dummyModel ) );
+            mesh, "Load_Boundary", input_db, physicsModel ) );
     dirichletLoadVecOp->setVariable( displacementVariable );
 
     // Pressure RHS
     auto pressureLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Pressure_Boundary", input_db, dummyModel ) );
+            mesh, "Pressure_Boundary", input_db, physicsModel ) );
 
     // For Initial-Guess
     auto dirichletDispInVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Displacement_Boundary", input_db, dummyModel ) );
+            mesh, "Displacement_Boundary", input_db, physicsModel ) );
     dirichletDispInVecOp->setVariable( displacementVariable );
 
     auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(

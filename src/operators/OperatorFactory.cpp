@@ -80,6 +80,7 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
     REGISTER_OPERATOR( DirichletMatrixCorrection, "DirichletMatrixCorrection" );
     REGISTER_OPERATOR( DirichletVectorCorrection, "DirichletVectorCorrection" );
 #ifdef AMP_USE_LIBMESH
+    REGISTER_OPERATOR( MapSurface, "MapSurface" );
     REGISTER_OPERATOR( DiffusionLinearFEOperator, "DiffusionLinearFEOperator" );
     REGISTER_OPERATOR( MechanicsLinearFEOperator, "MechanicsLinearFEOperator" );
     REGISTER_OPERATOR( RobinMatrixCorrection, "RobinMatrixCorrection" );

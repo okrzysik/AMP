@@ -49,10 +49,10 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
 
     auto dispVar = bvpOperator->getOutputVariable();
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
     auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, dummyModel ) );
+            mesh, "Load_Boundary", input_db, physicsModel ) );
     // This has an in-place apply. So, it has an empty input variable and
     // the output variable is the same as what it is operating on.
     dirichletVecOp->setVariable( dispVar );
@@ -60,7 +60,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     // Pressure RHS
     auto pressureLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Pressure_Boundary", input_db, dummyModel ) );
+            mesh, "Pressure_Boundary", input_db, physicsModel ) );
     // This has an in-place apply. So, it has an empty input variable and
     // the output variable is the same as what it is operating on.
 

@@ -46,19 +46,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
     // create a nonlinear BVP operator for nonlinear oxygen diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearOxygenOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenTransportModel;
     auto nonlinearOxygenOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testNonlinearOxygenOperator", input_db, oxygenTransportModel ) );
+            mesh, "testNonlinearOxygenOperator", input_db ) );
 
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
     auto nonlinearThermalDatabase = input_db->getDatabase( "testNonlinearThermalOperator" );
     auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
+            mesh, "testNonlinearThermalOperator", input_db ) );
 
     // create a column operator object for nonlinear thermal-oxygen diffusion
     auto nonlinearThermalOxygenOperator = std::make_shared<AMP::Operator::ColumnOperator>();

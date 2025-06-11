@@ -169,7 +169,7 @@ computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             exactSolutionsVec->setLocalValuesByGlobalID(
                 1, &globalIDs[xyz], &displacementXYZ[xyz] );
         } // end loop over the coordinates
-    }     // end soop over all nodes
+    } // end soop over all nodes
     if ( verbose ) {
         AMP::pout << "--------------------------------------------\n"
                   << "---- exact solution norm = " << std::setprecision( 15 )
@@ -275,7 +275,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         AMP_ERROR( "Unknown value for typeCoeffAB" );
     } // end if typeCoeffAB
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     // Vectors: solution, right-hand side, residual
     auto NodalVectorDOF =
@@ -289,7 +289,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
 
     // Create an operator to get manufactured solution and forcing terms
     auto volumeOp = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "VolumeIntegral", inputDatabase, dummyModel );
+        mesh, "VolumeIntegral", inputDatabase, physicsModel );
 
     // Compute the forcing terms
     rhsVec->zero();
@@ -315,7 +315,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     // Compute Neumann values
     auto neumannVecOp = std::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
         AMP::Operator::OperatorBuilder::createBoundaryOperator(
-            mesh, "NeumannCorrection", inputDatabase, volumeOp, dummyModel ) );
+            mesh, "NeumannCorrection", inputDatabase, volumeOp, physicsModel ) );
     // neumannVecOp->setVariable(var);
     auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
     for ( short neumannBoundaryId : neumannBoundaryIds ) {
