@@ -45,15 +45,6 @@
 
 #include "ProfilerApp.h"
 
-#define resetOperation( NAME )                                                      \
-    do {                                                                            \
-        if ( name == #NAME ) {                                                      \
-            auto params = std::dynamic_pointer_cast<NAME##Parameters>( in_params ); \
-            AMP_ASSERT( params.get() == in_params.get() );                          \
-            retOperator.reset( new NAME( params ) );                                \
-        }                                                                           \
-    } while ( 0 )
-
 
 namespace AMP::Operator::OperatorBuilder {
 
@@ -147,8 +138,6 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                           const std::string &operatorName,
                                           std::shared_ptr<AMP::Database> input_db )
 {
-    PROFILE( "createOperator" );
-
     std::shared_ptr<ElementPhysicsModel> model;
     std::shared_ptr<ElementPhysicsModelFactory> factory;
     return createOperator( mesh, operatorName, input_db, model, factory );
@@ -166,26 +155,15 @@ createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
     auto operator_db = input_db->getDatabase( operatorName );
 
-    AMP_INSIST( operator_db,
-                "Error:: createOperator(): No operator database entry with "
-                "given name exists in input database: " +
-                    operatorName );
-
     // we create the element physics model if a database entry exists
     // and the incoming element physics model pointer is NULL
     if ( !elementPhysicsModel && operator_db->keyExists( "LocalModel" ) ) {
+
         // extract the name of the local model from the operator database
         auto localModelName = operator_db->getString( "LocalModel" );
-        // check whether a database exists in the global database
-        // (NOTE: not the operator database) with the given name
-        AMP_INSIST( input_db->keyExists( localModelName ),
-                    "Error:: createOperator(): No local model "
-                    "database entry with given name exists in input database" );
 
+        // Get the local database
         auto localModel_db = input_db->getDatabase( localModelName );
-        AMP_INSIST( localModel_db,
-                    "Error:: createOperator(): No local model database "
-                    "entry with given name exists in input databaseot" );
 
         // If a non-NULL factory is being supplied through the argument list
         // use it, else call the AMP ElementPhysicsModelFactory interface
@@ -218,8 +196,8 @@ createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         retOperator =
             createNonlinearNavierStokesLSWFOperator( mesh, operator_db, elementPhysicsModel );
     } else if ( operatorType == "FickSoretNonlinearFEOperator" ) {
-        retOperator = createNonlinearFickSoretOperator(
-            mesh, operatorName, input_db, localModelFactory );
+        retOperator =
+            createNonlinearFickSoretOperator( mesh, operatorName, input_db, localModelFactory );
     } else if ( operatorType == "FlowFrapconOperator" ) {
         retOperator = createFlowFrapconOperator( mesh, operator_db );
     } else if ( operatorType == "FlowFrapconJacobian" ) {
@@ -295,6 +273,17 @@ Operator::shared_ptr createFlowFrapconJacobian( std::shared_ptr<AMP::Mesh::Mesh>
     params->d_Mesh = mesh;
     return OperatorFactory::create( params );
 }
+std::shared_ptr<BoundaryOperator>
+createPressureBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                std::shared_ptr<AMP::Database> input_db,
+                                std::shared_ptr<ElementPhysicsModel> & )
+{
+    AMP_ASSERT( input_db->getString( "name" ) == "PressureBoundaryOperator" );
+    auto params                  = std::make_shared<OperatorParameters>( input_db );
+    params->d_Mesh               = mesh;
+    std::shared_ptr<Operator> op = OperatorFactory::create( params );
+    return std::dynamic_pointer_cast<BoundaryOperator>( op );
+}
 
 
 /********************************************************
@@ -302,186 +291,53 @@ Operator::shared_ptr createFlowFrapconJacobian( std::shared_ptr<AMP::Mesh::Mesh>
  ********************************************************/
 #ifdef AMP_USE_LIBMESH
 
-
+static std::shared_ptr<SubchannelPhysicsModel>
+createSubchannelPhysicsModel( std::shared_ptr<AMP::Database> input_db,
+                              std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
+{
+    if ( elementPhysicsModel ) {
+        return std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
+    } else {
+        auto db             = input_db->getDatabase( "SubchannelPhysicsModel" );
+        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( db );
+        return std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
+    }
+}
 Operator::shared_ptr
 createSubchannelTwoEqLinearOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                      std::shared_ptr<AMP::Database> input_db,
                                      std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
 {
-    // first create a SubchannelPhysicsModel
-    std::shared_ptr<SubchannelPhysicsModel> transportModel;
-    if ( elementPhysicsModel ) {
-        transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
-    } else {
-        std::shared_ptr<AMP::Database> transportModel_db;
-        if ( input_db->keyExists( "SubchannelPhysicsModel" ) ) {
-            transportModel_db = input_db->getDatabase( "SubchannelPhysicsModel" );
-        } else {
-            AMP_INSIST( false, "Key ''SubchannelPhysicsModel'' is missing!" );
-        }
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
-        transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
-    }
-
-    AMP_INSIST( transportModel, "NULL transport model" );
-    // create the operator
-    std::shared_ptr<AMP::Database> subchannel_db;
-    if ( input_db->getString( "name" ) == "SubchannelTwoEqLinearOperator" ) {
-        subchannel_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
-    AMP_INSIST( subchannel_db,
-                "Error: The database object for SubchannelTwoEqLinearOperator is NULL" );
-
-    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( subchannel_db );
+    AMP_ASSERT( input_db->getString( "name" ) == "SubchannelTwoEqLinearOperator" );
+    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( input_db );
     subchannelParams->d_Mesh = mesh;
-    subchannelParams->d_subchannelPhysicsModel = transportModel;
-
+    subchannelParams->d_subchannelPhysicsModel =
+        createSubchannelPhysicsModel( input_db, elementPhysicsModel );
     return std::make_shared<SubchannelTwoEqLinearOperator>( subchannelParams );
 }
-
-
 Operator::shared_ptr
 createSubchannelTwoEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                         std::shared_ptr<AMP::Database> input_db,
                                         std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
 {
-
-    // first create a SubchannelPhysicsModel
-    std::shared_ptr<SubchannelPhysicsModel> transportModel;
-    if ( elementPhysicsModel ) {
-        transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
-    } else {
-        std::shared_ptr<AMP::Database> transportModel_db;
-        if ( input_db->keyExists( "SubchannelPhysicsModel" ) ) {
-            transportModel_db = input_db->getDatabase( "SubchannelPhysicsModel" );
-        } else {
-            AMP_INSIST( false, "Key ''SubchannelPhysicsModel'' is missing!" );
-        }
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
-        transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
-    }
-    AMP_INSIST( transportModel, "NULL transport model" );
-
-    // create the operator
-    std::shared_ptr<AMP::Database> subchannel_db;
-    if ( input_db->getString( "name" ) == "SubchannelTwoEqNonlinearOperator" ) {
-        subchannel_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
-    AMP_INSIST( subchannel_db,
-                "Error: The database object for SubchannelTwoEqNonlinearOperator is NULL" );
-
-    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( subchannel_db );
+    AMP_ASSERT( input_db->getString( "name" ) == "SubchannelTwoEqNonlinearOperator" );
+    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( input_db );
     subchannelParams->d_Mesh = mesh;
-    subchannelParams->d_subchannelPhysicsModel = transportModel;
+    subchannelParams->d_subchannelPhysicsModel =
+        createSubchannelPhysicsModel( input_db, elementPhysicsModel );
     return std::make_shared<SubchannelTwoEqNonlinearOperator>( subchannelParams );
 }
-
-
 Operator::shared_ptr
 createSubchannelFourEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                          std::shared_ptr<AMP::Database> input_db,
                                          std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
 {
-
-    // first create a SubchannelPhysicsModel
-    std::shared_ptr<SubchannelPhysicsModel> transportModel;
-    if ( elementPhysicsModel ) {
-        transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
-    } else {
-        std::shared_ptr<AMP::Database> transportModel_db;
-        if ( input_db->keyExists( "SubchannelPhysicsModel" ) ) {
-            transportModel_db = input_db->getDatabase( "SubchannelPhysicsModel" );
-        } else {
-            AMP_INSIST( false, "Key ''SubchannelPhysicsModel'' is missing!" );
-        }
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
-        transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
-    }
-    AMP_INSIST( transportModel, "NULL transport model" );
-
-    // create the operator
-    std::shared_ptr<AMP::Database> subchannel_db;
-    if ( input_db->getString( "name" ) == "SubchannelFourEqNonlinearOperator" ) {
-        subchannel_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
-    AMP_INSIST( subchannel_db,
-                "Error: The database object for SubchannelFourEqNonlinearOperator is NULL" );
-
-    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( subchannel_db );
+    AMP_ASSERT( input_db->getString( "name" ) == "SubchannelFourEqNonlinearOperator" );
+    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( input_db );
     subchannelParams->d_Mesh = mesh;
-    subchannelParams->d_subchannelPhysicsModel = transportModel;
+    subchannelParams->d_subchannelPhysicsModel =
+        createSubchannelPhysicsModel( input_db, elementPhysicsModel );
     return std::make_shared<SubchannelFourEqNonlinearOperator>( subchannelParams );
-}
-
-
-Operator::shared_ptr
-createLinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                               std::shared_ptr<AMP::Database> input_db,
-                               std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
-{
-    PROFILE( "createLinearDiffusionOperator" );
-
-    // first create a DiffusionTransportModel
-    std::shared_ptr<DiffusionTransportModel> transportModel;
-    if ( elementPhysicsModel ) {
-        transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
-    } else {
-        std::shared_ptr<AMP::Database> transportModel_db;
-        if ( input_db->keyExists( "DiffusionTransportModel" ) ) {
-            transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-        } else {
-            AMP_INSIST( false, "Key ''DiffusionTransportModel'' is missing!" );
-        }
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
-        transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
-    }
-    AMP_INSIST( transportModel, "NULL transport model" );
-
-    // next create a ElementOperation object
-    AMP_INSIST( input_db->keyExists( "DiffusionElement" ), "Key ''DiffusionElement'' is missing!" );
-    std::shared_ptr<ElementOperation> diffusionLinElem =
-        ElementOperationFactory::createElementOperation(
-            input_db->getDatabase( "DiffusionElement" ) );
-
-    // now create the linear diffusion operator
-    std::shared_ptr<AMP::Database> diffusionLinFEOp_db;
-    if ( input_db->getString( "name" ) == "DiffusionLinearFEOperator" ) {
-        diffusionLinFEOp_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
-    AMP_INSIST( diffusionLinFEOp_db,
-                "Error: The database object for DiffusionLinearFEOperator is NULL" );
-
-    auto diffusionOpParams =
-        std::make_shared<DiffusionLinearFEOperatorParameters>( diffusionLinFEOp_db );
-    diffusionOpParams->d_transportModel = transportModel;
-    diffusionOpParams->d_elemOp         = diffusionLinElem;
-    diffusionOpParams->d_Mesh           = mesh;
-    diffusionOpParams->d_inDofMap       = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    diffusionOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    auto diffusionOp = std::make_shared<DiffusionLinearFEOperator>( diffusionOpParams );
-
-    auto matrix = diffusionOp->getMatrix();
-    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
-
-    return diffusionOp;
 }
 
 
@@ -524,6 +380,54 @@ createVolumeIntegralOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
 
 Operator::shared_ptr
+createLinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                               std::shared_ptr<AMP::Database> input_db,
+                               std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
+{
+    PROFILE( "createLinearDiffusionOperator" );
+
+    // first create a DiffusionTransportModel
+    std::shared_ptr<DiffusionTransportModel> transportModel;
+    if ( elementPhysicsModel ) {
+        transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
+    } else {
+        std::shared_ptr<AMP::Database> transportModel_db;
+        if ( input_db->keyExists( "DiffusionTransportModel" ) ) {
+            transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
+        } else {
+            AMP_INSIST( false, "Key ''DiffusionTransportModel'' is missing!" );
+        }
+        elementPhysicsModel =
+            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
+        transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
+    }
+    AMP_INSIST( transportModel, "NULL transport model" );
+
+    // next create a ElementOperation object
+    AMP_INSIST( input_db->keyExists( "DiffusionElement" ), "Key ''DiffusionElement'' is missing!" );
+    std::shared_ptr<ElementOperation> diffusionLinElem =
+        ElementOperationFactory::createElementOperation(
+            input_db->getDatabase( "DiffusionElement" ) );
+
+    // now create the linear diffusion operator
+    AMP_ASSERT( input_db->getString( "name" ) == "DiffusionLinearFEOperator" );
+    auto diffusionOpParams = std::make_shared<DiffusionLinearFEOperatorParameters>( input_db );
+    diffusionOpParams->d_transportModel = transportModel;
+    diffusionOpParams->d_elemOp         = diffusionLinElem;
+    diffusionOpParams->d_Mesh           = mesh;
+    diffusionOpParams->d_inDofMap       = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    diffusionOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto diffusionOp = std::make_shared<DiffusionLinearFEOperator>( diffusionOpParams );
+
+    auto matrix = diffusionOp->getMatrix();
+    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+
+    return diffusionOp;
+}
+
+Operator::shared_ptr
 createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                   std::shared_ptr<AMP::Database> input_db,
                                   std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
@@ -552,16 +456,8 @@ createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         input_db->getDatabase( "DiffusionElement" ) );
 
     // now create the nonlinear diffusion operator parameters
-    std::shared_ptr<AMP::Database> diffusionNLinFEOp_db;
-    if ( input_db->getString( "name" ) == "DiffusionNonlinearFEOperator" ) {
-        diffusionNLinFEOp_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-    AMP_INSIST( diffusionNLinFEOp_db,
-                "Error: The database object for DiffusionNonlinearFEOperator is NULL" );
-    auto diffusionNLOpParams =
-        std::make_shared<DiffusionNonlinearFEOperatorParameters>( diffusionNLinFEOp_db );
+    AMP_ASSERT( input_db->getString( "name" ) == "DiffusionNonlinearFEOperator" );
+    auto diffusionNLOpParams = std::make_shared<DiffusionNonlinearFEOperatorParameters>( input_db );
     diffusionNLOpParams->d_transportModel = transportModel;
     diffusionNLOpParams->d_elemOp         = diffusionNonlinearElem;
     diffusionNLOpParams->d_Mesh           = mesh;
@@ -574,11 +470,11 @@ createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     // create variables and vectors for frozen material inputs
     auto NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    for ( auto name : getActiveVariables( diffusionNLinFEOp_db, "ActiveInputVariables" ) ) {
+    for ( auto name : getActiveVariables( input_db, "ActiveInputVariables" ) ) {
         auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
         auto vec = AMP::LinearAlgebra::createVector(
             NodalScalarDOF, var, true, diffusionNLOpParams->d_memory_location );
-        if ( diffusionNLinFEOp_db->getWithDefault<bool>( "Freeze" + name, false ) )
+        if ( input_db->getWithDefault<bool>( "Freeze" + name, false ) )
             diffusionNLOpParams->d_FrozenVecs[name] = vec;
     }
 
@@ -654,18 +550,8 @@ createLinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         input_db->getDatabase( "MechanicsElement" ) );
 
     // now create the linear mechanics operator
-    std::shared_ptr<AMP::Database> mechanicsLinFEOp_db;
-    if ( input_db->getString( "name" ) == "MechanicsLinearFEOperator" ) {
-        mechanicsLinFEOp_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
-    AMP_INSIST( mechanicsLinFEOp_db,
-                "Error: The database object for MechanicsLinearFEOperator is NULL" );
-
-    auto mechanicsOpParams =
-        std::make_shared<MechanicsLinearFEOperatorParameters>( mechanicsLinFEOp_db );
+    AMP_ASSERT( input_db->getString( "name" ) == "MechanicsLinearFEOperator" );
+    auto mechanicsOpParams = std::make_shared<MechanicsLinearFEOperatorParameters>( input_db );
     mechanicsOpParams->d_materialModel =
         std::dynamic_pointer_cast<MechanicsMaterialModel>( elementPhysicsModel );
     mechanicsOpParams->d_elemOp   = mechanicsLinElem;
@@ -702,18 +588,8 @@ createNonlinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         input_db->getDatabase( "MechanicsElement" ) );
 
     // now create the nonlinear mechanics operator
-    std::shared_ptr<AMP::Database> mechanicsFEOp_db;
-    if ( input_db->getString( "name" ) == "MechanicsNonlinearFEOperator" ) {
-        mechanicsFEOp_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
-    AMP_INSIST( mechanicsFEOp_db,
-                "Error: The database object for MechanicsNonlinearFEOperator is NULL" );
-
-    auto mechanicsOpParams =
-        std::make_shared<MechanicsNonlinearFEOperatorParameters>( mechanicsFEOp_db );
+    AMP_ASSERT( input_db->getString( "name" ) == "MechanicsNonlinearFEOperator" );
+    auto mechanicsOpParams = std::make_shared<MechanicsNonlinearFEOperatorParameters>( input_db );
     mechanicsOpParams->d_materialModel =
         std::dynamic_pointer_cast<MechanicsMaterialModel>( elementPhysicsModel );
     mechanicsOpParams->d_elemOp = mechanicsElem;
@@ -757,16 +633,8 @@ createLinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         ElementOperationFactory::createElementOperation( input_db->getDatabase( "FlowElement" ) );
 
     // now create the linear flow operator
-    std::shared_ptr<AMP::Database> flowLinFEOp_db;
-    if ( input_db->getString( "name" ) == "NavierStokesLSWFLinearFEOperator" ) {
-        flowLinFEOp_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
-    AMP_INSIST( flowLinFEOp_db, "Error: The database object for FlowLinearFEOperator is NULL" );
-
-    auto flowOpParams = std::make_shared<NavierStokesLinearFEOperatorParameters>( flowLinFEOp_db );
+    AMP_ASSERT( input_db->getString( "name" ) == "NavierStokesLSWFLinearFEOperator" );
+    auto flowOpParams = std::make_shared<NavierStokesLinearFEOperatorParameters>( input_db );
     flowOpParams->d_transportModel =
         std::dynamic_pointer_cast<FlowTransportModel>( elementPhysicsModel );
     flowOpParams->d_elemOp   = flowLinElem;
@@ -802,16 +670,8 @@ createNonlinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         ElementOperationFactory::createElementOperation( input_db->getDatabase( "FlowElement" ) );
 
     // now create the nonlinear mechanics operator
-    std::shared_ptr<AMP::Database> flowFEOp_db;
-    if ( input_db->getString( "name" ) == "NavierStokesLSWFFEOperator" ) {
-        flowFEOp_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
-    AMP_INSIST( flowFEOp_db, "Error: The database object for FlowNonlinearFEOperator is NULL" );
-
-    auto flowOpParams = std::make_shared<NavierStokesLSWFFEOperatorParameters>( flowFEOp_db );
+    AMP_ASSERT( input_db->getString( "name" ) == "NavierStokesLSWFFEOperator" );
+    auto flowOpParams = std::make_shared<NavierStokesLSWFFEOperatorParameters>( input_db );
     flowOpParams->d_transportModel =
         std::dynamic_pointer_cast<FlowTransportModel>( elementPhysicsModel );
     flowOpParams->d_elemOp = flowElem;
@@ -848,16 +708,8 @@ createMassLinearFEOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         ElementOperationFactory::createElementOperation( input_db->getDatabase( "MassElement" ) );
 
     // now create the linear density operator
-    std::shared_ptr<AMP::Database> densityLinFEOp_db;
-    if ( input_db->getString( "name" ) == "MassLinearFEOperator" ) {
-        densityLinFEOp_db = input_db;
-    } else {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
-    AMP_INSIST( densityLinFEOp_db, "Error: The database object for MassLinearFEOperator is NULL" );
-
-    auto densityOpParams = std::make_shared<MassLinearFEOperatorParameters>( densityLinFEOp_db );
+    AMP_ASSERT( input_db->getString( "name" ) == "MassLinearFEOperator" );
+    auto densityOpParams            = std::make_shared<MassLinearFEOperatorParameters>( input_db );
     densityOpParams->d_densityModel = densityModel;
     densityOpParams->d_elemOp       = densityLinElem;
     densityOpParams->d_Mesh         = mesh;
@@ -1242,17 +1094,6 @@ createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 }
 
 
-std::shared_ptr<BoundaryOperator>
-createPressureBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                std::shared_ptr<AMP::Database> input_db,
-                                std::shared_ptr<ElementPhysicsModel> & )
-{
-    auto params    = std::make_shared<OperatorParameters>( input_db );
-    params->d_Mesh = mesh;
-    return std::make_shared<PressureBoundaryOperator>( params );
-}
-
-
 std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh1,
                                           std::shared_ptr<AMP::Mesh::Mesh> mesh2,
                                           const AMP::AMP_MPI &comm,
@@ -1390,15 +1231,6 @@ createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh>,
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
-std::shared_ptr<BoundaryOperator>
-createPressureBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                std::shared_ptr<AMP::Database>,
-                                std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-
 
 #endif
 

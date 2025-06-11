@@ -89,5 +89,6 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
     REGISTER_OPERATOR( NeutronicsRhs, "NeutronicsRhsOperator" );
     REGISTER_OPERATOR( SubchannelTwoEqLinearOperator, "SubchannelTwoEqLinearOperator" );
     REGISTER_OPERATOR( SubchannelFourEqLinearOperator, "SubchannelFourEqLinearOperator" );
+    REGISTER_OPERATOR( PressureBoundaryOperator, "PressureBoundaryOperator" );
 #endif
 }
