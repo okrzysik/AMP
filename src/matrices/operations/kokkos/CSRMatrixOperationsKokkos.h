@@ -23,25 +23,27 @@ template<
                                                 Kokkos::DefaultExecutionSpace>::type,
     class ViewSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<void>>,
                                                 Kokkos::HostSpace,
-                                                Kokkos::SharedSpace>::type,
-    class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+                                                Kokkos::SharedSpace>::type>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
 public:
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
+    using policy_t          = Policy;
+    using allocator_t       = Allocator;
+    using matrixdata_t      = CSRMatrixData<Policy, Allocator>;
+    using localmatrixdata_t = typename matrixdata_t::localmatrixdata_t;
+
+    using localops_t = CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>;
+
+    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
     CSRMatrixOperationsKokkos()
         : d_exec_space(),
-          d_localops_diag(
-              std::make_shared<CSRLocalMatrixOperationsKokkos<Policy,
-                                                              Allocator,
-                                                              ExecSpace,
-                                                              ViewSpace,
-                                                              LocalMatrixData>>( d_exec_space ) ),
-          d_localops_offd(
-              std::make_shared<CSRLocalMatrixOperationsKokkos<Policy,
-                                                              Allocator,
-                                                              ExecSpace,
-                                                              ViewSpace,
-                                                              LocalMatrixData>>( d_exec_space ) )
+          d_localops_diag( std::make_shared<localops_t>( d_exec_space ) ),
+          d_localops_offd( std::make_shared<localops_t>( d_exec_space ) )
     {
     }
 
@@ -130,17 +132,13 @@ public:
     void copyCast( const MatrixData &X, MatrixData &Y ) override;
 
     template<typename PolicyIn>
-    static void
-    copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-              CSRMatrixData<Policy, Allocator, LocalMatrixData> *Y );
+    static void copyCast( CSRMatrixData<PolicyIn, Allocator> *X,
+                          CSRMatrixData<Policy, Allocator> *Y );
 
 protected:
     ExecSpace d_exec_space;
-    std::shared_ptr<
-        CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace, LocalMatrixData>>
-        d_localops_diag;
-    std::shared_ptr<CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>>
-        d_localops_offd;
+    std::shared_ptr<localops_t> d_localops_diag;
+    std::shared_ptr<localops_t> d_localops_offd;
 };
 
 } // namespace AMP::LinearAlgebra

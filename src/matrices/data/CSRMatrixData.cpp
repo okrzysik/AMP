@@ -5,16 +5,10 @@
 #include "AMP/matrices/data/CSRMatrixCommunicator.hpp"
 #include "AMP/utils/memory.h"
 
-#define INSTANTIATE_FULL( policy, allocator )                                 \
-    template class AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>; \
-    template class AMP::LinearAlgebra::CSRMatrixCommunicator<                 \
-        policy,                                                               \
-        allocator,                                                            \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;           \
-    template class AMP::LinearAlgebra::CSRMatrixData<                         \
-        policy,                                                               \
-        allocator,                                                            \
-        AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
+#define INSTANTIATE_FULL( policy, allocator )                                    \
+    template class AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>;    \
+    template class AMP::LinearAlgebra::CSRMatrixCommunicator<policy, allocator>; \
+    template class AMP::LinearAlgebra::CSRMatrixData<policy, allocator>;
 
 // Check if device based allocators are needed
 #ifdef USE_DEVICE

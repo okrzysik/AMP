@@ -11,19 +11,11 @@
 
     // Full instantiator macro is final one in the chain
     // this gives all template arguments
-    #define INSTANTIATE_FULL( policy, allocator, execspace, viewspace )    \
-        template class AMP::LinearAlgebra::CSRLocalMatrixOperationsKokkos< \
-            policy,                                                        \
-            allocator,                                                     \
-            execspace,                                                     \
-            viewspace,                                                     \
-            AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;    \
-        template class AMP::LinearAlgebra::CSRMatrixOperationsKokkos<      \
-            policy,                                                        \
-            allocator,                                                     \
-            execspace,                                                     \
-            viewspace,                                                     \
-            AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>;
+    #define INSTANTIATE_FULL( policy, allocator, execspace, viewspace )              \
+        template class AMP::LinearAlgebra::                                          \
+            CSRLocalMatrixOperationsKokkos<policy, allocator, execspace, viewspace>; \
+        template class AMP::LinearAlgebra::                                          \
+            CSRMatrixOperationsKokkos<policy, allocator, execspace, viewspace>;
 
     // Execution spaces and view spaces are instatiated together and anchor
     // the chain. Valid space combinations are applied to the given
@@ -76,28 +68,13 @@ INSTANTIATE_ALLOCS( HYPRECSRPolicyFloat )
     // Full instantiator macro is final one in the chain
     // this gives all template arguments
     #define INSTANTIATE_CC_FULL( policy, policyIn, allocator, execspace, viewspace )            \
-        template void AMP::LinearAlgebra::CSRMatrixOperationsKokkos<                            \
-            policy,                                                                             \
-            allocator,                                                                          \
-            execspace,                                                                          \
-            viewspace,                                                                          \
-            AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>::                        \
-            copyCast<policyIn>(                                                                 \
-                CSRMatrixData<policyIn,                                                         \
-                              allocator,                                                        \
-                              AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> *    \
-                    X,                                                                          \
-                CSRMatrixData<policy,                                                           \
-                              allocator,                                                        \
-                              AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> *      \
-                    Y );                                                                        \
-        template void AMP::LinearAlgebra::CSRLocalMatrixOperationsKokkos<                       \
-            policy,                                                                             \
-            allocator,                                                                          \
-            execspace,                                                                          \
-            viewspace,                                                                          \
-            AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>>::                        \
-            copyCast<policyIn>(                                                                 \
+        template void AMP::LinearAlgebra::                                                      \
+            CSRMatrixOperationsKokkos<policy, allocator, execspace, viewspace>::copyCast<       \
+                policyIn>( CSRMatrixData<policyIn, allocator> * X,                              \
+                           CSRMatrixData<policy, allocator> * Y );                              \
+        template void AMP::LinearAlgebra::                                                      \
+            CSRLocalMatrixOperationsKokkos<policy, allocator, execspace, viewspace>::copyCast<  \
+                policyIn>(                                                                      \
                 std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policyIn, allocator>> X, \
                 std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<policy, allocator>> Y );
 

@@ -73,11 +73,15 @@ void GhostDataHelper<TYPE, Allocator>::deallocateBuffers()
         this->d_AddBuffer = nullptr;
     }
     if ( this->d_SendRecv ) {
-        this->d_alloc.deallocate( this->d_SendRecv, this->d_localRemote.size() );
+        this->d_alloc.deallocate( this->d_SendRecv, this->d_numRemote );
         this->d_SendRecv = nullptr;
     }
+    if ( this->d_localRemote ) {
+        this->d_int_alloc.deallocate( this->d_localRemote, this->d_numRemote );
+        this->d_localRemote = nullptr;
+    }
     this->d_ghostSize = 0;
-    this->d_localRemote.clear();
+    this->d_numRemote = 0;
 }
 
 template<class TYPE, class Allocator>
@@ -109,9 +113,14 @@ void GhostDataHelper<TYPE, Allocator>::setCommunicationList(
     if ( N > 0 )
         this->d_SendRecv = d_alloc.allocate( N );
     // Get a list of the local dofs that are remote
-    d_localRemote = d_CommList->getReplicatedIDList();
-    AMP_ASSERT( d_localRemote.size() == N );
-    for ( size_t i = 0; i < d_localRemote.size(); i++ ) {
+    const auto &replicatedVec = d_CommList->getReplicatedIDList();
+    d_numRemote               = replicatedVec.size();
+    AMP_ASSERT( d_numRemote == N );
+    if ( N > 0 ) {
+        this->d_localRemote = d_int_alloc.allocate( N );
+    }
+    for ( size_t i = 0; i < d_numRemote; ++i ) {
+        d_localRemote[i] = replicatedVec[i];
         AMP_DEBUG_ASSERT( d_localRemote[i] >= d_localStart &&
                           d_localRemote[i] < d_localStart + d_localSize );
         d_localRemote[i] -= d_localStart;
@@ -185,8 +194,8 @@ void GhostDataHelper<TYPE, Allocator>::scatter_set()
     const auto &sendDisp  = d_CommList->getSendDisp();
     const auto &recvDisp  = d_CommList->getReceiveDisp();
     // Pack the set buffers
-    if ( !d_localRemote.empty() )
-        getValuesByLocalID( d_localRemote.size(), d_localRemote.data(), d_SendRecv, type );
+    if ( d_localRemote != nullptr )
+        getValuesByLocalID( d_numRemote, d_localRemote, d_SendRecv, type );
     // Communicate ghosts (directly fill ghost buffer)
     comm.allToAll<TYPE>( d_SendRecv,
                          sendSizes.data(),
@@ -218,8 +227,8 @@ void GhostDataHelper<TYPE, Allocator>::scatter_add()
                          const_cast<int *>( sendDisp.data() ),
                          true );
     // Unpack the add buffers
-    if ( !d_localRemote.empty() )
-        addValuesByLocalID( d_localRemote.size(), d_localRemote.data(), d_SendRecv, type );
+    if ( d_localRemote != nullptr )
+        addValuesByLocalID( d_numRemote, d_localRemote, d_SendRecv, type );
 }
 
 

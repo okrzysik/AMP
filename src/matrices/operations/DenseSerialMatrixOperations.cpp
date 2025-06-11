@@ -195,6 +195,7 @@ void DenseSerialMatrixOperations::setDiagonal( std::shared_ptr<const Vector> in,
     for ( size_t i = 0; i < nrows; i++ )
         m1RawData[i + i * nrows] = x[i];
     delete[] x;
+    delete[] k;
 }
 
 void DenseSerialMatrixOperations::setIdentity( MatrixData &A )

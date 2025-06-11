@@ -11,16 +11,20 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy,
-         class Allocator       = AMP::HostAllocator<void>,
-         class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+template<typename Policy, class Allocator>
 class CSRMatrixCommunicator
 {
 public:
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
+    using policy_t          = Policy;
+    using allocator_t       = Allocator;
+    using localmatrixdata_t = CSRLocalMatrixData<Policy, Allocator>;
+
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
     using gidxAllocator_t =
         typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
     using lidxAllocator_t =
@@ -49,12 +53,12 @@ public:
         }
     }
 
-    void sendMatrices( const std::map<int, std::shared_ptr<LocalMatrixData>> &matrices );
-    std::map<int, std::shared_ptr<LocalMatrixData>>
+    void sendMatrices( const std::map<int, std::shared_ptr<localmatrixdata_t>> &matrices );
+    std::map<int, std::shared_ptr<localmatrixdata_t>>
     recvMatrices( gidx_t first_row, gidx_t last_row, gidx_t first_col, gidx_t last_col );
 
 protected:
-    void countSources( const std::map<int, std::shared_ptr<LocalMatrixData>> &matrices );
+    void countSources( const std::map<int, std::shared_ptr<localmatrixdata_t>> &matrices );
 
     AMP_MPI d_comm;
     bool d_send_called;

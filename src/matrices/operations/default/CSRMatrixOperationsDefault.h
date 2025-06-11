@@ -12,16 +12,26 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy,
-         class Allocator,
-         class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+template<typename Policy, class Allocator>
 class CSRMatrixOperationsDefault : public MatrixOperations
 {
 public:
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
+    using policy_t          = Policy;
+    using allocator_t       = Allocator;
+    using matrixdata_t      = CSRMatrixData<Policy, Allocator>;
+    using localmatrixdata_t = typename matrixdata_t::localmatrixdata_t;
+
+    using localops_t = CSRLocalMatrixOperationsDefault<Policy, Allocator>;
+
+    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
     CSRMatrixOperationsDefault()
-        : d_localops_diag( std::make_shared<
-                           CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>>() ),
-          d_localops_offd( std::make_shared<CSRLocalMatrixOperationsDefault<Policy, Allocator>>() )
+        : d_localops_diag( std::make_shared<localops_t>() ),
+          d_localops_offd( std::make_shared<localops_t>() )
     {
     }
 
@@ -119,17 +129,13 @@ public:
     void copyCast( const MatrixData &X, MatrixData &Y ) override;
 
     template<typename PolicyIn>
-    static void
-    copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-              CSRMatrixData<Policy, Allocator, LocalMatrixData> *Y );
+    static void copyCast( CSRMatrixData<PolicyIn, Allocator> *X, matrixdata_t *Y );
 
 protected:
-    std::shared_ptr<CSRLocalMatrixOperationsDefault<Policy, Allocator, LocalMatrixData>>
-        d_localops_diag;
-    std::shared_ptr<CSRLocalMatrixOperationsDefault<Policy, Allocator>> d_localops_offd;
-    std::map<std::pair<std::shared_ptr<CSRMatrixData<Policy, Allocator, LocalMatrixData>>,
-                       std::shared_ptr<CSRMatrixData<Policy, Allocator, LocalMatrixData>>>,
-             CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>>
+    std::shared_ptr<localops_t> d_localops_diag;
+    std::shared_ptr<localops_t> d_localops_offd;
+    std::map<std::pair<std::shared_ptr<matrixdata_t>, std::shared_ptr<matrixdata_t>>,
+             CSRMatrixSpGEMMHelperDefault<Policy, Allocator>>
         d_SpGEMMHelpers;
 };
 

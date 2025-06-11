@@ -33,6 +33,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Print from all cores into the output files
     AMP::logAllNodes( ss.str() );
 
+    auto nReps = input_db->getWithDefault<int>( "repetitions", 1 );
+
     // Create the Mesh
     const auto mesh = createMesh( input_db );
 
@@ -58,21 +60,24 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto linearSolver = AMP::Solver::Test::buildSolver(
         "LinearSolver", input_db, comm, nullptr, diffusionOperator );
 
-    // Set initial guess
-    TemperatureInKelvinVec->setToScalar( 1.0 );
+    for ( int i = 0; i < nReps; ++i ) {
+        // Set initial guess
+        TemperatureInKelvinVec->setToScalar( 1.0 );
 
-    AMP::pout << "System size: " << RightHandSideVec->getGlobalSize() << std::endl;
+        AMP::pout << "Iteration " << i << ", system size: " << RightHandSideVec->getGlobalSize()
+                  << std::endl;
 
-    // Use a random initial guess?
-    linearSolver->setZeroInitialGuess( false );
+        // Use a random initial guess?
+        linearSolver->setZeroInitialGuess( false );
 
-    // Solve the problem.
-    {
-        PROFILE( "DRIVER::linearThermalTest(solve call)" );
-        linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
+        // Solve the problem.
+        {
+            PROFILE( "DRIVER::linearThermalTest(solve call)" );
+            linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
+        }
+
+        checkConvergence( linearSolver.get(), input_db, input_file, *ut );
     }
-
-    checkConvergence( linearSolver.get(), input_db, input_file, *ut );
 }
 
 int main( int argc, char *argv[] )
