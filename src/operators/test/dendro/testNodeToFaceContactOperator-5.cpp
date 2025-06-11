@@ -87,7 +87,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     globalComm.barrier();
     double meshEndTime = MPI_Wtime();
@@ -101,7 +101,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto dispDofManager = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
 
     // Build a column operator and a column preconditioner
     auto columnOperator          = std::make_shared<AMP::Operator::ColumnOperator>();
@@ -134,7 +134,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     bottomPelletTopPelletContactOperatorParams->d_DOFsPerNode = dofsPerNode;
     bottomPelletTopPelletContactOperatorParams->d_DOFManager  = dispDofManager;
     bottomPelletTopPelletContactOperatorParams->d_GlobalComm  = globalComm;
-    bottomPelletTopPelletContactOperatorParams->d_Mesh        = meshAdapter;
+    bottomPelletTopPelletContactOperatorParams->d_Mesh        = mesh;
     bottomPelletTopPelletContactOperatorParams->d_MasterMechanicsMaterialModel =
         fuelMechanicsMaterialModel;
     bottomPelletTopPelletContactOperatorParams->reset();
@@ -151,7 +151,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     bottomPelletCladContactOperatorParams->d_DOFsPerNode = dofsPerNode;
     bottomPelletCladContactOperatorParams->d_DOFManager  = dispDofManager;
     bottomPelletCladContactOperatorParams->d_GlobalComm  = globalComm;
-    bottomPelletCladContactOperatorParams->d_Mesh        = meshAdapter;
+    bottomPelletCladContactOperatorParams->d_Mesh        = mesh;
     bottomPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel =
         fuelMechanicsMaterialModel;
     bottomPelletCladContactOperatorParams->reset();
@@ -168,7 +168,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     topPelletCladContactOperatorParams->d_DOFsPerNode                  = dofsPerNode;
     topPelletCladContactOperatorParams->d_DOFManager                   = dispDofManager;
     topPelletCladContactOperatorParams->d_GlobalComm                   = globalComm;
-    topPelletCladContactOperatorParams->d_Mesh                         = meshAdapter;
+    topPelletCladContactOperatorParams->d_Mesh                         = mesh;
     topPelletCladContactOperatorParams->d_MasterMechanicsMaterialModel = fuelMechanicsMaterialModel;
     topPelletCladContactOperatorParams->reset();
     auto topPelletCladContactOperator =
@@ -186,7 +186,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::Mesh::MeshID bottomPelletMeshID = bottomPelletTopPelletContactOperator->getMasterMeshID();
     AMP_ASSERT( bottomPelletMeshID == bottomPelletCladContactOperator->getMasterMeshID() );
-    auto bottomPelletMeshAdapter = meshAdapter->Subset( bottomPelletMeshID );
+    auto bottomPelletMeshAdapter = mesh->Subset( bottomPelletMeshID );
     if ( bottomPelletMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> bottomPelletElementPhysicsModel;
         bottomPelletBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -214,11 +214,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::make_shared<AMP::Solver::TrilinosMLSolver>( bottomPelletSolverParams );
             columnPreconditioner->append( bottomPelletSolver );
         } // end if
-    }     // end if
+    } // end if
 
     auto topPelletMeshID = bottomPelletTopPelletContactOperator->getSlaveMeshID();
     AMP_ASSERT( topPelletMeshID == topPelletCladContactOperator->getMasterMeshID() );
-    auto topPelletMeshAdapter = meshAdapter->Subset( topPelletMeshID );
+    auto topPelletMeshAdapter = mesh->Subset( topPelletMeshID );
     if ( topPelletMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> topPelletElementPhysicsModel;
         topPelletBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -246,11 +246,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::make_shared<AMP::Solver::TrilinosMLSolver>( topPelletSolverParams );
             columnPreconditioner->append( topPelletSolver );
         } // end if
-    }     // end if
+    } // end if
 
     auto cladMeshID = bottomPelletCladContactOperator->getSlaveMeshID();
     AMP_ASSERT( cladMeshID == topPelletCladContactOperator->getSlaveMeshID() );
-    auto cladMeshAdapter = meshAdapter->Subset( cladMeshID );
+    auto cladMeshAdapter = mesh->Subset( cladMeshID );
     if ( cladMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> cladElementPhysicsModel;
         cladBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -362,7 +362,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tempVar               = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto dispVar               = columnOperator->getOutputVariable();
     auto tempDofManager        = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
     auto tempVec    = AMP::LinearAlgebra::createVector( tempDofManager, tempVar, split );
     auto refTempVec = tempVec->clone();
     auto sigma_xx   = AMP::LinearAlgebra::createVector(
@@ -504,7 +504,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     dispDofManager->getDOFs( it->globalID(), dofs );
                     columnSolVec->setValueByGlobalID( dofs[2], 0.0001 );
                 } // end if
-            }     // end for
+            } // end for
         }
         bottomPelletTopPelletContactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         columnSolVec->zero();
@@ -895,9 +895,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 if ( scaleSolution != 1.0 ) {
                     columnSolVec->scale( scaleSolution );
                 }
-                meshAdapter->displaceMesh( columnSolVec );
+                mesh->displaceMesh( columnSolVec );
                 columnSolVec->scale( -1.0 );
-                meshAdapter->displaceMesh( columnSolVec );
+                mesh->displaceMesh( columnSolVec );
                 if ( scaleSolution != 1.0 ) {
                     columnSolVec->scale( -1.0 / scaleSolution );
                 } else {
@@ -1072,9 +1072,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             if ( scaleSolution != 1.0 ) {
                 columnSolVec->scale( scaleSolution );
             }
-            meshAdapter->displaceMesh( columnSolVec );
+            mesh->displaceMesh( columnSolVec );
             columnSolVec->scale( -1.0 );
-            meshAdapter->displaceMesh( columnSolVec );
+            mesh->displaceMesh( columnSolVec );
             if ( scaleSolution != 1.0 ) {
                 columnSolVec->scale( -1.0 / scaleSolution );
             } else {
@@ -1094,11 +1094,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     std::cout << "!!!!!! ACTIVE SET ITERATIONS DID NOT CONVERGE !!!!!!!!\n";
                 }
             } // end if
-        }     // end for
+        } // end for
 
     } // end for
 
-    meshAdapter->displaceMesh( columnSolVec );
+    mesh->displaceMesh( columnSolVec );
 
     fout.close();
 

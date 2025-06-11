@@ -7,14 +7,14 @@
 namespace AMP::Operator {
 
 
-FlowFrapconJacobian::FlowFrapconJacobian( std::shared_ptr<const OperatorParameters> in_params )
-    : Operator( in_params ), dCp( 0 )
+FlowFrapconJacobian::FlowFrapconJacobian( std::shared_ptr<const OperatorParameters> params )
+    : Operator( params ), dCp( 0 )
 {
-    auto params = std::dynamic_pointer_cast<const FlowFrapconJacobianParameters>( in_params );
-    std::string inpVar = params->d_db->getString( "InputVariable" );
+    AMP_ASSERT( params );
+    auto inpVar = params->d_db->getString( "InputVariable" );
     d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
 
-    std::string outVar = params->d_db->getString( "OutputVariable" );
+    auto outVar = params->d_db->getString( "OutputVariable" );
     d_outVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
 
     d_SimpleVariable.reset( new AMP::LinearAlgebra::Variable( "FlowInternal" ) );
@@ -24,17 +24,15 @@ FlowFrapconJacobian::FlowFrapconJacobian( std::shared_ptr<const OperatorParamete
 
 
 std::shared_ptr<AMP::LinearAlgebra::Variable>
-FlowFrapconJacobian::createInputVariable( const std::string &name, int varId )
+FlowFrapconJacobian::createInputVariable( const std::string &name, int )
 {
-    (void) varId;
     return d_inpVariable->clone( name );
 }
 
 
 std::shared_ptr<AMP::LinearAlgebra::Variable>
-FlowFrapconJacobian::createOutputVariable( const std::string &name, int varId )
+FlowFrapconJacobian::createOutputVariable( const std::string &name, int )
 {
-    (void) varId;
     return d_outVariable->clone( name );
 }
 
@@ -54,43 +52,26 @@ std::shared_ptr<AMP::LinearAlgebra::Variable> FlowFrapconJacobian::getOutputVari
 void FlowFrapconJacobian::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_ASSERT( params );
+    AMP_ASSERT( params->d_db );
     d_memory_location = params->d_memory_location;
-
-    auto myparams = std::dynamic_pointer_cast<const FlowFrapconJacobianParameters>( params );
-
-    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
     bool skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 
     if ( !skipParams ) {
-        AMP_INSIST( myparams->d_db->keyExists( "numpoints" ), "Key ''numpoints'' is missing!" );
-        d_numpoints = myparams->d_db->getScalar<int>( "numpoints" );
-
-        AMP_INSIST( myparams->d_db->keyExists( "Channel_Diameter" ), "Missing key: Channel_Dia" );
-        d_De = myparams->d_db->getScalar<double>( "Channel_Diameter" );
-
-        AMP_INSIST( myparams->d_db->keyExists( "Heat_Capacity" ), "Missing key: Heat_Capacity" );
-        Cp = myparams->d_db->getScalar<double>( "Heat_Capacity" );
-
-        AMP_INSIST( myparams->d_db->keyExists( "Mass_Flux" ), "Missing key: Mass_Flux" );
-        d_G = myparams->d_db->getScalar<double>( "Mass_Flux" );
-
-        AMP_INSIST( myparams->d_db->keyExists( "Temp_Inlet" ), "Missing key: Temp_In" );
-        d_Tin = myparams->d_db->getScalar<double>( "Temp_Inlet" );
-
-        AMP_INSIST( myparams->d_db->keyExists( "Conductivity" ), "Missing key: Kconductivity" );
-        d_K = myparams->d_db->getScalar<double>( "Conductivity" );
-
-        AMP_INSIST( myparams->d_db->keyExists( "Reynolds" ), "Missing key: Reynolds" );
-        d_Re = myparams->d_db->getScalar<double>( "Reynolds" );
-
-        AMP_INSIST( myparams->d_db->keyExists( "Prandtl" ), "Missing key: Prandtl" );
-        d_Pr = myparams->d_db->getScalar<double>( "Prandtl" );
+        d_numpoints = params->d_db->getScalar<int>( "numpoints" );
+        d_De        = params->d_db->getScalar<double>( "Channel_Diameter" );
+        Cp          = params->d_db->getScalar<double>( "Heat_Capacity" );
+        d_G         = params->d_db->getScalar<double>( "Mass_Flux" );
+        d_Tin       = params->d_db->getScalar<double>( "Temp_Inlet" );
+        d_K         = params->d_db->getScalar<double>( "Conductivity" );
+        d_Re        = params->d_db->getScalar<double>( "Reynolds" );
+        d_Pr        = params->d_db->getScalar<double>( "Prandtl" );
     }
 
-    if ( ( myparams->d_frozenSolution.get() ) != nullptr ) {
-        d_frozenVec = myparams->d_frozenSolution;
+    auto myparams = std::dynamic_pointer_cast<const FlowFrapconJacobianParameters>( params );
+    if ( myparams ) {
+        if ( myparams->d_frozenSolution )
+            d_frozenVec = myparams->d_frozenSolution;
     }
 }
 
@@ -100,23 +81,17 @@ void FlowFrapconJacobian::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                  AMP::LinearAlgebra::Vector::shared_ptr r )
 {
 
-    // AMP::Mesh::DOFMap::shared_ptr dof_map = d_MeshAdapter->getDOFMap(d_inpVariable);
-
-    AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
-    AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
+    AMP_INSIST( r, "NULL Residual Vector" );
+    AMP_INSIST( u, "NULL Solution Vector" );
 
     std::vector<double> box = d_Mesh->getBoundingBox();
     const double min_z      = box[4];
     const double max_z      = box[5];
     const double del_z      = ( max_z - min_z ) / d_numpoints;
 
-    //    std::cout << "Extreme Min Point in z = " << min_z << std::endl;
-    //    std::cout << "Extreme Max Point in z = " << max_z << std::endl;
+    auto flowInputVec = subsetInputVector( u );
 
-
-    AMP::LinearAlgebra::Vector::const_shared_ptr flowInputVec = subsetInputVector( u );
-
-    AMP::LinearAlgebra::Vector::shared_ptr outputVec = subsetOutputVector( r );
+    auto outputVec = subsetOutputVector( r );
 
     AMP_INSIST( ( d_frozenVec ), "Null Frozen Vector inside Jacobian" );
 

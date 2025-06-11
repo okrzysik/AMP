@@ -47,8 +47,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     // Create the Mesh.
-    auto mesh_file   = input_db->getString( "mesh_file" );
-    auto meshAdapter = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
+    auto mesh_file = input_db->getString( "mesh_file" );
+    auto mesh      = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
@@ -64,7 +64,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearMechanicsBVPoperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "NonlinearMechanicsOperator", input_db ) );
+                mesh, "NonlinearMechanicsOperator", input_db ) );
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
@@ -75,7 +75,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
     auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+            mesh, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // Create the variables
     auto mechanicsNonlinearVolumeOperator =
@@ -91,7 +91,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+            mesh, "Load_Boundary", input_db, dummyModel ) );
     dirichletLoadVecOp->setVariable( dispVar );
 
     //--------------------------------------------------
@@ -101,7 +101,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     //--------------------------------------------------
 
     // Create the vectors
@@ -229,12 +229,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             fin             = fopen( fname.c_str(), "r" );
             double coord[3] = { 0, 0, 0 }, stress1[6] = { 0, 0, 0 }, strain1[6] = { 0, 0, 0 };
             for ( int ijk = 0; ijk < 8; ijk++ ) {
-                for ( auto &elem : coord )
-                    [[maybe_unused]] int err = fscanf( fin, "%lf", &elem );
-                for ( auto &elem : stress1 )
-                    [[maybe_unused]] int err = fscanf( fin, "%lf", &elem );
-                for ( auto &elem : strain1 )
-                    [[maybe_unused]] int err = fscanf( fin, "%lf", &elem );
+                for ( auto &elem : coord ) [[maybe_unused]]
+                    int err = fscanf( fin, "%lf", &elem );
+                for ( auto &elem : stress1 ) [[maybe_unused]]
+                    int err = fscanf( fin, "%lf", &elem );
+                for ( auto &elem : strain1 ) [[maybe_unused]]
+                    int err = fscanf( fin, "%lf", &elem );
                 if ( ijk == 7 ) {
                     const double prev_stress = 1.0, prev_strain = 1.0;
                     double slope = 1.0;

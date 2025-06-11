@@ -41,14 +41,14 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> FickMaterialModel;
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
@@ -57,13 +57,13 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "testLinearFickOperator" ), "key missing!" );
     auto linearFickOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testLinearFickOperator", input_db, FickMaterialModel ) );
+            mesh, "testLinearFickOperator", input_db, FickMaterialModel ) );
 
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
     auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
+            mesh, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
     // create a column operator object for linear Thermal-Fick
     auto linearThermalFickOperator = std::make_shared<AMP::Operator::ColumnOperator>();
@@ -97,14 +97,14 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto dirichletThermalInVecOp =
         std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "ThermalInitialGuess", input_db, dummyThermalModel ) );
+                mesh, "ThermalInitialGuess", input_db, dummyThermalModel ) );
     dirichletThermalInVecOp->setVariable( thermalVolumeOperator->getInputVariable() );
 
     // Initial-Guess for Fick
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyFickModel;
     auto dirichletFickInVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "FickInitialGuess", input_db, dummyFickModel ) );
+            mesh, "FickInitialGuess", input_db, dummyFickModel ) );
     dirichletFickInVecOp->setVariable( FickVolumeOperator->getInputVariable() );
 
     // Random initial guess

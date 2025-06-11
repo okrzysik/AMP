@@ -55,7 +55,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
@@ -71,7 +71,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearMechanicsBVPoperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "NonlinearMechanicsOperator", input_db ) );
+                mesh, "NonlinearMechanicsOperator", input_db ) );
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
@@ -82,7 +82,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
     auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+            mesh, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // Create the variables
     auto mechanicsNonlinearVolumeOperator =
@@ -98,11 +98,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+            mesh, "Load_Boundary", input_db, dummyModel ) );
     dirichletLoadVecOp->setVariable( dispVar );
 
     auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -229,7 +229,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearMechanicsBVPoperator->getVolumeOperator() )
             ->printStressAndStrain( solVec, fname );
 
-        meshAdapter->displaceMesh( solVec );
+        mesh->displaceMesh( solVec );
     }
 
     AMP::pout << "epsilon = " << epsilon << std::endl;

@@ -12,7 +12,7 @@ namespace AMP::Mesh {
 DendroSearch::DendroSearch( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                             bool verbose,
                             std::ostream &oStream )
-    : d_meshAdapter( mesh ),
+    : d_mesh( mesh ),
       d_verbose( verbose ),
       d_oStream( oStream ),
       d_timingMeasurements( std::vector<double>( numTimingTypes, -1.0 ) ),
@@ -120,9 +120,9 @@ void DendroSearch::projectOnBoundaryID(
                     //              std::cout<<f<<"  ->  "<<g<<"\n";
                     break;
                 } // end if
-            }     // end for g
-        }         // end for f
-    }             // end if
+            } // end for g
+        } // end for f
+    } // end if
 
     for ( unsigned int i = 0; i < d_foundPts.size(); i += 6 ) {
         ProjectOnBoundaryData tmpData;
@@ -163,9 +163,9 @@ void DendroSearch::projectOnBoundaryID(
                         &( tmpData.d_ProjectionLocalCoordsOnGeomType::Face[0] ),
                         &( tmpData.d_ShiftGlobalCoords[0] ) );
                     break; // we assume only one face will be on the boundary
-                }          // end if
-            }              // end for f
-        } else {           // point was found but element is not on boundary
+                } // end if
+            } // end for f
+        } else { // point was found but element is not on boundary
             tmpData.d_SearchStatus     = FoundNotOnBoundary;
             tmpData.d_GeomType::CellID = d_localElems[elementLocalID].globalID();
         } // end if
@@ -238,9 +238,9 @@ void DendroSearch::projectOnBoundaryID(
                     } // end for v
                     faceLocalIndices[pointLocalID] = tmpData.d_GeomType::FaceLocalIndex;
                 } // end if
-            }     // end if
-        }         // end for j
-    }             // end for i
+            } // end if
+        } // end for j
+    } // end for i
 
     recvData.clear();
 
@@ -260,13 +260,13 @@ void DendroSearch::projectOnBoundaryID(
 
 void DendroSearch::setupDSforSearch()
 {
-    if ( d_meshAdapter == NULL ) {
+    if ( d_mesh == NULL ) {
         return;
     }
 
     const unsigned int MaxDepth = 30;
 
-    AMP::AMP_MPI meshComm = d_meshAdapter->getComm();
+    AMP::AMP_MPI meshComm = d_mesh->getComm();
     const int rank        = meshComm.getRank();
     const int npes        = meshComm.getSize();
 
@@ -276,14 +276,14 @@ void DendroSearch::setupDSforSearch()
     }
     setupBeginTime = MPI_Wtime();
 
-    std::vector<double> box = d_meshAdapter->getBoundingBox();
-    for ( int i = 0; i < d_meshAdapter->getDim(); ++i ) {
+    std::vector<double> box = d_mesh->getBoundingBox();
+    for ( int i = 0; i < d_mesh->getDim(); ++i ) {
         d_minCoords[i]     = box[( 2 * i ) + 0];
         double maxCoord    = box[( 2 * i ) + 1];
         d_scalingFactor[i] = 1.0 / ( 1.0e-10 + maxCoord - d_minCoords[i] );
     } // end i
 
-    size_t globalNumElems = d_meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Cell );
+    size_t globalNumElems = d_mesh->numGlobalElements( AMP::Mesh::GeomType::Cell );
     if ( d_verbose ) {
         meshComm.barrier();
         if ( !rank ) {
@@ -309,7 +309,7 @@ void DendroSearch::setupDSforSearch()
 
     unsigned int twoPowFactor = ( 1u << ( MaxDepth - d_boxLevel ) );
 
-    size_t localNumElems = d_meshAdapter->numLocalElements( AMP::Mesh::GeomType::Cell );
+    size_t localNumElems = d_mesh->numLocalElements( AMP::Mesh::GeomType::Cell );
     AMP_DEBUG_ASSERT( localNumElems > 0 );
 
     std::vector<ot::TreeNode> tmpNodeList;
@@ -319,7 +319,7 @@ void DendroSearch::setupDSforSearch()
     d_localElems.clear();
     d_volume_elements.reserve( localNumElems );
     d_localElems.reserve( localNumElems );
-    AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator( AMP::Mesh::GeomType::Cell, 0 );
+    AMP::Mesh::MeshIterator el = d_mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     for ( size_t eId = 0; eId < localNumElems; ++eId, ++el ) {
         std::vector<int> eIdSingleton( 1, eId );
         d_localElems.push_back( *el );
@@ -347,7 +347,7 @@ void DendroSearch::setupDSforSearch()
                     }
                 }
             } // end k
-        }     // end j
+        } // end j
         d_volume_elements.push_back( new hex8_element_t( support_points ) );
         // PERFORMANCE IMPROVEMENT: We can skip the boxes that lie
         // completely outside the element.
@@ -374,9 +374,9 @@ void DendroSearch::setupDSforSearch()
                         tmpElemIdList.insert( tmpElemIdList.begin(), eIdSingleton );
                     }
                 } // end i
-            }     // end j
-        }         // end k
-    }             // end eId
+            } // end j
+        } // end k
+    } // end eId
 
     d_nodeList.clear();
     d_rankList.clear();
@@ -499,7 +499,7 @@ void DendroSearch::setupDSforSearch()
                 for ( int j = 0; j < recvEidCnts[i]; ++j ) {
                     d_rankList[recvEidDisps[i] + j] = i;
                 } // end j
-            }     // end i
+            } // end i
             recvEidDisps.clear();
             recvEidCnts.clear();
         } else {
@@ -571,7 +571,7 @@ void DendroSearch::setupDSforSearch()
                 for ( int j = 0; j < sendOctCnts[i]; ++j ) {
                     sendEidCnts[i] += ( tmpNodeList[sendOctDisps[i] + j].getWeight() );
                 } // end j
-            }     // end i
+            } // end i
 
             std::vector<ot::TreeNode> recvOctList( recvOctDisps[npes - 1] + recvOctCnts[npes - 1] );
             ot::TreeNode *tmpNodeListPtr = NULL;
@@ -598,7 +598,7 @@ void DendroSearch::setupDSforSearch()
                 for ( int j = 0; j < recvOctCnts[i]; ++j ) {
                     recvEidCnts[i] += ( recvOctList[recvOctDisps[i] + j].getWeight() );
                 } // end j
-            }     // end i
+            } // end i
 
             std::vector<int> sendEidDisps( npes );
             std::vector<int> recvEidDisps( npes );
@@ -637,7 +637,7 @@ void DendroSearch::setupDSforSearch()
                 for ( size_t k = 0; k < tmpEidList[i].size(); ++k, ++j ) {
                     tmpEidList[i][k] = recvEidList[j];
                 } // end k
-            }     // end i
+            } // end i
             recvEidList.clear();
 
             std::vector<std::vector<int>> dummyElemIdList( d_nodeList.size() );
@@ -656,7 +656,7 @@ void DendroSearch::setupDSforSearch()
                     dummyRankList[retIdx].insert(
                         dummyRankList[retIdx].end(), tmpEidList[recvOctDisps[i] + j].size(), i );
                 } // end j
-            }     // end i
+            } // end i
             recvOctCnts.clear();
             recvOctDisps.clear();
             recvOctList.clear();
@@ -714,10 +714,10 @@ void DendroSearch::search( AMP::AMP_MPI comm, const std::vector<double> &pts )
     //    std::string fileName = "debug_dendro_" + std::to_string(rank);
     //    std::fstream d_fout;
     //    d_fout.open(fileName.c_str(), std::fstream::out);
-    //    d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ?
-    //    static_cast<int>(d_meshAdapter->numLocalElements(AMP::Mesh::GeomType::Cell)) : -1)
-    //        <<"  global="<<(d_meshAdapter.get() != NULL ?
-    //        static_cast<int>(d_meshAdapter->numGlobalElements(AMP::Mesh::GeomType::Cell)) :
+    //    d_fout<<"local elements="<<(d_mesh.get() != NULL ?
+    //    static_cast<int>(d_mesh->numLocalElements(AMP::Mesh::GeomType::Cell)) : -1)
+    //        <<"  global="<<(d_mesh.get() != NULL ?
+    //        static_cast<int>(d_mesh->numGlobalElements(AMP::Mesh::GeomType::Cell)) :
     //        -1)<<"\n";
 
     double coarseSearchBeginTime = MPI_Wtime();
@@ -725,8 +725,8 @@ void DendroSearch::search( AMP::AMP_MPI comm, const std::vector<double> &pts )
     std::vector<int> rankMap( npes );
 
     int myRank = -1;
-    if ( d_meshAdapter != NULL ) {
-        AMP::AMP_MPI meshComm = d_meshAdapter->getComm();
+    if ( d_mesh != NULL ) {
+        AMP::AMP_MPI meshComm = d_mesh->getComm();
         myRank                = meshComm.getRank();
     }
 
@@ -890,8 +890,8 @@ void DendroSearch::search( AMP::AMP_MPI comm, const std::vector<double> &pts )
 
     rank                       = -1;
     double fineSearchBeginTime = MPI_Wtime();
-    if ( d_meshAdapter.get() != NULL ) {
-        AMP::AMP_MPI meshComm = d_meshAdapter->getComm();
+    if ( d_mesh.get() != NULL ) {
+        AMP::AMP_MPI meshComm = d_mesh->getComm();
         rank                  = meshComm.getRank();
         npes                  = meshComm.getSize();
 
@@ -1022,13 +1022,13 @@ void DendroSearch::search( AMP::AMP_MPI comm, const std::vector<double> &pts )
                         ++numFoundPts;
                         ++( d_sendCnts[procId] );
                     } // end if
-                }     // end if
-            }         // end if
-                      //            d_fout<<"\n";
-                      //            if( (static_cast<unsigned int>(recvPtsList[6*i+4]) == 3)
-                      //                || (static_cast<unsigned int>(recvPtsList[6*i+4]) == 4)
-                      //                || (static_cast<unsigned int>(recvPtsList[6*i+4]) == 2)) {
-                      //              double point_of_view[3] = { 1.0, 1.0, 1.0 };
+                } // end if
+            } // end if
+              //            d_fout<<"\n";
+              //            if( (static_cast<unsigned int>(recvPtsList[6*i+4]) == 3)
+              //                || (static_cast<unsigned int>(recvPtsList[6*i+4]) == 4)
+              //                || (static_cast<unsigned int>(recvPtsList[6*i+4]) == 2)) {
+              //              double point_of_view[3] = { 1.0, 1.0, 1.0 };
             //              draw_point(tmpPtGlobalCoordPtr, "red", std::cout, "$\\diamond$");
             //              draw_hex8_element(d_volume_elements[eId], point_of_view, std::cout);
             //            } // end if
@@ -1119,7 +1119,7 @@ void DendroSearch::interpolate( AMP::AMP_MPI comm,
                 double vecVal = vectorField->getValueByGlobalID( globalID[d] );
                 value[d] += ( vecVal * basis_functions_values[j] );
             } // end d
-        }     // end j
+        } // end j
         unsigned int ptProcId = static_cast<unsigned int>( d_foundPts[i + 5] );
         sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = d_foundPts[i + 4];
         ++( tmpSendCnts[ptProcId] );
@@ -1127,7 +1127,7 @@ void DendroSearch::interpolate( AMP::AMP_MPI comm,
             sendResults[d_sendDisps[ptProcId] + tmpSendCnts[ptProcId]] = value[d];
             ++( tmpSendCnts[ptProcId] );
         } // end d
-    }     // end i
+    } // end i
     tmpSendCnts.clear();
 
     if ( d_verbose ) {
@@ -1168,7 +1168,7 @@ void DendroSearch::interpolate( AMP::AMP_MPI comm,
         for ( size_t d = 0; d < dofsPerNode; ++d ) {
             results[( locId * dofsPerNode ) + d] = recvResults[i + d + 1];
         } // end d
-    }     // end i
+    } // end i
 
     for ( int i = 0; i < npes; ++i ) {
         d_sendCnts[i] /= ( dofsPerNode + 1 );

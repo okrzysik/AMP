@@ -55,23 +55,20 @@ void helperCreateColumnOperatorsForPelletMechanics(
             prefix = "Bottom";
         }
 
-        auto meshAdapter = localMeshes[id];
+        auto mesh = localMeshes[id];
 
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechModel;
         auto nonlinOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter,
+                mesh,
                 prefix + "PelletMechanicsNonlinearBVPOperator",
                 global_input_db,
                 mechModel ) );
         nonlinearColumnOperator->append( nonlinOperator );
 
         auto linOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator( meshAdapter,
-                                                            prefix +
-                                                                "PelletMechanicsLinearBVPOperator",
-                                                            global_input_db,
-                                                            mechModel ) );
+            AMP::Operator::OperatorBuilder::createOperator(
+                mesh, prefix + "PelletMechanicsLinearBVPOperator", global_input_db, mechModel ) );
         linearColumnOperator->append( linOperator );
     } // end for id
 }
@@ -166,11 +163,10 @@ void helperBuildPointLoadRHSForPelletMechanics(
         std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( coupledOp->getOperator( 3 ) );
     rhsVec->zero();
     for ( unsigned int id = 0; id < nonlinearColumnOperator->getNumberOfOperators(); id++ ) {
-        auto currOp      = nonlinearColumnOperator->getOperator( id );
-        auto meshAdapter = currOp->getMesh();
-        auto loadOp      = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "PointLoad", global_input_db ) );
+        auto currOp = nonlinearColumnOperator->getOperator( id );
+        auto mesh   = currOp->getMesh();
+        auto loadOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "PointLoad", global_input_db ) );
         loadOp->setVariable( currOp->getOutputVariable() );
         loadOp->apply( nullVec, rhsVec );
     } // end for id

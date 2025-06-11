@@ -57,7 +57,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
     globalComm.barrier();
     double meshEndTime = MPI_Wtime();
     if ( !rank ) {
@@ -70,11 +70,11 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto DOFs           = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto dummyVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Dummy" );
     auto dummyVector   = createVector( DOFs, dummyVariable, split );
 
-    auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto node     = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto end_node = node.end();
     for ( ; node != end_node; ++node ) {
         std::vector<size_t> globalID;
@@ -87,8 +87,8 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     double minCoords[3];
     double maxCoords[3];
-    std::vector<double> box = meshAdapter->getBoundingBox();
-    for ( int i = 0; i < meshAdapter->getDim(); ++i ) {
+    std::vector<double> box = mesh->getBoundingBox();
+    for ( int i = 0; i < mesh->getDim(); ++i ) {
         minCoords[i] = box[2 * i + 0];
         maxCoords[i] = box[2 * i + 1];
     }
@@ -123,7 +123,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     bool dendroVerbose = input_db->getScalar<bool>( "DENDRO_VERBOSE" );
     globalComm.barrier();
     double dendroConBeginTime = MPI_Wtime();
-    AMP::Mesh::DendroSearch dendroSearch( meshAdapter, dendroVerbose );
+    AMP::Mesh::DendroSearch dendroSearch( mesh, dendroVerbose );
     globalComm.barrier();
     double dendroConEndTime = MPI_Wtime();
     if ( !rank ) {

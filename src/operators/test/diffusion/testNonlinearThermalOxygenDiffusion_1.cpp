@@ -43,15 +43,15 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    auto manager     = AMP::Mesh::MeshFactory::create( meshParams );
-    auto meshAdapter = manager->Subset( "brick" );
+    auto manager = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh    = manager->Subset( "brick" );
 
     // create a nonlinear BVP operator for nonlinear thermal
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
     auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testNonlinearThermalOperator", input_db ) );
+            mesh, "testNonlinearThermalOperator", input_db ) );
     auto nonlinearThermalVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
@@ -63,7 +63,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
 
     auto nonlinearOxygenOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testNonlinearOxygenOperator", input_db ) );
+            mesh, "testNonlinearOxygenOperator", input_db ) );
     auto nonlinearOxygenVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearOxygenOperator->getVolumeOperator() );
@@ -91,7 +91,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create solution, rhs, and residual vectors
     auto solVec = AMP::LinearAlgebra::createVector( nodalDofMap, inputVariable );
@@ -141,13 +141,13 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
     auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testLinearThermalOperator", input_db, thermalMaterialModel ) );
+            mesh, "testLinearThermalOperator", input_db, thermalMaterialModel ) );
 
     // now construct the linear BVP operator for oxygen
     AMP_INSIST( input_db->keyExists( "testLinearOxygenOperator" ), "key missing!" );
     auto linearOxygenOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testLinearOxygenOperator", input_db, oxygenTransportModel ) );
+            mesh, "testLinearOxygenOperator", input_db, oxygenTransportModel ) );
 
     // create a column operator object for linear thermomechanics
     auto linearThermalOxygenOperator = std::make_shared<AMP::Operator::ColumnOperator>();

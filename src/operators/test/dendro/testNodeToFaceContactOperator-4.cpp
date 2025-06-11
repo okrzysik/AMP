@@ -81,7 +81,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( ( bis ? "MeshBis" : "Mesh" ) );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     globalComm.barrier();
     double meshEndTime = MPI_Wtime();
@@ -95,7 +95,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto dispDofManager = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
 
     // Build a column operator and a column preconditioner
     auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
@@ -129,7 +129,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     contactOperatorParams->d_DOFsPerNode                  = dofsPerNode;
     contactOperatorParams->d_DOFManager                   = dispDofManager;
     contactOperatorParams->d_GlobalComm                   = globalComm;
-    contactOperatorParams->d_Mesh                         = meshAdapter;
+    contactOperatorParams->d_Mesh                         = mesh;
     contactOperatorParams->d_MasterMechanicsMaterialModel = masterMechanicsMaterialModel;
     contactOperatorParams->reset(); // got segfault at constructor since d_Mesh was pointing to NULL
     auto contactOperator = std::make_shared<AMP::Operator::NodeToGeomType::FaceContactOperator>(
@@ -148,7 +148,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Build the master and slave operators
     std::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
     auto masterMeshID      = contactOperator->getMasterMeshID();
-    auto masterMeshAdapter = meshAdapter->Subset( masterMeshID );
+    auto masterMeshAdapter = mesh->Subset( masterMeshID );
     //  rotateMesh(masterMeshAdapter);
     if ( masterMeshAdapter ) {
         auto masterElementPhysicsModel;
@@ -175,11 +175,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 std::make_shared<AMP::Solver::TrilinosMLSolver>( masterSolverParams );
             columnPreconditioner->append( masterSolver );
         } // end if
-    }     // end if
+    } // end if
 
     std::shared_ptr<AMP::Operator::LinearBVPOperator> slaveBVPOperator;
     auto slaveMeshID      = contactOperator->getSlaveMeshID();
-    auto slaveMeshAdapter = meshAdapter->Subset( slaveMeshID );
+    auto slaveMeshAdapter = mesh->Subset( slaveMeshID );
     if ( slaveMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> slaveElementPhysicsModel;
         slaveBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -207,7 +207,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto slaveSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( slaveSolverParams );
             columnPreconditioner->append( slaveSolver );
         } // end if
-    }     // end if
+    } // end if
 
     auto contactPreconditioner_db = columnPreconditioner_db->getDatabase( "ContactPreconditioner" );
     auto contactPreconditionerParams =
@@ -277,7 +277,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tempVar        = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto dispVar        = columnOperator->getOutputVariable();
     auto tempDofManager = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
     auto tempVec    = AMP::LinearAlgebra::createVector( tempDofManager, tempVar, split );
     auto refTempVec = tempVec->clone();
 
@@ -427,7 +427,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 //        zDispVec->setValueByGlobalID(dofs[2], 0.00005);
                 columnSolVec->setValueByGlobalID( dofs[2], 0.00005 );
             } // end if
-        }     // end for
+        } // end for
         contactOperator->updateActiveSetWithALittleHelp( columnSolVec );
         //    zDispVec->zero();
         columnSolVec->zero();
@@ -538,11 +538,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 if ( !masterCor ) {
                     masterCor = masterRhs->clone();
                     applyCustomDirichletCondition(
-                        masterRhs, masterCor, meshAdapter, masterConstraints, masterMat );
+                        masterRhs, masterCor, mesh, masterConstraints, masterMat );
                 } else {
                     applyCustomDirichletCondition( masterRhs,
                                                    masterCor,
-                                                   meshAdapter,
+                                                   mesh,
                                                    masterConstraints,
                                                    std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
@@ -554,11 +554,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 if ( !slaveCor ) {
                     slaveCor = slaveRhs->clone();
                     applyCustomDirichletCondition(
-                        slaveRhs, slaveCor, meshAdapter, slaveConstraints, slaveMat );
+                        slaveRhs, slaveCor, mesh, slaveConstraints, slaveMat );
                 } else {
                     applyCustomDirichletCondition( slaveRhs,
                                                    slaveCor,
-                                                   meshAdapter,
+                                                   mesh,
                                                    slaveConstraints,
                                                    std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
@@ -656,9 +656,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             if ( scaleSolution != 1.0 ) {
                 columnSolVec->scale( scaleSolution );
             }
-            meshAdapter->displaceMesh( columnSolVec );
+            mesh->displaceMesh( columnSolVec );
             columnSolVec->scale( -1.0 );
-            meshAdapter->displaceMesh( columnSolVec );
+            mesh->displaceMesh( columnSolVec );
             if ( scaleSolution != 1.0 ) {
                 columnSolVec->scale( -1.0 / scaleSolution );
             } else {
@@ -718,9 +718,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             if ( scaleSolution != 1.0 ) {
                 columnSolVec->scale( scaleSolution );
             }
-            meshAdapter->displaceMesh( columnSolVec );
+            mesh->displaceMesh( columnSolVec );
             columnSolVec->scale( -1.0 );
-            meshAdapter->displaceMesh( columnSolVec );
+            mesh->displaceMesh( columnSolVec );
             if ( scaleSolution != 1.0 ) {
                 columnSolVec->scale( -1.0 / scaleSolution );
             } else {
@@ -740,11 +740,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                     std::cout << "!!!!!! ACTIVE SET ITERATIONS DID NOT CONVERGE !!!!!!!!\n";
                 }
             } // end if
-        }     // end for
+        } // end for
 
     } // end for
 
-    meshAdapter->displaceMesh( columnSolVec );
+    mesh->displaceMesh( columnSolVec );
 
     fout.close();
 

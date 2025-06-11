@@ -1,4 +1,5 @@
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
+#include "AMP/operators/subchannel/FlowFrapconJacobianParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/vectors/VectorSelector.h"
 
@@ -8,10 +9,9 @@
 namespace AMP::Operator {
 
 
-FlowFrapconOperator::FlowFrapconOperator( std::shared_ptr<const OperatorParameters> in_params )
-    : Operator( in_params ), d_boundaryId( 0 )
+FlowFrapconOperator::FlowFrapconOperator( std::shared_ptr<const OperatorParameters> params )
+    : Operator( params ), d_boundaryId( 0 )
 {
-    auto params = std::dynamic_pointer_cast<const FlowFrapconOperatorParameters>( in_params );
     AMP_ASSERT( params );
     AMP_ASSERT( params->d_db );
 
@@ -28,18 +28,16 @@ void FlowFrapconOperator::reset( std::shared_ptr<const OperatorParameters> param
     AMP_ASSERT( params );
     d_memory_location = params->d_memory_location;
 
-    auto myparams = std::dynamic_pointer_cast<const FlowFrapconOperatorParameters>( params );
-    AMP_ASSERT( myparams );
-    AMP_ASSERT( myparams->d_db );
+    AMP_ASSERT( params->d_db );
 
-    d_numpoints = myparams->d_db->getScalar<int>( "numpoints" );
-    d_De        = myparams->d_db->getScalar<double>( "Channel_Diameter" );
-    Cp          = myparams->d_db->getScalar<double>( "Heat_Capacity" );
-    d_G         = myparams->d_db->getScalar<double>( "Mass_Flux" );
-    d_Tin       = myparams->d_db->getWithDefault<double>( "Temp_Inlet", 300. );
-    d_K         = myparams->d_db->getScalar<double>( "Conductivity" );
-    d_Re        = myparams->d_db->getScalar<double>( "Reynolds" );
-    d_Pr        = myparams->d_db->getScalar<double>( "Prandtl" );
+    d_numpoints = params->d_db->getScalar<int>( "numpoints" );
+    d_De        = params->d_db->getScalar<double>( "Channel_Diameter" );
+    Cp          = params->d_db->getScalar<double>( "Heat_Capacity" );
+    d_G         = params->d_db->getScalar<double>( "Mass_Flux" );
+    d_Tin       = params->d_db->getWithDefault<double>( "Temp_Inlet", 300. );
+    d_K         = params->d_db->getScalar<double>( "Conductivity" );
+    d_Re        = params->d_db->getScalar<double>( "Reynolds" );
+    d_Pr        = params->d_db->getScalar<double>( "Prandtl" );
 }
 
 

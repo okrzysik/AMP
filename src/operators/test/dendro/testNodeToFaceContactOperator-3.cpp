@@ -51,7 +51,7 @@ static void selectNodes( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             //      std::cout<<nodesGlobalIDs.size()<<"  ("<<coord[0]<<", "<<coord[1]<<",
             //      "<<coord[2]<<")"<<std::endl;
         } // end if
-    }     // end for
+    } // end for
 }
 
 static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
@@ -73,7 +73,7 @@ static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 static void
 getConcentratedLoadAtNodes( double loadParameter,
                             double loadCutoff,
-                            std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+                            std::shared_ptr<AMP::Mesh::Mesh> mesh,
                             AMP::LinearAlgebra::Vector::shared_ptr loadVector,
                             std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {
@@ -82,9 +82,8 @@ getConcentratedLoadAtNodes( double loadParameter,
     AMP_ASSERT( loadValues.size() == dofIndices.size() );
 
     if ( loadValues.empty() ) {
-        double totalLoad = 0.0;
-        auto boundaryIterator =
-            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4, 0 );
+        double totalLoad      = 0.0;
+        auto boundaryIterator = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4, 0 );
         auto boundaryIterator_begin = boundaryIterator.begin();
         auto boundaryIterator_end   = boundaryIterator.end();
         std::vector<double> vertexCoordinates;
@@ -112,7 +111,7 @@ getConcentratedLoadAtNodes( double loadParameter,
                 //        ("<<vertexCoordinates[0]<<", "<<vertexCoordinates[1]<<"
                 //        ,"<<vertexCoordinates[2]<<")\n";
             } // end if
-        }     // end for
+        } // end for
         std::cout << "TOTAL load=" << totalLoad << "\n";
         AMP_ASSERT( loadValues.size() > 0 );
     } // end if
@@ -160,7 +159,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     globalComm.barrier();
     double meshEndTime = MPI_Wtime();
@@ -174,7 +173,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto dispDofManager = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
 
     // Build a column operator and a column preconditioner
     auto columnOperator          = std::make_shared<AMP::Operator::ColumnOperator>();
@@ -208,7 +207,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     contactOperatorParams->d_DOFsPerNode                  = dofsPerNode;
     contactOperatorParams->d_DOFManager                   = dispDofManager;
     contactOperatorParams->d_GlobalComm                   = globalComm;
-    contactOperatorParams->d_Mesh                         = meshAdapter;
+    contactOperatorParams->d_Mesh                         = mesh;
     contactOperatorParams->d_MasterMechanicsMaterialModel = masterMechanicsMaterialModel;
     contactOperatorParams->reset(); // got segfault at constructor since d_Mesh was pointing to NULL
     auto contactOperator = std::make_shared<AMP::Operator::NodeToGeomType::FaceContactOperator>(
@@ -223,7 +222,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
     std::shared_ptr<AMP::Operator::LinearBVPOperator> dummyMasterBVPOperator;
     auto masterMeshID      = contactOperator->getMasterMeshID();
-    auto masterMeshAdapter = meshAdapter->Subset( masterMeshID );
+    auto masterMeshAdapter = mesh->Subset( masterMeshID );
     if ( masterMeshAdapter ) {
         auto masterElementPhysicsModel;
         masterBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -254,7 +253,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::shared_ptr<AMP::Operator::LinearBVPOperator> slaveBVPOperator;
     auto slaveMeshID      = contactOperator->getSlaveMeshID();
-    auto slaveMeshAdapter = meshAdapter->Subset( slaveMeshID );
+    auto slaveMeshAdapter = mesh->Subset( slaveMeshID );
     if ( slaveMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> slaveElementPhysicsModel;
         slaveBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -313,7 +312,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 constraints.insert( std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double>>(
                     it->globalID(), tmp ) );
             } // end if
-        }     // end for
+        } // end for
     }
 
     // Build matrix shell operators to use the column operator with the petsc krylov solvers and
@@ -360,7 +359,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tempVar        = std::make_shared<MP::LinearAlgebra::Variable>( "temperature" );
     auto dispVar        = columnOperator->getOutputVariable();
     auto tempDofManager = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
     auto tempVec = AMP::LinearAlgebra::createVector( tempDofManager, tempVar, split );
     double const referenceTemperature = 300.0;
     tempVec->setToScalar( referenceTemperature );
@@ -463,13 +462,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto rhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
             if ( !cor ) {
                 cor = rhs->clone();
-                applyCustomDirichletCondition( rhs, cor, meshAdapter, constraints, mat );
+                applyCustomDirichletCondition( rhs, cor, mesh, constraints, mat );
             } else {
-                applyCustomDirichletCondition( rhs,
-                                               cor,
-                                               meshAdapter,
-                                               constraints,
-                                               std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
+                applyCustomDirichletCondition(
+                    rhs, cor, mesh, constraints, std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
             } // end if
             AMP_ASSERT( corptr );
 
@@ -649,9 +645,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             //    } // end if
             //  } // end for jj
 
-            meshAdapter->displaceMesh( columnSolVec );
+            mesh->displaceMesh( columnSolVec );
             columnSolVec->scale( -1.0 );
-            meshAdapter->displaceMesh( columnSolVec );
+            mesh->displaceMesh( columnSolVec );
             columnSolVec->scale( -1.0 );
 
             if ( !rank )

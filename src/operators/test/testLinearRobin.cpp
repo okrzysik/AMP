@@ -92,22 +92,22 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db = input_db->getDatabase( "Mesh" );
     auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     //   CREATE THE LINEAR DIFFUSION BVP OPERATOR
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "DiffusionBVPOperator", input_db, elementModel ) );
+            mesh, "DiffusionBVPOperator", input_db, elementModel ) );
 
     auto bcDatabase = input_db->getDatabase( "RobinMatrixCorrection" );
 
     auto boundaryOp = diffusionOperator->getBoundaryOperator();
     auto volumeOp   = diffusionOperator->getVolumeOperator();
 
-    // auto bndVec = meshAdapter->createVector( volumeOp->getOutputVariable() );
+    // auto bndVec = mesh->createVector( volumeOp->getOutputVariable() );
     auto NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto bndVec =
         AMP::LinearAlgebra::createVector( NodalScalarDOF, volumeOp->getOutputVariable(), true );
 

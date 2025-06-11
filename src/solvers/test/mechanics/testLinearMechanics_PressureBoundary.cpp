@@ -40,19 +40,19 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+            mesh, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
     auto dispVar = bvpOperator->getOutputVariable();
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+            mesh, "Load_Boundary", input_db, dummyModel ) );
     // This has an in-place apply. So, it has an empty input variable and
     // the output variable is the same as what it is operating on.
     dirichletVecOp->setVariable( dispVar );
@@ -60,12 +60,12 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     // Pressure RHS
     auto pressureLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "Pressure_Boundary", input_db, dummyModel ) );
+            mesh, "Pressure_Boundary", input_db, dummyModel ) );
     // This has an in-place apply. So, it has an empty input variable and
     // the output variable is the same as what it is operating on.
 
     auto dofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto mechSolVec      = AMP::LinearAlgebra::createVector( dofMap, dispVar, true );
@@ -151,7 +151,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
                                    ( ( bvpOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
-    meshAdapter->displaceMesh( mechSolVec );
+    mesh->displaceMesh( mechSolVec );
 }
 
 int testLinearMechanics_PressureBoundary( int argc, char *argv[] )

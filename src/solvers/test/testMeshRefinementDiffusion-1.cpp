@@ -62,13 +62,13 @@ static inline double __FsnK__() { return 80000000; }
 
 
 void calculateManufacturedSolution(
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> mesh,
     AMP::LinearAlgebra::Vector::shared_ptr manufacturedSolution,
     AMP::LinearAlgebra::Vector::shared_ptr manufacturedNormalGradient )
 {
     //  CALCULATE THE MANFACTURED SOLUTION
     auto dof_map       = manufacturedSolution->getDOFManager();
-    auto bottomAdapter = meshAdapter->Subset( "Bottom" );
+    auto bottomAdapter = mesh->Subset( "Bottom" );
     if ( bottomAdapter ) {
         auto el     = bottomAdapter->getIterator( AMP::Mesh::GeomType::Cell, 0 );
         auto end_el = el.end();
@@ -100,13 +100,13 @@ void calculateManufacturedSolution(
 }
 
 
-void calculateSources( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+void calculateSources( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                        std::shared_ptr<AMP::Discretization::DOFManager> gaussPointDOF,
                        std::shared_ptr<AMP::LinearAlgebra::Vector> manufacturedRHS )
 {
     // Compute the source on the gauss point
 
-    auto el     = meshAdapter->getIterator( AMP::Mesh::GeomType::Cell, 0 );
+    auto el     = mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     auto end_el = el.end();
 
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
@@ -139,13 +139,13 @@ void calculateSources( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
 }
 
 
-void computeL2Norm( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+void computeL2Norm( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                     const AMP::AMP_MPI &globalComm,
                     AMP::LinearAlgebra::Vector::shared_ptr TemperatureVec,
                     double *discretizationErrorNorm2 )
 {
     // CALCULATE THE L2Norm OF (U-Uh)
-    auto el                        = meshAdapter->getIterator( AMP::Mesh::GeomType::Cell, 0 );
+    auto el                        = mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     auto dof_map = TemperatureVec->getDOFManager();
@@ -192,7 +192,7 @@ void computeL2Norm( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                 double computedAtNode = TemperatureVec->getValueByGlobalID( bndGlobalIds[j] );
                 computedAtGauss[qp] += computedAtNode * phi[j][qp];
             } // end for j
-        }     // end for qp
+        } // end for qp
 
         for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
             double px                  = coordinates[qp]( 0 );

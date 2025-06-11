@@ -57,12 +57,12 @@ static void linearTest( AMP::UnitTest *ut,
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     auto diffFEOp_db = input_db->getDatabase( "LinearDiffusionOp" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "LinearDiffusionOp", input_db, elementModel );
+        mesh, "LinearDiffusionOp", input_db, elementModel );
     auto diffOp =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>( linearOperator );
 
@@ -82,7 +82,7 @@ static void linearTest( AMP::UnitTest *ut,
 
     // create vectors for parameters
     auto NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto tempVar = std::make_shared<AMP::LinearAlgebra::Variable>( "testTempVar" );
     auto concVar = std::make_shared<AMP::LinearAlgebra::Variable>( "testConcVar" );
     auto burnVar = std::make_shared<AMP::LinearAlgebra::Variable>( "testBurnVar" );
@@ -118,7 +118,7 @@ static void linearTest( AMP::UnitTest *ut,
     auto diffResVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, diffResVar, true );
     diffRhsVec->setToScalar( 0.0 );
 
-    auto curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto curNode = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto endNode = curNode.end();
     std::vector<size_t> dofs;
     while ( curNode != endNode ) {
@@ -140,16 +140,15 @@ static void linearTest( AMP::UnitTest *ut,
     // write values in mathematica form
     int nranks = globalComm.getSize();
     if ( nranks == 1 ) {
-        size_t nnodes        = meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
+        size_t nnodes        = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
         int proc             = globalComm.getRank();
         int nproc            = globalComm.getSize();
         std::string filename = "values-" + exeName;
         std::ofstream file( filename.c_str() );
         if ( proc == 0 ) {
-            file << "values={"
-                 << "\n";
+            file << "values={" << "\n";
         }
-        curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        curNode = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         for ( size_t i = 0; i < nnodes; i++ ) {
             auto pos = curNode->coord();
             double x = pos[0];

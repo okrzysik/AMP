@@ -42,8 +42,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager     = AMP::Mesh::MeshFactory::create( params );
-    auto meshAdapter = manager->Subset( "bar" );
+    auto manager = AMP::Mesh::MeshFactory::create( params );
+    auto mesh    = manager->Subset( "bar" );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
@@ -55,7 +55,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto flowDatabase = input_db->getDatabase( "FlowFrapconOperator" );
     auto flowOperator = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "FlowFrapconOperator", input_db, flowtransportModel ) );
+            mesh, "FlowFrapconOperator", input_db, flowtransportModel ) );
 
     auto inputVariable  = flowOperator->getInputVariable();
     auto outputVariable = flowOperator->getOutputVariable();
@@ -70,7 +70,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto flowJacobian = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "FlowFrapconJacobian", input_db, flowtransportModel ) );
+            mesh, "FlowFrapconJacobian", input_db, flowtransportModel ) );
 
     //  MANUFACTURE THE INPUT SOLUTION FROM PRESCRIBED FLOW SOLUTION
     double Tin  = 300;

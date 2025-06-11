@@ -72,7 +72,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     //--------------------------------------------------
     //   Create DOF Managers.
@@ -82,9 +82,9 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     int ghostWidth     = 1;
     bool split         = true;
     auto nodalDofMap   = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, ghostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerElement, split );
+        mesh, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerElement, split );
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of apply.
@@ -95,7 +95,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
+            mesh, "DiffusionBVPOperator", input_db, transportModel ) );
 
     auto TemperatureInKelvinVec = AMP::LinearAlgebra::createVector(
         nodalDofMap, diffusionOperator->getOutputVariable(), split );
@@ -125,7 +125,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //------------------------------------------
     // check the solution
-    auto nodeIt = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto nodeIt = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
 
     for ( const auto &node : nodeIt ) {
         std::vector<size_t> gid;
@@ -179,7 +179,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "VolumeIntegralOperator", input_db, stransportModel ) );
+            mesh, "VolumeIntegralOperator", input_db, stransportModel ) );
 
     // Create the power (heat source) vector.
     auto SourceVar = sourceOperator->getOutputVariable();

@@ -87,7 +87,7 @@ static void selectNodes( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             //      std::cout<<nodesGlobalIDs.size()<<"  ("<<coord[0]<<", "<<coord[1]<<",
             //      "<<coord[2]<<")"<<std::endl;
         } // end if
-    }     // end for
+    } // end for
 }
 
 static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
@@ -108,7 +108,7 @@ static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
 static void applySlaveLoadOperator( double loadParameterX,
                                     double loadParameterZ,
-                                    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+                                    std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     AMP::LinearAlgebra::Vector::shared_ptr loadVector,
                                     std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {
@@ -121,16 +121,15 @@ static void applySlaveLoadOperator( double loadParameterX,
     AMP_ASSERT( loadValuesZ.size() == dofIndicesZ.size() );
 
     if ( loadValuesX.empty() ) {
-        double totalLoadX = 0.0;
-        double totalLoadZ = 0.0;
-        auto boundaryIterator =
-            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 0, 0 );
+        double totalLoadX     = 0.0;
+        double totalLoadZ     = 0.0;
+        auto boundaryIterator = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 0, 0 );
         auto boundaryIterator_begin = boundaryIterator.begin();
         auto boundaryIterator_end   = boundaryIterator.end();
         std::vector<double> vertexCoordinates;
         std::vector<size_t> vertexDofIndices;
         size_t nGeomType::Faces =
-            ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 0, 0 ) ).size();
+            ( mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 0, 0 ) ).size();
         loadParameterX /= static_cast<double>( nGeomType::Faces );
         loadParameterZ /= static_cast<double>( nGeomType::Faces );
         for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
@@ -156,7 +155,7 @@ static void applySlaveLoadOperator( double loadParameterX,
                 totalLoadX += loadValuesX.back();
                 totalLoadZ += loadValuesZ.back();
             } // end if
-        }     // end for
+        } // end for
         std::cout << "TOTAL load slave X=" << totalLoadX << "\n";
         std::cout << "TOTAL load slave Z=" << totalLoadZ << "\n";
         AMP_ASSERT( loadValuesX.size() > 0 );
@@ -172,7 +171,7 @@ static void applySlaveLoadOperator( double loadParameterX,
 
 static void applyMasterLoadOperator( double loadParameterX,
                                      double loadParameterZ,
-                                     std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+                                     std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                      AMP::LinearAlgebra::Vector::shared_ptr loadVector,
                                      std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {
@@ -185,16 +184,15 @@ static void applyMasterLoadOperator( double loadParameterX,
     AMP_ASSERT( loadValuesZ.size() == dofIndicesZ.size() );
 
     if ( loadValuesX.empty() ) {
-        double totalLoadX = 0.0;
-        double totalLoadZ = 0.0;
-        auto boundaryIterator =
-            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1, 0 );
+        double totalLoadX     = 0.0;
+        double totalLoadZ     = 0.0;
+        auto boundaryIterator = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1, 0 );
         auto boundaryIterator_begin = boundaryIterator.begin();
         auto boundaryIterator_end   = boundaryIterator.end();
         std::vector<double> vertexCoordinates;
         std::vector<size_t> vertexDofIndices;
         size_t nGeomType::Faces =
-            ( meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 1, 0 ) ).size();
+            ( mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 1, 0 ) ).size();
         loadParameterX /= static_cast<double>( nGeomType::Faces );
         loadParameterZ /= static_cast<double>( nGeomType::Faces );
         for ( boundaryIterator = boundaryIterator_begin; boundaryIterator != boundaryIterator_end;
@@ -220,7 +218,7 @@ static void applyMasterLoadOperator( double loadParameterX,
                 totalLoadX += loadValuesX.back();
                 totalLoadZ += loadValuesZ.back();
             } // end if
-        }     // end for
+        } // end for
         std::cout << "TOTAL load master X=" << totalLoadX << "\n";
         std::cout << "TOTAL load master Z=" << totalLoadZ << "\n";
         AMP_ASSERT( loadValuesX.size() > 0 );
@@ -271,7 +269,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     globalComm.barrier();
     double meshEndTime = MPI_Wtime();
@@ -285,7 +283,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto dispDofManager = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, dofsPerNode, split );
 
     // Build a column operator and a column preconditioner
     auto columnOperator          = std::make_shared<AMP::Operator::ColumnOperator>();
@@ -319,7 +317,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     contactOperatorParams->d_DOFsPerNode                  = dofsPerNode;
     contactOperatorParams->d_DOFManager                   = dispDofManager;
     contactOperatorParams->d_GlobalComm                   = globalComm;
-    contactOperatorParams->d_Mesh                         = meshAdapter;
+    contactOperatorParams->d_Mesh                         = mesh;
     contactOperatorParams->d_MasterMechanicsMaterialModel = masterMechanicsMaterialModel;
     contactOperatorParams->reset(); // got segfault at constructor since d_Mesh was pointing to NULL
 
@@ -337,7 +335,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     bool matrixFree = input_db->getWithDefault<bool>( "matrixFree", false );
     // Build the master and slave operators
     auto masterMeshID      = contactOperator->getMasterMeshID();
-    auto masterMeshAdapter = meshAdapter->Subset( masterMeshID );
+    auto masterMeshAdapter = mesh->Subset( masterMeshID );
     if ( masterMeshAdapter.get() != NULL ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> masterElementPhysicsModel;
         masterBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -395,7 +393,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::LinearBVPOperator> slaveBVPOperator;
 
     auto slaveMeshID      = contactOperator->getSlaveMeshID();
-    auto slaveMeshAdapter = meshAdapter->Subset( slaveMeshID );
+    auto slaveMeshAdapter = mesh->Subset( slaveMeshID );
     if ( slaveMeshAdapter.get() != NULL ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> slaveElementPhysicsModel;
         slaveBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
@@ -501,7 +499,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tempVar        = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto dispVar        = columnOperator->getOutputVariable();
     auto tempDofManager = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
     auto tempVec = AMP::LinearAlgebra::createVector( tempDofManager, tempVar, split );
     double const referenceTemperature = 300.0;
     tempVec->setToScalar( referenceTemperature );
@@ -538,7 +536,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     sigma_xz->zero();
     sigma_xy->zero();
 
-    computeStressTensor( meshAdapter,
+    computeStressTensor( mesh,
                          columnSolVec,
                          sigma_xx,
                          sigma_yy,
@@ -736,9 +734,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         printNodesValues( slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec );
 
         columnSolVec->scale( 1.0e3 );
-        meshAdapter->displaceMesh( columnSolVec );
+        mesh->displaceMesh( columnSolVec );
         columnSolVec->scale( -1.0 );
-        meshAdapter->displaceMesh( columnSolVec );
+        mesh->displaceMesh( columnSolVec );
         columnSolVec->scale( -1.0e-3 );
 
         if ( !rank ) {
@@ -750,7 +748,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         }
         AMP_ASSERT( activeSetIteration != maxActiveSetIterations - 1 );
     } // end for
-    meshAdapter->displaceMesh( columnSolVec );
+    mesh->displaceMesh( columnSolVec );
 
     if ( masterMeshAdapter.get() != NULL ) {
         std::fstream masterFout;

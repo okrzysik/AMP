@@ -58,8 +58,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db   = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    auto mesh_file   = input_db->getString( "mesh_file" );
-    auto meshAdapter = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
+    auto mesh_file = input_db->getString( "mesh_file" );
+    auto mesh      = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
@@ -67,7 +67,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto nonlinBvpOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "nonlinearMechanicsBVPOperator", input_db ) );
+            mesh, "nonlinearMechanicsBVPOperator", input_db ) );
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinBvpOperator->getVolumeOperator() );
@@ -76,7 +76,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto linBvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "linearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
+            mesh, "linearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
     auto tmpVar = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
@@ -89,19 +89,19 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+            mesh, "Load_Boundary", input_db, dummyModel ) );
     dirichletLoadVecOp->setVariable( residualVariable );
 
     // For Initial-Guess
     auto dirichletDispInVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "Displacement_Boundary", input_db, dummyModel ) );
+            mesh, "Displacement_Boundary", input_db, dummyModel ) );
     dirichletDispInVecOp->setVariable( displacementVariable );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     auto DOF_vector = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     auto mechNlSolVec = AMP::LinearAlgebra::createVector( DOF_vector, residualVariable, true );
     auto mechNlRhsVec = AMP::LinearAlgebra::createVector( DOF_vector, residualVariable, true );
     auto mechNlResVec = AMP::LinearAlgebra::createVector( DOF_vector, residualVariable, true );

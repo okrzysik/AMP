@@ -17,12 +17,6 @@
  */
 namespace AMP::Operator::OperatorBuilder {
 
-/**
- * \brief Create operator from parameters
- * \details  This function will create a new operator given the parameters
- * \param in_params  Parameters for constructing the operator
- */
-std::shared_ptr<Operator> createOperator( std::shared_ptr<OperatorParameters> in_params );
 
 /**
  * \brief Create operator from database
@@ -71,7 +65,7 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh1
  * \details  This function will create a new operator given mesh, input database,
  * elementPhysicsModel, and
  * localModelFactory
- * \param meshAdapter           Mesh for the operator
+ * \param mesh                  Mesh for the operator
  * \param boundaryOperatorName  Name of the operator to create
  * \param input_db              Input database
  * \param volumeOperator        GeomType::Cell operator to use
@@ -79,7 +73,7 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh1
  * \param localModelFactory     Local model factor to use
  */
 std::shared_ptr<BoundaryOperator> createColumnBoundaryOperator(
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> mesh,
     std::string boundaryOperatorName,
     std::shared_ptr<AMP::Database> input_db,
     AMP::Operator::Operator::shared_ptr volumeOperator,
@@ -159,7 +153,6 @@ std::shared_ptr<Operator> createNonlinearFickSoretOperator(
     std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::string operatorName,
     std::shared_ptr<AMP::Database> input_db,
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel,
     std::shared_ptr<AMP::Operator::ElementPhysicsModelFactory> localModelFactory );
 
 std::shared_ptr<Operator> createGapConductanceOperator(

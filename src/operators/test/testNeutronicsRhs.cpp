@@ -37,7 +37,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     //   CREATE THE VOLUME INTEGRAL OPERATOR
     AMP_INSIST( input_db->keyExists( "NeutronicsRhs" ), "key missing!" );
@@ -47,7 +47,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
     // Construct stand-alone.
     if ( input_db->getWithDefault<bool>( "ConstructStandAlone", true ) ) {
         // construct it.
-        auto ntxPrm = std::make_shared<AMP::Operator::NeutronicsRhsParameters>( ntx_db );
+        auto ntxPrm = std::make_shared<AMP::Operator::OperatorParameters>( ntx_db );
         auto ntxRhs = std::make_shared<AMP::Operator::NeutronicsRhs>( ntxPrm );
         ut->passes( "NeutronicsRhs was constructed stand-alone for: " + input_file );
         // set the time.
@@ -62,7 +62,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
         int ghostWidth  = 1;
         bool split      = true;
         auto dof_map    = AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerNode, split );
+            mesh, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerNode, split );
         // create a variable/vector combo.
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         // AMP::Operator::NeutronicsRhs::SP_HexGaussPointVariable outVar(new
@@ -76,7 +76,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
     {
         auto ntxBld = std::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "NeutronicsRhs", input_db, unusedModel ) );
+                mesh, "NeutronicsRhs", input_db, unusedModel ) );
         AMP_INSIST( ntxBld, "NULL rhs out of OperatorBuilder" );
         ut->passes( "NeutronicsRhs was constructed by OperatorBuilder for: " + input_file );
         // ntxBld->setTimeStep(0);

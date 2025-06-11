@@ -34,18 +34,18 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
         auto input_db = AMP::Database::parseInputFile( input_file );
         input_db->print( AMP::plog );
 
-        auto mesh_file   = input_db->getString( "mesh_file" );
-        auto meshAdapter = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
+        auto mesh_file = input_db->getString( "mesh_file" );
+        auto mesh      = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+                mesh, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
         auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+                mesh, "Load_Boundary", input_db, dummyModel ) );
 
         auto var = bvpOperator->getOutputVariable();
 
@@ -54,7 +54,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
         dirichletVecOp->setVariable( var );
 
         auto dofMap = AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+            mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, var, true );

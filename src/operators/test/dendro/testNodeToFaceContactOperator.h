@@ -52,14 +52,14 @@ static void my_ijmf( double const &T, double const &f, double &ijmf, void *param
     ijmf      = -f / df;
 }
 
-static void computeFuelTemperature( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+static void computeFuelTemperature( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     AMP::LinearAlgebra::Vector::shared_ptr temperatureField,
                                     double fuelOuterRadius,
                                     double fuelOuterRadiusTemperature,
                                     double linearHeatGenerationRate,
                                     double fuelThermalConductivity )
 {
-    auto meshIterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
     auto meshIterator_begin = meshIterator.begin();
     auto meshIterator_end   = meshIterator.end();
     double epsilon          = 1.0e-14;
@@ -84,7 +84,7 @@ static void computeFuelTemperature( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter
     } // end for
 }
 
-static void computeCladTemperature( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+static void computeCladTemperature( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     AMP::LinearAlgebra::Vector::shared_ptr temperatureField,
                                     double cladInnerRadius,
                                     double cladOuterRadius,
@@ -92,7 +92,7 @@ static void computeCladTemperature( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter
                                     double cladOuterRadiusTemperature,
                                     double cladThermalConductivity )
 {
-    auto meshIterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
     auto meshIterator_begin = meshIterator.begin();
     auto meshIterator_end   = meshIterator.end();
     std::vector<size_t> DOFsIndices;
@@ -146,13 +146,13 @@ makeConstraintsOnFuel( AMP::Mesh::MeshIterator it,
                 if ( std::abs( dishRadius - radius ) < epsilon ) {
                     tmp.insert( std::pair<size_t, double>( 2, 0.0 ) );
                 } // end if
-            }     // end if
+            } // end if
             if ( !tmp.empty() ) {
                 constraints.insert( std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double>>(
                     it->globalID(), tmp ) );
             } // end if
-        }     // end if
-    }         // end for
+        } // end if
+    } // end for
 }
 
 static void
@@ -181,24 +181,24 @@ makeConstraintsOnClad( AMP::Mesh::MeshIterator it,
                 } else if ( std::abs( coord[1] - 0.0 ) < epsilon ) {
                     tmp.insert( std::pair<size_t, double>( 1, 0.0 ) );
                 } // end if
-            }     // end if
+            } // end if
         } else if ( std::abs( coord[2] - 0.0 ) < epsilon ) {
             if ( std::abs( radius - cladOuterRadius ) < epsilon ) {
                 tmp.insert( std::pair<size_t, double>( 2, 0.0 ) );
             } // end if
-        }     // end if
+        } // end if
         if ( !tmp.empty() ) {
             constraints.insert( std::pair<AMP::Mesh::MeshElementID, std::map<size_t, double>>(
                 it->globalID(), tmp ) );
         } // end if
-    }     // end for
+    } // end for
 }
 
 
 static void applyCustomDirichletCondition(
     AMP::LinearAlgebra::Vector::shared_ptr rhs,
     AMP::LinearAlgebra::Vector::shared_ptr &cor,
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> mesh,
     std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>> const &constraints,
     std::shared_ptr<AMP::LinearAlgebra::Matrix> mat )
 {
@@ -211,15 +211,15 @@ static void applyCustomDirichletCondition(
         auto dir = rhs->clone();
         dir->zero();
         for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
-            AMP_ASSERT( ( meshAdapter->getElement( it->first ) ).isOnSurface() );
+            AMP_ASSERT( ( mesh->getElement( it->first ) ).isOnSurface() );
             dofManager->getDOFs( it->first, dofIndices );
-            coord = ( meshAdapter->getElement( it->first ) ).coord();
+            coord = ( mesh->getElement( it->first ) ).coord();
             for ( auto jt = it->second.begin(); jt != it->second.end(); ++jt ) {
                 std::cout << ++count << " (" << coord[0] << ", " << coord[1] << ", " << coord[2]
                           << ") " << jt->second << "  " << xyz[jt->first] << "\n";
                 dir->setLocalValueByGlobalID( dofIndices[jt->first], jt->second );
             } // end for
-        }     // end for
+        } // end for
         dir->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         mat->mult( dir, cor );
         for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
@@ -232,9 +232,9 @@ static void applyCustomDirichletCondition(
                         mat->setValueByGlobalID( dofIndices[jt->first], dofIndices[k], 0.0 );
                         mat->setValueByGlobalID( dofIndices[k], dofIndices[jt->first], 0.0 );
                     } // end if
-                }     // end for k
-            }         // end for jt
-            auto neighbors = ( meshAdapter->getElement( it->first ) ).getNeighbors();
+                } // end for k
+            } // end for jt
+            auto neighbors = ( mesh->getElement( it->first ) ).getNeighbors();
             std::vector<size_t> neighborsDofIndices;
             for ( size_t n = 0; n < neighbors.size(); ++n ) {
                 dofManager->getDOFs( neighbors[n]->globalID(), neighborsDofIndices );
@@ -245,9 +245,9 @@ static void applyCustomDirichletCondition(
                         mat->setValueByGlobalID(
                             neighborsDofIndices[k], dofIndices[jt->first], 0.0 );
                     } // end for jt
-                }     // end for k
-            }         // end for n
-        }             // end for it
+                } // end for k
+            } // end for n
+        } // end for it
         mat->makeConsistent();
     } // end if
     rhs->subtract( rhs, cor );
@@ -256,7 +256,7 @@ static void applyCustomDirichletCondition(
         for ( auto jt = it->second.begin(); jt != it->second.end(); ++jt ) {
             rhs->setLocalValueByGlobalID( dofIndices[jt->first], jt->second );
         } // end for jt
-    }     // end for it
+    } // end for it
 }
 
 static void shrinkMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh, double const shrinkFactor )
@@ -398,7 +398,7 @@ static void computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                     strainTensor[i] -= ( thermalExpansionCoefficient *
                                          ( temperatureValues[v] - referenceTemperature ) );
                 } // end for i
-            }     // end if
+            } // end if
             compute_stress_tensor( constitutiveMatrix, strainTensor, stressTensor );
             double vonMisesStress = compute_von_mises_stress( stressTensor );
 
@@ -465,7 +465,7 @@ static void computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             } // end if
 
         } // end for v
-    }     // end for
+    } // end for
     AMP_ASSERT( verticesGlobalIDsAndCount.size() == numLocalVertices );
     AMP_ASSERT( countVertices == numLocalVertices );
     AMP_ASSERT( find( verticesInHowManyGeomType::CellElements.begin(),
@@ -504,7 +504,7 @@ static void computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                 sigma_eff->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
                     static_cast<double>( verticesInHowManyGeomType::CellElements[v] ) );
         } // end if
-    }     // end for v
+    } // end for v
 }
 
 
@@ -561,14 +561,13 @@ computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 }
 
 
-static void drawVerticesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+static void drawVerticesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                       int boundaryID,
                                       std::ostream &os,
                                       double const *point_of_view,
                                       const std::string &option = "" )
 {
-    auto boundaryIterator =
-        meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, boundaryID );
+    auto boundaryIterator = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, boundaryID );
     auto boundaryIterator_begin = boundaryIterator.begin();
     auto boundaryIterator_end   = boundaryIterator.end();
     std::vector<double> vertexCoordinates;
@@ -581,14 +580,13 @@ static void drawVerticesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapt
     } // end for
 }
 
-static void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+static void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                              int boundaryID,
                                              std::ostream &os,
                                              double const *point_of_view,
                                              const std::string &option = "" )
 {
-    auto boundaryIterator =
-        meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
+    auto boundaryIterator = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
     auto boundaryIterator_begin = boundaryIterator.begin();
     auto boundaryIterator_end   = boundaryIterator.end();
     std::vector<AMP::Mesh::MeshElement> faceVertices;
@@ -614,7 +612,7 @@ static void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> me
             os << "\\draw[" << option << "]\n";
             write_face( faceDataPtr, os );
         } // end if
-    }     // end for
+    } // end for
 }
 
 static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,

@@ -41,21 +41,21 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     auto input_db           = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    auto mesh_file   = input_db->getString( "mesh_file" );
-    auto meshAdapter = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
+    auto mesh_file = input_db->getString( "mesh_file" );
+    auto mesh      = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
     auto nonlinOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "NonlinearMechanicsOperator", input_db ) );
+            mesh, "NonlinearMechanicsOperator", input_db ) );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
         nonlinOperator->getMaterialModel();
 
     auto linOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearMechanicsOperator", input_db, elementPhysicsModel ) );
+            mesh, "LinearMechanicsOperator", input_db, elementPhysicsModel ) );
 
     auto dofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     auto var = nonlinOperator->getOutputVariable();
 

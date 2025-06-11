@@ -93,7 +93,7 @@ public:
     void reportTiming( size_t n, TimingType const *timingTypes, double *timingMeasurements );
 
 private:
-    std::shared_ptr<AMP::Mesh::Mesh> d_meshAdapter;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     std::vector<AMP::Mesh::MeshElement> d_localElems;
     std::vector<hex8_element_t *> d_volume_elements;
     std::vector<ot::TreeNode> d_nodeList;

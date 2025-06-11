@@ -38,21 +38,21 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
     input_db->print( AMP::plog );
 
     // create the Mesh
-    const auto meshAdapter = createMesh( input_db );
+    const auto mesh = createMesh( input_db );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 10;
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create a nonlinear BVP operator for nonlinear flow
     AMP_INSIST( input_db->keyExists( "NonlinearFlowOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowTransportModel;
     auto nonlinearFlowOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "NonlinearFlowOperator", input_db, flowTransportModel ) );
+            mesh, "NonlinearFlowOperator", input_db, flowTransportModel ) );
 
     // initialize the input variable
     auto flowVolumeOperator = std::dynamic_pointer_cast<AMP::Operator::NavierStokesLSWFFEOperator>(
@@ -92,7 +92,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
     AMP_INSIST( input_db->keyExists( "LinearFlowOperator" ), "key missing!" );
     auto linearFlowOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearFlowOperator", input_db, flowTransportModel ) );
+            mesh, "LinearFlowOperator", input_db, flowTransportModel ) );
 
     // Get the solver databases
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );

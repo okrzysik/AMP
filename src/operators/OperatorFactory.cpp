@@ -10,14 +10,35 @@
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
 
 #ifdef AMP_USE_LIBMESH
+    #include "AMP/discretization/structuredFaceDOFManager.h"
+    #include "AMP/operators/ElementOperationFactory.h"
+    #include "AMP/operators/NeutronicsRhs.h"
+    #include "AMP/operators/ParameterFactory.h"
+    #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
+    #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
+    #include "AMP/operators/boundary/DirichletVectorCorrection.h"
+    #include "AMP/operators/boundary/MassMatrixCorrection.h"
+    #include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
+    #include "AMP/operators/boundary/libmesh/PressureBoundaryOperator.h"
     #include "AMP/operators/boundary/libmesh/RobinMatrixCorrection.h"
     #include "AMP/operators/boundary/libmesh/RobinVectorCorrection.h"
     #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+    #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+    #include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
+    #include "AMP/operators/flow/NavierStokesLSWFFEOperator.h"
+    #include "AMP/operators/flow/NavierStokesLSWFLinearFEOperator.h"
+    #include "AMP/operators/libmesh/MassLinearFEOperator.h"
+    #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+    #include "AMP/operators/map/libmesh/MapSurface.h"
+    #include "AMP/operators/mechanics/MechanicsConstants.h"
     #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+    #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
     #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
     #include "AMP/operators/subchannel/FlowFrapconOperator.h"
     #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
+    #include "AMP/operators/subchannel/SubchannelFourEqNonlinearOperator.h"
     #include "AMP/operators/subchannel/SubchannelTwoEqLinearOperator.h"
+    #include "AMP/operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #endif
 
 
@@ -25,9 +46,9 @@ namespace AMP::Operator {
 
 
 // Macro to register an operator
-#define REGISTER_OPERATOR( NAME )                                           \
-    d_factories[#NAME] = []( std::shared_ptr<OperatorParameters> params ) { \
-        return std::make_unique<NAME>( params );                            \
+#define REGISTER_OPERATOR( OP, NAME )                                      \
+    d_factories[NAME] = []( std::shared_ptr<OperatorParameters> params ) { \
+        return std::make_unique<OP>( params );                             \
     }
 
 
@@ -51,21 +72,22 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
                           std::shared_ptr<AMP::Operator::OperatorParameters>>::registerDefault()
 {
     using namespace AMP::Operator;
-    REGISTER_OPERATOR( IdentityOperator );
-    REGISTER_OPERATOR( CoupledOperator );
-    REGISTER_OPERATOR( ColumnOperator );
-    REGISTER_OPERATOR( LinearBVPOperator );
-    REGISTER_OPERATOR( ColumnBoundaryOperator );
-    REGISTER_OPERATOR( DirichletMatrixCorrection );
-    REGISTER_OPERATOR( DirichletVectorCorrection );
+    REGISTER_OPERATOR( IdentityOperator, "IdentityOperator" );
+    REGISTER_OPERATOR( CoupledOperator, "CoupledOperator" );
+    REGISTER_OPERATOR( ColumnOperator, "ColumnOperator" );
+    REGISTER_OPERATOR( LinearBVPOperator, "LinearBVPOperator" );
+    REGISTER_OPERATOR( ColumnBoundaryOperator, "ColumnBoundaryOperator" );
+    REGISTER_OPERATOR( DirichletMatrixCorrection, "DirichletMatrixCorrection" );
+    REGISTER_OPERATOR( DirichletVectorCorrection, "DirichletVectorCorrection" );
 #ifdef AMP_USE_LIBMESH
-    REGISTER_OPERATOR( DiffusionLinearFEOperator );
-    REGISTER_OPERATOR( MechanicsLinearFEOperator );
-    REGISTER_OPERATOR( RobinMatrixCorrection );
-    REGISTER_OPERATOR( RobinVectorCorrection );
-    REGISTER_OPERATOR( FlowFrapconJacobian );
-    REGISTER_OPERATOR( FlowFrapconOperator );
-    REGISTER_OPERATOR( SubchannelTwoEqLinearOperator );
-    REGISTER_OPERATOR( SubchannelFourEqLinearOperator );
+    REGISTER_OPERATOR( DiffusionLinearFEOperator, "DiffusionLinearFEOperator" );
+    REGISTER_OPERATOR( MechanicsLinearFEOperator, "MechanicsLinearFEOperator" );
+    REGISTER_OPERATOR( RobinMatrixCorrection, "RobinMatrixCorrection" );
+    REGISTER_OPERATOR( RobinVectorCorrection, "RobinVectorCorrection" );
+    REGISTER_OPERATOR( FlowFrapconJacobian, "FlowFrapconJacobian" );
+    REGISTER_OPERATOR( FlowFrapconOperator, "FlowFrapconOperator" );
+    REGISTER_OPERATOR( NeutronicsRhs, "NeutronicsRhsOperator" );
+    REGISTER_OPERATOR( SubchannelTwoEqLinearOperator, "SubchannelTwoEqLinearOperator" );
+    REGISTER_OPERATOR( SubchannelFourEqLinearOperator, "SubchannelFourEqLinearOperator" );
 #endif
 }

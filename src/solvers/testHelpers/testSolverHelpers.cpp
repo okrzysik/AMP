@@ -93,7 +93,7 @@ std::shared_ptr<AMP::Mesh::Mesh> createMesh( std::shared_ptr<AMP::Database> inpu
 
 std::pair<std::shared_ptr<AMP::Discretization::DOFManager>,
           std::shared_ptr<AMP::Discretization::DOFManager>>
-getDofMaps( std::shared_ptr<const AMP::Mesh::Mesh> meshAdapter )
+getDofMaps( std::shared_ptr<const AMP::Mesh::Mesh> mesh )
 {
     // Create a DOF manager for a nodal vector
     constexpr int DOFsPerNode          = 1;
@@ -102,26 +102,25 @@ getDofMaps( std::shared_ptr<const AMP::Mesh::Mesh> meshAdapter )
     constexpr int gaussPointGhostWidth = 1;
     bool split                         = true;
     auto nodalDofMap                   = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
+        mesh, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
     return std::make_pair( nodalDofMap, gaussPointDofMap );
 }
 
 #ifdef AMP_USE_LIBMESH
 std::shared_ptr<AMP::LinearAlgebra::Vector>
 constructNeutronicsPowerSource( std::shared_ptr<AMP::Database> input_db,
-                                std::shared_ptr<AMP::Mesh::Mesh> meshAdapter )
+                                std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
 
-    auto [nodalDofMap, gaussPointDofMap] = getDofMaps( meshAdapter );
+    auto [nodalDofMap, gaussPointDofMap] = getDofMaps( mesh );
 
     // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
-    auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    auto neutronicsParams =
-        std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
+    auto neutronicsOp_db  = input_db->getDatabase( "NeutronicsOperator" );
+    auto neutronicsParams = std::make_shared<AMP::Operator::OperatorParameters>( neutronicsOp_db );
     auto neutronicsOperator = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
     auto SpecificPowerVec =
@@ -137,7 +136,7 @@ constructNeutronicsPowerSource( std::shared_ptr<AMP::Database> input_db,
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "VolumeIntegralOperator", input_db ) );
+            mesh, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap,
@@ -154,7 +153,7 @@ constructNeutronicsPowerSource( std::shared_ptr<AMP::Database> input_db,
 #else
 std::shared_ptr<AMP::LinearAlgebra::Vector>
 constructNeutronicsPowerSource( [[maybe_unused]] std::shared_ptr<AMP::Database> input_db,
-                                [[maybe_unused]] std::shared_ptr<AMP::Mesh::Mesh> meshAdapter )
+                                [[maybe_unused]] std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     AMP_ERROR( "Required LibMesh to be enabled at present" );
     return nullptr;

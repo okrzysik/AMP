@@ -108,11 +108,11 @@ void drawOctant( double const *space,
     drawOctant( octant, point_of_view, os );
 }
 
-void drawSpacePartition( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+void drawSpacePartition( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                          double const *point_of_view,
                          std::ostream &os )
 {
-    auto space = meshAdapter->getBoundingBox();
+    auto space = mesh->getBoundingBox();
     drawOctant( &( space[0] ), 0, 0, 0, 0, 2, point_of_view, os );
 
     drawOctant( &( space[0] ), 0, 0, 0, 1, 2, point_of_view, os );
@@ -143,14 +143,13 @@ void drawSpacePartition( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     drawOctant( &( space[0] ), 2, 1, 1, 2, 2, point_of_view, os );
 }
 
-void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
+void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                       int boundaryID,
                                       std::ostream &os,
                                       double const *point_of_view,
                                       const std::string &option = "" )
 {
-    auto boundaryIterator =
-        meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
+    auto boundaryIterator = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, boundaryID );
     auto boundaryIterator_begin = boundaryIterator.begin();
     auto boundaryIterator_end   = boundaryIterator.end();
     std::vector<AMP::Mesh::MeshElement> faceVertices;
@@ -178,7 +177,7 @@ void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapt
             os << "\\draw[" << option << "]\n";
             write_face( faceDataPtr, os );
         } // end if
-    }     // end for
+    } // end for
 }
 
 double dummyFunction( const std::vector<double> &xyz, const int dof )
@@ -301,10 +300,10 @@ void run( const std::string &meshFileName,
 
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
     globalComm.barrier();
     double meshEndTime                = MPI_Wtime();
-    size_t numberGlobalVolumeElements = meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Cell );
+    size_t numberGlobalVolumeElements = mesh->numGlobalElements( AMP::Mesh::GeomType::Cell );
     //  AMP_ASSERT(static_cast<size_t>(npes) * size_radius * size_radius * 4 * size_height ==
     //  numberGlobalVolumeElements);
     if ( !rank ) {
@@ -319,16 +318,16 @@ void run( const std::string &meshFileName,
       std::string file_name;
       file_name = "outer_surface_" + meshFileName;
       fout.open(file_name.c_str(), std::fstream::out);
-      drawGeomType::FacesOnBoundaryID(meshAdapter, 4, fout, point_of_view);
+      drawGeomType::FacesOnBoundaryID(mesh, 4, fout, point_of_view);
       fout.close();
       file_name = "top_surface_" + meshFileName;
       fout.open(file_name.c_str(), std::fstream::out);
-      drawGeomType::FacesOnBoundaryID(meshAdapter, 1, fout, point_of_view);
-      drawGeomType::FacesOnBoundaryID(meshAdapter, 33, fout, point_of_view);
+      drawGeomType::FacesOnBoundaryID(mesh, 1, fout, point_of_view);
+      drawGeomType::FacesOnBoundaryID(mesh, 33, fout, point_of_view);
       fout.close();
     */
 
-    //  drawSpacePartition(meshAdapter, point_of_view, std::cout);
+    //  drawSpacePartition(mesh, point_of_view, std::cout);
     //  std::cout<<std::flush;
     //  char a;
     //  std::cin>>a;
@@ -338,11 +337,11 @@ void run( const std::string &meshFileName,
     int nodalGhostWidth = 1;
     bool split          = true;
     auto DOFs           = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto dummyVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Dummy" );
     auto dummyVector   = createVector( DOFs, dummyVariable, split );
 
-    auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto node     = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto end_node = node.end();
     for ( ; node != end_node; ++node ) {
         std::vector<size_t> globalID;
@@ -369,8 +368,8 @@ void run( const std::string &meshFileName,
 
     double minCoords[3];
     double maxCoords[3];
-    std::vector<double> box = meshAdapter->getBoundingBox();
-    for ( unsigned char i = 0; i < meshAdapter->getDim(); ++i ) {
+    std::vector<double> box = mesh->getBoundingBox();
+    for ( unsigned char i = 0; i < mesh->getDim(); ++i ) {
         minCoords[i] = box[2 * i + 0];
         maxCoords[i] = box[2 * i + 1];
     } // end for i
@@ -387,7 +386,7 @@ void run( const std::string &meshFileName,
 
     // Perform the search
     bool dendroVerbose = false;
-    AMP::Mesh::DendroSearch dendroSearch( meshAdapter, dendroVerbose );
+    AMP::Mesh::DendroSearch dendroSearch( mesh, dendroVerbose );
     dendroSearch.search( globalComm, pts );
 
     // Interpolate
@@ -534,16 +533,16 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
                          << globalTimingMeasurements[3] << "  " // interpolation
                          << globalTimingMeasurements[4] << "  " // project on boundary
                          << globalTimingMeasurements[5] << "  " << std::flush; // coarse+fine
-                }                                                              // end if
-            }                                                                  // end for k
+                } // end if
+            } // end for k
             if ( !rank ) {
                 fout << "\n";
             } // end if
-        }     // end for j
+        } // end for j
         if ( !rank ) {
             fout.close();
         } // end if
-    }     // end for i
+    } // end for i
 
     ut->passes( exeName );
 }
