@@ -132,10 +132,9 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //  Integrate Nuclear Rhs over Desnity * GeomType::Cell //
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh1, "VolumeIntegralOperator", input_db, stransportModel ) );
+            mesh1, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();
@@ -184,10 +183,9 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     // CREATE THE LINEAR THERMAL OPERATOR 2
     AMP_INSIST( input_db->keyExists( "LinearThermalOperator2" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel2;
     auto linearThermalOperator2 = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh2, "LinearThermalOperator2", input_db, thermalTransportModel2 ) );
+            mesh2, "LinearThermalOperator2", input_db ) );
 
     auto thermalVolumeOperator2 =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(

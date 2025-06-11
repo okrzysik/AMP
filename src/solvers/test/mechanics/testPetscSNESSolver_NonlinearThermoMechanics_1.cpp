@@ -117,18 +117,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearThermoMechanicsOperator->append( linearThermalOperator );
 
     // Initial-Guess for mechanics
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyMechanicsModel;
     auto dirichletDispInVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "MechanicsInitialGuess", input_db, dummyMechanicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "MechanicsInitialGuess", input_db ) );
     dirichletDispInVecOp->setVariable( displacementVar );
 
     // Initial-Guess for thermal
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyThermalModel;
     auto dirichletThermalInVecOp =
         std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "ThermalInitialGuess", input_db, dummyThermalModel ) );
+                mesh, "ThermalInitialGuess", input_db ) );
     dirichletThermalInVecOp->setVariable( temperatureVar );
 
     // Random initial guess

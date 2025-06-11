@@ -112,10 +112,9 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     //  Integrate Nuclear Rhs over Desnity * GeomType::Cell
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh1, "VolumeIntegralOperator", input_db, stransportModel ) );
+            mesh1, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();
@@ -167,11 +166,10 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "LinearThermalOperator2" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel2;
     auto linearThermalDatabase2 = input_db->getDatabase( "LinearThermalOperator2" );
     auto linearThermalOperator2 = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh2, "LinearThermalOperator2", input_db, thermalTransportModel2 ) );
+            mesh2, "LinearThermalOperator2", input_db ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto thermalVolumeOperator2 =
@@ -252,12 +250,10 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "FlowFrapconOperator" ),
                 "Key ''FlowFrapconOperator'' is missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
     auto flowDatabase = input_db->getDatabase( "FlowFrapconOperator" );
     flowDatabase->putScalar( "numPoints", flowVecSize );
     auto flowOperator = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh2, "FlowFrapconOperator", input_db, flowtransportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh2, "FlowFrapconOperator", input_db ) );
 
     flowOperator->setZLocations( mapFlowToClad->getZLocations() );
 

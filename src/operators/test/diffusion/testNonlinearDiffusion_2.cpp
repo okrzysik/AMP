@@ -58,10 +58,9 @@ static void nonlinearTest( AMP::UnitTest *ut,
     // Create the meshes from the input database
     auto mesh = AMP::Mesh::MeshFactory::create( params );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    auto diffFEOp_db       = input_db->getDatabase( "NonlinearDiffusionOp" );
-    auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "NonlinearDiffusionOp", input_db, elementModel );
+    auto diffFEOp_db = input_db->getDatabase( "NonlinearDiffusionOp" );
+    auto nonlinearOperator =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "NonlinearDiffusionOp", input_db );
     auto diffOp =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
 

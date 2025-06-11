@@ -324,10 +324,7 @@ createVolumeIntegralOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         ElementOperationFactory::createElementOperation( input_db->getDatabase( "SourceElement" ) );
 
     // now create the nonlinear source operator
-    if ( input_db->getString( "name" ) != "VolumeIntegralOperator" ) {
-        AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
-    }
-
+    AMP_ASSERT( input_db->getString( "name" ) == "VolumeIntegralOperator" );
     auto volumeIntegralParameters = std::make_shared<VolumeIntegralOperatorParameters>( input_db );
     volumeIntegralParameters->d_sourcePhysicsModel = sourcePhysicsModel;
     volumeIntegralParameters->d_elemOp             = sourceNonlinearElem;
@@ -348,23 +345,16 @@ createLinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     if ( elementPhysicsModel ) {
         transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
     } else {
-        std::shared_ptr<AMP::Database> transportModel_db;
-        if ( input_db->keyExists( "DiffusionTransportModel" ) ) {
-            transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-        } else {
-            AMP_INSIST( false, "Key ''DiffusionTransportModel'' is missing!" );
-        }
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
+        auto db             = input_db->getDatabase( "DiffusionTransportModel" );
+        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( db );
         transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
     }
     AMP_INSIST( transportModel, "NULL transport model" );
 
     // next create a ElementOperation object
     AMP_INSIST( input_db->keyExists( "DiffusionElement" ), "Key ''DiffusionElement'' is missing!" );
-    std::shared_ptr<ElementOperation> diffusionLinElem =
-        ElementOperationFactory::createElementOperation(
-            input_db->getDatabase( "DiffusionElement" ) );
+    auto diffusionLinElem = ElementOperationFactory::createElementOperation(
+        input_db->getDatabase( "DiffusionElement" ) );
 
     // now create the linear diffusion operator
     AMP_ASSERT( input_db->getString( "name" ) == "DiffusionLinearFEOperator" );
@@ -395,14 +385,8 @@ createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     if ( elementPhysicsModel ) {
         transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
     } else {
-        std::shared_ptr<AMP::Database> transportModel_db;
-        if ( input_db->keyExists( "DiffusionTransportModel" ) ) {
-            transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-        } else {
-            AMP_INSIST( false, "Key ''DiffusionTransportModel'' is missing!" );
-        }
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
+        auto db             = input_db->getDatabase( "DiffusionTransportModel" );
+        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( db );
         transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
     }
     AMP_INSIST( transportModel, "NULL transport model" );
@@ -495,9 +479,8 @@ createLinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         AMP_INSIST( input_db->keyExists( "MechanicsMaterialModel" ),
                     "Key ''MechanicsMaterialModel'' is missing!" );
 
-        auto materialModel_db = input_db->getDatabase( "MechanicsMaterialModel" );
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( materialModel_db );
+        auto db             = input_db->getDatabase( "MechanicsMaterialModel" );
+        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( db );
     }
     AMP_INSIST( elementPhysicsModel, "NULL material model" );
 
@@ -533,9 +516,8 @@ createNonlinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         AMP_INSIST( input_db->keyExists( "MechanicsMaterialModel" ),
                     "Key ''MechanicsMaterialModel'' is missing!" );
 
-        auto transportModel_db = input_db->getDatabase( "MechanicsMaterialModel" );
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
+        auto db             = input_db->getDatabase( "MechanicsMaterialModel" );
+        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( db );
     }
     AMP_INSIST( elementPhysicsModel, "NULL material model" );
 
@@ -578,9 +560,8 @@ createLinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         AMP_INSIST( input_db->keyExists( "FlowTransportModel" ),
                     "Key ''FlowTransportModel'' is missing!" );
 
-        auto transportModel_db = input_db->getDatabase( "FlowTransportModel" );
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
+        auto db             = input_db->getDatabase( "FlowTransportModel" );
+        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( db );
     }
     AMP_INSIST( elementPhysicsModel, "NULL transport model" );
 
@@ -615,9 +596,8 @@ createNonlinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         AMP_INSIST( input_db->keyExists( "FlowTransportModel" ),
                     "Key ''FlowTransportModel'' is missing!" );
 
-        auto transportModel_db = input_db->getDatabase( "FlowTransportModel" );
-        elementPhysicsModel =
-            ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
+        auto db             = input_db->getDatabase( "FlowTransportModel" );
+        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( db );
     }
     AMP_INSIST( elementPhysicsModel, "NULL material model" );
 
@@ -967,7 +947,6 @@ createRobinMatrixCorrection( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     matrixCorrectionParameters->d_Mesh        = mesh;
 
     if ( elementPhysicsModel ) {
-
         std::shared_ptr<RobinPhysicsModel> robinPhysicsModel;
         robinPhysicsModel = std::dynamic_pointer_cast<RobinPhysicsModel>( elementPhysicsModel );
         matrixCorrectionParameters->d_robinPhysicsModel = robinPhysicsModel;

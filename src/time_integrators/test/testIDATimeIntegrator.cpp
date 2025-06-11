@@ -61,16 +61,13 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
         // create a linear BVP operator
         std::shared_ptr<AMP::Operator::LinearBVPOperator> linearPCOperator;
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
         auto IDARhsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "LinearOperator", input_db, elementModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearOperator", input_db ) );
 
         // create a mass linear BVP operator
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
         auto massOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "MassLinearOperator", input_db, massElementModel ) );
+                mesh, "MassLinearOperator", input_db ) );
 
         // create vectors for initial conditions (IC) and time derivative at IC
         auto outputVar             = IDARhsOperator->getOutputVariable();

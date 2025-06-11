@@ -68,16 +68,13 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     {
         // create a linear BVP operator
         std::shared_ptr<AMP::Operator::LinearBVPOperator> linearPCOperator;
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
         auto IDARhsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "LinearOperator", input_db, elementModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearOperator", input_db ) );
 
         // create a mass linear BVP operator
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> massElementModel;
         auto massOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "MassLinearOperator", input_db, massElementModel ) );
+                mesh, "MassLinearOperator", input_db ) );
 
         //  create neutronics source
         AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
@@ -101,10 +98,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         //  Integrate Nuclear Rhs over Density * GeomType::Cell //
         AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
         auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "VolumeIntegralOperator", input_db, sourceTransportModel ) );
+                mesh, "VolumeIntegralOperator", input_db ) );
 
         // Create the power (heat source) vector.
         auto powerInWattsVar = sourceOperator->getOutputVariable();
