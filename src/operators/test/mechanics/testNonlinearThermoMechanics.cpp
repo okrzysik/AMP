@@ -153,7 +153,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "testLinearMechanicsOperator" ), "key missing!" );
     auto linearMechanicsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testLinearMechanicsOperator", input_db, mechanicsMaterialModel, nullptr ) );
+            mesh, "testLinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );

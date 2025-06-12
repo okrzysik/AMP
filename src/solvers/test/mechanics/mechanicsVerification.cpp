@@ -275,7 +275,6 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         AMP_ERROR( "Unknown value for typeCoeffAB" );
     } // end if typeCoeffAB
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     // Vectors: solution, right-hand side, residual
     auto NodalVectorDOF =
@@ -288,8 +287,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getOutputVariable() );
 
     // Create an operator to get manufactured solution and forcing terms
-    auto volumeOp = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "VolumeIntegral", inputDatabase, physicsModel );
+    auto volumeOp =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "VolumeIntegral", inputDatabase );
 
     // Compute the forcing terms
     rhsVec->zero();
@@ -315,7 +314,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     // Compute Neumann values
     auto neumannVecOp = std::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
         AMP::Operator::OperatorBuilder::createBoundaryOperator(
-            mesh, "NeumannCorrection", inputDatabase, volumeOp, physicsModel ) );
+            mesh, "NeumannCorrection", inputDatabase, volumeOp ) );
     // neumannVecOp->setVariable(var);
     auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
     for ( short neumannBoundaryId : neumannBoundaryIds ) {

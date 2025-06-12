@@ -6,6 +6,10 @@
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/operators/OperatorFactory.h"
+#include "AMP/operators/boundary/ColumnBoundaryOperator.h"
+#include "AMP/operators/boundary/DirichletMatrixCorrection.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/operators/boundary/MassMatrixCorrection.h"
 #include "AMP/operators/map/MapOperatorParameters.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -15,10 +19,6 @@
     #include "AMP/operators/ElementOperationFactory.h"
     #include "AMP/operators/NeutronicsRhs.h"
     #include "AMP/operators/ParameterFactory.h"
-    #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
-    #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
-    #include "AMP/operators/boundary/DirichletVectorCorrection.h"
-    #include "AMP/operators/boundary/MassMatrixCorrection.h"
     #include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
     #include "AMP/operators/boundary/libmesh/PressureBoundaryOperator.h"
     #include "AMP/operators/boundary/libmesh/RobinMatrixCorrection.h"
@@ -51,6 +51,15 @@ namespace AMP::Operator::OperatorBuilder {
 
 
 using IdentityOperatorParameters = OperatorParameters;
+
+
+static std::shared_ptr<BoundaryOperator>
+createBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                        std::string boundaryOperatorName,
+                        std::shared_ptr<AMP::Database> input_db,
+                        Operator::shared_ptr volumeOperator,
+                        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+
 
 void setNestedOperatorMemoryLocations( std::shared_ptr<AMP::Database> input_db,
                                        std::string outerOperatorName,
@@ -135,119 +144,10 @@ std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::Database
 }
 
 
-std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                          const std::string &operatorName,
-                                          std::shared_ptr<AMP::Database> input_db )
-{
-    std::shared_ptr<ElementPhysicsModel> model;
-    std::shared_ptr<ElementPhysicsModelFactory> factory;
-    return createOperator( mesh, operatorName, input_db, model, factory );
-}
-
-
-std::shared_ptr<Operator>
-createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                const std::string &operatorName,
-                std::shared_ptr<AMP::Database> input_db,
-                std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel,
-                std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
-{
-    PROFILE( "createOperator" );
-
-    auto operator_db = input_db->getDatabase( operatorName );
-
-    // we create the element physics model if a database entry exists
-    // and the incoming element physics model pointer is NULL
-    if ( !elementPhysicsModel && operator_db->keyExists( "LocalModel" ) ) {
-
-        // extract the name of the local model from the operator database
-        auto localModelName = operator_db->getString( "LocalModel" );
-
-        // Get the local database
-        auto localModel_db = input_db->getDatabase( localModelName );
-
-        // If a non-NULL factory is being supplied through the argument list
-        // use it, else call the AMP ElementPhysicsModelFactory interface
-        if ( localModelFactory ) {
-            elementPhysicsModel = localModelFactory->createElementPhysicsModel( localModel_db );
-        } else {
-            elementPhysicsModel =
-                ElementPhysicsModelFactory::createElementPhysicsModel( localModel_db );
-        }
-
-        AMP_INSIST( elementPhysicsModel, "Error:: createOperator(): local model creation failed" );
-    }
-
-    auto operatorType = operator_db->getString( "name" );
-    std::shared_ptr<Operator> retOperator;
-    if ( operatorType == "MechanicsLinearFEOperator" ) {
-        retOperator = createLinearMechanicsOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "MechanicsNonlinearFEOperator" ) {
-        retOperator = createNonlinearMechanicsOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "DiffusionLinearFEOperator" ) {
-        retOperator = createLinearDiffusionOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "DiffusionNonlinearFEOperator" ) {
-        retOperator = createNonlinearDiffusionOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "NavierStokesLSWFLinearFEOperator" ) {
-        retOperator =
-            createLinearNavierStokesLSWFOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "NavierStokesLSWFFEOperator" ) {
-        retOperator =
-            createNonlinearNavierStokesLSWFOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "FickSoretNonlinearFEOperator" ) {
-        retOperator =
-            createNonlinearFickSoretOperator( mesh, operatorName, input_db, localModelFactory );
-    } else if ( operatorType == "SubchannelTwoEqLinearOperator" ) {
-        retOperator = createSubchannelTwoEqLinearOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "SubchannelTwoEqNonlinearOperator" ) {
-        retOperator =
-            createSubchannelTwoEqNonlinearOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "SubchannelFourEqNonlinearOperator" ) {
-        retOperator =
-            createSubchannelFourEqNonlinearOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "MassLinearFEOperator" ) {
-        retOperator = createMassLinearFEOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "VolumeIntegralOperator" ) {
-        retOperator = createVolumeIntegralOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "LinearBVPOperator" ) {
-        // note that we pass in the full database here and not the operator db
-        retOperator = createLinearBVPOperator(
-            mesh, operatorName, input_db, elementPhysicsModel, localModelFactory );
-    } else if ( operatorType == "NonlinearBVPOperator" ) {
-        // note that we pass in the full database here and not the operator db
-        retOperator = createNonlinearBVPOperator(
-            mesh, operatorName, input_db, elementPhysicsModel, localModelFactory );
-    } else if ( operatorType == "DirichletMatrixCorrection" ) {
-    } else if ( operatorType == "DirichletVectorCorrection" ) {
-        retOperator = createDirichletVectorCorrection( mesh, operator_db );
-    } else if ( OperatorFactory::exists( operatorType ) ) {
-        // Use the OperatorFactory to create the operator
-        auto params = std::make_shared<OperatorParameters>( operator_db, mesh );
-        retOperator = OperatorFactory::create( params );
-    }
-
-    return retOperator;
-}
-
-
-std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh1,
-                                          std::shared_ptr<AMP::Mesh::Mesh> mesh2,
-                                          const AMP::AMP_MPI &comm,
-                                          std::shared_ptr<AMP::Database> input_db )
-{
-    auto params       = std::make_shared<MapOperatorParameters>( input_db );
-    params->d_Mesh    = mesh1;
-    params->d_MapMesh = mesh2;
-    params->d_MapComm = comm;
-    return OperatorFactory::create( params );
-}
-
-
 /********************************************************
- * Other implementation                                  *
+ * Create specific operators implementation              *
  ********************************************************/
 #ifdef AMP_USE_LIBMESH
-
 static std::shared_ptr<SubchannelPhysicsModel>
 createSubchannelPhysicsModel( std::shared_ptr<AMP::Database> input_db,
                               std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
@@ -423,11 +323,9 @@ createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     return std::make_shared<DiffusionNonlinearFEOperator>( diffusionNLOpParams );
 }
 
-Operator::shared_ptr
-createNonlinearFickSoretOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                  std::string operatorName,
-                                  std::shared_ptr<AMP::Database> input_db,
-                                  std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
+Operator::shared_ptr createNonlinearFickSoretOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                                       std::string operatorName,
+                                                       std::shared_ptr<AMP::Database> input_db )
 {
     std::shared_ptr<Operator> retOperator;
     AMP_INSIST( input_db, "NULL database object passed" );
@@ -446,12 +344,10 @@ createNonlinearFickSoretOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     std::shared_ptr<ElementPhysicsModel> fickPhysicsModel;
     std::shared_ptr<ElementPhysicsModel> soretPhysicsModel;
 
-    auto fickOperator =
-        createOperator( mesh, fickOperatorName, input_db, fickPhysicsModel, localModelFactory );
+    auto fickOperator = createOperator( mesh, fickOperatorName, input_db, fickPhysicsModel );
     AMP_INSIST( fickOperator, "Error: unable to create Fick operator in createFickSoretOperator" );
 
-    auto soretOperator =
-        createOperator( mesh, soretOperatorName, input_db, soretPhysicsModel, localModelFactory );
+    auto soretOperator = createOperator( mesh, soretOperatorName, input_db, soretPhysicsModel );
 
     AMP_INSIST( soretOperator,
                 "Error: unable to create Soret operator in createFickSoretOperator" );
@@ -662,8 +558,7 @@ Operator::shared_ptr
 createLinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                          std::string operatorName,
                          std::shared_ptr<AMP::Database> input_db,
-                         std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel,
-                         std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
+                         std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
 {
     PROFILE( "createLinearBVPOperator" );
 
@@ -681,8 +576,7 @@ createLinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         input_db, operatorName, { volumeOperatorName, boundaryOperatorName } );
 
     // create the volume operator
-    auto volumeOperator = createOperator(
-        mesh, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
+    auto volumeOperator = createOperator( mesh, volumeOperatorName, input_db, elementPhysicsModel );
     auto volumeLinearOp = std::dynamic_pointer_cast<LinearOperator>( volumeOperator );
     AMP_INSIST( volumeLinearOp,
                 "Error: unable to create linear operator in createLinearBVPOperator" );
@@ -693,21 +587,8 @@ createLinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     boundaryOperator_db->putScalar(
         "isAttachedToVolumeOperator", true, Units(), Database::Check::Overwrite );
 
-    std::shared_ptr<ElementPhysicsModel> boundaryLocalModel;
-
-    // Use the same local physics model for both boundary and volume operators?
-    bool flag = operator_db->getWithDefault<bool>( "useSameLocalModelForVolumeAndBoundaryOperators",
-                                                   false );
-    if ( flag ) {
-        boundaryLocalModel = elementPhysicsModel;
-    }
-
-    auto boundaryOperator = createBoundaryOperator( mesh,
-                                                    boundaryOperatorName,
-                                                    input_db,
-                                                    volumeLinearOp,
-                                                    boundaryLocalModel,
-                                                    localModelFactory );
+    auto boundaryOperator =
+        createBoundaryOperator( mesh, boundaryOperatorName, input_db, volumeLinearOp );
 
     auto bvpOperatorParams                = std::make_shared<BVPOperatorParameters>( operator_db );
     bvpOperatorParams->d_volumeOperator   = volumeOperator;
@@ -721,8 +602,7 @@ Operator::shared_ptr
 createNonlinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                             std::string operatorName,
                             std::shared_ptr<AMP::Database> input_db,
-                            std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel,
-                            std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
+                            std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
 {
     AMP_INSIST( input_db, "NULL database object passed" );
 
@@ -738,8 +618,7 @@ createNonlinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         input_db, operatorName, { volumeOperatorName, boundaryOperatorName } );
 
     // create the volume operator
-    auto volumeOperator = createOperator(
-        mesh, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
+    auto volumeOperator = createOperator( mesh, volumeOperatorName, input_db, elementPhysicsModel );
     AMP_INSIST( volumeOperator,
                 "Error: unable to create nonlinear operator in "
                 "createNonlinearBVPOperator" );
@@ -751,156 +630,15 @@ createNonlinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     boundaryOperator_db->putScalar(
         "isAttachedToVolumeOperator", true, Units(), Database::Check::Overwrite );
 
-    std::shared_ptr<ElementPhysicsModel> boundaryLocalModel;
 
-    // Use the same local physics model for both boundary and volume operators?
-    bool flag = operator_db->getWithDefault<bool>( "useSameLocalModelForVolumeAndBoundaryOperators",
-                                                   false );
-    if ( flag ) {
-        boundaryLocalModel = elementPhysicsModel;
-    }
-
-    auto boundaryOperator = createBoundaryOperator( mesh,
-                                                    boundaryOperatorName,
-                                                    input_db,
-                                                    volumeOperator,
-                                                    boundaryLocalModel,
-                                                    localModelFactory );
+    auto boundaryOperator =
+        createBoundaryOperator( mesh, boundaryOperatorName, input_db, volumeOperator );
 
     auto bvpOperatorParams                = std::make_shared<BVPOperatorParameters>( input_db );
     bvpOperatorParams->d_volumeOperator   = volumeOperator;
     bvpOperatorParams->d_boundaryOperator = boundaryOperator;
 
     return std::make_shared<NonlinearBVPOperator>( bvpOperatorParams );
-}
-
-std::shared_ptr<BoundaryOperator>
-createBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                        std::string boundaryOperatorName,
-                        std::shared_ptr<AMP::Database> input_db,
-                        Operator::shared_ptr volumeOperator,
-                        std::shared_ptr<ElementPhysicsModel> elementPhysicsModel,
-                        std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
-{
-    std::shared_ptr<BoundaryOperator> retOperator;
-    AMP_INSIST( input_db, "NULL database object passed" );
-
-    auto operator_db = input_db->getDatabase( boundaryOperatorName );
-    AMP_INSIST( operator_db,
-                "Error: createBoundaryOperator(): "
-                "database object with given name not in database" );
-
-    // we create the element physics model if a database entry exists
-    // and the incoming element physics model pointer is NULL
-    //  if( (elementPhysicsModel.get()==NULL) && (operator_db->keyExists("LocalModel" ) ) )
-    //  The above Condition assumes all of the Operators inside column boundary use same Physics
-    //  Model - SA
-    if ( ( operator_db->keyExists( "LocalModel" ) ) ) {
-        // extract the name of the local model from the operator database
-        std::string localModelName = operator_db->getString( "LocalModel" );
-        // check whether a database exists in the global database
-        // (NOTE: not the operator database) with the given name
-        AMP_INSIST( input_db->keyExists( localModelName ),
-                    "Error:: createOperator(): No local model "
-                    "database entry with given name exists in input database" );
-
-        auto localModel_db = input_db->getDatabase( localModelName );
-        AMP_INSIST( localModel_db,
-                    "Error:: createOperator(): No local model database "
-                    "entry with given name exists in input database" );
-
-        // if a non-NULL factory is being supplied through the argument list
-        // use it, else call the AMP ElementPhysicsModelFactory interface
-        if ( localModelFactory ) {
-            elementPhysicsModel = localModelFactory->createElementPhysicsModel( localModel_db );
-        } else {
-            elementPhysicsModel =
-                ElementPhysicsModelFactory::createElementPhysicsModel( localModel_db );
-        }
-
-        AMP_INSIST( elementPhysicsModel, "Error:: createOperator(): local model creation failed" );
-    }
-
-    auto boundaryType = operator_db->getString( "name" );
-
-    if ( boundaryType == "DirichletMatrixCorrection" ) {
-        // in this case the volume operator has to be a linear operator
-        retOperator = createDirichletMatrixCorrection( mesh, operator_db, volumeOperator );
-    } else if ( boundaryType == "MassMatrixCorrection" ) {
-        retOperator = createMassMatrixCorrection( mesh, operator_db, volumeOperator );
-    } else if ( boundaryType == "RobinMatrixCorrection" ) {
-        // in this case the volume operator has to be a linear operator
-        retOperator =
-            createRobinMatrixCorrection( mesh, operator_db, volumeOperator, elementPhysicsModel );
-    } else if ( boundaryType == "RobinVectorCorrection" ) {
-        retOperator =
-            createRobinVectorCorrection( mesh, operator_db, volumeOperator, elementPhysicsModel );
-    } else if ( boundaryType == "NeumannVectorCorrection" ) {
-        retOperator =
-            createNeumannVectorCorrection( mesh, operator_db, volumeOperator, elementPhysicsModel );
-    } else if ( boundaryType == "DirichletVectorCorrection" ) {
-        // in this case the volume operator has to be a nonlinear operator
-        retOperator = createDirichletVectorCorrection( mesh, operator_db, volumeOperator );
-    } else if ( boundaryType == "ColumnBoundaryOperator" ) {
-        // note that the global input database is passed here instead of the operator
-        // database
-        retOperator = createColumnBoundaryOperator( mesh,
-                                                    boundaryOperatorName,
-                                                    input_db,
-                                                    volumeOperator,
-                                                    elementPhysicsModel,
-                                                    localModelFactory );
-    } else if ( OperatorFactory::exists( boundaryType ) ) {
-        // Use the OperatorFactory to create the operator
-        auto params                  = std::make_shared<OperatorParameters>( operator_db, mesh );
-        std::shared_ptr<Operator> op = OperatorFactory::create( params );
-        retOperator                  = std::dynamic_pointer_cast<BoundaryOperator>( op );
-        AMP_ASSERT( retOperator );
-    }
-
-    return retOperator;
-}
-
-
-std::shared_ptr<BoundaryOperator>
-createColumnBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                              std::string boundaryOperatorName,
-                              std::shared_ptr<AMP::Database> input_db,
-                              Operator::shared_ptr volumeOperator,
-                              std::shared_ptr<ElementPhysicsModel> elementPhysicsModel,
-                              std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
-{
-
-    AMP_INSIST( input_db, "NULL database object passed" );
-
-    auto operator_db = input_db->getDatabase( boundaryOperatorName );
-    AMP_INSIST( operator_db,
-                "Error: createBoundaryOperator(): "
-                "database object with given name not in database" );
-
-    int numberOfBoundaryOperators =
-        operator_db->getWithDefault<int>( "numberOfBoundaryOperators", 1 );
-
-    auto boundaryOps = operator_db->getVector<std::string>( "boundaryOperators" );
-    AMP_ASSERT( numberOfBoundaryOperators == (int) boundaryOps.size() );
-
-    // Ensure consistency of operator memory locations
-    setNestedOperatorMemoryLocations( input_db, boundaryOperatorName, boundaryOps );
-
-    auto params    = std::make_shared<OperatorParameters>( operator_db );
-    params->d_Mesh = mesh;
-
-    auto columnBoundaryOperator = std::make_shared<ColumnBoundaryOperator>( params );
-
-    for ( int i = 0; i < numberOfBoundaryOperators; i++ ) {
-        auto model2     = elementPhysicsModel;
-        auto bcOperator = createBoundaryOperator(
-            mesh, boundaryOps[i], input_db, volumeOperator, model2, localModelFactory );
-        AMP_ASSERT( bcOperator );
-        columnBoundaryOperator->append( bcOperator );
-    }
-
-    return columnBoundaryOperator;
 }
 
 
@@ -976,7 +714,6 @@ createRobinVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     return std::make_shared<RobinVectorCorrection>( vectorCorrectionParameters );
 }
 
-
 std::shared_ptr<BoundaryOperator>
 createNeumannVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                std::shared_ptr<AMP::Database> input_db,
@@ -996,6 +733,8 @@ createNeumannVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
     return std::make_shared<NeumannVectorCorrection>( vectorCorrectionParameters );
 }
+
+#endif
 
 
 std::shared_ptr<BoundaryOperator>
@@ -1022,124 +761,242 @@ createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 }
 
 
-#else
+/********************************************************
+ * createColumnBoundaryOperator                          *
+ ********************************************************/
+std::shared_ptr<BoundaryOperator>
+createColumnBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                              std::string boundaryOperatorName,
+                              std::shared_ptr<AMP::Database> input_db,
+                              Operator::shared_ptr volumeOperator,
+                              std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
+{
 
-std::shared_ptr<Operator> createLinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                         std::shared_ptr<AMP::Database>,
-                                                         std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator> createNonlinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                            std::shared_ptr<AMP::Database>,
-                                                            std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator> createLinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                         std::shared_ptr<AMP::Database>,
-                                                         std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator> createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                            std::shared_ptr<AMP::Database>,
-                                                            std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-createLinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                      std::shared_ptr<AMP::Database>,
-                                      std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-createNonlinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                         std::shared_ptr<AMP::Database>,
-                                         std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-createNonlinearFickSoretOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                  std::string,
-                                  std::shared_ptr<AMP::Database>,
-                                  std::shared_ptr<ElementPhysicsModelFactory> )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-createSubchannelTwoEqLinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                     std::shared_ptr<AMP::Database>,
-                                     std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-createSubchannelTwoEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                        std::shared_ptr<AMP::Database>,
-                                        std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator>
-createSubchannelFourEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                         std::shared_ptr<AMP::Database>,
-                                         std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator> createMassLinearFEOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                      std::shared_ptr<AMP::Database>,
-                                                      std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator> createVolumeIntegralOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                        std::shared_ptr<AMP::Database>,
-                                                        std::shared_ptr<ElementPhysicsModel> & )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator> createLinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                   std::string,
-                                                   std::shared_ptr<AMP::Database>,
-                                                   std::shared_ptr<ElementPhysicsModel> &,
-                                                   std::shared_ptr<ElementPhysicsModelFactory> )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<Operator> createNonlinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                      std::string,
-                                                      std::shared_ptr<AMP::Database>,
-                                                      std::shared_ptr<ElementPhysicsModel> &,
-                                                      std::shared_ptr<ElementPhysicsModelFactory> )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
-}
-std::shared_ptr<BoundaryOperator> createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                                   std::shared_ptr<AMP::Database> )
-{
-    AMP_ERROR( "No libmesh" );
-    return nullptr;
+    AMP_INSIST( input_db, "NULL database object passed" );
+
+    auto operator_db = input_db->getDatabase( boundaryOperatorName );
+    AMP_INSIST( operator_db,
+                "Error: createBoundaryOperator(): "
+                "database object with given name not in database" );
+
+    int numberOfBoundaryOperators =
+        operator_db->getWithDefault<int>( "numberOfBoundaryOperators", 1 );
+
+    auto boundaryOps = operator_db->getVector<std::string>( "boundaryOperators" );
+    AMP_ASSERT( numberOfBoundaryOperators == (int) boundaryOps.size() );
+
+    // Ensure consistency of operator memory locations
+    setNestedOperatorMemoryLocations( input_db, boundaryOperatorName, boundaryOps );
+
+    auto params    = std::make_shared<OperatorParameters>( operator_db );
+    params->d_Mesh = mesh;
+
+    auto columnBoundaryOperator = std::make_shared<ColumnBoundaryOperator>( params );
+
+    for ( int i = 0; i < numberOfBoundaryOperators; i++ ) {
+        auto model2 = elementPhysicsModel;
+        auto bcOperator =
+            createBoundaryOperator( mesh, boundaryOps[i], input_db, volumeOperator, model2 );
+        AMP_ASSERT( bcOperator );
+        columnBoundaryOperator->append( bcOperator );
+    }
+
+    return columnBoundaryOperator;
 }
 
+
+/********************************************************
+ * createOperator                                        *
+ ********************************************************/
+std::shared_ptr<Operator>
+createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                const std::string &operatorName,
+                std::shared_ptr<AMP::Database> input_db,
+                std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
+{
+    PROFILE( "createOperator" );
+
+    auto operator_db = input_db;
+    if ( input_db->keyExists( operatorName ) )
+        operator_db = input_db->getDatabase( operatorName );
+
+    // we create the element physics model if a database entry exists
+    // and the incoming element physics model pointer is NULL
+    if ( !elementPhysicsModel && operator_db->keyExists( "LocalModel" ) ) {
+
+        // extract the name of the local model from the operator database
+        auto localModelName = operator_db->getString( "LocalModel" );
+
+        // Get the local database
+        auto localModel_db = input_db->getDatabase( localModelName );
+
+        // If a non-NULL factory is being supplied through the argument list
+        // use it, else call the AMP ElementPhysicsModelFactory interface
+        elementPhysicsModel =
+            ElementPhysicsModelFactory::createElementPhysicsModel( localModel_db );
+
+        AMP_INSIST( elementPhysicsModel, "Error:: createOperator(): local model creation failed" );
+    }
+
+    auto operatorType = operator_db->getString( "name" );
+    std::shared_ptr<Operator> retOperator;
+    if ( operatorType == "DirichletMatrixCorrection" ) {
+    } else if ( operatorType == "DirichletVectorCorrection" ) {
+        retOperator = createDirichletVectorCorrection( mesh, operator_db );
+#ifdef AMP_USE_LIBMESH
+    } else if ( operatorType == "MechanicsLinearFEOperator" ) {
+        retOperator = createLinearMechanicsOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "MechanicsNonlinearFEOperator" ) {
+        retOperator = createNonlinearMechanicsOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "DiffusionLinearFEOperator" ) {
+        retOperator = createLinearDiffusionOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "DiffusionNonlinearFEOperator" ) {
+        retOperator = createNonlinearDiffusionOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "NavierStokesLSWFLinearFEOperator" ) {
+        retOperator =
+            createLinearNavierStokesLSWFOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "NavierStokesLSWFFEOperator" ) {
+        retOperator =
+            createNonlinearNavierStokesLSWFOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "FickSoretNonlinearFEOperator" ) {
+        retOperator = createNonlinearFickSoretOperator( mesh, operatorName, input_db );
+    } else if ( operatorType == "SubchannelTwoEqLinearOperator" ) {
+        retOperator = createSubchannelTwoEqLinearOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "SubchannelTwoEqNonlinearOperator" ) {
+        retOperator =
+            createSubchannelTwoEqNonlinearOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "SubchannelFourEqNonlinearOperator" ) {
+        retOperator =
+            createSubchannelFourEqNonlinearOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "MassLinearFEOperator" ) {
+        retOperator = createMassLinearFEOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "VolumeIntegralOperator" ) {
+        retOperator = createVolumeIntegralOperator( mesh, operator_db, elementPhysicsModel );
+    } else if ( operatorType == "LinearBVPOperator" ) {
+        // note that we pass in the full database here and not the operator db
+        retOperator = createLinearBVPOperator( mesh, operatorName, input_db, elementPhysicsModel );
+    } else if ( operatorType == "NonlinearBVPOperator" ) {
+        // note that we pass in the full database here and not the operator db
+        retOperator =
+            createNonlinearBVPOperator( mesh, operatorName, input_db, elementPhysicsModel );
 #endif
+    } else if ( OperatorFactory::exists( operatorType ) ) {
+        // Use the OperatorFactory to create the operator
+        auto params = std::make_shared<OperatorParameters>( operator_db, mesh );
+        retOperator = OperatorFactory::create( params );
+    }
+
+    return retOperator;
+}
+std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh1,
+                                          std::shared_ptr<AMP::Mesh::Mesh> mesh2,
+                                          const AMP::AMP_MPI &comm,
+                                          std::shared_ptr<AMP::Database> input_db )
+{
+    auto params       = std::make_shared<MapOperatorParameters>( input_db );
+    params->d_Mesh    = mesh1;
+    params->d_MapMesh = mesh2;
+    params->d_MapComm = comm;
+    return OperatorFactory::create( params );
+}
+std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                          const std::string &operatorName,
+                                          std::shared_ptr<AMP::Database> input_db )
+{
+    std::shared_ptr<ElementPhysicsModel> model;
+    return createOperator( mesh, operatorName, input_db, model );
+}
+
+
+/********************************************************
+ * createBoundaryOperator                                *
+ ********************************************************/
+static std::shared_ptr<BoundaryOperator>
+createBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                        std::string boundaryOperatorName,
+                        std::shared_ptr<AMP::Database> input_db,
+                        Operator::shared_ptr volumeOperator,
+                        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel )
+{
+    std::shared_ptr<BoundaryOperator> retOperator;
+    AMP_INSIST( input_db, "NULL database object passed" );
+
+    auto operator_db = input_db->getDatabase( boundaryOperatorName );
+    AMP_INSIST( operator_db,
+                "Error: createBoundaryOperator(): "
+                "database object with given name not in database" );
+
+    // we create the element physics model if a database entry exists
+    // and the incoming element physics model pointer is NULL
+    //  if( (elementPhysicsModel.get()==NULL) && (operator_db->keyExists("LocalModel" ) ) )
+    //  The above Condition assumes all of the Operators inside column boundary use same Physics
+    //  Model - SA
+    if ( ( operator_db->keyExists( "LocalModel" ) ) ) {
+        // extract the name of the local model from the operator database
+        std::string localModelName = operator_db->getString( "LocalModel" );
+        // check whether a database exists in the global database
+        // (NOTE: not the operator database) with the given name
+        AMP_INSIST( input_db->keyExists( localModelName ),
+                    "Error:: createOperator(): No local model "
+                    "database entry with given name exists in input database" );
+
+        auto localModel_db = input_db->getDatabase( localModelName );
+        AMP_INSIST( localModel_db,
+                    "Error:: createOperator(): No local model database "
+                    "entry with given name exists in input database" );
+
+        // if a non-NULL factory is being supplied through the argument list
+        // use it, else call the AMP ElementPhysicsModelFactory interface
+        elementPhysicsModel =
+            ElementPhysicsModelFactory::createElementPhysicsModel( localModel_db );
+
+        AMP_INSIST( elementPhysicsModel, "Error:: createOperator(): local model creation failed" );
+    }
+
+    auto boundaryType = operator_db->getString( "name" );
+
+    if ( boundaryType == "DirichletVectorCorrection" ) {
+        // in this case the volume operator has to be a nonlinear operator
+        retOperator = createDirichletVectorCorrection( mesh, operator_db, volumeOperator );
+#ifdef AMP_USE_LIBMESH
+    } else if ( boundaryType == "DirichletMatrixCorrection" ) {
+        // in this case the volume operator has to be a linear operator
+        retOperator = createDirichletMatrixCorrection( mesh, operator_db, volumeOperator );
+    } else if ( boundaryType == "MassMatrixCorrection" ) {
+        retOperator = createMassMatrixCorrection( mesh, operator_db, volumeOperator );
+    } else if ( boundaryType == "RobinMatrixCorrection" ) {
+        // in this case the volume operator has to be a linear operator
+        retOperator =
+            createRobinMatrixCorrection( mesh, operator_db, volumeOperator, elementPhysicsModel );
+    } else if ( boundaryType == "RobinVectorCorrection" ) {
+        retOperator =
+            createRobinVectorCorrection( mesh, operator_db, volumeOperator, elementPhysicsModel );
+    } else if ( boundaryType == "NeumannVectorCorrection" ) {
+        retOperator =
+            createNeumannVectorCorrection( mesh, operator_db, volumeOperator, elementPhysicsModel );
+#endif
+    } else if ( boundaryType == "ColumnBoundaryOperator" ) {
+        // note that the global input database is passed here instead of the operator
+        // database
+        retOperator = createColumnBoundaryOperator(
+            mesh, boundaryOperatorName, input_db, volumeOperator, elementPhysicsModel );
+    } else if ( OperatorFactory::exists( boundaryType ) ) {
+        // Use the OperatorFactory to create the operator
+        auto params                  = std::make_shared<OperatorParameters>( operator_db, mesh );
+        std::shared_ptr<Operator> op = OperatorFactory::create( params );
+        retOperator                  = std::dynamic_pointer_cast<BoundaryOperator>( op );
+        AMP_ASSERT( retOperator );
+    }
+
+    return retOperator;
+}
+std::shared_ptr<BoundaryOperator> createBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                                          std::string boundaryOperatorName,
+                                                          std::shared_ptr<AMP::Database> input_db,
+                                                          Operator::shared_ptr volumeOperator )
+{
+    return createBoundaryOperator( mesh, boundaryOperatorName, input_db, volumeOperator, nullptr );
+}
+
 
 } // namespace AMP::Operator::OperatorBuilder
