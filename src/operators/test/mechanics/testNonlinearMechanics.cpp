@@ -39,13 +39,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
                 mesh, "testNonlinearMechanicsOperator", input_db ) );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-        testNonlinOperator->getMaterialModel();
+    auto elementPhysicsModel = testNonlinOperator->getMaterialModel();
 
     AMP_INSIST( input_db->keyExists( "testLinearMechanicsOperator" ), "key missing!" );
 
     auto testLinOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
+        AMP::Operator::OperatorBuilder::createOperator2(
             mesh, "testLinearMechanicsOperator", input_db, elementPhysicsModel ) );
 
     ut->passes( exeName + " : create" );

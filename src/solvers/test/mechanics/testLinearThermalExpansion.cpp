@@ -38,10 +38,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "MechanicsBVPOperator", input_db ) );
 
     AMP::pout << "Constructed BVP operator" << std::endl;
 

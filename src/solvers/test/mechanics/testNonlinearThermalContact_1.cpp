@@ -94,11 +94,10 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //   CREATE THE NONLINEAR THERMAL OPERATOR 1
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator1" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel1;
     auto nonlinearThermalDatabase1 = input_db->getDatabase( "NonlinearThermalOperator1" );
     auto nonlinearThermalOperator1 = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh1, "NonlinearThermalOperator1", input_db, thermalTransportModel1 ) );
+            mesh1, "NonlinearThermalOperator1", input_db ) );
 
     // initialize the input variable
     auto thermalVolumeOperator1 =
@@ -115,7 +114,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     // CREATE THE LINEAR THERMAL OPERATOR 1
     auto linearThermalOperator1 = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh1, "LinearThermalOperator1", input_db, thermalTransportModel1 ) );
+            mesh1, "LinearThermalOperator1", input_db ) );
 
     // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),

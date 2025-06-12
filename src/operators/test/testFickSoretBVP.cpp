@@ -48,9 +48,8 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create nonlinear FickSoret BVP operator and access volume nonlinear FickSoret operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "testFickSoretBVPOperator", input_db, elementPhysicsModel );
+        mesh, "testFickSoretBVPOperator", input_db );
     auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
     auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(
@@ -62,7 +61,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // use the linear BVP operator to create a Fick linear operator with bc's
     auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "testLinearFickBVPOperator", input_db, elementPhysicsModel );
+        mesh, "testLinearFickBVPOperator", input_db );
     auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
 
     ut->passes( exeName + ": creation" );

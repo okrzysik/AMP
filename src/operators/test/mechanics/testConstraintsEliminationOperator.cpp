@@ -64,10 +64,9 @@ static void myTest( AMP::UnitTest *ut )
         preconditionerParams->d_pOperator = colOp;
         auto colPre = std::make_shared<AMP::Solver::ColumnSolver>( preconditionerParams );
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
         auto bvpOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, ( dummy ? "DummyBVPOperator" : "BVPOperator" ), input_db, physicsModel ) );
+                mesh, ( dummy ? "DummyBVPOperator" : "BVPOperator" ), input_db ) );
         colOp->append( bvpOp );
 
         auto solver_db    = preconditioner_db->getDatabase( "Solver" );
@@ -129,8 +128,7 @@ static void myTest( AMP::UnitTest *ut )
         } // end if
 
         auto loadOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "LoadOperator", input_db, physicsModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "LoadOperator", input_db ) );
         auto var = bvpOp->getOutputVariable();
         loadOp->setVariable( var );
 

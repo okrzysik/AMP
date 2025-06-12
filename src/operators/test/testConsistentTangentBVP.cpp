@@ -51,11 +51,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     auto mechNonlinOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinOperator->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-        mechNonlinOperator->getMaterialModel();
+    auto elementPhysicsModel = mechNonlinOperator->getMaterialModel();
 
     auto linOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
+        AMP::Operator::OperatorBuilder::createOperator2(
             mesh, "LinearMechanicsOperator", input_db, elementPhysicsModel ) );
 
     auto dofMap = AMP::Discretization::simpleDOFManager::create(

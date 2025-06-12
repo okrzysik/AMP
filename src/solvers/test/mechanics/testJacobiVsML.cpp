@@ -41,10 +41,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Mesh has " << mesh->numLocalElements( AMP::Mesh::GeomType::Vertex ) << " nodes."
               << std::endl;
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "MechanicsBVPOperator", input_db ) );
 
     auto displacementVariable = bvpOperator->getOutputVariable();
 

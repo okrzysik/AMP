@@ -61,17 +61,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto meshH08 = manager->Subset( "cubeH08" );
 
     // Create the Conservation of Momentum Operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> FlowTransportModel;
     AMP_INSIST( input_db->keyExists( "ConsMomentumLinearFEOperator" ), "key missing!" );
     auto ConsMomentumOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshH27, "ConsMomentumLinearBVPOperator", input_db, FlowTransportModel ) );
+            meshH27, "ConsMomentumLinearBVPOperator", input_db ) );
 
     // Create the Conservation of Mass Operator
     AMP_INSIST( input_db->keyExists( "ConsMassLinearFEOperator" ), "key missing!" );
     auto ConsMassOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshH08, "ConsMassLinearBVPOperator", input_db, FlowTransportModel ) );
+            meshH08, "ConsMassLinearBVPOperator", input_db ) );
     AMP::pout << "Finished creating Mass Operator" << std::endl;
 
     // Create the variables

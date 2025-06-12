@@ -222,12 +222,9 @@ void createThermalOperators(
 
     //   CREATE THE NONLINEAR THERMAL OPERATOR 1
     AMP_INSIST( global_input_db->keyExists( "BottomNonlinearThermalOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
     auto thermalNonlinearOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator( bottomAdapter,
-                                                        "BottomNonlinearThermalOperator",
-                                                        global_input_db,
-                                                        thermalTransportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator(
+            bottomAdapter, "BottomNonlinearThermalOperator", global_input_db ) );
     nonlinearColumnOperator->append( thermalNonlinearOperator );
 
     //-------------------------------------
@@ -235,10 +232,8 @@ void createThermalOperators(
     //-------------------------------------
     AMP_INSIST( global_input_db->keyExists( "BottomLinearThermalOperator" ), "key missing!" );
     auto thermalLinearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator( bottomAdapter,
-                                                        "BottomLinearThermalOperator",
-                                                        global_input_db,
-                                                        thermalTransportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator(
+            bottomAdapter, "BottomLinearThermalOperator", global_input_db ) );
     linearColumnOperator->append( thermalLinearOperator );
 
     AMP::pout << "Leaving createThermalOperators" << std::endl;

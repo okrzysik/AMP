@@ -71,10 +71,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     // create a nonlinear BVP operator for thermal operator
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
     auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "NonlinearThermalOperator", input_db, elementModel ) );
+            mesh, "NonlinearThermalOperator", input_db ) );
 
     // create a column rhs operator object with the nonlinear thermal in it for use in the nonlinear
     // problem definition
@@ -83,8 +82,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     // create a linear BVP operator
     auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearThermalOperator", input_db, elementModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearThermalOperator", input_db ) );
 
     // create a column rhs operator object with the linear thermal in it for use in the linear
     // problem definition

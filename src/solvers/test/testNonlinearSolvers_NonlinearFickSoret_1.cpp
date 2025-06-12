@@ -140,9 +140,8 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &inputName, std::vector<doub
     AMP_INSIST( input_db->keyExists( "testNonlinearFickSoretBVPOperator" ), "key missing!" );
 
     // Create nonlinear FickSoret BVP operator and access volume nonlinear FickSoret operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "testNonlinearFickSoretBVPOperator", input_db, elementPhysicsModel );
+        mesh, "testNonlinearFickSoretBVPOperator", input_db );
     auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
     auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(

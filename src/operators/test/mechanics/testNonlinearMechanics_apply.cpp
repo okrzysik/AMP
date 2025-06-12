@@ -36,11 +36,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "testNonlinearMechanicsOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto testNonlinOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "testNonlinearMechanicsOperator", input_db, elementPhysicsModel ) );
+                mesh, "testNonlinearMechanicsOperator", input_db ) );
 
     auto dofMap = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );

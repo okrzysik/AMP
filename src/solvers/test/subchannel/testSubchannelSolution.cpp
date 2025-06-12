@@ -91,11 +91,10 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         input_db->getDatabase( "CladProperties" )->getVector<double>( "d" );
 
     // create nonlinear operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
     auto nonlinearOperator =
         std::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                subchannelMesh, "SubchannelTwoEqNonlinearOperator", input_db, elementModel ) );
+                subchannelMesh, "SubchannelTwoEqNonlinearOperator", input_db ) );
     // pass creation test
     ut->passes( exeName + ": creation" );
     std::cout.flush();

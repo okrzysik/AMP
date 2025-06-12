@@ -53,11 +53,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "FlowFrapconOperator" ),
                 "Key ''FlowFrapconOperator'' is missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
     auto flowDatabase = input_db->getDatabase( "FlowFrapconOperator" );
     auto flowOperator = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "FlowFrapconOperator", input_db, flowtransportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "FlowFrapconOperator", input_db ) );
 
     auto inputVariable  = flowOperator->getInputVariable();
     auto outputVariable = flowOperator->getOutputVariable();
@@ -70,8 +68,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tmpVec = AMP::LinearAlgebra::createSimpleVector<double>( 10, inputVariable );
 
     auto flowJacobian = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "FlowFrapconJacobian", input_db, flowtransportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "FlowFrapconJacobian", input_db ) );
 
     //    MANUFACTURE THE INPUT SOLUTION
     //     FROM PRESCRIBED FLOW SOLUTION

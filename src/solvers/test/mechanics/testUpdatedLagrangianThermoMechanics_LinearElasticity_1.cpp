@@ -50,11 +50,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
     auto nonlinearMechanicsBVPoperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+                mesh, "NonlinearMechanicsOperator", input_db ) );
 
     // Create the variables
     auto mechanicsNonlinearVolumeOperator =
@@ -110,7 +109,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
     auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+            mesh, "LinearMechanicsOperator", input_db ) );
 
     // We need to reset the linear operator before the solve since TrilinosML does
     // the factorization of the matrix during construction and so the matrix must

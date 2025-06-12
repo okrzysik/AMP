@@ -78,15 +78,13 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );
     AMP_INSIST( input_db->keyExists( "NonlinearOxygenOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalModel;
     auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "NonlinearThermalOperator", input_db, thermalModel ) );
+            mesh, "NonlinearThermalOperator", input_db ) );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenModel;
     auto nonlinearOxygenOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "NonlinearOxygenOperator", input_db, oxygenModel ) );
+            mesh, "NonlinearOxygenOperator", input_db ) );
 
     // create a column rhs operator object with the nonlinear thermal in it for use in the nonlinear
     // problem definition
@@ -96,11 +94,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     // create linear BVP operators
     auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearThermalOperator", input_db, thermalModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearThermalOperator", input_db ) );
     auto linearOxygenOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearOxygenOperator", input_db, oxygenModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearOxygenOperator", input_db ) );
     // create a column rhs operator object with the linear thermal in it for use in the linear
     // problem definition
     auto columnLinearRhsOperator = std::make_shared<AMP::Operator::ColumnOperator>();

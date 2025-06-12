@@ -51,10 +51,9 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    auto fsOp_db           = input_db->getDatabase( "NonlinearFickSoretOp" );
-    auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "NonlinearFickSoretOp", input_db, elementModel );
+    auto fsOp_db = input_db->getDatabase( "NonlinearFickSoretOp" );
+    auto nonlinearOperator =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "NonlinearFickSoretOp", input_db );
     auto fsOp =
         std::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>( nonlinearOperator );
     auto fickOp  = fsOp->getFickOperator();

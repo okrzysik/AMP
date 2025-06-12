@@ -52,10 +52,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
     auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
+            mesh, "testNonlinearThermalOperator", input_db ) );
 
     // initialize the input variable
     auto thermalVolumeOperator =
@@ -80,7 +79,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
     auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testLinearThermalOperator", input_db, thermalTransportModel ) );
+            mesh, "testLinearThermalOperator", input_db ) );
 
     // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
@@ -105,10 +104,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Integrate Nuclear Rhs over Desnity * GeomType::Cell
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "VolumeIntegralOperator", input_db, stransportModel ) );
+            mesh, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();

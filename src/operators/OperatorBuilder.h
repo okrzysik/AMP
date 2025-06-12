@@ -45,6 +45,11 @@ createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                 const std::string &operatorName,
                 std::shared_ptr<AMP::Database> input_db,
                 std::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel );
+std::shared_ptr<Operator>
+createOperator2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                 const std::string &operatorName,
+                 std::shared_ptr<AMP::Database> input_db,
+                 std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
 /**
  * \brief Create operator from database

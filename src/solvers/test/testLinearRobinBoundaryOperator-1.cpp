@@ -92,10 +92,8 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     //------------------------------------------
     //   CREATE THE THERMAL BVP OPERATOR  //
     //------------------------------------------
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "DiffusionBVPOperator", input_db, transportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "DiffusionBVPOperator", input_db ) );
 
     auto TemperatureInKelvinVec = AMP::LinearAlgebra::createVector(
         nodalDofMap, diffusionOperator->getOutputVariable(), split );
@@ -176,10 +174,9 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "VolumeIntegralOperator", input_db, stransportModel ) );
+            mesh, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto SourceVar = sourceOperator->getOutputVariable();
