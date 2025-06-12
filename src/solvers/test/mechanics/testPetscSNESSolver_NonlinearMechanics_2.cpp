@@ -55,8 +55,7 @@ static void myTest( AMP::UnitTest *ut )
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinBvpOperator->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-        nonlinearMechanicsVolumeOperator->getMaterialModel();
+    auto elementPhysicsModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     auto temperatureVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto displacementVariable = nonlinBvpOperator->getOutputVariable();
@@ -97,16 +96,13 @@ static void myTest( AMP::UnitTest *ut )
             mesh, "linearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, physicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "Load_Boundary", input_db ) );
     dirichletLoadVecOp->setVariable( displacementVariable );
 
     // For Initial-Guess
     auto dirichletDispInVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Displacement_Boundary", input_db, physicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "Displacement_Boundary", input_db ) );
     dirichletDispInVecOp->setVariable( displacementVariable );
 
     auto dispDofMap = AMP::Discretization::simpleDOFManager::create(

@@ -54,15 +54,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
     auto nonlinearMechanicsDatabase = input_db->getDatabase( "NonlinearMechanicsOperator" );
     auto dirichletVectorCorrectionDatabase =
         nonlinearMechanicsDatabase->getDatabase( "BoundaryOperator" );
     auto nonlinearMechanicsBVPoperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                mesh, "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
-
+                mesh, "NonlinearMechanicsOperator", input_db ) );
+    auto nonlinearMechanicsVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+            nonlinearMechanicsBVPoperator->getVolumeOperator() );
+    auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     // Create a Linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );

@@ -200,19 +200,19 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     // now construct the linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "testLinearMechanicsOperator" ), "key missing!" );
     auto linearMechanicsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator2(
+        AMP::Operator::OperatorBuilder::createOperator(
             mesh, "testLinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
     auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator2(
+        AMP::Operator::OperatorBuilder::createOperator(
             mesh, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
     // now construct the linear BVP operator for oxygen
     AMP_INSIST( input_db->keyExists( "testLinearOxygenOperator" ), "key missing!" );
     auto linearOxygenOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator2(
+        AMP::Operator::OperatorBuilder::createOperator(
             mesh, "testLinearOxygenOperator", input_db, oxygenTransportModel ) );
 
     // create a column operator object for linear thermomechanics

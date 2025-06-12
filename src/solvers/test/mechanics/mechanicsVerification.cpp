@@ -216,11 +216,15 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     AMP::pout << "Scaling mesh by a factor " << scaleMeshFactor << "\n";
 
     // Create the linear mechanics operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "MechanicsBVPOperator", inputDatabase, elementPhysicsModel ) );
+            mesh, "MechanicsBVPOperator", inputDatabase ) );
     AMP_ASSERT( bvpOperator );
+    auto mechanicsVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
+            bvpOperator->getVolumeOperator() );
+    auto elementPhysicsModel = mechanicsVolumeOperator->getMaterialModel();
+
     AMP_ASSERT( elementPhysicsModel );
     // auto var = bvpOperator->getOutputVariable();
 

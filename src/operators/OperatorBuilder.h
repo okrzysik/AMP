@@ -38,18 +38,12 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
  * \param operatorName          Name of the operator to create
  * \param input_db              Input database
  * \param elementPhysicsModel   Element physics model to use
- * \param localModelFactory     Local model factor to use
  */
 std::shared_ptr<Operator>
 createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                 const std::string &operatorName,
                 std::shared_ptr<AMP::Database> input_db,
-                std::shared_ptr<AMP::Operator::ElementPhysicsModel> &elementPhysicsModel );
-std::shared_ptr<Operator>
-createOperator2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                 const std::string &operatorName,
-                 std::shared_ptr<AMP::Database> input_db,
-                 std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+                std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
 
 /**
  * \brief Create operator from database
@@ -66,14 +60,11 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh1
 
 /**
  * \brief Create operator from database
- * \details  This function will create a new operator given mesh, input database,
- *     elementPhysicsModel, and localModelFactory
+ * \details  This function will create a new operator given mesh, and input database
  * \param meshAdapter           Mesh for the operator
  * \param boundaryOperatorName  Name of the operator to create
  * \param input_db              Input database
  * \param volumeOperator        GeomType::Cell operator to use
- * \param elementPhysicsModel   Element physics model to use
- * \param localModelFactory     Local model factor to use
  */
 std::shared_ptr<BoundaryOperator>
 createBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,

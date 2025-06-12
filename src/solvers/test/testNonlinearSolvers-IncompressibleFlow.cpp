@@ -49,10 +49,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
 
     // create a nonlinear BVP operator for nonlinear flow
     AMP_INSIST( input_db->keyExists( "NonlinearFlowOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowTransportModel;
     auto nonlinearFlowOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "NonlinearFlowOperator", input_db, flowTransportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "NonlinearFlowOperator", input_db ) );
 
     // initialize the input variable
     auto flowVolumeOperator = std::dynamic_pointer_cast<AMP::Operator::NavierStokesLSWFFEOperator>(
@@ -89,6 +87,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &inputName )
 
 #if 0
     // now construct the linear BVP operator for flow
+    auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::NonlinearFlowOperator>(
+        nlinBVPOp->getVolumeOperator() );
+    auto flowTransportModel = nlinOp->getTransportModel();
+
     AMP_INSIST( input_db->keyExists( "LinearFlowOperator" ), "key missing!" );
     auto linearFlowOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(

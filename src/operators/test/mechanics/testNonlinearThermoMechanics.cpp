@@ -51,8 +51,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsOperator->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
-        nonlinearMechanicsVolumeOperator->getMaterialModel();
+    auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
@@ -64,8 +63,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearThermalVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel =
-        nonlinearThermalVolumeOperator->getTransportModel();
+    auto thermalTransportModel = nonlinearThermalVolumeOperator->getTransportModel();
 
     // create a column operator object for nonlinear thermomechanics
     auto nonlinearThermoMechanicsOperator = std::make_shared<AMP::Operator::ColumnOperator>();

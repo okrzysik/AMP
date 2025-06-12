@@ -56,14 +56,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 "Key ''NumberOfLoadingSteps'' is missing!" );
     int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto nonlinBvpOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "nonlinearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
+            mesh, "nonlinearMechanicsBVPOperator", input_db ) );
+    auto nonlinearMechanicsVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+            nonlinBvpOperator->getVolumeOperator() );
+    auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     auto linBvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "linearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
+            mesh, "linearMechanicsBVPOperator", input_db, mechanicsMaterialModel ) );
 
     auto multivariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
         nonlinBvpOperator->getVolumeOperator()->getInputVariable() );
@@ -72,16 +75,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto residualVariable = nonlinBvpOperator->getOutputVariable();
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> physicsModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, physicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "Load_Boundary", input_db ) );
     dirichletLoadVecOp->setVariable( residualVariable );
 
     // Pressure RHS
     auto pressureLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::PressureBoundaryOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Pressure_Boundary", input_db, physicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "Pressure_Boundary", input_db ) );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     auto mechNlSolVec    = AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );

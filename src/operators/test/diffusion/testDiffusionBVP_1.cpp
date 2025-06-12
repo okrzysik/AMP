@@ -58,7 +58,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto elementPhysicsModel = nlinOp->getTransportModel();
 
     // use the linear BVP operator to create a thermal linear operator with bc's
-    auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator2(
+    auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
         mesh, "ThermalLinearBVPOperator", input_db, elementPhysicsModel );
     auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
     ut->passes( exeName + ": creation" );
