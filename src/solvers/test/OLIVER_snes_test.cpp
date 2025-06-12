@@ -28,12 +28,8 @@ class QuadraticOper : public AMP::Operator::Operator {
 
 public: 
 
-    std::shared_ptr<AMP::Discretization::DOFManager> d_dof;
-
     // Call base class constructor
-    QuadraticOper(std::shared_ptr<const AMP::Operator::OperatorParameters> params) : AMP::Operator::Operator( params ) {
-        d_dof = nullptr;
-    };
+    QuadraticOper(std::shared_ptr<const AMP::Operator::OperatorParameters> params) : AMP::Operator::Operator( params ) { };
 
     // Implementation of pure virtual function
     std::string type() const { return "QuadraticOper"; };
@@ -43,19 +39,9 @@ public:
     void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> x_vec, std::shared_ptr<AMP::LinearAlgebra::Vector> Ax_vec) 
     {
         std::cout << "\t\tQuadraticOper: entering apply..." << std::endl;
-
-        auto dof  = this->d_dof;
-        AMP::Mesh::MeshIterator meshIt = this->getMesh()->getIterator(AMP::Mesh::GeomType::Vertex); 
-
-        for ( auto &node : meshIt ) {
-            std::vector<size_t> x_dof;
-            dof->getDOFs( node.globalID(), x_dof );
-            double x = x_vec->getValueByGlobalID<double>( x_dof[0] );
-            double Ax = x * x - 1.0;
-            Ax_vec->setValueByGlobalID<double>( x_dof[0], Ax );        
-        }
-    
-         std::cout << "\t\tQuadraticOper: exiting apply..." << std::endl;
+        Ax_vec->multiply(*x_vec, *x_vec);
+        Ax_vec->addScalar(*Ax_vec, -1.0);
+        std::cout << "\t\tQuadraticOper: exiting apply..." << std::endl;
     }
 };
 
@@ -113,7 +99,6 @@ void driver(AMP::AMP_MPI comm, int n ) {
     auto Op_params = std::make_shared<AMP::Operator::OperatorParameters>( Op_db );
     Op_params->d_Mesh = mesh;
     auto myOper = std::make_shared<QuadraticOper>( Op_params ); 
-    myOper->d_dof = dof;
 
     /****************************************************************
     * Set up relevant vectors over the mesh                         *
@@ -176,7 +161,7 @@ void driver(AMP::AMP_MPI comm, int n ) {
     rhs_vec1->setToScalar(-1.0);
     AMP::LinearAlgebra::Vector::shared_ptr rhs_vecNULL;
 
-    // Solve A(x) = 0 --> x^2 - 1 = 0. For which the solution is x = +1 or x = -1 (we probably converge to the positive oen if we initialize from a positive number)
+    // Solve A(x) = 0 --> x^2 - 1 = 0. For which the solution is x = +1 or x = -1 (we probably converge to the positive one if we initialize from a positive number)
     // Newton converges quadratically here...
     AMP::pout << "----------------------------------------" << std::endl;
     AMP::pout << "Starting Nonlinear Solve with RHS=0.0..." << std::endl;
