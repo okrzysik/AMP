@@ -1133,10 +1133,8 @@ std::shared_ptr<Operator> createNonlinearBVPOperator( std::shared_ptr<AMP::Mesh:
     AMP_ERROR( "No libmesh" );
     return nullptr;
 }
-std::shared_ptr<BoundaryOperator>
-createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh>,
-                                 std::shared_ptr<AMP::Database>,
-                                 std::shared_ptr<ElementPhysicsModel> & )
+std::shared_ptr<BoundaryOperator> createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                                   std::shared_ptr<AMP::Database> )
 {
     AMP_ERROR( "No libmesh" );
     return nullptr;

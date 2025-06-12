@@ -47,12 +47,12 @@ static void myTest( AMP::UnitTest *ut )
         bool distortElement = input_db->getScalar<bool>( "DISTORT_ELEMENT" );
 
         libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
-        auto mesh = std::make_shared<libMesh::Mesh>( comm, 3 );
+        auto libmesh = std::make_shared<libMesh::Mesh>( comm, 3 );
         libMesh::MeshTools::Generation::build_cube(
-            ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
+            ( *( libmesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
 
         if ( distortElement ) {
-            libMesh::Elem *elemPtr = mesh->elem_ptr( 0 );
+            libMesh::Elem *elemPtr = libmesh->elem_ptr( 0 );
 
             ( elemPtr->point( 0 ) )( 0 ) -= 0.1;
             ( elemPtr->point( 0 ) )( 1 ) -= 0.2;
@@ -67,7 +67,7 @@ static void myTest( AMP::UnitTest *ut )
             ( elemPtr->point( 6 ) )( 2 ) += 0.1;
         }
 
-        auto mesh = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "TestMesh" );
+        auto mesh = std::make_shared<AMP::Mesh::libmeshMesh>( libmesh, "TestMesh" );
 
         AMP_INSIST( input_db->keyExists( "Isotropic_Model" ),
                     "Key ''Isotropic_Model'' is missing!" );

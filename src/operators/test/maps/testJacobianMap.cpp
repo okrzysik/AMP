@@ -37,9 +37,9 @@ ENABLE_WARNINGS
 static void calculateGrad( AMP::UnitTest *ut )
 {
 
-    auto mesh =
+    auto libmesh =
         AMP::Mesh::MeshWriters::readTestMeshLibMesh( "distortedElementMesh", AMP_COMM_WORLD );
-    auto mesh = mesh->getlibMesh();
+    auto mesh = libmesh->getlibMesh();
 
     libMesh::EquationSystems equation_systems( *mesh );
 
