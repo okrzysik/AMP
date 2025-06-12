@@ -197,6 +197,10 @@ ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 1 GPU )
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 2 GPU )
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 4 GPU )
 
+IF ( USE_PETSC )
+    ADD_AMP_TEST( OLIVER_snes_test )
+ENDIF()
+
 IF ( USE_LIBMESH )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 1 GPU )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 2 GPU )
