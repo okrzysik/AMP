@@ -4,20 +4,14 @@
 #include "AMP/operators/CoupledOperator.h"
 #include "AMP/operators/IdentityOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/Operator.h"
+#include "AMP/operators/ParameterFactory.h"
 #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
-
+#include "AMP/operators/boundary/MassMatrixCorrection.h"
 #ifdef AMP_USE_LIBMESH
-    #include "AMP/discretization/structuredFaceDOFManager.h"
-    #include "AMP/operators/ElementOperationFactory.h"
-    #include "AMP/operators/NeutronicsRhs.h"
-    #include "AMP/operators/ParameterFactory.h"
-    #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
-    #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
-    #include "AMP/operators/boundary/DirichletVectorCorrection.h"
-    #include "AMP/operators/boundary/MassMatrixCorrection.h"
     #include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
     #include "AMP/operators/boundary/libmesh/PressureBoundaryOperator.h"
     #include "AMP/operators/boundary/libmesh/RobinMatrixCorrection.h"
@@ -45,11 +39,20 @@
 namespace AMP::Operator {
 
 
-// Macro to register an operator
+// Macros to register an operator
 #define REGISTER_OPERATOR( OP, NAME )                                      \
     d_factories[NAME] = []( std::shared_ptr<OperatorParameters> params ) { \
         return std::make_unique<OP>( params );                             \
     }
+#ifdef AMP_USE_LIBMESH
+    #define REGISTER_OPERATOR_LIBMESH( OP, NAME ) REGISTER_OPERATOR( OP, NAME )
+#else
+    #define REGISTER_OPERATOR_LIBMESH( OP, NAME )                       \
+        d_factories[NAME] = []( std::shared_ptr<OperatorParameters> ) { \
+            AMP_ERROR( std::string( NAME ) + " requires libMesh" );     \
+            return nullptr;                                             \
+        }
+#endif
 
 
 // Create the operator
@@ -79,17 +82,15 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
     REGISTER_OPERATOR( ColumnBoundaryOperator, "ColumnBoundaryOperator" );
     REGISTER_OPERATOR( DirichletMatrixCorrection, "DirichletMatrixCorrection" );
     REGISTER_OPERATOR( DirichletVectorCorrection, "DirichletVectorCorrection" );
-#ifdef AMP_USE_LIBMESH
-    REGISTER_OPERATOR( MapSurface, "MapSurface" );
-    REGISTER_OPERATOR( DiffusionLinearFEOperator, "DiffusionLinearFEOperator" );
-    REGISTER_OPERATOR( MechanicsLinearFEOperator, "MechanicsLinearFEOperator" );
-    REGISTER_OPERATOR( RobinMatrixCorrection, "RobinMatrixCorrection" );
-    REGISTER_OPERATOR( RobinVectorCorrection, "RobinVectorCorrection" );
-    REGISTER_OPERATOR( FlowFrapconJacobian, "FlowFrapconJacobian" );
-    REGISTER_OPERATOR( FlowFrapconOperator, "FlowFrapconOperator" );
     REGISTER_OPERATOR( NeutronicsRhs, "NeutronicsRhsOperator" );
-    REGISTER_OPERATOR( SubchannelTwoEqLinearOperator, "SubchannelTwoEqLinearOperator" );
-    REGISTER_OPERATOR( SubchannelFourEqLinearOperator, "SubchannelFourEqLinearOperator" );
-    REGISTER_OPERATOR( PressureBoundaryOperator, "PressureBoundaryOperator" );
-#endif
+    REGISTER_OPERATOR_LIBMESH( MapSurface, "MapSurface" );
+    REGISTER_OPERATOR_LIBMESH( DiffusionLinearFEOperator, "DiffusionLinearFEOperator" );
+    REGISTER_OPERATOR_LIBMESH( MechanicsLinearFEOperator, "MechanicsLinearFEOperator" );
+    REGISTER_OPERATOR_LIBMESH( RobinMatrixCorrection, "RobinMatrixCorrection" );
+    REGISTER_OPERATOR_LIBMESH( RobinVectorCorrection, "RobinVectorCorrection" );
+    REGISTER_OPERATOR_LIBMESH( FlowFrapconJacobian, "FlowFrapconJacobian" );
+    REGISTER_OPERATOR_LIBMESH( FlowFrapconOperator, "FlowFrapconOperator" );
+    REGISTER_OPERATOR_LIBMESH( SubchannelTwoEqLinearOperator, "SubchannelTwoEqLinearOperator" );
+    REGISTER_OPERATOR_LIBMESH( SubchannelFourEqLinearOperator, "SubchannelFourEqLinearOperator" );
+    REGISTER_OPERATOR_LIBMESH( PressureBoundaryOperator, "PressureBoundaryOperator" );
 }
