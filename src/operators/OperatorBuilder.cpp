@@ -121,6 +121,11 @@ static void setNestedOperatorMemoryLocations( std::shared_ptr<AMP::Database> inp
     }
 }
 
+
+/********************************************************
+ * Create specific operators implementation              *
+ ********************************************************/
+#ifdef AMP_USE_LIBMESH
 static std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::Database> db,
                                                     const std::string &key )
 {
@@ -134,12 +139,6 @@ static std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::D
     }
     return vars;
 }
-
-
-/********************************************************
- * Create specific operators implementation              *
- ********************************************************/
-#ifdef AMP_USE_LIBMESH
 static std::shared_ptr<SubchannelPhysicsModel>
 createSubchannelPhysicsModel( std::shared_ptr<AMP::Database> input_db,
                               std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
