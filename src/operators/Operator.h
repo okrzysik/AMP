@@ -97,10 +97,16 @@ public:
     virtual void setDebugPrintInfoLevel( int level ) { d_iDebugPrintInfoLevel = level; }
 
     //! Return the output variable
-    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() { return nullptr; }
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const
+    {
+        return nullptr;
+    }
 
     //! Return the input variable
-    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() { return nullptr; }
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() const
+    {
+        return nullptr;
+    }
 
     //! Subset output vector
     virtual std::shared_ptr<AMP::LinearAlgebra::Vector>

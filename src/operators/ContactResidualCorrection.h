@@ -46,7 +46,7 @@ public:
 
     void setDofs( const std::vector<std::vector<unsigned int>> &vec ) { d_dofs = vec; }
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override
     {
         std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
             new AMP::LinearAlgebra::MultiVariable( "ContactVariable" ) );
@@ -55,7 +55,7 @@ public:
         return retVariable;
     }
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() const override
     {
         std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
             new AMP::LinearAlgebra::MultiVariable( "ContactVariable" ) );

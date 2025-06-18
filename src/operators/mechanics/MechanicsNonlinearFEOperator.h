@@ -93,7 +93,7 @@ public:
       it
       returns the multivariable for the entire vector.
       */
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() const override
     {
         return d_inpVariables;
     }
@@ -101,7 +101,7 @@ public:
     /**
       @return The variable for the output vector
       */
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override
     {
         return d_outVariable;
     }

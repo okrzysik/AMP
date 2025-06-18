@@ -66,7 +66,7 @@ public:
 
     void setOutputVariableName( const std::string &name, int varId = -1 );
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override;
 
     void setTimeStep( int tStep ) { d_timeStep = tStep; }
     void setTimeInSeconds( double seconds );

@@ -60,9 +60,9 @@ public:
     std::shared_ptr<AMP::LinearAlgebra::Variable> createOutputVariable( const std::string &name,
                                                                         int varId = -1 );
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() const override;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override;
 
     void setInputVariableName( const std::string &name, int varId = -1 );
 

@@ -37,13 +37,13 @@ FlowFrapconJacobian::createOutputVariable( const std::string &name, int )
 }
 
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> FlowFrapconJacobian::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> FlowFrapconJacobian::getInputVariable() const
 {
     return d_inpVariable;
 }
 
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> FlowFrapconJacobian::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> FlowFrapconJacobian::getOutputVariable() const
 {
     return d_outVariable;
 }

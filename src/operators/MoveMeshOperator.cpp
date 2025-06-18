@@ -15,7 +15,10 @@ void MoveMeshOperator::setVariable( std::shared_ptr<AMP::LinearAlgebra::Variable
     d_var = var;
 }
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> MoveMeshOperator::getInputVariable() { return d_var; }
+std::shared_ptr<AMP::LinearAlgebra::Variable> MoveMeshOperator::getInputVariable() const
+{
+    return d_var;
+}
 
 void MoveMeshOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                               AMP::LinearAlgebra::Vector::shared_ptr )
