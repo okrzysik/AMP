@@ -272,7 +272,7 @@ void AMP_MPI::reset()
     if ( count == 0 ) {
         // We are holding that last reference to the MPI_Comm object, we need to free it
         if ( d_manage ) {
-#if defined( AMP_USE_MPI ) || defined( USE_PETSC )
+#if defined( AMP_USE_MPI ) || defined( AMP_USE_PETSC )
             MPI_Comm_set_errhandler( d_comm, MPI_ERRORS_ARE_FATAL );
             int err = MPI_Comm_free( (MPI_Comm *) &d_comm );
             if ( err != MPI_SUCCESS )
@@ -769,9 +769,11 @@ AMP_MPI AMP_MPI::dup( bool manage ) const
         return AMP_MPI( commNull );
     PROFILE( "dup", profile_level );
     AMP_MPI::Comm new_MPI_comm = d_comm;
-#if defined( AMP_USE_MPI ) || defined( USE_PETSC )
+#if defined( AMP_USE_MPI ) || defined( AMP_USE_PETSC )
     // USE MPI to duplicate the communicator
-    MPI_Comm_dup( d_comm, &new_MPI_comm );
+    MPI_Comm tmp;
+    MPI_Comm_dup( d_comm, &tmp );
+    new_MPI_comm = tmp;
 #else
     static AMP_MPI::Comm uniqueGlobalComm = 11;
     new_MPI_comm = uniqueGlobalComm;
