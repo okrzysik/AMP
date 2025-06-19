@@ -97,6 +97,7 @@ private:
 
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
+    void initialize( std::shared_ptr<AMP::LinearAlgebra::Vector> solution_vector );
 
     std::shared_ptr<AMP::Operator::Operator>
     createPreconditionerOperator( std::shared_ptr<AMP::Operator::Operator> op );
