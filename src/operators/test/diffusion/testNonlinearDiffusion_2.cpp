@@ -213,7 +213,8 @@ static void nonlinearTest( AMP::UnitTest *ut,
         std::string filename = "values-" + exeName;
         std::ofstream file( filename.c_str() );
         if ( proc == 0 ) {
-            file << "values={" << "\n";
+            file << "values={"
+                 << "\n";
         }
         auto node = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
 
