@@ -473,7 +473,13 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 
     d_bPrintNonlinearResiduals = db->getWithDefault<bool>( "print_nonlinear_residuals", false );
     d_bPrintLinearResiduals    = db->getWithDefault<bool>( "print_linear_residuals", false );
-    d_bDestroyCachedVecs       = db->getWithDefault<bool>( "destroy_cached_vecs", false );
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        d_bPrintNonlinearResiduals = true;
+    }
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        d_bPrintLinearResiduals = true;
+    }
+    d_bDestroyCachedVecs = db->getWithDefault<bool>( "destroy_cached_vecs", false );
 }
 
 std::shared_ptr<SolverStrategy>
@@ -516,8 +522,7 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
     auto *pSNESSolver = reinterpret_cast<PetscSNESSolver *>( ctx );
     std::shared_ptr<AMP::Operator::Operator> op( pSNESSolver->getOperator() );
 
-    op->residual( sp_f, sp_x, sp_r );
-    sp_r->scale( -1.0 );
+    op->apply( sp_x, sp_r );
 
     return ( ierr );
 }
@@ -531,11 +536,16 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 {
     PROFILE( "solve" );
 
+    if ( d_bUseZeroInitialGuess ) {
+        u->zero();
+    }
+
     if ( d_iDebugPrintInfoLevel > 2 )
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve before view " << u->L2Norm()
                   << std::endl;
+    auto v = f ? f : std::const_pointer_cast<const AMP::LinearAlgebra::Vector>( u );
+    preApply( v );
 
-    preApply( f );
 
     // Get petsc views of the vectors
     auto spRhs = AMP::LinearAlgebra::PetscVector::constView( f );
@@ -547,9 +557,12 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
 
-    if ( d_iDebugPrintInfoLevel > 2 )
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        auto fNorm = f ? f->L2Norm() : 0.0;
+        AMP::pout << "L2 Norm of f in PetscSNESSolver::solve after view " << fNorm << std::endl;
         AMP::pout << "L2 Norm of u in PetscSNESSolver::solve after view " << u->L2Norm()
                   << std::endl;
+    }
 
     Vec x = spSol->getVec();
     Vec b = spRhs ? spRhs->getVec() : nullptr;
@@ -589,6 +602,15 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     spRhs.reset();
     spSol.reset();
+
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+
+        PetscReal petscNorm;
+        VecNorm( x, NORM_2, &petscNorm );
+        AMP::pout << "Petsc L2 Norm of u after solve " << petscNorm << std::endl;
+        AMP::pout << "AMP L2 Norm of u after solve " << u->L2Norm() << std::endl;
+        AMP::pout << "Vector values" << u << std::endl;
+    }
 
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }

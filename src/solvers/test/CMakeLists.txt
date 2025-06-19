@@ -187,6 +187,8 @@ COPY_TEST_FILE( input_testLinearSolvers-PL-CylMesh-CG )
 
 COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermalOxygenDiffusion-2 )
 
+ADD_AMP_TEST( testSolversWithRhsOptions )
+
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 1 )
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 2 )
 ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 4 )
