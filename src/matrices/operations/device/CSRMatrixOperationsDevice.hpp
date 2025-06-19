@@ -77,14 +77,16 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::mult(
         // of the colMap from inside offdMatrix
         std::vector<size_t> colMap;
         offdMatrix->getColumnMap( colMap );
-        std::vector<scalar_t, scalarAllocator_t> ghosts( colMap.size() );
-        in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts.data() );
+        const auto N = colMap.size();
+        scalarAllocator_t alloc;
+        scalar_t *ghosts = alloc.allocate( N );
+        in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts );
 
-        AMP_DEBUG_ASSERT( static_cast<typename Policy::lidx_t>( ghosts.size() ) ==
+        AMP_DEBUG_ASSERT( static_cast<typename Policy::lidx_t>( N ) ==
                           offdMatrix->numUniqueColumns() );
 
-        CSRLocalMatrixOperationsDevice<Policy, Allocator>::mult(
-            ghosts.data(), offdMatrix, outDataBlock );
+        CSRLocalMatrixOperationsDevice<Policy, Allocator>::mult( ghosts, offdMatrix, outDataBlock );
+        alloc.deallocate( ghosts, N );
     }
 }
 
