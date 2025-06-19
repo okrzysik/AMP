@@ -57,13 +57,12 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
     auto mesh_db   = input_db->getDatabase( meshName.c_str() );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
     //--------------------------------------------------
 
     // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "FickNonlinearBVPOperator", input_db, nonlinearPhysicsModel );
+        mesh, "FickNonlinearBVPOperator", input_db );
     auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
     auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
@@ -73,9 +72,8 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
 
     // Get source mass operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
     auto sourceOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
+        mesh, "ManufacturedSourceOperator", input_db );
     auto sourceOp =
         std::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
 
@@ -101,7 +99,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create solution, rhs, and residual vectors
     auto solVec    = AMP::LinearAlgebra::createVector( nodalDofMap, solVar );
@@ -124,7 +122,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
         size_t len = geom.size();
         isCylindrical = (pos < len);
     }*/
-    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
+    auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     auto mfgName  = mfgSolution->get_name();
     if ( mfgName.find( "Cylindrical" ) < mfgName.size() ) {
         for ( ; iterator != iterator.end(); ++iterator ) {

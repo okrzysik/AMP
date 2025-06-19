@@ -14,12 +14,14 @@ namespace AMP::Operator {
 
 
 DirichletVectorCorrection::DirichletVectorCorrection(
-    std::shared_ptr<const OperatorParameters> inParams )
-    : BoundaryOperator( inParams )
+    std::shared_ptr<const OperatorParameters> params )
+    : BoundaryOperator( params )
 {
-    auto params = std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( inParams );
+
     AMP_ASSERT( params );
-    d_variable                   = params->d_variable;
+    auto myparams = std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( params );
+    if ( myparams )
+        d_variable = myparams->d_variable;
     d_isAttachedToVolumeOperator = false;
     d_setResidual                = false;
     d_valuesType                 = 0;
@@ -27,11 +29,10 @@ DirichletVectorCorrection::DirichletVectorCorrection(
     reset( params );
 }
 
-void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters> tmpParams )
+void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    AMP_ASSERT( tmpParams );
-    d_memory_location = tmpParams->d_memory_location;
-    auto params = std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( tmpParams );
+    AMP_ASSERT( params );
+    d_memory_location = params->d_memory_location;
 
     AMP_INSIST( params, "NULL parameters" );
     AMP_INSIST( params->d_db, "NULL database" );

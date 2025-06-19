@@ -75,8 +75,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
-        nonlinearMechanicsVolumeOperator->getMaterialModel();
+    auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     // Create a Linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
@@ -96,10 +95,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto burnVar = multivariable->getVariable( AMP::Operator::Mechanics::BURNUP );
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "Load_Boundary", input_db, dummyModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "Load_Boundary", input_db ) );
     dirichletLoadVecOp->setVariable( dispVar );
 
     // Create the vectors

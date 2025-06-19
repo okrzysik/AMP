@@ -48,19 +48,17 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create diffusion operator (nonlinear operator)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "NonlinearDiffusionOp", input_db, elementModel );
+    auto nonlinearOperator =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "NonlinearDiffusionOp", input_db );
     auto diffOp =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
 
     // Get source mass operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
     auto sourceOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
+        mesh, "ManufacturedSourceOperator", input_db );
     auto sourceOp =
         std::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
     auto densityModel = sourceOp->getDensityModel();
@@ -80,7 +78,7 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create solution, rhs, and residual vectors
     auto solVec    = AMP::LinearAlgebra::createVector( nodalDofMap, solVar );
@@ -92,7 +90,7 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
     rhsVec->setToScalar( 0.0 );
 
     // Fill in manufactured solution
-    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x  = ( iterator->coord() )[0];
         double y  = ( iterator->coord() )[1];

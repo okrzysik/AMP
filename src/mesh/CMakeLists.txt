@@ -13,9 +13,6 @@ IF ( USE_TRILINOS_STKCLASSIC )
     # stk interface is broken due to extensive changes in Trilinos
     # ADD_PACKAGE_SUBDIRECTORY( STKmesh )
 ENDIF()
-IF ( USE_DENDRO )
-    ADD_PACKAGE_SUBDIRECTORY( dendro )
-ENDIF()
 INSTALL_AMP_TARGET( mesh )
 
 # Add the unit tests

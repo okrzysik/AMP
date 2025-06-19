@@ -41,20 +41,18 @@ void linearFickTest( AMP::UnitTest *ut, const std::string &inputFileName )
     AMP::logAllNodes( log_file );
 
     // create the Mesh
-    const auto meshAdapter = createMesh( input_db );
+    const auto mesh = createMesh( input_db );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // CREATE THE DIFFUSION OPERATOR
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "DiffusionBVPOperator", input_db ) );
 
     auto SolutionVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
@@ -105,7 +103,7 @@ void linearFickTest( AMP::UnitTest *ut, const std::string &inputFileName )
     }
 
     // CHECK THE SOLUTION
-    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
 
     // The analytical solution is:  T = a + b*z + c*z*z
     //   c = -power/2

@@ -63,24 +63,19 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         auto meshFile = input_db->getString( meshFileKey );
 
-        auto meshAdapter =
-            AMP::Mesh::MeshWriters::readBinaryTestMeshLibMesh( meshFile, AMP_COMM_WORLD );
+        auto mesh = AMP::Mesh::MeshWriters::readBinaryTestMeshLibMesh( meshFile, AMP_COMM_WORLD );
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "BVPOperator", input_db, elementPhysicsModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "BVPOperator", input_db ) );
 
         auto dispVar = bvpOperator->getOutputVariable();
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
         auto loadOperator = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "LoadOperator", input_db, dummyModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "LoadOperator", input_db ) );
         loadOperator->setVariable( dispVar );
 
         auto NodalVectorDOF = AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3 );
+            mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         auto solVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, dispVar );

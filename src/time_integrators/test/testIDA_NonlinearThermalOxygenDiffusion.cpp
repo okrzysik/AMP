@@ -61,7 +61,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode          = 1;
@@ -70,23 +70,21 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     int gaussPointGhostWidth = 1;
     bool split               = true;
     auto nodalDofMap         = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
+        mesh, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
 
     // create two nonlinear thermal BVP operators
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );
     AMP_INSIST( input_db->keyExists( "NonlinearOxygenOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalModel;
     auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "NonlinearThermalOperator", input_db, thermalModel ) );
+            mesh, "NonlinearThermalOperator", input_db ) );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> oxygenModel;
     auto nonlinearOxygenOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "NonlinearOxygenOperator", input_db, oxygenModel ) );
+            mesh, "NonlinearOxygenOperator", input_db ) );
 
     // create a column rhs operator object with the nonlinear thermal in it for use in the nonlinear
     // problem definition
@@ -96,11 +94,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     // create linear BVP operators
     auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearThermalOperator", input_db, thermalModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearThermalOperator", input_db ) );
     auto linearOxygenOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearOxygenOperator", input_db, oxygenModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearOxygenOperator", input_db ) );
     // create a column rhs operator object with the linear thermal in it for use in the linear
     // problem definition
     auto columnLinearRhsOperator = std::make_shared<AMP::Operator::ColumnOperator>();
@@ -108,14 +104,10 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     columnLinearRhsOperator->append( linearOxygenOperator );
 
     // create a mass linear BVP operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> massThermalModel;
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> massOxygenModel;
     auto massThermalOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "MassThermalOperator", input_db, massThermalModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "MassThermalOperator", input_db ) );
     auto massOxygenOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "MassOxygenOperator", input_db, massOxygenModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "MassOxygenOperator", input_db ) );
 
     // create a column mass operator object for use in the nonlinear and linear problem definition
     auto columnMassOperator = std::make_shared<AMP::Operator::ColumnOperator>();
@@ -134,7 +126,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
     timeOperatorParameters->d_pRhsOperator  = columnLinearRhsOperator;
     timeOperatorParameters->d_pMassOperator = columnMassOperator;
-    timeOperatorParameters->d_Mesh          = meshAdapter;
+    timeOperatorParameters->d_Mesh          = mesh;
     auto columnLinearTimeOperator =
         std::make_shared<AMP::TimeIntegrator::ColumnTimeOperator>( timeOperatorParameters );
 
@@ -164,10 +156,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     //  create neutronics source
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
-    auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    auto neutronicsParams =
-        std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
-    neutronicsParams->d_Mesh = meshAdapter;
+    auto neutronicsOp_db  = input_db->getDatabase( "NeutronicsOperator" );
+    auto neutronicsParams = std::make_shared<AMP::Operator::OperatorParameters>( neutronicsOp_db );
+    neutronicsParams->d_Mesh = mesh;
     auto neutronicsOperator  = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
     auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
@@ -179,10 +170,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     // Integrate Nuclear Rhs over Density * GeomType::Cell //
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "VolumeIntegralOperator", input_db, sourceTransportModel ) );
+            mesh, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto powerInWattsVar = sourceOperator->getOutputVariable();
@@ -194,11 +184,11 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     // set initial conditions, initialize created vectors
 
-    auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto node     = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto end_node = node.end();
 
-    AMP::LinearAlgebra::VS_Mesh vectorSelector1( meshAdapter );
-    AMP::LinearAlgebra::VS_Mesh vectorSelector2( meshAdapter );
+    AMP::LinearAlgebra::VS_Mesh vectorSelector1( mesh );
+    AMP::LinearAlgebra::VS_Mesh vectorSelector2( mesh );
 
     auto thermalIC = initialCondition->select( vectorSelector1 );
     auto oxygenIC  = initialCondition->select( vectorSelector2 );

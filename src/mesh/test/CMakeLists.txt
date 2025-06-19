@@ -73,13 +73,7 @@ ADD_AMP_TEST( test_BoxMeshIndex )
 # Write some old meshes
 ADD_AMP_TEST( writeMesh )
 
-
-# Add Dendro tests
+# Misc tests
 ADD_AMP_TEST( testTriangleProjection )
-IF( USE_DENDRO AND USE_PETSC )
-    ADD_AMP_TEST_1_2_4( testDendroInterpolation )
-    COPY_TEST_FILE( input_testDendroInterpolation  )
-    ADD_AMP_TEST( testDendroSearch PROCS 4 )
-ENDIF()
 ADD_AMP_TEST( testHex8Element )
 

@@ -58,12 +58,11 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "FickNonlinearBVPOperator", input_db, nonlinearPhysicsModel );
+        mesh, "FickNonlinearBVPOperator", input_db );
     auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
     auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
@@ -74,15 +73,13 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
         nlinBVPOp->getBoundaryOperator() );
 
     // Create linear diffusion BVP operator with bc's
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
-    auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "FickLinearBVPOperator", input_db, linearPhysicsModel );
+    auto linBVPOperator =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "FickLinearBVPOperator", input_db );
     auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
 
     // Get source mass operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourcePhysicsModel;
     auto sourceOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "ManufacturedSourceOperator", input_db, sourcePhysicsModel );
+        mesh, "ManufacturedSourceOperator", input_db );
     auto sourceOp =
         std::dynamic_pointer_cast<AMP::Operator::MassLinearFEOperator>( sourceOperator );
 
@@ -99,7 +96,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto workVar = std::make_shared<AMP::LinearAlgebra::Variable>( "work" );
 
     auto DOF = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     auto solVec  = AMP::LinearAlgebra::createVector( DOF, solVar );
     auto rhsVec  = AMP::LinearAlgebra::createVector( DOF, rhsVar );
@@ -113,7 +110,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Fill in manufactured solution in mesh interior
     const double Pi     = 3.1415926535898;
-    auto iterator       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto iterator       = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     std::string mfgName = mfgSolution->get_name();
     bool isCylindrical  = mfgName.find( "Cylindrical" ) < mfgName.size();
     for ( ; iterator != iterator.end(); ++iterator ) {
@@ -144,7 +141,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Fill in manufactured solution on mesh boundary
     for ( int j = 0; j <= 8; j++ ) {
-        auto beg_bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, j, 0 );
+        auto beg_bnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, j, 0 );
         auto end_bnd = beg_bnd.end();
         for ( auto iter = beg_bnd; iter != end_bnd; ++iter ) {
             auto coord = iterator->coord();
@@ -235,12 +232,12 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
                 file << "results={" << std::endl;
             }
 
-            iterator        = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+            iterator        = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
             size_t numNodes = 0;
             for ( ; iterator != iterator.end(); ++iterator )
                 numNodes++;
 
-            iterator     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+            iterator     = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
             size_t iNode = 0;
             double l2err = 0.;
             for ( ; iterator != iterator.end(); ++iterator ) {

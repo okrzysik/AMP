@@ -1,7 +1,6 @@
 #ifndef included_AMP_NeutronicsRhs
 #define included_AMP_NeutronicsRhs
 
-#include "AMP/operators/NeutronicsRhsParameters.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
@@ -27,7 +26,7 @@ public:
 
 private:
 public:
-    explicit NeutronicsRhs( std::shared_ptr<NeutronicsRhsParameters> parameters );
+    explicit NeutronicsRhs( std::shared_ptr<OperatorParameters> parameters );
 
     /**
      * Empty destructor for NeutronicsRhs

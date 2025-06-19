@@ -3,7 +3,6 @@
 #define included_AMP_FlowFrapconOperator
 
 #include "AMP/operators/Operator.h"
-#include "AMP/operators/subchannel/FlowFrapconOperatorParameters.h"
 
 
 namespace AMP::Operator {

@@ -33,14 +33,12 @@ void myTest( AMP::UnitTest *ut )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    auto mesh_file   = input_db->getString( "mesh_file" );
-    auto meshAdapter = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
+    auto mesh_file = input_db->getString( "mesh_file" );
+    auto mesh      = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearBVPOperator", input_db, elementPhysicsModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearBVPOperator", input_db ) );
 
     /* auto mat     = bvpOperator->getMatrix();
     size_t matSz = mat->numGlobalRows();
@@ -60,7 +58,7 @@ void myTest( AMP::UnitTest *ut )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto solVec = AMP::LinearAlgebra::createVector( nodalDofMap, bvpOperator->getOutputVariable() );

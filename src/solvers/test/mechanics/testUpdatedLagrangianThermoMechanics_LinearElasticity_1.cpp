@@ -42,7 +42,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
                 "Key ''NumberOfLoadingSteps'' is missing!" );
@@ -50,11 +50,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create a nonlinear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "NonlinearMechanicsOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel;
     auto nonlinearMechanicsBVPoperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "NonlinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+                mesh, "NonlinearMechanicsOperator", input_db ) );
 
     // Create the variables
     auto mechanicsNonlinearVolumeOperator =
@@ -66,17 +65,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tempVar = inputVars->getVariable( AMP::Operator::Mechanics::TEMPERATURE );
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "Load_Boundary", input_db ) );
     dirichletLoadVecOp->setVariable( dispVar );
 
     auto dispDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     auto tempDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -112,7 +109,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
     auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+            mesh, "LinearMechanicsOperator", input_db ) );
 
     // We need to reset the linear operator before the solve since TrilinosML does
     // the factorization of the matrix during construction and so the matrix must

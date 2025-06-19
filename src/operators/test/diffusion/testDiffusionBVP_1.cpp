@@ -45,22 +45,21 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create nonlinear Diffusion BVP operator and access volume nonlinear Diffusion operator
     auto nbvp_db         = input_db->getDatabase( "ThermalNonlinearBVPOperator" );
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "ThermalNonlinearBVPOperator", input_db );
+        mesh, "ThermalNonlinearBVPOperator", input_db );
     auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
     auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nlinBVPOp->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel =
-        nlinOp->getTransportModel();
+    auto elementPhysicsModel = nlinOp->getTransportModel();
 
     // use the linear BVP operator to create a thermal linear operator with bc's
     auto linBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "ThermalLinearBVPOperator", input_db, elementPhysicsModel );
+        mesh, "ThermalLinearBVPOperator", input_db, elementPhysicsModel );
     auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
     ut->passes( exeName + ": creation" );
     std::cout.flush();
@@ -75,7 +74,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create solution, rhs, and residual vectors
     auto bvpSolVec = AMP::LinearAlgebra::createVector( nodalDofMap, bvpSolVar );

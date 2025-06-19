@@ -49,20 +49,20 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto manager      = AMP::Mesh::MeshFactory::create( mgrParams );
-    auto meshAdapter1 = manager->Subset( "pellet" );
-    auto meshAdapter2 = manager->Subset( "clad" );
+    auto manager = AMP::Mesh::MeshFactory::create( mgrParams );
+    auto mesh1   = manager->Subset( "pellet" );
+    auto mesh2   = manager->Subset( "clad" );
 
     // Create a DOF manager for a nodal vector
     using AMP::Discretization::simpleDOFManager;
     auto Vertex            = AMP::Mesh::GeomType::Vertex;
     auto Cell              = AMP::Mesh::GeomType::Cell;
     auto nodalDofMap       = simpleDOFManager::create( manager, Vertex, 1, 1 );
-    auto nodalDofMap1      = simpleDOFManager::create( meshAdapter1, Vertex, 1, 1 );
-    auto nodalDofMap2      = simpleDOFManager::create( meshAdapter2, Vertex, 1, 1 );
-    auto gaussPointDofMap1 = simpleDOFManager::create( meshAdapter1, Cell, 1, 8 );
-    AMP::LinearAlgebra::VS_Mesh vectorSelector1( meshAdapter1 );
-    AMP::LinearAlgebra::VS_Mesh vectorSelector2( meshAdapter2 );
+    auto nodalDofMap1      = simpleDOFManager::create( mesh1, Vertex, 1, 1 );
+    auto nodalDofMap2      = simpleDOFManager::create( mesh2, Vertex, 1, 1 );
+    auto gaussPointDofMap1 = simpleDOFManager::create( mesh1, Cell, 1, 8 );
+    AMP::LinearAlgebra::VS_Mesh vectorSelector1( mesh1 );
+    AMP::LinearAlgebra::VS_Mesh vectorSelector2( mesh2 );
 
     auto TemperatureVar = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
 
@@ -74,11 +74,10 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     //   CREATE THE NONLINEAR THERMAL OPERATOR 1 ----
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator1" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel1;
     auto nonlinearThermalDatabase1 = input_db->getDatabase( "NonlinearThermalOperator1" );
     auto nonlinearThermalOperator1 = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter1, "NonlinearThermalOperator1", input_db, thermalTransportModel1 ) );
+            mesh1, "NonlinearThermalOperator1", input_db ) );
 
     // initialize the input variable
     auto thermalVolumeOperator1 =
@@ -93,18 +92,16 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     auto ResidualVec1      = AMP::LinearAlgebra::createVector( nodalDofMap1, outputVariable1 );
 
     //   CREATE THE LINEAR THERMAL OPERATOR 1
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel1;
     auto linearThermalOperator1 = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter1, "LinearThermalOperator1", input_db, transportModel1 ) );
+            mesh1, "LinearThermalOperator1", input_db ) );
 
     //  CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
-    auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
-    auto neutronicsParams =
-        std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
-    neutronicsParams->d_Mesh = meshAdapter1;
+    auto neutronicsOp_db  = input_db->getDatabase( "NeutronicsOperator" );
+    auto neutronicsParams = std::make_shared<AMP::Operator::OperatorParameters>( neutronicsOp_db );
+    neutronicsParams->d_Mesh = mesh1;
     auto neutronicsOperator  = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
     auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
@@ -115,10 +112,9 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     //  Integrate Nuclear Rhs over Desnity * GeomType::Cell
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter1, "VolumeIntegralOperator", input_db, stransportModel ) );
+            mesh1, "VolumeIntegralOperator", input_db ) );
 
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();
@@ -170,11 +166,10 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "LinearThermalOperator2" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel2;
     auto linearThermalDatabase2 = input_db->getDatabase( "LinearThermalOperator2" );
     auto linearThermalOperator2 = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter2, "LinearThermalOperator2", input_db, thermalTransportModel2 ) );
+            mesh2, "LinearThermalOperator2", input_db ) );
 
     //----------------------------------------------------------------------------------------------------------------------------------------------//
     auto thermalVolumeOperator2 =
@@ -209,12 +204,12 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto map3dto1d_db1    = input_db->getDatabase( "MapPelletto1D" );
     auto map3dto1dParams1 = std::make_shared<AMP::Operator::MapOperatorParameters>( map3dto1d_db1 );
-    map3dto1dParams1->d_MapMesh = meshAdapter1;
+    map3dto1dParams1->d_MapMesh = mesh1;
     auto map1ToLowDim           = std::make_shared<AMP::Operator::Map3Dto1D>( map3dto1dParams1 );
 
     auto map1dto3d_db1    = input_db->getDatabase( "Map1DtoClad" );
     auto map1dto3dParams1 = std::make_shared<AMP::Operator::MapOperatorParameters>( map1dto3d_db1 );
-    map1dto3dParams1->d_MapMesh = meshAdapter2;
+    map1dto3dParams1->d_MapMesh = mesh2;
     //-------------------------------------
     ut->passes( "Everything up till constructing 1Dto3D passes." );
     //-------------------------------------
@@ -224,12 +219,12 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto map3dto1d_db2    = input_db->getDatabase( "MapCladto1D" );
     auto map3dto1dParams2 = std::make_shared<AMP::Operator::MapOperatorParameters>( map3dto1d_db2 );
-    map3dto1dParams2->d_MapMesh = meshAdapter2;
+    map3dto1dParams2->d_MapMesh = mesh2;
     auto map2ToLowDim           = std::make_shared<AMP::Operator::Map3Dto1D>( map3dto1dParams2 );
 
     auto map1dto3d_db2    = input_db->getDatabase( "Map1DtoPellet" );
     auto map1dto3dParams2 = std::make_shared<AMP::Operator::MapOperatorParameters>( map1dto3d_db2 );
-    map1dto3dParams2->d_MapMesh = meshAdapter1;
+    map1dto3dParams2->d_MapMesh = mesh1;
     auto map2ToHighDim          = std::make_shared<AMP::Operator::Map1Dto3D>( map1dto3dParams2 );
 
     map2ToLowDim->setZLocations( map2ToHighDim->getZLocations() );
@@ -238,13 +233,13 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mapcladflow_db = input_db->getDatabase( "MapCladtoFlow" );
     auto mapcladflowParams =
         std::make_shared<AMP::Operator::MapOperatorParameters>( mapcladflow_db );
-    mapcladflowParams->d_MapMesh = meshAdapter2;
+    mapcladflowParams->d_MapMesh = mesh2;
     auto mapCladToFlow           = std::make_shared<AMP::Operator::Map3Dto1D>( mapcladflowParams );
 
     auto mapflowclad_db = input_db->getDatabase( "MapFlowtoClad" );
     auto mapflowcladParams =
         std::make_shared<AMP::Operator::MapOperatorParameters>( mapflowclad_db );
-    mapflowcladParams->d_MapMesh = meshAdapter2;
+    mapflowcladParams->d_MapMesh = mesh2;
     auto mapFlowToClad           = std::make_shared<AMP::Operator::Map1Dto3D>( mapflowcladParams );
 
     mapCladToFlow->setZLocations( mapFlowToClad->getZLocations() );
@@ -255,12 +250,10 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "FlowFrapconOperator" ),
                 "Key ''FlowFrapconOperator'' is missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
     auto flowDatabase = input_db->getDatabase( "FlowFrapconOperator" );
     flowDatabase->putScalar( "numPoints", flowVecSize );
     auto flowOperator = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter2, "FlowFrapconOperator", input_db, flowtransportModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh2, "FlowFrapconOperator", input_db ) );
 
     flowOperator->setZLocations( mapFlowToClad->getZLocations() );
 

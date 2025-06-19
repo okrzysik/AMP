@@ -34,17 +34,16 @@ void myTest( AMP::UnitTest *ut, const std::string &inputName )
     input_db->print( AMP::plog );
 
     // create the Mesh
-    const auto meshAdapter = createMesh( input_db );
+    const auto mesh = createMesh( input_db );
 
     // create a power source from neutronics
-    auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, meshAdapter );
+    auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, mesh );
 
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> thermalTransportModel;
     auto nonlinearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testNonlinearThermalOperator", input_db, thermalTransportModel ) );
+            mesh, "testNonlinearThermalOperator", input_db ) );
 
     auto thermalVariable = nonlinearThermalOperator->getOutputVariable();
     auto nodalDofMap     = PowerInWattsVec->getDOFManager();

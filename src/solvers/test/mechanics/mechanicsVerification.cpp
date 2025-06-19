@@ -216,11 +216,15 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     AMP::pout << "Scaling mesh by a factor " << scaleMeshFactor << "\n";
 
     // Create the linear mechanics operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "MechanicsBVPOperator", inputDatabase, elementPhysicsModel ) );
+            mesh, "MechanicsBVPOperator", inputDatabase ) );
     AMP_ASSERT( bvpOperator );
+    auto mechanicsVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
+            bvpOperator->getVolumeOperator() );
+    auto elementPhysicsModel = mechanicsVolumeOperator->getMaterialModel();
+
     AMP_ASSERT( elementPhysicsModel );
     // auto var = bvpOperator->getOutputVariable();
 
@@ -275,7 +279,6 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         AMP_ERROR( "Unknown value for typeCoeffAB" );
     } // end if typeCoeffAB
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     // Vectors: solution, right-hand side, residual
     auto NodalVectorDOF =
@@ -288,8 +291,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getOutputVariable() );
 
     // Create an operator to get manufactured solution and forcing terms
-    auto volumeOp = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "VolumeIntegral", inputDatabase, dummyModel );
+    auto volumeOp =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "VolumeIntegral", inputDatabase );
 
     // Compute the forcing terms
     rhsVec->zero();
@@ -315,7 +318,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     // Compute Neumann values
     auto neumannVecOp = std::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
         AMP::Operator::OperatorBuilder::createBoundaryOperator(
-            mesh, "NeumannCorrection", inputDatabase, volumeOp, dummyModel ) );
+            mesh, "NeumannCorrection", inputDatabase, volumeOp ) );
     // neumannVecOp->setVariable(var);
     auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
     for ( short neumannBoundaryId : neumannBoundaryIds ) {

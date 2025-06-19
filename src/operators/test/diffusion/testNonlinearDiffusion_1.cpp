@@ -53,20 +53,18 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     // nonlinear operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    auto diffFEOp_db       = input_db->getDatabase( "NonlinearDiffusionOp" );
-    auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "NonlinearDiffusionOp", input_db, elementModel );
+    auto diffFEOp_db = input_db->getDatabase( "NonlinearDiffusionOp" );
+    auto nonlinearOperator =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "NonlinearDiffusionOp", input_db );
     auto diffOp =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
 
     // linear operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> linElementModel;
-    auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "LinearDiffusionOp", input_db, linElementModel );
+    auto linearOperator =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "LinearDiffusionOp", input_db );
     auto linOp =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>( linearOperator );
 
@@ -107,7 +105,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create solution, rhs, and residual vectors
     auto tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );

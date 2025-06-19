@@ -49,8 +49,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     input_db->print( AMP::plog );
 
     //   Create the Mesh.
-    auto mesh_file   = input_db->getString( "mesh_file" );
-    auto meshAdapter = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
+    auto mesh_file = input_db->getString( "mesh_file" );
+    auto mesh      = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
     bool ExtractData = input_db->getWithDefault<bool>( "ExtractStressStrainData", false );
     FILE *fout123;
@@ -62,18 +62,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearMechanicsBVPoperator =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "NonlinearMechanicsOperator", input_db ) );
+                mesh, "NonlinearMechanicsOperator", input_db ) );
     auto nonlinearMechanicsVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> mechanicsMaterialModel =
-        nonlinearMechanicsVolumeOperator->getMaterialModel();
+    auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
     // Create a Linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
     auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+            mesh, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
 
     // Create the variables
     auto mechanicsNonlinearVolumeOperator =
@@ -86,10 +85,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //       linearMechanicsBVPoperator->getVolumeOperator());
 
     // For RHS (Point Forces)
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "Load_Boundary", input_db ) );
     dirichletLoadVecOp->setVariable( dispVar );
 
     //--------------------------------------------------
@@ -99,7 +96,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     //--------------------------------------------------
 
     // Create the vectors

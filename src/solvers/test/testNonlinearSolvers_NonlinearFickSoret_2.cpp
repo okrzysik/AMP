@@ -45,22 +45,21 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double
     input_db->print( AMP::plog );
 
     // create the Mesh
-    const auto meshAdapter = createMesh( input_db );
+    const auto mesh = createMesh( input_db );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create a nonlinear BVP operator for nonlinear Fick-Soret diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearFickSoretBVPOperator" ), "key missing!" );
 
     // Create nonlinear FickSoret BVP operator and access volume nonlinear FickSoret operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "testNonlinearFickSoretBVPOperator", input_db, elementPhysicsModel );
+        mesh, "testNonlinearFickSoretBVPOperator", input_db );
     auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
     auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(
@@ -91,7 +90,7 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double
 
     auto lenscale = input_db->getScalar<double>( "LengthScale" );
     soretFrozen["temperature"]->setToScalar( 300. );
-    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x = ( iterator->coord() )[0];
         double y = ( iterator->coord() )[1];
@@ -143,7 +142,7 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double
     auto soretModel    = soretOp->getTransportModel();
 
     {
-        iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        iterator      = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         size_t nnodes = fickCoeffVec->getLocalSize(), node;
         std::vector<size_t> gids( nnodes );
         std::vector<double> temp( nnodes ), conc( nnodes ), fickCoeff( nnodes ),
@@ -175,7 +174,7 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &exeName, std::vector<double
 
     // store result
     {
-        iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         results.resize( iterator.size() );
         size_t iNode = 0;
         for ( ; iterator != iterator.end(); ++iterator ) {

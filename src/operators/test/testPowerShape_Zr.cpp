@@ -31,7 +31,7 @@ static void test_with_shape( AMP::UnitTest *ut )
     //   Create the Mesh
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     //  Construct PowerShape for a radial only term.
     auto shape_db = input_db->putDatabase( "shape_db" );
@@ -44,7 +44,7 @@ static void test_with_shape( AMP::UnitTest *ut )
     int ghostWidth  = 0;
     bool split      = true;
     auto dof_map    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerNode, split );
 
     auto shapeVar = std::make_shared<AMP::LinearAlgebra::Variable>( "PowerShape" );
     auto shapeVec = AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
@@ -57,7 +57,7 @@ static void test_with_shape( AMP::UnitTest *ut )
             shape_db->putVector( "Moments", moments );
         }
         auto shape_params    = std::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
-        shape_params->d_Mesh = meshAdapter;
+        shape_params->d_Mesh = mesh;
         auto shape           = std::make_shared<AMP::Operator::PowerShape>( shape_params );
 
         // Create a shared pointer to a Variable - Power - Output because it will be used in the
@@ -114,7 +114,7 @@ static void test_with_shape( AMP::UnitTest *ut )
                 shape_db->putVector( "Moments", moments );
             }
             auto shape_params = std::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
-            shape_params->d_Mesh = meshAdapter;
+            shape_params->d_Mesh = mesh;
             auto shape           = std::make_shared<AMP::Operator::PowerShape>( shape_params );
             auto SpecificPowerShapeVar =
                 std::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerShape" );

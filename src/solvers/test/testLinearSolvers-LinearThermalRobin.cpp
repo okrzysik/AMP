@@ -36,14 +36,13 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto nReps = input_db->getWithDefault<int>( "repetitions", 1 );
 
     // Create the Mesh
-    const auto meshAdapter = createMesh( input_db );
+    const auto mesh = createMesh( input_db );
 
-    auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, meshAdapter );
+    auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, mesh );
 
     // Create the Thermal BVP Operator
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "DiffusionBVPOperator", input_db ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "DiffusionBVPOperator", input_db ) );
 
     auto linearOp               = diffusionOperator->getVolumeOperator();
     auto TemperatureInKelvinVec = linearOp->getLeftVector();
@@ -56,7 +55,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
-    auto &comm = meshAdapter->getComm();
+    auto &comm = mesh->getComm();
 
     auto linearSolver = AMP::Solver::Test::buildSolver(
         "LinearSolver", input_db, comm, nullptr, diffusionOperator );
