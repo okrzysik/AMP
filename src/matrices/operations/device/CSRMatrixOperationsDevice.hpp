@@ -70,18 +70,21 @@ void CSRMatrixOperationsDevice<Policy, Allocator>::mult( std::shared_ptr<const V
         PROFILE( "CSRMatrixOperationsDevice::mult(ghost)" );
         using scalarAllocator_t =
             typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
-        // Possible mismatch between Policy::gidx_t and size_t forces a deep copy
-        // of the colMap from inside offdMatrix
-        std::vector<size_t> colMap;
-        offdMatrix->getColumnMap( colMap );
-        std::vector<scalar_t, scalarAllocator_t> ghosts( colMap.size() );
-        in->getGhostValuesByGlobalID( colMap.size(), colMap.data(), ghosts.data() );
+        const auto nGhosts = offdMatrix->numUniqueColumns();
+        scalarAllocator_t alloc;
+        scalar_t *ghosts = alloc.allocate( nGhosts );
+        if constexpr ( std::is_same_v<size_t, gidx_t> ) {
+            // column map can be passed to get ghosts function directly
+            size_t *colMap = offdMatrix->getColumnMap();
+            in->getGhostValuesByGlobalID( nGhosts, colMap, ghosts );
+        } else {
+            std::vector<size_t> colMap;
+            offdMatrix->getColumnMap( colMap );
+            in->getGhostValuesByGlobalID( nGhosts, colMap.data(), ghosts );
+        }
 
-        AMP_DEBUG_ASSERT( static_cast<typename Policy::lidx_t>( ghosts.size() ) ==
-                          offdMatrix->numUniqueColumns() );
-
-        CSRLocalMatrixOperationsDevice<Policy, Allocator>::mult(
-            ghosts.data(), offdMatrix, outDataBlock );
+        CSRLocalMatrixOperationsDevice<Policy, Allocator>::mult( ghosts, offdMatrix, outDataBlock );
+        alloc.deallocate( ghosts, nGhosts );
     }
 }
 
