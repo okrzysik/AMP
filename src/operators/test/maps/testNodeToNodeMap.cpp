@@ -166,7 +166,7 @@ int testNodeToNodeMap( int argc, char *argv[] )
         ut.failure( "No input files specified" );
     } else {
         for ( int i = 1; i < argc; i++ ) {
-            std::cout << "Running test with input file: " << argv[i] << std::endl;
+            AMP::pout << "Running test with input file: " << argv[i] << std::endl;
             runTest( argv[i], &ut );
         }
     }
