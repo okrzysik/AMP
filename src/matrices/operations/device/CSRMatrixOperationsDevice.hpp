@@ -29,6 +29,7 @@ void CSRMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::mult(
     AMP_DEBUG_ASSERT( in->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     using scalar_t = typename Policy::scalar_t;
+    using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
 
     auto csrData =
