@@ -121,9 +121,9 @@ public:
 
 public: // Default constructors
     MultiVariable() : Variable() {}
-    MultiVariable( MultiVariable && )      = default;
-    MultiVariable( const MultiVariable & ) = default;
-    MultiVariable &operator=( MultiVariable && ) = default;
+    MultiVariable( MultiVariable && )                 = default;
+    MultiVariable( const MultiVariable & )            = default;
+    MultiVariable &operator=( MultiVariable && )      = default;
     MultiVariable &operator=( const MultiVariable & ) = default;
     virtual ~MultiVariable()                          = default;
 
@@ -157,7 +157,6 @@ public:
 public: // Functions inherited from VectorSelector
     bool isSelected( const Vector & ) const override;
     Vector::shared_ptr subset( Vector::shared_ptr vec ) const override;
-    Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const override;
 
 protected:
     std::shared_ptr<MultiVariable> d_var;

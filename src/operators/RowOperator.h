@@ -32,7 +32,7 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override
     {
         return d_Operators[0]->getOutputVariable();
     }

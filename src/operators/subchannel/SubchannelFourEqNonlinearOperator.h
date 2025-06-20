@@ -36,25 +36,19 @@ public:
 
     void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() const override
     {
         return d_inpVariable;
     }
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override
     {
         return d_outVariable;
     }
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
-    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
+    std::shared_ptr<AMP::LinearAlgebra::VectorSelector> selectOutputVector() const override;
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
-    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
+    std::shared_ptr<AMP::LinearAlgebra::VectorSelector> selectInputVector() const override;
 
     void setVector( AMP::LinearAlgebra::Vector::shared_ptr frozenVec )
     {

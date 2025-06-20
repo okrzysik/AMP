@@ -29,9 +29,9 @@ public:
 
     void postElementOperation() override;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() const override;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override;
 
     std::shared_ptr<MassDensityModel> getDensityModel() { return d_densityModel; };
 

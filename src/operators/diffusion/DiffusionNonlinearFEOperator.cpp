@@ -50,13 +50,14 @@ DiffusionNonlinearFEOperator::createOutputVariable( const std::string &name, int
 }
 
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> DiffusionNonlinearFEOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> DiffusionNonlinearFEOperator::getInputVariable() const
 {
     return d_inpVariables;
 }
 
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> DiffusionNonlinearFEOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable>
+DiffusionNonlinearFEOperator::getOutputVariable() const
 {
     return d_outVariable;
 }
