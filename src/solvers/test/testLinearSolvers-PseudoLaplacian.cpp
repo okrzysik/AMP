@@ -57,17 +57,18 @@ void linearThermalTest( AMP::UnitTest *ut,
     auto inVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
     auto outVar = inVar;
 
-#ifdef USE_DEVICE
-    auto inVec = AMP::LinearAlgebra::createVector(
-        scalarDOFs, inVar, true, AMP::Utilities::MemoryType::managed );
-    auto outVec = AMP::LinearAlgebra::createVector(
-        scalarDOFs, outVar, true, AMP::Utilities::MemoryType::managed );
-    memoryLocation      = "managed";
-    accelerationBackend = "hip_cuda";
-#else
-    auto inVec  = AMP::LinearAlgebra::createVector( scalarDOFs, inVar );
-    auto outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
-#endif
+    std::shared_ptr<AMP::LinearAlgebra::Vector> inVec, outVec;
+
+    if ( memoryLocation == "host" ) {
+        inVec  = AMP::LinearAlgebra::createVector( scalarDOFs, inVar );
+        outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
+    } else {
+        AMP_ASSERT( memoryLocation == "managed" );
+        inVec = AMP::LinearAlgebra::createVector(
+            scalarDOFs, inVar, true, AMP::Utilities::MemoryType::managed );
+        outVec = AMP::LinearAlgebra::createVector(
+            scalarDOFs, outVar, true, AMP::Utilities::MemoryType::managed );
+    }
 
     auto backend = AMP::Utilities::backendFromString( accelerationBackend );
 
