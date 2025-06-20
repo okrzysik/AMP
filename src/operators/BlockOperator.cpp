@@ -30,7 +30,7 @@ void BlockOperator::reset( std::shared_ptr<const OperatorParameters> params )
     }
 }
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> BlockOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> BlockOperator::getOutputVariable() const
 {
     auto var = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "BlockVariable" );
     for ( int i = 0; i < d_iNumRowBlocks; i++ ) {
@@ -41,7 +41,7 @@ std::shared_ptr<AMP::LinearAlgebra::Variable> BlockOperator::getOutputVariable()
     return var;
 }
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> BlockOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> BlockOperator::getInputVariable() const
 {
     auto var = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "BlockVariable" );
     for ( int i = 0; i < d_iNumColumnBlocks; i++ ) {

@@ -125,58 +125,28 @@ FlowFrapconOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_sh
 }
 
 
-AMP::LinearAlgebra::Vector::shared_ptr
-FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
+// Create the VectorSelector, the vectors are simple vectors and
+//    we need to subset for the current comm instead of the mesh
+std::shared_ptr<AMP::LinearAlgebra::VectorSelector> FlowFrapconOperator::selectOutputVector() const
 {
-    // Subset the vectors, they are simple vectors and we need to subset for the current comm
-    // instead of the mesh
-    if ( d_Mesh ) {
-        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        vec = vec->select( commSelector );
-    }
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::VectorSelector>> selectors;
+    if ( d_Mesh )
+        selectors.push_back( std::make_shared<AMP::LinearAlgebra::VS_Comm>( d_Mesh->getComm() ) );
     auto var = getInputVariable();
-    return vec->subsetVectorForVariable( var );
+    if ( var )
+        selectors.push_back( var->createVectorSelector() );
+    return AMP::LinearAlgebra::VectorSelector::create( selectors );
+}
+std::shared_ptr<AMP::LinearAlgebra::VectorSelector> FlowFrapconOperator::selectInputVector() const
+{
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::VectorSelector>> selectors;
+    if ( d_Mesh )
+        selectors.push_back( std::make_shared<AMP::LinearAlgebra::VS_Comm>( d_Mesh->getComm() ) );
+    auto var = getInputVariable();
+    if ( var )
+        selectors.push_back( var->createVectorSelector() );
+    return AMP::LinearAlgebra::VectorSelector::create( selectors );
 }
 
 
-AMP::LinearAlgebra::Vector::shared_ptr
-FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
-{
-    // Subset the vectors, they are simple vectors and we need to subset for the current comm
-    // instead of the mesh
-    if ( d_Mesh ) {
-        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        vec = vec->select( commSelector );
-    }
-    auto var = getInputVariable();
-    return vec->subsetVectorForVariable( var );
-}
-
-
-AMP::LinearAlgebra::Vector::const_shared_ptr
-FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
-{
-    // Subset the vectors, they are simple vectors and we need to subset for the current comm
-    // instead of the mesh
-    if ( d_Mesh ) {
-        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        vec = vec->select( commSelector );
-    }
-    auto var = getInputVariable();
-    return vec->subsetVectorForVariable( var );
-}
-
-
-AMP::LinearAlgebra::Vector::const_shared_ptr
-FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
-{
-    // Subset the vectors, they are simple vectors and we need to subset for the current comm
-    // instead of the mesh
-    if ( d_Mesh ) {
-        AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        vec = vec->select( commSelector );
-    }
-    auto var = getInputVariable();
-    return vec->subsetVectorForVariable( var );
-}
 } // namespace AMP::Operator

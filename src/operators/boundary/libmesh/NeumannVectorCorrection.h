@@ -81,12 +81,15 @@ public:
 
     std::vector<std::vector<unsigned int>> getDofIds() const { return d_dofIds; }
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override
     {
         return d_variable;
     }
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override { return d_variable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() const override
+    {
+        return d_variable;
+    }
 
 protected:
     /**

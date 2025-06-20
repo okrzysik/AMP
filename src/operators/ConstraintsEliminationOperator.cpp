@@ -6,12 +6,14 @@
 
 namespace AMP::Operator {
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> ConstraintsEliminationOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable>
+ConstraintsEliminationOperator::getInputVariable() const
 {
     return d_InputVariable;
 }
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> ConstraintsEliminationOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable>
+ConstraintsEliminationOperator::getOutputVariable() const
 {
     return d_OutputVariable;
 }
