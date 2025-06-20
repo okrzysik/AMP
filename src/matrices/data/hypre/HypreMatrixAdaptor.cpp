@@ -47,6 +47,19 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     HYPRE_IJMatrixSetObjectType( d_matrix, HYPRE_PARCSR );
     HYPRE_IJMatrixSetMaxOffProcElmts( d_matrix, 0 );
 
+#if defined( HYPRE_USING_GPU ) && defined( HYPRE_USING_CUSPARSE ) && CUSPARSE_VERSION >= 11000
+    // CUSPARSE_SPMV_ALG_DEFAULT doesn't provide deterministic results
+    // hypre comment from test/ij.c
+    // Note we crash without turning this off for Cuda 12.3-12.8 && hypre 2.31-33 with managed
+    // memory
+    HYPRE_Int spmv_use_vendor = 0;
+#else
+    HYPRE_Int spmv_use_vendor = 0;
+#endif
+
+    HYPRE_SetSpMVUseVendor( spmv_use_vendor );
+
+
     // Attempt dynamic pointer casts to supported types
     // Policy must match HypreCSRPolicy
     // need to match supported allocators depending on device support
