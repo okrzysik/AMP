@@ -69,8 +69,9 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     ut->passes( exeName + ": PowerShape gets past apply with a non-flat power shape." );
 
-    AMP::pout << "SpecificPowerShapeVec->max()" << " : " << SpecificPowerShapeVec->min() << " : "
-              << SpecificPowerShapeVec->max() << std::endl;
+    AMP::pout << "SpecificPowerShapeVec->max()"
+              << " : " << SpecificPowerShapeVec->min() << " : " << SpecificPowerShapeVec->max()
+              << std::endl;
     // Check that the data is non-negative
     bool itpasses  = true;
     auto elem      = mesh->getIterator( AMP::Mesh::GeomType::Cell, ghostWidth );
@@ -87,7 +88,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
                 itpasses = false;
             }
         } // end for gauss-points
-    } // end for elements
+    }     // end for elements
 
     if ( itpasses )
         ut->passes( exeName + ": PowerShape produces a non-negative power shape." );

@@ -86,8 +86,8 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( "error" );
     }
 
-    AMP::pout << "shapeOutVec->max/min" << " : " << shapeOutVec->min() << " : "
-              << shapeOutVec->max() << std::endl;
+    AMP::pout << "shapeOutVec->max/min"
+              << " : " << shapeOutVec->min() << " : " << shapeOutVec->max() << std::endl;
     ut->passes( "PowerShape didn't crash the system" );
 
     try {

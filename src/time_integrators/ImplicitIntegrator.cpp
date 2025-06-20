@@ -63,6 +63,11 @@ void ImplicitIntegrator::createSolver( void )
         solverDB = globalDB->getDatabase( solverName );
     }
 
+    // unless explicitly set, let solver use non-zero guess
+    if ( !solverDB->keyExists( "zero_initial_guess" ) ) {
+        solverDB->putScalar<bool>( "zero_initial_guess", false );
+    }
+
     solverDB->print( AMP::plog );
     auto solver_params = std::make_shared<AMP::Solver::SolverStrategyParameters>( solverDB );
 

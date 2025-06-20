@@ -127,20 +127,10 @@ void NonlinearKrylovAccelerator<T>::getFromInput( std::shared_ptr<AMP::Database>
 
 template<typename T>
 void NonlinearKrylovAccelerator<T>::initialize(
-    std::shared_ptr<const AMP::Solver::SolverStrategyParameters> params )
+    std::shared_ptr<AMP::LinearAlgebra::Vector> solution_vector )
 {
-    // temporary if-then-else till a cleanup
-    if ( params->d_vectors.size() > 0 ) {
-        d_solution_vector = params->d_vectors[0]->clone();
-        d_solution_vector->copyVector( params->d_vectors[0] );
-    } else {
-        d_solution_vector = params->d_pInitialGuess;
-        AMP_INSIST( d_solution_vector, "Initial guess vector cannot be null" );
-    }
-
-    AMP_ASSERT( d_solution_vector );
-
-    d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    AMP_ASSERT( solution_vector );
+    d_solution_vector = solution_vector;
 
     int n = d_mvec + 1;
 
@@ -166,6 +156,25 @@ void NonlinearKrylovAccelerator<T>::initialize(
 
     d_residual_vector->setToScalar( static_cast<T>( 0.0 ) );
     d_correction_vector->setToScalar( static_cast<T>( 0.0 ) );
+}
+
+template<typename T>
+void NonlinearKrylovAccelerator<T>::initialize(
+    std::shared_ptr<const AMP::Solver::SolverStrategyParameters> params )
+{
+    if ( params ) {
+        std::shared_ptr<AMP::LinearAlgebra::Vector> v;
+        if ( params->d_vectors.size() > 0 ) {
+            v = params->d_vectors[0];
+        } else {
+            v = params->d_pInitialGuess;
+        }
+        if ( v ) {
+            d_solution_vector = v->clone();
+            d_solution_vector->copyVector( v );
+            initialize( d_solution_vector );
+        }
+    }
 }
 
 template<typename T>
@@ -336,6 +345,8 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
                                            std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE( "NonlinearKrylovAccelerator<T>::apply" );
+    // reset so that basis info from previous solve if any is reset
+    reset( {} );
     d_ConvergenceStatus = AMP::Solver::SolverStrategy::SolverStatus::DivergedOther;
     AMP_ASSERT( u && d_pOperator );
 
@@ -346,15 +357,20 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 
     d_iNumberIterations = 0;
 
-    d_solution_vector->copyVector( u );
+    if ( !d_solver_initialized ) {
+        initialize( u );
+    }
+
+    if ( d_bUseZeroInitialGuess ) {
+        d_solution_vector->zero();
+    } else {
+        d_solution_vector->copyVector( u );
+    }
     d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // compute residual
     d_pOperator->residual( f, d_solution_vector, d_residual_vector );
     d_function_apply_count++;
-
-    d_residual_vector->scale( static_cast<T>( -1.0 ), *d_residual_vector );
-    //    d_residual_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     auto residual_norm = d_residual_vector->L2Norm();
 
@@ -421,16 +437,14 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
         this->correction( d_correction_vector );
 
         // correct current solution
-        d_solution_vector->axpy( static_cast<T>( -1.0 ), *d_correction_vector, *d_solution_vector );
+        //        d_solution_vector->axpy( static_cast<T>( -1.0 ), *d_correction_vector,
+        //        *d_solution_vector );
+        d_solution_vector->add( *d_correction_vector, *d_solution_vector );
         d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         // compute the residual
         d_pOperator->residual( f, d_solution_vector, d_residual_vector );
         d_function_apply_count++;
-
-        d_residual_vector->scale( static_cast<T>( -1.0 ), *d_residual_vector );
-        //        d_residual_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET
-        //        );
 
         // auto prev_residual_norm = residual_norm;
         residual_norm = d_residual_vector->L2Norm();

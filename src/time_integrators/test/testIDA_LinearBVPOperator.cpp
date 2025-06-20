@@ -138,7 +138,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             for ( auto &elem : gid ) {
                 initialCondition->setValuesByGlobalID( 1, &elem, &val );
             } // end for i
-        } // end for node
+        }     // end for node
         initialConditionPrime->zero();
 
         // create a copy of the rhs which can be modified at each time step (maybe)

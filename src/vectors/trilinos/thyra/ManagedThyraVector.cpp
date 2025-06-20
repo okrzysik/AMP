@@ -74,6 +74,10 @@ void ManagedThyraVector::swapVectors( Vector &other )
  ****************************************************************/
 void ManagedThyraVector::copyVector( Vector::const_shared_ptr vec )
 {
+    AMP_ASSERT( vec );
+    if ( vec.get() == this )
+        return;
+
     auto engineVec = getVectorEngine( getVectorData() );
     engineVec->copyVector( vec );
 }
