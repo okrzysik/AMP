@@ -62,26 +62,65 @@ void GhostDataHelper<TYPE, Allocator>::deallocateBuffers()
 {
     if ( this->d_Ghosts ) {
         this->d_alloc.deallocate( this->d_Ghosts, this->d_ghostSize );
+        this->d_Ghosts = nullptr;
     }
     if ( this->d_AddBuffer ) {
         this->d_alloc.deallocate( this->d_AddBuffer, this->d_ghostSize );
+        this->d_AddBuffer = nullptr;
     }
-    this->d_Ghosts    = nullptr;
-    this->d_AddBuffer = nullptr;
+    if ( this->d_SendRecv ) {
+        this->d_alloc.deallocate( this->d_SendRecv, this->d_numRemote );
+        this->d_SendRecv = nullptr;
+    }
+    if ( this->d_localRemote ) {
+        this->d_int_alloc.deallocate( this->d_localRemote, this->d_numRemote );
+        this->d_localRemote = nullptr;
+    }
     this->d_ghostSize = 0;
+    this->d_numRemote = 0;
 }
 
 template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::setCommunicationList(
     std::shared_ptr<CommunicationList> comm )
 {
+    // Verify CommunicationList and vector sizes
     AMP_ASSERT( comm );
+    if ( d_globalSize == 0 ) {
+        d_localSize  = comm->numLocalRows();
+        d_globalSize = comm->getTotalSize();
+        d_localStart = comm->getStartGID();
+    } else {
+        AMP_ASSERT( comm->getTotalSize() == d_globalSize );
+        AMP_ASSERT( comm->getStartGID() == d_localStart );
+        AMP_ASSERT( comm->numLocalRows() == d_localSize );
+    }
     // deallocate any existing buffers
     deallocateBuffers();
     d_CommList = comm;
     // reallocate buffers based on new comm list
     const auto len = d_CommList->getVectorReceiveBufferSize();
     allocateBuffers( len );
+    // Allocate send/recv buffer
+    const auto &sendSizes = d_CommList->getSendSizes();
+    size_t N              = 0;
+    for ( auto size : sendSizes )
+        N += size;
+    if ( N > 0 )
+        this->d_SendRecv = d_alloc.allocate( N );
+    // Get a list of the local dofs that are remote
+    const auto &replicatedVec = d_CommList->getReplicatedIDList();
+    d_numRemote               = replicatedVec.size();
+    AMP_ASSERT( d_numRemote == N );
+    if ( N > 0 ) {
+        this->d_localRemote = d_int_alloc.allocate( N );
+    }
+    for ( size_t i = 0; i < d_numRemote; ++i ) {
+        d_localRemote[i] = replicatedVec[i];
+        AMP_DEBUG_ASSERT( d_localRemote[i] >= d_localStart &&
+                          d_localRemote[i] < d_localStart + d_localSize );
+        d_localRemote[i] -= d_localStart;
+    }
 }
 
 
@@ -124,7 +163,7 @@ void GhostDataHelper<TYPE, Allocator>::makeConsistent( ScatterType t )
             AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
             scatter_add();
             for ( size_t i = 0; i < d_ghostSize; ++i )
-                this->d_AddBuffer[i] = 0.0;
+                this->d_AddBuffer[i] = 0;
         }
         *d_UpdateState = UpdateState::SETTING;
         scatter_set();
@@ -141,47 +180,51 @@ template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::scatter_set()
 {
     AMP_ASSERT( d_CommList );
+    if ( !d_CommList->anyCommunication() )
+        return;
+    PROFILE( "scatter_set" );
+    constexpr auto type   = getTypeID<TYPE>();
     const auto &sendSizes = d_CommList->getSendSizes();
     const auto &recvSizes = d_CommList->getReceiveSizes();
-    if ( sendSizes.empty() && recvSizes.empty() )
-        return;
-    const auto &comm     = d_CommList->getComm();
-    const auto &sendDisp = d_CommList->getSendDisp();
-    const auto &recvDisp = d_CommList->getReceiveDisp();
-    const auto &sendDOFs = d_CommList->getReplicatedIDList();
-    const auto &recvDOFs = d_CommList->getGhostIDList();
+    const auto &comm      = d_CommList->getComm();
+    const auto &sendDisp  = d_CommList->getSendDisp();
+    const auto &recvDisp  = d_CommList->getReceiveDisp();
     // Pack the set buffers
-    std::vector<TYPE> send( d_CommList->getVectorSendBufferSize() );
-    if ( !send.empty() )
-        getLocalValuesByGlobalID( send.size(), sendDOFs.data(), send.data() );
-    // Communicate
-    auto recv = comm.allToAll( send, sendSizes, sendDisp, recvSizes, recvDisp );
-    // Unpack the set buffers
-    if ( !recv.empty() )
-        setGhostValuesByGlobalID( recv.size(), recvDOFs.data(), recv.data() );
+    if ( d_localRemote != nullptr )
+        getValuesByLocalID( d_numRemote, d_localRemote, d_SendRecv, type );
+    // Communicate ghosts (directly fill ghost buffer)
+    comm.allToAll<TYPE>( d_SendRecv,
+                         sendSizes.data(),
+                         sendDisp.data(),
+                         d_Ghosts,
+                         const_cast<int *>( recvSizes.data() ),
+                         const_cast<int *>( recvDisp.data() ),
+                         true );
 }
 template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::scatter_add()
 {
     AMP_ASSERT( d_CommList );
+    if ( !d_CommList->anyCommunication() )
+        return;
+    PROFILE( "scatter_add" );
+    constexpr auto type   = getTypeID<TYPE>();
     const auto &sendSizes = d_CommList->getSendSizes();
     const auto &recvSizes = d_CommList->getReceiveSizes();
-    if ( sendSizes.empty() && recvSizes.empty() )
-        return;
-    const auto &comm     = d_CommList->getComm();
-    const auto &sendDisp = d_CommList->getSendDisp();
-    const auto &recvDisp = d_CommList->getReceiveDisp();
-    const auto &sendDOFs = d_CommList->getReplicatedIDList();
-    const auto &recvDOFs = d_CommList->getGhostIDList();
-    // Pack the add buffers
-    std::vector<TYPE> send( d_CommList->getVectorReceiveBufferSize() );
-    if ( !send.empty() )
-        getGhostAddValuesByGlobalID( send.size(), recvDOFs.data(), send.data() );
-    // Communicate
-    auto recv = comm.allToAll( send, recvSizes, recvDisp, sendSizes, sendDisp );
+    const auto &comm      = d_CommList->getComm();
+    const auto &sendDisp  = d_CommList->getSendDisp();
+    const auto &recvDisp  = d_CommList->getReceiveDisp();
+    // Communicate add buffers (use add buffer directly)
+    comm.allToAll<TYPE>( d_AddBuffer,
+                         recvSizes.data(),
+                         recvDisp.data(),
+                         d_SendRecv,
+                         const_cast<int *>( sendSizes.data() ),
+                         const_cast<int *>( sendDisp.data() ),
+                         true );
     // Unpack the add buffers
-    if ( !recv.empty() )
-        addLocalValuesByGlobalID( recv.size(), sendDOFs.data(), recv.data() );
+    if ( d_localRemote != nullptr )
+        addValuesByLocalID( d_numRemote, d_localRemote, d_SendRecv, type );
 }
 
 
@@ -192,22 +235,6 @@ template<class TYPE, class Allocator>
 size_t GhostDataHelper<TYPE, Allocator>::getGhostSize() const
 {
     return this->d_ghostSize;
-}
-
-
-/****************************************************************
- * Alias ghost buffer                                            *
- ****************************************************************/
-template<class TYPE, class Allocator>
-void GhostDataHelper<TYPE, Allocator>::aliasGhostBuffer(
-    [[maybe_unused]] std::shared_ptr<VectorData> in )
-{
-    AMP_ERROR( "Not finished" );
-#if 0
-    auto ghostData = std::dynamic_pointer_cast<GhostDataHelper<TYPE, Allocator>>( in );
-    AMP_ASSERT( ghostData );
-    this->d_Ghosts = ghostData->d_Ghosts;
-#endif
 }
 
 
@@ -316,8 +343,8 @@ void GhostDataHelper<TYPE, Allocator>::getGhostValuesByGlobalID( size_t N,
         AMP_INSIST( allGhostIndices( N, ndx ), "Non ghost index encountered" );
         auto data = reinterpret_cast<TYPE *>( vals );
         for ( size_t i = 0; i < N; i++ ) {
-            data[i] = this->d_Ghosts[d_CommList->getLocalGhostID( ndx[i] )] +
-                      this->d_AddBuffer[d_CommList->getLocalGhostID( ndx[i] )];
+            size_t k = d_CommList->getLocalGhostID( ndx[i] );
+            data[i]  = this->d_Ghosts[k] + this->d_AddBuffer[k];
         }
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );
@@ -440,9 +467,8 @@ GhostDataHelper<TYPE, Allocator>::GhostDataHelper( int64_t fid, AMP::IO::Restart
     IO::readHDF5( fid, "ghosts", ghostData );
     IO::readHDF5( fid, "addBuffer", addData );
 
-    this->d_ghostSize = ghostData.length();
-    this->d_Ghosts    = d_alloc.allocate( this->d_ghostSize );
-    this->d_AddBuffer = d_alloc.allocate( this->d_ghostSize );
+    allocateBuffers( ghostData.length() );
+
     for ( size_t i = 0; i < this->d_ghostSize; ++i ) {
         this->d_Ghosts[i]    = ghostData( i );
         this->d_AddBuffer[i] = addData( i );

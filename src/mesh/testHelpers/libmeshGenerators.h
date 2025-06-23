@@ -30,7 +30,7 @@ public:
     std::string name() const override { return "LibMeshCubeGenerator"; }
 
 private:
-    int SIZE = 0;
+    [[maybe_unused]] int SIZE = 0;
 };
 
 
@@ -42,7 +42,7 @@ public:
     ExodusReaderGenerator( std::string_view file ) : d_file( file ) {}
     void build_mesh() override;
     std::string name() const override { return "ExodusReaderGenerator"; }
-    const std::string d_file;
+    [[maybe_unused]] const std::string d_file;
 };
 
 

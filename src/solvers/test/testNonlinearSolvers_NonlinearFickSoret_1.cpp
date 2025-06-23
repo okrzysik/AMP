@@ -51,16 +51,15 @@ fickTest( AMP::UnitTest *ut, const std::string &inputName, std::vector<double> &
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager     = AMP::Mesh::MeshFactory::create( params );
-    auto meshAdapter = manager->Subset( "cylinder" );
+    auto manager = AMP::Mesh::MeshFactory::create( params );
+    auto mesh    = manager->Subset( "cylinder" );
 
     // create a nonlinear BVP operator for nonlinear fick diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearFickOperator" ), "key missing!" );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> fickTransportModel;
     auto nonlinearFickOperator = std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "testNonlinearFickOperator", input_db, fickTransportModel ) );
+            mesh, "testNonlinearFickOperator", input_db ) );
 
     // initialize the input variable
     auto fickVolumeOperator =
@@ -71,7 +70,7 @@ fickTest( AMP::UnitTest *ut, const std::string &inputName, std::vector<double> &
 
     // create solution, rhs, and residual vectors
     auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto solVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
     auto rhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
     auto resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fickVariable, true );
@@ -100,7 +99,7 @@ fickTest( AMP::UnitTest *ut, const std::string &inputName, std::vector<double> &
 
     // store result
     {
-        auto iterator   = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        auto iterator   = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         size_t numNodes = iterator.size();
         results.resize( numNodes );
         std::vector<size_t> dofs;
@@ -134,16 +133,15 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &inputName, std::vector<doub
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager     = AMP::Mesh::MeshFactory::create( params );
-    auto meshAdapter = manager->Subset( "cylinder" );
+    auto manager = AMP::Mesh::MeshFactory::create( params );
+    auto mesh    = manager->Subset( "cylinder" );
 
     // create a nonlinear BVP operator for nonlinear Fick-Soret diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearFickSoretBVPOperator" ), "key missing!" );
 
     // Create nonlinear FickSoret BVP operator and access volume nonlinear FickSoret operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "testNonlinearFickSoretBVPOperator", input_db, elementPhysicsModel );
+        mesh, "testNonlinearFickSoretBVPOperator", input_db );
     auto nlinBVPOp =
         std::dynamic_pointer_cast<AMP::Operator::NonlinearBVPOperator>( nlinBVPOperator );
     auto nlinOp = std::dynamic_pointer_cast<AMP::Operator::FickSoretNonlinearFEOperator>(
@@ -160,7 +158,7 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &inputName, std::vector<doub
 
     // create solution, rhs, and residual vectors
     auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto solVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, cVar, true );
     auto rhsVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fsOutVar, true );
     auto resVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, fsOutVar, true );
@@ -197,7 +195,7 @@ fickSoretTest( AMP::UnitTest *ut, const std::string &inputName, std::vector<doub
 
     // store result
     {
-        auto iterator   = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        auto iterator   = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         size_t numNodes = iterator.size();
         results.resize( numNodes );
         std::vector<size_t> dofs;

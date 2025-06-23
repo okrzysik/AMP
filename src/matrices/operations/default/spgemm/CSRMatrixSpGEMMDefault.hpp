@@ -1,4 +1,5 @@
 #include "AMP/matrices/operations/default/spgemm/CSRMatrixSpGEMMDefault.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include "ProfilerApp.h"
 
@@ -8,8 +9,8 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::symbolicMultiply()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::symbolicMultiply()
 {
     if ( d_overlap_comms ) {
         symbolicMultiply_Overlapped();
@@ -18,8 +19,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::symbolicM
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::numericMultiply()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiply()
 {
     if ( d_overlap_comms ) {
         numericMultiply_Overlapped();
@@ -28,9 +29,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::numericMu
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::
-    symbolicMultiply_NonOverlapped()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::symbolicMultiply_NonOverlapped()
 {
     PROFILE( "symbolicMultiply_NonOverlapped" );
 
@@ -57,8 +57,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::symbolicMultiply_Overlapped()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::symbolicMultiply_Overlapped()
 {
     PROFILE( "symbolicMultiply_Overlapped" );
 
@@ -67,20 +67,20 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::symbolicM
         startBRemoteComm();
     }
 
-    C_diag_diag = std::make_shared<LocalMatrixData>( nullptr,
-                                                     C->getMemoryLocation(),
-                                                     C->beginRow(),
-                                                     C->endRow(),
-                                                     C->beginCol(),
-                                                     C->endCol(),
-                                                     true );
-    C_diag_offd = std::make_shared<LocalMatrixData>( nullptr,
-                                                     C->getMemoryLocation(),
-                                                     C->beginRow(),
-                                                     C->endRow(),
-                                                     C->beginCol(),
-                                                     C->endCol(),
-                                                     false );
+    C_diag_diag = std::make_shared<localmatrixdata_t>( nullptr,
+                                                       C->getMemoryLocation(),
+                                                       C->beginRow(),
+                                                       C->endRow(),
+                                                       C->beginCol(),
+                                                       C->endCol(),
+                                                       true );
+    C_diag_offd = std::make_shared<localmatrixdata_t>( nullptr,
+                                                       C->getMemoryLocation(),
+                                                       C->beginRow(),
+                                                       C->endRow(),
+                                                       C->beginCol(),
+                                                       C->endCol(),
+                                                       false );
 
     {
         PROFILE( "symbolicMultiply_Overlapped (local)" );
@@ -92,31 +92,30 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::symbolicM
         PROFILE( "symbolicMultiply_Overlapped (remote)" );
         endBRemoteComm();
         if ( BR_diag.get() != nullptr ) {
-            C_offd_diag = std::make_shared<LocalMatrixData>( nullptr,
-                                                             C->getMemoryLocation(),
-                                                             C->beginRow(),
-                                                             C->endRow(),
-                                                             C->beginCol(),
-                                                             C->endCol(),
-                                                             true );
+            C_offd_diag = std::make_shared<localmatrixdata_t>( nullptr,
+                                                               C->getMemoryLocation(),
+                                                               C->beginRow(),
+                                                               C->endRow(),
+                                                               C->beginCol(),
+                                                               C->endCol(),
+                                                               true );
             multiply<Mode::SYMBOLIC, BlockType::DIAG>( A_offd, BR_diag, C_offd_diag );
         }
         if ( BR_offd.get() != nullptr ) {
-            C_offd_offd = std::make_shared<LocalMatrixData>( nullptr,
-                                                             C->getMemoryLocation(),
-                                                             C->beginRow(),
-                                                             C->endRow(),
-                                                             C->beginCol(),
-                                                             C->endCol(),
-                                                             false );
+            C_offd_offd = std::make_shared<localmatrixdata_t>( nullptr,
+                                                               C->getMemoryLocation(),
+                                                               C->beginRow(),
+                                                               C->endRow(),
+                                                               C->beginCol(),
+                                                               C->endCol(),
+                                                               false );
             multiply<Mode::SYMBOLIC, BlockType::OFFD>( A_offd, BR_offd, C_offd_offd );
         }
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::
-    numericMultiply_NonOverlapped()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiply_NonOverlapped()
 {
     PROFILE( "numericMultiply_NonOverlapped" );
 
@@ -151,8 +150,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::
     d_need_comms = true;
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::numericMultiply_Overlapped()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiply_Overlapped()
 {
     PROFILE( "numericMultiply_Overlapped" );
 
@@ -195,8 +194,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::numericMu
     d_need_comms = true;
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::numericMultiplyReuse()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiplyReuse()
 {
     using lidx_t   = typename Policy::lidx_t;
     using gidx_t   = typename Policy::gidx_t;
@@ -252,21 +251,20 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::numericMu
     d_need_comms = true;
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-template<
-    typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::Mode mode_t,
-    typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::BlockType block_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
-    std::shared_ptr<LocalMatrixData> A_data,
-    std::shared_ptr<LocalMatrixData> B_data,
-    std::shared_ptr<LocalMatrixData> C_data )
+template<typename Policy, class Allocator>
+template<typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::Mode mode_t,
+         typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::BlockType block_t>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::multiply(
+    std::shared_ptr<localmatrixdata_t> A_data,
+    std::shared_ptr<localmatrixdata_t> B_data,
+    std::shared_ptr<localmatrixdata_t> C_data )
 {
-    using lidx_t           = typename Policy::lidx_t;
-    using gidx_t           = typename Policy::gidx_t;
-    using scalar_t         = typename Policy::scalar_t;
-    constexpr bool is_diag = block_t == BlockType::DIAG;
-    using acc_t            = typename std::
-        conditional<is_diag, DenseAccumulator<gidx_t>, SparseAccumulator<gidx_t>>::type;
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+    using acc_t    = typename std::conditional<block_t == BlockType::DIAG,
+                                            DenseAccumulator<gidx_t>,
+                                            SparseAccumulator<gidx_t>>::type;
 
     AMP_DEBUG_ASSERT( A_data != nullptr );
     AMP_DEBUG_ASSERT( B_data != nullptr );
@@ -275,6 +273,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
     if ( A_data->isEmpty() || B_data->isEmpty() ) {
         return;
     }
+
+    const bool is_diag = block_t == BlockType::DIAG;
 
     // all fields from blocks involved
     lidx_t *A_rs = nullptr, *A_cols_loc = nullptr;
@@ -305,12 +305,15 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
 
     // DenseAcc's act on assembled blocks that may have global columns removed
     // set up conversion for that case
-    auto B_to_global = [B_cols, B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
+    DISABLE_WARNINGS
+    auto B_to_global =
+        [is_diag, B_cols, B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
         if ( B_cols != nullptr ) {
             return B_cols[k];
         }
         return is_diag ? first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]];
     };
+    ENABLE_WARNINGS
 
     // Create accumulator with appropriate capacity
     const lidx_t acc_cap = is_diag ? B_data->numLocalColumns() : SPACC_SIZE;
@@ -371,21 +374,20 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiply(
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-template<
-    typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::Mode mode_t,
-    typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::BlockType block_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyFused(
-    std::shared_ptr<LocalMatrixData> B_data,
-    std::shared_ptr<LocalMatrixData> BR_data,
-    std::shared_ptr<LocalMatrixData> C_data )
+template<typename Policy, class Allocator>
+template<typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::Mode mode_t,
+         typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::BlockType block_t>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::multiplyFused(
+    std::shared_ptr<localmatrixdata_t> B_data,
+    std::shared_ptr<localmatrixdata_t> BR_data,
+    std::shared_ptr<localmatrixdata_t> C_data )
 {
-    using lidx_t           = typename Policy::lidx_t;
-    using gidx_t           = typename Policy::gidx_t;
-    using scalar_t         = typename Policy::scalar_t;
-    constexpr bool is_diag = block_t == BlockType::DIAG;
-    using acc_t            = typename std::
-        conditional<is_diag, DenseAccumulator<gidx_t>, SparseAccumulator<gidx_t>>::type;
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+    using acc_t    = typename std::conditional<block_t == BlockType::DIAG,
+                                            DenseAccumulator<gidx_t>,
+                                            SparseAccumulator<gidx_t>>::type;
 
     if ( ( A_diag->isEmpty() || B_data->isEmpty() ) &&
          ( A_offd->isEmpty() || BR_data->isEmpty() ) ) {
@@ -422,16 +424,13 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyF
 
     // The B blocks will have either local or global cols available
     // but generally not both. If only local available need conversion to global
-    auto B_colmap    = B_offd->getColumnMap();
-    auto B_to_global = [B_cols_loc, first_col, B_colmap]( const lidx_t k ) -> gidx_t {
-        if constexpr ( is_diag ) {
-            (void) B_colmap;
-            return first_col + B_cols_loc[k];
-        } else {
-            (void) first_col;
-            return B_colmap[B_cols_loc[k]];
-        }
+    const bool is_diag = block_t == BlockType::DIAG;
+    auto B_colmap      = B_offd->getColumnMap();
+    DISABLE_WARNINGS
+    auto B_to_global = [B_cols_loc, first_col, B_colmap, is_diag]( const lidx_t k ) -> gidx_t {
+        return is_diag ? first_col + B_cols_loc[k] : B_colmap[B_cols_loc[k]];
     };
+    ENABLE_WARNINGS
 
     // Create accumulator with appropriate capacity
     const lidx_t acc_cap = is_diag ? B_data->numLocalColumns() : SPACC_SIZE;
@@ -506,13 +505,12 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyF
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-template<
-    typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::BlockType block_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyReuse(
-    std::shared_ptr<LocalMatrixData> A_data,
-    std::shared_ptr<LocalMatrixData> B_data,
-    std::shared_ptr<LocalMatrixData> C_data )
+template<typename Policy, class Allocator>
+template<typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::BlockType block_t>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::multiplyReuse(
+    std::shared_ptr<localmatrixdata_t> A_data,
+    std::shared_ptr<localmatrixdata_t> B_data,
+    std::shared_ptr<localmatrixdata_t> C_data )
 {
     using lidx_t           = typename Policy::lidx_t;
     using gidx_t           = typename Policy::gidx_t;
@@ -563,28 +561,11 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyR
     // depending on the output block type need either
     // local or global column indices from B_data, but
     // could have either ones present or not
-    auto B_to_global = [is_remote, is_diag, B_cols, B_cols_loc, B_colmap]( lidx_t k ) -> gidx_t {
-        if constexpr ( is_diag ) {
-            (void) is_remote;
-            (void) is_diag;
-            (void) B_cols;
-            (void) B_cols_loc;
-            (void) B_colmap;
-            AMP_ERROR( "multiplyReuse: B_to_global called on diag" );
-        } else {
-            return is_remote ? B_cols[k] : B_colmap[B_cols_loc[k]];
-        }
+    auto B_to_global = [is_remote, B_cols, B_cols_loc, B_colmap]( lidx_t k ) -> gidx_t {
+        return is_remote ? B_cols[k] : B_colmap[B_cols_loc[k]];
     };
     auto B_to_local = [is_remote, B_cols, B_cols_loc, first_col]( lidx_t k ) -> lidx_t {
-        if constexpr ( is_diag ) {
-            return is_remote ? static_cast<lidx_t>( B_cols[k] - first_col ) : B_cols_loc[k];
-        } else {
-            (void) is_remote;
-            (void) B_cols;
-            (void) B_cols_loc;
-            (void) first_col;
-            AMP_ERROR( "multiplyReuse: B_to_local called on offd" );
-        }
+        return is_remote ? static_cast<lidx_t>( B_cols[k] - first_col ) : B_cols_loc[k];
     };
 
     // Finally, after all the setup do the actual computation
@@ -623,60 +604,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::multiplyR
             acc.clear();
         }
     }
-
-    // columns already exist in C, so need way to convert them to position to write
-    // auto diag_search = [B_cols,
-    //                     B_cols_loc]( lidx_t loc, lidx_t row_len, lidx_t *col_space ) -> lidx_t {
-    //     // special ordering on diagonal, check first entry outside of binary search
-    //     if ( col_space[0] == loc ) {
-    //         return 0;
-    //     }
-
-    //     lidx_t lo = 1, up = row_len - 1;
-    //     while ( ( up - lo ) > 1 ) {
-    //         const auto pos = ( up + lo ) / 2;
-    //         if ( col_space[pos] == loc ) {
-    //             return pos;
-    //         } else if ( col_space[pos] > loc ) {
-    //             up = pos;
-    //         } else {
-    //             lo = pos;
-    //         }
-    //     }
-    //     if ( col_space[lo] == loc ) {
-    //         return lo;
-    //     }
-    //     if ( col_space[up] == loc ) {
-    //         return up;
-    //     }
-    //     AMP_ERROR( "multiplyReuse diag_search failed" );
-    //     return -1;
-    // };
-    // auto offd_search = [C_colmap]( gidx_t gbl, lidx_t row_len, lidx_t *col_space ) -> lidx_t {
-    //     lidx_t lo = 0, up = row_len - 1;
-    //     while ( ( up - lo ) > 1 ) {
-    //         const auto pos = ( up + lo ) / 2;
-    //         if ( C_colmap[col_space[pos]] == gbl ) {
-    //             return pos;
-    //         } else if ( C_colmap[col_space[pos]] > gbl ) {
-    //             up = pos;
-    //         } else {
-    //             lo = pos;
-    //         }
-    //     }
-    //     if ( C_colmap[col_space[lo]] == gbl ) {
-    //         return lo;
-    //     }
-    //     if ( C_colmap[col_space[up]] == gbl ) {
-    //         return up;
-    //     }
-    //     AMP_ERROR( "multiplyReuse offd_search failed" );
-    //     return -1;
-    // };
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::mergeDiag()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::mergeDiag()
 {
     PROFILE( "mergeDiag" );
 
@@ -750,8 +681,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::mergeDiag
     C_offd_diag.reset();
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::mergeOffd()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::mergeOffd()
 {
     PROFILE( "mergeOffd" );
 
@@ -841,8 +772,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::mergeOffd
     C_offd_offd.reset();
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::setupBRemoteComm()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::setupBRemoteComm()
 {
     /*
      * Setting up the comms is somewhat involved. A high level overview
@@ -921,8 +852,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::setupBRem
     comm.waitAll( static_cast<int>( irecvs.size() ), irecvs.data() );
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::startBRemoteComm()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::startBRemoteComm()
 {
     // check if the communicator information is available and create if needed
     if ( d_dest_info.empty() ) {
@@ -937,16 +868,16 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::startBRem
     d_csr_comm.sendMatrices( d_send_matrices );
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::endBRemoteComm()
+template<typename Policy, class Allocator>
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::endBRemoteComm()
 {
     PROFILE( "endBRemoteComm" );
 
     d_recv_matrices = d_csr_comm.recvMatrices( 0, 0, 0, B->numGlobalColumns() );
     // BRemotes do not need any particular parameters object internally
-    BR_diag = CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
+    BR_diag = localmatrixdata_t::ConcatVertical(
         nullptr, d_recv_matrices, B->beginCol(), B->endCol(), true );
-    BR_offd = CSRLocalMatrixData<Policy, Allocator>::ConcatVertical(
+    BR_offd = localmatrixdata_t::ConcatVertical(
         nullptr, d_recv_matrices, B->beginCol(), B->endCol(), false );
 
     // comms are done and BR_{diag,offd} filled, deallocate send/recv blocks
@@ -957,10 +888,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::endBRemot
     d_need_comms = false;
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
 typename Policy::lidx_t
-CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccumulator<col_t>::contains(
+CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::contains(
     col_t col_idx ) const
 {
     using lidx_t = typename Policy::lidx_t;
@@ -969,10 +900,10 @@ CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccumulat
     return flags[loc];
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccumulator<
-    col_t>::set_flag( col_t col_idx, typename Policy::lidx_t k )
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::set_flag(
+    col_t col_idx, typename Policy::lidx_t k )
 {
     using lidx_t = typename Policy::lidx_t;
 
@@ -989,10 +920,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccu
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccumulator<
-    col_t>::insert_or_append( col_t col_idx )
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::insert_or_append(
+    col_t col_idx )
 {
     using lidx_t = typename Policy::lidx_t;
 
@@ -1011,13 +942,13 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccu
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccumulator<
-    col_t>::insert_or_append( col_t col_idx,
-                              typename Policy::scalar_t val,
-                              col_t *col_space,
-                              typename Policy::scalar_t *val_space )
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::insert_or_append(
+    col_t col_idx,
+    typename Policy::scalar_t val,
+    col_t *col_space,
+    typename Policy::scalar_t *val_space )
 {
     using lidx_t = typename Policy::lidx_t;
 
@@ -1038,10 +969,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccu
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccumulator<
-    col_t>::clear()
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::clear()
 {
     using lidx_t = typename Policy::lidx_t;
 
@@ -1051,10 +981,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::DenseAccu
     num_inserted = 0;
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-uint16_t
-CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAccumulator<col_t>::hash(
+uint16_t CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::hash(
     col_t col_idx ) const
 {
     const uint16_t c0 = ( 506999 * col_idx ) & 0xFFFF;
@@ -1062,11 +991,11 @@ CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAccumula
     return ( c0 ^ c1 ) % capacity;
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
 typename Policy::lidx_t
-CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAccumulator<
-    col_t>::contains( col_t col_idx ) const
+CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::contains(
+    col_t col_idx ) const
 {
     auto pos = hash( col_idx ), flag = flags[pos];
     if ( flag == 0xFFFF ) {
@@ -1086,10 +1015,10 @@ CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAccumula
     return -1;
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAccumulator<
-    col_t>::set_flag( col_t col_idx, typename Policy::lidx_t k )
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::set_flag(
+    col_t col_idx, typename Policy::lidx_t k )
 {
     auto pos = hash( col_idx ), flag = flags[pos];
     if ( flag == 0xFFFF ) {
@@ -1118,10 +1047,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAcc
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAccumulator<
-    col_t>::insert_or_append( col_t col_idx )
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::insert_or_append(
+    col_t col_idx )
 {
     if ( num_inserted == capacity ) {
         grow( cols.data() );
@@ -1171,13 +1100,13 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAcc
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAccumulator<
-    col_t>::insert_or_append( col_t col_idx,
-                              typename Policy::scalar_t val,
-                              col_t *col_space,
-                              typename Policy::scalar_t *val_space )
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::insert_or_append(
+    col_t col_idx,
+    typename Policy::scalar_t val,
+    col_t *col_space,
+    typename Policy::scalar_t *val_space )
 {
     if ( num_inserted == capacity ) {
         grow( col_space );
@@ -1208,10 +1137,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAcc
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAccumulator<
-    col_t>::grow( col_t *col_space )
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::grow(
+    col_t *col_space )
 {
 #if CSRSPGEMM_REPORT_SPACC_STATS
     ++total_grows;
@@ -1244,10 +1173,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAcc
     }
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
+template<typename Policy, class Allocator>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator, LocalMatrixData>::SparseAccumulator<
-    col_t>::clear()
+void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::clear()
 {
 #if CSRSPGEMM_REPORT_SPACC_STATS
     total_clears++;

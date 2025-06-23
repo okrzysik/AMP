@@ -166,9 +166,9 @@ createOperators( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     NonlinearDiffusionDB->putScalar( "OutputVariable", OutputVariable );
     NonlinearDiffusionDB->putScalar( "PrincipalVariable", "temperature" );
     addDiffusionElementDB( *NonlinearDiffusionDB, "DiffusionNonlinearElement" );
-    auto nonlinearDiffusion = std::dynamic_pointer_cast<DiffusionNonlinearFEOperator>(
-        OperatorBuilder::createNonlinearDiffusionOperator(
-            mesh, NonlinearDiffusionDB, DiffusionTransportModel ) );
+    auto nonlinearDiffusion =
+        std::dynamic_pointer_cast<DiffusionNonlinearFEOperator>( OperatorBuilder::createOperator(
+            mesh, "DiffusionNonlinearFEOperator", NonlinearDiffusionDB, DiffusionTransportModel ) );
     nonlinearDiffusion->setVector( "temperature", tempVec );
 
     // Create the column boundary operators

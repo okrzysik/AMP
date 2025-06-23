@@ -441,8 +441,6 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
 {
     PROFILE( "CSRLocalMatrixData::sortColumns" );
 
-    typedef std::tuple<gidx_t, scalar_t> tuple_t;
-
     AMP_INSIST( d_memory_location < AMP::Utilities::MemoryType::device,
                 "CSRSerialMatrixData::sortColumns not implemented for device memory" );
 
@@ -453,47 +451,52 @@ void CSRLocalMatrixData<Policy, Allocator>::sortColumns()
     AMP_DEBUG_INSIST( d_cols.get() != nullptr,
                       "CSRLocalMatrixData::sortColumns Access to global columns required" );
 
-    std::vector<tuple_t> rTpl;
+    std::vector<lidx_t> row_indices;
+    std::vector<gidx_t> cols_tmp;
+    std::vector<scalar_t> coeffs_tmp;
     for ( lidx_t row = 0; row < d_num_rows; ++row ) {
         const auto rs      = d_row_starts[row];
         const auto row_len = d_row_starts[row + 1] - rs;
         if ( row_len == 0 )
             continue;
 
-        // enlarge temp vector of tuples if needed
-        if ( row_len > static_cast<lidx_t>( rTpl.size() ) ) {
-            rTpl.resize( row_len );
-        }
+        row_indices.resize( row_len );
+        cols_tmp.resize( row_len );
+        coeffs_tmp.resize( row_len );
 
-        // pack local column and coeff into array of tuples
-        for ( lidx_t k = 0; k < row_len; ++k ) {
-            rTpl[k] = std::make_tuple( d_cols[rs + k], d_coeffs[rs + k] );
-        }
+        // initial row numbers
+        std::iota( row_indices.begin(), row_indices.end(), 0 );
 
+        // sort row_indices using column indices
         // slightly different sorting criteria for on and off diagonal blocks
+        const auto cols_ptr = &d_cols[rs];
         if ( d_is_diag ) {
+            PROFILE( "CSRLocalMatrixData::sortColumns:diag" );
             const gidx_t diag_idx = d_first_col + static_cast<gidx_t>( row );
             // diag block puts diag entry first, then ascending order on local col
-            std::sort( rTpl.data(),
-                       rTpl.data() + row_len,
-                       [diag_idx]( const tuple_t &a, const tuple_t &b ) -> bool {
-                           const gidx_t gca = std::get<0>( a ), gcb = std::get<0>( b );
-                           return diag_idx != gcb && ( gca < gcb || gca == diag_idx );
+            std::sort( row_indices.begin(),
+                       row_indices.end(),
+                       [diag_idx, cols_ptr]( const lidx_t &a, const lidx_t &b ) -> bool {
+                           return diag_idx != cols_ptr[b] &&
+                                  ( cols_ptr[a] < cols_ptr[b] || cols_ptr[a] == diag_idx );
                        } );
         } else {
+            PROFILE( "CSRLocalMatrixData::sortColumns:offdiag" );
             // offd block is plain ascending order on local col
-            std::sort( rTpl.data(),
-                       rTpl.data() + row_len,
-                       []( const tuple_t &a, const tuple_t &b ) -> bool {
-                           return std::get<0>( a ) < std::get<0>( b );
+            std::sort( row_indices.begin(),
+                       row_indices.end(),
+                       [cols_ptr]( const lidx_t &a, const lidx_t &b ) -> bool {
+                           return cols_ptr[a] < cols_ptr[b];
                        } );
         }
 
-        // unpack now sorted array of tuples
+        // use row_indices to fill sorted col and coeff vectors
         for ( lidx_t k = 0; k < row_len; ++k ) {
-            d_cols[rs + k]   = std::get<0>( rTpl[k] );
-            d_coeffs[rs + k] = std::get<1>( rTpl[k] );
+            cols_tmp[k]   = d_cols[rs + row_indices[k]];
+            coeffs_tmp[k] = d_coeffs[rs + row_indices[k]];
         }
+        std::copy( cols_tmp.begin(), cols_tmp.end(), &d_cols[rs] );
+        std::copy( coeffs_tmp.begin(), coeffs_tmp.end(), &d_coeffs[rs] );
     }
 }
 

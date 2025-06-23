@@ -34,15 +34,14 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     AMP::logAllNodes( log_file );
 
     // Create the Mesh
-    const auto meshAdapter = createMesh( input_db );
+    const auto mesh = createMesh( input_db );
 
     // Create the power source
-    auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, meshAdapter );
+    auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, mesh );
 
     // CREATE THE THERMAL OPERATOR
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "DiffusionBVPOperator", input_db ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "DiffusionBVPOperator", input_db ) );
 
     auto nodalDofMap    = PowerInWattsVec->getDOFManager();
     auto inputVariable  = diffusionOperator->getInputVariable();
@@ -68,7 +67,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     const auto rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
     AMP::pout << "RHS Norm: " << rhsNorm << std::endl;
 
-    auto &comm    = meshAdapter->getComm();
+    auto &comm    = mesh->getComm();
     auto mlSolver = AMP::Solver::Test::buildSolver(
         "LinearSolver", input_db, comm, nullptr, diffusionOperator );
 
@@ -79,7 +78,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     checkConvergence( mlSolver.get(), input_db, inputFileName, *ut );
 
     // check the solution
-    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
 
     // The analytical solution is:  T = a + b*z + c*z*z
     //   c = -power/2

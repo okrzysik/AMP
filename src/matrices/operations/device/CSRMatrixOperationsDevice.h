@@ -8,11 +8,22 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy,
-         class Allocator,
-         class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+template<typename Policy, class Allocator>
 class CSRMatrixOperationsDevice : public MatrixOperations
 {
+public:
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
+    using policy_t          = Policy;
+    using allocator_t       = Allocator;
+    using matrixdata_t      = CSRMatrixData<Policy, Allocator>;
+    using localmatrixdata_t = typename matrixdata_t::localmatrixdata_t;
+
+    using localops_t = CSRLocalMatrixOperationsDevice<Policy, Allocator>;
+
+    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
 
     /** \brief  Matrix-vector multiplication
      * \param[in]  in  The vector to multiply
@@ -101,9 +112,7 @@ class CSRMatrixOperationsDevice : public MatrixOperations
     void copyCast( const MatrixData &X, MatrixData &Y ) override;
 
     template<typename PolicyIn>
-    static void
-    copyCast( CSRMatrixData<PolicyIn, Allocator, CSRLocalMatrixData<PolicyIn, Allocator>> *X,
-              CSRMatrixData<Policy, Allocator, LocalMatrixData> *Y );
+    static void copyCast( CSRMatrixData<PolicyIn, Allocator> *X, matrixdata_t *Y );
 };
 
 } // namespace AMP::LinearAlgebra

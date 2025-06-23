@@ -19,22 +19,26 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-template<typename P, class A, class DIAG>
+template<typename P, class A>
 class CSRMatrixSpGEMMDefault;
 
-template<typename Policy,
-         class Allocator       = AMP::HostAllocator<void>,
-         class LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+template<typename Policy, class Allocator>
 class CSRMatrixData : public MatrixData
 {
 public:
-    template<typename P, class A, class DIAG>
+    template<typename P, class A>
     friend class CSRMatrixSpGEMMDefault;
+
+    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
+    using policy_t          = Policy;
+    using allocator_t       = Allocator;
+    using localmatrixdata_t = CSRLocalMatrixData<Policy, Allocator>;
 
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+
     using gidxAllocator_t =
         typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
     using lidxAllocator_t =
@@ -194,10 +198,10 @@ public:
     }
 
     //! Get pointer to diagonal block
-    std::shared_ptr<LocalMatrixData> getDiagMatrix() { return d_diag_matrix; }
+    std::shared_ptr<localmatrixdata_t> getDiagMatrix() { return d_diag_matrix; }
 
     //! Get pointer to off-diagonal block
-    std::shared_ptr<LocalMatrixData> getOffdMatrix() { return d_offd_matrix; }
+    std::shared_ptr<localmatrixdata_t> getOffdMatrix() { return d_offd_matrix; }
 
     //! Get row pointers from diagonal block
     lidx_t *getDiagRowStarts() { return d_diag_matrix->d_row_starts.get(); }
@@ -270,7 +274,7 @@ public:
      * offd components. Row extents are set to [0,rows.size) and column extents
      * are set to [0,numGlobalColumns).
      */
-    std::shared_ptr<LocalMatrixData> subsetRows( const std::vector<gidx_t> &rows ) const;
+    std::shared_ptr<localmatrixdata_t> subsetRows( const std::vector<gidx_t> &rows ) const;
 
     /** \brief  Extract subset of each row containing global columns in some range
      * \param[in] idx_lo  Lower global column index (inclusive)
@@ -280,7 +284,7 @@ public:
      * offd components. Row and column extents are inherited from this matrix,
      * but are neither sorted nor converted to local indices.
      */
-    std::shared_ptr<LocalMatrixData> subsetCols( const gidx_t idx_lo, const gidx_t idx_up ) const;
+    std::shared_ptr<localmatrixdata_t> subsetCols( const gidx_t idx_lo, const gidx_t idx_up ) const;
 
 protected:
     bool d_is_square = true;
@@ -303,9 +307,9 @@ protected:
     scalarAllocator_t d_scalarAllocator;
 
     //! Diagonal matrix block [d_first_row,d_last_row] x [d_first_col,d_last_col]
-    std::shared_ptr<LocalMatrixData> d_diag_matrix;
+    std::shared_ptr<localmatrixdata_t> d_diag_matrix;
     //! Diagonal matrix block [d_first_row,d_last_row] x ]d_first_col,d_last_col[
-    std::shared_ptr<LocalMatrixData> d_offd_matrix;
+    std::shared_ptr<localmatrixdata_t> d_offd_matrix;
 
     //! DOFManager for left vectors
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
@@ -327,23 +331,22 @@ protected:
     void setOtherData( std::map<gidx_t, std::map<gidx_t, scalar_t>> &,
                        AMP::LinearAlgebra::ScatterType );
 
-    std::shared_ptr<LocalMatrixData>
+    std::shared_ptr<localmatrixdata_t>
     transposeOffd( std::shared_ptr<MatrixParametersBase> params ) const;
 };
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-static CSRMatrixData<Policy, Allocator, LocalMatrixData> const *
-getCSRMatrixData( MatrixData const &A )
+template<typename Policy, class Allocator>
+static CSRMatrixData<Policy, Allocator> const *getCSRMatrixData( MatrixData const &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator, LocalMatrixData> const *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator> const *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
 
-template<typename Policy, class Allocator, class LocalMatrixData>
-static CSRMatrixData<Policy, Allocator, LocalMatrixData> *getCSRMatrixData( MatrixData &A )
+template<typename Policy, class Allocator>
+static CSRMatrixData<Policy, Allocator> *getCSRMatrixData( MatrixData &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator, LocalMatrixData> *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator> *>( &A );
     AMP_INSIST( ptr, "dynamic cast from MatrixData to CSRMatrixData failed" );
     return ptr;
 }

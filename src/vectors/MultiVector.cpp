@@ -271,6 +271,8 @@ Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
     // Check if we are dealing with a component selector
     if ( dynamic_cast<const VS_Components *>( &s ) )
         return s.subset( shared_from_this() );
+    if ( dynamic_cast<const MultiSelector *>( &s ) )
+        return s.subset( shared_from_this() );
     // Check if this vector matches (only need to deal with select by name for now)
     auto s_name = dynamic_cast<const VS_ByVariableName *>( &s );
     if ( s_name || dynamic_cast<const VS_MultiVariable *>( &s ) ) {

@@ -60,25 +60,17 @@ public:
     std::shared_ptr<AMP::LinearAlgebra::Variable> createOutputVariable( const std::string &name,
                                                                         int varId = -1 );
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() const override;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override;
 
     void setInputVariableName( const std::string &name, int varId = -1 );
 
     void setOutputVariableName( const std::string &name, int varId = -1 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
+    std::shared_ptr<AMP::LinearAlgebra::VectorSelector> selectOutputVector() const override;
 
-    AMP::LinearAlgebra::Vector::shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
-
-    AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
-
-    AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec ) override;
+    std::shared_ptr<AMP::LinearAlgebra::VectorSelector> selectInputVector() const override;
 
     /**
       @param [in] zloc is the location vector in z direction.

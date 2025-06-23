@@ -38,9 +38,9 @@ public:
 
     void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() const override;
 
     static int
     matVec( ML_Operator *data, int in_length, double in[], int out_length, double out[] );

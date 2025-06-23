@@ -68,7 +68,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
             ->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
     AMP_ASSERT( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-    AMP_ASSERT( d_rhs->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
+    //    AMP_ASSERT( d_rhs->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     const Teuchos::RCP<Thyra::PreconditionerBase<double>> W_prec_out = outArgs.get_W_prec();
     if ( nonnull( W_prec_out ) ) {
@@ -93,7 +93,8 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
             d_prePostOperator->runPreApply( x, f_out, exact );
         // Apply the AMP::Operator to compute r = A(u) - rhs
         d_nonlinearOp->apply( x, f_out );
-        f_out->axpby( -1, 1, *d_rhs );
+        if ( d_rhs )
+            f_out->axpby( -1, 1, *d_rhs );
         if ( d_prePostOperator != nullptr )
             d_prePostOperator->runPostApply( x, f_out, exact );
     }

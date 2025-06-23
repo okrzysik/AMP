@@ -2091,8 +2091,7 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     if ( !d_scratch_function_vector )
         d_scratch_function_vector = in->clone();
-    auto rhs = d_scratch_function_vector;
-    rhs->zero();
+
     setMultiPhysicsScalings();
 
     if ( !d_scratch_vector )
@@ -2121,7 +2120,7 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
         AMP::pout << std::endl;
     }
 
-    d_solver->apply( rhs, d_scratch_vector );
+    d_solver->apply( nullptr, d_scratch_vector );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "Scaled outgoing TI solution component norms: ";

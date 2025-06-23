@@ -121,26 +121,24 @@ void ColumnOperator::append( std::shared_ptr<Operator> op )
 /********************************************************
  * Get the variables                                     *
  ********************************************************/
-std::shared_ptr<AMP::LinearAlgebra::Variable> ColumnOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> ColumnOperator::getInputVariable() const
 {
     auto retVariable = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "ColumnVariable" );
     for ( auto &elem : d_operators ) {
         auto opVar = elem->getInputVariable();
-        if ( opVar ) {
+        if ( opVar )
             retVariable->add( opVar );
-        }
     }
     retVariable->removeDuplicateVariables();
     return retVariable;
 }
-std::shared_ptr<AMP::LinearAlgebra::Variable> ColumnOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> ColumnOperator::getOutputVariable() const
 {
     auto retVariable = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "ColumnVariable" );
     for ( auto &elem : d_operators ) {
-        std::shared_ptr<AMP::LinearAlgebra::Variable> opVar = elem->getOutputVariable();
-        if ( opVar ) {
+        auto opVar = elem->getOutputVariable();
+        if ( opVar )
             retVariable->add( opVar );
-        }
     }
     retVariable->removeDuplicateVariables();
     return retVariable;

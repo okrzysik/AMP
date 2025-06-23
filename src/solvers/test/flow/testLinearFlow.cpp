@@ -56,22 +56,21 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager        = AMP::Mesh::MeshFactory::create( params );
-    auto meshAdapterH27 = manager->Subset( "cubeH27" );
-    auto meshAdapterH08 = manager->Subset( "cubeH08" );
+    auto manager = AMP::Mesh::MeshFactory::create( params );
+    auto meshH27 = manager->Subset( "cubeH27" );
+    auto meshH08 = manager->Subset( "cubeH08" );
 
     // Create the Conservation of Momentum Operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> FlowTransportModel;
     AMP_INSIST( input_db->keyExists( "ConsMomentumLinearFEOperator" ), "key missing!" );
     auto ConsMomentumOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapterH27, "ConsMomentumLinearBVPOperator", input_db, FlowTransportModel ) );
+            meshH27, "ConsMomentumLinearBVPOperator", input_db ) );
 
     // Create the Conservation of Mass Operator
     AMP_INSIST( input_db->keyExists( "ConsMassLinearFEOperator" ), "key missing!" );
     auto ConsMassOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapterH08, "ConsMassLinearBVPOperator", input_db, FlowTransportModel ) );
+            meshH08, "ConsMassLinearBVPOperator", input_db ) );
     AMP::pout << "Finished creating Mass Operator" << std::endl;
 
     // Create the variables
@@ -96,9 +95,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto BMat  = ConsMassOperator->getMatrix();
     auto BtMat = BMat->transpose();
 
-    // Create a zero matrix over meshAdapterH08
+    // Create a zero matrix over meshH08
     auto DOF_H08_scalar = AMP::Discretization::simpleDOFManager::create(
-        meshAdapterH08, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+        meshH08, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto zeroMat = AMP::LinearAlgebra::createMatrix(
         AMP::LinearAlgebra::createVector( DOF_H08_scalar, pressureVar ),
         AMP::LinearAlgebra::createVector( DOF_H08_scalar, pressureVar ) );

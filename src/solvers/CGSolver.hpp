@@ -117,10 +117,12 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     if ( !d_r ) {
         d_r = u->clone();
-        if ( !d_bUsesPreconditioner )
-            d_z = d_r;
         allocateScratchVectors( d_r );
     }
+
+    // ensure d_r does no communication
+    if ( d_sVariant == "pcg" )
+        d_r->setNoGhosts();
 
     // Always zero before checking stopping criteria for any reason
     d_iNumberIterations = 0;
@@ -173,6 +175,8 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     if ( d_bUsesPreconditioner ) {
         PROFILE( "CGSolver<T>:: z = M^{-1}r (initial)" );
         d_pPreconditioner->apply( d_r, d_z );
+    } else {
+        d_z = d_r;
     }
 
     if ( d_sVariant != "pcg" ) {
@@ -189,12 +193,14 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     T rho_0, rho_1, alpha, gamma;
 
-    {
+    if ( d_bUsesPreconditioner ) {
         PROFILE( "CGSolver<T>:: rho_1 = <z,r> (initial)" );
         rho_1 = static_cast<T>( d_z->dot( *d_r ) );
+    } else {
+        rho_1 = static_cast<T>( d_dResidualNorm );
+        rho_1 *= rho_1;
     }
 
-    rho_0 = rho_1;
     {
         PROFILE( "CGSolver<T>:: p = z (initial) " );
         d_p->copyVector( d_z );
@@ -299,8 +305,13 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             rho_1 = static_cast<T>( d_r->dot( *d_p ) );
 
         } else {
-            PROFILE( "CGSolver<T>:: rho_1 = <r,z>" );
-            rho_1 = static_cast<T>( d_r->dot( *d_z ) );
+            if ( d_bUsesPreconditioner ) {
+                PROFILE( "CGSolver<T>:: rho_1 = <r,z>" );
+                rho_1 = static_cast<T>( d_r->dot( *d_z ) );
+            } else {
+                rho_1 = static_cast<T>( d_dResidualNorm );
+                rho_1 *= rho_1;
+            }
         }
 
         if ( d_sVariant != "fcg" ) {

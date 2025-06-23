@@ -14,6 +14,8 @@ class GhostDataHelper : public VectorData
 public:
     using ScalarAllocator_t =
         typename std::allocator_traits<Allocator>::template rebind_alloc<TYPE>;
+    using sizetAllocator_t =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<size_t>;
 
     GhostDataHelper();
     GhostDataHelper( std::shared_ptr<CommunicationList> );
@@ -23,7 +25,6 @@ public: // Functions overloaded from VectorData
     bool hasGhosts() const override { return d_ghostSize > 0; }
     std::shared_ptr<CommunicationList> getCommunicationList() const override;
     void setCommunicationList( std::shared_ptr<CommunicationList> comm ) override;
-    void aliasGhostBuffer( std::shared_ptr<VectorData> in ) override;
     size_t getGhostSize() const override;
     void fillGhosts( const Scalar & ) override;
     void setNoGhosts() override;
@@ -65,11 +66,22 @@ protected:
     std::shared_ptr<CommunicationList> d_CommList = nullptr;
     std::shared_ptr<UpdateState> d_UpdateState    = nullptr;
 
-    ScalarAllocator_t d_alloc;
-    TYPE *d_Ghosts    = nullptr;
-    TYPE *d_AddBuffer = nullptr;
     //! size/length of ghost and add buffers
     size_t d_ghostSize = 0;
+
+    ScalarAllocator_t d_alloc;
+
+    TYPE *d_Ghosts    = nullptr;
+    TYPE *d_AddBuffer = nullptr;
+    //! Buffers for sending/receiving data
+    TYPE *d_SendRecv = nullptr;
+
+    //! number of local ids that are remote
+    size_t d_numRemote = 0;
+
+    sizetAllocator_t d_int_alloc;
+    //! list of local ids that are remote
+    size_t *d_localRemote = nullptr;
 };
 
 

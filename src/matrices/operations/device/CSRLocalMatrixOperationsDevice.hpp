@@ -22,10 +22,6 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::mult(
     PROFILE( "CSRLocalMatrixOperationsDevice::mult" );
     AMP_DEBUG_ASSERT( in && out && A );
 
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
 
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
@@ -52,10 +48,6 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::scale(
     typename Policy::scalar_t alpha, std::shared_ptr<LocalMatrixData> A )
 {
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
 
     const auto tnnz_d = A->numberOfNonZeros();
@@ -77,10 +69,6 @@ void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::axpy(
     std::shared_ptr<LocalMatrixData> X,
     std::shared_ptr<LocalMatrixData> Y )
 {
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     const auto [row_starts_d_x, cols_d_x, cols_loc_d_x, coeffs_d_x] = X->getDataFields();
     auto [row_starts_d_y, cols_d_y, cols_loc_d_y, coeffs_d_y]       = Y->getDataFields();
     const auto tnnz                                                 = X->numberOfNonZeros();
@@ -95,10 +83,6 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setScalar(
     typename Policy::scalar_t alpha, std::shared_ptr<LocalMatrixData> A )
 {
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
 
     const auto tnnz_d = A->numberOfNonZeros();
@@ -110,7 +94,6 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::zero(
     std::shared_ptr<LocalMatrixData> A )
 {
-    using scalar_t = typename Policy::scalar_t;
     setScalar( static_cast<scalar_t>( 0.0 ), A );
 }
 
@@ -118,10 +101,6 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setDiagonal(
     const typename Policy::scalar_t *in, std::shared_ptr<LocalMatrixData> A )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
     const auto nRows                                  = static_cast<lidx_t>( A->numLocalRows() );
 
@@ -134,10 +113,6 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::extractDiagonal(
     std::shared_ptr<LocalMatrixData> A, typename Policy::scalar_t *buf )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
     const auto nRows                                  = static_cast<lidx_t>( A->numLocalRows() );
 
@@ -149,10 +124,6 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::setIdentity(
     std::shared_ptr<LocalMatrixData> A )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     zero( A );
 
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
@@ -165,10 +136,6 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::LinfNorm(
     std::shared_ptr<LocalMatrixData> A, typename Policy::scalar_t *rowSums )
 {
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     auto [row_starts_d, cols_d, cols_loc_d, coeffs_d] = A->getDataFields();
     const auto nRows                                  = static_cast<lidx_t>( A->numLocalRows() );
 
@@ -180,10 +147,6 @@ template<typename Policy, class Allocator, class LocalMatrixData>
 void CSRLocalMatrixOperationsDevice<Policy, Allocator, LocalMatrixData>::copy(
     std::shared_ptr<const LocalMatrixData> X, std::shared_ptr<LocalMatrixData> Y )
 {
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     const auto [row_starts_d_x, cols_d_x, cols_loc_d_x, coeffs_d_x] =
         std::const_pointer_cast<LocalMatrixData>( X )->getDataFields();
     auto [row_starts_d_y, cols_d_y, cols_loc_d_y, coeffs_d_y] = Y->getDataFields();

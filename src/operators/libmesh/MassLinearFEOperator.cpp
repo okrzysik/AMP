@@ -5,13 +5,13 @@
 namespace AMP::Operator {
 
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> MassLinearFEOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> MassLinearFEOperator::getInputVariable() const
 {
     return d_inpVariable;
 }
 
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> MassLinearFEOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> MassLinearFEOperator::getOutputVariable() const
 {
     return d_outVariable;
 }

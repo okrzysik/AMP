@@ -56,12 +56,11 @@ static void nonlinearTest( AMP::UnitTest *ut,
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    auto diffFEOp_db       = input_db->getDatabase( "NonlinearDiffusionOp" );
-    auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
-        meshAdapter, "NonlinearDiffusionOp", input_db, elementModel );
+    auto diffFEOp_db = input_db->getDatabase( "NonlinearDiffusionOp" );
+    auto nonlinearOperator =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "NonlinearDiffusionOp", input_db );
     auto diffOp =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>( nonlinearOperator );
 
@@ -100,7 +99,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // create solution, rhs, and residual vectors
     auto tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
@@ -162,7 +161,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
     }
     diffRhsVec->setToScalar( 0.0 );
 
-    auto curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto curNode = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     auto endNode = curNode.end();
 
     for ( curNode = curNode.begin(); curNode != endNode; ++curNode ) {
@@ -208,7 +207,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
     // write values in mathematica form
     int nranks = globalComm.getSize();
     if ( nranks == 1 ) {
-        size_t nnodes        = meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
+        size_t nnodes        = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
         int proc             = globalComm.getRank();
         int nproc            = globalComm.getSize();
         std::string filename = "values-" + exeName;
@@ -217,7 +216,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
             file << "values={"
                  << "\n";
         }
-        auto node = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        auto node = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
 
         int i = 0;
         for ( ; node != node.end(); ++node ) {

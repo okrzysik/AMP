@@ -38,6 +38,11 @@ Writer::WriterProperties SiloIO::getProperties() const
     properties.extension              = "silo";
     properties.registerMesh           = true;
     properties.registerVectorWithMesh = true;
+#ifdef AMP_USE_SILO
+    properties.enabled = true;
+#else
+    properties.enabled = false;
+#endif
     return properties;
 }
 

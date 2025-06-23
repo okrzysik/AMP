@@ -47,12 +47,12 @@ static void myTest( AMP::UnitTest *ut )
         bool distortElement = input_db->getScalar<bool>( "DISTORT_ELEMENT" );
 
         libMesh::Parallel::Communicator comm( globalComm.getCommunicator() );
-        auto mesh = std::make_shared<libMesh::Mesh>( comm, 3 );
+        auto libmesh = std::make_shared<libMesh::Mesh>( comm, 3 );
         libMesh::MeshTools::Generation::build_cube(
-            ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
+            ( *( libmesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
 
         if ( distortElement ) {
-            libMesh::Elem *elemPtr = mesh->elem_ptr( 0 );
+            libMesh::Elem *elemPtr = libmesh->elem_ptr( 0 );
 
             ( elemPtr->point( 0 ) )( 0 ) -= 0.1;
             ( elemPtr->point( 0 ) )( 1 ) -= 0.2;
@@ -67,7 +67,7 @@ static void myTest( AMP::UnitTest *ut )
             ( elemPtr->point( 6 ) )( 2 ) += 0.1;
         }
 
-        auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "TestMesh" );
+        auto mesh = std::make_shared<AMP::Mesh::libmeshMesh>( libmesh, "TestMesh" );
 
         AMP_INSIST( input_db->keyExists( "Isotropic_Model" ),
                     "Key ''Isotropic_Model'' is missing!" );
@@ -85,7 +85,7 @@ static void myTest( AMP::UnitTest *ut )
         auto mechLinElem = std::make_shared<AMP::Operator::MechanicsLinearElement>( elemOpParams );
 
         auto dofMap = AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+            mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Assembly" ),
                     "Key ''Mechanics_Assembly'' is missing!" );
@@ -94,7 +94,7 @@ static void myTest( AMP::UnitTest *ut )
             std::make_shared<AMP::Operator::MechanicsLinearFEOperatorParameters>( mechAssembly_db );
         mechOpParams->d_materialModel = isotropicModel;
         mechOpParams->d_elemOp        = mechLinElem;
-        mechOpParams->d_Mesh          = meshAdapter;
+        mechOpParams->d_Mesh          = mesh;
         mechOpParams->d_inDofMap      = dofMap;
         mechOpParams->d_outDofMap     = dofMap;
         auto mechOp = std::make_shared<AMP::Operator::MechanicsLinearFEOperator>( mechOpParams );
@@ -112,7 +112,7 @@ static void myTest( AMP::UnitTest *ut )
             fprintf( fp, "\n" );
         } // end for i
 
-        auto nd     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        auto nd     = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         auto end_nd = nd.end();
 
         for ( int i = 0; nd != end_nd; ++nd, ++i ) {

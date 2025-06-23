@@ -89,6 +89,8 @@ public:
     void printStressAndStrain( AMP::LinearAlgebra::Vector::shared_ptr disp,
                                const std::string &fname );
 
+    std::shared_ptr<MechanicsMaterialModel> getMaterialModel() { return d_materialModel; }
+
 protected:
     void getDofIndicesForCurrentElement();
 

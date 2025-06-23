@@ -37,8 +37,7 @@ void linearThermalTest( AMP::UnitTest *ut,
     // Print from all cores into the output files
     AMP::logAllNodes( ss.str() );
 
-    // Create the Mesh
-    const auto meshAdapter = createMesh( input_db );
+    auto nReps = input_db->getWithDefault<int>( "repetitions", 1 );
 
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
     neutronicsOp_db->putScalar( "AccelerationBackend", accelerationBackend );
@@ -47,7 +46,10 @@ void linearThermalTest( AMP::UnitTest *ut,
     volumeOp_db->putScalar( "AccelerationBackend", accelerationBackend );
     volumeOp_db->putScalar( "MemoryLocation", memoryLocation );
 
-    auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, meshAdapter );
+    // Create the Mesh
+    const auto mesh = createMesh( input_db );
+
+    auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, mesh );
 
     // Set appropriate acceleration backend
     auto op_db = input_db->getDatabase( "DiffusionBVPOperator" );
@@ -55,8 +57,7 @@ void linearThermalTest( AMP::UnitTest *ut,
     op_db->putScalar( "MemoryLocation", memoryLocation );
     // Create the Thermal BVP Operator
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            meshAdapter, "DiffusionBVPOperator", input_db ) );
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "DiffusionBVPOperator", input_db ) );
 
     auto linearOp               = diffusionOperator->getVolumeOperator();
     auto TemperatureInKelvinVec = linearOp->getLeftVector();
@@ -69,26 +70,29 @@ void linearThermalTest( AMP::UnitTest *ut,
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
-    auto &comm = meshAdapter->getComm();
+    auto &comm = mesh->getComm();
 
     auto linearSolver = AMP::Solver::Test::buildSolver(
         "LinearSolver", input_db, comm, nullptr, diffusionOperator );
 
-    // Set initial guess
-    TemperatureInKelvinVec->setToScalar( 1.0 );
+    for ( int i = 0; i < nReps; ++i ) {
+        // Set initial guess
+        TemperatureInKelvinVec->setToScalar( 1.0 );
 
-    AMP::pout << "System size: " << RightHandSideVec->getGlobalSize() << std::endl;
+        AMP::pout << "Iteration " << i << ", system size: " << RightHandSideVec->getGlobalSize()
+                  << std::endl;
 
-    // Use a random initial guess?
-    linearSolver->setZeroInitialGuess( false );
+        // Use a random initial guess?
+        linearSolver->setZeroInitialGuess( false );
 
-    // Solve the problem.
-    {
-        PROFILE( "DRIVER::linearThermalTest(solve call)" );
-        linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
+        // Solve the problem.
+        {
+            PROFILE( "DRIVER::linearThermalTest(solve call)" );
+            linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
+        }
+
+        checkConvergence( linearSolver.get(), input_db, input_file, *ut );
     }
-
-    checkConvergence( linearSolver.get(), input_db, input_file, *ut );
 }
 
 int main( int argc, char *argv[] )

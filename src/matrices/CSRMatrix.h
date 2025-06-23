@@ -8,6 +8,9 @@
 
 namespace AMP::LinearAlgebra {
 
+template<typename Policy, class Allocator = AMP::HostAllocator<void>>
+class CSRMatrixData;
+
 /** \class CSRMatrix
  * \brief  An concrete class for dealing with dense serial matrices
  * \details  This is a concrete class that stores a dense local matrix.
@@ -17,6 +20,9 @@ template<typename Policy, typename Allocator = AMP::HostAllocator<void>>
 class CSRMatrix : public Matrix
 {
     static_assert( std::is_same_v<typename Allocator::value_type, void> );
+    using policy_t     = Policy;
+    using allocator_t  = Allocator;
+    using matrixdata_t = CSRMatrixData<Policy, Allocator>;
 
 public:
     CSRMatrix() = delete;

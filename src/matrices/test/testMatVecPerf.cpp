@@ -166,10 +166,10 @@ size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
 
     // Test on defined matrix types
 #if defined( AMP_USE_TRILINOS )
-    // matVecTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs, true );
+    matVecTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs, true );
 #endif
 #if defined( AMP_USE_PETSC )
-    // matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, true );
+    matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, true );
 #endif
     size_t nGlobal = 0;
     for ( auto &backend : backends ) {

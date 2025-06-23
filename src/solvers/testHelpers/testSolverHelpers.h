@@ -33,11 +33,11 @@ std::shared_ptr<AMP::Mesh::Mesh> createMesh( std::shared_ptr<AMP::Database> inpu
 
 std::pair<std::shared_ptr<AMP::Discretization::DOFManager>,
           std::shared_ptr<AMP::Discretization::DOFManager>>
-getDofMaps( std::shared_ptr<const AMP::Mesh::Mesh> meshAdapter );
+getDofMaps( std::shared_ptr<const AMP::Mesh::Mesh> mesh );
 
 std::shared_ptr<AMP::LinearAlgebra::Vector>
 constructNeutronicsPowerSource( std::shared_ptr<AMP::Database> input_db,
-                                std::shared_ptr<AMP::Mesh::Mesh> meshAdapter );
+                                std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 std::tuple<int, double, double, bool>
 get_regression_solution( std::shared_ptr<const AMP::Database> input_db );

@@ -25,23 +25,20 @@ class Operator;
 class OperatorParameters : public ParameterBase
 {
 public:
-    typedef std::shared_ptr<AMP::Operator::OperatorParameters> shared_ptr;
-
     /**
      * Construct and initialize a parameter list according to input
      * data.  Guess what the required and optional keywords are.
      */
-    explicit OperatorParameters( std::shared_ptr<AMP::Database> db ) : ParameterBase( db ) {}
+    explicit OperatorParameters( std::shared_ptr<AMP::Database> db,
+                                 std::shared_ptr<AMP::Mesh::Mesh> mesh = nullptr );
 
-    /**
-     * Destructor.
-     */
+    //! Destructor
     virtual ~OperatorParameters() {}
 
+    //! Optional mesh for the operator
     std::shared_ptr<AMP::Mesh::Mesh> d_Mesh;
-    /**
-     * Allow for the case that a fully constructed operator is returned
-     */
+
+    //! Allow for the case that a fully constructed operator is returned
     std::shared_ptr<AMP::Operator::Operator> d_pOperator;
 };
 

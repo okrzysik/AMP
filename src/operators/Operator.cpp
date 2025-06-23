@@ -120,73 +120,63 @@ void Operator::setMemoryAndBackendParameters( std::shared_ptr<AMP::Database> db 
         db->putScalar<std::string>( "AccelerationBackend", AMP::Utilities::getString( d_backend ) );
 }
 
-AMP::LinearAlgebra::Vector::shared_ptr
-Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
+/********************************************************
+ * Return the default VectorSelector                     *
+ ********************************************************/
+std::shared_ptr<AMP::LinearAlgebra::VectorSelector> Operator::selectOutputVector() const
 {
-    PROFILE( "subsetOutputVector", 1 );
-    // Subset for mesh (if set)
-    if ( d_Mesh ) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        vec = vec->select( meshSelector );
-    }
-    // Subset for variable (if set)
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::VectorSelector>> selectors;
+    if ( d_Mesh )
+        selectors.push_back( std::make_shared<AMP::LinearAlgebra::VS_Mesh>( d_Mesh ) );
     auto var = getOutputVariable();
     if ( var )
-        vec = vec->subsetVectorForVariable( var );
-    return vec;
+        selectors.push_back( var->createVectorSelector() );
+    return AMP::LinearAlgebra::VectorSelector::create( selectors );
+}
+std::shared_ptr<AMP::LinearAlgebra::VectorSelector> Operator::selectInputVector() const
+{
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::VectorSelector>> selectors;
+    if ( d_Mesh )
+        selectors.push_back( std::make_shared<AMP::LinearAlgebra::VS_Mesh>( d_Mesh ) );
+    auto var = getInputVariable();
+    if ( var )
+        selectors.push_back( var->createVectorSelector() );
+    return AMP::LinearAlgebra::VectorSelector::create( selectors );
 }
 
 
-AMP::LinearAlgebra::Vector::shared_ptr
-Operator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
+/********************************************************
+ * Subset vectors                                        *
+ ********************************************************/
+std::shared_ptr<AMP::LinearAlgebra::Vector>
+Operator::subsetInputVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec ) const
 {
     PROFILE( "subsetInputVector", 1 );
-    // Subset for mesh (if set)
-    if ( d_Mesh ) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        vec = vec->select( meshSelector );
-    }
-    // Subset for variable (if set)
-    auto var = getInputVariable();
-    if ( var )
-        vec = vec->subsetVectorForVariable( var );
-    return vec;
+    return vec->select( *selectInputVector() );
 }
-
-
-AMP::LinearAlgebra::Vector::const_shared_ptr
-Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
-{
-    PROFILE( "constSubsetOutputVector", 1 );
-    // Subset for mesh (if set)
-    if ( d_Mesh ) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        vec = vec->select( meshSelector );
-    }
-    // Subset for variable (if set)
-    auto var = getOutputVariable();
-    if ( var )
-        vec = vec->subsetVectorForVariable( var );
-    return vec;
-}
-
-
-AMP::LinearAlgebra::Vector::const_shared_ptr
-Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
+std::shared_ptr<const AMP::LinearAlgebra::Vector>
+Operator::subsetInputVector( std::shared_ptr<const AMP::LinearAlgebra::Vector> vec ) const
 {
     PROFILE( "constSubsetInputVector", 1 );
-    // Subset for mesh (if set)
-    if ( d_Mesh ) {
-        AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        vec = vec->select( meshSelector );
-    }
-    // Subset for variable (if set)
-    auto var = getInputVariable();
-    if ( var )
-        vec = vec->subsetVectorForVariable( var );
-    return vec;
+    return vec->select( *selectInputVector() );
+}
+std::shared_ptr<AMP::LinearAlgebra::Vector>
+Operator::subsetOutputVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec ) const
+{
+    PROFILE( "subsetOutputVector", 1 );
+    return vec->select( *selectOutputVector() );
+}
+std::shared_ptr<const AMP::LinearAlgebra::Vector>
+Operator::subsetOutputVector( std::shared_ptr<const AMP::LinearAlgebra::Vector> vec ) const
+{
+    PROFILE( "constSubsetOutputVector", 1 );
+    return vec->select( *selectOutputVector() );
 }
 
+
+/********************************************************
+ * makeConsistent                                        *
+ ********************************************************/
 void Operator::makeConsistent( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
 {
     AMP_ASSERT( vec );

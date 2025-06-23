@@ -48,17 +48,14 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
         auto input_db = AMP::Database::parseInputFile( input_file );
         input_db->print( AMP::plog );
 
-        auto meshAdapter = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
+        auto mesh = AMP::Mesh::MeshWriters::readTestMeshLibMesh( mesh_file, AMP_COMM_WORLD );
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
         auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "MechanicsBVPOperator", input_db, elementPhysicsModel ) );
+                mesh, "MechanicsBVPOperator", input_db ) );
 
-        std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
         auto dirichletVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "Load_Boundary", input_db, dummyModel ) );
+            AMP::Operator::OperatorBuilder::createOperator( mesh, "Load_Boundary", input_db ) );
 
         auto var = bvpOperator->getOutputVariable();
 
@@ -67,7 +64,7 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
         dirichletVecOp->setVariable( var );
 
         auto dofMap = AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+            mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
@@ -116,7 +113,7 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
 
         AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-        printSolution( meshAdapter, mechSolVec, exeName );
+        printSolution( mesh, mechSolVec, exeName );
 
         if ( finalResidualNorm > ( 1e-10 * initResidualNorm ) ) {
             ut->failure( exeName );

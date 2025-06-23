@@ -216,11 +216,15 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     AMP::pout << "Scaling mesh by a factor " << scaleMeshFactor << "\n";
 
     // Create the linear mechanics operator
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "MechanicsBVPOperator", inputDatabase, elementPhysicsModel ) );
+            mesh, "MechanicsBVPOperator", inputDatabase ) );
     AMP_ASSERT( bvpOperator );
+    auto mechanicsVolumeOperator =
+        std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
+            bvpOperator->getVolumeOperator() );
+    auto elementPhysicsModel = mechanicsVolumeOperator->getMaterialModel();
+
     AMP_ASSERT( elementPhysicsModel );
     // auto var = bvpOperator->getOutputVariable();
 
@@ -275,7 +279,6 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         AMP_ERROR( "Unknown value for typeCoeffAB" );
     } // end if typeCoeffAB
 
-    std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     // Vectors: solution, right-hand side, residual
     auto NodalVectorDOF =
@@ -288,8 +291,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getOutputVariable() );
 
     // Create an operator to get manufactured solution and forcing terms
-    auto volumeOp = AMP::Operator::OperatorBuilder::createOperator(
-        mesh, "VolumeIntegral", inputDatabase, dummyModel );
+    auto volumeOp =
+        AMP::Operator::OperatorBuilder::createOperator( mesh, "VolumeIntegral", inputDatabase );
 
     // Compute the forcing terms
     rhsVec->zero();
@@ -315,7 +318,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
     // Compute Neumann values
     auto neumannVecOp = std::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
         AMP::Operator::OperatorBuilder::createBoundaryOperator(
-            mesh, "NeumannCorrection", inputDatabase, volumeOp, dummyModel ) );
+            mesh, "NeumannCorrection", inputDatabase, volumeOp ) );
     // neumannVecOp->setVariable(var);
     auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
     for ( short neumannBoundaryId : neumannBoundaryIds ) {
@@ -326,8 +329,9 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
             std::vector<double> gradientY( 3, 1.0 );
             std::vector<double> gradientZ( 3, 1.0 );
             // The tensor is stored under the form xx yy zz yz xz xy
-            // autostressTensor = manufacturedSolution->getStressTensor(bnd->x(), bnd->y(),
-            // bnd->z());
+            auto pos = node.coord();
+            [[maybe_unused]] auto stressTensor =
+                manufacturedSolution->getStressTensor( pos.x(), pos.y(), pos.z() );
             double normalDotGradientX = 0.0;
             double normalDotGradientY = 0.0;
             double normalDotGradientZ = 0.0;
@@ -455,9 +459,10 @@ int mechanicsVerification( int argc, char *argv[] )
 
     if ( argc == 1 ) {
         exeNames.emplace_back( "mechanicsVerification-Linear" );
+        exeNames.emplace_back( "mechanicsVerification-Trigonometric" );
     } else {
         for ( int i = 1; i < argc; i++ )
-            exeNames.emplace_back( "mechanicsVerification-" + std::string( argv[i] ) );
+            exeNames.emplace_back( argv[i] );
     }
 
     for ( unsigned int i = 0; i < exeNames.size(); i++ )

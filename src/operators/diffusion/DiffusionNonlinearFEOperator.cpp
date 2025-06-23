@@ -16,6 +16,21 @@
 namespace AMP::Operator {
 
 
+static std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::Database> db,
+                                                    const std::string &key )
+{
+    std::vector<std::string> vars;
+    if ( db->isDatabase( key ) ) {
+        auto activeDB = db->getDatabase( key );
+        for ( auto key2 : activeDB->getAllKeys() )
+            vars.push_back( activeDB->getString( key2 ) );
+    } else {
+        vars = db->getVector<std::string>( key );
+    }
+    return vars;
+}
+
+
 std::shared_ptr<AMP::LinearAlgebra::Variable>
 DiffusionNonlinearFEOperator::createInputVariable( const std::string &name, int varId )
 {
@@ -35,13 +50,14 @@ DiffusionNonlinearFEOperator::createOutputVariable( const std::string &name, int
 }
 
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> DiffusionNonlinearFEOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> DiffusionNonlinearFEOperator::getInputVariable() const
 {
     return d_inpVariables;
 }
 
 
-std::shared_ptr<AMP::LinearAlgebra::Variable> DiffusionNonlinearFEOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable>
+DiffusionNonlinearFEOperator::getOutputVariable() const
 {
     return d_outVariable;
 }
@@ -95,8 +111,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
 
     d_transportModel = params->d_transportModel;
 
-    auto activeVariables =
-        OperatorBuilder::getActiveVariables( params->d_db, "ActiveInputVariables" );
+    auto activeVariables = getActiveVariables( params->d_db, "ActiveInputVariables" );
     for ( auto name : activeVariables ) {
         InputVectorStruct data;
         data.isFrozen  = params->d_db->getWithDefault<bool>( "Freeze" + name, false );
