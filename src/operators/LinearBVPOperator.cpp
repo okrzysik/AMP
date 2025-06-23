@@ -54,8 +54,7 @@ LinearBVPOperator::LinearBVPOperator( std::shared_ptr<const OperatorParameters> 
 
 void LinearBVPOperator::reset( std::shared_ptr<const OperatorParameters> inParams )
 {
-    d_memory_location = inParams->d_memory_location;
-    auto params       = std::dynamic_pointer_cast<const BVPOperatorParameters>( inParams );
+    auto params = std::dynamic_pointer_cast<const BVPOperatorParameters>( inParams );
 
     AMP_INSIST( params, "LinearBVPOperator :: reset Null parameter" );
 

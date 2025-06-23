@@ -46,8 +46,7 @@ void RowOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 void RowOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_ASSERT( params );
-    d_memory_location = params->d_memory_location;
-    auto fParams      = std::dynamic_pointer_cast<const ColumnOperatorParameters>( params );
+    auto fParams = std::dynamic_pointer_cast<const ColumnOperatorParameters>( params );
 
     AMP_INSIST( ( fParams ), "RowOperator::reset parameter object is NULL" );
 
@@ -75,8 +74,8 @@ RowOperator::getParameters( const std::string &type,
                             AMP::LinearAlgebra::Vector::const_shared_ptr u,
                             std::shared_ptr<OperatorParameters> params )
 {
-    std::shared_ptr<AMP::Database> db;
-
+    auto db = std::make_shared<Database>();
+    Operator::setMemoryAndBackendParameters( db );
     auto opParameters = std::make_shared<ColumnOperatorParameters>( db );
 
     auto rtParameters = std::make_shared<OperatorParameters>( db );

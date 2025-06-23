@@ -299,8 +299,9 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     auto uVecView = AMP::LinearAlgebra::PetscVector::view( u );
     Vec fVec      = fVecView->getVec();
     Vec uVec      = uVecView->getVec();
+    PetscReal norm;
+    VecNorm( fVec, NORM_2, &norm );
     KSPSolve( d_KrylovSolver, fVec, uVec );
-
     // Manually update state, needed for mixing different (tpl) solvers
     u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 

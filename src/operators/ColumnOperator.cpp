@@ -79,7 +79,8 @@ ColumnOperator::getParameters( const std::string &type,
                                AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                std::shared_ptr<OperatorParameters> params )
 {
-    std::shared_ptr<AMP::Database> db;
+    auto db = std::make_shared<Database>();
+    Operator::setMemoryAndBackendParameters( db );
     auto opParameters    = std::make_shared<ColumnOperatorParameters>( db );
     opParameters->d_Mesh = d_Mesh;
     opParameters->d_db   = std::make_shared<AMP::Database>( "ColumnOperator" );
@@ -97,7 +98,6 @@ ColumnOperator::getParameters( const std::string &type,
  ********************************************************/
 void ColumnOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    d_memory_location     = params->d_memory_location;
     auto columnParameters = std::dynamic_pointer_cast<const ColumnOperatorParameters>( params );
     AMP_INSIST( ( columnParameters ), "ColumnOperator::reset parameter object is NULL" );
     AMP_INSIST( ( ( ( columnParameters->d_OperatorParameters ).size() ) == ( d_operators.size() ) ),

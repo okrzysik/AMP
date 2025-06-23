@@ -128,8 +128,7 @@ void NeutronicsRhs::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_ASSERT( params );
     AMP_ASSERT( params->d_db );
-    d_memory_location = params->d_memory_location;
-    d_db              = params->d_db;
+    d_db = params->d_db;
     getFromInput( params->d_db );
 
     if ( !d_useFixedValue ) {

@@ -51,9 +51,9 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
             reset( params );
         } else {
             AMP::LinearAlgebra::Vector::shared_ptr tmpInVec = AMP::LinearAlgebra::createVector(
-                d_inDofMap, d_inputVariable, true, params->d_memory_location );
+                d_inDofMap, d_inputVariable, true, d_memory_location );
             AMP::LinearAlgebra::Vector::shared_ptr tmpOutVec = AMP::LinearAlgebra::createVector(
-                d_outDofMap, d_outputVariable, true, params->d_memory_location );
+                d_outDofMap, d_outputVariable, true, d_memory_location );
             d_matrix = AMP::LinearAlgebra::createMatrix( tmpInVec, tmpOutVec );
         }
     } else {
