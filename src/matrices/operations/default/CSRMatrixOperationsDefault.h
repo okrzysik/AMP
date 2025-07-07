@@ -12,22 +12,21 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator>
+template<typename Config>
 class CSRMatrixOperationsDefault : public MatrixOperations
 {
 public:
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+    using allocator_type = typename Config::allocator_type;
+    static_assert( std::is_same_v<typename allocator_type::value_type, void> );
 
-    using policy_t          = Policy;
-    using allocator_t       = Allocator;
-    using matrixdata_t      = CSRMatrixData<Policy, Allocator>;
+    using matrixdata_t      = CSRMatrixData<Config>;
     using localmatrixdata_t = typename matrixdata_t::localmatrixdata_t;
 
-    using localops_t = CSRLocalMatrixOperationsDefault<Policy, Allocator>;
+    using localops_t = CSRLocalMatrixOperationsDefault<Config>;
 
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
+    using gidx_t   = typename Config::gidx_t;
+    using lidx_t   = typename Config::lidx_t;
+    using scalar_t = typename Config::scalar_t;
 
     CSRMatrixOperationsDefault()
         : d_localops_diag( std::make_shared<localops_t>() ),
@@ -128,14 +127,16 @@ public:
      */
     void copyCast( const MatrixData &X, MatrixData &Y ) override;
 
-    template<typename PolicyIn>
-    static void copyCast( CSRMatrixData<PolicyIn, Allocator> *X, matrixdata_t *Y );
+    template<typename ConfigIn>
+    static void
+    copyCast( CSRMatrixData<typename ConfigIn::template set_alloc_t<Config::allocator>> *X,
+              matrixdata_t *Y );
 
 protected:
     std::shared_ptr<localops_t> d_localops_diag;
     std::shared_ptr<localops_t> d_localops_offd;
     std::map<std::pair<std::shared_ptr<matrixdata_t>, std::shared_ptr<matrixdata_t>>,
-             CSRMatrixSpGEMMHelperDefault<Policy, Allocator>>
+             CSRMatrixSpGEMMHelperDefault<Config>>
         d_SpGEMMHelpers;
 };
 

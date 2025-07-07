@@ -2,8 +2,8 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/matrices/CSRConfig.h"
 #include "AMP/matrices/CSRMatrix.h"
-#include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
@@ -20,10 +20,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#if defined( AMP_USE_HYPRE )
-    #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-#endif
-
 #include "ProfilerApp.h"
 
 #include <iomanip>
@@ -37,12 +33,12 @@
 
 // TODO: extend this to triple product once transposing is supported
 
-template<typename Policy, typename Allocator>
-void findAggregates( std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<Policy, Allocator>> A,
-                     std::vector<typename Policy::lidx_t> &agg_id,
-                     typename Policy::lidx_t &num_agg )
+template<typename Config>
+void findAggregates( std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<Config>> A,
+                     std::vector<typename Config::lidx_t> &agg_id,
+                     typename Config::lidx_t &num_agg )
 {
-    using lidx_t = typename Policy::lidx_t;
+    using lidx_t = typename Config::lidx_t;
 
     const auto A_nrows = static_cast<lidx_t>( A->numLocalRows() );
 
@@ -96,17 +92,17 @@ void findAggregates( std::shared_ptr<AMP::LinearAlgebra::CSRLocalMatrixData<Poli
     }
 }
 
-template<typename Policy, typename Allocator>
-std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>
-createAggregateMatrix( std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> A )
+template<typename Config>
+std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>>
+createAggregateMatrix( std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> A )
 {
-    using lidx_t = typename Policy::lidx_t;
+    using lidx_t = typename Config::lidx_t;
 
     // get aggregates just using diagonal block
     std::vector<lidx_t> agg_id;
     lidx_t num_agg;
-    auto A_data = std::dynamic_pointer_cast<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>(
-        A->getMatrixData() );
+    auto A_data =
+        std::dynamic_pointer_cast<AMP::LinearAlgebra::CSRMatrixData<Config>>( A->getMatrixData() );
     findAggregates( A_data->getDiagMatrix(), agg_id, num_agg );
 
     // Build matrix parameters object
@@ -129,7 +125,7 @@ createAggregateMatrix( std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, All
         A_data->getRightVariable(),
         A_data->getRightVariable(),
         std::function<std::vector<size_t>( size_t )>() );
-    auto P_data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
+    auto P_data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Config>>( params );
 
     // non-zeros only in diag block and only one per row
     P_data->setNNZ( std::vector<lidx_t>( agg_id.size(), 1 ),
@@ -150,7 +146,7 @@ createAggregateMatrix( std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, All
 
     // reset dof managers and return matrix
     P_data->resetDOFManagers();
-    return std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( P_data );
+    return std::make_shared<AMP::LinearAlgebra::CSRMatrix<Config>>( P_data );
 }
 
 size_t matMultTestWithDOFs( AMP::UnitTest *ut,
@@ -168,8 +164,8 @@ size_t matMultTestWithDOFs( AMP::UnitTest *ut,
     ut->expected_failure( "SpGEMM for device CSRMatrix not implemented" );
     return 0;
 #else
-    auto inVec             = AMP::LinearAlgebra::createVector( dofManager, inVar );
-    auto outVec            = AMP::LinearAlgebra::createVector( dofManager, outVar );
+    auto inVec  = AMP::LinearAlgebra::createVector( dofManager, inVar );
+    auto outVec = AMP::LinearAlgebra::createVector( dofManager, outVar );
 #endif
 
     // Create the matrix
@@ -182,16 +178,11 @@ size_t matMultTestWithDOFs( AMP::UnitTest *ut,
     AMP::pout << "CSRMatrix Global rows: " << nGlobalRows << " Local rows: " << nLocalRows
               << std::endl;
 
-#if defined( AMP_USE_HYPRE )
-    using DefaultCSRPolicy = AMP::LinearAlgebra::CSRPolicy<HYPRE_BigInt, HYPRE_Int, HYPRE_Real>;
-#else
-    using DefaultCSRPolicy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
-#endif
+    using DefaultCSRConfig = AMP::LinearAlgebra::DefaultHostCSRConfig;
 
     // Create aggregate matrix
-    auto Acsr = std::dynamic_pointer_cast<
-        AMP::LinearAlgebra::CSRMatrix<DefaultCSRPolicy, AMP::HostAllocator<void>>>( A );
-    auto P = createAggregateMatrix( Acsr );
+    auto Acsr = std::dynamic_pointer_cast<AMP::LinearAlgebra::CSRMatrix<DefaultCSRConfig>>( A );
+    auto P    = createAggregateMatrix( Acsr );
 
     // perform A*P SpGEMM
     auto AP = AMP::LinearAlgebra::Matrix::matMatMult( A, P );

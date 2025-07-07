@@ -1,6 +1,7 @@
 #ifndef included_AMP_CSRMatrix
 #define included_AMP_CSRMatrix
 
+#include "AMP/matrices/CSRConfig.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/utils/memory.h"
 #include "AMP/vectors/Vector.h"
@@ -8,7 +9,7 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator = AMP::HostAllocator<void>>
+template<typename Policy>
 class CSRMatrixData;
 
 /** \class CSRMatrix
@@ -16,15 +17,15 @@ class CSRMatrixData;
  * \details  This is a concrete class that stores a dense local matrix.
  *    This is not a distributed matrix and requires that the comm is AMP_COMM_SELF.
  */
-template<typename Policy, typename Allocator = AMP::HostAllocator<void>>
+template<class Config>
 class CSRMatrix : public Matrix
 {
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
-    using policy_t     = Policy;
-    using allocator_t  = Allocator;
-    using matrixdata_t = CSRMatrixData<Policy, Allocator>;
-
 public:
+    using config_type     = Config;
+    using allocator_type  = typename Config::allocator_type;
+    using matrixdata_type = CSRMatrixData<Config>;
+    static_assert( std::is_same_v<typename allocator_type::value_type, void> );
+
     CSRMatrix() = delete;
 
     /** \brief Constructor
@@ -48,6 +49,12 @@ public:
 
     //! Return the type of the matrix
     virtual std::string type() const override { return "CSRMatrix"; }
+
+    //! Return CSR mode of the matrix.
+    virtual std::uint16_t mode() const override
+    {
+        return static_cast<std::uint16_t>( Config::mode );
+    }
 
     /** \brief  Return a new matrix that is the transpose of this one
      * \return  A copy of this matrix transposed.

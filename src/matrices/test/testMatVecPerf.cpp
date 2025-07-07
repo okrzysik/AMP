@@ -2,6 +2,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/matrices/CSRConfig.h"
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
@@ -17,10 +18,6 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-
-#if defined( AMP_USE_HYPRE )
-    #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-#endif
 
 #include "ProfilerApp.h"
 
@@ -75,7 +72,7 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
               << std::endl;
 
 #if defined( AMP_USE_HYPRE )
-    using scalar_t = typename AMP::LinearAlgebra::HypreCSRPolicy::scalar_t;
+    using scalar_t = typename AMP::LinearAlgebra::scalar_info<AMP::LinearAlgebra::hypre_real>::type;
 #else
     using scalar_t = double;
 #endif

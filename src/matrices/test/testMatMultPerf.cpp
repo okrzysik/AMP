@@ -18,10 +18,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#if defined( AMP_USE_HYPRE )
-    #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-#endif
-
 #include "ProfilerApp.h"
 
 #include <iomanip>
@@ -72,7 +68,7 @@ size_t matMatTestWithDOFs( AMP::UnitTest *ut,
               << std::endl;
 
 #if defined( AMP_USE_HYPRE )
-    using scalar_t = typename AMP::LinearAlgebra::HypreCSRPolicy::scalar_t;
+    using scalar_t = typename AMP::LinearAlgebra::scalar_info<AMP::LinearAlgebra::hypre_real>::type;
 #else
     using scalar_t = double;
 #endif

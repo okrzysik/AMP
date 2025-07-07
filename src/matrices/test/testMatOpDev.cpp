@@ -2,8 +2,8 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/matrices/CSRConfig.h"
 #include "AMP/matrices/CSRMatrix.h"
-#include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
@@ -20,10 +20,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#if defined( AMP_USE_HYPRE )
-    #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-#endif
-
 #include "ProfilerApp.h"
 
 #include <iomanip>
@@ -36,14 +32,13 @@
 // classes
 
 
-template<typename Policy, class Allocator>
-void createMatrixAndVectors(
-    AMP::UnitTest *ut,
-    std::string type,
-    std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> &matrix,
-    std::shared_ptr<AMP::LinearAlgebra::Vector> &x,
-    std::shared_ptr<AMP::LinearAlgebra::Vector> &y )
+template<typename Config>
+void createMatrixAndVectors( AMP::UnitTest *ut,
+                             std::string type,
+                             std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
+                             std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> &matrix,
+                             std::shared_ptr<AMP::LinearAlgebra::Vector> &x,
+                             std::shared_ptr<AMP::LinearAlgebra::Vector> &y )
 {
     auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     // Create the vectors
@@ -93,8 +88,8 @@ void createMatrixAndVectors(
 
 
     // Create the matrix
-    auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
-    matrix    = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( data );
+    auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Config>>( params );
+    matrix    = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Config>>( data );
     // Initialize the matrix
     matrix->zero();
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -110,15 +105,15 @@ void createMatrixAndVectors(
     y = matrix->getLeftVector();
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 void testGetSetValues( AMP::UnitTest *ut,
                        std::string type,
                        std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> matrix = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> x                            = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> y                            = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, matrix, x, y );
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> matrix = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> x                 = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> y                 = nullptr;
+    createMatrixAndVectors<Config>( ut, type, dofManager, matrix, x, y );
 
     fillWithPseudoLaplacian( matrix, dofManager );
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -139,18 +134,18 @@ void testGetSetValues( AMP::UnitTest *ut,
     ut->passes( type + ": Able to get and set" );
 }
 
-template<typename Policy, class Allocator>
+template<class Config>
 void testMatvecWithDOFs( AMP::UnitTest *ut,
                          std::string type,
                          std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
                          bool testTranspose )
 {
-    using scalar_t = typename Policy::scalar_t;
+    using scalar_t = typename Config::scalar_t;
 
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> matrix = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> x                            = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> y                            = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, matrix, x, y );
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> matrix = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> x                 = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> y                 = nullptr;
+    createMatrixAndVectors<Config>( ut, type, dofManager, matrix, x, y );
 
     fillWithPseudoLaplacian( matrix, dofManager );
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -196,21 +191,21 @@ void testMatvecWithDOFs( AMP::UnitTest *ut,
 }
 
 
-template<typename Policy, class Allocator>
+template<class Config>
 void testAXPY( AMP::UnitTest *ut,
                std::string type,
                std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-    using scalar_t = typename Policy::scalar_t;
+    using scalar_t = typename Config::scalar_t;
 
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> X = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> rX                      = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> lX                      = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, X, rX, lX );
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> Y = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> rY                      = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> lY                      = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, Y, rY, lY );
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> X = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> rX           = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> lX           = nullptr;
+    createMatrixAndVectors<Config>( ut, type, dofManager, X, rX, lX );
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> Y = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> rY           = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> lY           = nullptr;
+    createMatrixAndVectors<Config>( ut, type, dofManager, Y, rY, lY );
 
     fillWithPseudoLaplacian( X, dofManager );
     X->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -247,17 +242,17 @@ void testAXPY( AMP::UnitTest *ut,
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 void testScale( AMP::UnitTest *ut,
                 std::string type,
                 std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-    using scalar_t = typename Policy::scalar_t;
+    using scalar_t = typename Config::scalar_t;
 
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> A = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> x                       = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> y                       = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, A, x, y );
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> A = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> x            = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> y            = nullptr;
+    createMatrixAndVectors<Config>( ut, type, dofManager, A, x, y );
 
     fillWithPseudoLaplacian( A, dofManager );
     A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -281,17 +276,17 @@ void testScale( AMP::UnitTest *ut,
 }
 
 
-template<typename Policy, class Allocator>
+template<typename Config>
 void testSetScalar( AMP::UnitTest *ut,
                     std::string type,
                     std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-    using scalar_t = typename Policy::scalar_t;
+    using scalar_t = typename Config::scalar_t;
 
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> A = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> x                       = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> y                       = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, A, x, y );
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> A = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> x            = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> y            = nullptr;
+    createMatrixAndVectors<Config>( ut, type, dofManager, A, x, y );
 
     A->setScalar( 1. );
 
@@ -324,17 +319,17 @@ void testSetScalar( AMP::UnitTest *ut,
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 void testGetSetDiagonal( AMP::UnitTest *ut,
                          std::string type,
                          std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-    using scalar_t = typename Policy::scalar_t;
+    using scalar_t = typename Config::scalar_t;
 
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> A = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> x                       = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> y                       = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, A, x, y );
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> A = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> x            = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> y            = nullptr;
+    createMatrixAndVectors<Config>( ut, type, dofManager, A, x, y );
 
     fillWithPseudoLaplacian( A, dofManager );
     A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -359,17 +354,17 @@ void testGetSetDiagonal( AMP::UnitTest *ut,
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 void testLinfNorm( AMP::UnitTest *ut,
                    std::string type,
                    std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-    using scalar_t = typename Policy::scalar_t;
+    using scalar_t = typename Config::scalar_t;
 
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> A = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> x                       = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> y                       = nullptr;
-    createMatrixAndVectors<Policy, Allocator>( ut, type, dofManager, A, x, y );
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> A = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> x            = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> y            = nullptr;
+    createMatrixAndVectors<Config>( ut, type, dofManager, A, x, y );
 
     fillWithPseudoLaplacian( A, dofManager );
     A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -393,18 +388,15 @@ void matDeviceOperationsTest( AMP::UnitTest *ut, std::string input_file )
 {
     // clang-format off
 #ifdef USE_DEVICE
-    using Allocator      = AMP::ManagedAllocator<void>;
+	constexpr auto allocator =  AMP::LinearAlgebra::alloc::managed;
     bool testTransposeOp = false;
 #else
-    using Allocator      = AMP::HostAllocator<void>;
+    constexpr auto allocator =  AMP::LinearAlgebra::alloc::host;
     bool testTransposeOp = true;
 #endif
 
-#if defined( AMP_USE_HYPRE )
-    using Policy = AMP::LinearAlgebra::HypreCSRPolicy;
-#else
-    using Policy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
-#endif
+    using Config = AMP::LinearAlgebra::DefaultCSRConfig<allocator>;
+
     // clang-format on
 
     std::string log_file = "output_testMatOpDev";
@@ -427,13 +419,13 @@ void matDeviceOperationsTest( AMP::UnitTest *ut, std::string input_file )
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
 
     // Test on defined matrix types
-    testGetSetValues<Policy, Allocator>( ut, "CSRMatrix", scalarDOFs );
-    testMatvecWithDOFs<Policy, Allocator>( ut, "CSRMatrix", scalarDOFs, testTransposeOp );
-    testAXPY<Policy, Allocator>( ut, "CSRMatrix", scalarDOFs );
-    testScale<Policy, Allocator>( ut, "CSRMatrix", scalarDOFs );
-    testSetScalar<Policy, Allocator>( ut, "CSRMatrix", scalarDOFs );
-    testGetSetDiagonal<Policy, Allocator>( ut, "CSRMatrix", scalarDOFs );
-    testLinfNorm<Policy, Allocator>( ut, "CSRMatrix", scalarDOFs );
+    testGetSetValues<Config>( ut, "CSRMatrix", scalarDOFs );
+    testMatvecWithDOFs<Config>( ut, "CSRMatrix", scalarDOFs, testTransposeOp );
+    testAXPY<Config>( ut, "CSRMatrix", scalarDOFs );
+    testScale<Config>( ut, "CSRMatrix", scalarDOFs );
+    testSetScalar<Config>( ut, "CSRMatrix", scalarDOFs );
+    testGetSetDiagonal<Config>( ut, "CSRMatrix", scalarDOFs );
+    testLinfNorm<Config>( ut, "CSRMatrix", scalarDOFs );
 }
 
 int main( int argc, char *argv[] )

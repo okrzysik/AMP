@@ -50,6 +50,8 @@ public:
     //! Return the type of the matrix
     virtual std::string type() const = 0;
 
+    //! Return CSR mode of the matrix.
+    virtual std::uint16_t mode() const;
     /** \brief  Matrix-vector multiplication
      * \param[in]  in  The vector to multiply
      * \param[out] out The resulting vectory
