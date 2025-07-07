@@ -21,7 +21,7 @@
 
 
 namespace AMP::Utilities {
-enum class MemoryType : uint8_t;
+enum class MemoryType : int8_t;
 }
 
 // Get the pointer type from hip

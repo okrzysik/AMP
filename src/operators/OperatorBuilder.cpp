@@ -302,8 +302,10 @@ createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     for ( auto name : getActiveVariables( input_db, "ActiveInputVariables" ) ) {
         auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
-        auto vec = AMP::LinearAlgebra::createVector(
-            NodalScalarDOF, var, true, diffusionNLOpParams->d_memory_location );
+
+        auto memLoc = AMP::Utilities::memoryLocationFromString(
+            diffusionNLOpParams->d_db->getWithDefault<std::string>( "MemoryLocation", "host" ) );
+        auto vec = AMP::LinearAlgebra::createVector( NodalScalarDOF, var, true, memLoc );
         if ( input_db->getWithDefault<bool>( "Freeze" + name, false ) )
             diffusionNLOpParams->d_FrozenVecs[name] = vec;
     }

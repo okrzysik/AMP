@@ -534,7 +534,7 @@ void CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>::co
     } else {
         AMP::Utilities::copyCast<scalar_t_in,
                                  scalar_t_out,
-                                 AMP::Utilities::PortabilityBackend::Kokkos,
+                                 AMP::Utilities::AccelerationBackend::Kokkos,
                                  Allocator>( X->numberOfNonZeros(), X_coeffs, Y_coeffs );
     }
 }

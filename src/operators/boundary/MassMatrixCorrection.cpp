@@ -44,7 +44,6 @@ void MassMatrixCorrection::resetBoundaryIds(
 void MassMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_ASSERT( params );
-    d_memory_location = params->d_memory_location;
 
     auto myParams = std::dynamic_pointer_cast<const MassMatrixCorrectionParameters>( params );
 

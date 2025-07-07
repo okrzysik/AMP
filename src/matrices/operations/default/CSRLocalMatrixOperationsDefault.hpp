@@ -211,9 +211,9 @@ void CSRLocalMatrixOperationsDefault<Policy, Allocator>::copyCast(
         std::copy( X_coeffs, X_coeffs + X->numberOfNonZeros(), Y_coeffs );
     } else {
 #ifdef AMP_USE_OPENMP
-        using DefaultBcknd = AMP::Utilities::PortabilityBackend::OpenMP;
+        using DefaultBcknd = AMP::Utilities::AccelerationBackend::OpenMP;
 #else
-        using DefaultBcknd = AMP::Utilities::PortabilityBackend::Serial;
+        using DefaultBcknd = AMP::Utilities::AccelerationBackend::Serial;
 #endif
         AMP::Utilities::copyCast<scalar_t_in, scalar_t_out, DefaultBcknd, Allocator>(
             X->numberOfNonZeros(), X_coeffs, Y_coeffs );

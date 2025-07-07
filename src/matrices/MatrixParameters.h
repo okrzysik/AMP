@@ -18,13 +18,12 @@ public:
     MatrixParameters() = delete;
 
     /** \brief Constructor
-     * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$y\f$ is a left
-     * vector )
-     * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$x\f$ is a right
-     * vector )
+     * \param[in] dofLeft  The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$y\f$ is a left vector )
+     * \param[in] dofRight The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$x\f$ is a right vector )
      * \param[in] comm     Communicator for the matrix
+     * \param[in] getRow   Function that finds finds column indices of a row in each block
      */
     explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
                                std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
@@ -32,13 +31,30 @@ public:
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
     /** \brief Constructor
-     * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$y\f$ is a left
-     * vector )
-     * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$x\f$ is a right
-     * vector )
+     * \param[in] dofLeft  The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$y\f$ is a left vector )
+     * \param[in] dofRight The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$x\f$ is a right vector )
      * \param[in] comm     Communicator for the matrix
+     * \param[in] backend  Acceleration backend for matrix operations
+     * \param[in] getRow   Function that finds finds column indices of a row in each block
+     */
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               AMP::Utilities::Backend backend,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
+
+    /** \brief Constructor
+     * \param[in] dofLeft  The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$y\f$ is a left vector )
+     * \param[in] dofRight The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$x\f$ is a right vector )
+     * \param[in] comm     Communicator for the matrix
+     * \param[in] varLeft  Pointer to left variable
+     * \param[in] varRight Pointer to right variable
+     * \param[in] getRow   Function that finds finds column indices of a row in each block
      */
     explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
                                std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
@@ -48,13 +64,33 @@ public:
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
     /** \brief Constructor
-     * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$y\f$ is a left
-     * vector )
-     * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$x\f$ is a right
-     * vector )
+     * \param[in] dofLeft  The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$y\f$ is a left vector )
+     * \param[in] dofRight The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
+     * \f$x\f$ is a right vector )
      * \param[in] comm     Communicator for the matrix
+     * \param[in] varLeft  Pointer to left variable
+     * \param[in] varRight Pointer to right variable
+     * \param[in] backend  Acceleration backend for matrix operations
+     * \param[in] getRow   Function that finds finds column indices of a row in each block
+     */
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               std::shared_ptr<Variable> varLeft,
+                               std::shared_ptr<Variable> varRight,
+                               AMP::Utilities::Backend backend,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
+    /** \brief Constructor
+     * \param[in] dofLeft       The DOFManager for the left vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
+     * \param[in] dofRight      The DOFManager for the right vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
+     * \param[in] comm          Communicator for the matrix
+     * \param[in] commListLeft  Communication list for the left vector
+     * \param[in] commListRight Communication list for the right vector
+     * \param[in] getRow        Function that finds finds column indices of a row in each block
      */
     explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
                                std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
@@ -64,13 +100,35 @@ public:
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
     /** \brief Constructor
-     * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$y\f$ is a left
-     * vector )
-     * \param[in] right    The DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$x\f$ is a right
-     * vector )
-     * \param[in] comm     Communicator for the matrix
+     * \param[in] dofLeft       The DOFManager for the left vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
+     * \param[in] dofRight      The DOFManager for the right vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
+     * \param[in] comm          Communicator for the matrix
+     * \param[in] commListLeft  Communication list for the left vector
+     * \param[in] commListRight Communication list for the right vector
+     * \param[in] backend       Acceleration backend for matrix operations
+     * \param[in] getRow        Function that finds finds column indices of a row in each block
+     */
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               std::shared_ptr<CommunicationList> commListLeft,
+                               std::shared_ptr<CommunicationList> commListRight,
+                               AMP::Utilities::Backend backend,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
+    /** \brief Constructor
+     * \param[in] dofLeft       The DOFManager for the left vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
+     * \param[in] dofRight      The DOFManager for the right vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
+     * \param[in] comm          Communicator for the matrix
+     * \param[in] varLeft       Pointer to left variable
+     * \param[in] varRight      Pointer to right variable
+     * \param[in] commListLeft  Communication list for the left vector
+     * \param[in] commListRight Communication list for the right vector
+     * \param[in] getRow        Function that finds finds column indices of a row in each block
      */
     explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
                                std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
@@ -79,6 +137,29 @@ public:
                                std::shared_ptr<Variable> varRight,
                                std::shared_ptr<CommunicationList> commListLeft,
                                std::shared_ptr<CommunicationList> commListRight,
+                               const std::function<std::vector<size_t>( size_t )> getRow = {} );
+
+    /** \brief Constructor
+     * \param[in] dofLeft       The DOFManager for the left vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left vector )
+     * \param[in] dofRight      The DOFManager for the right vector ( For
+     * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right vector )
+     * \param[in] comm          Communicator for the matrix
+     * \param[in] varLeft       Pointer to left variable
+     * \param[in] varRight      Pointer to right variable
+     * \param[in] commListLeft  Communication list for the left vector
+     * \param[in] commListRight Communication list for the right vector
+     * \param[in] backend       Acceleration backend for matrix operations
+     * \param[in] getRow        Function that finds finds column indices of a row in each block
+     */
+    explicit MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> dofLeft,
+                               std::shared_ptr<AMP::Discretization::DOFManager> dofRight,
+                               const AMP_MPI &comm,
+                               std::shared_ptr<Variable> varLeft,
+                               std::shared_ptr<Variable> varRight,
+                               std::shared_ptr<CommunicationList> commListLeft,
+                               std::shared_ptr<CommunicationList> commListRight,
+                               AMP::Utilities::Backend backend,
                                const std::function<std::vector<size_t>( size_t )> getRow = {} );
 
     //! Destructor

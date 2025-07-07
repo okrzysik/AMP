@@ -114,14 +114,12 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
             d_dofMap[Mechanics::DISPLACEMENT],
             d_inpVariables->getVariable( Mechanics::DISPLACEMENT ),
             true,
-            params->d_memory_location );
+            d_memory_location );
         d_refXYZ->zero();
         for ( unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++ ) {
             if ( d_isActive[i] ) {
-                d_inVec_pre[i] = AMP::LinearAlgebra::createVector( d_dofMap[i],
-                                                                   d_inpVariables->getVariable( i ),
-                                                                   true,
-                                                                   params->d_memory_location );
+                d_inVec_pre[i] = AMP::LinearAlgebra::createVector(
+                    d_dofMap[i], d_inpVariables->getVariable( i ), true, d_memory_location );
                 d_inVec_pre[i]->zero();
             }
         }
@@ -365,7 +363,6 @@ void MechanicsNonlinearFEOperator::init()
 void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_ASSERT( params );
-    d_memory_location = params->d_memory_location;
 
     if ( !d_isInitialized )
         init();

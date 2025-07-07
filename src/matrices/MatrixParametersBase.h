@@ -22,7 +22,20 @@ public:
     explicit MatrixParametersBase( const AMP_MPI &comm )
         : d_comm( comm ),
           d_VariableLeft( std::make_shared<Variable>( "" ) ),
-          d_VariableRight( std::make_shared<Variable>( "" ) )
+          d_VariableRight( std::make_shared<Variable>( "" ) ),
+          d_backend( AMP::Utilities::Backend::none )
+    {
+    }
+
+    /** \brief Constructor, variable names set to default
+     * \param[in] comm     Communicator for the matrix
+     * \param[in] backend  Acceleration backend for matrix operations
+     */
+    explicit MatrixParametersBase( const AMP_MPI &comm, AMP::Utilities::Backend backend )
+        : d_comm( comm ),
+          d_VariableLeft( std::make_shared<Variable>( "" ) ),
+          d_VariableRight( std::make_shared<Variable>( "" ) ),
+          d_backend( backend )
     {
     }
 
@@ -34,7 +47,27 @@ public:
     explicit MatrixParametersBase( const AMP_MPI &comm,
                                    std::shared_ptr<Variable> varLeft,
                                    std::shared_ptr<Variable> varRight )
-        : d_comm( comm ), d_VariableLeft( varLeft ), d_VariableRight( varRight )
+        : d_comm( comm ),
+          d_VariableLeft( varLeft ),
+          d_VariableRight( varRight ),
+          d_backend( AMP::Utilities::Backend::none )
+    {
+    }
+
+    /** \brief Constructor, variable names provided
+     * \param[in] comm      Communicator for the matrix
+     * \param[in] varLeft   pointer to left variable
+     * \param[in] varRight  pointer to right variable
+     * \param[in] backend   Acceleration backend for matrix operations
+     */
+    explicit MatrixParametersBase( const AMP_MPI &comm,
+                                   std::shared_ptr<Variable> varLeft,
+                                   std::shared_ptr<Variable> varRight,
+                                   AMP::Utilities::Backend backend )
+        : d_comm( comm ),
+          d_VariableLeft( varLeft ),
+          d_VariableRight( varRight ),
+          d_backend( backend )
     {
     }
 
@@ -52,9 +85,6 @@ public:
 
     std::shared_ptr<Variable> getRightVariable() const { return d_VariableRight; }
 
-    // The backend used for cpus and/or gpu acceleration
-    AMP::Utilities::Backend d_backend = AMP::Utilities::Backend::serial;
-
 protected:
     // The comm of the matrix
     AMP_MPI d_comm;
@@ -66,6 +96,10 @@ protected:
     //!  The variable for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right
     //!  vector )
     std::shared_ptr<Variable> d_VariableRight;
+
+public:
+    // The backend used for cpus and/or gpu acceleration
+    AMP::Utilities::Backend d_backend;
 };
 } // namespace AMP::LinearAlgebra
 

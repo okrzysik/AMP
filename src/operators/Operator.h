@@ -171,6 +171,8 @@ protected:
         return nullptr;
     }
 
+    void setMemoryAndBackendParameters( std::shared_ptr<AMP::Database> db );
+
     int d_iDebugPrintInfoLevel = 0;
 
     int d_iObject_id;
@@ -179,7 +181,9 @@ protected:
 
     std::shared_ptr<AMP::Mesh::Mesh> d_Mesh;
 
-    AMP::Utilities::MemoryType d_memory_location;
+    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::none;
+
+    AMP::Utilities::Backend d_backend = AMP::Utilities::Backend::none;
 
 private:
 };

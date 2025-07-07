@@ -53,7 +53,6 @@ void FlowFrapconJacobian::reset( std::shared_ptr<const OperatorParameters> param
 {
     AMP_ASSERT( params );
     AMP_ASSERT( params->d_db );
-    d_memory_location = params->d_memory_location;
 
     bool skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 

@@ -40,7 +40,8 @@
 size_t matVecTestWithDOFs( AMP::UnitTest *ut,
                            std::string type,
                            std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
-                           bool testTranspose )
+                           bool testTranspose,
+                           std::string accelerationBackend )
 {
     auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     // Create the vectors
@@ -57,11 +58,12 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
 #endif
 
     // Create the matrix
-    auto matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec, type );
+    auto matrix = AMP::LinearAlgebra::createMatrix(
+        inVec, outVec, AMP::Utilities::backendFromString( accelerationBackend ), type );
     if ( matrix ) {
-        ut->passes( type + ": Able to create a square matrix" );
+        ut->passes( type + ", " + accelerationBackend + ": Able to create a square matrix" );
     } else {
-        ut->failure( type + ": Unable to create a square matrix" );
+        ut->failure( type + ", " + accelerationBackend + ": Unable to create a square matrix" );
     }
 
     fillWithPseudoLaplacian( matrix, dofManager );
@@ -93,11 +95,13 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
     auto yNorm = static_cast<scalar_t>( y->L1Norm() );
 
     if ( yNorm == static_cast<scalar_t>( matrix->numGlobalRows() ) ) {
-        ut->passes( type + ": Passes 1 norm test with pseudo Laplacian" );
+        ut->passes( type + ", " + accelerationBackend +
+                    ": Passes 1 norm test with pseudo Laplacian" );
     } else {
         AMP::pout << "1 Norm " << yNorm << ", number of rows " << matrix->numGlobalRows()
                   << std::endl;
-        ut->failure( type + ": Fails 1 norm test with pseudo Laplacian" );
+        ut->failure( type + ", " + accelerationBackend +
+                     ": Fails 1 norm test with pseudo Laplacian" );
     }
 
     if ( testTranspose && NUM_PRODUCTS_TRANS ) {
@@ -112,11 +116,13 @@ size_t matVecTestWithDOFs( AMP::UnitTest *ut,
         auto xNorm = static_cast<scalar_t>( x->L1Norm() );
 
         if ( xNorm == static_cast<scalar_t>( matrix->numGlobalRows() ) ) {
-            ut->passes( type + ": Passes 1 norm test with pseudo Laplacian transpose" );
+            ut->passes( type + ", " + accelerationBackend +
+                        ": Passes 1 norm test with pseudo Laplacian transpose" );
         } else {
             AMP::pout << "Transpose 1 Norm " << xNorm << ", number of rows "
                       << matrix->numGlobalRows() << std::endl;
-            ut->failure( type + ": Fails 1 norm test with pseudo Laplacian transpose" );
+            ut->failure( type + ", " + accelerationBackend +
+                         ": Fails 1 norm test with pseudo Laplacian transpose" );
         }
     }
 
@@ -137,6 +143,20 @@ size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
     auto comm     = AMP::AMP_MPI( AMP_COMM_WORLD );
     params->setComm( comm );
 
+    // Get the acceleration backend for the matrix
+    std::vector<std::string> backends;
+    if ( input_db->keyExists( "MatrixAccelerationBackend" ) ) {
+        backends.emplace_back( input_db->getString( "MatrixAccelerationBackend" ) );
+    } else {
+        backends.emplace_back( "serial" );
+#if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+        backends.emplace_back( "kokkos" );
+#endif
+#ifdef USE_DEVICE
+        backends.emplace_back( "hip_cuda" );
+#endif
+    }
+
     // Create the meshes from the input database
     auto mesh = AMP::Mesh::MeshFactory::create( params );
 
@@ -146,12 +166,17 @@ size_t matVecTest( AMP::UnitTest *ut, std::string input_file )
 
     // Test on defined matrix types
 #if defined( AMP_USE_TRILINOS )
-    matVecTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs, true );
+    matVecTestWithDOFs( ut, "ManagedEpetraMatrix", scalarDOFs, true, "serial" );
 #endif
 #if defined( AMP_USE_PETSC )
-    matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, true );
+    matVecTestWithDOFs( ut, "NativePetscMatrix", scalarDOFs, true, "serial" );
 #endif
-    return matVecTestWithDOFs( ut, "CSRMatrix", scalarDOFs, true );
+    size_t nGlobal = 0;
+    for ( auto &backend : backends ) {
+        nGlobal = matVecTestWithDOFs(
+            ut, "CSRMatrix", scalarDOFs, backend == "hip_cuda" ? false : true, backend );
+    }
+    return nGlobal;
 }
 
 int main( int argc, char *argv[] )
