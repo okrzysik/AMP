@@ -8,22 +8,22 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator>
+template<typename Config>
 class CSRMatrixOperationsDevice : public MatrixOperations
 {
 public:
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+    static_assert( std::is_same_v<typename Config::allocator_type::value_type, void> );
 
-    using policy_t          = Policy;
-    using allocator_t       = Allocator;
-    using matrixdata_t      = CSRMatrixData<Policy, Allocator>;
+    using config_type       = Config;
+    using allocator_type    = typename Config::allocator_type;
+    using matrixdata_t      = CSRMatrixData<Config>;
     using localmatrixdata_t = typename matrixdata_t::localmatrixdata_t;
 
-    using localops_t = CSRLocalMatrixOperationsDevice<Policy, Allocator>;
+    using localops_t = CSRLocalMatrixOperationsDevice<Config>;
 
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
+    using gidx_t   = typename Config::gidx_t;
+    using lidx_t   = typename Config::lidx_t;
+    using scalar_t = typename Config::scalar_t;
 
     /** \brief  Matrix-vector multiplication
      * \param[in]  in  The vector to multiply
@@ -111,8 +111,10 @@ public:
      */
     void copyCast( const MatrixData &X, MatrixData &Y ) override;
 
-    template<typename PolicyIn>
-    static void copyCast( CSRMatrixData<PolicyIn, Allocator> *X, matrixdata_t *Y );
+    template<typename ConfigIn>
+    static void
+    copyCast( CSRMatrixData<typename ConfigIn::template set_alloc_t<Config::allocator>> *X,
+              matrixdata_t *Y );
 };
 
 } // namespace AMP::LinearAlgebra

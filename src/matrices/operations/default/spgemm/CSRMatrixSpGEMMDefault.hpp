@@ -9,8 +9,8 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::symbolicMultiply()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::symbolicMultiply()
 {
     if ( d_overlap_comms ) {
         symbolicMultiply_Overlapped();
@@ -19,8 +19,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::symbolicMultiply()
     }
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiply()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::numericMultiply()
 {
     if ( d_overlap_comms ) {
         numericMultiply_Overlapped();
@@ -29,8 +29,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiply()
     }
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::symbolicMultiply_NonOverlapped()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::symbolicMultiply_NonOverlapped()
 {
     PROFILE( "symbolicMultiply_NonOverlapped" );
 
@@ -57,8 +57,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::symbolicMultiply_NonOverla
     }
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::symbolicMultiply_Overlapped()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::symbolicMultiply_Overlapped()
 {
     PROFILE( "symbolicMultiply_Overlapped" );
 
@@ -114,8 +114,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::symbolicMultiply_Overlappe
     }
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiply_NonOverlapped()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::numericMultiply_NonOverlapped()
 {
     PROFILE( "numericMultiply_NonOverlapped" );
 
@@ -150,8 +150,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiply_NonOverlap
     d_need_comms = true;
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiply_Overlapped()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::numericMultiply_Overlapped()
 {
     PROFILE( "numericMultiply_Overlapped" );
 
@@ -194,13 +194,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiply_Overlapped
     d_need_comms = true;
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiplyReuse()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::numericMultiplyReuse()
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
     PROFILE( "numericMultiplyReuse" );
 
     // start communication to build BRemote before doing anything
@@ -251,18 +247,14 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::numericMultiplyReuse()
     d_need_comms = true;
 }
 
-template<typename Policy, class Allocator>
-template<typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::Mode mode_t,
-         typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::BlockType block_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::multiply(
-    std::shared_ptr<localmatrixdata_t> A_data,
-    std::shared_ptr<localmatrixdata_t> B_data,
-    std::shared_ptr<localmatrixdata_t> C_data )
+template<typename Config>
+template<typename CSRMatrixSpGEMMHelperDefault<Config>::Mode mode_t,
+         typename CSRMatrixSpGEMMHelperDefault<Config>::BlockType block_t>
+void CSRMatrixSpGEMMHelperDefault<Config>::multiply( std::shared_ptr<localmatrixdata_t> A_data,
+                                                     std::shared_ptr<localmatrixdata_t> B_data,
+                                                     std::shared_ptr<localmatrixdata_t> C_data )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-    using acc_t    = typename std::conditional<block_t == BlockType::DIAG,
+    using acc_t = typename std::conditional<block_t == BlockType::DIAG,
                                             DenseAccumulator<gidx_t>,
                                             SparseAccumulator<gidx_t>>::type;
 
@@ -374,18 +366,15 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::multiply(
     }
 }
 
-template<typename Policy, class Allocator>
-template<typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::Mode mode_t,
-         typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::BlockType block_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::multiplyFused(
+template<typename Config>
+template<typename CSRMatrixSpGEMMHelperDefault<Config>::Mode mode_t,
+         typename CSRMatrixSpGEMMHelperDefault<Config>::BlockType block_t>
+void CSRMatrixSpGEMMHelperDefault<Config>::multiplyFused(
     std::shared_ptr<localmatrixdata_t> B_data,
     std::shared_ptr<localmatrixdata_t> BR_data,
     std::shared_ptr<localmatrixdata_t> C_data )
 {
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
-    using acc_t    = typename std::conditional<block_t == BlockType::DIAG,
+    using acc_t = typename std::conditional<block_t == BlockType::DIAG,
                                             DenseAccumulator<gidx_t>,
                                             SparseAccumulator<gidx_t>>::type;
 
@@ -505,16 +494,13 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::multiplyFused(
     }
 }
 
-template<typename Policy, class Allocator>
-template<typename CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::BlockType block_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::multiplyReuse(
+template<typename Config>
+template<typename CSRMatrixSpGEMMHelperDefault<Config>::BlockType block_t>
+void CSRMatrixSpGEMMHelperDefault<Config>::multiplyReuse(
     std::shared_ptr<localmatrixdata_t> A_data,
     std::shared_ptr<localmatrixdata_t> B_data,
     std::shared_ptr<localmatrixdata_t> C_data )
 {
-    using lidx_t           = typename Policy::lidx_t;
-    using gidx_t           = typename Policy::gidx_t;
-    using scalar_t         = typename Policy::scalar_t;
     constexpr bool is_diag = block_t == BlockType::DIAG;
     using acc_t            = typename std::
         conditional<is_diag, DenseAccumulator<lidx_t>, SparseAccumulator<gidx_t>>::type;
@@ -606,14 +592,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::multiplyReuse(
     }
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::mergeDiag()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::mergeDiag()
 {
     PROFILE( "mergeDiag" );
-
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
 
     const auto first_col = C_diag->beginCol();
 
@@ -681,14 +663,10 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::mergeDiag()
     C_offd_diag.reset();
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::mergeOffd()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::mergeOffd()
 {
     PROFILE( "mergeOffd" );
-
-    using lidx_t   = typename Policy::lidx_t;
-    using gidx_t   = typename Policy::gidx_t;
-    using scalar_t = typename Policy::scalar_t;
 
     // handle special case where either C_diag_offd or C_offd_offd is empty
     if ( C_diag_offd.get() == nullptr && C_offd_offd.get() == nullptr ) {
@@ -772,8 +750,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::mergeOffd()
     C_offd_offd.reset();
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::setupBRemoteComm()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::setupBRemoteComm()
 {
     /*
      * Setting up the comms is somewhat involved. A high level overview
@@ -789,7 +767,7 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::setupBRemoteComm()
 
     PROFILE( "setupBRemoteComm" );
 
-    using lidx_t = typename Policy::lidx_t;
+    using lidx_t = typename Config::lidx_t;
 
     auto comm_size = comm.getSize();
 
@@ -852,8 +830,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::setupBRemoteComm()
     comm.waitAll( static_cast<int>( irecvs.size() ), irecvs.data() );
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::startBRemoteComm()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::startBRemoteComm()
 {
     // check if the communicator information is available and create if needed
     if ( d_dest_info.empty() ) {
@@ -868,8 +846,8 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::startBRemoteComm()
     d_csr_comm.sendMatrices( d_send_matrices );
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::endBRemoteComm()
+template<typename Config>
+void CSRMatrixSpGEMMHelperDefault<Config>::endBRemoteComm()
 {
     PROFILE( "endBRemoteComm" );
 
@@ -888,25 +866,20 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::endBRemoteComm()
     d_need_comms = false;
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-typename Policy::lidx_t
-CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::contains(
-    col_t col_idx ) const
+typename Config::lidx_t
+CSRMatrixSpGEMMHelperDefault<Config>::DenseAccumulator<col_t>::contains( col_t col_idx ) const
 {
-    using lidx_t = typename Policy::lidx_t;
-
     const auto loc = IsGlobal ? static_cast<lidx_t>( col_idx - offset ) : col_idx;
     return flags[loc];
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::set_flag(
-    col_t col_idx, typename Policy::lidx_t k )
+void CSRMatrixSpGEMMHelperDefault<Config>::DenseAccumulator<col_t>::set_flag(
+    col_t col_idx, typename Config::lidx_t k )
 {
-    using lidx_t = typename Policy::lidx_t;
-
     const auto loc      = IsGlobal ? static_cast<lidx_t>( col_idx - offset ) : col_idx;
     const auto old_flag = flags[loc];
     flags[loc]          = k;
@@ -920,13 +893,11 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::s
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::insert_or_append(
+void CSRMatrixSpGEMMHelperDefault<Config>::DenseAccumulator<col_t>::insert_or_append(
     col_t col_idx )
 {
-    using lidx_t = typename Policy::lidx_t;
-
     const auto loc = IsGlobal ? static_cast<lidx_t>( col_idx - offset ) : col_idx;
     const auto k   = flags[loc];
     if ( k == -1 ) {
@@ -942,15 +913,15 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::i
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::insert_or_append(
+void CSRMatrixSpGEMMHelperDefault<Config>::DenseAccumulator<col_t>::insert_or_append(
     col_t col_idx,
-    typename Policy::scalar_t val,
+    typename Config::scalar_t val,
     col_t *col_space,
-    typename Policy::scalar_t *val_space )
+    typename Config::scalar_t *val_space )
 {
-    using lidx_t = typename Policy::lidx_t;
+    using lidx_t = typename Config::lidx_t;
 
     const auto loc = IsGlobal ? static_cast<lidx_t>( col_idx - offset ) : col_idx;
     const auto k   = flags[loc];
@@ -969,33 +940,29 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::i
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::DenseAccumulator<col_t>::clear()
+void CSRMatrixSpGEMMHelperDefault<Config>::DenseAccumulator<col_t>::clear()
 {
-    using lidx_t = typename Policy::lidx_t;
-
     for ( lidx_t n = 0; n < num_inserted; ++n ) {
         flags[flag_inv[n]] = -1;
     }
     num_inserted = 0;
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-uint16_t CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::hash(
-    col_t col_idx ) const
+uint16_t CSRMatrixSpGEMMHelperDefault<Config>::SparseAccumulator<col_t>::hash( col_t col_idx ) const
 {
     const uint16_t c0 = ( 506999 * col_idx ) & 0xFFFF;
     const uint16_t c1 = ( col_idx >> 16 ) & 0xFFFF;
     return ( c0 ^ c1 ) % capacity;
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-typename Policy::lidx_t
-CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::contains(
-    col_t col_idx ) const
+typename Config::lidx_t
+CSRMatrixSpGEMMHelperDefault<Config>::SparseAccumulator<col_t>::contains( col_t col_idx ) const
 {
     auto pos = hash( col_idx ), flag = flags[pos];
     if ( flag == 0xFFFF ) {
@@ -1015,10 +982,10 @@ CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::conta
     return -1;
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::set_flag(
-    col_t col_idx, typename Policy::lidx_t k )
+void CSRMatrixSpGEMMHelperDefault<Config>::SparseAccumulator<col_t>::set_flag(
+    col_t col_idx, typename Config::lidx_t k )
 {
     auto pos = hash( col_idx ), flag = flags[pos];
     if ( flag == 0xFFFF ) {
@@ -1047,9 +1014,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::insert_or_append(
+void CSRMatrixSpGEMMHelperDefault<Config>::SparseAccumulator<col_t>::insert_or_append(
     col_t col_idx )
 {
     if ( num_inserted == capacity ) {
@@ -1100,13 +1067,13 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::insert_or_append(
+void CSRMatrixSpGEMMHelperDefault<Config>::SparseAccumulator<col_t>::insert_or_append(
     col_t col_idx,
-    typename Policy::scalar_t val,
+    typename Config::scalar_t val,
     col_t *col_space,
-    typename Policy::scalar_t *val_space )
+    typename Config::scalar_t *val_space )
 {
     if ( num_inserted == capacity ) {
         grow( col_space );
@@ -1137,10 +1104,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::grow(
-    col_t *col_space )
+void CSRMatrixSpGEMMHelperDefault<Config>::SparseAccumulator<col_t>::grow( col_t *col_space )
 {
 #if CSRSPGEMM_REPORT_SPACC_STATS
     ++total_grows;
@@ -1173,9 +1139,9 @@ void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::
     }
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 template<typename col_t>
-void CSRMatrixSpGEMMHelperDefault<Policy, Allocator>::SparseAccumulator<col_t>::clear()
+void CSRMatrixSpGEMMHelperDefault<Config>::SparseAccumulator<col_t>::clear()
 {
 #if CSRSPGEMM_REPORT_SPACC_STATS
     total_clears++;

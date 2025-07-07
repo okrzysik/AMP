@@ -9,13 +9,13 @@ namespace AMP::LinearAlgebra {
 /** \class RawCSRMatrixParameters
  * \brief  A class used to hold basic parameters for a matrix
  */
-template<typename CSRPolicy>
+template<typename Config>
 class RawCSRMatrixParameters : public MatrixParametersBase
 {
 public:
-    using gidx_t   = typename CSRPolicy::gidx_t;
-    using lidx_t   = typename CSRPolicy::lidx_t;
-    using scalar_t = typename CSRPolicy::scalar_t;
+    using gidx_t   = typename Config::gidx_t;
+    using lidx_t   = typename Config::lidx_t;
+    using scalar_t = typename Config::scalar_t;
 
     // The diagonal and off-diagonal blocks need all the same parameters
     // Like in CSRMatrixData use a nested class to pack all this away

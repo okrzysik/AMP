@@ -28,15 +28,14 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructor/Destructor                                *
  ********************************************************/
-template<typename Policy, typename Allocator>
-CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params )
-    : Matrix( params )
+template<typename Config>
+CSRMatrix<Config>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params ) : Matrix( params )
 {
     bool set_ops = false;
 
     if ( params->d_backend == AMP::Utilities::Backend::hip_cuda ) {
 #ifdef USE_DEVICE
-        d_matrixOps = std::make_shared<CSRMatrixOperationsDevice<Policy, Allocator>>();
+        d_matrixOps = std::make_shared<CSRMatrixOperationsDevice<Config>>();
         set_ops     = true;
 #else
         AMP_ERROR( "HIP or CUDA need to be loaded to be able to use hip_cuda backend." );
@@ -45,7 +44,7 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
 
     if ( params->d_backend == AMP::Utilities::Backend::kokkos ) {
 #if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
-        d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
+        d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Config>>();
         set_ops     = true;
 #else
         AMP_ERROR( "KOKKOS need to be loaded to be able to use kokkos backend." );
@@ -54,21 +53,21 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixParametersBase> p
 
     // nothing above matched, fall back on default operations
     if ( !set_ops ) {
-        d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+        d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Config>>();
     }
 
-    d_matrixData = std::make_shared<matrixdata_t>( params );
+    d_matrixData = std::make_shared<matrixdata_type>( params );
 }
 
-template<typename Policy, typename Allocator>
-CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
+template<typename Config>
+CSRMatrix<Config>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
     auto backend = data->getBackend();
     bool set_ops = false;
 
     if ( backend == AMP::Utilities::Backend::hip_cuda ) {
 #ifdef USE_DEVICE
-        d_matrixOps = std::make_shared<CSRMatrixOperationsDevice<Policy, Allocator>>();
+        d_matrixOps = std::make_shared<CSRMatrixOperationsDevice<Config>>();
         set_ops     = true;
 #else
         AMP_ERROR( "HIP or CUDA need to be loaded to be able to use hip_cuda backend." );
@@ -77,7 +76,7 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Ma
 
     if ( backend == AMP::Utilities::Backend::kokkos ) {
 #if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
-        d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Policy, Allocator>>();
+        d_matrixOps = std::make_shared<CSRMatrixOperationsKokkos<Config>>();
         set_ops     = true;
 #else
         AMP_ERROR( "KOKKOS need to be loaded to be able to use kokkos backend." );
@@ -86,31 +85,31 @@ CSRMatrix<Policy, Allocator>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Ma
 
     // nothing above matched, fall back on default operations
     if ( !set_ops ) {
-        d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy, Allocator>>();
+        d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Config>>();
     }
 }
 
-template<typename Policy, typename Allocator>
-CSRMatrix<Policy, Allocator>::~CSRMatrix()
+template<typename Config>
+CSRMatrix<Config>::~CSRMatrix()
 {
 }
 
 /********************************************************
  * Copy/transpose the matrix                             *
  ********************************************************/
-template<typename Policy, typename Allocator>
-std::shared_ptr<Matrix> CSRMatrix<Policy, Allocator>::clone() const
+template<typename Config>
+std::shared_ptr<Matrix> CSRMatrix<Config>::clone() const
 {
-    return std::make_shared<CSRMatrix<Policy, Allocator>>( d_matrixData->cloneMatrixData() );
+    return std::make_shared<CSRMatrix<Config>>( d_matrixData->cloneMatrixData() );
 }
 
-template<typename Policy, typename Allocator>
-std::shared_ptr<Matrix> CSRMatrix<Policy, Allocator>::transpose() const
+template<typename Config>
+std::shared_ptr<Matrix> CSRMatrix<Config>::transpose() const
 {
-    PROFILE( "CSRMatrix<Policy, Allocator>::transpose" );
+    PROFILE( "CSRMatrix<Config>::transpose" );
 
     auto data = d_matrixData->transpose();
-    return std::make_shared<CSRMatrix<Policy, Allocator>>( data );
+    return std::make_shared<CSRMatrix<Config>>( data );
 }
 
 /********************************************************
@@ -118,14 +117,14 @@ std::shared_ptr<Matrix> CSRMatrix<Policy, Allocator>::transpose() const
  * result = this * other_op                             *
  * C(N,M) = A(N,K)*B(K,M)
  ********************************************************/
-template<typename Policy, typename Allocator>
-void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
-                                             std::shared_ptr<Matrix> &result )
+template<typename Config>
+void CSRMatrix<Config>::multiply( std::shared_ptr<Matrix> other_op,
+                                  std::shared_ptr<Matrix> &result )
 {
-    PROFILE( "CSRMatrix<Policy, Allocator>::multiply" );
+    PROFILE( "CSRMatrix<Config>::multiply" );
     // pull out matrix data objects and ensure they are of correct type
-    auto thisData  = std::dynamic_pointer_cast<matrixdata_t>( d_matrixData );
-    auto otherData = std::dynamic_pointer_cast<matrixdata_t>( other_op->getMatrixData() );
+    auto thisData  = std::dynamic_pointer_cast<matrixdata_type>( d_matrixData );
+    auto otherData = std::dynamic_pointer_cast<matrixdata_type>( other_op->getMatrixData() );
     AMP_DEBUG_INSIST( thisData && otherData,
                       "CSRMatrix::multiply received invalid MatrixData types" );
 
@@ -141,15 +140,15 @@ void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
             std::function<std::vector<size_t>( size_t )>() );
 
         // Create the matrix
-        auto newData = std::make_shared<matrixdata_t>( params );
+        auto newData = std::make_shared<matrixdata_type>( params );
         std::shared_ptr<Matrix> newMatrix =
-            std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( newData );
+            std::make_shared<AMP::LinearAlgebra::CSRMatrix<Config>>( newData );
         AMP_ASSERT( newMatrix );
         result.swap( newMatrix );
 
         d_matrixOps->matMatMult( thisData, otherData, newData );
     } else {
-        auto resultData = std::dynamic_pointer_cast<matrixdata_t>( result->getMatrixData() );
+        auto resultData = std::dynamic_pointer_cast<matrixdata_type>( result->getMatrixData() );
         d_matrixOps->matMatMult( thisData, otherData, resultData );
     }
 }
@@ -157,8 +156,8 @@ void CSRMatrix<Policy, Allocator>::multiply( std::shared_ptr<Matrix> other_op,
 /********************************************************
  * Get/Set the diagonal                                  *
  ********************************************************/
-template<typename Policy, typename Allocator>
-Vector::shared_ptr CSRMatrix<Policy, Allocator>::extractDiagonal( Vector::shared_ptr buf ) const
+template<typename Config>
+Vector::shared_ptr CSRMatrix<Config>::extractDiagonal( Vector::shared_ptr buf ) const
 {
     Vector::shared_ptr out = buf;
     if ( !buf )
@@ -172,19 +171,19 @@ Vector::shared_ptr CSRMatrix<Policy, Allocator>::extractDiagonal( Vector::shared
 /********************************************************
  * Get the left/right vectors and DOFManagers            *
  ********************************************************/
-template<typename Policy, typename Allocator>
-Vector::shared_ptr CSRMatrix<Policy, Allocator>::getRightVector() const
+template<typename Config>
+Vector::shared_ptr CSRMatrix<Config>::getRightVector() const
 {
-    auto var          = std::dynamic_pointer_cast<matrixdata_t>( d_matrixData )->getRightVariable();
-    const auto memloc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
+    auto var = std::dynamic_pointer_cast<matrixdata_type>( d_matrixData )->getRightVariable();
+    const auto memloc = AMP::Utilities::getAllocatorMemoryType<allocator_type>();
     return createVector( getRightDOFManager(), var, true, memloc );
 }
 
-template<typename Policy, typename Allocator>
-Vector::shared_ptr CSRMatrix<Policy, Allocator>::getLeftVector() const
+template<typename Config>
+Vector::shared_ptr CSRMatrix<Config>::getLeftVector() const
 {
-    auto var          = std::dynamic_pointer_cast<matrixdata_t>( d_matrixData )->getLeftVariable();
-    const auto memloc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
+    auto var = std::dynamic_pointer_cast<matrixdata_type>( d_matrixData )->getLeftVariable();
+    const auto memloc = AMP::Utilities::getAllocatorMemoryType<allocator_type>();
     return createVector( getLeftDOFManager(), var, true, memloc );
 }
 

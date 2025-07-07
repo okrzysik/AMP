@@ -2,8 +2,8 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/matrices/CSRConfig.h"
 #include "AMP/matrices/CSRMatrix.h"
-#include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
@@ -20,10 +20,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#if defined( AMP_USE_HYPRE )
-    #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-#endif
-
 #include "ProfilerApp.h"
 
 #include <iomanip>
@@ -36,14 +32,13 @@
 // classes
 
 
-template<typename Policy, class Allocator>
-void createMatrixAndVectors(
-    AMP::UnitTest *ut,
-    AMP::Utilities::Backend AccelerationBackend,
-    std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> &matrix,
-    std::shared_ptr<AMP::LinearAlgebra::Vector> &x,
-    std::shared_ptr<AMP::LinearAlgebra::Vector> &y )
+template<typename Config>
+void createMatrixAndVectors( AMP::UnitTest *ut,
+                             AMP::Utilities::Backend AccelerationBackend,
+                             std::shared_ptr<AMP::Discretization::DOFManager> &dofManager,
+                             std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> &matrix,
+                             std::shared_ptr<AMP::LinearAlgebra::Vector> &x,
+                             std::shared_ptr<AMP::LinearAlgebra::Vector> &y )
 {
     auto comm = AMP::AMP_MPI( AMP_COMM_WORLD );
     // Create the vectors
@@ -76,8 +71,8 @@ void createMatrixAndVectors(
         leftDOF, rightDOF, comm, inVar, outVar, AccelerationBackend, getRow );
 
     // Create the matrix
-    auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy, Allocator>>( params );
-    matrix    = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>>( data );
+    auto data = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Config>>( params );
+    matrix    = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Config>>( data );
     // Initialize the matrix
     matrix->zero();
     matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
@@ -93,16 +88,16 @@ void createMatrixAndVectors(
     y = matrix->getLeftVector();
 }
 
-template<typename Policy, class Allocator>
+template<typename Config>
 void testMatvecWithDOFs( AMP::UnitTest *ut,
                          std::shared_ptr<AMP::Discretization::DOFManager> &dofManager )
 {
-    using scalar_t = typename Policy::scalar_t;
+    using scalar_t = typename Config::scalar_t;
 
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> dev_mat = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> dev_x                         = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> dev_y                         = nullptr;
-    createMatrixAndVectors<Policy, Allocator>(
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> dev_mat = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> dev_x              = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> dev_y              = nullptr;
+    createMatrixAndVectors<Config>(
         ut, AMP::Utilities::Backend::hip_cuda, dofManager, dev_mat, dev_x, dev_y );
 
     fillWithPseudoLaplacian( dev_mat, dofManager );
@@ -115,10 +110,10 @@ void testMatvecWithDOFs( AMP::UnitTest *ut,
 
     dev_mat->mult( dev_x, dev_y );
 
-    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Policy, Allocator>> kks_mat = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> kks_x                         = nullptr;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> kks_y                         = nullptr;
-    createMatrixAndVectors<Policy, Allocator>(
+    std::shared_ptr<AMP::LinearAlgebra::CSRMatrix<Config>> kks_mat = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> kks_x              = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> kks_y              = nullptr;
+    createMatrixAndVectors<Config>(
         ut, AMP::Utilities::Backend::kokkos, dofManager, kks_mat, kks_x, kks_y );
 
     fillWithPseudoLaplacian( kks_mat, dofManager );
@@ -161,12 +156,8 @@ void testMatvecWithDOFs( AMP::UnitTest *ut,
 
 void compareCSRMatOps( AMP::UnitTest *ut, std::string input_file )
 {
-    using Allocator = AMP::ManagedAllocator<void>;
-#if defined( AMP_USE_HYPRE )
-    using Policy = AMP::LinearAlgebra::HypreCSRPolicy;
-#else
-    using Policy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
-#endif
+    constexpr auto allocator = AMP::LinearAlgebra::alloc::managed;
+    using Config             = AMP::LinearAlgebra::DefaultCSRConfig<allocator>;
 
     std::string log_file = "output_testCompareCSRMatOps";
     AMP::logOnlyNodeZero( log_file );
@@ -188,7 +179,7 @@ void compareCSRMatOps( AMP::UnitTest *ut, std::string input_file )
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
 
     // Test on defined matrix types
-    testMatvecWithDOFs<Policy, Allocator>( ut, scalarDOFs );
+    testMatvecWithDOFs<Config>( ut, scalarDOFs );
 }
 
 int main( int argc, char *argv[] )

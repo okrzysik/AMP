@@ -6,6 +6,7 @@
 #include "AMP/utils/ParameterBase.h"
 
 #include <iomanip>
+#include <limits>
 
 namespace AMP::LinearAlgebra {
 
@@ -159,5 +160,7 @@ void Matrix::copyCast( std::shared_ptr<const Matrix> X )
 {
     d_matrixOps->copyCast( *X->getMatrixData(), *getMatrixData() );
 }
+
+std::uint16_t Matrix::mode() const { return std::numeric_limits<std::uint16_t>::max(); }
 
 } // namespace AMP::LinearAlgebra

@@ -3,14 +3,13 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy,
-         typename Allocator,
-         typename LocalMatrixData = CSRLocalMatrixData<Policy, Allocator>>
+template<typename Config, typename LocalMatrixData = CSRLocalMatrixData<Config>>
 class CSRLocalMatrixOperationsDevice
 {
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
+    using gidx_t         = typename Config::gidx_t;
+    using lidx_t         = typename Config::lidx_t;
+    using scalar_t       = typename Config::scalar_t;
+    using allocator_type = typename Config::allocator_type;
 
 public:
     /** \brief  Matrix-vector multiplication
@@ -105,9 +104,11 @@ public:
      * \param[in] X matrix data to copy from
      * \param[in] Y matrix data to copy to after up/down casting the coefficients
      */
-    template<typename PolicyIn>
-    static void copyCast( std::shared_ptr<CSRLocalMatrixData<PolicyIn, Allocator>> X,
-                          std::shared_ptr<LocalMatrixData> Y );
+    template<typename ConfigIn>
+    static void
+    copyCast( std::shared_ptr<
+                  CSRLocalMatrixData<typename ConfigIn::template set_alloc_t<Config::allocator>>> X,
+              std::shared_ptr<LocalMatrixData> Y );
 };
 
 } // namespace AMP::LinearAlgebra

@@ -7,8 +7,8 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator>
-void CSRMatrixCommunicator<Policy, Allocator>::sendMatrices(
+template<typename Config>
+void CSRMatrixCommunicator<Config>::sendMatrices(
     const std::map<int, std::shared_ptr<localmatrixdata_t>> &matrices )
 {
     PROFILE( "CSRMatrixCommunicator::sendMatrices" );
@@ -35,8 +35,8 @@ void CSRMatrixCommunicator<Policy, Allocator>::sendMatrices(
     d_send_called = true;
 }
 
-template<typename Policy, class Allocator>
-void CSRMatrixCommunicator<Policy, Allocator>::countSources(
+template<typename Config>
+void CSRMatrixCommunicator<Config>::countSources(
     const std::map<int, std::shared_ptr<localmatrixdata_t>> &matrices )
 {
     PROFILE( "CSRMatrixCommunicator::countSources" );
@@ -78,23 +78,23 @@ void CSRMatrixCommunicator<Policy, Allocator>::countSources(
     }
 }
 
-template<typename Policy, class Allocator>
-std::map<int, std::shared_ptr<CSRLocalMatrixData<Policy, Allocator>>>
-CSRMatrixCommunicator<Policy, Allocator>::recvMatrices( typename Policy::gidx_t first_row,
-                                                        typename Policy::gidx_t last_row,
-                                                        typename Policy::gidx_t first_col,
-                                                        typename Policy::gidx_t last_col )
+template<typename Config>
+std::map<int, std::shared_ptr<CSRLocalMatrixData<Config>>>
+CSRMatrixCommunicator<Config>::recvMatrices( typename Config::gidx_t first_row,
+                                             typename Config::gidx_t last_row,
+                                             typename Config::gidx_t first_col,
+                                             typename Config::gidx_t last_col )
 {
     PROFILE( "CSRMatrixCommunicator::recvMatrices" );
 
-    using lidx_t = typename Policy::lidx_t;
-    using gidx_t = typename Policy::gidx_t;
+    using lidx_t = typename Config::lidx_t;
+    using gidx_t = typename Config::gidx_t;
 
     AMP_INSIST( d_send_called,
                 "CSRMatrixCommunicator::sendMatrices must be called before recvMatrices" );
 
     std::map<int, std::shared_ptr<localmatrixdata_t>> blocks;
-    const auto mem_loc = AMP::Utilities::getAllocatorMemoryType<Allocator>();
+    const auto mem_loc = AMP::Utilities::getAllocatorMemoryType<allocator_type>();
 
     // there are d_num_sources matrices to recieve
     // always sent in order row_starts, cols, coeffs
