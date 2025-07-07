@@ -11,27 +11,27 @@
 
 namespace AMP::LinearAlgebra {
 
-template<
-    typename Policy,
-    typename Allocator,
-    class ExecSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<void>>,
-                                                Kokkos::DefaultHostExecutionSpace,
-                                                Kokkos::DefaultExecutionSpace>::type,
-    class ViewSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<void>>,
-                                                Kokkos::HostSpace,
-                                                Kokkos::SharedSpace>::type>
+template<typename Config,
+         class ExecSpace = typename std::conditional<
+             std::is_same_v<typename Config::allocator_type, AMP::HostAllocator<void>>,
+             Kokkos::DefaultHostExecutionSpace,
+             Kokkos::DefaultExecutionSpace>::type,
+         class ViewSpace = typename std::conditional<
+             std::is_same_v<typename Config::allocator_type, AMP::HostAllocator<void>>,
+             Kokkos::HostSpace,
+             Kokkos::SharedSpace>::type>
 class CSRLocalMatrixOperationsKokkos
 {
 public:
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+    static_assert( std::is_same_v<typename Config::allocator_type::value_type, void> );
 
-    using policy_t          = Policy;
-    using allocator_t       = Allocator;
-    using localmatrixdata_t = CSRLocalMatrixData<Policy, Allocator>;
+    using config_type       = Config;
+    using allocator_type    = typename Config::allocator_type;
+    using localmatrixdata_t = CSRLocalMatrixData<Config>;
 
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
+    using gidx_t   = typename Config::gidx_t;
+    using lidx_t   = typename Config::lidx_t;
+    using scalar_t = typename Config::scalar_t;
 
     CSRLocalMatrixOperationsKokkos( const ExecSpace &exec_space ) : d_exec_space( exec_space ) {}
 
@@ -128,9 +128,11 @@ public:
      * \param[in] X matrix data to copy from
      * \param[in] Y matrix data to copy to after up/down casting the coefficients
      */
-    template<typename PolicyIn>
-    static void copyCast( std::shared_ptr<CSRLocalMatrixData<PolicyIn, Allocator>> X,
-                          std::shared_ptr<localmatrixdata_t> Y );
+    template<typename ConfigIn>
+    static void
+    copyCast( std::shared_ptr<
+                  CSRLocalMatrixData<typename ConfigIn::template set_alloc_t<Config::allocator>>> X,
+              std::shared_ptr<localmatrixdata_t> Y );
 
 protected:
     ExecSpace d_exec_space;
