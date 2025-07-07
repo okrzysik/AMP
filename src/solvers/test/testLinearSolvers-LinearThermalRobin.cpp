@@ -10,9 +10,13 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include <chrono>
 #include <iomanip>
 #include <memory>
 #include <string>
+
+
+#define to_ms( x ) std::chrono::duration_cast<std::chrono::milliseconds>( x ).count()
 
 void linearThermalTest( AMP::UnitTest *ut,
                         const std::string &inputFileName,
@@ -27,9 +31,6 @@ void linearThermalTest( AMP::UnitTest *ut,
     ss << "output_testLinSolveRobin_r" << std::setw( 3 ) << std::setfill( '0' )
        << AMP::AMPManager::getCommWorld().getSize();
 
-    AMP::pout << "Running linearThermalTest with input " << input_file << " with "
-              << accelerationBackend << " backend on " << memoryLocation << " memory" << std::endl;
-
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -38,6 +39,9 @@ void linearThermalTest( AMP::UnitTest *ut,
     AMP::logAllNodes( ss.str() );
 
     auto nReps = input_db->getWithDefault<int>( "repetitions", 1 );
+    AMP::pout << std::endl
+              << "linearThermalTest input: " << input_file << ",  backend: " << accelerationBackend
+              << ",  memory: " << memoryLocation << ", repetitions: " << nReps << std::endl;
 
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
     neutronicsOp_db->putScalar( "AccelerationBackend", accelerationBackend );
@@ -75,6 +79,8 @@ void linearThermalTest( AMP::UnitTest *ut,
     auto linearSolver = AMP::Solver::Test::buildSolver(
         "LinearSolver", input_db, comm, nullptr, diffusionOperator );
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+
     for ( int i = 0; i < nReps; ++i ) {
         // Set initial guess
         TemperatureInKelvinVec->setToScalar( 1.0 );
@@ -93,6 +99,12 @@ void linearThermalTest( AMP::UnitTest *ut,
 
         checkConvergence( linearSolver.get(), input_db, input_file, *ut );
     }
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+
+    AMP::pout << std::endl
+              << "linearThermalTest with " << input_file << "  average time: "
+              << " (" << 1e-3 * to_ms( t2 - t1 ) / nReps << " s)" << std::endl;
 }
 
 int main( int argc, char *argv[] )
