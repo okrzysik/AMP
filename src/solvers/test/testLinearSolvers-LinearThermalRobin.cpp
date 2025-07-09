@@ -7,6 +7,7 @@
 #include "AMP/solvers/testHelpers/testSolverHelpers.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 
@@ -25,23 +26,20 @@ void linearThermalTest( AMP::UnitTest *ut,
 {
     PROFILE( "DRIVER::linearThermalTest" );
 
-    // Input and output file names
-    std::string input_file = inputFileName;
-    std::ostringstream ss;
-    ss << "output_testLinSolveRobin_r" << std::setw( 3 ) << std::setfill( '0' )
-       << AMP::AMPManager::getCommWorld().getSize();
-
     // Fill the database from the input file.
-    auto input_db = AMP::Database::parseInputFile( input_file );
+    auto input_db = AMP::Database::parseInputFile( inputFileName );
     input_db->print( AMP::plog );
 
     // Print from all cores into the output files
-    AMP::logAllNodes( ss.str() );
+    auto logFile = AMP::Utilities::stringf( "output_testLinSolveRobin_r%03i",
+                                            AMP::AMPManager::getCommWorld().getSize() );
+    AMP::logAllNodes( logFile );
 
     auto nReps = input_db->getWithDefault<int>( "repetitions", 1 );
     AMP::pout << std::endl
-              << "linearThermalTest input: " << input_file << ",  backend: " << accelerationBackend
-              << ",  memory: " << memoryLocation << ", repetitions: " << nReps << std::endl;
+              << "linearThermalTest input: " << inputFileName
+              << ",  backend: " << accelerationBackend << ",  memory: " << memoryLocation
+              << ", repetitions: " << nReps << std::endl;
 
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
     neutronicsOp_db->putScalar( "AccelerationBackend", accelerationBackend );
@@ -97,14 +95,14 @@ void linearThermalTest( AMP::UnitTest *ut,
             linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
         }
 
-        checkConvergence( linearSolver.get(), input_db, input_file, *ut );
+        checkConvergence( linearSolver.get(), input_db, inputFileName, *ut );
     }
 
     auto t2 = std::chrono::high_resolution_clock::now();
 
     AMP::pout << std::endl
-              << "linearThermalTest with " << input_file << "  average time: "
-              << " (" << 1e-3 * to_ms( t2 - t1 ) / nReps << " s)" << std::endl;
+              << "linearThermalTest with " << inputFileName << "  average time: ("
+              << 1e-3 * to_ms( t2 - t1 ) / nReps << " s)" << std::endl;
 }
 
 int main( int argc, char *argv[] )
@@ -118,7 +116,8 @@ int main( int argc, char *argv[] )
 
     if ( argc > 1 ) {
 
-        files.emplace_back( argv[1] );
+        for ( int i = 1; i < argc; i++ )
+            files.emplace_back( argv[i] );
 
     } else {
 

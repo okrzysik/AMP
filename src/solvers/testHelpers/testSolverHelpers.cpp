@@ -181,7 +181,7 @@ void checkConvergence( AMP::Solver::SolverStrategy *solver,
                        const std::string &inputFile,
                        AMP::UnitTest &ut )
 {
-    const auto final_norm = solver->getResidualNorm();
+    const auto final_norm = static_cast<double>( solver->getResidualNorm() );
     const int iter        = solver->getIterations();
     const auto calc_norm  = std::fmax( static_cast<double>( solver->getAbsoluteTolerance() ),
                                       static_cast<double>( solver->getInitialResidual() ) *
@@ -199,9 +199,9 @@ void checkConvergence( AMP::Solver::SolverStrategy *solver,
         // override reference norm if needed
         ref_norm = ref_norm > 0.0 ? ref_norm : calc_norm;
         // set pass/fail for each condition
-        const bool pass_iters = strict ? iter == ref_iter : iter <= ref_iter;
-        const auto norm_diff  = static_cast<double>( final_norm - ref_norm );
-        const bool pass_norm  = strict ? std::fabs( norm_diff ) <= ref_tol : norm_diff <= 0.0;
+        const bool pass_iters  = strict ? iter == ref_iter : iter <= ref_iter;
+        const double norm_diff = final_norm - ref_norm;
+        const bool pass_norm   = strict ? std::fabs( norm_diff ) <= ref_tol : norm_diff <= ref_tol;
         // Report passing or dump out information and fail
         if ( pass_iters && pass_norm && accept ) {
             ut.passes( "Passes convergence rate test for " + inputFile );
@@ -222,6 +222,8 @@ void checkConvergence( AMP::Solver::SolverStrategy *solver,
                       << final_norm << std::endl;
             AMP::pout << "Maximum: Iterations: " << ref_iter
                       << ", residual norm: " << std::setprecision( 15 ) << ref_norm << std::endl;
+            AMP::pout << "Difference ( computed - reference ): " << norm_diff
+                      << ", tolerance: " << ref_tol << std::endl;
             AMP::pout << "  Solver finished with status: " << solver->getConvergenceStatusString()
                       << std::endl;
             ut.failure( "FAILED: convergence rate test for " + inputFile );
