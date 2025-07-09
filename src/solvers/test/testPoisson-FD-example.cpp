@@ -291,6 +291,15 @@ static std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, con
     std::cout << std::endl;
     #endif
 
+    #if 1
+    AMP::pout << "boundary ids:" << std::endl;
+    auto bndry_ids = boxMesh->getBoundaryIDs();
+    for (auto id : bndry_ids) {
+        AMP::pout << id << " ";
+    }
+    AMP::pout << std::endl;
+    #endif
+
     return boxMesh;
 }
 
@@ -572,7 +581,7 @@ std::map<size_t, colsDataPair> PoissonOp::get1DCSRData() {
     // Get 3-point stencil
     auto stencil = getStencil1D( );
     
-    // Map from grid indices i,j to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
+    // Map from grid index i to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
     auto grid_inds_to_DOF = [mesh, dofmap]( int i ) {
         AMP::Mesh::BoxMesh::MeshElementIndex ind(
                         AMP::Mesh::GeomType::Vertex, 0, i );
@@ -582,28 +591,48 @@ std::map<size_t, colsDataPair> PoissonOp::get1DCSRData() {
         return dof[0];
     };
 
+    // CSR structure for identity row
+    auto localCSR_identity = [](size_t dof) { 
+        std::vector<double> vals = { 1.0 };  // data
+        std::vector<size_t> cols = { dof };  // Column index
+        colsDataPair identity = { cols, vals }; 
+        return identity;
+    };
+
     // Get local grid index box w/ zero ghosts
-    auto localBox  = getLocalNodeBox( mesh );
     auto globalBox = getGlobalNodeBox( mesh );
+
+    // Segment localBox into DOFs on the global boundary and those on the interior
+    auto localBoxInterior = getLocalNodeBox( mesh );
+    std::vector<int> localBoundaryIDs = {-1, -1};
+    // Local west boundary is global west boundary
+    if (localBoxInterior.first[0] == globalBox.first[0]) {
+        localBoundaryIDs[0] = localBoxInterior.first[0];
+        localBoxInterior.first[0] += 1;
+    }
+    // Local east boundary is global east boundary
+    if (localBoxInterior.last[0] == globalBox.last[0]) {
+        localBoundaryIDs[1] = localBoxInterior.last[0];
+        localBoxInterior.last[0] -= 1;
+    }
 
     // Create a map from the DOF to a pair a vectors
     // Map from a DOF to vector of col inds and associated data
     std::map<size_t, colsDataPair> localCSRData;
 
-    // Could do some check here whether local box shares a boundary with global box to save checking every time in the loop...
-
-    // Iterate over local box
-    for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
-        
-        // Set identity in boundary rows
-        if (i == globalBox.first[0] || i == globalBox.last[0]) {
-            size_t dof = grid_inds_to_DOF(i); // The current row
-            std::vector<double> vals = { 1.0 };  // data
-            std::vector<size_t> cols = { dof };  // Column index
-            localCSRData[dof] = { cols, vals };
-            continue;
+    // Set identity in boundary rows that I own
+    for (auto i : localBoundaryIDs) {
+        if (i != -1) {
+            auto dof = grid_inds_to_DOF(i);
+            localCSRData[dof] = localCSR_identity( dof );
         }
+    }
 
+    
+
+    // Iterate over local interior box
+    for (auto i = localBoxInterior.first[0]; i <= localBoxInterior.last[0]; i++) {
+        
         // The current row
         size_t dof = grid_inds_to_DOF(i);
         // Copy of stencil
