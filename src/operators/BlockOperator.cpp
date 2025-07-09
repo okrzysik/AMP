@@ -21,8 +21,7 @@ BlockOperator::BlockOperator( std::shared_ptr<const OperatorParameters> ) : Oper
 
 void BlockOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    d_memory_location = params->d_memory_location;
-    auto myParams     = std::dynamic_pointer_cast<const BlockOperatorParameters>( params );
+    auto myParams = std::dynamic_pointer_cast<const BlockOperatorParameters>( params );
     for ( int i = 0; i < d_iNumRowBlocks; i++ ) {
         for ( int j = 0; j < d_iNumColumnBlocks; j++ ) {
             d_blocks[i][j]->reset( ( myParams->d_blockParams )[i][j] );

@@ -58,12 +58,8 @@ PowerShape::~PowerShape() = default;
  *  default values.                                                      *
  *************************************************************************
  */
-void PowerShape::reset( std::shared_ptr<const OperatorParameters> parameters )
+void PowerShape::reset( std::shared_ptr<const OperatorParameters> )
 {
-    AMP_ASSERT( parameters );
-    d_memory_location = parameters->d_memory_location;
-    d_db              = parameters->d_db;
-
     if ( d_coordinateSystem == "cartesian" ) {
 
         if ( d_type == "legendre" ) {

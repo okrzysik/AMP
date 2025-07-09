@@ -19,32 +19,28 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-template<typename P, class A>
+template<typename P>
 class CSRMatrixSpGEMMDefault;
 
-template<typename Policy, class Allocator>
+template<typename Config>
 class CSRMatrixData : public MatrixData
 {
 public:
-    template<typename P, class A>
+    template<typename P>
     friend class CSRMatrixSpGEMMDefault;
 
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
-
-    using policy_t          = Policy;
-    using allocator_t       = Allocator;
-    using localmatrixdata_t = CSRLocalMatrixData<Policy, Allocator>;
-
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
+    using gidx_t         = typename Config::gidx_t;
+    using lidx_t         = typename Config::lidx_t;
+    using scalar_t       = typename Config::scalar_t;
+    using allocator_type = typename Config::allocator_type;
+    static_assert( std::is_same_v<typename allocator_type::value_type, void> );
     using gidxAllocator_t =
-        typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
+        typename std::allocator_traits<allocator_type>::template rebind_alloc<gidx_t>;
     using lidxAllocator_t =
-        typename std::allocator_traits<Allocator>::template rebind_alloc<lidx_t>;
+        typename std::allocator_traits<allocator_type>::template rebind_alloc<lidx_t>;
     using scalarAllocator_t =
-        typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
+        typename std::allocator_traits<allocator_type>::template rebind_alloc<scalar_t>;
+    using localmatrixdata_t = CSRLocalMatrixData<Config>;
 
     // Memory location, set by examining type of Allocator
     const AMP::Utilities::MemoryType d_memory_location;
@@ -335,18 +331,18 @@ protected:
     transposeOffd( std::shared_ptr<MatrixParametersBase> params ) const;
 };
 
-template<typename Policy, class Allocator>
-static CSRMatrixData<Policy, Allocator> const *getCSRMatrixData( MatrixData const &A )
+template<typename Config>
+static CSRMatrixData<Config> const *getCSRMatrixData( MatrixData const &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator> const *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Config> const *>( &A );
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
 
-template<typename Policy, class Allocator>
-static CSRMatrixData<Policy, Allocator> *getCSRMatrixData( MatrixData &A )
+template<typename Config>
+static CSRMatrixData<Config> *getCSRMatrixData( MatrixData &A )
 {
-    auto ptr = dynamic_cast<CSRMatrixData<Policy, Allocator> *>( &A );
+    auto ptr = dynamic_cast<CSRMatrixData<Config> *>( &A );
     AMP_INSIST( ptr, "dynamic cast from MatrixData to CSRMatrixData failed" );
     return ptr;
 }

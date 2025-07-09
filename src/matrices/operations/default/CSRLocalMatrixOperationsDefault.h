@@ -3,19 +3,18 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator>
+template<typename Config>
 class CSRLocalMatrixOperationsDefault
 {
 public:
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+    using config_type       = Config;
+    using allocator_type    = typename Config::allocator_type;
+    using localmatrixdata_t = CSRLocalMatrixData<Config>;
+    using gidx_t            = typename Config::gidx_t;
+    using lidx_t            = typename Config::lidx_t;
+    using scalar_t          = typename Config::scalar_t;
 
-    using policy_t          = Policy;
-    using allocator_t       = Allocator;
-    using localmatrixdata_t = CSRLocalMatrixData<Policy, Allocator>;
-
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
+    static_assert( std::is_same_v<typename allocator_type::value_type, void> );
 
     /** \brief  Matrix-vector multiplication
      * \param[in]  x  The vector to multiply
@@ -101,9 +100,11 @@ public:
      * \param[in] X matrix data to copy from
      * \param[in] Y matrix data to copy to after up/down casting the coefficients
      */
-    template<typename PolicyIn>
-    static void copyCast( std::shared_ptr<CSRLocalMatrixData<PolicyIn, Allocator>> X,
-                          std::shared_ptr<localmatrixdata_t> Y );
+    template<typename ConfigIn>
+    static void
+    copyCast( std::shared_ptr<
+                  CSRLocalMatrixData<typename ConfigIn::template set_alloc_t<Config::allocator>>> X,
+              std::shared_ptr<localmatrixdata_t> Y );
 };
 
 } // namespace AMP::LinearAlgebra

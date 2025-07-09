@@ -16,7 +16,7 @@ Operator::Operator()
     d_iObject_id           = Operator::d_iInstance_id;
     d_iDebugPrintInfoLevel = 0;
     Operator::d_iInstance_id++;
-    d_memory_location = AMP::Utilities::MemoryType::host;
+    d_memory_location = AMP::Utilities::MemoryType::none;
 }
 
 
@@ -28,7 +28,6 @@ Operator::Operator( std::shared_ptr<const OperatorParameters> params )
     d_iObject_id           = Operator::d_iInstance_id;
     d_iDebugPrintInfoLevel = 0;
     Operator::d_iInstance_id++;
-    d_memory_location = params->d_memory_location;
 
     // try and keep the next call the last in the function
     // so as not to override any parameters set through it
@@ -40,7 +39,6 @@ Operator::Operator( std::shared_ptr<const OperatorParameters> params )
 void Operator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_INSIST( params, "NULL parameter" );
-    d_memory_location = params->d_memory_location;
 
     // try and keep the next call the last in the function
     // so as not to override any parameters set through it
@@ -80,7 +78,11 @@ Operator::getParameters( const std::string &type,
                          std::shared_ptr<OperatorParameters> )
 {
     if ( type == "Jacobian" ) {
-        return getJacobianParameters( u );
+        auto params = getJacobianParameters( u );
+        if ( params ) {
+            setMemoryAndBackendParameters( params->d_db );
+        }
+        return params;
     } else {
         // Derived class should implement this
         AMP_ERROR( "Unknown OperatorParameters type specified" );
@@ -94,8 +96,29 @@ void Operator::getFromInput( std::shared_ptr<AMP::Database> db )
     AMP_INSIST( db, "NULL database" );
 
     d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
+
+    if ( d_memory_location == AMP::Utilities::MemoryType::none ) {
+        auto memLoc       = db->getWithDefault<std::string>( "MemoryLocation", "host" );
+        d_memory_location = AMP::Utilities::memoryLocationFromString( memLoc );
+    }
+    if ( d_backend == AMP::Utilities::Backend::none ) {
+        if ( db->keyExists( "AccelerationBackend" ) ) {
+            auto bcknd = db->getString( "AccelerationBackend" );
+            d_backend  = AMP::Utilities::backendFromString( bcknd );
+        } else {
+            d_backend = AMP::Utilities::getDefaultBackend( d_memory_location );
+        }
+    }
 }
 
+void Operator::setMemoryAndBackendParameters( std::shared_ptr<AMP::Database> db )
+{
+    if ( d_memory_location != AMP::Utilities::MemoryType::none )
+        db->putScalar<std::string>( "MemoryLocation",
+                                    AMP::Utilities::getString( d_memory_location ) );
+    if ( d_backend != AMP::Utilities::Backend::none )
+        db->putScalar<std::string>( "AccelerationBackend", AMP::Utilities::getString( d_backend ) );
+}
 
 /********************************************************
  * Return the default VectorSelector                     *

@@ -10,11 +10,18 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include <chrono>
 #include <iomanip>
 #include <memory>
 #include <string>
 
-void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
+
+#define to_ms( x ) std::chrono::duration_cast<std::chrono::milliseconds>( x ).count()
+
+void linearThermalTest( AMP::UnitTest *ut,
+                        const std::string &inputFileName,
+                        std::string &accelerationBackend,
+                        std::string &memoryLocation )
 {
     PROFILE( "DRIVER::linearThermalTest" );
 
@@ -24,8 +31,6 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     ss << "output_testLinSolveRobin_r" << std::setw( 3 ) << std::setfill( '0' )
        << AMP::AMPManager::getCommWorld().getSize();
 
-    AMP::pout << "Running linearThermalTest with input " << input_file << std::endl;
-
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -34,12 +39,26 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     AMP::logAllNodes( ss.str() );
 
     auto nReps = input_db->getWithDefault<int>( "repetitions", 1 );
+    AMP::pout << std::endl
+              << "linearThermalTest input: " << input_file << ",  backend: " << accelerationBackend
+              << ",  memory: " << memoryLocation << ", repetitions: " << nReps << std::endl;
+
+    auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
+    neutronicsOp_db->putScalar( "AccelerationBackend", accelerationBackend );
+    neutronicsOp_db->putScalar( "MemoryLocation", memoryLocation );
+    auto volumeOp_db = input_db->getDatabase( "VolumeIntegralOperator" );
+    volumeOp_db->putScalar( "AccelerationBackend", accelerationBackend );
+    volumeOp_db->putScalar( "MemoryLocation", memoryLocation );
 
     // Create the Mesh
     const auto mesh = createMesh( input_db );
 
     auto PowerInWattsVec = constructNeutronicsPowerSource( input_db, mesh );
 
+    // Set appropriate acceleration backend
+    auto op_db = input_db->getDatabase( "DiffusionBVPOperator" );
+    op_db->putScalar( "AccelerationBackend", accelerationBackend );
+    op_db->putScalar( "MemoryLocation", memoryLocation );
     // Create the Thermal BVP Operator
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator( mesh, "DiffusionBVPOperator", input_db ) );
@@ -60,6 +79,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto linearSolver = AMP::Solver::Test::buildSolver(
         "LinearSolver", input_db, comm, nullptr, diffusionOperator );
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+
     for ( int i = 0; i < nReps; ++i ) {
         // Set initial guess
         TemperatureInKelvinVec->setToScalar( 1.0 );
@@ -78,6 +99,12 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
         checkConvergence( linearSolver.get(), input_db, input_file, *ut );
     }
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+
+    AMP::pout << std::endl
+              << "linearThermalTest with " << input_file << "  average time: "
+              << " (" << 1e-3 * to_ms( t2 - t1 ) / nReps << " s)" << std::endl;
 }
 
 int main( int argc, char *argv[] )
@@ -127,7 +154,16 @@ int main( int argc, char *argv[] )
 #endif
 
 #ifdef AMP_USE_HYPRE
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreBiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreGMRES" );
+
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreBiCGSTAB" );
+
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-IPCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FCG" );
@@ -144,19 +180,12 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreCG" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreGMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreGMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreBiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreBiCGSTAB" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-HypreBiCGSTAB" );
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
-            //        files.emplace_back(
-            //        "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscBiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscBiCGSTAB" );
     #endif
 #endif
 
@@ -199,10 +228,26 @@ int main( int argc, char *argv[] )
 #endif
     }
 
+    std::vector<std::pair<std::string, std::string>> backendsAndMemory;
+    backendsAndMemory.emplace_back( std::make_pair( "serial", "host" ) );
+#ifdef USE_OPENMP
+    backendsAndMemory.emplace_back( std::make_pair( "openmp", "host" ) );
+#endif
+#ifdef USE_DEVICE
+    backendsAndMemory.emplace_back( std::make_pair( "hip_cuda", "managed" ) );
+#endif
+#if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+    backendsAndMemory.emplace_back( std::make_pair( "kokkos", "host" ) );
+    #ifdef USE_DEVICE
+    backendsAndMemory.emplace_back( std::make_pair( "kokkos", "managed" ) );
+    #endif
+#endif
+
     {
         PROFILE( "DRIVER::main(test loop)" );
         for ( auto &file : files ) {
-            linearThermalTest( &ut, file );
+            for ( auto &[backend, memory] : backendsAndMemory )
+                linearThermalTest( &ut, file, backend, memory );
         }
     }
 

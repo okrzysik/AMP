@@ -57,7 +57,6 @@ SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
 void SubchannelFourEqNonlinearOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_ASSERT( params );
-    d_memory_location = params->d_memory_location;
 
     auto myparams = std::dynamic_pointer_cast<const SubchannelOperatorParameters>( params );
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
@@ -898,7 +897,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                     axial_turbulence_sum += wt * ( u_mid - u_mid_neighbor );
 
                 } // end if (lateralFaceIterator != interiorLateralFaceMap.end()) {
-            } // end loop over gap faces
+            }     // end loop over gap faces
 
             // force terms to zero if requested
             double force_factor_conduction  = 1.0;
@@ -959,7 +958,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                 outputVec->setValuesByGlobalID( 1, &minusDofs[1], &val );
             }
         } // end loop over cells of current subchannel
-    } // end loop over subchannels
+    }     // end loop over subchannels
 
     // loop over lateral faces
     auto face = d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ); // iterator for cells of mesh
@@ -1425,8 +1424,8 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
             // adjacent to the current
             // lateral face
             double knownCentroid[3]           = { parentLateralFaceCentroid[0],
-                                                  parentLateralFaceCentroid[1],
-                                                  daughterCellCentroid[2] };
+                                        parentLateralFaceCentroid[1],
+                                        daughterCellCentroid[2] };
             bool isAxiallyAdjacentLateralFace = true;
             for ( size_t i = 0; i < 3; i++ ) {
                 if ( !AMP::Utilities::approx_equal(

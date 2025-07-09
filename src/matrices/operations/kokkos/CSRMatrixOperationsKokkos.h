@@ -15,30 +15,30 @@
 
 namespace AMP::LinearAlgebra {
 
-template<
-    typename Policy,
-    typename Allocator,
-    class ExecSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<void>>,
-                                                Kokkos::DefaultHostExecutionSpace,
-                                                Kokkos::DefaultExecutionSpace>::type,
-    class ViewSpace = typename std::conditional<std::is_same_v<Allocator, AMP::HostAllocator<void>>,
-                                                Kokkos::HostSpace,
-                                                Kokkos::SharedSpace>::type>
+template<typename Config,
+         class ExecSpace = typename std::conditional<
+             std::is_same_v<typename Config::allocator_type, AMP::HostAllocator<void>>,
+             Kokkos::DefaultHostExecutionSpace,
+             Kokkos::DefaultExecutionSpace>::type,
+         class ViewSpace = typename std::conditional<
+             std::is_same_v<typename Config::allocator_type, AMP::HostAllocator<void>>,
+             Kokkos::HostSpace,
+             Kokkos::SharedSpace>::type>
 class CSRMatrixOperationsKokkos : public MatrixOperations
 {
 public:
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
+    static_assert( std::is_same_v<typename Config::allocator_type::value_type, void> );
 
-    using policy_t          = Policy;
-    using allocator_t       = Allocator;
-    using matrixdata_t      = CSRMatrixData<Policy, Allocator>;
+    using config_type       = Config;
+    using allocator_type    = typename Config::allocator_type;
+    using matrixdata_t      = CSRMatrixData<Config>;
     using localmatrixdata_t = typename matrixdata_t::localmatrixdata_t;
 
-    using localops_t = CSRLocalMatrixOperationsKokkos<Policy, Allocator, ExecSpace, ViewSpace>;
+    using localops_t = CSRLocalMatrixOperationsKokkos<Config, ExecSpace, ViewSpace>;
 
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
+    using gidx_t   = typename Config::gidx_t;
+    using lidx_t   = typename Config::lidx_t;
+    using scalar_t = typename Config::scalar_t;
 
     CSRMatrixOperationsKokkos()
         : d_exec_space(),
@@ -131,9 +131,10 @@ public:
      */
     void copyCast( const MatrixData &X, MatrixData &Y ) override;
 
-    template<typename PolicyIn>
-    static void copyCast( CSRMatrixData<PolicyIn, Allocator> *X,
-                          CSRMatrixData<Policy, Allocator> *Y );
+    template<typename ConfigIn>
+    static void
+    copyCast( CSRMatrixData<typename ConfigIn::template set_alloc_t<Config::allocator>> *X,
+              CSRMatrixData<Config> *Y );
 
 protected:
     ExecSpace d_exec_space;

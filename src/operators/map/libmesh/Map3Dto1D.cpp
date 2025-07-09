@@ -34,7 +34,6 @@ Map3Dto1D::Map3Dto1D( std::shared_ptr<const OperatorParameters> params ) : MapOp
 void Map3Dto1D::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_ASSERT( params );
-    d_memory_location = params->d_memory_location;
 
     auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
 

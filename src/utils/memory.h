@@ -15,13 +15,27 @@
 namespace AMP::Utilities {
 
 //! Enum to store pointer type
-enum class MemoryType : uint8_t { unregistered = 0, host = 1, managed = 2, device = 3 };
+enum class MemoryType : int8_t { none = -1, unregistered = 0, host = 1, managed = 2, device = 3 };
 
 //! Return the pointer type
 MemoryType getMemoryType( const void *ptr );
 
 //! Return a string for the memory type
 std::string getString( MemoryType );
+
+//! Return the memory type from a string
+static inline MemoryType memoryLocationFromString( const std::string &name )
+{
+#ifdef USE_DEVICE
+    if ( name == "managed" || name == "Managed" ) {
+        return MemoryType::managed;
+    } else if ( name == "device" || name == "Device" ) {
+        return MemoryType::device;
+    }
+#endif
+    (void) name;
+    return MemoryType::host;
+}
 
 } // namespace AMP::Utilities
 

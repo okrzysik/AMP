@@ -48,12 +48,12 @@ void GhostDataHelper<TYPE, Allocator>::allocateBuffers( size_t len )
         // allocate space for ghost buffer
         this->d_Ghosts = d_alloc.allocate( d_ghostSize );
         for ( size_t i = 0; i < d_ghostSize; ++i )
-            new ( this->d_Ghosts + i ) TYPE( 0 );
+            this->d_Ghosts[i] = 0;
 
         // allocate space for add buffer
         this->d_AddBuffer = d_alloc.allocate( d_ghostSize );
         for ( size_t i = 0; i < d_ghostSize; ++i )
-            new ( this->d_AddBuffer + i ) TYPE( 0 );
+            this->d_AddBuffer[i] = 0;
     }
 }
 
@@ -61,14 +61,10 @@ template<class TYPE, class Allocator>
 void GhostDataHelper<TYPE, Allocator>::deallocateBuffers()
 {
     if ( this->d_Ghosts ) {
-        for ( size_t i = 0; i < this->d_ghostSize; ++i )
-            this->d_Ghosts[i].~TYPE();
         this->d_alloc.deallocate( this->d_Ghosts, this->d_ghostSize );
         this->d_Ghosts = nullptr;
     }
     if ( this->d_AddBuffer ) {
-        for ( size_t i = 0; i < this->d_ghostSize; ++i )
-            this->d_AddBuffer[i].~TYPE();
         this->d_alloc.deallocate( this->d_AddBuffer, this->d_ghostSize );
         this->d_AddBuffer = nullptr;
     }

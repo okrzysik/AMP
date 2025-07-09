@@ -32,9 +32,6 @@ public:
     explicit OperatorParameters( std::shared_ptr<AMP::Database> db,
                                  std::shared_ptr<AMP::Mesh::Mesh> mesh = nullptr );
 
-    // Get the memory location from a string
-    static AMP::Utilities::MemoryType memoryLocationFromString( const std::string &name );
-
     //! Destructor
     virtual ~OperatorParameters() {}
 
@@ -43,14 +40,6 @@ public:
 
     //! Allow for the case that a fully constructed operator is returned
     std::shared_ptr<AMP::Operator::Operator> d_pOperator;
-
-    /**
-     * Location (host/managed/device) where internally created
-     * vectors and matrices should live. Host memory should always
-     * work. More specialized parameter classes can overwrite this
-     * if supported.
-     */
-    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
 };
 
 

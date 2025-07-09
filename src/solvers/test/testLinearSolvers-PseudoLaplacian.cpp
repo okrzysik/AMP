@@ -24,13 +24,17 @@
 #include <memory>
 #include <string>
 
-void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
+void linearThermalTest( AMP::UnitTest *ut,
+                        const std::string &inputFileName,
+                        std::string &accelerationBackend,
+                        std::string &memoryLocation )
 {
     // Input and output file names
     std::string input_file = inputFileName;
     std::string log_file   = "output_" + inputFileName;
 
-    AMP::pout << "Running linearThermalTest with input " << input_file << std::endl;
+    AMP::pout << "Running linearThermalTest with input " << input_file << " with "
+              << accelerationBackend << " backend on " << memoryLocation << " memory" << std::endl;
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -53,24 +57,31 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto inVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "inputVar" );
     auto outVar = inVar;
 
-#ifdef USE_DEVICE
-    auto inVec = AMP::LinearAlgebra::createVector(
-        scalarDOFs, inVar, true, AMP::Utilities::MemoryType::managed );
-    auto outVec = AMP::LinearAlgebra::createVector(
-        scalarDOFs, outVar, true, AMP::Utilities::MemoryType::managed );
-#else
-    auto inVec  = AMP::LinearAlgebra::createVector( scalarDOFs, inVar );
-    auto outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
-#endif
+    std::shared_ptr<AMP::LinearAlgebra::Vector> inVec, outVec;
+
+    if ( memoryLocation == "host" ) {
+        inVec  = AMP::LinearAlgebra::createVector( scalarDOFs, inVar );
+        outVec = AMP::LinearAlgebra::createVector( scalarDOFs, outVar );
+    } else {
+        AMP_ASSERT( memoryLocation == "managed" );
+        inVec = AMP::LinearAlgebra::createVector(
+            scalarDOFs, inVar, true, AMP::Utilities::MemoryType::managed );
+        outVec = AMP::LinearAlgebra::createVector(
+            scalarDOFs, outVar, true, AMP::Utilities::MemoryType::managed );
+    }
+
+    auto backend = AMP::Utilities::backendFromString( accelerationBackend );
 
     // Create the matrix
-    auto matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec, "CSRMatrix" );
+    auto matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec, backend, "CSRMatrix" );
 
     fillWithPseudoLaplacian( matrix, scalarDOFs );
-    matrix->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     // Create operator to wrap matrix
-    auto op_db          = input_db->getDatabase( "LinearOperator" );
+    auto op_db = input_db->getDatabase( "LinearOperator" );
+    op_db->putScalar<std::string>( "AccelerationBackend", accelerationBackend );
+    op_db->putScalar<std::string>( "MemoryLocation", memoryLocation );
+
     auto opParams       = std::make_shared<AMP::Operator::OperatorParameters>( op_db );
     auto linearOperator = std::make_shared<AMP::Operator::LinearOperator>( opParams );
     linearOperator->setMatrix( matrix );
@@ -128,8 +139,24 @@ int main( int argc, char *argv[] )
 #endif
     }
 
+    std::vector<std::pair<std::string, std::string>> backendsAndMemory;
+    backendsAndMemory.emplace_back( std::make_pair( "serial", "host" ) );
+#ifdef USE_OPENMP
+    backendsAndMemory.emplace_back( std::make_pair( "openmp", "host" ) );
+#endif
+#if ( defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS ) )
+    backendsAndMemory.emplace_back( std::make_pair( "kokkos", "host" ) );
+    #ifdef USE_DEVICE
+    backendsAndMemory.emplace_back( std::make_pair( "kokkos", "managed" ) );
+    #endif
+#endif
+#ifdef USE_DEVICE
+    backendsAndMemory.emplace_back( std::make_pair( "hip_cuda", "managed" ) );
+#endif
+
     for ( auto &file : files ) {
-        linearThermalTest( &ut, file );
+        for ( auto &[backend, memory] : backendsAndMemory )
+            linearThermalTest( &ut, file, backend, memory );
     }
 
     ut.report();

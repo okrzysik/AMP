@@ -31,9 +31,6 @@ DirichletVectorCorrection::DirichletVectorCorrection(
 
 void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    AMP_ASSERT( params );
-    d_memory_location = params->d_memory_location;
-
     AMP_INSIST( params, "NULL parameters" );
     AMP_INSIST( params->d_db, "NULL database" );
 
