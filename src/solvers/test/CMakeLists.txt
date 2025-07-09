@@ -202,6 +202,7 @@ IF ( USE_PETSC )
 ENDIF()
 IF ( USE_HYPRE )
     ADD_AMP_TEST( testPoisson-FD-example )
+    ADD_AMP_TEST( testHeat-FD-example )
 ENDIF()
 
 IF ( USE_LIBMESH )
