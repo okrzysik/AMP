@@ -35,7 +35,7 @@ struct csr_visitor {
         case alloc::managed:
             return check_lidx<alloc::managed>();
         }
-        AMP_WARNING( "csr_visitor: mode not found!" );
+        AMP_ERROR( "csr_visitor: mode not found!" );
     }
 
 private:
@@ -49,6 +49,7 @@ private:
             AMP_DEBUG_ASSERT( ptr );
             return std::forward<F>( f )( ptr );
         }
+        AMP_ERROR( "csr_visitor: mode not found!" );
     }
     template<alloc a, index l, index g>
     auto check_scalar()
@@ -61,6 +62,7 @@ private:
         case scalar::fld:
             return visit<a, l, g, scalar::fld>();
         }
+        AMP_ERROR( "csr_visitor: mode not found!" );
     }
     template<alloc a, index l>
     auto check_gidx()
@@ -73,6 +75,7 @@ private:
         case index::ill:
             return check_scalar<a, l, index::ill>();
         }
+        AMP_ERROR( "csr_visitor: mode not found!" );
     }
     template<alloc a>
     auto check_lidx()
@@ -85,14 +88,21 @@ private:
         case index::ill:
             return check_gidx<a, index::ill>();
         }
+        AMP_ERROR( "csr_visitor: mode not found!" );
     }
 };
 
 template<class F>
 csr_visitor( csr_mode, std::shared_ptr<Matrix>, F ) -> csr_visitor<F>;
 
+/*!
+  Helper to recover a CSR matrix type from a type erased Matrix pointer
+  @param[in] mat Generic matrix pointer
+  @param[in] f Callable that will be invoked with the CSR Matrix pointer
+  @return Result of calling f with CSR Matrix pointer
+ */
 template<class F>
-auto csr_visit( std::shared_ptr<Matrix> mat, F &&f )
+auto csrVisit( std::shared_ptr<Matrix> mat, F &&f )
 {
     auto mode = static_cast<csr_mode>( mat->mode() );
     csr_visitor visit{ mode, mat, std::forward<F>( f ) };
