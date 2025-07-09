@@ -375,7 +375,7 @@ size_t GhostDataHelper<TYPE, Allocator>::getAllGhostValues( void *vals, const ty
     if ( id == getTypeID<TYPE>() ) {
         std::memcpy( vals, d_Ghosts, d_ghostSize * sizeof( TYPE ) );
     } else {
-        AMP_ERROR( "Not finished" );
+        AMP_ERROR( "Ghosts other than same type are not supported yet" );
     }
     return d_ghostSize;
 }

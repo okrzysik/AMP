@@ -231,6 +231,15 @@ void ManagedVectorData::addGhostValuesByGlobalID( size_t N,
         vec->getVectorData()->addGhostValuesByGlobalID( N, ndx, vals, id );
     }
 }
+size_t ManagedVectorData::getGhostValuesByGlobalID( void *, const typeID & ) const
+{
+    auto vec = getVectorEngine();
+    if ( !vec ) {
+        return GhostDataHelper<double>::getGhostValuesByGlobalID( vals, id );
+    } else {
+        return vec->getVectorData()->getGhostValuesByGlobalID( vals, id );
+    }
+}
 void ManagedVectorData::makeConsistent( ScatterType t )
 {
     auto vec = getVectorEngine();
