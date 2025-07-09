@@ -2,8 +2,8 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/matrices/CSRConfig.h"
 #include "AMP/matrices/CSRMatrix.h"
-#include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/RawCSRMatrixParameters.h"
 #include "AMP/matrices/testHelpers/MatrixDataTransforms.h"
@@ -19,10 +19,6 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-
-#if defined( AMP_USE_HYPRE )
-    #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
-#endif
 
 #include <iostream>
 #include <string>
@@ -41,7 +37,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
 #if defined( AMP_USE_TRILINOS )
     type = "ManagedEpetraMatrix";
 #elif defined( AMP_USE_PETSC )
-    type         = "NativePetscMatrix";
+    type = "NativePetscMatrix";
 #else
     AMP_ERROR( "This test requires either Trilinos or Petsc matrices to be enabled" );
 #endif
@@ -61,14 +57,10 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     auto nGlobalRows1 = matrix->numGlobalRows();
     auto nLocalRows1  = matrix->numLocalRows();
 
-#if defined( AMP_USE_HYPRE )
-    using Policy = AMP::LinearAlgebra::HypreCSRPolicy;
-#else
-    using Policy = AMP::LinearAlgebra::CSRPolicy<size_t, int, double>;
-#endif
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
+    using Config   = AMP::LinearAlgebra::DefaultHostCSRConfig;
+    using gidx_t   = typename Config::gidx_t;
+    using lidx_t   = typename Config::lidx_t;
+    using scalar_t = typename Config::scalar_t;
 
     gidx_t startRow, endRow;
     gidx_t startCol, endCol;
@@ -76,7 +68,7 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
     std::vector<gidx_t> cols_d, cols_od;
     std::vector<scalar_t> coeffs_d, coeffs_od;
 
-    AMP::LinearAlgebra::transformDofToCSR<Policy>( matrix,
+    AMP::LinearAlgebra::transformDofToCSR<Config>( matrix,
                                                    startRow,
                                                    endRow,
                                                    startCol,
@@ -88,18 +80,18 @@ void matVecTestWithDOFs( AMP::UnitTest *ut,
                                                    cols_od,
                                                    coeffs_od );
 
-    AMP::LinearAlgebra::RawCSRMatrixParameters<Policy>::RawCSRLocalMatrixParameters pars_d{
+    AMP::LinearAlgebra::RawCSRMatrixParameters<Config>::RawCSRLocalMatrixParameters pars_d{
         rs_d.data(), cols_d.data(), coeffs_d.data()
     };
 
-    AMP::LinearAlgebra::RawCSRMatrixParameters<Policy>::RawCSRLocalMatrixParameters pars_od{
+    AMP::LinearAlgebra::RawCSRMatrixParameters<Config>::RawCSRLocalMatrixParameters pars_od{
         rs_od.data(), cols_od.data(), coeffs_od.data()
     };
 
-    auto csrParams = std::make_shared<AMP::LinearAlgebra::RawCSRMatrixParameters<Policy>>(
+    auto csrParams = std::make_shared<AMP::LinearAlgebra::RawCSRMatrixParameters<Config>>(
         startRow, endRow, startCol, endCol, pars_d, pars_od, comm, inVar, outVar );
 
-    auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
+    auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Config>>( csrParams );
     AMP_ASSERT( csrMatrix );
 
     auto nGlobalRows2 = csrMatrix->numGlobalRows();

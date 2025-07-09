@@ -11,26 +11,22 @@
 
 namespace AMP::LinearAlgebra {
 
-template<typename Policy, class Allocator>
+template<typename Config>
 class CSRMatrixCommunicator
 {
 public:
-    static_assert( std::is_same_v<typename Allocator::value_type, void> );
-
-    using policy_t          = Policy;
-    using allocator_t       = Allocator;
-    using localmatrixdata_t = CSRLocalMatrixData<Policy, Allocator>;
-
-    using gidx_t   = typename Policy::gidx_t;
-    using lidx_t   = typename Policy::lidx_t;
-    using scalar_t = typename Policy::scalar_t;
-
+    using gidx_t            = typename Config::gidx_t;
+    using lidx_t            = typename Config::lidx_t;
+    using scalar_t          = typename Config::scalar_t;
+    using localmatrixdata_t = CSRLocalMatrixData<Config>;
+    using allocator_type    = typename Config::allocator_type;
+    static_assert( std::is_same_v<typename allocator_type::value_type, void> );
     using gidxAllocator_t =
-        typename std::allocator_traits<Allocator>::template rebind_alloc<gidx_t>;
+        typename std::allocator_traits<allocator_type>::template rebind_alloc<gidx_t>;
     using lidxAllocator_t =
-        typename std::allocator_traits<Allocator>::template rebind_alloc<lidx_t>;
+        typename std::allocator_traits<allocator_type>::template rebind_alloc<lidx_t>;
     using scalarAllocator_t =
-        typename std::allocator_traits<Allocator>::template rebind_alloc<scalar_t>;
+        typename std::allocator_traits<allocator_type>::template rebind_alloc<scalar_t>;
 
     CSRMatrixCommunicator() = default;
     CSRMatrixCommunicator( std::shared_ptr<CommunicationList> comm_list )

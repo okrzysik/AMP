@@ -11,11 +11,11 @@ namespace AMP::LinearAlgebra {
 /** \class MatrixParameters
  * \brief  A class used to hold basic parameters for a matrix
  */
-template<typename Policy>
+template<typename Config>
 class AMPCSRMatrixParameters : public MatrixParameters
 {
-    using gidx_t = typename Policy::gidx_t;
-    using lidx_t = typename Policy::lidx_t;
+    using gidx_t = typename Config::gidx_t;
+    using lidx_t = typename Config::lidx_t;
 
 public:
     AMPCSRMatrixParameters() = delete;
