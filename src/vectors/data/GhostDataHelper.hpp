@@ -4,6 +4,9 @@
 #include "AMP/IO/RestartManager.h"
 #include "AMP/vectors/data/GhostDataHelper.h"
 
+#include <cstring>
+
+
 namespace AMP::LinearAlgebra {
 
 
@@ -365,6 +368,16 @@ void GhostDataHelper<TYPE, Allocator>::getGhostAddValuesByGlobalID( size_t N,
     } else {
         AMP_ERROR( "Ghosts other than same type are not supported yet" );
     }
+}
+template<class TYPE, class Allocator>
+size_t GhostDataHelper<TYPE, Allocator>::getAllGhostValues( void *vals, const typeID &id ) const
+{
+    if ( id == getTypeID<TYPE>() ) {
+        std::memcpy( vals, d_Ghosts, d_ghostSize * sizeof( TYPE ) );
+    } else {
+        AMP_ERROR( "Ghosts other than same type are not supported yet" );
+    }
+    return d_ghostSize;
 }
 
 

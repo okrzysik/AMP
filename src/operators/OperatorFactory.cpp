@@ -19,8 +19,6 @@
     #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
     #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
     #include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
-    #include "AMP/operators/flow/NavierStokesLSWFFEOperator.h"
-    #include "AMP/operators/flow/NavierStokesLSWFLinearFEOperator.h"
     #include "AMP/operators/libmesh/MassLinearFEOperator.h"
     #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
     #include "AMP/operators/map/libmesh/MapSurface.h"

@@ -62,6 +62,7 @@ public: // Derived from VectorData
     void setGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
     void addGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
     void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
+    size_t getAllGhostValues( void *, const typeID & ) const override;
     void putRawData( const void *, const typeID & ) override;
     void getRawData( void *, const typeID & ) const override;
     UpdateState getLocalUpdateStatus() const override;

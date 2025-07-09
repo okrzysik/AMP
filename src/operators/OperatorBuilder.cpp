@@ -26,8 +26,6 @@
     #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
     #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
     #include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
-    #include "AMP/operators/flow/NavierStokesLSWFFEOperator.h"
-    #include "AMP/operators/flow/NavierStokesLSWFLinearFEOperator.h"
     #include "AMP/operators/libmesh/MassLinearFEOperator.h"
     #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
     #include "AMP/operators/map/libmesh/MapSurface.h"
@@ -428,73 +426,6 @@ createNonlinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 }
 
 static Operator::shared_ptr
-createLinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                      std::shared_ptr<AMP::Database> input_db,
-                                      std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
-{
-
-    if ( !elementPhysicsModel ) {
-        AMP_INSIST( input_db->keyExists( "FlowTransportModel" ),
-                    "Key ''FlowTransportModel'' is missing!" );
-
-        auto db             = input_db->getDatabase( "FlowTransportModel" );
-        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( db );
-    }
-    AMP_INSIST( elementPhysicsModel, "NULL transport model" );
-
-    // next create a ElementOperation object
-    AMP_INSIST( input_db->keyExists( "FlowElement" ), "Key ''FlowElement'' is missing!" );
-    auto flowLinElem =
-        ElementOperationFactory::createElementOperation( input_db->getDatabase( "FlowElement" ) );
-
-    // now create the linear flow operator
-    AMP_ASSERT( input_db->getString( "name" ) == "NavierStokesLSWFLinearFEOperator" );
-    auto flowOpParams = std::make_shared<NavierStokesLinearFEOperatorParameters>( input_db );
-    flowOpParams->d_transportModel =
-        std::dynamic_pointer_cast<FlowTransportModel>( elementPhysicsModel );
-    flowOpParams->d_elemOp   = flowLinElem;
-    flowOpParams->d_Mesh     = mesh;
-    flowOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 10, true );
-    flowOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 10, true );
-
-    return std::make_shared<NavierStokesLSWFLinearFEOperator>( flowOpParams );
-}
-
-static Operator::shared_ptr
-createNonlinearNavierStokesLSWFOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                         std::shared_ptr<AMP::Database> input_db,
-                                         std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
-{
-
-    if ( !elementPhysicsModel ) {
-        AMP_INSIST( input_db->keyExists( "FlowTransportModel" ),
-                    "Key ''FlowTransportModel'' is missing!" );
-
-        auto db             = input_db->getDatabase( "FlowTransportModel" );
-        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( db );
-    }
-    AMP_INSIST( elementPhysicsModel, "NULL material model" );
-
-    // next create a ElementOperation object
-    AMP_INSIST( input_db->keyExists( "FlowElement" ), "Key ''FlowElement'' is missing!" );
-    auto flowElem =
-        ElementOperationFactory::createElementOperation( input_db->getDatabase( "FlowElement" ) );
-
-    // now create the nonlinear mechanics operator
-    AMP_ASSERT( input_db->getString( "name" ) == "NavierStokesLSWFFEOperator" );
-    auto flowOpParams = std::make_shared<NavierStokesLSWFFEOperatorParameters>( input_db );
-    flowOpParams->d_transportModel =
-        std::dynamic_pointer_cast<FlowTransportModel>( elementPhysicsModel );
-    flowOpParams->d_elemOp = flowElem;
-    flowOpParams->d_Mesh   = mesh;
-    flowOpParams->d_dofMap = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 10, true );
-    return std::make_shared<NavierStokesLSWFFEOperator>( flowOpParams );
-}
-
-static Operator::shared_ptr
 createMassLinearFEOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                             std::shared_ptr<AMP::Database> input_db,
                             std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
@@ -807,10 +738,6 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         return createLinearDiffusionOperator( mesh, operator_db, elementPhysicsModel );
     } else if ( operatorType == "DiffusionNonlinearFEOperator" ) {
         return createNonlinearDiffusionOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "NavierStokesLSWFLinearFEOperator" ) {
-        return createLinearNavierStokesLSWFOperator( mesh, operator_db, elementPhysicsModel );
-    } else if ( operatorType == "NavierStokesLSWFFEOperator" ) {
-        return createNonlinearNavierStokesLSWFOperator( mesh, operator_db, elementPhysicsModel );
     } else if ( operatorType == "FickSoretNonlinearFEOperator" ) {
         return createNonlinearFickSoretOperator( mesh, operatorName, input_db );
     } else if ( operatorType == "SubchannelTwoEqLinearOperator" ) {

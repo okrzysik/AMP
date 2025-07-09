@@ -234,7 +234,6 @@ IF ( USE_LIBMESH )
     ADD_AMP_TEST( testLinearSolversWithIdentity PROCS 2)
     ADD_AMP_TEST( testLinearSolversWithIdentity PROCS 4)
 
-    ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-IncompressibleFlow )
     ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-NonlinearThermalOxygenDiffusion )
 
 IF( USE_TRILINOS )
@@ -268,7 +267,7 @@ IF ( USE_LIBMESH AND USE_PETSC AND USE_HYPRE )
 ENDIF()
 FINALIZE_TESTBUILDER()
 
-ADD_SUBDIRECTORY( mechanics )
 ADD_SUBDIRECTORY( flow )
+ADD_SUBDIRECTORY( mechanics )
 ADD_SUBDIRECTORY( subchannel )
 

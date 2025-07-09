@@ -58,6 +58,7 @@ public: // Ghost data functions
     void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
     void
     getGhostAddValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
+    size_t getAllGhostValues( void *, const typeID & ) const override;
     void makeConsistent( ScatterType ) override;
     void makeConsistent() override;
     void dataChanged() override;

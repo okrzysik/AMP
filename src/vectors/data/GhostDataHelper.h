@@ -34,6 +34,7 @@ public: // Functions overloaded from VectorData
     void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
     void
     getGhostAddValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
+    size_t getAllGhostValues( void *, const typeID & ) const override;
     UpdateState getLocalUpdateStatus() const override;
     void setUpdateStatus( UpdateState state ) override;
     void setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs ) override;
