@@ -1031,24 +1031,37 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *ut )
         auto ghostIDList = comm_list->getGhostIDList();
         vector->getValuesByGlobalID(
             vector->getGhostSize(), (size_t *) &( ghostIDList[0] ), &( ghostList[0] ) );
-        bool testPassed = true;
+        bool pass = true;
         for ( size_t i = 0; i != vector->getGhostSize(); i++ ) {
             if ( fabs( ghostList[i] - (double) ( ghostIDList[i] ) ) > 0.0000001 )
-                testPassed = false;
+                pass = false;
         }
-        PASS_FAIL( testPassed, "ghost set correctly in vector" );
+        PASS_FAIL( pass, "ghost set correctly in vector" );
     }
     if ( vector->getGhostSize() > 0 ) {
         auto comm_list   = vector->getCommunicationList();
         auto ghostIDList = comm_list->getGhostIDList();
-        bool testPassed  = true;
+        bool pass        = true;
         for ( size_t i = 0; i != vector->getGhostSize(); i++ ) {
             size_t ghostNdx = ghostIDList[i];
             double ghostVal = vector->getValueByGlobalID( ghostNdx );
             if ( fabs( ghostVal - (double) ghostNdx ) > 0.0000001 )
-                testPassed = false;
+                pass = false;
         }
-        PASS_FAIL( testPassed, "ghost set correctly in alias " );
+        PASS_FAIL( pass, "ghost set correctly in alias" );
+    }
+    if ( vector->getGhostSize() > 0 ) {
+        auto comm_list   = vector->getCommunicationList();
+        auto ghostIDList = comm_list->getGhostIDList();
+        size_t N         = vector->getGhostSize();
+        std::vector<double> ghost1( N, -1.0 );
+        std::vector<double> ghost2( N, -1.0 );
+        vector->getGhostValuesByGlobalID( N, ghostIDList.data(), ghost1.data() );
+        size_t N2 = vector->getVectorData()->getAllGhostValues( ghost2.data() );
+        bool pass = N == N2;
+        for ( size_t i = 0; i != N; i++ )
+            pass = pass && ghost1[i] == ghost2[i];
+        PASS_FAIL( pass, "VectorData::getAllGhostValues" );
     }
 }
 

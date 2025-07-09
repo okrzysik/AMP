@@ -118,6 +118,7 @@ void SubsetCommSelfVectorData::getGhostAddValuesByGlobalID( size_t,
                                                             const typeID & ) const
 {
 }
+size_t SubsetCommSelfVectorData::getAllGhostValues( void *, const typeID & ) const { return 0; }
 void SubsetCommSelfVectorData::swapData( VectorData &rhs )
 {
     auto s = dynamic_cast<SubsetCommSelfVectorData *>( &rhs );

@@ -51,6 +51,7 @@ public: // Basic virtual functions
     void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
     void
     getGhostAddValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
+    size_t getAllGhostValues( void *, const typeID & ) const override;
     size_t getGhostSize() const override;
     void fillGhosts( const Scalar & ) override;
     void makeConsistent() override;
@@ -203,6 +204,10 @@ protected:
                                std::vector<std::vector<size_t>> &out_indices,
                                std::vector<std::vector<std::byte>> &out_vals,
                                std::vector<std::vector<int>> *remap = nullptr ) const;
+
+    // Get all ghost values
+    template<class TYPE>
+    size_t getAllGhostValues( TYPE * ) const;
 
 
 protected:

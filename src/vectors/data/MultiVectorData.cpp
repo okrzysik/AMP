@@ -4,7 +4,7 @@
 #include "AMP/vectors/data/MultiVectorData.h"
 #include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 #include "AMP/vectors/CommunicationList.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
@@ -313,6 +313,36 @@ void MultiVectorData::getGhostAddValuesByGlobalID( size_t N,
     for ( size_t i = 0; i != remap.size(); i++ ) {
         for ( size_t j = 0; j != remap[i].size(); j++ )
             memcpy( &out[remap[i][j] * id.bytes], &vals[i][j * id.bytes], id.bytes );
+    }
+}
+template<class TYPE>
+size_t MultiVectorData::getAllGhostValues( TYPE *vals ) const
+{
+    constexpr auto id = getTypeID<TYPE>();
+    std::vector<size_t> remoteDofs;
+    for ( size_t i = 0; i < d_data.size(); i++ ) {
+        auto list = d_data[i]->getCommunicationList();
+        if ( list ) {
+            auto ptr  = &vals[remoteDofs.size()];
+            size_t N  = d_data[i]->getAllGhostValues( ptr, id );
+            auto dofs = list->getGhostIDList();
+            AMP_ASSERT( N == dofs.size() );
+            remoteDofs.reserve( remoteDofs.size() + dofs.size() );
+            for ( size_t j = 0; j < dofs.size(); j++ )
+                remoteDofs.push_back( d_dofMap.subToGlobal( i, dofs[j] ) );
+        }
+    }
+    AMP::Utilities::quicksort( remoteDofs.size(), remoteDofs.data(), vals );
+    return remoteDofs.size();
+}
+size_t MultiVectorData::getAllGhostValues( void *vals, const typeID &id ) const
+{
+    if ( id == getTypeID<double>() ) {
+        return getAllGhostValues( reinterpret_cast<double *>( vals ) );
+    } else if ( id == getTypeID<float>() ) {
+        return getAllGhostValues( reinterpret_cast<float *>( vals ) );
+    } else {
+        AMP_ERROR( "Not finished" );
     }
 }
 

@@ -68,6 +68,11 @@ void VectorDataNull<TYPE>::getGhostAddValuesByGlobalID( size_t N,
 {
     AMP_INSIST( N == 0, "Cannot get values in NullVectorData" );
 }
+template<typename TYPE>
+size_t VectorDataNull<TYPE>::getAllGhostValues( void *, const typeID & ) const
+{
+    return 0;
+}
 
 
 /****************************************************************

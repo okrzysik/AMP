@@ -272,6 +272,14 @@ public: // Get/Set data
     template<class TYPE>
     void getGhostValuesByGlobalID( size_t num, const size_t *indices, TYPE *vals ) const;
 
+    /**
+     * \brief Get all ghost values
+     * \param[out] vals the values to place in the vector
+     * \details This will get any value owned by this core.
+     */
+    template<class TYPE>
+    size_t getAllGhostValues( TYPE *vals ) const;
+
 
 public: // Advanced (virtual) get/set values
     /**\brief Copy data into this vector
@@ -378,6 +386,14 @@ public: // Advanced (virtual) get/set values
                                            const size_t *indices,
                                            void *vals,
                                            const typeID &id ) const = 0;
+    /**
+     * \brief Get all ghost values in the vector
+     * \param[out] vals the values to place in the vector
+     * \param[in] id   typeID of raw data
+     * \details This will get any value owned by this core.
+     * \return Returns the number of ghost values
+     */
+    virtual size_t getAllGhostValues( void *vals, const typeID &id ) const = 0;
 
 
 public: // Advanced functions

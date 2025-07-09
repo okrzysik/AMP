@@ -303,6 +303,13 @@ void VectorData::getGhostAddValuesByGlobalID( size_t N, const size_t *ndx, TYPE 
     constexpr auto type = getTypeID<TYPE>();
     getGhostAddValuesByGlobalID( N, ndx, vals, type );
 }
+template<class TYPE>
+size_t VectorData::getAllGhostValues( TYPE *vals ) const
+{
+    constexpr auto type = getTypeID<TYPE>();
+    size_t N            = getAllGhostValues( vals, type );
+    return N;
+}
 
 
 } // namespace AMP::LinearAlgebra
