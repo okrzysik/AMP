@@ -169,7 +169,7 @@ computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             exactSolutionsVec->setLocalValuesByGlobalID(
                 1, &globalIDs[xyz], &displacementXYZ[xyz] );
         } // end loop over the coordinates
-    }     // end soop over all nodes
+    } // end soop over all nodes
     if ( verbose ) {
         AMP::pout << "--------------------------------------------\n"
                   << "---- exact solution norm = " << std::setprecision( 15 )
@@ -315,11 +315,17 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         }
     }
 
-    // Compute Neumann values
-    auto neumannVecOp = std::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createBoundaryOperator(
-            mesh, "NeumannCorrection", inputDatabase, volumeOp ) );
+    // Create Neumann boundary operator
+    auto neumannDB = inputDatabase->getDatabase( "NeumannCorrection" );
+    auto vectorCorrectionParameters =
+        std::make_shared<AMP::Operator::NeumannVectorCorrectionParameters>( neumannDB );
+    vectorCorrectionParameters->d_variable = volumeOp->getOutputVariable();
+    vectorCorrectionParameters->d_Mesh     = mesh;
+    auto neumannVecOp =
+        std::make_shared<AMP::Operator::NeumannVectorCorrection>( vectorCorrectionParameters );
     // neumannVecOp->setVariable(var);
+
+    // Compute Neumann values
     auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
     for ( short neumannBoundaryId : neumannBoundaryIds ) {
         auto bnd = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, neumannBoundaryId );

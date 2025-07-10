@@ -235,7 +235,6 @@ DiffusionNonlinearFEOperator1{
         QRULE_ORDER = "DEFAULT"
     }    
     LocalModel = DiffusionTransportModel1
-    DiffusionTransportModel = DiffusionTransportModel1
 }
 
 RobinVectorCorrection1{
@@ -276,7 +275,7 @@ DiffusionLinearFEOperator1{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }    
-    DiffusionTransportModel = DiffusionTransportModel1
+    LocalModel = DiffusionTransportModel1
 }
 
 RobinMatrixCorrection1{
@@ -317,7 +316,6 @@ DiffusionLinearFEOperator2{
         QRULE_ORDER = "DEFAULT"
     }    
     LocalModel = DiffusionTransportModel2
-    DiffusionTransportModel = DiffusionTransportModel2
 }
 
 
