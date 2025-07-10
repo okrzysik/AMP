@@ -69,10 +69,6 @@ static void myTest( AMP::UnitTest *ut )
             nonlinBvpOperator->getVolumeOperator() );
     auto elementPhysicsModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
-    auto linBvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "linearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
-
     auto multivariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
         nonlinBvpOperator->getInputVariable() );
     auto displacementVariable =
@@ -142,6 +138,9 @@ static void myTest( AMP::UnitTest *ut )
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
 
     auto linearSolver_db = nonlinearSolver_db->getDatabase( "LinearSolver" );
+
+    auto linBvpOperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinBvpOperator->getParameters( "Jacobian", nullptr ) );
 
     // ---- first initialize the preconditioner
     auto pcSolver_db    = linearSolver_db->getDatabase( "Preconditioner" );

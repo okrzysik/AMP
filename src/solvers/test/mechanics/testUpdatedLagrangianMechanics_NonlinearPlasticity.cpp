@@ -60,12 +60,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
     auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
-    // Create a Linear BVP operator for mechanics
-    AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
-    auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
-
     // Create the variables
     auto mechanicsNonlinearVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
@@ -96,6 +90,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     dirichletLoadVecOp->apply( nullVec, rhsVec );
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
 
+    // Create a Linear BVP operator for mechanics
+    auto linearMechanicsBVPoperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinearMechanicsBVPoperator->getParameters( "Jacobian", nullptr ) );
+
     // We need to reset the linear operator before the solve since TrilinosML does
     // the factorization of the matrix during construction and so the matrix must
     // be correct before constructing the TrilinosML object.
@@ -105,8 +103,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     double epsilon =
         1.0e-13 *
-        static_cast<double>(
-            ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+        static_cast<double>( linearMechanicsBVPoperator->getMatrix()->extractDiagonal()->L1Norm() );
 
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );

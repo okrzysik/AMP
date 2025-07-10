@@ -51,6 +51,13 @@ namespace AMP::Operator::OperatorBuilder {
 using IdentityOperatorParameters = OperatorParameters;
 
 
+std::shared_ptr<Operator>
+createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                const std::string &operatorName,
+                std::shared_ptr<AMP::Database> input_db,
+                std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
+
+
 static void setNestedOperatorMemoryLocations( std::shared_ptr<AMP::Database> input_db,
                                               std::string outerOperatorName,
                                               std::vector<std::string> nestedOperatorNames )
@@ -704,6 +711,23 @@ createColumnBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 /********************************************************
  * createOperator                                        *
  ********************************************************/
+void createElementPhysicsModel( std::shared_ptr<AMP::Database> operator_db,
+                                std::shared_ptr<AMP::Database> input_db,
+                                std::shared_ptr<ElementPhysicsModel> &elementPhysicsModel )
+{
+    if ( !elementPhysicsModel && operator_db->keyExists( "LocalModel" ) ) {
+        if ( operator_db->isString( "LocalModel" ) ) {
+            auto modelName      = operator_db->getString( "LocalModel" );
+            auto model_db       = input_db->getDatabase( modelName );
+            elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( model_db );
+            AMP_ASSERT( elementPhysicsModel );
+        } else {
+            auto model_db       = input_db->getDatabase( "LocalModel" );
+            elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( model_db );
+            AMP_ASSERT( elementPhysicsModel );
+        }
+    }
+}
 std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                           const std::string &operatorName,
                                           std::shared_ptr<AMP::Database> input_db,
@@ -718,12 +742,7 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
     // we create the element physics model if a database entry exists
     // and the incoming element physics model pointer is NULL
-    if ( !elementPhysicsModel && operator_db->keyExists( "LocalModel" ) ) {
-        auto modelName      = operator_db->getString( "LocalModel" );
-        auto model_db       = input_db->getDatabase( modelName );
-        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( model_db );
-        AMP_ASSERT( elementPhysicsModel );
-    }
+    createElementPhysicsModel( operator_db, input_db, elementPhysicsModel );
 
     auto operatorType = operator_db->getString( "name" );
     if ( operatorType == "DirichletMatrixCorrection" ) {
@@ -798,12 +817,7 @@ std::shared_ptr<BoundaryOperator> createBoundaryOperator( std::shared_ptr<AMP::M
 
     // we create the element physics model if a database entry exists
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
-    if ( !elementPhysicsModel && operator_db->keyExists( "LocalModel" ) ) {
-        auto modelName      = operator_db->getString( "LocalModel" );
-        auto model_db       = input_db->getDatabase( modelName );
-        elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( model_db );
-        AMP_ASSERT( elementPhysicsModel );
-    }
+    createElementPhysicsModel( operator_db, input_db, elementPhysicsModel );
 
     auto boundaryType = operator_db->getString( "name" );
     if ( boundaryType == "DirichletVectorCorrection" ) {

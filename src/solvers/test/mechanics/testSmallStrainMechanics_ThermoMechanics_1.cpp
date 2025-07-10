@@ -128,10 +128,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     mechanicsNonlinearVolumeOperator->setVector( AMP::Operator::Mechanics::LHGR, lhgrVec );
 
     // Create a Linear BVP operator for mechanics
-    AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
-    auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
+    auto linearMechanicsBVPoperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinearMechanicsBVPoperator->getParameters( "Jacobian", nullptr ) );
 
     AMP::pout << "Created the linearMechanicsOperator." << std::endl;
 
@@ -146,8 +144,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     double epsilon =
         1.0e-13 *
-        static_cast<double>(
-            ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+        static_cast<double>( linearMechanicsBVPoperator->getMatrix()->extractDiagonal()->L1Norm() );
 
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );

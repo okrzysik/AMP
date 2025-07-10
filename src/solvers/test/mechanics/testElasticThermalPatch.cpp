@@ -57,12 +57,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
     auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
-    // Create a Linear BVP operator for mechanics
-    AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
-    auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
-
     // Create the variables
     auto mechanicsNonlinearVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
@@ -102,6 +96,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // RHS
     rhsVec->zero();
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
+
+    // Create a Linear BVP operator for mechanics
+    auto linearMechanicsBVPoperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinearMechanicsBVPoperator->getParameters( "Jacobian", nullptr ) );
 
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
 

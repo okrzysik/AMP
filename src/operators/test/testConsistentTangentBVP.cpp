@@ -53,10 +53,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
             nonlinOperator->getVolumeOperator() );
     auto elementPhysicsModel = mechNonlinOperator->getMaterialModel();
 
-    auto linOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearMechanicsOperator", input_db, elementPhysicsModel ) );
-
     auto dofMap = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
@@ -74,13 +70,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
     double solNorm = static_cast<double>( solVec->L2Norm() );
     AMP::pout << "sol-Norm-2 = " << solNorm << std::endl;
 
+    auto linOperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinOperator->getParameters( "Jacobian", nullptr ) );
+
     nonlinOperator->apply( solVec, resVecNonlin );
     linOperator->reset( nonlinOperator->getParameters( "Jacobian", solVec ) );
     linOperator->apply( solVec, resVecLin );
     resDiffVec->subtract( *resVecNonlin, *resVecLin );
 
-    double epsilon = 1.0e-13 * static_cast<double>(
-                                   ( ( linOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+    double epsilon =
+        1.0e-13 * static_cast<double>( linOperator->getMatrix()->extractDiagonal()->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
     double nonLinNorm = static_cast<double>( resVecNonlin->L1Norm() );

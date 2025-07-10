@@ -485,20 +485,19 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
     // the linear element level.
     if ( d_useUpdatedLagrangian ) {
         auto displacementVector =
-            mySubsetVector( u, ( d_inpVariables->getVariable( Mechanics::DISPLACEMENT ) ) );
+            mySubsetVector( u, d_inpVariables->getVariable( Mechanics::DISPLACEMENT ) );
         outParams->d_dispVec = displacementVector;
-        outParams->d_dispVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
 
     if ( d_jacobianReusesRadialReturn == false ) {
         auto dispVector =
-            mySubsetVector( u, ( d_inpVariables->getVariable( Mechanics::DISPLACEMENT ) ) );
+            mySubsetVector( u, d_inpVariables->getVariable( Mechanics::DISPLACEMENT ) );
         setVector( Mechanics::DISPLACEMENT, dispVector );
 
         if ( d_isActive[Mechanics::TEMPERATURE] ) {
             if ( !( d_isFrozen[Mechanics::TEMPERATURE] ) ) {
                 auto tempVector =
-                    mySubsetVector( u, ( d_inpVariables->getVariable( Mechanics::TEMPERATURE ) ) );
+                    mySubsetVector( u, d_inpVariables->getVariable( Mechanics::TEMPERATURE ) );
                 setVector( Mechanics::TEMPERATURE, tempVector );
             }
         }
@@ -514,15 +513,15 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
         if ( d_isActive[Mechanics::OXYGEN_CONCENTRATION] ) {
             if ( !( d_isFrozen[Mechanics::OXYGEN_CONCENTRATION] ) ) {
                 auto oxyVector = mySubsetVector(
-                    u, ( d_inpVariables->getVariable( Mechanics::OXYGEN_CONCENTRATION ) ) );
+                    u, d_inpVariables->getVariable( Mechanics::OXYGEN_CONCENTRATION ) );
                 setVector( Mechanics::OXYGEN_CONCENTRATION, oxyVector );
             }
         }
 
         if ( d_isActive[Mechanics::LHGR] ) {
             if ( !( d_isFrozen[Mechanics::LHGR] ) ) {
-                auto lhgrVar = d_inpVariables->getVariable( Mechanics::LHGR );
-                AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = mySubsetVector( u, lhgrVar );
+                auto lhgrVar    = d_inpVariables->getVariable( Mechanics::LHGR );
+                auto lhgrVector = mySubsetVector( u, lhgrVar );
                 setVector( Mechanics::LHGR, lhgrVector );
             }
         }
@@ -784,6 +783,8 @@ AMP::LinearAlgebra::Vector::shared_ptr
 MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                               std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
+    if ( !vec )
+        return nullptr;
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         auto meshSubsetVec = vec->select( meshSelector );
@@ -797,6 +798,8 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                                               std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
+    if ( !vec )
+        return nullptr;
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         auto meshSubsetVec = vec->select( meshSelector );

@@ -64,9 +64,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinBvpOperator->getVolumeOperator() );
     auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
-    auto linBvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "linearMechanicsBVPOperator", input_db, mechanicsMaterialModel ) );
+    auto linBvpOperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinBvpOperator->getParameters( "Jacobian", nullptr ) );
 
     auto multivariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
         nonlinBvpOperator->getVolumeOperator()->getInputVariable() );

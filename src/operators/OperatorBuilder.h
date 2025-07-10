@@ -31,21 +31,6 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
 /**
  * \brief Create operator from database
- * \details  This function will create a new operator given mesh, input database, and
- *      elementPhysicsModel
- * \param mesh                  Mesh for the operator
- * \param operatorName          Name of the operator to create
- * \param input_db              Input database
- * \param elementPhysicsModel   Element physics model to use
- */
-[[deprecated]] std::shared_ptr<Operator>
-createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                const std::string &operatorName,
-                std::shared_ptr<AMP::Database> input_db,
-                std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel );
-
-/**
- * \brief Create operator from database
  * \details  This function will create a new operator given mesh, input database
  * \param mesh1                 Mesh1 for the operator
  * \param mesh2                 Mesh2 for the operator
