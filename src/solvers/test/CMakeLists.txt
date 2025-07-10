@@ -26,8 +26,6 @@ COPY_TEST_FILE( input_LinearThermalOperator-bar )
 COPY_TEST_FILE( input_LinearThermalRobinOperator )
 COPY_TEST_FILE( input_LinearThermalRobinOperator-CylMesh )
 
-COPY_TEST_FILE( input_PoissonOperator )
-
 COPY_TEST_FILE( input_NonlinearFick-cylinder-1a )
 COPY_TEST_FILE( input_NonlinearFick-cylinder-1b )
 COPY_TEST_FILE( input_NonlinearFick-cylinder-1c )
@@ -159,6 +157,8 @@ COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-HypreBiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-PL-AmpMesh-BoomerAMG )
 COPY_TEST_FILE( input_testLinearSolvers-PL-CylMesh-BoomerAMG )
 
+COPY_TEST_FILE( input_testLinearSolvers-PoissonFD-BoomerAMG-CG )
+
 IF( USE_PETSC )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscCG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES )
@@ -199,7 +199,7 @@ IF ( USE_PETSC )
     ADD_AMP_TEST( OLIVER_snes_test )
 ENDIF()
 IF ( USE_HYPRE )
-    ADD_AMP_TEST( testPoisson-FD-example )
+    ADD_AMP_TEST( testLinearSolvers-PoissonFD )
     ADD_AMP_TEST( testHeat-FD-example )
 ENDIF()
 

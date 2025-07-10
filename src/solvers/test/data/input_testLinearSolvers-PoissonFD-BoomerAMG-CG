@@ -1,18 +1,24 @@
+# # 1D Example
+# PDE{
+#     dim = 1
+#     n   = 128
+# }
+
+# # 2D Example
+# PDE{
+#     dim   = 2
+#     n     = 32
+#     eps   = 1e-2
+#     theta = 0.523598775 # 30 degrees
+# }
+
+# 3D Example
 PDE{
-    dim = 2
-    n   = 32
-
-    theta = 0.523598775 // 30 degrees 
-    eps   = 1e-2
+    dim  = 3
+    n    = 32
+    epsy = 1e-2
+    epsz = 1e-1
 }
-
-// PDE{
-//     dim = 3
-//     n   = 32
- 
-//     epsy = 1e-2
-//     epsz = 1e-1
-// }
 
 LinearSolver{
     name = "CGSolver"
