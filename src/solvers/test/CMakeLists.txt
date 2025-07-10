@@ -26,6 +26,8 @@ COPY_TEST_FILE( input_LinearThermalOperator-bar )
 COPY_TEST_FILE( input_LinearThermalRobinOperator )
 COPY_TEST_FILE( input_LinearThermalRobinOperator-CylMesh )
 
+COPY_TEST_FILE( input_PoissonOperator )
+
 COPY_TEST_FILE( input_NonlinearFick-cylinder-1a )
 COPY_TEST_FILE( input_NonlinearFick-cylinder-1b )
 COPY_TEST_FILE( input_NonlinearFick-cylinder-1c )
