@@ -1,5 +1,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
 
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/Vector.h"
@@ -20,6 +21,8 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+
+#include "AMP/solvers/testHelpers/testSolverHelpers.h"
 
 #include <iostream>
 
@@ -311,11 +314,45 @@ double PoissonOp::exactSolution(double x, double y, double z) {
     return std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z);
 }
 
-// -(u_xx + epsy*u_yy + epsz*u_zz) = f
+// // -(u_xx + epsy*u_yy + epsz*u_zz) = f
+// double PoissonOp::sourceTerm(double x, double y, double z) {
+//     auto epsilony = d_db->getScalar<double>("epsy");
+//     auto epsilonz = d_db->getScalar<double>("epsz");
+//     return 4*std::pow(M_PI, 2)*(4*epsilony + 9*epsilonz + 1)*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z);
+// }
+
 double PoissonOp::sourceTerm(double x, double y, double z) {
-    auto epsilony = d_db->getScalar<double>("epsy");
-    auto epsilonz = d_db->getScalar<double>("epsz");
-    return 4*std::pow(M_PI, 2)*(4*epsilony + 9*epsilonz + 1)*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z);
+    auto epsy  = d_db->getScalar<double>("epsy");
+    auto epsz  = d_db->getScalar<double>("epsz");
+    auto psi   = d_db->getScalar<double>("psi");
+    auto theta = d_db->getScalar<double>("theta");
+    auto phi   = d_db->getScalar<double>("phi");
+
+    // Trig functions of angles
+    double cth  = cos(theta);
+    double sth  = sin(theta);
+    double cpsi = cos(psi);
+    double spsi = sin(psi);
+    double cphi = cos(phi);
+    double sphi = sin(phi);
+
+    // Diffusion tensor coefficients
+    double d11 = epsy*std::pow(cphi*cth*spsi + cpsi*sphi, 2) + epsz*std::pow(spsi, 2)*std::pow(sth, 2) + std::pow(cphi*cpsi - cth*sphi*spsi, 2);
+    double d22 = std::pow(cpsi, 2)*epsz*std::pow(sth, 2) + epsy*std::pow(cphi*cpsi*cth - sphi*spsi, 2) + std::pow(cphi*spsi + cpsi*cth*sphi, 2);
+    double d33 = std::pow(cphi, 2)*epsy*std::pow(sth, 2) + std::pow(cth, 2)*epsz + std::pow(sphi, 2)*std::pow(sth, 2);
+    double d12 = cpsi*epsz*spsi*std::pow(sth, 2) + epsy*(cphi*cpsi*cth - sphi*spsi)*(cphi*cth*spsi + cpsi*sphi) - (cphi*cpsi - cth*sphi*spsi)*(cphi*spsi + cpsi*cth*sphi);
+    double d13 = sth*(-cphi*epsy*(cphi*cth*spsi + cpsi*sphi) + cth*epsz*spsi + sphi*(cphi*cpsi - cth*sphi*spsi));
+    double d23 = sth*(-cphi*epsy*(cphi*cpsi*cth - sphi*spsi) + cpsi*cth*epsz - sphi*(cphi*spsi + cpsi*cth*sphi));
+
+    // PDE coefficients
+    double alpha   = d11;
+    double beta    = d22;
+    double gamma   = d33;
+    double delta   = 2.0*d12;
+    double epsilon = 2.0*d13;
+    double zeta    = 2.0*d23;
+
+    return 4*std::pow(M_PI, 2)*(alpha*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) + 4*beta*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) - 2*delta*std::sin(6*M_PI*z)*std::cos(2*M_PI*x)*std::cos(4*M_PI*y) - 3*epsilon*std::sin(4*M_PI*y)*std::cos(2*M_PI*x)*std::cos(6*M_PI*z) + 9*gamma*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) - 6*zeta*std::sin(2*M_PI*x)*std::cos(4*M_PI*y)*std::cos(6*M_PI*z));
 }
 
 
@@ -376,22 +413,139 @@ std::vector<double> PoissonOp::getStencil2D() {
     return stencil;
 }
 
-/* Get 7-point stencil for 3D Poisson. */
+// /* Get 7-point stencil for 3D Poisson. */
+// std::vector<double> PoissonOp::getStencil3D() {
+    
+//     auto epsy = d_db->getScalar<double>( "epsy" );
+//     auto epsz = d_db->getScalar<double>( "epsz" );
+
+//     double D  = -1.0*epsz;
+//     double S  = -1.0*epsy;
+//     double W  = -1.0; 
+//     double O  = +2.0 + 2.0*epsy + 2.0*epsz; 
+//     double E  = -1.0;
+//     double N  = -1.0*epsy;
+//     double U  = -1.0*epsz;
+
+//     // Populate stencil
+//     std::vector<double> stencil = { O, D, S, W, E, N, U };
+
+//     // Introduce 1/h^2 scaling 
+//     auto h = d_db->getScalar<double>( "h" );
+//     for ( auto &s : stencil ) {
+//         s *= 1.0/(h*h);
+//     }
+
+//     return stencil;
+// }
+
+/* Get 27-8=19-point stencil for 3D Poisson. 
+
+    -alpha  *u_xx
+    -beta   *u_yy
+    -gamma  *u_zz
+    -delta  *u_xy
+    -epsilon*u_xz
+    -zeta   *u_yz
+
+*/
 std::vector<double> PoissonOp::getStencil3D() {
     
-    auto epsy = d_db->getScalar<double>( "epsy" );
-    auto epsz = d_db->getScalar<double>( "epsz" );
+    auto epsy  = d_db->getScalar<double>("epsy");
+    auto epsz  = d_db->getScalar<double>("epsz");
+    auto psi   = d_db->getScalar<double>("psi");
+    auto theta = d_db->getScalar<double>("theta");
+    auto phi   = d_db->getScalar<double>("phi");
 
-    double D  = -1.0*epsz;
-    double S  = -1.0*epsy;
-    double W  = -1.0; 
-    double O  = +2.0 + 2.0*epsy + 2.0*epsz; 
-    double E  = -1.0;
-    double N  = -1.0*epsy;
-    double U  = -1.0*epsz;
+    // Trig functions of angles
+    double cth  = cos(theta);
+    double sth  = sin(theta);
+    double cpsi = cos(psi);
+    double spsi = sin(psi);
+    double cphi = cos(phi);
+    double sphi = sin(phi);
+
+    // Diffusion tensor coefficients
+    double d11 = epsy*std::pow(cphi*cth*spsi + cpsi*sphi, 2) + epsz*std::pow(spsi, 2)*std::pow(sth, 2) + std::pow(cphi*cpsi - cth*sphi*spsi, 2);
+    double d22 = std::pow(cpsi, 2)*epsz*std::pow(sth, 2) + epsy*std::pow(cphi*cpsi*cth - sphi*spsi, 2) + std::pow(cphi*spsi + cpsi*cth*sphi, 2);
+    double d33 = std::pow(cphi, 2)*epsy*std::pow(sth, 2) + std::pow(cth, 2)*epsz + std::pow(sphi, 2)*std::pow(sth, 2);
+    double d12 = cpsi*epsz*spsi*std::pow(sth, 2) + epsy*(cphi*cpsi*cth - sphi*spsi)*(cphi*cth*spsi + cpsi*sphi) - (cphi*cpsi - cth*sphi*spsi)*(cphi*spsi + cpsi*cth*sphi);
+    double d13 = sth*(-cphi*epsy*(cphi*cth*spsi + cpsi*sphi) + cth*epsz*spsi + sphi*(cphi*cpsi - cth*sphi*spsi));
+    double d23 = sth*(-cphi*epsy*(cphi*cpsi*cth - sphi*spsi) + cpsi*cth*epsz - sphi*(cphi*spsi + cpsi*cth*sphi));
+
+    // PDE coefficients
+    double alpha   = d11;
+    double beta    = d22;
+    double gamma   = d33;
+    double delta   = 2.0*d12;
+    double epsilon = 2.0*d13;
+    double zeta    = 2.0*d23;
+
+    // AMP::pout << 
+    // "alpha=" << alpha <<
+    // ", beta=" << beta <<
+    // ", gamma=" << gamma <<
+    // ", delta=" << delta <<
+    // ", epsilon=" << epsilon <<
+    // ", zeta=" << zeta << std::endl;
+
+    /*
+    z = -1 plane
+    DNE DN DNE
+    DW  DO DE
+    DSW DS DSE
+
+    z = 0 plane
+    MNE MN MNE
+    MW  MO ME
+    MSW MS MSE
+
+    z = +1 plane
+    UNE UN UNE
+    UW  UO UE
+    USW US USE
+    */
+
+    // The non-mized terms
+    double MO = 0.0;
+    // -alpha*u_xx
+    double MW  = -1.0*alpha; 
+           MO += +2.0*alpha;  
+    double ME  = -1.0*alpha;
+    // -beta =*u_yy
+    double MS  = -1.0*beta;
+           MO += +2.0*beta;
+    double MN  = -1.0*beta;
+    // -gamma*u_zz
+    double DO  = -1.0*gamma;
+           MO += +2.0*gamma;
+    double UO  = -1.0*gamma;
+
+    // -delta*u_xy
+    double MSW = -0.25*delta;
+    double MSE = +0.25*delta;
+    double MNW = +0.25*delta;
+    double MNE = -0.25*delta;
+
+    // -epsilon*u_xz
+    double DW = -0.25*epsilon;
+    double DE = +0.25*epsilon;
+    double UW = +0.25*epsilon;
+    double UE = -0.25*epsilon;
+
+    // -zeta*u_yz
+    double DS = -0.25*zeta;
+    double DN = +0.25*zeta;
+    double US = +0.25*zeta;
+    double UN = -0.25*zeta;
+    
 
     // Populate stencil
-    std::vector<double> stencil = { O, D, S, W, E, N, U };
+    std::vector<double> stencil = { 
+        DS, DW, DO, DE, DN, // z = -1 plane
+        MSW, MS, MSE, MW, MO, ME, MNW, MN, MNE, // z = 0 plane
+        US, UW, UO, UE, UN // z = +1 plane
+    };
 
     // Introduce 1/h^2 scaling 
     auto h = d_db->getScalar<double>( "h" );
@@ -401,6 +555,8 @@ std::vector<double> PoissonOp::getStencil3D() {
 
     return stencil;
 }
+
+    
 
 
 /* Get CSR structure of 1D Laplacian */
@@ -535,15 +691,44 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData3D( ) {
                 // Copy of stencil
                 std::vector<double> vals = stencil; 
                 // Column indices, ordered consistently with the stencil
-                // O, D, S, W, E, N, U
+                // // O, D, S, W, E, N, U
+                // std::vector<size_t> cols = { 
+                //     dof,
+                //     gridIndsToDOF( i,   j,   k-1 ),
+                //     gridIndsToDOF( i,   j-1, k   ),
+                //     gridIndsToDOF( i-1, j,   k   ),
+                //     gridIndsToDOF( i+1, j,   k   ),
+                //     gridIndsToDOF( i,   j+1, k   ),
+                //     gridIndsToDOF( i,   j,   k+1 ) };
+
+                // 
+                // DS, DW, DO, DE, DN, // z = -1 plane
+                // MSW, MS, MSE, MW, MO, ME, MNW, MN, MNE, // z = 0 plane
+                // US, UW, UO, UE, UN, // z = +1 plane
                 std::vector<size_t> cols = { 
-                    dof,
-                    gridIndsToDOF( i,   j,   k-1 ),
-                    gridIndsToDOF( i,   j-1, k   ),
-                    gridIndsToDOF( i-1, j,   k   ),
-                    gridIndsToDOF( i+1, j,   k   ),
-                    gridIndsToDOF( i,   j+1, k   ),
-                    gridIndsToDOF( i,   j,   k+1 ) };
+                    gridIndsToDOF( i,   j-1, k-1 ), // DS
+                    gridIndsToDOF( i-1, j,   k-1 ), // DW
+                    gridIndsToDOF( i,   j,   k-1 ), // DO
+                    gridIndsToDOF( i+1, j,   k-1 ), // DE
+                    gridIndsToDOF( i,   j+1, k-1 ), // DN
+                    //
+                    gridIndsToDOF( i-1, j-1, k   ), // MSW
+                    gridIndsToDOF( i ,  j-1, k   ), // MS
+                    gridIndsToDOF( i+1, j-1, k   ), // MSE
+                    gridIndsToDOF( i-1, j, k     ), // MW
+                    gridIndsToDOF( i  , j, k     ), // MO
+                    gridIndsToDOF( i+1, j, k     ), // ME
+                    gridIndsToDOF( i-1, j+1, k   ), // MNW
+                    gridIndsToDOF( i ,  j+1, k   ), // MN
+                    gridIndsToDOF( i+1, j+1, k   ), // MNE
+                    //
+                    gridIndsToDOF( i,   j-1, k+1 ), // US
+                    gridIndsToDOF( i-1, j,   k+1 ), // UW
+                    gridIndsToDOF( i,   j,   k+1 ), // UO
+                    gridIndsToDOF( i+1, j,   k+1 ), // UE
+                    gridIndsToDOF( i,   j+1, k+1 )  // UN
+                };
+
 
                 localCSRData[dof] = { cols, vals };
             }
@@ -652,6 +837,7 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
 
 
 void driver(AMP::AMP_MPI comm, 
+            AMP::UnitTest *ut,
             const std::string &exeName ) {
 
     std::string input_file = "input_"  + exeName;
@@ -674,11 +860,19 @@ void driver(AMP::AMP_MPI comm,
     ****************************************************************/
     static std::shared_ptr<AMP::Mesh::BoxMesh> mesh = createBoxMesh( comm, PDE_db );
 
+    // Print basic problem information
+    AMP::pout << "-------------------------------------------------------------------------" << std::endl;
+    AMP::pout << "Solving " << static_cast<int>(mesh->getDim()) 
+        << "D Poisson problem on mesh with " 
+        << mesh->numGlobalElements(AMP::Mesh::GeomType::Vertex) 
+        << " total DOFs across " << mesh->getComm().getSize() 
+        << " ranks" << std::endl;
+    AMP::pout << "-------------------------------------------------------------------------" << std::endl;
+
 
     /****************************************************************
     * Create the LinearOperator PoissonOp over the mesh             *
     ****************************************************************/
-
     const auto OpDB = std::make_shared<AMP::Database>( "linearOperatorDB" );
     OpDB->putDatabase( "PDE_db", PDE_db->cloneDatabase() );
     OpDB->putScalar<int>( "print_info_level", 0 );
@@ -720,11 +914,11 @@ void driver(AMP::AMP_MPI comm,
     /****************************************************************
     * Compute discrete residual norm on continuous solution (truncation error) *
     ****************************************************************/
-    AMP::pout << "\nDiscrete residual of continuous solution: ";
+    AMP::pout << "\nDiscrete residual of continuous manufactured solution: ";
     AOp->residual( fsourceVec, uexactVec, rexactVec );
     auto rnorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), rexactVec );
     // Print residual norms
-    AMP::pout << "||r|| = (" << rnorms[0] << ", " << rnorms[1] << ", " << rnorms[2] << ")" << std::endl;
+    AMP::pout << "||r|| = (" << rnorms[0] << ", " << rnorms[1] << ", " << rnorms[2] << ")" << std::endl << std::endl;
 
     
     /****************************************************************
@@ -734,14 +928,11 @@ void driver(AMP::AMP_MPI comm,
     auto solverStratParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( solver_db );
     solverStratParams->d_comm      = comm;
     solverStratParams->d_pOperator = AOp;
-    auto mySolver = AMP::Solver::SolverFactory::create( solverStratParams );
+    auto linearSolver = AMP::Solver::SolverFactory::create( solverStratParams );
     
-
-    //auto mySolver = getLinearSolver( comm, AOp, *PDE_db );
-
     // Use zero initial iterate and apply solver
-    mySolver->setZeroInitialGuess( true );
-    mySolver->apply(fsourceVec, unumVec);
+    linearSolver->setZeroInitialGuess( true );
+    linearSolver->apply(fsourceVec, unumVec);
     
     // Compute disretization error
     AMP::pout << "\nDiscretization error post linear solve: "; 
@@ -749,6 +940,9 @@ void driver(AMP::AMP_MPI comm,
     e->axpy(-1.0, *unumVec, *uexactVec); 
     auto enorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), e );
     AMP::pout << "||e|| = (" << enorms[0] << ", " << enorms[1] << ", " << enorms[2] << ")" << std::endl;
+
+    // No specific solution is implemented for this problem, so this will just check that the solver converged. 
+    checkConvergence( linearSolver.get(), input_db, input_file, *ut );
 
 }
 // end of driver()
@@ -773,19 +967,22 @@ int main( int argc, char **argv )
 
     AMP::AMPManager::startup( argc, argv );      
 
+    AMP::UnitTest ut;
+
     // Create a global communicator
     AMP::AMP_MPI comm( AMP_COMM_WORLD );
-    // int myRank   = comm.getRank();
-    // int numRanks = comm.getSize();
+    
 
     std::vector<std::string> exeNames;
     exeNames.emplace_back( "testLinearSolvers-PoissonFD-BoomerAMG-CG" );
 
     for ( auto &exeName : exeNames ) {
-        driver( comm, exeName );
+        driver( comm, &ut, exeName );
     }    
 
-    AMP::AMPManager::shutdown();
+    ut.report();
 
-    return 0;
+    int num_failed = ut.NumFailGlobal();
+    AMP::AMPManager::shutdown();
+    return num_failed;
 }
