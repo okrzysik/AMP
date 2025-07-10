@@ -24,11 +24,20 @@
 #include <iostream>
 
 
-// Object to hold column indices and associated data
+// Object to hold column indices and associated data for packing into a CSR matrix
 struct colsDataPair {
     std::vector<size_t> cols;
     std::vector<double> data;
 };
+
+// CSR structure for identity row
+colsDataPair localCSR_identity(size_t dof) { 
+    std::vector<double> vals = { 1.0 };  // data
+    std::vector<size_t> cols = { dof };  // Column index
+    colsDataPair identity    = { cols, vals }; 
+    return identity;
+};
+
 
 /* --------------------------------------
     Implementation of utility functions 
@@ -82,154 +91,14 @@ void fillMatWithLocalCSRData( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix
 }
 
 
-// Parameters for CG, optionally using a preconditioner
-std::unique_ptr<AMP::Database> getCGParameters( bool use_nested ) {
-    auto db = std::make_unique<AMP::Database>( "LinearSolver" );
-    db->putScalar<std::string>( "name", "CGSolver" );
-
-    db->putScalar<bool>( "uses_preconditioner", use_nested );
-    db->putScalar<double>( "absolute_tolerance", 1.0e-12 );
-    db->putScalar<double>( "relative_tolerance", 1.0e-12 );
-    db->putScalar<int>( "print_info_level", 1 );
-    db->putScalar<int>( "max_iterations", 100 );
-    // Later, a pc Database will be created with key "Preconditioner" 
-    if ( use_nested )
-        db->putScalar<std::string>( "pc_name", "Preconditioner" );
-    return db;
-}
-
-
-// These parameters are modified from "SolverTestParameters.cpp"
-// Boomer docs: https://hypre.readthedocs.io/en/latest/solvers-boomeramg.html
-std::unique_ptr<AMP::Database> getBoomerAMGParameters( bool as_preconditioner ) {
-    auto db = std::make_unique<AMP::Database>( "LinearSolver" );
-    db->putScalar<std::string>( "name", "BoomerAMGSolver" );
-    
-    // Ensure use of 1 iteration pre preconditioner application
-    if (as_preconditioner) {
-        db->putScalar<double>( "absolute_tolerance", 0.0 );
-        db->putScalar<double>( "relative_tolerance", 0.0 );
-        db->putScalar<int>( "max_iterations", 1 );
-        db->putScalar<int>( "print_info_level", 0 );
-    } else {
-        db->putScalar<double>( "absolute_tolerance", 1.0e-12 );
-        db->putScalar<double>( "relative_tolerance", 1.0e-12 );
-        db->putScalar<int>( "max_iterations", 25 );
-        db->putScalar<int>( "print_info_level", 1 );
-    }
-
-    db->putScalar<int>( "min_coarse_size", 5 );
-    db->putScalar<int>( "relax_type", 6 ); // Hybrid GS/Jacobi
-    db->putScalar<int>( "coarsen_type", 10 );
-    db->putScalar<int>( "interp_type", 17 ); // distance-two
-    db->putScalar<int>( "cycle_type", 1 );
-    db->putScalar<int>( "relax_order", 0 );
-    db->putScalar<double>( "strong_threshold", 0.5 );
-    return db;
-}
-
-
-/* Create a SolverStrategyParameters object, as required to build a linear solver from the SolverFactory. input_db should contain a Database with key "solver_name", which contains a "name" key that is a valid class in AMP::Solver. 
-    For similar examples, see: 
-        "buildSolver()" in testSolversForUserMatrix.cpp 
-        "buildSolver()" in SolverTestParameters.cpp */
-std::shared_ptr<AMP::Solver::SolverStrategyParameters> 
-getSolverStrategyParameters(const std::string &solver_name,
-                            std::shared_ptr<AMP::Database> input_db,
-                            const AMP::AMP_MPI &comm,
-                            std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess,
-                            std::shared_ptr<AMP::Operator::Operator> op )
+/* Create a d-dimensional BoxMesh over [0,1]^d with n+1 points in each direction. Also store the mesh spacing h in the provided database */
+std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, std::shared_ptr<AMP::Database> PDE_db )
 {
-    // Ensure input_db contains a database with key "solver_name" 
-    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
-    auto db = input_db->getDatabase( solver_name );
-
-    // Ensure the "name" of the solver is specified
-    AMP_INSIST( db->keyExists( "name" ), "input_db must contain a 'name' key inside its '" + solver_name + "' database" );
-    auto name = db->getScalar<std::string>( "name" );
-
-    auto solverStratParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
-
-    solverStratParams->d_pOperator     = op;
-    solverStratParams->d_comm          = comm;
-    solverStratParams->d_pInitialGuess = initialGuess;
-    solverStratParams->d_db            = db;
-    solverStratParams->d_global_db     = input_db;
-
-    return solverStratParams;
-}
-
-
-/* Given a solver defined by solverStratParams, augment it with a preconditioner if one is specified to be used in input_db[solver_name] */
-void augmentWithPcSolver(const std::string &solver_name,
-                        std::shared_ptr<AMP::Database> input_db,
-                        std::shared_ptr<AMP::Solver::SolverStrategyParameters> solverStratParams ) {
-
-    // First some basic error checking
-    // Ensure input_db contains a database with key "solver_name" 
-    AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
-    auto db = input_db->getDatabase( solver_name );
-    // Ensure the "name" of the solver is specified
-    AMP_INSIST( db->keyExists( "name" ), "input_db must contain a 'name' key inside its '" + solver_name + "' database" );
-    auto name = db->getScalar<std::string>( "name" );
-
-    // Construct preconditioner if one is to be used 
-    auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
-    if ( uses_preconditioner ) {
-        auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
-        AMP_INSIST( input_db->keyExists( pc_name ), "'" + solver_name + "' uses a pc with name '" + pc_name + "' but input_db does not contain a key for it" );
-
-        // Get a solverStategyParameters object for the preconditioner
-        auto pcSolverParams = getSolverStrategyParameters(pc_name, input_db, solverStratParams->d_comm, nullptr, solverStratParams->d_pOperator );
-
-        // Set NestedSolver field for the outer solver as the preconditioner
-        solverStratParams->d_pNestedSolver = AMP::Solver::SolverFactory::create( pcSolverParams );
-    }
-}
-
-
-/* Create a linear solver for the linear operator AOp. 
-    solverName can be one of: "CG", "AMG", "CG+AMG" */
-static std::unique_ptr<AMP::Solver::SolverStrategy>
-getLinearSolver(AMP::AMP_MPI comm,
-                std::shared_ptr<AMP::Operator::LinearOperator> AOp,
-                const AMP::Database &PDE_db) {
-
-    auto solverName = PDE_db.getString( "solverName" );
-
-    // Get solver-specific parameters. Parameters for the solver are stored as a Database in solverParams with key "LinearSolver"
-    auto solverParams = std::make_shared<AMP::Database>();
-    if ( solverName == "CG" ) {
-        // CG params when used as a solver
-        solverParams->putDatabase( "LinearSolver", getCGParameters( false ) ); 
-    } else if ( solverName == "AMG" ) {
-        // BoomerAMG params when used as a solver
-        solverParams->putDatabase( "LinearSolver", getBoomerAMGParameters( false ) ); 
-    } else if ( solverName == "CG+AMG" ) {
-        // CG parameters, when used with a preconditioner
-        solverParams->putDatabase( "LinearSolver", getCGParameters( true ) ); 
-        // BoomerAMG params when used as a preconditioner stored as "Preconditioner" Database
-        solverParams->putDatabase( "Preconditioner", getBoomerAMGParameters( true ) ); 
-    } else {
-        AMP_ERROR( "solverName '" + solverName + "' is not one of those supported: 'CG', 'AMG', or 'CG+AMG'" );
-    }
-
-    // Create solverStrategyParameters according to the "LinearSolver" Database in solverParams
-    auto solverStratParams = getSolverStrategyParameters( "LinearSolver", solverParams, comm, nullptr, AOp );
-    // Add preconditioner to outer solver if required
-    augmentWithPcSolver( "LinearSolver", solverParams, solverStratParams );
-    // Create linear solver
-    auto solver = AMP::Solver::SolverFactory::create( solverStratParams );
-
-    return solver;
-}
-
-
-/* Create a d-dimensional BoxMesh over [0,1]^d with n+1 points in each direction */
-static std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, const AMP::Database &PDE_db )
-{
-    auto n   = PDE_db.getScalar<int>( "n" );
-    auto dim = PDE_db.getScalar<int>( "dim" );
+    auto n   = PDE_db->getScalar<int>( "n" );
+    auto dim = PDE_db->getScalar<int>( "dim" );
+    // Store the mesh size: There are n+1 points on the mesh, including the boundaries
+    double h = 1.0 / n;
+    PDE_db->putScalar( "h",   h );
 
     auto mesh_db = std::make_shared<AMP::Database>( "Mesh" );
     mesh_db->putScalar<int>( "dim", dim );
@@ -291,7 +160,6 @@ static std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, con
 
     return boxMesh;
 }
-
 
 
 /* Compute discrete norms of vector u */
@@ -370,7 +238,7 @@ private:
     /* Build and set d_DOFMan */
     void set_DOFManager() {
         int DOFsPerElement = 1; 
-        int gcw  = 1; // Ghost-cell width. 
+        int gcw  = 1; // Ghost-cell width (stencils are at most 3-point in each direction)
         d_DOFMan = AMP::Discretization::boxMeshDOFManager::create(this->getMesh(), d_geomType, gcw, DOFsPerElement);
     }
 
@@ -392,8 +260,8 @@ private:
     std::map<size_t, colsDataPair> get2DCSRData();
     std::map<size_t, colsDataPair> get3DCSRData();
 
-    // Map from grid index i (or i,j, or i,j,k) to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
-    size_t grid_inds_to_DOF( int i, int j = 0, int k = 0 ) {
+    // Map from grid index i, or i,j, or i,j,k to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
+    size_t gridIndsToDOF( int i, int j = 0, int k = 0 ) {
         AMP::Mesh::BoxMesh::MeshElementIndex ind(
                         AMP::Mesh::GeomType::Vertex, 0, i, j, k );
         AMP::Mesh::MeshElementID id = d_BoxMesh->convert( ind );
@@ -499,7 +367,7 @@ std::vector<double> PoissonOp::getStencil2D() {
     std::vector<double> stencil = { O, SW, S, SE, W, E, NW, N, NE };
 
     // Introduce 1/h^2 scaling 
-    auto h = d_db->getScalar<double>("h");
+    auto h = d_db->getScalar<double>( "h" );
     for ( auto &s : stencil ) {
         s *= 1.0/(h*h);
     }
@@ -510,7 +378,7 @@ std::vector<double> PoissonOp::getStencil2D() {
 /* Get 7-point stencil for 3D Poisson. */
 std::vector<double> PoissonOp::getStencil3D() {
     
-    auto eps  = d_db->getScalar<double>("eps");
+    auto eps  = d_db->getScalar<double>( "eps" );
 
     double D  = -1.0*eps;
     double S  = -1.0;
@@ -524,22 +392,13 @@ std::vector<double> PoissonOp::getStencil3D() {
     std::vector<double> stencil = { O, D, S, W, E, N, U };
 
     // Introduce 1/h^2 scaling 
-    auto h = d_db->getScalar<double>("h");
+    auto h = d_db->getScalar<double>( "h" );
     for ( auto &s : stencil ) {
         s *= 1.0/(h*h);
     }
 
     return stencil;
 }
-
-
-// CSR structure for identity row
-colsDataPair localCSR_identity(size_t dof) { 
-    std::vector<double> vals = { 1.0 };  // data
-    std::vector<size_t> cols = { dof };  // Column index
-    colsDataPair identity = { cols, vals }; 
-    return identity;
-};
 
 
 /* Get CSR structure of 1D Laplacian */
@@ -572,7 +431,7 @@ std::map<size_t, colsDataPair> PoissonOp::get1DCSRData() {
     // Set identity in boundary rows that I own
     for (auto i : localBoundaryIDs) {
         if (i != -1) {
-            auto dof = grid_inds_to_DOF( i );
+            auto dof = gridIndsToDOF( i );
             localCSRData[dof] = localCSR_identity( dof );
         }
     }
@@ -581,14 +440,14 @@ std::map<size_t, colsDataPair> PoissonOp::get1DCSRData() {
     for (auto i = localBoxInterior.first[0]; i <= localBoxInterior.last[0]; i++) {
         
         // The current row
-        size_t dof = grid_inds_to_DOF( i );
+        size_t dof = gridIndsToDOF( i );
         // Copy of stencil
         std::vector<double> vals = stencil; 
         // Column indices, ordered consistently with the stencil
         std::vector<size_t> cols = { 
             dof,
-            grid_inds_to_DOF( i-1 ),
-            grid_inds_to_DOF( i+1 ) };
+            gridIndsToDOF( i-1 ),
+            gridIndsToDOF( i+1 ) };
         localCSRData[dof] = { cols, vals };
     }  
 
@@ -614,7 +473,7 @@ std::map<size_t, colsDataPair> PoissonOp::get2DCSRData() {
         for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
         
             // The current row
-            size_t dof = grid_inds_to_DOF( i, j );
+            size_t dof = gridIndsToDOF( i, j );
 
             // Set identity in boundary rows
             if (j == globalBox.first[1] || j == globalBox.last[1] || i == globalBox.first[0] || i == globalBox.last[0]) {
@@ -627,14 +486,14 @@ std::map<size_t, colsDataPair> PoissonOp::get2DCSRData() {
             // Column indices, ordered consistently with the stencil
             std::vector<size_t> cols = { 
                 dof,
-                grid_inds_to_DOF( i-1, j-1 ),
-                grid_inds_to_DOF( i ,  j-1 ),
-                grid_inds_to_DOF( i+1, j-1 ),
-                grid_inds_to_DOF( i-1, j   ),
-                grid_inds_to_DOF( i+1, j   ),
-                grid_inds_to_DOF( i-1, j+1 ),
-                grid_inds_to_DOF( i ,  j+1 ),
-                grid_inds_to_DOF( i+1, j+1 ) };
+                gridIndsToDOF( i-1, j-1 ),
+                gridIndsToDOF( i ,  j-1 ),
+                gridIndsToDOF( i+1, j-1 ),
+                gridIndsToDOF( i-1, j   ),
+                gridIndsToDOF( i+1, j   ),
+                gridIndsToDOF( i-1, j+1 ),
+                gridIndsToDOF( i ,  j+1 ),
+                gridIndsToDOF( i+1, j+1 ) };
 
             localCSRData[dof] = { cols, vals };
         }
@@ -663,7 +522,7 @@ std::map<size_t, colsDataPair> PoissonOp::get3DCSRData( ) {
             for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
 
                 // The current row
-                size_t dof = grid_inds_to_DOF( i, j, k );
+                size_t dof = gridIndsToDOF( i, j, k );
 
                 // Set identity in boundary rows
                 if (k == globalBox.first[2] || k == globalBox.last[2] || j == globalBox.first[1] || j == globalBox.last[1] || i == globalBox.first[0] || i == globalBox.last[0]) {
@@ -677,12 +536,12 @@ std::map<size_t, colsDataPair> PoissonOp::get3DCSRData( ) {
                 // O, D, S, W, E, N, U
                 std::vector<size_t> cols = { 
                     dof,
-                    grid_inds_to_DOF( i,   j,   k-1 ),
-                    grid_inds_to_DOF( i,   j-1, k   ),
-                    grid_inds_to_DOF( i-1, j,   k   ),
-                    grid_inds_to_DOF( i+1, j,   k   ),
-                    grid_inds_to_DOF( i,   j+1, k   ),
-                    grid_inds_to_DOF( i,   j,   k+1 ) };
+                    gridIndsToDOF( i,   j,   k-1 ),
+                    gridIndsToDOF( i,   j-1, k   ),
+                    gridIndsToDOF( i-1, j,   k   ),
+                    gridIndsToDOF( i+1, j,   k   ),
+                    gridIndsToDOF( i,   j+1, k   ),
+                    gridIndsToDOF( i,   j,   k+1 ) };
 
                 localCSRData[dof] = { cols, vals };
             }
@@ -791,14 +650,24 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
 
 
 void driver(AMP::AMP_MPI comm, 
-            std::shared_ptr<AMP::Database> PDE_db ) {
+            const std::string &exeName ) {
 
-    AMP_INSIST( PDE_db, "driver() requires non-null PDE_db" );
+    std::string input_file = "input_"  + exeName;
+    std::string log_file   = "output_" + exeName;
+
+    AMP::logOnlyNodeZero( log_file );
+
+    auto input_db = AMP::Database::parseInputFile( input_file );
+    input_db->print( AMP::plog );
+
+    // Unpack databases from the input file
+    auto PDE_db    = input_db->getDatabase( "PDE" );
+    auto solver_db = input_db->getDatabase( "LinearSolver" );
 
     /****************************************************************
     * Create a mesh                                                 *
     ****************************************************************/
-    static std::shared_ptr<AMP::Mesh::BoxMesh> mesh = createBoxMesh( comm, *PDE_db );
+    static std::shared_ptr<AMP::Mesh::BoxMesh> mesh = createBoxMesh( comm, PDE_db );
 
 
     /****************************************************************
@@ -846,7 +715,6 @@ void driver(AMP::AMP_MPI comm,
     /****************************************************************
     * Compute discrete residual norm on continuous solution (truncation error) *
     ****************************************************************/
-    auto A = AOp->getMatrix();
     AMP::pout << "\nDiscrete residual of continuous solution: ";
     AOp->residual( fsourceVec, uexactVec, rexactVec );
     auto rnorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), rexactVec );
@@ -858,7 +726,13 @@ void driver(AMP::AMP_MPI comm,
     * Construct linear solver of the LinearOperator and apply it    *
     ****************************************************************/
     // Get the linear solver for operator AOp
-    auto mySolver = getLinearSolver( comm, AOp, *PDE_db );
+    auto solverStratParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( solver_db );
+    solverStratParams->d_comm      = comm;
+    solverStratParams->d_pOperator = AOp;
+    auto mySolver = AMP::Solver::SolverFactory::create( solverStratParams );
+    
+
+    //auto mySolver = getLinearSolver( comm, AOp, *PDE_db );
 
     // Use zero initial iterate and apply solver
     mySolver->setZeroInitialGuess( true );
@@ -893,40 +767,19 @@ void driver(AMP::AMP_MPI comm,
 int main( int argc, char **argv )
 {
 
-    // Default constants in the 2D PDE.
-    double eps   = 1e-2;
-    double theta = 30.0 * (M_PI / 180.0);
-
-    AMP::AMPManager::startup( argc, argv );
+    AMP::AMPManager::startup( argc, argv );      
 
     // Create a global communicator
     AMP::AMP_MPI comm( AMP_COMM_WORLD );
     // int myRank   = comm.getRank();
     // int numRanks = comm.getSize();
 
-    // Unpack inputs
-    int dim = atoi(argv[1]);          // PDE dimension
-    int n   = atoi(argv[2]);          // Grid size in each dimension
-    std::string solverName = argv[3]; // Solver name
-    
-    // Create DB with PDE- and mesh-related quantities
-    auto PDE_db = std::make_shared<AMP::Database>( "PDE" );
-    PDE_db->putScalar( "n",   n );
-    PDE_db->putScalar( "dim", dim );
-    PDE_db->putScalar( "solverName", solverName );
-    if ( dim == 2 ) {
-        PDE_db->putScalar<double>( "eps",   eps );
-        PDE_db->putScalar<double>( "theta", theta );
-    } else if ( dim == 3 ) {
-        PDE_db->putScalar<double>( "eps",   eps );
-    }
+    std::vector<std::string> exeNames;
+    exeNames.emplace_back( "PoissonOperator" );
 
-    // Store the mesh size: There are n+1 points on the mesh, including the boundaries
-    double h = 1.0 / n;
-    PDE_db->putScalar( "h",   h );
-
-    // Driver
-    driver( comm, PDE_db );
+    for ( auto &exeName : exeNames ) {
+        driver( comm, exeName );
+    }    
 
     AMP::AMPManager::shutdown();
 
