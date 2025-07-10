@@ -256,9 +256,9 @@ private:
     std::vector<double> getStencil3D();
 
     // Map from row index to col+data in that row
-    std::map<size_t, colsDataPair> get1DCSRData();
-    std::map<size_t, colsDataPair> get2DCSRData();
-    std::map<size_t, colsDataPair> get3DCSRData();
+    std::map<size_t, colsDataPair> getCSRData1D();
+    std::map<size_t, colsDataPair> getCSRData2D();
+    std::map<size_t, colsDataPair> getCSRData3D();
 
     // Map from grid index i, or i,j, or i,j,k to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
     size_t gridIndsToDOF( int i, int j = 0, int k = 0 ) {
@@ -306,15 +306,16 @@ double PoissonOp::sourceTerm(double x, double y) {
     return f;
 }
 
-// -(u_xx + u_yy + epsilon*u_zz) = f
+// -(u_xx + epsy*u_yy + epsz*u_zz) = f
 double PoissonOp::exactSolution(double x, double y, double z) {
     return std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z);
 }
 
-// -(u_xx + u_yy + epsilon*u_zz) = f
+// -(u_xx + epsy*u_yy + epsz*u_zz) = f
 double PoissonOp::sourceTerm(double x, double y, double z) {
-    auto epsilon = d_db->getScalar<double>("eps");
-    return 4*std::pow(M_PI, 2)*(9*epsilon + 5)*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z);
+    auto epsilony = d_db->getScalar<double>("epsy");
+    auto epsilonz = d_db->getScalar<double>("epsz");
+    return 4*std::pow(M_PI, 2)*(4*epsilony + 9*epsilonz + 1)*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z);
 }
 
 
@@ -378,15 +379,16 @@ std::vector<double> PoissonOp::getStencil2D() {
 /* Get 7-point stencil for 3D Poisson. */
 std::vector<double> PoissonOp::getStencil3D() {
     
-    auto eps  = d_db->getScalar<double>( "eps" );
+    auto epsy = d_db->getScalar<double>( "epsy" );
+    auto epsz = d_db->getScalar<double>( "epsz" );
 
-    double D  = -1.0*eps;
-    double S  = -1.0;
+    double D  = -1.0*epsz;
+    double S  = -1.0*epsy;
     double W  = -1.0; 
-    double O  = +4.0 + 2.0*eps; 
+    double O  = +2.0 + 2.0*epsy + 2.0*epsz; 
     double E  = -1.0;
-    double N  = -1.0;
-    double U  = -1.0*eps;
+    double N  = -1.0*epsy;
+    double U  = -1.0*epsz;
 
     // Populate stencil
     std::vector<double> stencil = { O, D, S, W, E, N, U };
@@ -402,7 +404,7 @@ std::vector<double> PoissonOp::getStencil3D() {
 
 
 /* Get CSR structure of 1D Laplacian */
-std::map<size_t, colsDataPair> PoissonOp::get1DCSRData() {    
+std::map<size_t, colsDataPair> PoissonOp::getCSRData1D() {    
 
     // Get 3-point stencil
     auto stencil = getStencil1D( );
@@ -455,7 +457,7 @@ std::map<size_t, colsDataPair> PoissonOp::get1DCSRData() {
 }
 
 /* Get CSR structure of rotated anisotropic 2D Laplacian */
-std::map<size_t, colsDataPair> PoissonOp::get2DCSRData() {    
+std::map<size_t, colsDataPair> PoissonOp::getCSRData2D() {    
 
     // Get 9-point stencil 
     auto stencil = getStencil2D( );
@@ -503,7 +505,7 @@ std::map<size_t, colsDataPair> PoissonOp::get2DCSRData() {
 }
 
 /* Get CSR structure of anisotropic 3D Laplacian */
-std::map<size_t, colsDataPair> PoissonOp::get3DCSRData( ) {    
+std::map<size_t, colsDataPair> PoissonOp::getCSRData3D( ) {    
 
     // Get 7-point stencil
     auto stencil = getStencil3D( );
@@ -622,11 +624,11 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
     int meshDim = this->getMesh()->getDim();
     std::map<size_t, colsDataPair> localCSRData;
     if ( meshDim == 1 ) {
-        localCSRData = this->get1DCSRData( );
+        localCSRData = this->getCSRData1D( );
     } else if ( meshDim == 2 ) {
-        localCSRData = this->get2DCSRData( );
+        localCSRData = this->getCSRData2D( );
     } else if ( meshDim == 3 ) {
-        localCSRData = this->get3DCSRData( );
+        localCSRData = this->getCSRData3D( );
     }
 
     // Create Lambda to return col inds from a given row ind
@@ -663,6 +665,9 @@ void driver(AMP::AMP_MPI comm,
     // Unpack databases from the input file
     auto PDE_db    = input_db->getDatabase( "PDE" );
     auto solver_db = input_db->getDatabase( "LinearSolver" );
+
+    AMP_INSIST( PDE_db,    "A PDE database must be provided" );
+    AMP_INSIST( solver_db, "A LinearSolver database must be provided" );
 
     /****************************************************************
     * Create a mesh                                                 *
@@ -751,18 +756,17 @@ void driver(AMP::AMP_MPI comm,
 
 
 
-/*  Input usage is: >> <dim> <n> <solverName>
-    Where:
-        dim        : 1, 2, or 3 is the number of spatial dimensions
-        n          : There are n+1 mesh points in each dimension
-        solverName : CG, or AMG, or CG+AMG is the linear solver
+/*  The input file must contain a "PDE" database, which has 
 
-    e.g., >> mpirun -n 2 testPoisson-FD-example 1 16 CG+AMG
+    dim : the dimension of the problem (1, 2, or 3)
+    n   : the number of mesh points (plus 1) in each grid dimension
+    
+    - In 1D, the PDE is -u_xx = f. Standard 3-point finite differences are used. 
+    - In 2D, the PDE is -u_xx -eps*u_yy = f, but rotated an angle of theta in [0,pi/2] radians counter clockwise from the positive x axis. 7-point upwind finite differences are used.
+    - In 3D, the PDE is -u_xx -epsy*u_yy - epsz*u_zz = f. Standard 7-point finite differences are used
 
-    In 1D, the PDE is -u_xx = f. Standard 3-point finite differences are used. 
-    In 2D, the PDE is -u_xx -eps*u_yy = f but rotated an angle of theta degrees. 7-point upwind finite-differences are used.
-    In 3D, the PDE is -u_xx -u_yy - eps*u_zz = f
-
+    - In 2D, the PDE database must also specify the constants "eps" and "theta"
+    - in 2D, the PDE database must also specify the constants "epsy" and "epsz"
 */
 int main( int argc, char **argv )
 {
@@ -775,7 +779,7 @@ int main( int argc, char **argv )
     // int numRanks = comm.getSize();
 
     std::vector<std::string> exeNames;
-    exeNames.emplace_back( "PoissonOperator" );
+    exeNames.emplace_back( "testLinearSolvers-PoissonFD-BoomerAMG-CG" );
 
     for ( auto &exeName : exeNames ) {
         driver( comm, exeName );
