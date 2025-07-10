@@ -1,13 +1,8 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 
-#include "AMP/vectors/CommunicationList.h"
-#include "AMP/matrices/petsc/NativePetscMatrix.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/data/VectorData.h"
-#include "AMP/vectors/data/VectorDataNull.h"
-#include "AMP/vectors/operations/default/VectorOperationsDefault.h"
 
 #include "AMP/discretization/boxMeshDOFManager.h"
 #include "AMP/mesh/Mesh.h"
@@ -15,10 +10,7 @@
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 
-#include "AMP/matrices/CSRMatrix.h"
-#include "AMP/matrices/CSRPolicy.h"
 #include "AMP/matrices/MatrixBuilder.h"
-#include "AMP/matrices/RawCSRMatrixParameters.h"
 
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/LinearOperator.h"
@@ -26,7 +18,6 @@
 
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategy.h"
-#include "AMP/solvers/testHelpers/SolverTestParameters.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 
@@ -45,7 +36,6 @@ struct colsDataPair {
 
 // Convert an element box to a node box. 
 // Modified from src/mesh/test/test_BoxMeshIndex.cpp by removing the possibility of any of the grid dimensions being periodic.
-// I cannot understand why this happens, but it seems that the last index on the east/north/top side of the mesh is one less than it should be. I don't understand what is meant by converting an element box to a node box... Perhaps its because if you count nodes vs elements then there's one more node than an element... But still, this seems somehow strange...
 AMP::Mesh::BoxMesh::Box getNodeBox( std::shared_ptr<AMP::Mesh::BoxMesh> mesh, AMP::Mesh::BoxMesh::Box box ) {
     auto global = mesh->getGlobalBox();
     for ( int d = 0; d < 3; d++ ) {
@@ -76,14 +66,13 @@ AMP::Mesh::BoxMesh::Box getGlobalNodeBox( std::shared_ptr<AMP::Mesh::BoxMesh> me
 };
 
 
-
 /* Fill CSR matrix with data from CSRData */
 void fillMatWithLocalCSRData( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
-                          std::shared_ptr<AMP::Discretization::DOFManager> dofmap,
+                          std::shared_ptr<AMP::Discretization::DOFManager> DOFMan,
                           std::map<size_t, colsDataPair> CSRData ) {
 
     // Iterate through local rows in matrix
-    for ( size_t dof = dofmap->beginDOF(); dof != dofmap->endDOF(); dof++ ) {
+    for ( size_t dof = DOFMan->beginDOF(); dof != DOFMan->endDOF(); dof++ ) {
         size_t nrows = 1;
         size_t ncols = CSRData[dof].cols.size();
 
@@ -236,13 +225,12 @@ getLinearSolver(AMP::AMP_MPI comm,
 }
 
 
-/* Create a d-dimensional BoxMesh with n+1 points in each direction */
+/* Create a d-dimensional BoxMesh over [0,1]^d with n+1 points in each direction */
 static std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, const AMP::Database &PDE_db )
 {
     auto n   = PDE_db.getScalar<int>( "n" );
     auto dim = PDE_db.getScalar<int>( "dim" );
-    //auto h   = PDE_db.getScalar<double>( "h" );
-    
+
     auto mesh_db = std::make_shared<AMP::Database>( "Mesh" );
     mesh_db->putScalar<int>( "dim", dim );
     mesh_db->putScalar<std::string>( "MeshName", "AMP::cube" );
@@ -265,14 +253,15 @@ static std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, con
     // Create Mesh
     static std::shared_ptr<AMP::Mesh::BoxMesh> boxMesh = AMP::Mesh::BoxMesh::generate( mesh_params );
 
-    // Print some statistics RE mesh
+    // Print some statistics of mesh
+    # if 0
     std::cout << "Mesh: " 
     << static_cast<int>(boxMesh->getDim()) << "-dimensional. " 
     << "Global size = " << boxMesh->numGlobalElements(AMP::Mesh::GeomType::Vertex) << ". " 
     << "Local size on rank " << boxMesh->getComm().getRank() << " (of " << boxMesh->getComm().getSize() << ") = " << boxMesh->numLocalElements(AMP::Mesh::GeomType::Vertex) 
     << std::endl;
     //std::cout << "mesh comm size = " << boxMesh->getComm().getSize() << std::endl;
-
+    #endif
     
     #if 0
     // Bounding box of mesh w/ zero ghost
@@ -291,7 +280,7 @@ static std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, con
     std::cout << std::endl;
     #endif
 
-    #if 1
+    #if 0
     AMP::pout << "boundary ids:" << std::endl;
     auto bndry_ids = boxMesh->getBoundaryIDs();
     for (auto id : bndry_ids) {
@@ -305,58 +294,16 @@ static std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, con
 
 
 
-/* Compute norm of residual vector r = f - A*u given approximate solution u of A*u = f */
-std::vector<double> getDiscreteResidualNorms(double h, 
-                    std::shared_ptr<AMP::LinearAlgebra::Matrix> &A, 
-                    std::shared_ptr<AMP::LinearAlgebra::Vector> &u, 
-                    std::shared_ptr<AMP::LinearAlgebra::Vector> &f) {
-    
-    AMP::LinearAlgebra::Vector::shared_ptr r = A->getLeftVector(); // Initialize an r
-    A->mult( u, r );         // r <- A*u
-    r->axpby(1.0, -1.0, *f); // r <- f - r
+/* Compute discrete norms of vector u */
+std::vector<double> getDiscreteNorms(double h,  
+                    std::shared_ptr<const AMP::LinearAlgebra::Vector> u) {
+    // Compute norms
+    double uL1Norm  = static_cast<double>( u->L1Norm()  ) * h*h;
+    double uL2Norm  = static_cast<double>( u->L2Norm()  ) * h;
+    double uMaxNorm = static_cast<double>( u->maxNorm() );
 
-    #if 0
-    // Print out data for debugging
-    std::shared_ptr<AMP::Discretization::DOFManager> myDOFManager = u->getDOFManager();
-    AMP::Mesh::MeshIterator myMeshIterator = myDOFManager->getIterator(); 
-    for (auto it = myMeshIterator.begin() ; it != myMeshIterator.end(); ++it ) {
-        std::vector<size_t> i;
-        myDOFManager->getDOFs( it->globalID(), i );
-        std::cout << "DOF i = " << i[0] << ": (r, f, u) = (" << 
-        r->getValueByGlobalID(i[0]) << ", " <<
-        f->getValueByGlobalID(i[0]) << ", " <<
-        u->getValueByGlobalID(i[0]) << ")"
-        << std::endl;
-    }
-    #endif
-
-    // Compute residual norms
-    double rL1Norm  = static_cast<double>( r->L1Norm()  ) * h*h;
-    double rL2Norm  = static_cast<double>( r->L2Norm()  ) * h;
-    double rMaxNorm = static_cast<double>( r->maxNorm() );
-    
-    // Print residual norms
-    AMP::pout << "||r|| = (" << rL1Norm << ", " << rL2Norm << ", " << rMaxNorm << ")" << std::endl;
-
-    std::vector<double> rnorms = { rL1Norm, rL2Norm, rMaxNorm }; 
-    return rnorms;
-}
-
-
-// Get error norms of e = uexact - uapprox 
-std::vector<double> getDiscreteErrorNorms(double h, 
-                    AMP::LinearAlgebra::Vector::shared_ptr &uexact, 
-                    AMP::LinearAlgebra::Vector::shared_ptr &uapprox) {
-
-    std::shared_ptr<AMP::LinearAlgebra::Vector> e = uexact->clone();
-    e->axpy(-1.0, *uapprox, *uexact); 
-    double eL1Norm  = static_cast<double>( e->L1Norm()  ) * h*h;
-    double eL2Norm  = static_cast<double>( e->L2Norm()  ) * h;
-    double eMaxNorm = static_cast<double>( e->maxNorm() );
-    AMP::pout << "||e|| = (" << eL1Norm << ", " << eL2Norm << ", " << eMaxNorm << ")" << std::endl;
-
-    std::vector<double> enorms = { eL1Norm, eL2Norm, eMaxNorm };
-    return enorms;
+    std::vector<double> unorms = { uL1Norm, uL2Norm, uMaxNorm }; 
+    return unorms;
 }
 
 
@@ -371,6 +318,7 @@ private:
 
 public:
 
+    std::shared_ptr<AMP::Mesh::BoxMesh>              d_BoxMesh;
     std::shared_ptr<AMP::Database>                   d_db;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFMan;
     AMP::Mesh::GeomType                              d_geomType = AMP::Mesh::GeomType::Vertex;
@@ -379,7 +327,9 @@ public:
     PoissonOp(std::shared_ptr<const AMP::Operator::OperatorParameters> params_) : 
             AMP::Operator::LinearOperator( params_ ) { 
 
-        AMP_INSIST( std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>(this->getMesh()), "Mesh must be a AMP::Mesh::BoxMesh" );
+        // Keep a pointer to my BoxMesh to save having to do this downcast repeatedly 
+        d_BoxMesh = std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>(this->getMesh());
+        AMP_INSIST( d_BoxMesh, "Mesh must be a AMP::Mesh::BoxMesh" );
 
         // Set my database
         d_db = params_->d_db->getDatabase( "PDE_db" );
@@ -422,9 +372,6 @@ private:
         int DOFsPerElement = 1; 
         int gcw  = 1; // Ghost-cell width. 
         d_DOFMan = AMP::Discretization::boxMeshDOFManager::create(this->getMesh(), d_geomType, gcw, DOFsPerElement);
-        // Note: The following creates a processor-local DOF manager
-        // auto myDOFManager = AMP::Discretization::boxMeshDOFManager::create(myMeshIterator,  myDOFsPerElement);
-        //std::cout << "DOF manafer comm size = " << myDOFManager->getComm().getSize() << std::endl;
     }
 
     // Exact solution and corresponding source term
@@ -444,6 +391,16 @@ private:
     std::map<size_t, colsDataPair> get1DCSRData();
     std::map<size_t, colsDataPair> get2DCSRData();
     std::map<size_t, colsDataPair> get3DCSRData();
+
+    // Map from grid index i (or i,j, or i,j,k) to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
+    size_t grid_inds_to_DOF( int i, int j = 0, int k = 0 ) {
+        AMP::Mesh::BoxMesh::MeshElementIndex ind(
+                        AMP::Mesh::GeomType::Vertex, 0, i, j, k );
+        AMP::Mesh::MeshElementID id = d_BoxMesh->convert( ind );
+        std::vector<size_t> dof;
+        d_DOFMan->getDOFs(id, dof);
+        return dof[0];
+    };
 }; 
 
 
@@ -517,6 +474,9 @@ std::vector<double> PoissonOp::getStencil2D() {
     
     double eps   = this->d_db->getScalar<double>( "eps" );
     double theta = this->d_db->getScalar<double>( "theta" );
+
+    AMP_INSIST( theta >= 0.0 && theta <= M_PI/2.0, "Upwind discretization only valid for theta in [0,pi/2]" );
+
     double c     = cos(theta);
     double s     = sin(theta);
 
@@ -572,38 +532,27 @@ std::vector<double> PoissonOp::getStencil3D() {
     return stencil;
 }
 
+
+// CSR structure for identity row
+colsDataPair localCSR_identity(size_t dof) { 
+    std::vector<double> vals = { 1.0 };  // data
+    std::vector<size_t> cols = { dof };  // Column index
+    colsDataPair identity = { cols, vals }; 
+    return identity;
+};
+
+
 /* Get CSR structure of 1D Laplacian */
 std::map<size_t, colsDataPair> PoissonOp::get1DCSRData() {    
 
-    auto dofmap = d_DOFMan;
-    auto mesh   = std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>(this->getMesh());
-
     // Get 3-point stencil
     auto stencil = getStencil1D( );
-    
-    // Map from grid index i to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
-    auto grid_inds_to_DOF = [mesh, dofmap]( int i ) {
-        AMP::Mesh::BoxMesh::MeshElementIndex ind(
-                        AMP::Mesh::GeomType::Vertex, 0, i );
-        AMP::Mesh::MeshElementID id = mesh->convert( ind );
-        std::vector<size_t> dof;
-        dofmap->getDOFs(id, dof);
-        return dof[0];
-    };
-
-    // CSR structure for identity row
-    auto localCSR_identity = [](size_t dof) { 
-        std::vector<double> vals = { 1.0 };  // data
-        std::vector<size_t> cols = { dof };  // Column index
-        colsDataPair identity = { cols, vals }; 
-        return identity;
-    };
 
     // Get local grid index box w/ zero ghosts
-    auto globalBox = getGlobalNodeBox( mesh );
+    auto globalBox = getGlobalNodeBox( d_BoxMesh );
 
     // Segment localBox into DOFs on the global boundary and those on the interior
-    auto localBoxInterior = getLocalNodeBox( mesh );
+    auto localBoxInterior = getLocalNodeBox( d_BoxMesh );
     std::vector<int> localBoundaryIDs = {-1, -1};
     // Local west boundary is global west boundary
     if (localBoxInterior.first[0] == globalBox.first[0]) {
@@ -623,25 +572,23 @@ std::map<size_t, colsDataPair> PoissonOp::get1DCSRData() {
     // Set identity in boundary rows that I own
     for (auto i : localBoundaryIDs) {
         if (i != -1) {
-            auto dof = grid_inds_to_DOF(i);
+            auto dof = grid_inds_to_DOF( i );
             localCSRData[dof] = localCSR_identity( dof );
         }
     }
-
-    
 
     // Iterate over local interior box
     for (auto i = localBoxInterior.first[0]; i <= localBoxInterior.last[0]; i++) {
         
         // The current row
-        size_t dof = grid_inds_to_DOF(i);
+        size_t dof = grid_inds_to_DOF( i );
         // Copy of stencil
         std::vector<double> vals = stencil; 
         // Column indices, ordered consistently with the stencil
         std::vector<size_t> cols = { 
             dof,
-            grid_inds_to_DOF(i-1),
-            grid_inds_to_DOF(i+1) };
+            grid_inds_to_DOF( i-1 ),
+            grid_inds_to_DOF( i+1 ) };
         localCSRData[dof] = { cols, vals };
     }  
 
@@ -651,61 +598,43 @@ std::map<size_t, colsDataPair> PoissonOp::get1DCSRData() {
 /* Get CSR structure of rotated anisotropic 2D Laplacian */
 std::map<size_t, colsDataPair> PoissonOp::get2DCSRData() {    
 
-    auto dofmap = d_DOFMan;
-    auto mesh   = std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>(this->getMesh());
-
     // Get 9-point stencil 
     auto stencil = getStencil2D( );
     
-    // Map from grid indices i,j to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
-    auto grid_inds_to_DOF = [mesh, dofmap]( int i, int j ) {
-        AMP::Mesh::BoxMesh::MeshElementIndex ind(
-                        AMP::Mesh::GeomType::Vertex, 0, i, j );
-        AMP::Mesh::MeshElementID id = mesh->convert( ind );
-        std::vector<size_t> dof;
-        dofmap->getDOFs(id, dof);
-        return dof[0];
-    };
-
     // Get local grid index box w/ zero ghosts
-    auto localBox  = getLocalNodeBox( mesh );
-    auto globalBox = getGlobalNodeBox( mesh );
+    auto localBox  = getLocalNodeBox( d_BoxMesh );
+    auto globalBox = getGlobalNodeBox( d_BoxMesh );
 
     // Create a map from the DOF to a pair a vectors
     // Map from a DOF to vector of col inds and associated data
     std::map<size_t, colsDataPair> localCSRData;
 
-    // Could do some check here whether local box shares a boundary with global box to save checking every time in the loop...
-
     // Iterate over local box
     for (auto j = localBox.first[1]; j <= localBox.last[1]; j++) {
         for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
         
+            // The current row
+            size_t dof = grid_inds_to_DOF( i, j );
+
             // Set identity in boundary rows
             if (j == globalBox.first[1] || j == globalBox.last[1] || i == globalBox.first[0] || i == globalBox.last[0]) {
-
-                size_t dof = grid_inds_to_DOF(i, j); // The current row
-                std::vector<double> vals = { 1.0 };  // data
-                std::vector<size_t> cols = { dof };  // Column index
-                localCSRData[dof] = { cols, vals };
+                localCSRData[dof] = localCSR_identity( dof );
                 continue;
             }
-
-            // The current row
-            size_t dof = grid_inds_to_DOF(i, j);
+            
             // Copy of stencil
             std::vector<double> vals = stencil; 
             // Column indices, ordered consistently with the stencil
             std::vector<size_t> cols = { 
                 dof,
-                grid_inds_to_DOF(i-1, j-1),
-                grid_inds_to_DOF(i ,  j-1),
-                grid_inds_to_DOF(i+1, j-1),
-                grid_inds_to_DOF(i-1, j),
-                grid_inds_to_DOF(i+1, j),
-                grid_inds_to_DOF(i-1, j+1),
-                grid_inds_to_DOF(i ,  j+1),
-                grid_inds_to_DOF(i+1, j+1) };
+                grid_inds_to_DOF( i-1, j-1 ),
+                grid_inds_to_DOF( i ,  j-1 ),
+                grid_inds_to_DOF( i+1, j-1 ),
+                grid_inds_to_DOF( i-1, j   ),
+                grid_inds_to_DOF( i+1, j   ),
+                grid_inds_to_DOF( i-1, j+1 ),
+                grid_inds_to_DOF( i ,  j+1 ),
+                grid_inds_to_DOF( i+1, j+1 ) };
 
             localCSRData[dof] = { cols, vals };
         }
@@ -717,61 +646,43 @@ std::map<size_t, colsDataPair> PoissonOp::get2DCSRData() {
 /* Get CSR structure of anisotropic 3D Laplacian */
 std::map<size_t, colsDataPair> PoissonOp::get3DCSRData( ) {    
 
-    auto dofmap = d_DOFMan;
-    auto mesh   = std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>(this->getMesh());
-
     // Get 7-point stencil
     auto stencil = getStencil3D( );
-    
-    // Map from grid indices i,j to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
-    auto grid_inds_to_DOF = [mesh, dofmap]( int i, int j, int k ) {
-        AMP::Mesh::BoxMesh::MeshElementIndex ind(
-                        AMP::Mesh::GeomType::Vertex, 0, i, j, k );
-        AMP::Mesh::MeshElementID id = mesh->convert( ind );
-        std::vector<size_t> dof;
-        dofmap->getDOFs(id, dof);
-        return dof[0];
-    };
 
     // Get local grid index box w/ zero ghosts
-    auto localBox  = getLocalNodeBox( mesh );
-    auto globalBox = getGlobalNodeBox( mesh );
+    auto localBox  = getLocalNodeBox( d_BoxMesh );
+    auto globalBox = getGlobalNodeBox( d_BoxMesh );
 
     // Create a map from the DOF to a pair a vectors
     // Map from a DOF to vector of col inds and associated data
     std::map<size_t, colsDataPair> localCSRData;
 
-    // Could do some check here whether local box shares a boundary with global box to save checking every time in the loop...
-
     // Iterate over local box
     for (auto k = localBox.first[2]; k <= localBox.last[2]; k++) {
         for (auto j = localBox.first[1]; j <= localBox.last[1]; j++) {
             for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
-            
+
+                // The current row
+                size_t dof = grid_inds_to_DOF( i, j, k );
+
                 // Set identity in boundary rows
                 if (k == globalBox.first[2] || k == globalBox.last[2] || j == globalBox.first[1] || j == globalBox.last[1] || i == globalBox.first[0] || i == globalBox.last[0]) {
-
-                    size_t dof = grid_inds_to_DOF(i, j, k); // The current row
-                    std::vector<double> vals = { 1.0 };  // data
-                    std::vector<size_t> cols = { dof };  // Column index
-                    localCSRData[dof] = { cols, vals };
+                    localCSRData[dof] = localCSR_identity( dof );
                     continue;
                 }
 
-                // The current row
-                size_t dof = grid_inds_to_DOF(i, j, k);
                 // Copy of stencil
                 std::vector<double> vals = stencil; 
                 // Column indices, ordered consistently with the stencil
                 // O, D, S, W, E, N, U
                 std::vector<size_t> cols = { 
                     dof,
-                    grid_inds_to_DOF(i,   j,   k-1),
-                    grid_inds_to_DOF(i,   j-1, k),
-                    grid_inds_to_DOF(i-1, j,   k),
-                    grid_inds_to_DOF(i+1, j,   k),
-                    grid_inds_to_DOF(i,   j+1, k),
-                    grid_inds_to_DOF(i,   j,   k+1) };
+                    grid_inds_to_DOF( i,   j,   k-1 ),
+                    grid_inds_to_DOF( i,   j-1, k   ),
+                    grid_inds_to_DOF( i-1, j,   k   ),
+                    grid_inds_to_DOF( i+1, j,   k   ),
+                    grid_inds_to_DOF( i,   j+1, k   ),
+                    grid_inds_to_DOF( i,   j,   k+1 ) };
 
                 localCSRData[dof] = { cols, vals };
             }
@@ -784,15 +695,14 @@ std::map<size_t, colsDataPair> PoissonOp::get3DCSRData( ) {
 
 
 /* Populate exact solution and RHS source-term vectors. 
-    Note that zero BCs are hacked into the RHS of f */
+    Note that zero values are put into boundary rows of the 
+    RHS vector f since the problem is posed with zero Dirichlet BCs */
 void PoissonOp::fill_uexact_and_fsource( 
         std::shared_ptr<AMP::LinearAlgebra::Vector> uexact, 
         std::shared_ptr<AMP::LinearAlgebra::Vector> fsource ) {
 
-    
-    auto dof    = this->d_DOFMan; // DOFManager
-    auto it     = this->getMesh()->getIterator(d_geomType); // Mesh iterator
-    int meshDim = this->getMesh()->getDim(); // Dimension
+    auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
+    auto meshDim = d_BoxMesh->getDim(); // Dimension
 
     // Fill in exact solution and source term vectors
     for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
@@ -835,7 +745,7 @@ void PoissonOp::fill_uexact_and_fsource(
         }
 
         std::vector<size_t> i;
-        dof->getDOFs( elem->globalID(), i );
+        d_DOFMan->getDOFs( elem->globalID(), i );
         uexact->setValuesByGlobalID( 1, &i[0], &u[0] );
         fsource->setValuesByGlobalID( 1, &i[0], &f[0] );
     }
@@ -869,11 +779,12 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
     // Finalize A
     A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
     // Print statistics of A
+    #if 0
     size_t nGlobalRows = A->numGlobalRows();
     size_t nLocalRows  = A->numLocalRows();
     std::cout << "Matrix A: #global rows=" << nGlobalRows << ". #local rows on rank " << A->getComm().getRank() << " (of " << A->getComm().getSize() << ") = " << nLocalRows
               << std::endl;
-
+    #endif
     return A;
 }
 
@@ -921,6 +832,7 @@ void driver(AMP::AMP_MPI comm,
     // Create required vectors over the mesh
     auto unumVec    = AOp->getRightVector();
     auto uexactVec  = AOp->getRightVector();
+    auto rexactVec  = AOp->getRightVector();
     auto fsourceVec = AOp->getRightVector();
 
     // Set exact solution and RHS vector
@@ -936,8 +848,11 @@ void driver(AMP::AMP_MPI comm,
     ****************************************************************/
     auto A = AOp->getMatrix();
     AMP::pout << "\nDiscrete residual of continuous solution: ";
-    auto rnorms = getDiscreteResidualNorms( PDE_db->getScalar<double>( "h" ), A, uexactVec, fsourceVec );
-    
+    AOp->residual( fsourceVec, uexactVec, rexactVec );
+    auto rnorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), rexactVec );
+    // Print residual norms
+    AMP::pout << "||r|| = (" << rnorms[0] << ", " << rnorms[1] << ", " << rnorms[2] << ")" << std::endl;
+
     
     /****************************************************************
     * Construct linear solver of the LinearOperator and apply it    *
@@ -951,7 +866,10 @@ void driver(AMP::AMP_MPI comm,
     
     // Compute disretization error
     AMP::pout << "\nDiscretization error post linear solve: "; 
-    auto enorms = getDiscreteErrorNorms( PDE_db->getScalar<double>( "h" ), uexactVec, unumVec );
+    auto e = uexactVec->clone();
+    e->axpy(-1.0, *unumVec, *uexactVec); 
+    auto enorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), e );
+    AMP::pout << "||e|| = (" << enorms[0] << ", " << enorms[1] << ", " << enorms[2] << ")" << std::endl;
 
 }
 // end of driver()
@@ -1014,354 +932,3 @@ int main( int argc, char **argv )
 
     return 0;
 }
-
-
-// Some other code:
-
-// --- Example of how to read in mesh file from input
-// AMP_INSIST( argc == 2, "Usage is:  createmesh  inputFile" );
-// std::string filename( argv[1] );
-// AMP::pout << "the filename is " << filename << "\n";
-//createBoxMesh( filename );
-//void createBoxMesh( const std::string &input_file )
-// // Read the input file
-// auto input_db = AMP::Database::parseInputFile( input_file );
-// // Get the Mesh database and create the mesh parameters
-// auto database = input_db->getDatabase( "Mesh" )->getDatabase( "Mesh_1" );
-//auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
-//params->setComm( globalComm );
-// // Create the meshes from the input database
-// //auto mesh = AMP::Mesh::MeshFactory::create( params );
-
-
-// // --- Example of how to create a DB in on pass. 
-// std::vector<int> size = {4, 4};
-// std::vector<int> range = {0, 1, 0, 1};
-// auto myMeshDataBase = AMP::Database::create( 
-//     "name", "boxMeshData", 
-//     "MeshName", "myBoxMesh",
-//     "dim", 2,
-//     "Generator", "cube",
-//     "Size", size,
-//     "Range", range);
-// AMP::pout << "myDataBase = \n" << myMeshDataBase->print() << std::endl;
-// // Get the Mesh database and create the mesh parameters
-// //auto database = myMeshDataBase->getDatabase( "boxMeshData" );
-// // Create MeshParameters; note the input has to be a std::make_shared<AMP::DataBase>
-// auto myMeshParams   = std::make_shared<AMP::Mesh::MeshParameters>( database );
-// myMeshParams->setComm( comm );
-// // Create the mesh from the meshParameters
-// auto myBoxMesh = AMP::Mesh::BoxMesh( myMeshParams );
-
-
-// //--- Example showing how to iterate over elements on the mesh
-// elem is a pointer to a AMP::Mesh::MeshElement
-// for (auto elem = myMeshIterator.begin(); elem != myMeshIterator.end(); elem++) {
-
-//     //std::cout << "element class = " << elem->elementClass() << std::endl;
-
-//     // Get structure used to identify the mesh element
-//     AMP::Mesh::MeshElementID id = elem->globalID();
-
-//     // Understanding mesh object
-//     if (meshDim == 1) {
-//         std::cout << "Element " << id.local_id() << " on process " << elem->globalOwnerRank() << " has coord x=" << elem->coord(0) << std::endl;
-//     } else if (meshDim == 2) {
-//         std::cout << "Element " << id.local_id() << " on process " << elem->globalOwnerRank() << " has coords (x,y)=(" << elem->coord(0) << "," << elem->coord(1) << ")" << std::endl;
-//     }
-
-//     // TODO: I don't understand what this does... and it's influenced by gcw
-//     // std::cout << "\t rowDOFs are: ";
-//     // auto myRowDOFs = myDOFManager->getRowDOFs(id);
-//     // for (size_t DOF : myRowDOFs) {
-//     //    std::cout << DOF << " ";
-//     // }
-//     // std::cout << std::endl;
-// }
-
-
-
-// Example of function that returns col ids for a given row.. Note this isn't too robust because it relies on the assumption of how the underlying DOFs are ordered, and I don't really know this
-//auto getColumnIDs = std::bind(Laplacian1DColIDs, std::placeholders::_1, n);
-// Suppose there are n+1 DOFs, indexed 0, 1, ..., n. Here, DOF 0 and n are the boundary DOFs and will just have a non-zero diagonal.
-// std::vector<size_t> Laplacian1DColIDs(size_t row, size_t n) {
-//     std::vector<size_t> cols;
-//     if (row == 0) {
-//         cols.push_back(0);
-//     } else if (row == n) {
-//         cols.push_back(n);
-//     } else {
-//         cols.push_back(row-1);
-//         cols.push_back(row);
-//         cols.push_back(row+1);
-//     }
-//     return cols;
-// }
-
-
-// void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
-//                               std::shared_ptr<AMP::Discretization::DOFManager> dofmap )
-// {
-//     // Iterate through rows
-//     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-//         std::cout << "i = " << i << std::endl;
-//         // Get pointer to cols
-//         auto cols        = matrix->getColumnIDs( i );
-//         const auto ncols = cols.size();
-//         std::vector<double> vals( ncols );
-//         for ( size_t j = 0; j != ncols; j++ ) {
-//             std::cout << "\tj = " << j << std::endl;
-//             if ( cols[j] == i )
-//                 vals[j] = static_cast<double>( ncols );
-//             else
-//                 vals[j] = -1;
-//         }
-//         if ( ncols ) {
-//             matrix->setValuesByGlobalID<double>( 1, ncols, &i, cols.data(), vals.data() );
-//         }
-//     }
-// }
-
-
-// --------------------------------------------------------------------------------------
-// My first implementation for creating and filling matrices.
-//
-//
-// /* Fill matrix with stencil [-1,2-1]/h^2, expect in boundary rows where we put 1 */
-// void fillWith1DLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
-//                           std::shared_ptr<AMP::Discretization::DOFManager> dofmap,
-//                           const AMP::Database &PDE_db ) {
-
-//     auto h = PDE_db.getScalar<double>("h");
-//     double hrsq = 1.0/(h*h);
-//     // Iterate through rows in matrix
-//     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-//         // Get pointer to col indices
-//         auto cols        = matrix->getColumnIDs( i );
-//         const auto ncols = cols.size();
-//         // Create data array for this row
-//         std::vector<double> vals( ncols );
-//         // Iterate through all non-zero cols
-//         for ( size_t j = 0; j != ncols; j++ ) {
-//             // On diagonal
-//             if ( cols[j] == i )
-//                 if (ncols == 1) {
-//                     vals[j] = 1.0; // Put identity in boundary rows
-//                 } else {
-//                     vals[j] = 2 * hrsq;
-//                 }
-//             // Off diagonal
-//             else {
-//                 vals[j] = -1 * hrsq;
-//             }
-//         }
-//         if ( ncols ) {
-//             matrix->setValuesByGlobalID<double>( 1, ncols, &i, cols.data(), vals.data() );
-//         }
-//     }
-// }
-
-// /* Determine position of node1 relative to node0 in the sense of a 9-point stencil */
-// int stencil_connection_position( double h, AMP::Mesh::MeshElement node0, AMP::Mesh::MeshElement node1 )
-// {
-//     double x0 = node0.coord(0);
-//     double y0 = node0.coord(1);
-//     double x1 = node1.coord(0);
-//     double y1 = node1.coord(1);
-
-//     double abs_diff_tol = 0.1*h;
-
-//     // x1 < x0. Default
-//     int x_shift = -1;
-//     // x1 == x0
-//     if (AMP::Utilities::approx_equal_abs( x0, x1, abs_diff_tol )) { // if they are genuinely different, they should be so to ~h
-//         x_shift = 0;
-//     // x1 > x0 
-//     } else if ( x1 > x0 ) {
-//         x_shift = 1;
-//     }
-
-//     // y1 < y0. Default
-//     int y_shift = -1;
-//     // y1 == y0
-//     if (AMP::Utilities::approx_equal_abs( y0, y1, abs_diff_tol )) {
-//         y_shift = 0;
-//     // y1 > y0 
-//     } else if ( y1 > y0 ) {
-//         y_shift = 1;
-//     }
-
-//     int conn = -1;
-//     // South
-//     if (y_shift == -1) {
-//         if (x_shift == -1) {
-//             conn = 0;
-//         } else if (x_shift == 0) {
-//             conn = 1;
-//         } else {
-//             conn = 2;
-//         }
-//     // Center
-//     } else if (y_shift == 0) {
-//         if (x_shift == -1) {
-//             conn = 3;
-//         } else if (x_shift == 0) {
-//             conn = 4;
-//         } else {
-//             conn = 5;
-//         }
-//     // North
-//     } else {
-//         if (x_shift == -1) {
-//             conn = 6;
-//         } else if (x_shift == 0) {
-//             conn = 7;
-//         } else {
-//             conn = 8;
-//         }
-//     }
-//     return conn;
-// }
-
-// /* Get 9-point stencil for upwind FD disretization of rotated anisotropic 2D Poisson. Note this stencil doesn't include the 1/h^2 scaling */
-// std::map<int, double> getStencil2D(const AMP::Database &PDE_db) {
-    
-//     double eps   = PDE_db.getScalar<double>( "eps" );
-//     double theta = PDE_db.getScalar<double>( "theta" );
-
-//     double c     = cos(theta);
-//     double s     = sin(theta);
-
-//     // PDE coefficients
-//     double alpha = c*c + eps * s*s;
-//     double beta  = eps * c*c + s*s;
-//     double gamma = 2*(1 - eps) * c * s;
-//     gamma *= 0.5; // gamma only ever appears multiplied by 1/2, except at O.
-//     double NW = 0.0;
-//     double N  =           -   beta +   gamma; 
-//     double NE =                    -   gamma; 
-//     double W  = -   alpha          +   gamma; 
-//     double O  = + 2*alpha + 2*beta - 2*gamma; 
-//     double E  = -   alpha          +   gamma;
-//     double SW =                    -   gamma;
-//     double S  =           -   beta +   gamma;
-//     double SE = 0.0; 
-
-//     // Populate stencil
-//     std::map<int, double> stencil_map;
-//     stencil_map.insert( std::make_pair( 0, SW ) );
-//     stencil_map.insert( std::make_pair( 1, S  ) );
-//     stencil_map.insert( std::make_pair( 2, SE ) );
-//     stencil_map.insert( std::make_pair( 3, W  ) );
-//     stencil_map.insert( std::make_pair( 4, O  ) );
-//     stencil_map.insert( std::make_pair( 5, E  ) );
-//     stencil_map.insert( std::make_pair( 6, NW ) );
-//     stencil_map.insert( std::make_pair( 7, N  ) );
-//     stencil_map.insert( std::make_pair( 8, NE ) );
-
-//     return stencil_map;
-// }
-
-// /* Fill matrix with 9-point stencil */
-// void fillWith2DLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
-//                           std::shared_ptr<AMP::Discretization::DOFManager> dofmap,
-//                           const AMP::Database &PDE_db ) {    
-
-//     // Get 9-point stencil (doesn't include h scaling)
-//     auto stencil_map = getStencil2D( PDE_db );
-//     // Introduce 1/h^2 scaling 
-//     auto h = PDE_db.getScalar<double>("h");
-//     for ( auto &pair : stencil_map ) {
-//         pair.second *= 1.0/(h*h);
-//     }
-
-//     // Iterate through rows in matrix
-//     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-//         // Get pointer to col indices
-//         auto cols        = matrix->getColumnIDs( i );
-//         const auto ncols = cols.size();
-//         // Create data array for this row
-//         std::vector<double> vals( ncols );
-//         // Iterate through all non-zero cols
-
-//         // Put identity in boundary rows
-//         if (ncols == 1) {
-//             vals[0] = 1.0; 
-        
-//         // Otherwise consider all 9 connections
-//         } else {
-
-//             // Get element corresponding to diagonal element
-//             AMP::Mesh::MeshElement elem_i = dofmap->getElement( i );
-
-//             // First get position of element j relative to i, then select corresponding entry from the stencil and put into the data array.
-//             for ( size_t j = 0; j != ncols; j++ ) { 
-//                 AMP::Mesh::MeshElement elem_j = dofmap->getElement( cols[j] );
-//                 int offset = stencil_connection_position( h, elem_i, elem_j );
-//                 vals[j] = stencil_map[ offset ];
-//             }
-
-//         }
-//         // Insert data into matrix
-//         if ( ncols ) {
-//             matrix->setValuesByGlobalID<double>( 1, ncols, &i, cols.data(), vals.data() );
-//         }
-
-//         // std::cout << "Row " << i << " connections: "; 
-//         // for (auto d : vals)
-//         //     std::cout << d << " ";
-//         // std::cout << std::endl;
-
-//     }
-// }
-
-
-
-// /* Returns a map from a given DOF to the other DOFs that its immediately connected to in the mesh, unless it's a boundary point, then we pretend it's just connected to itself. 
-//     This code should work for any dimension where the stencil is just composed of nearest neighbors. 
-//     Given a MeshElementID, we can get the corresponding global ID from the DOFManager.
-//     For related code, see mesh/testHelpers/meshTests.cpp */
-// std::map<size_t, std::vector<size_t>> getLaplacianColIDs(
-//         std::shared_ptr<AMP::Mesh::BoxMesh> &myBoxMesh, 
-//         std::shared_ptr<AMP::Discretization::DOFManager> &myDOFManager) {
-
-//     // The map we will construct, from a global DOF to its nearest neighbors
-//     std::map<size_t, std::vector<size_t>> stencil_cons;
-
-//     auto nodeIterator = myBoxMesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-//     // Get a list of all neighors for each local node
-//     for ( auto &node : nodeIterator ) {
-
-//         // Get my id 
-//         std::vector<AMP::Mesh::MeshElementID> con_ids;
-//         con_ids.push_back( node.globalID() );
-
-//         // Get id's of neighbors, provided I'm an interior point (for boundary points we only include the above self connection)
-//         auto nbors = node.getNeighbors();
-//         if (!node.isOnSurface()) {    
-//             for ( auto &nbor : nbors ) {
-//                 if (nbor)
-//                     con_ids.push_back( nbor->globalID() );
-//             }
-//         }
-
-//         // Get my global(!) index and those of my neighbors
-//         std::vector<size_t> con_dofs;
-//         myDOFManager->getDOFs(con_ids, con_dofs);
-
-//         // Associate these indices with mine in the map 
-//         auto entry = std::make_pair( con_dofs[0], con_dofs );
-//         stencil_cons.insert( entry );
-        
-//     }
-
-//     // // Debug statements
-//     // for (int i = 0; i < stencil_cons.size(); i++) {
-//     // std::cout << "DOF " << i << " connects to: ";
-//     //     for (auto j : stencil_cons[i])
-//     //         std::cout << j << " ";
-//     //     std::cout << std::endl;
-//     // }
-
-//     return stencil_cons;
-// }
