@@ -5,9 +5,9 @@ import sympy as sym
 def main():
 
     # Just uncomment whichever one you want to use.
-    poisson_1D()
-    poisson_2D()
-    #poisson_3D()
+    #poisson_1D()
+    #poisson_2D()
+    poisson_3D()
     
 
 def cxx_print(u, f):
@@ -54,18 +54,18 @@ def poisson_2D():
     cxx_print(u, LU)
 
 
-# 3D equation with anisotropy epsilon in the z direction
+# 3D equation with anisotropy epsilony in the y direction and epsilonz in the z direction
 def poisson_3D():
 
-    x, y, z, epsilon = sym.symbols('x y z epsilon')
+    x, y, z, epsilony, epsilonz = sym.symbols('x y z epsilony epsilonz')
 
     # Exact solution
     u = ( sym.sin(2 * sym.pi * x) * sym.sin(4 * sym.pi * y) * sym.sin(6 * sym.pi * z) )
 
     # Differential operator applied to exact solution
     LU = -sym.diff( sym.diff(u, x), x) \
-         -sym.diff( sym.diff(u, y), y) \
-         -epsilon*sym.diff( sym.diff(u, z), z)
+         -epsilony*sym.diff( sym.diff(u, y), y) \
+         -epsilonz*sym.diff( sym.diff(u, z), z)
     
     print("\n\n3D Poisson problem:")
     cxx_print(u, LU)
