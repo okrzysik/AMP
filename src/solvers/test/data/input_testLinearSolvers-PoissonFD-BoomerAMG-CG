@@ -14,11 +14,23 @@
 
 # 3D Example
 PDE{
-    dim  = 3
-    n    = 32
-    epsy = 1e-2
-    epsz = 1e-1
+    dim   = 3
+    n     = 64
+    theta = 0.1234
+    phi   = 0.5462
+    psi   = 0.9843
+    epsy  = 1e-2
+    epsz  = 1e-1
 }
+
+
+# # 3D Example
+# PDE{
+#     dim  = 3
+#     n    = 64
+#     epsy = 1e-2
+#     epsz = 1e-1
+# }
 
 LinearSolver{
     name = "CGSolver"
