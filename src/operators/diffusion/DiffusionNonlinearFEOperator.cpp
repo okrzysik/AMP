@@ -307,8 +307,11 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
     AMP::LinearAlgebra::Vector::const_shared_ptr u )
 {
     auto db = std::make_shared<AMP::Database>( "Dummy" );
-    AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto u_meshVec = u->select( meshSelector );
+    AMP::LinearAlgebra::Vector::const_shared_ptr u_meshVec;
+    if ( u ) {
+        AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
+        u_meshVec = u->select( meshSelector );
+    }
 
     // set up a database for the linear operator params
     db->putScalar( "name", "DiffusionLinearFEOperator" );
@@ -342,10 +345,9 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
         if ( data.isFrozen ) {
             outParams->d_inputVecs[name] =
                 std::const_pointer_cast<AMP::LinearAlgebra::Vector>( data.frozen );
-        } else {
+        } else if ( u_meshVec ) {
             auto vec = std::const_pointer_cast<AMP::LinearAlgebra::Vector>(
                 u_meshVec->subsetVectorForVariable( name ) );
-            vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             outParams->d_inputVecs[name] = vec;
         }
     }

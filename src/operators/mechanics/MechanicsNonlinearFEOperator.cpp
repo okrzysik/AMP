@@ -46,11 +46,10 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     }
 
     if ( d_useUpdatedLagrangian ) {
-        AMP_INSIST( ( ( d_mechNULElem.get() ) != nullptr ),
+        AMP_INSIST( d_mechNULElem,
                     "d_elemOp is not of type MechanicsNonlinearUpdatedLagrangianElement" );
     } else {
-        AMP_INSIST( ( ( d_mechNonlinElem.get() ) != nullptr ),
-                    "d_elemOp is not of type MechanicsNonlinearElement" );
+        AMP_INSIST( d_mechNonlinElem, "d_elemOp is not of type MechanicsNonlinearElement" );
     }
 
     d_materialModel = params->d_materialModel;
@@ -100,7 +99,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
             auto dummyVar       = std::make_shared<AMP::LinearAlgebra::Variable>( varName );
             d_inpVariables->setVariable( i, dummyVar );
             if ( d_isFrozen[i] ) {
-                if ( params->d_FrozenVec[i] != nullptr ) {
+                if ( params->d_FrozenVec[i] ) {
                     setVector( i, params->d_FrozenVec[i] );
                 }
             }
@@ -125,7 +124,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
         }
     }
 
-    if ( params->d_ReferenceTemperature != nullptr ) {
+    if ( params->d_ReferenceTemperature ) {
         setReferenceTemperature( params->d_ReferenceTemperature );
     }
 
@@ -139,7 +138,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
 void MechanicsNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                 std::shared_ptr<AMP::LinearAlgebra::Vector> r )
 {
-    AMP_INSIST( ( u != nullptr ), "NULL Input Vector" );
+    AMP_INSIST( u, "NULL Input Vector" );
 
     if ( !d_isInitialized ) {
         init();
@@ -287,7 +286,7 @@ void MechanicsNonlinearFEOperator::postElementOperation()
             d_outVec->addValuesByGlobalID(
                 1, &d_dofIndices[r][d], &d_elementOutputVector[( 3 * r ) + d] );
         } // end for d
-    }     // end for r
+    } // end for r
 }
 
 void MechanicsNonlinearFEOperator::init()
@@ -346,7 +345,7 @@ void MechanicsNonlinearFEOperator::init()
                     d_refXYZ->setValuesByGlobalID(
                         1, &d_dofIndices[j][i], &elementRefXYZ[( 3 * j ) + i] );
                 } // end for i
-            }     // end for j
+            } // end for j
         }
 
     } // end for el
@@ -370,7 +369,7 @@ void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
     auto myParams =
         std::dynamic_pointer_cast<const MechanicsNonlinearFEOperatorParameters>( params );
 
-    AMP_INSIST( ( ( myParams.get() ) != nullptr ), "Null parameter!" );
+    AMP_INSIST( myParams, "Null parameter!" );
 
     if ( d_resetReusesRadialReturn ) {
         d_materialModel->globalReset();
@@ -381,27 +380,27 @@ void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
         setVector( Mechanics::DISPLACEMENT, myParams->d_EquilibriumVec[Mechanics::DISPLACEMENT] );
 
         if ( d_isActive[Mechanics::TEMPERATURE] ) {
-            if ( myParams->d_EquilibriumVec[Mechanics::TEMPERATURE] != nullptr ) {
+            if ( myParams->d_EquilibriumVec[Mechanics::TEMPERATURE] ) {
                 setVector( Mechanics::TEMPERATURE,
                            myParams->d_EquilibriumVec[Mechanics::TEMPERATURE] );
             }
         }
 
         if ( d_isActive[Mechanics::BURNUP] ) {
-            if ( myParams->d_EquilibriumVec[Mechanics::BURNUP] != nullptr ) {
+            if ( myParams->d_EquilibriumVec[Mechanics::BURNUP] ) {
                 setVector( Mechanics::BURNUP, myParams->d_EquilibriumVec[Mechanics::BURNUP] );
             }
         }
 
         if ( d_isActive[Mechanics::OXYGEN_CONCENTRATION] ) {
-            if ( myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION] != nullptr ) {
+            if ( myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION] ) {
                 setVector( Mechanics::OXYGEN_CONCENTRATION,
                            myParams->d_EquilibriumVec[Mechanics::OXYGEN_CONCENTRATION] );
             }
         }
 
         if ( d_isActive[Mechanics::LHGR] ) {
-            if ( myParams->d_EquilibriumVec[Mechanics::LHGR] != nullptr ) {
+            if ( myParams->d_EquilibriumVec[Mechanics::LHGR] ) {
                 setVector( Mechanics::LHGR, myParams->d_EquilibriumVec[Mechanics::LHGR] );
             }
         }
@@ -440,7 +439,7 @@ void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
     for ( unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++ ) {
         if ( d_isActive[i] ) {
             if ( d_isFrozen[i] ) {
-                if ( myParams->d_FrozenVec[i] != nullptr ) {
+                if ( myParams->d_FrozenVec[i] ) {
                     setVector( i, myParams->d_FrozenVec[i] );
                 }
             }
@@ -451,12 +450,10 @@ void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
 std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianParameters(
     AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
-    if ( !d_isInitialized ) {
+    if ( !d_isInitialized )
         init();
-    }
 
-    AMP::LinearAlgebra::Vector::shared_ptr u =
-        std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
+    auto u = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
 
     // set up a database for the linear operator params
     auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
@@ -662,7 +659,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain(
                     }
                 }
             } // end for i
-        }     // end for r
+        } // end for r
 
         d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                        d_materialModel );
@@ -739,7 +736,7 @@ void MechanicsNonlinearFEOperator::updateMaterialForElementCommonFunction(
                 }
             }
         } // end for i
-    }     // end for r
+    } // end for r
 
     if ( d_useUpdatedLagrangian ) {
         d_mechNULElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
