@@ -25,6 +25,16 @@ ThermalLinearBVPOperator {
    BoundaryOperator="DirichletMatrixCorrection"
 }
 
+DiffusionTransportModel {
+	     name = "DiffusionTransportModel"
+	     Material = "Independent"
+	     Property = "ThermalDiffusionCoefficient"
+	     print_info_level = 3 
+	     Default_Concentration = .15
+	     Default_Temperature   = 300.
+	     Default_Burnup   = 0.0
+}
+
 DiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
 	 InputVariable="temperature"
@@ -35,7 +45,7 @@ DiffusionNonlinearFEOperator{
 	   temperature="temperature"
 	 }
 	 PrincipalVariable = "temperature"
-         LocalModel = "DiffusionTransportModel"
+         LocalModel = DiffusionTransportModel
 	
 	 DiffusionElement {
 	      name = "DiffusionNonlinearElement"
@@ -86,12 +96,3 @@ DirichletVectorCorrection{
      value_0_0        = 500.
    }
 
-DiffusionTransportModel {
-	     name = "DiffusionTransportModel"
-	     Material = "Independent"
-	     Property = "ThermalDiffusionCoefficient"
-	     print_info_level = 3 
-	     Default_Concentration = .15
-	     Default_Temperature   = 300.
-	     Default_Burnup   = 0.0
-}

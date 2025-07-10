@@ -88,6 +88,17 @@ NonlinearSolver{
     }
 }
 
+MechanicsMaterialModel {
+        USE_MATERIALS_LIBRARY = FALSE
+          Material = ""
+          name = "IsotropicElasticModel"
+          Youngs_Modulus = 100.0
+          Poissons_Ratio = 0.0
+          Default_Temperature = 0.0
+          Default_Burnup = 0.0
+          Default_Oxygen_Concentration = 0.0
+      }
+
 MechanicsNonlinearFEOperator{
       name = "MechanicsNonlinearFEOperator"
         print_info_level = 3
@@ -106,7 +117,7 @@ MechanicsNonlinearFEOperator{
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }
-	LocalModel = "MechanicsMaterialModel"
+	LocalModel = MechanicsMaterialModel
     }
 
 DirichletVectorCorrection{
@@ -195,14 +206,3 @@ MechanicsLinearFEOperator{
         }
     }
 
-
-MechanicsMaterialModel {
-        USE_MATERIALS_LIBRARY = FALSE
-          Material = ""
-          name = "IsotropicElasticModel"
-          Youngs_Modulus = 100.0
-          Poissons_Ratio = 0.0
-          Default_Temperature = 0.0
-          Default_Burnup = 0.0
-          Default_Oxygen_Concentration = 0.0
-      }

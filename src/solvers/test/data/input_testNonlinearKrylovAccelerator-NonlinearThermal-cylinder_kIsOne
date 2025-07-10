@@ -11,6 +11,23 @@ Mesh{
 
 NumberOfLoadingSteps = 1
 
+DiffusionTransportModel1{
+  name = "DiffusionTransportModel"
+    Material = "Independent"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+} 
+DiffusionTransportModel2{
+  name = "DiffusionTransportModel"
+    Material = "Independent"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+} 
+
 testNonlinearThermalOperator {
   name="NonlinearBVPOperator"
     VolumeOperator = "DiffusionNonlinearFEOperator1"
@@ -33,7 +50,7 @@ DiffusionNonlinearFEOperator1 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 DirichletVectorCorrection1 {
   name = "DirichletVectorCorrection"
@@ -48,14 +65,6 @@ DirichletVectorCorrection1 {
     dof_1_0 = 0
     value_1_0 = 0.
 }
-DiffusionTransportModel1{
-  name = "DiffusionTransportModel"
-    Material = "Independent"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
-} 
 
 testLinearThermalOperator {
   name = "LinearBVPOperator"
@@ -81,7 +90,7 @@ DiffusionLinearFEOperator2 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel2"
+  LocalModel = DiffusionTransportModel2
 }
 DirichletMatrixCorrection2 {
   name = "DirichletMatrixCorrection"
@@ -95,14 +104,7 @@ DirichletMatrixCorrection2 {
     number_of_dofs_1 = 1
     dof_1_0 = 0
 }
-DiffusionTransportModel2{
-  name = "DiffusionTransportModel"
-    Material = "Independent"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
-} 
+
 
 ThermalInitialGuess {
   name = "DirichletVectorCorrection"

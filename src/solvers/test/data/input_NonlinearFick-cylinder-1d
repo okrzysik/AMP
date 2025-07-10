@@ -16,6 +16,15 @@ testNonlinearFickOperator {
     BoundaryOperator = "DirichletVectorCorrection1"
 }
 
+DiffusionTransportModel1{
+        name = "DiffusionCylindricalTransportModel"
+        Material = "CylindricallySymmetric"
+        Property = "ScalarRadialFick"
+ 		RadiusArgument = "radius"
+ 		// coefficients for the polynomial 1. + 100 r (1 - r) (r - .2) (r - .52) (r - .63) (r - .8)
+        Parameters =  1., 5.2416, -56.4016, 214.92, -378.76, 315.0, -100.
+} 
+
 DiffusionNonlinearFEOperator1 {
       name = "DiffusionNonlinearFEOperator" 
         print_info_level = 0
@@ -34,7 +43,7 @@ DiffusionNonlinearFEOperator1 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "DiffusionTransportModel1"
+	LocalModel = DiffusionTransportModel1
 }
 	
 DirichletVectorCorrection1 {
@@ -53,14 +62,6 @@ DirichletVectorCorrection1 {
       value_1_0        = .05
   }
 
-DiffusionTransportModel1{
-        name = "DiffusionCylindricalTransportModel"
-        Material = "CylindricallySymmetric"
-        Property = "ScalarRadialFick"
- 		RadiusArgument = "radius"
- 		// coefficients for the polynomial 1. + 100 r (1 - r) (r - .2) (r - .52) (r - .63) (r - .8)
-        Parameters =  1., 5.2416, -56.4016, 214.92, -378.76, 315.0, -100.
-} 
 
 testLinearFickOperator {
     name = "LinearBVPOperator"
@@ -87,7 +88,7 @@ DiffusionLinearFEOperator2 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "DiffusionTransportModel1"
+	LocalModel = DiffusionTransportModel1
 }
 	
 DirichletMatrixCorrection2 {

@@ -27,6 +27,17 @@ testLinearMechanicsOperator {
 
 }
 
+MechanicsMaterialModel { 
+       USE_MATERIALS_LIBRARY = TRUE
+       Material = "UO2_MSRZC_09"
+       name="ThermalSwellingDensificationElasticity"
+       Use_Thermal_Strain = TRUE
+       Use_Densification_Strain = TRUE
+       Default_Temperature = 310.0
+       Default_Burnup = 0.5
+       Default_Oxygen_Concentration = 0.01
+     }
+
 MechanicsNonlinearFEOperator{
      name = "MechanicsNonlinearFEOperator"
      print_info_level = 1
@@ -50,7 +61,7 @@ MechanicsNonlinearFEOperator{
        QRULE_ORDER = "DEFAULT"
      }
 
-     LocalModel = "MechanicsMaterialModel"
+     LocalModel = MechanicsMaterialModel
 
    }
 
@@ -112,15 +123,5 @@ DirichletMatrixCorrection{
      dof_1_2 = 2
 }
 
-MechanicsMaterialModel { 
-       USE_MATERIALS_LIBRARY = TRUE
-       Material = "UO2_MSRZC_09"
-       name="ThermalSwellingDensificationElasticity"
-       Use_Thermal_Strain = TRUE
-       Use_Densification_Strain = TRUE
-       Default_Temperature = 310.0
-       Default_Burnup = 0.5
-       Default_Oxygen_Concentration = 0.01
-     }
 
 

@@ -16,6 +16,29 @@ testNonlinearThermalOperator {
     BoundaryOperator = "DirichletVectorCorrection1"
 }
 
+DiffusionTransportModel1{
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 750.
+    Default_Burnup   = 0.0
+    UseBilogScaling = TRUE
+    BilogVariable = "concentration"
+    BilogScaleCoefficient = FALSE
+} 
+
+DiffusionTransportModel3{
+  name = "DiffusionTransportModel"
+    Material = "Ox_MSRZC_09"
+    Property = "FickCoefficient"
+    Default_Concentration = .1
+    Default_Temperature   = 750.
+    Default_Burnup   = 0.0
+    UseBilogScaling = TRUE
+    BilogVariable = "concentration"
+} 
+
 DiffusionNonlinearFEOperator1 {
   name = "DiffusionNonlinearFEOperator" 
     print_info_level = 1
@@ -35,7 +58,7 @@ DiffusionNonlinearFEOperator1 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 DirichletVectorCorrection1 {
@@ -49,18 +72,6 @@ DirichletVectorCorrection1 {
     dof_0_0 = 0
     value_0_0 = 750
 }
-
-DiffusionTransportModel1{
-  name = "DiffusionTransportModel"
-    Material = "UO2_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 750.
-    Default_Burnup   = 0.0
-    UseBilogScaling = TRUE
-    BilogVariable = "concentration"
-    BilogScaleCoefficient = FALSE
-} 
 
 testLinearThermalOperator {
   name = "LinearBVPOperator"
@@ -87,7 +98,7 @@ DiffusionLinearFEOperator2 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 DirichletMatrixCorrection2 {
@@ -127,7 +138,7 @@ DiffusionNonlinearFEOperator3 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel3"
+  LocalModel = DiffusionTransportModel3
 }
 
 DirichletVectorCorrection3 {
@@ -141,17 +152,6 @@ DirichletVectorCorrection3 {
     dof_0_0 = 0
     value_0_0 = 0.01
 }
-
-DiffusionTransportModel3{
-  name = "DiffusionTransportModel"
-    Material = "Ox_MSRZC_09"
-    Property = "FickCoefficient"
-    Default_Concentration = .1
-    Default_Temperature   = 750.
-    Default_Burnup   = 0.0
-    UseBilogScaling = TRUE
-    BilogVariable = "concentration"
-} 
 
 testLinearOxygenOperator {
   name = "LinearBVPOperator"
@@ -178,7 +178,7 @@ DiffusionLinearFEOperator4 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel3"
+  LocalModel = DiffusionTransportModel3
 }
 
 DirichletMatrixCorrection4 {

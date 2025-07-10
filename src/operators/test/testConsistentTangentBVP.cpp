@@ -167,7 +167,6 @@ int testConsistentTangentBVP( int argc, char *argv[] )
     exeNames.emplace_back( "testConsistentTangentBVP-2-mesh1-normal" );
     exeNames.emplace_back( "testConsistentTangentBVP-3-mesh1-normal" );
     exeNames.emplace_back( "testConsistentTangentBVP-4-mesh1-normal" );
-
     exeNames.emplace_back( "testConsistentTangentBVP-4-mesh1-reduced" );
 
     for ( int j = 0; j < 2; j++ ) {

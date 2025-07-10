@@ -79,6 +79,19 @@ LinearMechanicsElement {
     QRULE_ORDER = "DEFAULT"
 }
 
+MechanicsMaterialModel {
+        name="ThermalStrainMaterialModel"
+          USE_MATERIALS_LIBRARY = FALSE
+          Material = ""
+          Youngs_Modulus = 1.0e6
+          Poissons_Ratio = 0.0
+          THERMAL_EXPANSION_COEFFICIENT = 1.0e-8
+          THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
+          Default_Oxygen_Concentration = 0.0
+          Default_Temperature = 0.0
+          Default_Burnup = 0.0
+      }
+
 MechanicsNonlinearFEOperator{
       name = "MechanicsNonlinearFEOperator"
         print_info_level = 1
@@ -100,7 +113,7 @@ MechanicsNonlinearFEOperator{
             QRULE_ORDER = "DEFAULT"
         }
         MechanicsLinearElement = LinearMechanicsElement
-	LocalModel = "MechanicsMaterialModel"
+	LocalModel = MechanicsMaterialModel
     }
 
 DirichletVectorCorrection{
@@ -264,16 +277,3 @@ DirichletMatrixCorrection{
       dof_7_2 = 2
   }
 
-
-MechanicsMaterialModel {
-        name="ThermalStrainMaterialModel"
-          USE_MATERIALS_LIBRARY = FALSE
-          Material = ""
-          Youngs_Modulus = 1.0e6
-          Poissons_Ratio = 0.0
-          THERMAL_EXPANSION_COEFFICIENT = 1.0e-8
-          THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
-          Default_Oxygen_Concentration = 0.0
-          Default_Temperature = 0.0
-          Default_Burnup = 0.0
-      }

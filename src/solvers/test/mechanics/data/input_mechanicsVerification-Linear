@@ -143,6 +143,13 @@ DirichletMatrixCorrection{
     dof_5_2 = 2
 }
 
+MechanicsMaterialModel {
+  name="IsotropicElasticModel"
+    USE_MATERIALS_LIBRARY = FALSE
+    Youngs_Modulus = 2.08e11
+    Poissons_Ratio = 0.0 //0.23
+}
+
 MechanicsLinearFEOperator{
   name="MechanicsLinearFEOperator"
     print_info_level = 1
@@ -158,12 +165,6 @@ MechanicsLinearFEOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }
-  LocalModel = "MechanicsMaterialModel"
+  LocalModel = MechanicsMaterialModel
 }
 
-MechanicsMaterialModel {
-  name="IsotropicElasticModel"
-    USE_MATERIALS_LIBRARY = FALSE
-    Youngs_Modulus = 2.08e11
-    Poissons_Ratio = 0.0 //0.23
-}

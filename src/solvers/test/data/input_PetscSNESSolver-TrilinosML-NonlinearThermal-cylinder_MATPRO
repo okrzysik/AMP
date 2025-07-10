@@ -23,28 +23,6 @@ NeutronicsOperator{
     print_info_level   = 3
 }
 
-VolumeIntegralOperator{
-  name="VolumeIntegralOperator"
-    InputVariableType = "IntegrationPointScalar"
-    Number_Active_Variables = 1
-    Number_Auxillary_Variables = 0
-    ConstantSource   = FALSE
-    ActiveInputVariables{
-      ActiveVariable_0 = "SpecificPowerInWattsPerKiloGram" 
-    }
-  OutputVariable = "heatsource"
-    print_info_level = 0
-    LocalModel = "SourcePhysicsModel"
-    SourceElement {
-      name="SourceNonlinearElement"
-        print_info_level = 3
-        FE_ORDER = "FIRST"  
-        FE_FAMILY = "LAGRANGE"
-        QRULE_TYPE = "QGAUSS"
-        QRULE_ORDER = "DEFAULT"
-    }
-}
-
 SourcePhysicsModel {
   name = "SourcePhysicsModel"
     Material = "UO2_MSRZC_09"
@@ -56,6 +34,36 @@ SourcePhysicsModel {
     Default_Burnup   = 0.0
 }
 
+DiffusionTransportModel1{
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+} 
+
+VolumeIntegralOperator{
+  name="VolumeIntegralOperator"
+    InputVariableType = "IntegrationPointScalar"
+    Number_Active_Variables = 1
+    Number_Auxillary_Variables = 0
+    ConstantSource   = FALSE
+    ActiveInputVariables{
+      ActiveVariable_0 = "SpecificPowerInWattsPerKiloGram" 
+    }
+  OutputVariable = "heatsource"
+    print_info_level = 0
+    LocalModel = SourcePhysicsModel
+    SourceElement {
+      name="SourceNonlinearElement"
+        print_info_level = 3
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+}
 
 NumberOfLoadingSteps = 1
 
@@ -84,7 +92,7 @@ DiffusionNonlinearFEOperator1 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 DirichletVectorCorrection1 {
@@ -100,14 +108,6 @@ DirichletVectorCorrection1 {
     value_0_0        = 557.2
 }
 
-DiffusionTransportModel1{
-  name = "DiffusionTransportModel"
-    Material = "UO2_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 557.2
-    Default_Burnup   = 0.0
-} 
 
 testLinearThermalOperator {
   name = "LinearBVPOperator"
@@ -134,7 +134,7 @@ DiffusionLinearFEOperator2 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 DirichletMatrixCorrection2 {

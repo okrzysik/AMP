@@ -8,29 +8,9 @@ Mesh {
     surfaceIds = 8, 8, 8, 8, 8, 8
     static = TRUE
 }
+
 PowerShape{
   print_info_level = 3
-}
-VolumeIntegralOperator{
-  name="VolumeIntegralOperator"
-  InputVariableType = "IntegrationPointScalar"
-  Number_Active_Variables = 1
-  Number_Auxillary_Variables = 0
-  ConstantSource   = FALSE
-  ActiveInputVariables{
-  }
-  OutputVariable = "heatsource"
-  print_info_level = 3
-  LocalModel = "SourcePhysicsModel"
-
-  SourceElement {
-    name="SourceNonlinearElement"
-    print_info_level = 3
-    FE_ORDER = "FIRST"  
-    FE_FAMILY = "LAGRANGE"
-    QRULE_TYPE = "QGAUSS"
-    QRULE_ORDER = "DEFAULT"
-  }
 }
 
 SourcePhysicsModel {
@@ -43,3 +23,26 @@ SourcePhysicsModel {
     Default_Temperature   = 300.
     Default_Burnup   = 0.0
 }
+
+VolumeIntegralOperator{
+  name="VolumeIntegralOperator"
+  InputVariableType = "IntegrationPointScalar"
+  Number_Active_Variables = 1
+  Number_Auxillary_Variables = 0
+  ConstantSource   = FALSE
+  ActiveInputVariables{
+  }
+  OutputVariable = "heatsource"
+  print_info_level = 3
+  LocalModel = SourcePhysicsModel
+
+  SourceElement {
+    name="SourceNonlinearElement"
+    print_info_level = 3
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+  }
+}
+

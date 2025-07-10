@@ -11,6 +11,28 @@ Mesh{
 
 LengthScale = 13.e-3
 
+FickDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+          Material = "Ox_MSRZC_09"
+          Property = "FickCoefficient"
+          Default_Concentration = -2.9444389791664407
+          Default_Temperature   = 300.
+          Default_Burnup   = 0.0
+          UseBilogScaling = TRUE
+          BilogVariable = "concentration"
+      } 
+
+SoretDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Ox_MSRZC_09"
+        Property = "ThermalDiffusionCoefficient"
+        Default_Concentration = -2.9444389791664407
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+        UseBilogScaling = TRUE
+        BilogVariable = "concentration"
+      } 
+
 testNonlinearFickSoretBVPOperator {
   name="NonlinearBVPOperator"
   print_info_level = 3
@@ -41,7 +63,7 @@ FickSoretNonlinearFEOperator1 {
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }    
-	LocalModel = "FickDiffusionTransportModel"
+	LocalModel = FickDiffusionTransportModel
     }
     
     SoretOperator {
@@ -64,7 +86,7 @@ FickSoretNonlinearFEOperator1 {
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
       }    
-      LocalModel = "SoretDiffusionTransportModel"
+      LocalModel = SoretDiffusionTransportModel
     }
   }
   DirichletVectorCorrection1 {
@@ -104,7 +126,7 @@ DiffusionLinearFEOperator2 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "FickDiffusionTransportModel"
+	LocalModel = FickDiffusionTransportModel
     }
 
 DirichletMatrixCorrection2 {
@@ -155,24 +177,3 @@ NonlinearSolver{
     }
 }
 
-FickDiffusionTransportModel{
-        name = "DiffusionTransportModel"
-          Material = "Ox_MSRZC_09"
-          Property = "FickCoefficient"
-          Default_Concentration = -2.9444389791664407
-          Default_Temperature   = 300.
-          Default_Burnup   = 0.0
-          UseBilogScaling = TRUE
-          BilogVariable = "concentration"
-      } 
-
-SoretDiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "Ox_MSRZC_09"
-        Property = "ThermalDiffusionCoefficient"
-        Default_Concentration = -2.9444389791664407
-        Default_Temperature   = 300.
-        Default_Burnup   = 0.0
-        UseBilogScaling = TRUE
-        BilogVariable = "concentration"
-      } 

@@ -8,6 +8,15 @@ testOperator {
    BoundaryOperator="DirichletMatrixCorrection"
 }
 
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "ThermalDiffusionCoefficient"
+        Default_Concentration = .1
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+    } 
+
 DiffusionLinearFEOperator{
     name = "DiffusionLinearFEOperator"
     InputVariable = "temperature"
@@ -26,7 +35,7 @@ DiffusionLinearFEOperator{
         QRULE_ORDER = "DEFAULT"
     }    
 
-    LocalModel="DiffusionTransportModel"
+    LocalModel=DiffusionTransportModel
 }
 
 DirichletMatrixCorrection{
@@ -41,12 +50,4 @@ DirichletMatrixCorrection{
     value_0_0        = 300.
   }
 
-DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "Independent"
-        Property = "ThermalDiffusionCoefficient"
-        Default_Concentration = .1
-        Default_Temperature   = 300.
-        Default_Burnup   = 0.0
-    } 
 

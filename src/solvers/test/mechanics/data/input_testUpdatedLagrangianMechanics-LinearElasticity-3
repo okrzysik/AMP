@@ -18,6 +18,24 @@ NonlinearMechanicsOperator {
     BoundaryOperator = "DirichletVectorCorrection1"
 }
 
+VonMisesElastoPlasticModel1 {
+    USE_MATERIALS_LIBRARY = FALSE
+    USE_CONTINUUM_TANGENT = FALSE
+    USE_UPDATED_LAGRANGIAN = TRUE
+    USE_JAUMANN_RATE = FALSE
+    print_info_level = 6
+    Material = ""
+    //name = "VonMisesElastoPlasticModel"
+    name = "IsotropicElasticModel"
+    Youngs_Modulus = 1.0e2
+    Poissons_Ratio = 0.3
+    Linear_Strain_Hardening = 5.0
+    Elastic_Yield_Stress = 0.1
+    Default_Temperature = 0.0
+    Default_Burnup = 0.0
+    Default_Oxygen_Concentration = 0.0
+}
+
 MechanicsNonlinearFEOperator1 {
       name = "MechanicsNonlinearFEOperator"
         print_info_level = 3
@@ -39,7 +57,7 @@ MechanicsNonlinearFEOperator1 {
             QRULE_ORDER = "DEFAULT"
         }
 
-	LocalModel = "VonMisesElastoPlasticModel1"
+	LocalModel = VonMisesElastoPlasticModel1
 }
 
 DirichletVectorCorrection1 {
@@ -60,24 +78,6 @@ DirichletVectorCorrection1 {
       value_0_1 = 0.0
       value_0_2 = 0.0
   }
-
-VonMisesElastoPlasticModel1 {
-        USE_MATERIALS_LIBRARY = FALSE
-        USE_CONTINUUM_TANGENT = FALSE
-        USE_UPDATED_LAGRANGIAN = TRUE
-        USE_JAUMANN_RATE = FALSE
-        print_info_level = 6
-          Material = ""
-          //name = "VonMisesElastoPlasticModel"
-          name = "IsotropicElasticModel"
-          Youngs_Modulus = 1.0e2
-          Poissons_Ratio = 0.3
-          Linear_Strain_Hardening = 5.0
-          Elastic_Yield_Stress = 0.1
-          Default_Temperature = 0.0
-          Default_Burnup = 0.0
-          Default_Oxygen_Concentration = 0.0
-      }
 
 LinearMechanicsOperator {
   name="LinearBVPOperator"

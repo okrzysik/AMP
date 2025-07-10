@@ -9,6 +9,42 @@ Mesh{
     static = TRUE
 }
 
+SourcePhysicsModel {
+    name = "SourcePhysicsModel"
+    Equation="ThermalSource"
+    Material = "UO2_MSRZC_09"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    USE_MATERIALS_LIBRARY = TRUE 
+    BilogScaleCoefficient = FALSE
+}
+
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Property = "ThermalConductivity"
+        Material = "UO2_MSRZC_09"
+        Default_Concentration = .1
+        Default_Temperature   = 750.
+        Default_Burnup   = 0.0
+//        UseBilogScaling = TRUE
+//        BilogVariable = "concentration"
+//        BilogScaleCoefficient = FALSE
+       BilogScaleCoefficient = FALSE
+} 
+
+MassDensityModel{
+        name = "MassDensityModel"
+        Material = "UO2_MSRZC_09"
+        Equation = "Thermal"
+        Property = "ThermalConductivity"
+        Default_Concentration = .1
+        Default_Temperature   = 750.
+        Default_Burnup   = 0.0
+//        UseBilogScaling = TRUE
+//        BilogVariable = "concentration"
+       BilogScaleCoefficient = FALSE
+       print_info_level = 3
+}
+
 NeutronicsOperator{
     name="NeutronicsRhsOperator"
     type               = "Power"
@@ -32,7 +68,7 @@ VolumeIntegralOperator{
   OutputVariable = "HeatSource"
   print_info_level = 3
 
-  LocalModel = "SourcePhysicsModel"
+  LocalModel = SourcePhysicsModel
 
   SourceElement {
     name="SourceNonlinearElement"
@@ -42,15 +78,6 @@ VolumeIntegralOperator{
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"
   }
-}
-
-SourcePhysicsModel {
-    name = "SourcePhysicsModel"
-    Equation="ThermalSource"
-    Material = "UO2_MSRZC_09"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    USE_MATERIALS_LIBRARY = TRUE 
-    BilogScaleCoefficient = FALSE
 }
 
 NonlinearOperator {
@@ -78,7 +105,7 @@ DiffusionNonlinearFEOperator{
         QRULE_ORDER = "DEFAULT"
      }    
 
-    LocalModel = "DiffusionTransportModel"
+    LocalModel = DiffusionTransportModel
 
 }
 
@@ -119,21 +146,9 @@ DiffusionLinearFEOperator{
         QRULE_ORDER = "DEFAULT"
     }    
  
-    LocalModel = "DiffusionTransportModel"
+    LocalModel = DiffusionTransportModel
 }
 
-DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Property = "ThermalConductivity"
-        Material = "UO2_MSRZC_09"
-        Default_Concentration = .1
-        Default_Temperature   = 750.
-        Default_Burnup   = 0.0
-//        UseBilogScaling = TRUE
-//        BilogVariable = "concentration"
-//        BilogScaleCoefficient = FALSE
-       BilogScaleCoefficient = FALSE
-} 
 
 DirichletMatrixCorrection{
     name="DirichletMatrixCorrection"
@@ -176,22 +191,9 @@ MassLinearFEOperator {
         QRULE_ORDER = "DEFAULT"
     }    
 
-    LocalModel = "MassDensityModel"
+    LocalModel = MassDensityModel
 }
 
-MassDensityModel{
-        name = "MassDensityModel"
-        Material = "UO2_MSRZC_09"
-        Equation = "Thermal"
-        Property = "ThermalConductivity"
-        Default_Concentration = .1
-        Default_Temperature   = 750.
-        Default_Burnup   = 0.0
-//        UseBilogScaling = TRUE
-//        BilogVariable = "concentration"
-       BilogScaleCoefficient = FALSE
-       print_info_level = 3
-}
 
 MassMatrixCorrection{
   name="MassMatrixCorrection"

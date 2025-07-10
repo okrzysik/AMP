@@ -9,6 +9,24 @@ Mesh{
     static = TRUE
 }
 
+FickDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+          Material = "Ox_MSRZC_09"
+          Property = "FickCoefficient"
+          Default_Concentration = .05
+          Default_Temperature   = 300.
+          Default_Burnup   = 0.0
+      } 
+
+SoretDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Ox_MSRZC_09"
+        Property = "ThermalDiffusionCoefficient"
+        Default_Concentration = .05
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+      } 
+
 testNonlinearFickSoretBVPOperator {
   name="NonlinearBVPOperator"
   print_info_level = 3
@@ -43,7 +61,7 @@ FickDiffusionNonlinearFEOperator{
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }    
-	LocalModel = "FickDiffusionTransportModel"
+	LocalModel = FickDiffusionTransportModel
 }
     
 SoretDiffusionNonlinearFEOperator{
@@ -66,7 +84,7 @@ SoretDiffusionNonlinearFEOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
       }    
-      LocalModel = "SoretDiffusionTransportModel"
+      LocalModel = SoretDiffusionTransportModel
     }
 
 DirichletVectorCorrection1 {
@@ -106,7 +124,7 @@ DiffusionLinearFEOperator2 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "FickDiffusionTransportModel"
+	LocalModel = FickDiffusionTransportModel
     }
 
 DirichletMatrixCorrection2 {
@@ -160,20 +178,3 @@ NonlinearSolver{
     }
 }
 
-FickDiffusionTransportModel{
-        name = "DiffusionTransportModel"
-          Material = "Ox_MSRZC_09"
-          Property = "FickCoefficient"
-          Default_Concentration = .05
-          Default_Temperature   = 300.
-          Default_Burnup   = 0.0
-      } 
-
-SoretDiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "Ox_MSRZC_09"
-        Property = "ThermalDiffusionCoefficient"
-        Default_Concentration = .05
-        Default_Temperature   = 300.
-        Default_Burnup   = 0.0
-      } 

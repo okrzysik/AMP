@@ -31,6 +31,26 @@ NonlinearThermalOperator {
     BoundaryOperator = "DirichletVectorCorrection1"
 }
 
+DiffusionTransportModel1{
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = 0.0
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+} 
+
+SourcePhysicsModel {
+  name = "SourcePhysicsModel"
+    Material = "UO2_MSRZC_09"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+    Default_Concentration = .1
+    Default_Temperature   = 557.2 
+    Default_Burnup   = 0.0
+}
+
 DiffusionNonlinearFEOperator1 {
   name = "DiffusionNonlinearFEOperator" 
     print_info_level = 1
@@ -49,7 +69,7 @@ DiffusionNonlinearFEOperator1 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 DirichletVectorCorrection1 {
@@ -67,14 +87,6 @@ DirichletVectorCorrection1 {
 
 }
 
-DiffusionTransportModel1{
-  name = "DiffusionTransportModel"
-    Material = "UO2_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = 0.0
-    Default_Temperature   = 557.2
-    Default_Burnup   = 0.0
-} 
 
 LinearThermalOperator {
   name = "LinearBVPOperator"
@@ -100,7 +112,7 @@ DiffusionLinearFEOperator2 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 DirichletMatrixCorrection2 {
@@ -128,7 +140,7 @@ VolumeIntegralOperator{
     }
   OutputVariable = "heatsource"
     print_info_level = 3
-    LocalModel = "SourcePhysicsModel"
+    LocalModel = SourcePhysicsModel
     SourceElement {
       name="SourceNonlinearElement"
         print_info_level = 3
@@ -137,17 +149,6 @@ VolumeIntegralOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }
-}
-
-SourcePhysicsModel {
-  name = "SourcePhysicsModel"
-    Material = "UO2_MSRZC_09"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    Equation = "ThermalSource"
-    USE_MATERIALS_LIBRARY = TRUE 
-    Default_Concentration = .1
-    Default_Temperature   = 557.2 
-    Default_Burnup   = 0.0
 }
 
 

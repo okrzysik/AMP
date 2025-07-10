@@ -16,6 +16,28 @@ LinearOperator {
    BoundaryOperator="DirichletMatrixCorrection"
 }
 
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Property = "ThermalConductivity"
+        Material = "UO2_MSRZC_09"
+        Default_Concentration = .1
+        Default_Temperature   = 750.
+        Default_Burnup   = 0.0
+        BilogScaleCoefficient = FALSE
+} 
+
+MassDensityModel{
+        name = "MassDensityModel"
+        Material = "UO2_MSRZC_09"
+        Equation = "Thermal"
+        Property = "ThermalConductivity"
+        Default_Concentration = .1
+        Default_Temperature   = 750.
+        Default_Burnup   = 0.0
+        BilogScaleCoefficient = FALSE
+	print_info_level = 3
+}
+
 DiffusionLinearFEOperator{
     name = "DiffusionLinearFEOperator"
     InputVariable = "temperature"
@@ -34,18 +56,8 @@ DiffusionLinearFEOperator{
         QRULE_ORDER = "DEFAULT"
     }    
  
-    LocalModel = "DiffusionTransportModel"
+    LocalModel = DiffusionTransportModel
 }
-
-DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Property = "ThermalConductivity"
-        Material = "UO2_MSRZC_09"
-        Default_Concentration = .1
-        Default_Temperature   = 750.
-        Default_Burnup   = 0.0
-        BilogScaleCoefficient = FALSE
-} 
 
 DirichletMatrixCorrection{
     name="DirichletMatrixCorrection"
@@ -88,19 +100,7 @@ MassLinearFEOperator {
         QRULE_ORDER = "DEFAULT"
     }    
 
-    LocalModel = "MassDensityModel"
-}
-
-MassDensityModel{
-        name = "MassDensityModel"
-        Material = "UO2_MSRZC_09"
-        Equation = "Thermal"
-        Property = "ThermalConductivity"
-        Default_Concentration = .1
-        Default_Temperature   = 750.
-        Default_Burnup   = 0.0
-        BilogScaleCoefficient = FALSE
-	print_info_level = 3
+    LocalModel = MassDensityModel
 }
 
 MassMatrixCorrection{

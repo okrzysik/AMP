@@ -10,6 +10,16 @@ Mesh {
     static = TRUE
 }
   
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Independent"
+        Property = "ThermalDiffusionCoefficient"
+        Default_Concentration = .15
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+    } 
+
+
 LinearDiffusionOp{
     name = "DiffusionLinearFEOperator"
     InputVariable = "temperature"
@@ -28,7 +38,7 @@ LinearDiffusionOp{
         QRULE_ORDER = "DEFAULT"
     }    
 
-    LocalModel = "DiffusionTransportModel"
+    LocalModel = DiffusionTransportModel
 }
 
 NonlinearDiffusionOp{
@@ -49,19 +59,9 @@ NonlinearDiffusionOp{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }    
-    LocalModel = "DiffusionTransportModel"
+    LocalModel = DiffusionTransportModel
 
 }
-
-DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "Independent"
-        Property = "ThermalDiffusionCoefficient"
-        Default_Concentration = .15
-        Default_Temperature   = 300.
-        Default_Burnup   = 0.0
-    } 
-
 
 
      

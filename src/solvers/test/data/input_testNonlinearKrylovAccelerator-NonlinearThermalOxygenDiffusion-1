@@ -8,6 +8,39 @@ surfaceIds = 1, 1, 1, 1, 2, 3
 static = TRUE
 }
 
+DiffusionTransportModel1{
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+} 
+DiffusionTransportModel2{
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+} 
+DiffusionTransportModel3{
+  name = "DiffusionTransportModel"
+    Material = "Ox_MSRZC_09"
+    Property = "FickCoefficient"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+} 
+DiffusionTransportModel4{
+  name = "DiffusionTransportModel"
+    Material = "Ox_MSRZC_09"
+    Property = "FickCoefficient"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+} 
+
 NeutronicsOperator{
   name="NeutronicsRhsOperator"
     type               = "Power"
@@ -59,7 +92,7 @@ DiffusionNonlinearFEOperator1 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 DirichletVectorCorrection1 {
   name = "DirichletVectorCorrection"
@@ -74,14 +107,7 @@ DirichletVectorCorrection1 {
     dof_1_0 = 0
     value_1_0 = 0.0
 }
-DiffusionTransportModel1{
-  name = "DiffusionTransportModel"
-    Material = "UO2_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
-} 
+
 
 testLinearThermalOperator {
   name = "LinearBVPOperator"
@@ -105,7 +131,7 @@ DiffusionLinearFEOperator2 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel2"
+  LocalModel = DiffusionTransportModel2
 }
 DirichletMatrixCorrection2 {
   name = "DirichletMatrixCorrection"
@@ -119,14 +145,6 @@ DirichletMatrixCorrection2 {
     number_of_dofs_1 = 1
     dof_1_0 = 0
 }
-DiffusionTransportModel2{
-  name = "DiffusionTransportModel"
-    Material = "UO2_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
-} 
 
 testNonlinearOxygenOperator {
   name="NonlinearBVPOperator"
@@ -152,7 +170,7 @@ DiffusionNonlinearFEOperator3 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel3"
+  LocalModel = DiffusionTransportModel3
 }
 DirichletVectorCorrection3 {
   name = "DirichletVectorCorrection"
@@ -167,14 +185,6 @@ DirichletVectorCorrection3 {
     dof_1_0 = 0
     value_1_0 = 0.0
 }
-DiffusionTransportModel3{
-  name = "DiffusionTransportModel"
-    Material = "Ox_MSRZC_09"
-    Property = "FickCoefficient"
-    Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
-} 
 
 testLinearOxygenOperator {
   name = "LinearBVPOperator"
@@ -198,7 +208,7 @@ DiffusionLinearFEOperator4 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel4"
+  LocalModel = DiffusionTransportModel4
 }
 DirichletMatrixCorrection4 {
   name = "DirichletMatrixCorrection"
@@ -212,14 +222,6 @@ DirichletMatrixCorrection4 {
     number_of_dofs_1 = 1
     dof_1_0 = 0
 }
-DiffusionTransportModel4{
-  name = "DiffusionTransportModel"
-    Material = "Ox_MSRZC_09"
-    Property = "FickCoefficient"
-    Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
-} 
 
 ThermalInitialGuess {
   name = "DirichletVectorCorrection"

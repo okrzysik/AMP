@@ -99,6 +99,31 @@ LinearMechanicsElement {
     QRULE_ORDER = "DEFAULT"
 }
 
+MechanicsMaterialModel {
+    USE_MATERIALS_LIBRARY = FALSE
+    Material = "UO2_MSRZC_09"
+    print_info_level = 6
+    name="VonMises_IsotropicKinematicHardening"
+    Youngs_Modulus = 70.0
+    Poissons_Ratio = 0.3333333
+    Cook_Membrane_Plasticity_Test = FALSE
+    Thick_Walled_Cylinder_Plasticity_Test = TRUE
+    // The following parameters are used for the Thick Walled cylinder test
+    Linear_Strain_Hardening = 0.15
+    Exponent_Delta = 0.1
+    Value_K_0 = 0.2437
+    K_Infinity = 0.343
+    Fraction_Beta = 0.1
+    // The following parameters are used for the Cook's Membrane Plasticity test
+    //Isotropic_Linear_Hardening = 0.1
+    //Kinematic_Linear_Hardening = 10.0
+    //Initial_Yield_Strength = 0.243
+    // Parameters for the benchmark test ends here
+    Default_Temperature = 310.0
+    Default_Burnup = 0.0
+    Default_Oxygen_Concentration = .1
+}
+
 MechanicsNonlinearFEOperator{
       name = "MechanicsNonlinearFEOperator"
         print_info_level = 0
@@ -118,7 +143,7 @@ MechanicsNonlinearFEOperator{
             QRULE_ORDER = "DEFAULT"
         }
         MechanicsLinearElement = LinearMechanicsElement
-	LocalModel = "MechanicsMaterialModel"
+	LocalModel = MechanicsMaterialModel
     }
 
 DirichletVectorCorrection{
@@ -197,27 +222,3 @@ DirichletMatrixCorrection{
       //dof_0_2 = 2
   }
 
-MechanicsMaterialModel {
-        USE_MATERIALS_LIBRARY = FALSE
-          Material = "UO2_MSRZC_09"
-          print_info_level = 6
-          name="VonMises_IsotropicKinematicHardening"
-          Youngs_Modulus = 70.0
-          Poissons_Ratio = 0.3333333
-          Cook_Membrane_Plasticity_Test = FALSE
-          Thick_Walled_Cylinder_Plasticity_Test = TRUE
-// The following parameters are used for the Thick Walled cylinder test
-          Linear_Strain_Hardening = 0.15
-          Exponent_Delta = 0.1
-          Value_K_0 = 0.2437
-          K_Infinity = 0.343
-          Fraction_Beta = 0.1
-// The following parameters are used for the Cook's Membrane Plasticity test
-          //Isotropic_Linear_Hardening = 0.1
-          //Kinematic_Linear_Hardening = 10.0
-          //Initial_Yield_Strength = 0.243
-// Parameters for the benchmark test ends here
-          Default_Temperature = 310.0
-          Default_Burnup = 0.0
-          Default_Oxygen_Concentration = .1
-      }

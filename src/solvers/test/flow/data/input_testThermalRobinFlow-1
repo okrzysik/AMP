@@ -11,6 +11,26 @@ Mesh{
     surfaceIds = 4, 4, 4, 4, 1, 2
 }
 
+DiffusionTransportModel1{
+        name = "DiffusionTransportModel"
+        Material = "UO2_MSRZC_09"
+          Property = "ThermalConductivity"
+          Default_Concentration = 0.1
+          Default_Temperature   = 557.2
+          Default_Burnup   = 0.0
+      } 
+
+SourcePhysicsModel {
+      name = "SourcePhysicsModel"
+        Material = "UO2_MSRZC_09"
+        USE_ELEMENT_PHYSICS = "MassDensityModel"
+        Equation = "ThermalSource"
+        USE_MATERIALS_LIBRARY = TRUE 
+        Default_Concentration = .1
+        Default_Temperature   = 557.2 
+        Default_Burnup   = 0.0
+    }
+
 NeutronicsOperator{
   name="NeutronicsRhsOperator"
   type               = "Power"
@@ -48,7 +68,7 @@ DiffusionNonlinearFEOperator1 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "DiffusionTransportModel1"
+	LocalModel = DiffusionTransportModel1
 }
 
 RobinVectorCorrection1 {
@@ -71,14 +91,6 @@ RobinVectorCorrection1 {
           value_0_0        =  0.0
   }
 
-DiffusionTransportModel1{
-        name = "DiffusionTransportModel"
-        Material = "UO2_MSRZC_09"
-          Property = "ThermalConductivity"
-          Default_Concentration = 0.1
-          Default_Temperature   = 557.2
-          Default_Burnup   = 0.0
-      } 
 
 LinearThermalOperator {
   name = "LinearBVPOperator"
@@ -104,7 +116,7 @@ DiffusionLinearFEOperator2 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "DiffusionTransportModel1"
+	LocalModel = DiffusionTransportModel1
 }
 
 RobinMatrixCorrection2 {
@@ -138,7 +150,7 @@ RobinMatrixCorrection2 {
     }
   OutputVariable = "heatsource"
     print_info_level = 3
-    LocalModel = "SourcePhysicsModel"
+    LocalModel = SourcePhysicsModel
 
   SourceElement {
     name="SourceNonlinearElement"
@@ -149,17 +161,6 @@ RobinMatrixCorrection2 {
       QRULE_ORDER = "DEFAULT"
   }
 }
-
-SourcePhysicsModel {
-      name = "SourcePhysicsModel"
-        Material = "UO2_MSRZC_09"
-        USE_ELEMENT_PHYSICS = "MassDensityModel"
-        Equation = "ThermalSource"
-        USE_MATERIALS_LIBRARY = TRUE 
-        Default_Concentration = .1
-        Default_Temperature   = 557.2 
-        Default_Burnup   = 0.0
-    }
 
 Map3Dto1D{
   BoundaryId = 4

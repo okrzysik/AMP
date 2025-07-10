@@ -10,6 +10,29 @@ Mesh{
 
 NumberOfLoadingSteps = 1
 
+
+
+MechanicsMaterialModel { 
+  name="ThermalStrainMaterialModel"
+    USE_MATERIALS_LIBRARY = FALSE
+    Material = "UO2_MSRZC_09"
+    Youngs_Modulus = 2.08e11
+    Poissons_Ratio = 0.23
+    THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
+    THERMAL_EXPANSION_COEFFICIENT = 2.0e-6 
+}
+
+ThermalDiffusionTransportModel {
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    print_info_level = 3 
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+}
+
+
 testNonlinearMechanicsOperator {
   name="NonlinearBVPOperator"
     print_info_level = 1
@@ -74,7 +97,7 @@ MechanicsNonlinearFEOperator{
     }
 
   MechanicsLinearElement = LinearMechanicsElement
-  LocalModel = "MechanicsMaterialModel"
+  LocalModel = MechanicsMaterialModel
 }
 
 MechanicsDirichletVectorCorrection{
@@ -127,17 +150,6 @@ MechanicsDirichletMatrixCorrection{
     dof_1_2 = 2
 }
 
-
-MechanicsMaterialModel { 
-  name="ThermalStrainMaterialModel"
-    USE_MATERIALS_LIBRARY = FALSE
-    Material = "UO2_MSRZC_09"
-    Youngs_Modulus = 2.08e11
-    Poissons_Ratio = 0.23
-    THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
-    THERMAL_EXPANSION_COEFFICIENT = 2.0e-6 
-}
-
 ThermalDiffusionNonlinearFEOperator{
   name="DiffusionNonlinearFEOperator"
     InputVariable="temperature"
@@ -149,7 +161,7 @@ ThermalDiffusionNonlinearFEOperator{
     }
   PrincipalVariable = "temperature"
 
-    LocalModel = "ThermalDiffusionTransportModel"
+    LocalModel = ThermalDiffusionTransportModel
 
     DiffusionElement {
       name = "DiffusionNonlinearElement"
@@ -158,16 +170,6 @@ ThermalDiffusionNonlinearFEOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }
-}
-
-ThermalDiffusionTransportModel {
-  name = "DiffusionTransportModel"
-    Material = "UO2_MSRZC_09"
-    Property = "ThermalConductivity"
-    print_info_level = 3 
-    Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
 }
 
 ThermalDirichletVectorCorrection{
@@ -195,7 +197,7 @@ ThermalDiffusionLinearFEOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }
-  LocalModel = "ThermalDiffusionTransportModel"
+  LocalModel = ThermalDiffusionTransportModel
 }
 
 ThermalDirichletMatrixCorrection{

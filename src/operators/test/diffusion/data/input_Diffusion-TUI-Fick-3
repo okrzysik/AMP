@@ -27,6 +27,15 @@ ThermalLinearBVPOperator {
    BoundaryOperator="RobinMatrixCorrection"
 }
 
+DiffusionTransportModel {
+     name = "DiffusionTransportModel"
+     Material = "Independent"
+     Property = "FickCoefficient"
+     print_info_level = 3 
+     Default_Concentration = .15
+     Default_Temperature   = 300.
+     Default_Burnup   = 0.0
+}
 
 DiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
@@ -38,7 +47,7 @@ DiffusionNonlinearFEOperator{
 	   concentration = "concentration"
 	 }
 	 PrincipalVariable = "concentration"
-	 LocalModel= "DiffusionTransportModel"
+	 LocalModel= DiffusionTransportModel
 	
 	   DiffusionElement {
 	      name = "DiffusionNonlinearElement"
@@ -64,17 +73,7 @@ DiffusionLinearFEOperator{
        QRULE_TYPE = "QGAUSS"
        QRULE_ORDER = "DEFAULT"
      }
-     LocalModel= "DiffusionTransportModel"
-}
-
-DiffusionTransportModel {
-     name = "DiffusionTransportModel"
-     Material = "Independent"
-     Property = "FickCoefficient"
-     print_info_level = 3 
-     Default_Concentration = .15
-     Default_Temperature   = 300.
-     Default_Burnup   = 0.0
+     LocalModel= DiffusionTransportModel
 }
 
 RobinVectorCorrection{

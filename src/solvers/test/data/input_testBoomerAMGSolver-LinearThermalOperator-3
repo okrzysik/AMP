@@ -26,6 +26,15 @@ DiffusionBVPOperator {
     BoundaryOperator = "DirichletMatrixCorrection1"
 }
 
+DiffusionTransportModel {
+    name="DiffusionTransportModel"
+    Material = "Independent"
+    Property = "ThermalConductivity"
+      Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+}
+
 ThermalDiffusionOperator{
   name="DiffusionLinearFEOperator"
   InputVariable = "therm"
@@ -42,19 +51,10 @@ ThermalDiffusionOperator{
     QRULE_ORDER = "DEFAULT"
   }
 
-  LocalModel = "DiffusionTransportModel"
+  LocalModel = DiffusionTransportModel
 
 }
 
-
-DiffusionTransportModel {
-    name="DiffusionTransportModel"
-    Material = "Independent"
-    Property = "ThermalConductivity"
-      Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
-}
 
 VolumeIntegralOperator{
   name="VolumeIntegralOperator"

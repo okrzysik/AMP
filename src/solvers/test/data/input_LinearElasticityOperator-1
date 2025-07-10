@@ -9,6 +9,12 @@ Mesh {
   static = TRUE
 }
 
+IsotropicElasticModel1 {
+     name="IsotropicElasticModel"
+     Youngs_Modulus = 2.08e11
+     Poissons_Ratio = 0.23
+    }
+
 MechanicsBVPOperator {
   name="LinearBVPOperator"
   VolumeOperator = "MechanicsLinearFEOperator1"
@@ -30,7 +36,7 @@ MechanicsLinearFEOperator1 {
     QRULE_ORDER = "DEFAULT"
     }
 
-    LocalModel = "IsotropicElasticModel1"
+    LocalModel = IsotropicElasticModel1
 }
 
 DirichletMatrixCorrection1 {
@@ -44,12 +50,6 @@ DirichletMatrixCorrection1 {
     dof_0_1 = 1
     dof_0_2 = 2
 }
-
-IsotropicElasticModel1 {
-     name="IsotropicElasticModel"
-     Youngs_Modulus = 2.08e11
-     Poissons_Ratio = 0.23
-    }
 
 Load_Boundary {
   name="DirichletVectorCorrection"

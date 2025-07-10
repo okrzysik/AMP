@@ -30,6 +30,46 @@ Mesh{
     }  
 }
 
+DiffusionTransportModel1{
+        name = "DiffusionTransportModel"
+        Material = "UO2_MSRZC_09"
+          Property = "ThermalConductivity"
+          Default_Concentration = .1
+          Default_Temperature   = 557.2
+          Default_Burnup   = 0.0
+      } 
+
+DiffusionTransportModel3{
+        name = "DiffusionTransportModel"
+        Material = "Steel316_MSRZC_09"
+        Property = "ThermalConductivity"
+        Default_Concentration = .1
+        Default_Temperature   = 513.2
+        Default_Burnup   = 0.0
+     } 
+
+SourcePhysicsModel {
+    name = "SourcePhysicsModel"
+    Material = "UO2_MSRZC_09"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+     Default_Concentration = .1
+     Default_Temperature   = 557.2 
+     Default_Burnup   = 0.0
+  }
+SourcePhysicsModel2 {
+    name = "SourcePhysicsModel"
+    Material = "Independent"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE
+    Default_Concentration = .1
+    Default_Temperature   = 557.16
+    Default_Burnup   = 0.0
+  }
+
+
 Nuclides {
   num_nuclides=3
   nuclides  = "U235", "Pu238", "O16"
@@ -133,7 +173,7 @@ DiffusionNonlinearFEOperator1 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "DiffusionTransportModel1"
+	LocalModel = DiffusionTransportModel1
 }
 
 RobinVectorCorrection1 {
@@ -152,15 +192,6 @@ RobinVectorCorrection1 {
       dof_0_0          =   0
       value_0_0        =  0.0
 }
-
-DiffusionTransportModel1{
-        name = "DiffusionTransportModel"
-        Material = "UO2_MSRZC_09"
-          Property = "ThermalConductivity"
-          Default_Concentration = .1
-          Default_Temperature   = 557.2
-          Default_Burnup   = 0.0
-      } 
 
 LinearThermalOperator1 {
    name = "LinearBVPOperator"
@@ -185,7 +216,7 @@ DiffusionLinearFEOperator2 {
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
      }    
-     LocalModel = "DiffusionTransportModel1"
+     LocalModel = DiffusionTransportModel1
    }
 
 RobinMatrixCorrection2 {
@@ -230,7 +261,7 @@ DiffusionLinearFEOperator3 {
         QRULE_ORDER = "DEFAULT"
      }    
 
-     LocalModel = "DiffusionTransportModel3"
+     LocalModel = DiffusionTransportModel3
 }
 
 ColumnBoundaryOperator3 {
@@ -269,15 +300,6 @@ ColumnBoundaryOperator3 {
 
  }
 
-DiffusionTransportModel3{
-        name = "DiffusionTransportModel"
-        Material = "Steel316_MSRZC_09"
-        Property = "ThermalConductivity"
-        Default_Concentration = .1
-        Default_Temperature   = 513.2
-        Default_Burnup   = 0.0
-     } 
-
 VolumeIntegralOperator{
   name="VolumeIntegralOperator"
   InputVariableType = "IntegrationPointScalar"
@@ -289,7 +311,7 @@ VolumeIntegralOperator{
   }
   OutputVariable = "heatsource"
 
-  LocalModel = "SourcePhysicsModel"
+  LocalModel = SourcePhysicsModel
   SourceElement {
     name="SourceNonlinearElement"
       FE_ORDER = "FIRST"  
@@ -298,17 +320,6 @@ VolumeIntegralOperator{
     QRULE_ORDER = "DEFAULT"
   }
 }
-
-SourcePhysicsModel {
-    name = "SourcePhysicsModel"
-    Material = "UO2_MSRZC_09"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    Equation = "ThermalSource"
-    USE_MATERIALS_LIBRARY = TRUE 
-     Default_Concentration = .1
-     Default_Temperature   = 557.2 
-     Default_Burnup   = 0.0
-  }
 
 VolumeIntegralOperatorOxygen{
   name="VolumeIntegralOperator"
@@ -322,7 +333,7 @@ VolumeIntegralOperatorOxygen{
   }
 
   OutputVariable = "oxygen"
-  LocalModel = "SourcePhysicsModel2"
+  LocalModel = SourcePhysicsModel2
   SourceElement {
     name="SourceNonlinearElement"
       FE_ORDER = "FIRST"
@@ -331,17 +342,6 @@ VolumeIntegralOperatorOxygen{
     QRULE_ORDER = "DEFAULT"
   }
 }
-
-SourcePhysicsModel2 {
-    name = "SourcePhysicsModel"
-    Material = "Independent"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    Equation = "ThermalSource"
-    USE_MATERIALS_LIBRARY = TRUE
-    Default_Concentration = .1
-    Default_Temperature   = 557.16
-    Default_Burnup   = 0.0
-  }
 
 
 VolumeIntegralOperatorMetal{
@@ -357,7 +357,7 @@ VolumeIntegralOperatorMetal{
 
   OutputVariable = "metal"
 
-  LocalModel = "SourcePhysicsModel2"
+  LocalModel = SourcePhysicsModel2
 
   SourceElement {
     name="SourceNonlinearElement"
@@ -381,7 +381,7 @@ VolumeIntegralOperatorFissionGas{
 
   OutputVariable = "fissionGas"
 
-  LocalModel = "SourcePhysicsModel2"
+  LocalModel = SourcePhysicsModel2
 
   SourceElement {
     name="SourceNonlinearElement"

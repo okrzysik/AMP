@@ -7,6 +7,17 @@ Mesh{
   Range = 0, 1, 0, 1, 0, 1
 }
 
+SourcePhysicsModel {
+    name = "SourcePhysicsModel"
+    Material = "Independent"
+    USE_ELEMENT_PHYSICS = "DiffusionTransportModel"
+    USE_MATERIALS_LIBRARY = TRUE 
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+  }
+
 VolumeIntegralOperator{
   name="VolumeIntegralOperator"
   InputVariableType = "IntegrationPointScalar"
@@ -18,7 +29,7 @@ VolumeIntegralOperator{
   }
   OutputVariable = "heatsource"
   print_info_level = 3
-  LocalModel = "SourcePhysicsModel"
+  LocalModel = SourcePhysicsModel
 
   SourceElement {
     name="SourceNonlinearElement"
@@ -29,15 +40,4 @@ VolumeIntegralOperator{
     QRULE_ORDER = "DEFAULT"
   }
 }
-
-SourcePhysicsModel {
-    name = "SourcePhysicsModel"
-    Material = "Independent"
-    USE_ELEMENT_PHYSICS = "DiffusionTransportModel"
-    USE_MATERIALS_LIBRARY = TRUE 
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
-  }
 

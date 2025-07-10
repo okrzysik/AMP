@@ -29,8 +29,8 @@ FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(
     AMP_INSIST( soretName == "DiffusionNonlinearFEOperator", "Soret operator has incorrect name" );
 
     // check transport models correct
-    auto fickModelDb    = db->getDatabase( fickDb->getString( "LocalModel" ) );
-    auto soretModelDb   = db->getDatabase( soretDb->getString( "LocalModel" ) );
+    auto fickModelDb    = fickDb->getDatabase( "LocalModel" );
+    auto soretModelDb   = soretDb->getDatabase( "LocalModel" );
     auto fickModelProp  = fickModelDb->getString( "Property" );
     auto soretModelProp = soretModelDb->getString( "Property" );
     AMP_INSIST( fickModelProp == "FickCoefficient", "FickCoefficient property was not specified" );

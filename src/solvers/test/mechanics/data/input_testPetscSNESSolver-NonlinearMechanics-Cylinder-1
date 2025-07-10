@@ -26,48 +26,8 @@ nonlinearMechanicsBVPOperator {
     BoundaryOperator = "DirichletVectorCorrection1"
 }
 
-MechanicsNonlinearFEOperator1 {
-  name = "MechanicsNonlinearFEOperator"
-    print_info_level = 1
-    ActiveInputVariables {
-      DISPLACEMENT = "displacement"
-    }
-  OutputVariable = "displacement"
-    RESET_REUSES_RADIAL_RETURN = TRUE
-    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
-
-    MechanicsElement {
-      name="MechanicsNonlinearElement"
-        USE_REDUCED_INTEGRATION = FALSE 
-        FE_ORDER = "FIRST"  
-        FE_FAMILY = "LAGRANGE"
-        QRULE_TYPE = "QGAUSS"
-        QRULE_ORDER = "DEFAULT"
-    }
-
-  MechanicsLinearElement = LinearMechanicsElement
-  LocalModel = "VonMises_IsotropicKinematicHardening"
-}
-
-DirichletVectorCorrection1 {
-  name = "DirichletVectorCorrection"
-    print_info_level = 1
-    skip_params = FALSE
-
-    number_of_ids = 1
-
-    id_0 = 103
-    number_of_dofs_0 = 3
-    dof_0_0 = 0
-    dof_0_1 = 1
-    dof_0_2 = 2
-    value_0_0 = 0.0
-    value_0_1 = 0.0
-    value_0_2 = 0.0
-}
-
 VonMises_IsotropicKinematicHardening{
-  USE_MATERIALS_LIBRARY = FALSE
+    USE_MATERIALS_LIBRARY = FALSE
     USE_CONTINUUM_TANGENT = TRUE
     Material = "UO2_MSRZC_09"
     print_info_level = 6
@@ -93,6 +53,46 @@ VonMises_IsotropicKinematicHardening{
     Default_Temperature = 310.0
     Default_Burnup = 0.0
     Default_Oxygen_Concentration = .1
+}
+
+MechanicsNonlinearFEOperator1 {
+  name = "MechanicsNonlinearFEOperator"
+    print_info_level = 1
+    ActiveInputVariables {
+      DISPLACEMENT = "displacement"
+    }
+  OutputVariable = "displacement"
+    RESET_REUSES_RADIAL_RETURN = TRUE
+    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+
+    MechanicsElement {
+      name="MechanicsNonlinearElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
+
+  MechanicsLinearElement = LinearMechanicsElement
+  LocalModel = VonMises_IsotropicKinematicHardening
+}
+
+DirichletVectorCorrection1 {
+  name = "DirichletVectorCorrection"
+    print_info_level = 1
+    skip_params = FALSE
+
+    number_of_ids = 1
+
+    id_0 = 103
+    number_of_dofs_0 = 3
+    dof_0_0 = 0
+    dof_0_1 = 1
+    dof_0_2 = 2
+    value_0_0 = 0.0
+    value_0_1 = 0.0
+    value_0_2 = 0.0
 }
 
 linearMechanicsBVPOperator {

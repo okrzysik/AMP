@@ -9,6 +9,15 @@ Mesh{
     static = TRUE
 }
 
+DiffusionTransportModel1{
+        name = "DiffusionTransportModel"
+          Material = "Ox_MSRZC_09"
+          Property = "FickCoefficient"
+          Default_Concentration = .05
+          Default_Temperature   = 300.
+          Default_Burnup   = 0.0
+      } 
+
 testNonlinearFickOperator {
     name="NonlinearBVPOperator"
     print_info_level = 0
@@ -34,7 +43,7 @@ DiffusionNonlinearFEOperator1 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "DiffusionTransportModel1"
+	LocalModel = DiffusionTransportModel1
 }
 	
 DirichletVectorCorrection1 {
@@ -48,15 +57,6 @@ DirichletVectorCorrection1 {
       dof_0_0          =   0
       value_0_0        = .15
   }
-
-DiffusionTransportModel1{
-        name = "DiffusionTransportModel"
-          Material = "Ox_MSRZC_09"
-          Property = "FickCoefficient"
-          Default_Concentration = .05
-          Default_Temperature   = 300.
-          Default_Burnup   = 0.0
-      } 
 
 testLinearFickOperator {
   name = "LinearBVPOperator"
@@ -83,7 +83,7 @@ DiffusionLinearFEOperator2 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "DiffusionTransportModel1"
+	LocalModel = DiffusionTransportModel1
     }
 
 DirichletMatrixCorrection2 {
