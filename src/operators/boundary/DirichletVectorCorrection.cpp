@@ -13,15 +13,29 @@ using AMP::Utilities::stringf;
 namespace AMP::Operator {
 
 
+static std::shared_ptr<const DirichletVectorCorrectionParameters>
+convert( std::shared_ptr<const OperatorParameters> params )
+{
+    if ( std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( params ) )
+        return std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( params );
+    auto myparams    = std::make_shared<DirichletVectorCorrectionParameters>( params->d_db );
+    myparams->d_Mesh = params->d_Mesh;
+    auto boundary    = std::dynamic_pointer_cast<const BoundaryOperatorParameters>( params );
+    if ( boundary ) {
+        myparams->d_variable = boundary->d_volumeOperator->getOutputVariable();
+    }
+    return myparams;
+}
+
+
 DirichletVectorCorrection::DirichletVectorCorrection(
     std::shared_ptr<const OperatorParameters> params )
     : BoundaryOperator( params )
 {
 
     AMP_ASSERT( params );
-    auto myparams = std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( params );
-    if ( myparams )
-        d_variable = myparams->d_variable;
+    auto myparams                = convert( params );
+    d_variable                   = myparams->d_variable;
     d_isAttachedToVolumeOperator = false;
     d_setResidual                = false;
     d_valuesType                 = 0;

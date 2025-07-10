@@ -6,6 +6,7 @@
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/operators/OperatorFactory.h"
+#include "AMP/operators/boundary/BoundaryOperatorParameters.h"
 #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -32,11 +33,6 @@
     #include "AMP/operators/mechanics/MechanicsConstants.h"
     #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
     #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
-    #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
-    #include "AMP/operators/subchannel/FlowFrapconOperator.h"
-    #include "AMP/operators/subchannel/SubchannelFourEqNonlinearOperator.h"
-    #include "AMP/operators/subchannel/SubchannelTwoEqLinearOperator.h"
-    #include "AMP/operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #endif
 
 
@@ -153,40 +149,6 @@ static std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::D
     }
     return vars;
 }
-static Operator::shared_ptr
-createSubchannelTwoEqLinearOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                     std::shared_ptr<AMP::Database> input_db )
-{
-    AMP_ASSERT( input_db->getString( "name" ) == "SubchannelTwoEqLinearOperator" );
-    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( input_db );
-    subchannelParams->d_Mesh = mesh;
-    subchannelParams->d_subchannelPhysicsModel =
-        std::dynamic_pointer_cast<SubchannelPhysicsModel>( createElementPhysicsModel( input_db ) );
-    return std::make_shared<SubchannelTwoEqLinearOperator>( subchannelParams );
-}
-static Operator::shared_ptr
-createSubchannelTwoEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                        std::shared_ptr<AMP::Database> input_db )
-{
-    AMP_ASSERT( input_db->getString( "name" ) == "SubchannelTwoEqNonlinearOperator" );
-    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( input_db );
-    subchannelParams->d_Mesh = mesh;
-    subchannelParams->d_subchannelPhysicsModel =
-        std::dynamic_pointer_cast<SubchannelPhysicsModel>( createElementPhysicsModel( input_db ) );
-    return std::make_shared<SubchannelTwoEqNonlinearOperator>( subchannelParams );
-}
-static Operator::shared_ptr
-createSubchannelFourEqNonlinearOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                         std::shared_ptr<AMP::Database> input_db )
-{
-    AMP_ASSERT( input_db->getString( "name" ) == "SubchannelFourEqNonlinearOperator" );
-    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( input_db );
-    subchannelParams->d_Mesh = mesh;
-    subchannelParams->d_subchannelPhysicsModel =
-        std::dynamic_pointer_cast<SubchannelPhysicsModel>( createElementPhysicsModel( input_db ) );
-    return std::make_shared<SubchannelFourEqNonlinearOperator>( subchannelParams );
-}
-
 static Operator::shared_ptr createVolumeIntegralOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                           std::shared_ptr<AMP::Database> input_db )
 {
@@ -237,14 +199,14 @@ static Operator::shared_ptr createLinearDiffusionOperator( std::shared_ptr<AMP::
 
     // now create the linear diffusion operator
     AMP_ASSERT( input_db->getString( "name" ) == "DiffusionLinearFEOperator" );
+    auto scalarDOF = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto diffusionOpParams = std::make_shared<DiffusionLinearFEOperatorParameters>( input_db );
     diffusionOpParams->d_transportModel = transportModel;
     diffusionOpParams->d_elemOp         = diffusionLinElem;
     diffusionOpParams->d_Mesh           = mesh;
-    diffusionOpParams->d_inDofMap       = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    diffusionOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    diffusionOpParams->d_inDofMap       = scalarDOF;
+    diffusionOpParams->d_outDofMap      = scalarDOF;
     auto diffusionOp = std::make_shared<DiffusionLinearFEOperator>( diffusionOpParams );
 
     auto matrix = diffusionOp->getMatrix();
@@ -281,14 +243,13 @@ createNonlinearDiffusionOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     diffusionNLOpParams->d_FrozenVecs.clear();
 
     // create variables and vectors for frozen material inputs
-    auto NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
+    auto scalarDOF = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     for ( auto name : getActiveVariables( input_db, "ActiveInputVariables" ) ) {
-        auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
-
+        auto var    = std::make_shared<AMP::LinearAlgebra::Variable>( name );
         auto memLoc = AMP::Utilities::memoryLocationFromString(
             diffusionNLOpParams->d_db->getWithDefault<std::string>( "MemoryLocation", "host" ) );
-        auto vec = AMP::LinearAlgebra::createVector( NodalScalarDOF, var, true, memLoc );
+        auto vec = AMP::LinearAlgebra::createVector( scalarDOF, var, true, memLoc );
         if ( input_db->getWithDefault<bool>( "Freeze" + name, false ) )
             diffusionNLOpParams->d_FrozenVecs[name] = vec;
     }
@@ -344,15 +305,15 @@ static Operator::shared_ptr createLinearMechanicsOperator( std::shared_ptr<AMP::
 
     // now create the linear mechanics operator
     AMP_ASSERT( input_db->getString( "name" ) == "MechanicsLinearFEOperator" );
+    auto dofManager = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     auto mechanicsOpParams = std::make_shared<MechanicsLinearFEOperatorParameters>( input_db );
     mechanicsOpParams->d_materialModel =
         std::dynamic_pointer_cast<MechanicsMaterialModel>( elementPhysicsModel );
-    mechanicsOpParams->d_elemOp   = mechanicsLinElem;
-    mechanicsOpParams->d_Mesh     = mesh;
-    mechanicsOpParams->d_inDofMap = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
-    mechanicsOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    mechanicsOpParams->d_elemOp    = mechanicsLinElem;
+    mechanicsOpParams->d_Mesh      = mesh;
+    mechanicsOpParams->d_inDofMap  = dofManager;
+    mechanicsOpParams->d_outDofMap = dofManager;
 
     return std::make_shared<MechanicsLinearFEOperator>( mechanicsOpParams );
 }
@@ -373,24 +334,20 @@ createNonlinearMechanicsOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
     // now create the nonlinear mechanics operator
     AMP_ASSERT( input_db->getString( "name" ) == "MechanicsNonlinearFEOperator" );
+    auto scalarDofs = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto vecDofs = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     auto mechanicsOpParams = std::make_shared<MechanicsNonlinearFEOperatorParameters>( input_db );
     mechanicsOpParams->d_materialModel =
         std::dynamic_pointer_cast<MechanicsMaterialModel>( elementPhysicsModel );
-    mechanicsOpParams->d_elemOp = mechanicsElem;
-    mechanicsOpParams->d_Mesh   = mesh;
-    mechanicsOpParams->d_dofMap[Mechanics::DISPLACEMENT] =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
-    mechanicsOpParams->d_dofMap[Mechanics::TEMPERATURE] =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    mechanicsOpParams->d_dofMap[Mechanics::BURNUP] = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    mechanicsOpParams->d_dofMap[Mechanics::OXYGEN_CONCENTRATION] =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    mechanicsOpParams->d_dofMap[Mechanics::LHGR] = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    mechanicsOpParams->d_elemOp                                  = mechanicsElem;
+    mechanicsOpParams->d_Mesh                                    = mesh;
+    mechanicsOpParams->d_dofMap[Mechanics::DISPLACEMENT]         = vecDofs;
+    mechanicsOpParams->d_dofMap[Mechanics::TEMPERATURE]          = scalarDofs;
+    mechanicsOpParams->d_dofMap[Mechanics::BURNUP]               = scalarDofs;
+    mechanicsOpParams->d_dofMap[Mechanics::OXYGEN_CONCENTRATION] = scalarDofs;
+    mechanicsOpParams->d_dofMap[Mechanics::LHGR]                 = scalarDofs;
 
     return std::make_shared<MechanicsNonlinearFEOperator>( mechanicsOpParams );
 }
@@ -411,14 +368,14 @@ static Operator::shared_ptr createMassLinearFEOperator( std::shared_ptr<AMP::Mes
 
     // now create the linear density operator
     AMP_ASSERT( input_db->getString( "name" ) == "MassLinearFEOperator" );
+    auto scalarDofs = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto densityOpParams            = std::make_shared<MassLinearFEOperatorParameters>( input_db );
     densityOpParams->d_densityModel = densityModel;
     densityOpParams->d_elemOp       = densityLinElem;
     densityOpParams->d_Mesh         = mesh;
-    densityOpParams->d_inDofMap     = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    densityOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    densityOpParams->d_inDofMap     = scalarDofs;
+    densityOpParams->d_outDofMap    = scalarDofs;
     return std::make_shared<MassLinearFEOperator>( densityOpParams );
 }
 
@@ -592,30 +549,6 @@ createNeumannVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 #endif
 
 
-static std::shared_ptr<BoundaryOperator>
-createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                 std::shared_ptr<AMP::Database> input_db,
-                                 Operator::shared_ptr volumeOperator )
-{
-    auto vectorCorrectionParameters =
-        std::make_shared<DirichletVectorCorrectionParameters>( input_db );
-    vectorCorrectionParameters->d_variable = volumeOperator->getOutputVariable();
-    vectorCorrectionParameters->d_Mesh     = mesh;
-    return std::make_shared<DirichletVectorCorrection>( vectorCorrectionParameters );
-}
-
-
-static std::shared_ptr<BoundaryOperator>
-createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                 std::shared_ptr<AMP::Database> input_db )
-{
-    auto vectorCorrectionParameters =
-        std::make_shared<DirichletVectorCorrectionParameters>( input_db );
-    vectorCorrectionParameters->d_Mesh = mesh;
-    return std::make_shared<DirichletVectorCorrection>( vectorCorrectionParameters );
-}
-
-
 /********************************************************
  * createColumnBoundaryOperator                          *
  ********************************************************/
@@ -672,8 +605,6 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
     auto operatorType = operator_db->getString( "name" );
     if ( operatorType == "DirichletMatrixCorrection" ) {
-    } else if ( operatorType == "DirichletVectorCorrection" ) {
-        return createDirichletVectorCorrection( mesh, operator_db );
 #ifdef AMP_USE_LIBMESH
     } else if ( operatorType == "MechanicsLinearFEOperator" ) {
         return createLinearMechanicsOperator( mesh, operator_db );
@@ -683,18 +614,12 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         return createLinearDiffusionOperator( mesh, operator_db );
     } else if ( operatorType == "DiffusionNonlinearFEOperator" ) {
         return createNonlinearDiffusionOperator( mesh, operator_db );
-    } else if ( operatorType == "FickSoretNonlinearFEOperator" ) {
-        return createNonlinearFickSoretOperator( mesh, operatorName, input_db );
-    } else if ( operatorType == "SubchannelTwoEqLinearOperator" ) {
-        return createSubchannelTwoEqLinearOperator( mesh, operator_db );
-    } else if ( operatorType == "SubchannelTwoEqNonlinearOperator" ) {
-        return createSubchannelTwoEqNonlinearOperator( mesh, operator_db );
-    } else if ( operatorType == "SubchannelFourEqNonlinearOperator" ) {
-        return createSubchannelFourEqNonlinearOperator( mesh, operator_db );
     } else if ( operatorType == "MassLinearFEOperator" ) {
         return createMassLinearFEOperator( mesh, operator_db );
     } else if ( operatorType == "VolumeIntegralOperator" ) {
         return createVolumeIntegralOperator( mesh, operator_db );
+    } else if ( operatorType == "FickSoretNonlinearFEOperator" ) {
+        return createNonlinearFickSoretOperator( mesh, operatorName, input_db );
     } else if ( operatorType == "LinearBVPOperator" ) {
         // note that we pass in the full database here and not the operator db
         return createLinearBVPOperator( mesh, operatorName, input_db );
@@ -724,9 +649,10 @@ std::shared_ptr<BoundaryOperator> createBoundaryOperator( std::shared_ptr<AMP::M
     AMP_INSIST( operator_db, "operator database is null" );
 
     auto boundaryType = operator_db->getString( "name" );
-    if ( boundaryType == "DirichletVectorCorrection" ) {
-        // in this case the volume operator has to be a nonlinear operator
-        return createDirichletVectorCorrection( mesh, operator_db, volumeOperator );
+    if ( boundaryType == "ColumnBoundaryOperator" ) {
+        // note that the global input database is passed here instead of the operator
+        // database
+        return createColumnBoundaryOperator( mesh, boundaryOperatorName, input_db, volumeOperator );
 #ifdef AMP_USE_LIBMESH
     } else if ( boundaryType == "DirichletMatrixCorrection" ) {
         // in this case the volume operator has to be a linear operator
@@ -741,13 +667,11 @@ std::shared_ptr<BoundaryOperator> createBoundaryOperator( std::shared_ptr<AMP::M
     } else if ( boundaryType == "NeumannVectorCorrection" ) {
         return createNeumannVectorCorrection( mesh, operator_db, volumeOperator );
 #endif
-    } else if ( boundaryType == "ColumnBoundaryOperator" ) {
-        // note that the global input database is passed here instead of the operator
-        // database
-        return createColumnBoundaryOperator( mesh, boundaryOperatorName, input_db, volumeOperator );
     } else if ( OperatorFactory::exists( boundaryType ) ) {
         // Use the OperatorFactory to create the operator
-        auto params                  = std::make_shared<OperatorParameters>( operator_db, mesh );
+        auto params                  = std::make_shared<BoundaryOperatorParameters>( operator_db );
+        params->d_Mesh               = mesh;
+        params->d_volumeOperator     = volumeOperator;
         std::shared_ptr<Operator> op = OperatorFactory::create( params );
         auto op2                     = std::dynamic_pointer_cast<BoundaryOperator>( op );
         AMP_ASSERT( op2 );

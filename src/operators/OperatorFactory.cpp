@@ -90,5 +90,9 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
     REGISTER_OPERATOR_LIBMESH( FlowFrapconOperator, "FlowFrapconOperator" );
     REGISTER_OPERATOR_LIBMESH( SubchannelTwoEqLinearOperator, "SubchannelTwoEqLinearOperator" );
     REGISTER_OPERATOR_LIBMESH( SubchannelFourEqLinearOperator, "SubchannelFourEqLinearOperator" );
+    REGISTER_OPERATOR_LIBMESH( SubchannelTwoEqNonlinearOperator,
+                               "SubchannelTwoEqNonlinearOperator" );
+    REGISTER_OPERATOR_LIBMESH( SubchannelFourEqNonlinearOperator,
+                               "SubchannelFourEqNonlinearOperator" );
     REGISTER_OPERATOR_LIBMESH( PressureBoundaryOperator, "PressureBoundaryOperator" );
 }
