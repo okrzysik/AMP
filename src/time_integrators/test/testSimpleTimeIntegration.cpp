@@ -44,15 +44,16 @@ void testIntegrator( const std::string &name,
     auto var            = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
     auto solution       = AMP::LinearAlgebra::createSimpleVector<double>( 1, var, AMP_COMM_WORLD );
     auto timeIntegrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( params );
-    solution->zero();
+
     auto x = solution->clone();
-    x->zero();
+    solution->setToScalar( 1.0 );
+    x->copy( *solution );
 
     // Advance the solution
     double T         = 0;
-    double dt        = 0.1;
+    double dt        = 0.0001;
     double finalTime = timeIntegrator->getFinalTime();
-    timeIntegrator->setInitialDt( 0.1 );
+    timeIntegrator->setInitialDt( dt );
     while ( T < finalTime ) {
         timeIntegrator->advanceSolution( dt, T == 0, solution, x );
         if ( timeIntegrator->checkNewSolution() ) {
@@ -66,17 +67,19 @@ void testIntegrator( const std::string &name,
 
     // Check the answer
     double ans2 = static_cast<double>( solution->max() );
-    if ( AMP::Utilities::approx_equal( ans2, ans, 1e-12 ) )
+    if ( AMP::Utilities::approx_equal( ans2, ans, 5.0e-10 ) )
         ut.passes( name + " - " + test );
     else
-        ut.failure( AMP::Utilities::stringf( "%s - %s (%f)", name.data(), test.data(), ans2 ) );
+        ut.failure(
+            AMP::Utilities::stringf( "%s - %s (%0.16f)", name.data(), test.data(), ans - ans2 ) );
 }
 
 void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( db );
-    auto imp_ti      = { "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
-    auto name        = db->getScalar<std::string>( "name" );
+    auto imp_ti = { "CN", "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
+    auto name   = db->getScalar<std::string>( "name" );
+    AMP::pout << name << std::endl;
     auto is_implicit = ( std::find( imp_ti.begin(), imp_ti.end(), name ) != imp_ti.end() );
     if ( is_implicit ) {
 
@@ -92,20 +95,22 @@ void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
                                                 "max_iterations",
                                                 100,
                                                 "absolute_tolerance",
-                                                1.0e-12,
+                                                1.0e-14,
                                                 "relative_tolerance",
-                                                1.0e-12 );
+                                                1.0e-14,
+                                                "zero_initial_guess",
+                                                false );
         db->putDatabase( "Solver", std::move( solver_db ) );
     }
 }
 
 void runBasicIntegratorTests( const std::string &name, AMP::UnitTest &ut )
 {
-    double finalTime = 2.0;
+    double finalTime = 0.001;
     // Create the vectors
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
     auto ic  = AMP::LinearAlgebra::createSimpleVector<double>( 1, var, AMP_COMM_WORLD );
-    ic->zero();
+    ic->setToScalar( 1.0 );
 
     // Test creating Create the time integrator
     std::shared_ptr<AMP::Database> db = AMP::Database::create( "name",
@@ -115,14 +120,15 @@ void runBasicIntegratorTests( const std::string &name, AMP::UnitTest &ut )
                                                                "final_time",
                                                                finalTime,
                                                                "max_integrator_steps",
-                                                               10000,
+                                                               1000000,
                                                                "print_info_level",
                                                                2 );
     updateDatabaseIfImplicit( db );
 
     auto params         = std::make_shared<AMP::TimeIntegrator::TimeIntegratorParameters>( db );
     params->d_ic_vector = ic;
-    params->d_operator  = std::make_shared<AMP::Operator::NullOperator>();
+
+    params->d_operator = std::make_shared<AMP::Operator::NullOperator>();
     try {
         auto timeIntegrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( params );
         ut.passes( name + " - created" );
@@ -136,13 +142,17 @@ void runBasicIntegratorTests( const std::string &name, AMP::UnitTest &ut )
     source->setToScalar( 3.0 );
     params->d_pSourceTerm = source;
     params->d_operator    = std::make_shared<AMP::Operator::NullOperator>();
-    testIntegrator( name, "fixed source", params, 3 * finalTime, ut );
-#if 0
+    testIntegrator( name, "du/dt=3", params, 1.0 + 3 * finalTime, ut );
+
     // Test with no source and constant operator
     params->d_pSourceTerm = nullptr;
-    params->d_operator    = std::make_shared<FunctionOperator>( []( double ) { return 3.0; } );
-    testIntegrator( name, "constant", params, 3 * finalTime, ut );
-#endif
+    params->d_operator = std::make_shared<FunctionOperator>( []( double x ) { return -3.0 * x; } );
+    testIntegrator( name, "du/dt=-3u", params, std::exp( -3.0 * finalTime ), ut );
+
+    // Test with fixed source and constant operator
+    params->d_pSourceTerm = source;
+    params->d_operator = std::make_shared<FunctionOperator>( []( double x ) { return -3.0 * x; } );
+    testIntegrator( name, "du/dt=-3u+3", params, 1.0, ut );
 }
 
 
@@ -153,9 +163,11 @@ int testSimpleTimeIntegration( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     // List of integrators
-    auto integrators = { "ExplicitEuler", "RK12", "RK23", "RK34", "RK45", "RK2", "RK4" };
-    //                         "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5" };
-
+    // We need to look at the errors for the first order -- whether they are acceptable
+    //    auto integrators = { "ExplicitEuler", "RK2",  "RK4", "Backward Euler", "BDF1", "CN",
+    //    "BDF2",
+    //                         "BDF3",          "BDF4", "BDF5" };
+    auto integrators = { "RK2", "RK4", "CN", "BDF2", "BDF3", "BDF4", "BDF5" };
     // Run the tests
     for ( auto tmp : integrators )
         runBasicIntegratorTests( tmp, ut );

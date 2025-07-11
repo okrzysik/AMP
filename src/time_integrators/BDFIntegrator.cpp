@@ -13,10 +13,6 @@
 #include <cmath>
 #include <iomanip>
 
-#ifdef ENABLE_RESTART
-    #include "RestartData.h"
-#endif
-
 #include "ProfilerApp.h"
 
 namespace AMP::TimeIntegrator {
@@ -154,9 +150,6 @@ void BDFIntegrator::integratorSpecificInitialize( void )
 
     auto params = std::make_shared<AMP::Solver::SolverStrategyParameters>();
     params->d_vectors.push_back( d_solution_vector );
-
-    //    if ( d_solver )
-    //        d_solver->initialize( params );
 }
 
 void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool )
@@ -530,17 +523,21 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
 
     f->zero();
 
+    // note that we have to subtract since the signs are the opposite of what should be there!!
+    // should be fixed in future!!
     for ( size_t i = 0; i <= d_integrator_index; ++i ) {
         f->axpy( -d_a[i], *d_prev_solutions[i], *f );
     }
 
+    const auto &current_integrator = d_integrator_names[d_integrator_index];
+
     // add in a time dependent source, g, for problems of the form u_t = f(u)+g
     // or for MGRIT it adds in the FAS correction
     if ( d_pSourceTerm ) {
-        f->axpy( -d_gamma, *d_pSourceTerm, *f );
+        const auto alpha = ( current_integrator == "CN" ) ? -2.0 * d_gamma : -d_gamma;
+        f->axpy( alpha, *d_pSourceTerm, *f );
     }
 
-    const auto &current_integrator = d_integrator_names[d_integrator_index];
     if ( current_integrator == "CN" ) {
 
         AMP_ASSERT( d_integrator_index == 0 );
@@ -550,10 +547,6 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
 
         // set the source term to -( u^{n}+(dt/2-\eps)f(u^n) )
         f->axpy( -beta, *d_prev_function_vector, *f );
-        // we have to add this in again for CN
-        if ( d_pSourceTerm ) {
-            f->axpy( -d_gamma, *d_pSourceTerm, *f );
-        }
     }
 
     auto timeOperator = std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
@@ -596,22 +589,7 @@ void BDFIntegrator::printVectorComponentNorms(
 *                                                                       *
 *************************************************************************
 */
-double BDFIntegrator::getInitialDt()
-{
-    double returnVal = d_initial_dt;
-
-#ifdef ENABLE_RESTART
-    if ( d_restart_data != nullptr ) {
-        if ( d_restart_data->readTimeStepFromRestart() ) {
-            returnVal = d_restart_data->getInitialDt();
-            // Set d_current_dt to be the time step read from restart data.
-            d_current_dt = returnVal;
-        }
-    }
-#endif
-
-    return returnVal;
-}
+double BDFIntegrator::getInitialDt() { return d_initial_dt; }
 
 /*
 *************************************************************************
@@ -636,20 +614,6 @@ double BDFIntegrator::getNextDtTruncationError( const bool good_solution, const 
                 AMP::pout << "Truncation error limited timestep" << std::endl;
         }
 
-#ifdef ENABLE_RESTART
-        if ( d_restart_data != nullptr ) {
-
-            if ( d_restart_data->getCurrentCheckPointTime() > 0.0 ) {
-                double currentCheckPointTime = d_restart_data->getCurrentCheckPointTime();
-
-                if ( ( d_current_dt + d_current_time > currentCheckPointTime ) &&
-                     ( currentCheckPointTime - d_current_time > 1.0e-10 ) ) {
-                    // make sure we hit the checkpoint
-                    d_current_dt = currentCheckPointTime - d_current_time;
-                }
-            }
-        }
-#endif
     } else {
         PROFILE( "getNextDt-truncation-bad", 2 );
         // the rejection could be due to the truncation error being too large or
@@ -712,11 +676,7 @@ double BDFIntegrator::getNextDtConstant( const bool, const int ) { return d_init
 
 double BDFIntegrator::getNextDtPredefined( const bool good_solution, const int solver_retcode )
 {
-#ifdef ENABLE_RESTART
-    return d_restart_data->getNextDt();
-#else
     return getNextDtConstant( good_solution, solver_retcode );
-#endif
 }
 
 double BDFIntegrator::getNextDtFinalConstant( const bool, const int )
@@ -768,26 +728,6 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
                                d_timestep_strategy );
                 }
             }
-
-#ifdef ENABLE_RESTART
-            // new code to make sure we hit checkpoints
-            // BP: 03/23/04
-            if ( d_restart_data != nullptr ) {
-                if ( d_restart_data->getCurrentCheckPointTime() > 0.0 ) {
-                    double currentCheckPointTime = d_restart_data->getCurrentCheckPointTime();
-
-                    if ( ( d_current_dt + d_current_time > currentCheckPointTime ) &&
-                         ( currentCheckPointTime - d_current_time > 1.0e-10 ) ) {
-                        // make sure we hit the checkpoint
-                        d_current_dt           = currentCheckPointTime - d_current_time;
-                        dtLimitedForCheckPoint = true;
-                        dtBeforeCheckPoint     = d_old_dt;
-                    } else {
-                        dtLimitedForCheckPoint = false;
-                    }
-                }
-            }
-#endif
 
         } else {
 
@@ -858,7 +798,6 @@ void BDFIntegrator::evaluatePredictor()
     if ( !d_operator->isValidVector( d_predictor_vector ) ) {
         // do a constant extrapolation in time for the
         // predictor
-        //        evaluateForwardEulerPredictor();
         d_predictor_vector->copyVector( d_prev_solutions[0] );
     }
 }
@@ -1239,18 +1178,6 @@ void BDFIntegrator::integratorSpecificUpdateSolution( const double new_time )
         printVectorComponentNorms( d_prev_solutions[0], " of current ", ": ", "L2Norm" );
     }
 
-#ifdef ENABLE_RESTART
-    if ( d_restart_data != nullptr ) {
-        if ( d_restart_data->isWriteErrorCheckPoint( d_current_time ) ) {
-            d_restart_data->writeErrorCheckPoint( d_current_time );
-        } else {
-            if ( d_restart_data->isReadErrorCheckPoint( d_current_time ) ) {
-                AMP_ERROR( "Now BDFIntegrator does not compute error approximations." );
-                // computeErrorApproximation(d_current_time);
-            }
-        }
-    }
-#endif
     // the fact that an updateSolution has happened implies that atleast
     // one step is completed. However, SAMRAI only updates the status
     // after the call to getNextDt. So going into getNextDt and in particular
@@ -2103,6 +2030,15 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
         d_scratch_vector->copyVector( d_solution_vector );
     }
 
+    if ( !d_scratch_function_vector )
+        d_scratch_function_vector = in->clone();
+
+    if ( d_function_scaling ) {
+        d_scratch_function_vector->divide( *d_integrator_source_vector, *d_function_scaling );
+    } else {
+        d_scratch_function_vector->copyVector( d_integrator_source_vector );
+    }
+
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "Scaled incoming TI solution component norms: ";
         auto mv = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_scratch_vector );
@@ -2120,7 +2056,8 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
         AMP::pout << std::endl;
     }
 
-    d_solver->apply( nullptr, d_scratch_vector );
+    d_scratch_function_vector->scale( -1.0 );
+    d_solver->apply( d_scratch_function_vector, d_scratch_vector );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "Scaled outgoing TI solution component norms: ";
