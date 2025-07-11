@@ -28,10 +28,10 @@ createBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
  * Create specific operators implementation              *
  ********************************************************/
 #ifdef AMP_USE_LIBMESH
-static Operator::shared_ptr
-createNonlinearFickSoretOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                  std::string operatorName,
-                                  std::shared_ptr<AMP::Database> input_db )
+static std::shared_ptr<OperatorParameters>
+createNonlinearFickSoretOperatorParameters( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                            std::string operatorName,
+                                            std::shared_ptr<AMP::Database> input_db )
 {
     AMP_INSIST( input_db, "NULL database object passed" );
     auto operator_db = input_db->getDatabase( operatorName );
@@ -42,29 +42,29 @@ createNonlinearFickSoretOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
     // Ensure consistency of operator memory locations
     AMP::Utilities::setNestedOperatorMemoryLocations(
         input_db, operatorName, { fickOperatorName, soretOperatorName } );
-    auto fickOperator  = createOperator( mesh, fickOperatorName, input_db );
-    auto soretOperator = createOperator( mesh, soretOperatorName, input_db );
-    auto db            = input_db;
-    auto params        = std::make_shared<FickSoretNonlinearFEOperatorParameters>( db );
-    params->d_Mesh     = mesh;
+    std::shared_ptr<Database> db = input_db->cloneDatabase();
+    auto fickOperator            = createOperator( mesh, fickOperatorName, input_db );
+    auto soretOperator           = createOperator( mesh, soretOperatorName, input_db );
+    auto params                  = std::make_shared<FickSoretNonlinearFEOperatorParameters>( db );
+    params->d_Mesh               = mesh;
     params->d_FickOperator =
         std::dynamic_pointer_cast<DiffusionNonlinearFEOperator>( fickOperator );
     params->d_SoretOperator =
         std::dynamic_pointer_cast<DiffusionNonlinearFEOperator>( soretOperator );
     params->d_name = operatorName;
-    return std::make_shared<FickSoretNonlinearFEOperator>( params );
+    return params;
 }
 #else
-static Operator::shared_ptr createNonlinearFickSoretOperator( std::shared_ptr<AMP::Mesh::Mesh>,
-                                                              std::string,
-                                                              std::shared_ptr<AMP::Database> )
+static std::shared_ptr<OperatorParameters> createNonlinearFickSoretOperatorParameters(
+    std::shared_ptr<AMP::Mesh::Mesh>, std::string, std::shared_ptr<AMP::Database> )
 {
     return nullptr;
 }
 #endif
-static Operator::shared_ptr createLinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                                     std::string operatorName,
-                                                     std::shared_ptr<AMP::Database> input_db )
+static std::shared_ptr<OperatorParameters>
+createLinearBVPOperatorParameters( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                   std::string operatorName,
+                                   std::shared_ptr<AMP::Database> input_db )
 {
     PROFILE( "createLinearBVPOperator" );
     AMP_INSIST( input_db, "NULL database object passed" );
@@ -90,11 +90,12 @@ static Operator::shared_ptr createLinearBVPOperator( std::shared_ptr<AMP::Mesh::
     auto bvpOperatorParams                = std::make_shared<BVPOperatorParameters>( operator_db );
     bvpOperatorParams->d_volumeOperator   = volumeOperator;
     bvpOperatorParams->d_boundaryOperator = boundaryOperator;
-    return std::make_shared<LinearBVPOperator>( bvpOperatorParams );
+    return bvpOperatorParams;
 }
-static Operator::shared_ptr createNonlinearBVPOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                                        std::string operatorName,
-                                                        std::shared_ptr<AMP::Database> input_db )
+static std::shared_ptr<OperatorParameters>
+createNonlinearBVPOperatorParameters( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                      std::string operatorName,
+                                      std::shared_ptr<AMP::Database> input_db )
 {
     AMP_INSIST( input_db, "NULL database object passed" );
     auto operator_db = input_db->getDatabase( operatorName );
@@ -117,7 +118,7 @@ static Operator::shared_ptr createNonlinearBVPOperator( std::shared_ptr<AMP::Mes
     auto bvpOperatorParams                = std::make_shared<BVPOperatorParameters>( input_db );
     bvpOperatorParams->d_volumeOperator   = volumeOperator;
     bvpOperatorParams->d_boundaryOperator = boundaryOperator;
-    return std::make_shared<NonlinearBVPOperator>( bvpOperatorParams );
+    return bvpOperatorParams;
 }
 
 
@@ -165,18 +166,16 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         operator_db = input_db->getDatabase( operatorName );
     AMP_INSIST( operator_db, "operator database is null" );
     auto operatorType = operator_db->getString( "name" );
+    auto params       = std::make_shared<OperatorParameters>( operator_db, mesh );
     if ( operatorType == "FickSoretNonlinearFEOperator" )
-        return createNonlinearFickSoretOperator( mesh, operatorName, input_db );
+        params = createNonlinearFickSoretOperatorParameters( mesh, operatorName, input_db );
     if ( operatorType == "LinearBVPOperator" )
-        return createLinearBVPOperator( mesh, operatorName, input_db );
+        params = createLinearBVPOperatorParameters( mesh, operatorName, input_db );
     if ( operatorType == "NonlinearBVPOperator" )
-        return createNonlinearBVPOperator( mesh, operatorName, input_db );
-    if ( OperatorFactory::exists( operatorType ) ) {
-        // Use the OperatorFactory to create the operator
-        auto params = std::make_shared<OperatorParameters>( operator_db, mesh );
-        return OperatorFactory::create( params );
-    }
-    AMP_ERROR( "Unable to create operator " + operatorType );
+        params = createNonlinearBVPOperatorParameters( mesh, operatorName, input_db );
+    if ( !params->d_db->keyExists( "name" ) )
+        params->d_db->putScalar( "name", operatorType );
+    return OperatorFactory::create( params );
 }
 
 
