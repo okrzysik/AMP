@@ -4,6 +4,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
 
 #include "StackTrace/StackTrace.h"
 #include "StackTrace_Version.h"
@@ -704,6 +705,78 @@ std::string_view getLastErrnoString()
         return "Cross-device link";
     } else {
         AMP_ERROR( "Unknown errno (" + std::to_string( err ) + ")" );
+    }
+}
+
+
+/****************************************************************************
+ *  Modify database entries to ensure consistent memory spaces               *
+ ****************************************************************************/
+void setNestedOperatorMemoryLocations( std::shared_ptr<AMP::Database> input_db,
+                                       std::string outerOperatorName,
+                                       std::vector<std::string> nestedOperatorNames )
+{
+    auto outer_db = input_db->getDatabase( outerOperatorName );
+    AMP_INSIST( outer_db, "OperatorBuilder: outer DB is null" );
+
+    if ( outer_db->keyExists( "MemoryLocation" ) ) {
+        // if outer operator requests a memory location it takes precedent
+        auto memLoc = outer_db->getScalar<std::string>( "MemoryLocation" );
+        for ( auto &innerName : nestedOperatorNames ) {
+            auto inner_db = input_db->getDatabase( innerName );
+            AMP_INSIST( inner_db, "OperatorBuilder: inner DB is null" );
+            inner_db->putScalar(
+                "MemoryLocation", memLoc, Units(), Database::Check::WarnOverwrite );
+        }
+    } else {
+        // outer db does not specify a memory location, check if any internal one does
+        // if multiple are specified use most restrictive one
+        std::string memLoc{ "device" };
+        auto memRestrict = []( std::string m1, std::string m2 ) -> std::string {
+            int c1 = 3, c2 = 3;
+            if ( m1 == "device" || m1 == "Device" ) {
+                c1 = 2;
+            } else if ( m1 == "managed" || m1 == "Managed" ) {
+                c1 = 1;
+            } else if ( m1 == "host" || m1 == "host" ) {
+                c1 = 0;
+            }
+            if ( m2 == "device" || m2 == "Device" ) {
+                c2 = 2;
+            } else if ( m2 == "managed" || m2 == "Managed" ) {
+                c2 = 1;
+            } else if ( m2 == "host" || m2 == "host" ) {
+                c2 = 0;
+            }
+            if ( c1 == 3 && c2 == 3 ) {
+                // both spaces unrecognized
+                AMP_WARNING( "Unrecognized memory space, returning host" );
+                return "host";
+            } else if ( c1 < c2 ) {
+                return m1;
+            }
+            return m2;
+        };
+        bool found = false;
+        for ( auto &innerName : nestedOperatorNames ) {
+            auto inner_db = input_db->getDatabase( innerName );
+            AMP_INSIST( inner_db, "OperatorBuilder: inner DB is null (" + innerName + ")" );
+            if ( inner_db->keyExists( "MemoryLocation" ) ) {
+                found        = true;
+                auto memLocI = inner_db->getScalar<std::string>( "MemoryLocation" );
+                memLoc       = memRestrict( memLoc, memLocI );
+            }
+        }
+        if ( found ) {
+            outer_db->putScalar(
+                "MemoryLocation", memLoc, Units(), Database::Check::WarnOverwrite );
+            for ( auto &innerName : nestedOperatorNames ) {
+                auto inner_db = input_db->getDatabase( innerName );
+                AMP_INSIST( inner_db, "OperatorBuilder: inner DB is null" );
+                inner_db->putScalar(
+                    "MemoryLocation", memLoc, Units(), Database::Check::WarnOverwrite );
+            }
+        }
     }
 }
 

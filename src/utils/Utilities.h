@@ -577,6 +577,10 @@ static inline Backend backendFromString( const std::string &name )
 }
 
 
+void setNestedOperatorMemoryLocations( std::shared_ptr<AMP::Database> input_db,
+                                       std::string outerOperatorName,
+                                       std::vector<std::string> nestedOperatorNames );
+
 } // namespace Utilities
 } // namespace AMP
 

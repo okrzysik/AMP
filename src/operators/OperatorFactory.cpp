@@ -5,6 +5,7 @@
 #include "AMP/operators/IdentityOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NeutronicsRhs.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/ParameterFactory.h"
 #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
@@ -77,6 +78,7 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
     REGISTER_OPERATOR( CoupledOperator, "CoupledOperator" );
     REGISTER_OPERATOR( ColumnOperator, "ColumnOperator" );
     REGISTER_OPERATOR( LinearBVPOperator, "LinearBVPOperator" );
+    REGISTER_OPERATOR( NonlinearBVPOperator, "NonlinearBVPOperator" );
     REGISTER_OPERATOR( ColumnBoundaryOperator, "ColumnBoundaryOperator" );
     REGISTER_OPERATOR( DirichletMatrixCorrection, "DirichletMatrixCorrection" );
     REGISTER_OPERATOR( DirichletVectorCorrection, "DirichletVectorCorrection" );
@@ -101,4 +103,5 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
     REGISTER_OPERATOR_LIBMESH( PressureBoundaryOperator, "PressureBoundaryOperator" );
     REGISTER_OPERATOR_LIBMESH( MassMatrixCorrection, "MassMatrixCorrection" );
     REGISTER_OPERATOR_LIBMESH( NeumannVectorCorrection, "NeumannVectorCorrection" );
+    REGISTER_OPERATOR_LIBMESH( FickSoretNonlinearFEOperator, "FickSoretNonlinearFEOperator" );
 }
