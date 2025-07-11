@@ -27,11 +27,45 @@
 #include <iostream>
 
 
+/* Representation of constant coefficients in front of derivatives in second-order PDE
+In 1D:
+    cxx*u_xx
+In 2D:
+    cxx*u_xx + cyy*u_yy + cxy*u_xy
+In 3D:
+    cxx*u_xx + cyy*u_yy + czz*u_zz + cxy*u_xy + cxz*u_xz + cyz*u_yz
+*/
+struct PDECoefficients {
+    double xx = std::nan("");
+    double yy = std::nan("");
+    double zz = std::nan("");
+    double xy = std::nan("");
+    double xz = std::nan("");
+    double yz = std::nan("");
+
+    PDECoefficients() {};
+    PDECoefficients( int dim, std::vector<double> c ) {
+        if ( dim == 1 ) {
+            xx = c[0];
+        } else if ( dim == 2 ) {
+            xx = c[0], yy = c[1], xy = c[2];
+        } else if ( dim == 3 ) {
+            xx = c[0], yy = c[1], zz = c[2], xy = c[3], xz = c[4], yz = c[5];
+        }
+    }
+};
+
 // Object to hold column indices and associated data for packing into a CSR matrix
 struct colsDataPair {
     std::vector<size_t> cols;
     std::vector<double> data;
 };
+
+
+
+/* --------------------------------------
+    Implementation of utility functions 
+----------------------------------------- */
 
 // CSR structure for identity row
 colsDataPair localCSR_identity(size_t dof) { 
@@ -39,12 +73,7 @@ colsDataPair localCSR_identity(size_t dof) {
     std::vector<size_t> cols = { dof };  // Column index
     colsDataPair identity    = { cols, vals }; 
     return identity;
-};
-
-
-/* --------------------------------------
-    Implementation of utility functions 
------------------------------------------ */
+}
 
 // Convert an element box to a node box. 
 // Modified from src/mesh/test/test_BoxMeshIndex.cpp by removing the possibility of any of the grid dimensions being periodic.
@@ -55,7 +84,7 @@ AMP::Mesh::BoxMesh::Box getNodeBox( std::shared_ptr<AMP::Mesh::BoxMesh> mesh, AM
             box.last[d]++;
     }
     return box;
-};
+}
 
 // As above, but just gets a localNodeBox from the mesh
 AMP::Mesh::BoxMesh::Box getLocalNodeBox( std::shared_ptr<AMP::Mesh::BoxMesh> mesh ) {
@@ -66,7 +95,7 @@ AMP::Mesh::BoxMesh::Box getLocalNodeBox( std::shared_ptr<AMP::Mesh::BoxMesh> mes
             local.last[d]++;
     }
     return local;
-};
+}
 
 // As above, but just gets a GlobalNodeBox from the mesh
 AMP::Mesh::BoxMesh::Box getGlobalNodeBox( std::shared_ptr<AMP::Mesh::BoxMesh> mesh ) {
@@ -75,7 +104,7 @@ AMP::Mesh::BoxMesh::Box getGlobalNodeBox( std::shared_ptr<AMP::Mesh::BoxMesh> me
         global.last[d]++;
     }
     return global;
-};
+}
 
 
 /* Fill CSR matrix with data from CSRData */
@@ -185,14 +214,20 @@ std::vector<double> getDiscreteNorms(double h,
 class PoissonOp : public AMP::Operator::LinearOperator {
 
 private:
-    std::shared_ptr<AMP::LinearAlgebra::Matrix> getLaplacianMatrix();
+    
+    std::shared_ptr<AMP::Mesh::BoxMesh> d_BoxMesh;
+    PDECoefficients                     d_c;
+    AMP::Mesh::GeomType                 d_geomType = AMP::Mesh::GeomType::Vertex;
 
+    void setPDECoefficients();
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> getLaplacianMatrix();
+    
 public:
 
-    std::shared_ptr<AMP::Mesh::BoxMesh>              d_BoxMesh;
+    
     std::shared_ptr<AMP::Database>                   d_db;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFMan;
-    AMP::Mesh::GeomType                              d_geomType = AMP::Mesh::GeomType::Vertex;
+    
 
     // Constructor call's base class's constructor
     PoissonOp(std::shared_ptr<const AMP::Operator::OperatorParameters> params_) : 
@@ -209,12 +244,14 @@ public:
         this->set_DOFManager();
         AMP_INSIST(  d_DOFMan, "Requires non-null DOF" );
 
+        // Set PDE coefficients
+        this->setPDECoefficients();
+
         // Get the matrix
         auto A = getLaplacianMatrix( );
         
         // Set linear operator's matrix
         this->setMatrix( A );
-
     }
 
     // Used by OperatorFactory to create a PoissonOp
@@ -238,12 +275,19 @@ public:
     
 
 private:
+
+
     /* Build and set d_DOFMan */
     void set_DOFManager() {
         int DOFsPerElement = 1; 
         int gcw  = 1; // Ghost-cell width (stencils are at most 3-point in each direction)
         d_DOFMan = AMP::Discretization::boxMeshDOFManager::create(this->getMesh(), d_geomType, gcw, DOFsPerElement);
     }
+
+    // Coefficients defining the PDE
+    std::vector<double> getPDECoefficients1D();
+    std::vector<double> getPDECoefficients2D();
+    std::vector<double> getPDECoefficients3D();
 
     // Exact solution and corresponding source term
     double exactSolution(double x);
@@ -275,96 +319,116 @@ private:
 }; 
 
 
-// -u_xx = f
+void PoissonOp::setPDECoefficients() {
+    int dim = this->getMesh()->getDim();
+    if ( dim == 1 ) {
+        d_c = PDECoefficients( 1, getPDECoefficients1D() );
+    } else if ( dim == 2 ) {
+        d_c = PDECoefficients( 2, getPDECoefficients2D() );
+    } else if ( dim == 3 ) {
+        d_c = PDECoefficients( 3, getPDECoefficients3D() );
+    }
+}
+
+
+std::vector<double> PoissonOp::getPDECoefficients1D() {
+    // PDE coefficients
+    double cxx = 1.0;
+    std::vector<double> c = { cxx };
+    return c;
+}
+
+std::vector<double> PoissonOp::getPDECoefficients2D() {
+    auto eps    = d_db->getScalar<double>("eps");
+    auto theta  = d_db->getScalar<double>("theta");
+    
+    // Trig functions of angle
+    double cth = cos(theta);
+    double sth = sin(theta);
+    // Diffusion tensor coefficients
+    double d11 = std::pow(cth, 2) + eps*std::pow(sth, 2);
+    double d22 = std::pow(cth, 2)*eps + std::pow(sth, 2);
+    double d12 = cth*sth*(1 - eps);
+    // PDE coefficients
+    double cxx = d11;
+    double cyy = d22;
+    double cxy = 2.0*d12;
+    std::vector<double> c = { cxx, cyy, cxy };
+    return c;
+}
+
+
+std::vector<double> PoissonOp::getPDECoefficients3D() {
+    auto epsy  = d_db->getScalar<double>("epsy");
+    auto epsz  = d_db->getScalar<double>("epsz");
+    auto alpha = d_db->getScalar<double>("alpha");
+    auto beta  = d_db->getScalar<double>("beta");
+    auto gamma = d_db->getScalar<double>("gamma");
+
+    // Trig functions of angles
+    double ca = cos(alpha);
+    double sa = sin(alpha);
+    double cb = cos(beta);
+    double sb = sin(beta);
+    double cg = cos(gamma);
+    double sg = sin(gamma);
+    // Diffusion tensor coefficients
+    double d11 = epsy*std::pow(ca*sg + cb*cg*sa, 2) + epsz*std::pow(sa, 2)*std::pow(sb, 2) + std::pow(ca*cg - cb*sa*sg, 2);
+    double d22 = std::pow(ca, 2)*epsz*std::pow(sb, 2) + epsy*std::pow(ca*cb*cg - sa*sg, 2) + std::pow(ca*cb*sg + cg*sa, 2);
+    double d33 = std::pow(cb, 2)*epsz + std::pow(cg, 2)*epsy*std::pow(sb, 2) + std::pow(sb, 2)*std::pow(sg, 2);
+    double d12 = -ca*epsz*sa*std::pow(sb, 2) - epsy*(ca*sg + cb*cg*sa)*(ca*cb*cg - sa*sg) + (ca*cg - cb*sa*sg)*(ca*cb*sg + cg*sa);
+    double d13 = sb*(cb*epsz*sa - cg*epsy*(ca*sg + cb*cg*sa) + sg*(ca*cg - cb*sa*sg));
+    double d23 = sb*(-ca*cb*epsz + cg*epsy*(ca*cb*cg - sa*sg) + sg*(ca*cb*sg + cg*sa));
+    // PDE coefficients
+    double cxx = d11;
+    double cyy = d22;
+    double czz = d33;
+    double cxy = 2.0*d12;
+    double cxz = 2.0*d13;
+    double cyz = 2.0*d23;
+    std::vector<double> c = { cxx, cyy, czz, cxy, cxz, cyz };
+    return c;
+}
+
 double PoissonOp::exactSolution(double x) {
     return sin(2.0 * M_PI * x);
 }
 
-// -u_xx = f
 double PoissonOp::sourceTerm(double x) {
-    return 4.0 * M_PI * M_PI * sin(2.0 * M_PI * x);
+    double cxx = d_c.xx;
+    return 4*std::pow(M_PI, 2)*cxx*std::sin(2*M_PI*x);
 }
 
-// -(alpha*u_xx + beta*u_yy + gamma*u_xy) = f (make sol non-symmetric in x and y to ensure the code doesn't mix up the two)
 double PoissonOp::exactSolution(double x, double y) {
     double u = sin(2.0 * M_PI * x) * sin(4.0 * M_PI * y);
     return u;
 }
 
-// -(alpha*u_xx + beta*u_yy + gamma*u_xy) = f
 double PoissonOp::sourceTerm(double x, double y) {
-    
-    // Unpack parameters
-    auto theta   = d_db->getScalar<double>("theta");
-    auto eps     = d_db->getScalar<double>("eps");
-    double c     = cos(theta);
-    double s     = sin(theta);
-    // PDE coefficients
-    double alpha = c*c + eps * s*s;
-    double beta  = eps * c*c + s*s;
-    double gamma = 2*(1 - eps) * c * s;
-
-    double f = 4*M_PI*M_PI*(alpha*sin(2*M_PI*x)*sin(4*M_PI*y) + 4*beta*sin(2*M_PI*x)*sin(4*M_PI*y) - 2*gamma*cos(2*M_PI*x)*cos(4*M_PI*y));
-
-    return f;
+    double cxx = d_c.xx, cyy = d_c.yy, cxy = d_c.xy; 
+    return 4*std::pow(M_PI, 2)*(cxx*std::sin(2*M_PI*x)*std::sin(4*M_PI*y) - 2*cxy*std::cos(2*M_PI*x)*std::cos(4*M_PI*y) + 4*cyy*std::sin(2*M_PI*x)*std::sin(4*M_PI*y));
 }
 
-// -(u_xx + epsy*u_yy + epsz*u_zz) = f
 double PoissonOp::exactSolution(double x, double y, double z) {
     return std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z);
 }
 
-// // -(u_xx + epsy*u_yy + epsz*u_zz) = f
-// double PoissonOp::sourceTerm(double x, double y, double z) {
-//     auto epsilony = d_db->getScalar<double>("epsy");
-//     auto epsilonz = d_db->getScalar<double>("epsz");
-//     return 4*std::pow(M_PI, 2)*(4*epsilony + 9*epsilonz + 1)*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z);
-// }
-
 double PoissonOp::sourceTerm(double x, double y, double z) {
-    auto epsy  = d_db->getScalar<double>("epsy");
-    auto epsz  = d_db->getScalar<double>("epsz");
-    auto psi   = d_db->getScalar<double>("psi");
-    auto theta = d_db->getScalar<double>("theta");
-    auto phi   = d_db->getScalar<double>("phi");
-
-    // Trig functions of angles
-    double cth  = cos(theta);
-    double sth  = sin(theta);
-    double cpsi = cos(psi);
-    double spsi = sin(psi);
-    double cphi = cos(phi);
-    double sphi = sin(phi);
-
-    // Diffusion tensor coefficients
-    double d11 = epsy*std::pow(cphi*cth*spsi + cpsi*sphi, 2) + epsz*std::pow(spsi, 2)*std::pow(sth, 2) + std::pow(cphi*cpsi - cth*sphi*spsi, 2);
-    double d22 = std::pow(cpsi, 2)*epsz*std::pow(sth, 2) + epsy*std::pow(cphi*cpsi*cth - sphi*spsi, 2) + std::pow(cphi*spsi + cpsi*cth*sphi, 2);
-    double d33 = std::pow(cphi, 2)*epsy*std::pow(sth, 2) + std::pow(cth, 2)*epsz + std::pow(sphi, 2)*std::pow(sth, 2);
-    double d12 = cpsi*epsz*spsi*std::pow(sth, 2) + epsy*(cphi*cpsi*cth - sphi*spsi)*(cphi*cth*spsi + cpsi*sphi) - (cphi*cpsi - cth*sphi*spsi)*(cphi*spsi + cpsi*cth*sphi);
-    double d13 = sth*(-cphi*epsy*(cphi*cth*spsi + cpsi*sphi) + cth*epsz*spsi + sphi*(cphi*cpsi - cth*sphi*spsi));
-    double d23 = sth*(-cphi*epsy*(cphi*cpsi*cth - sphi*spsi) + cpsi*cth*epsz - sphi*(cphi*spsi + cpsi*cth*sphi));
-
-    // PDE coefficients
-    double alpha   = d11;
-    double beta    = d22;
-    double gamma   = d33;
-    double delta   = 2.0*d12;
-    double epsilon = 2.0*d13;
-    double zeta    = 2.0*d23;
-
-    return 4*std::pow(M_PI, 2)*(alpha*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) + 4*beta*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) - 2*delta*std::sin(6*M_PI*z)*std::cos(2*M_PI*x)*std::cos(4*M_PI*y) - 3*epsilon*std::sin(4*M_PI*y)*std::cos(2*M_PI*x)*std::cos(6*M_PI*z) + 9*gamma*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) - 6*zeta*std::sin(2*M_PI*x)*std::cos(4*M_PI*y)*std::cos(6*M_PI*z));
+    double cxx = d_c.xx, cyy = d_c.yy, czz = d_c.zz, cxy = d_c.xy, cxz = d_c.xz, cyz = d_c.yz; 
+    return 4*std::pow(M_PI, 2)*(cxx*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) - 2*cxy*std::sin(6*M_PI*z)*std::cos(2*M_PI*x)*std::cos(4*M_PI*y) - 3*cxz*std::sin(4*M_PI*y)*std::cos(2*M_PI*x)*std::cos(6*M_PI*z) + 4*cyy*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) - 6*cyz*std::sin(2*M_PI*x)*std::cos(4*M_PI*y)*std::cos(6*M_PI*z) + 9*czz*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z));
 }
 
 
 /* Get 3-point stencil for 1D Poisson. */
 std::vector<double> PoissonOp::getStencil1D() {
-    
+    // Unpack PDE coefficients
+    double cxx = d_c.xx;
     // Stencil coefficients
-    double W  = -1.0; 
-    double O  = +2.0; 
-    double E  = -1.0;
+    double W  = -1.0*cxx; 
+    double O  = +2.0*cxx; 
+    double E  = -1.0*cxx;
     // Populate stencil
-    std::vector<double> stencil = { O, W, E };
+    std::vector<double> stencil = { W, O, E };
 
     // Introduce 1/h^2 scaling 
     auto h = d_db->getScalar<double>("h");
@@ -375,34 +439,40 @@ std::vector<double> PoissonOp::getStencil1D() {
     return stencil;
 }
 
-/* Get 9-point stencil for upwind FD disretization of rotated anisotropic 2D Poisson. */
+/* Get 9-point stencil for 2D Poisson that discretizes the operator
+    -cxx*u_xx
+    -cyy*u_yy
+    -cxy*u_xy 
+
+Standard 3-point differences are used for the _ii terms, and 4-point central differences are used for the mixed _ij term.
+*/
 std::vector<double> PoissonOp::getStencil2D() {
     
-    double eps   = this->d_db->getScalar<double>( "eps" );
-    double theta = this->d_db->getScalar<double>( "theta" );
+    // Unpack PDE coefficients
+    double cxx = d_c.xx;
+    double cyy = d_c.yy;
+    double cxy = d_c.xy;
 
-    AMP_INSIST( theta >= 0.0 && theta <= M_PI/2.0, "Upwind discretization only valid for theta in [0,pi/2]" );
+    // The non-mixed terms
+    double O = 0.0;
+    // -cxx*u_xx
+    double W  = -1.0*cxx; 
+           O += +2.0*cxx;  
+    double E  = -1.0*cxx;
+    // -czz =*u_yy
+    double S  = -1.0*cyy;
+           O += +2.0*cyy;
+    double N  = -1.0*cyy;
 
-    double c     = cos(theta);
-    double s     = sin(theta);
-
-    // PDE coefficients
-    double alpha = c*c + eps * s*s;
-    double beta  = eps * c*c + s*s;
-    double gamma = 2*(1 - eps) * c * s;
-    gamma *= 0.5; // gamma only ever appears multiplied by 1/2, except at O.
-    double NW = 0.0;
-    double N  =           -   beta +   gamma; 
-    double NE =                    -   gamma; 
-    double W  = -   alpha          +   gamma; 
-    double O  = + 2*alpha + 2*beta - 2*gamma; 
-    double E  = -   alpha          +   gamma;
-    double SW =                    -   gamma;
-    double S  =           -   beta +   gamma;
-    double SE = 0.0; 
+    // Mixed term
+    // -cxy*u_xy
+    double SW = -0.25*cxy;
+    double SE = +0.25*cxy;
+    double NW = +0.25*cxy;
+    double NE = -0.25*cxy;
 
     // Populate stencil
-    std::vector<double> stencil = { O, SW, S, SE, W, E, NW, N, NE };
+    std::vector<double> stencil = { SW, S, SE, W, O, E, NW, N, NE };
 
     // Introduce 1/h^2 scaling 
     auto h = d_db->getScalar<double>( "h" );
@@ -413,133 +483,79 @@ std::vector<double> PoissonOp::getStencil2D() {
     return stencil;
 }
 
-// /* Get 7-point stencil for 3D Poisson. */
-// std::vector<double> PoissonOp::getStencil3D() {
-    
-//     auto epsy = d_db->getScalar<double>( "epsy" );
-//     auto epsz = d_db->getScalar<double>( "epsz" );
 
-//     double D  = -1.0*epsz;
-//     double S  = -1.0*epsy;
-//     double W  = -1.0; 
-//     double O  = +2.0 + 2.0*epsy + 2.0*epsz; 
-//     double E  = -1.0;
-//     double N  = -1.0*epsy;
-//     double U  = -1.0*epsz;
 
-//     // Populate stencil
-//     std::vector<double> stencil = { O, D, S, W, E, N, U };
+/* Get 19-point stencil for 3D Poisson that discretizes the operator
+    -cxx*u_xx
+    -cyy*u_yy
+    -czz*u_zz
+    -cxy*u_xy
+    -cxz*u_xz
+    -czz*u_yz
 
-//     // Introduce 1/h^2 scaling 
-//     auto h = d_db->getScalar<double>( "h" );
-//     for ( auto &s : stencil ) {
-//         s *= 1.0/(h*h);
-//     }
+Standard 3-point differences are used for the _ii terms, and 4-point central differences are used for the mixed _ij terms.
 
-//     return stencil;
-// }
-
-/* Get 27-8=19-point stencil for 3D Poisson. 
-
-    -alpha  *u_xx
-    -beta   *u_yy
-    -gamma  *u_zz
-    -delta  *u_xy
-    -epsilon*u_xz
-    -zeta   *u_yz
-
+The stencil is 19 point rather than 27 point because none of the corers of the 3D cube [-1,0,+1]^3 are included in it. That is, the discretization is defined by a combination of differences that live in the xy, xz, and yz planes. 
 */
 std::vector<double> PoissonOp::getStencil3D() {
     
-    auto epsy  = d_db->getScalar<double>("epsy");
-    auto epsz  = d_db->getScalar<double>("epsz");
-    auto psi   = d_db->getScalar<double>("psi");
-    auto theta = d_db->getScalar<double>("theta");
-    auto phi   = d_db->getScalar<double>("phi");
-
-    // Trig functions of angles
-    double cth  = cos(theta);
-    double sth  = sin(theta);
-    double cpsi = cos(psi);
-    double spsi = sin(psi);
-    double cphi = cos(phi);
-    double sphi = sin(phi);
-
-    // Diffusion tensor coefficients
-    double d11 = epsy*std::pow(cphi*cth*spsi + cpsi*sphi, 2) + epsz*std::pow(spsi, 2)*std::pow(sth, 2) + std::pow(cphi*cpsi - cth*sphi*spsi, 2);
-    double d22 = std::pow(cpsi, 2)*epsz*std::pow(sth, 2) + epsy*std::pow(cphi*cpsi*cth - sphi*spsi, 2) + std::pow(cphi*spsi + cpsi*cth*sphi, 2);
-    double d33 = std::pow(cphi, 2)*epsy*std::pow(sth, 2) + std::pow(cth, 2)*epsz + std::pow(sphi, 2)*std::pow(sth, 2);
-    double d12 = cpsi*epsz*spsi*std::pow(sth, 2) + epsy*(cphi*cpsi*cth - sphi*spsi)*(cphi*cth*spsi + cpsi*sphi) - (cphi*cpsi - cth*sphi*spsi)*(cphi*spsi + cpsi*cth*sphi);
-    double d13 = sth*(-cphi*epsy*(cphi*cth*spsi + cpsi*sphi) + cth*epsz*spsi + sphi*(cphi*cpsi - cth*sphi*spsi));
-    double d23 = sth*(-cphi*epsy*(cphi*cpsi*cth - sphi*spsi) + cpsi*cth*epsz - sphi*(cphi*spsi + cpsi*cth*sphi));
-
-    // PDE coefficients
-    double alpha   = d11;
-    double beta    = d22;
-    double gamma   = d33;
-    double delta   = 2.0*d12;
-    double epsilon = 2.0*d13;
-    double zeta    = 2.0*d23;
-
-    // AMP::pout << 
-    // "alpha=" << alpha <<
-    // ", beta=" << beta <<
-    // ", gamma=" << gamma <<
-    // ", delta=" << delta <<
-    // ", epsilon=" << epsilon <<
-    // ", zeta=" << zeta << std::endl;
+    // Unpack PDE coefficients
+    double cxx = d_c.xx;
+    double cyy = d_c.yy;
+    double czz = d_c.zz;
+    double cxy = d_c.xy;
+    double cxz = d_c.xz;
+    double cyz = d_c.yz; 
 
     /*
-    z = -1 plane
+    z = -1 plane (D == down)
     DNE DN DNE
     DW  DO DE
     DSW DS DSE
 
-    z = 0 plane
+    z = 0 plane (M == middle)
     MNE MN MNE
     MW  MO ME
     MSW MS MSE
 
-    z = +1 plane
+    z = +1 plane (U == up)
     UNE UN UNE
     UW  UO UE
     USW US USE
     */
 
-    // The non-mized terms
+    // The non-mixed terms
     double MO = 0.0;
-    // -alpha*u_xx
-    double MW  = -1.0*alpha; 
-           MO += +2.0*alpha;  
-    double ME  = -1.0*alpha;
-    // -beta =*u_yy
-    double MS  = -1.0*beta;
-           MO += +2.0*beta;
-    double MN  = -1.0*beta;
-    // -gamma*u_zz
-    double DO  = -1.0*gamma;
-           MO += +2.0*gamma;
-    double UO  = -1.0*gamma;
+    // -cxx*u_xx
+    double MW  = -1.0*cxx; 
+           MO += +2.0*cxx;  
+    double ME  = -1.0*cxx;
+    // -czz =*u_yy
+    double MS  = -1.0*cyy;
+           MO += +2.0*cyy;
+    double MN  = -1.0*cyy;
+    // -czz*u_zz
+    double DO  = -1.0*czz;
+           MO += +2.0*czz;
+    double UO  = -1.0*czz;
 
-    // -delta*u_xy
-    double MSW = -0.25*delta;
-    double MSE = +0.25*delta;
-    double MNW = +0.25*delta;
-    double MNE = -0.25*delta;
-
-    // -epsilon*u_xz
-    double DW = -0.25*epsilon;
-    double DE = +0.25*epsilon;
-    double UW = +0.25*epsilon;
-    double UE = -0.25*epsilon;
-
-    // -zeta*u_yz
-    double DS = -0.25*zeta;
-    double DN = +0.25*zeta;
-    double US = +0.25*zeta;
-    double UN = -0.25*zeta;
+    // Mixed terms
+    // -cxy*u_xy
+    double MSW = -0.25*cxy;
+    double MSE = +0.25*cxy;
+    double MNW = +0.25*cxy;
+    double MNE = -0.25*cxy;
+    // -cxz*u_xz
+    double DW  = -0.25*cxz;
+    double DE  = +0.25*cxz;
+    double UW  = +0.25*cxz;
+    double UE  = -0.25*cxz;
+    // -cyz*u_yz
+    double DS  = -0.25*cyz;
+    double DN  = +0.25*cyz;
+    double US  = +0.25*cyz;
+    double UN  = -0.25*cyz;
     
-
     // Populate stencil
     std::vector<double> stencil = { 
         DS, DW, DO, DE, DN, // z = -1 plane
@@ -603,8 +619,8 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData1D() {
         std::vector<double> vals = stencil; 
         // Column indices, ordered consistently with the stencil
         std::vector<size_t> cols = { 
-            dof,
             gridIndsToDOF( i-1 ),
+            dof,
             gridIndsToDOF( i+1 ) };
         localCSRData[dof] = { cols, vals };
     }  
@@ -643,15 +659,16 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData2D() {
             std::vector<double> vals = stencil; 
             // Column indices, ordered consistently with the stencil
             std::vector<size_t> cols = { 
-                dof,
-                gridIndsToDOF( i-1, j-1 ),
-                gridIndsToDOF( i ,  j-1 ),
-                gridIndsToDOF( i+1, j-1 ),
-                gridIndsToDOF( i-1, j   ),
-                gridIndsToDOF( i+1, j   ),
-                gridIndsToDOF( i-1, j+1 ),
-                gridIndsToDOF( i ,  j+1 ),
-                gridIndsToDOF( i+1, j+1 ) };
+                gridIndsToDOF( i-1, j-1 ), // SW
+                gridIndsToDOF( i ,  j-1 ), // S
+                gridIndsToDOF( i+1, j-1 ), // SE
+                gridIndsToDOF( i-1, j   ), // W
+                dof,                       // O
+                gridIndsToDOF( i+1, j   ), // E
+                gridIndsToDOF( i-1, j+1 ), // NW
+                gridIndsToDOF( i ,  j+1 ), // N
+                gridIndsToDOF( i+1, j+1 )  // NW
+            };
 
             localCSRData[dof] = { cols, vals };
         }
@@ -691,17 +708,6 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData3D( ) {
                 // Copy of stencil
                 std::vector<double> vals = stencil; 
                 // Column indices, ordered consistently with the stencil
-                // // O, D, S, W, E, N, U
-                // std::vector<size_t> cols = { 
-                //     dof,
-                //     gridIndsToDOF( i,   j,   k-1 ),
-                //     gridIndsToDOF( i,   j-1, k   ),
-                //     gridIndsToDOF( i-1, j,   k   ),
-                //     gridIndsToDOF( i+1, j,   k   ),
-                //     gridIndsToDOF( i,   j+1, k   ),
-                //     gridIndsToDOF( i,   j,   k+1 ) };
-
-                // 
                 // DS, DW, DO, DE, DN, // z = -1 plane
                 // MSW, MS, MSE, MW, MO, ME, MNW, MN, MNE, // z = 0 plane
                 // US, UW, UO, UE, UN, // z = +1 plane
@@ -715,9 +721,9 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData3D( ) {
                     gridIndsToDOF( i-1, j-1, k   ), // MSW
                     gridIndsToDOF( i ,  j-1, k   ), // MS
                     gridIndsToDOF( i+1, j-1, k   ), // MSE
-                    gridIndsToDOF( i-1, j, k     ), // MW
-                    gridIndsToDOF( i  , j, k     ), // MO
-                    gridIndsToDOF( i+1, j, k     ), // ME
+                    gridIndsToDOF( i-1, j,   k   ), // MW
+                    gridIndsToDOF( i  , j,   k   ), // MO
+                    gridIndsToDOF( i+1, j,   k   ), // ME
                     gridIndsToDOF( i-1, j+1, k   ), // MNW
                     gridIndsToDOF( i ,  j+1, k   ), // MN
                     gridIndsToDOF( i+1, j+1, k   ), // MNE
@@ -728,8 +734,6 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData3D( ) {
                     gridIndsToDOF( i+1, j,   k+1 ), // UE
                     gridIndsToDOF( i,   j+1, k+1 )  // UN
                 };
-
-
                 localCSRData[dof] = { cols, vals };
             }
         } 
@@ -861,13 +865,14 @@ void driver(AMP::AMP_MPI comm,
     static std::shared_ptr<AMP::Mesh::BoxMesh> mesh = createBoxMesh( comm, PDE_db );
 
     // Print basic problem information
-    AMP::pout << "-------------------------------------------------------------------------" << std::endl;
+    AMP::pout << "--------------------------------------------------------------------------------" << std::endl;
     AMP::pout << "Solving " << static_cast<int>(mesh->getDim()) 
         << "D Poisson problem on mesh with " 
         << mesh->numGlobalElements(AMP::Mesh::GeomType::Vertex) 
+        << " (==" << PDE_db->getScalar<int>( "n" )+1 << "^" << static_cast<int>(mesh->getDim()) << ")"
         << " total DOFs across " << mesh->getComm().getSize() 
         << " ranks" << std::endl;
-    AMP::pout << "-------------------------------------------------------------------------" << std::endl;
+    AMP::pout << "--------------------------------------------------------------------------------" << std::endl;
 
 
     /****************************************************************
@@ -949,18 +954,22 @@ void driver(AMP::AMP_MPI comm,
 
 
 
-
 /*  The input file must contain a "PDE" database, which has 
 
     dim : the dimension of the problem (1, 2, or 3)
     n   : the number of mesh points (plus 1) in each grid dimension
     
     - In 1D, the PDE is -u_xx = f. Standard 3-point finite differences are used. 
-    - In 2D, the PDE is -u_xx -eps*u_yy = f, but rotated an angle of theta in [0,pi/2] radians counter clockwise from the positive x axis. 7-point upwind finite differences are used.
-    - In 3D, the PDE is -u_xx -epsy*u_yy - epsz*u_zz = f. Standard 7-point finite differences are used
+    - In 2D, the PDE is -u_xx -eps*u_yy = f, but rotated an angle of theta radians counter clockwise from the positive x axis. 9-point finite differences are used.
+    - In 3D, the PDE is -u_xx -epsy*u_yy - epsz*u_zz = f, but rotated according in 3D according the the so-called "extrinsic" 3-1-3 Euler angles (see https://en.wikipedia.org/wiki/Euler_angles#Definition_by_extrinsic_rotations) gamma, beta, and alpha. A new coordinate system XYZ is obtained from rotating the xyz coordinate system by: 1. first rotating gamma radians around the z axis, 2. then beta radians about the x axis, 3. then alpha radians about the z axis. 19-point finite differences are used. 
+    
+    - In 2D, the PDE database must also specify the constants "eps", and "theta"
+    - In 2D, the PDE database must also specify the constants "epsy", "epsz", "gamma", "beta", and "alpha"
 
-    - In 2D, the PDE database must also specify the constants "eps" and "theta"
-    - in 2D, the PDE database must also specify the constants "epsy" and "epsz"
+    - Mixed derivatives are discretized with central finite differences (as opposed to upwind)
+
+    - Note that for eps = epsy = epsz = 1, the PDEs are isotropic and grid aligned (the rotation angles have no impact in this case), and moreover, in these cases the discretizations reduce to the standard 5- and 7-point stencils in 2D and 3D, respectively.
+
 */
 int main( int argc, char **argv )
 {
@@ -972,17 +981,81 @@ int main( int argc, char **argv )
     // Create a global communicator
     AMP::AMP_MPI comm( AMP_COMM_WORLD );
     
-
     std::vector<std::string> exeNames;
     exeNames.emplace_back( "testLinearSolvers-PoissonFD-BoomerAMG-CG" );
 
     for ( auto &exeName : exeNames ) {
         driver( comm, &ut, exeName );
     }    
-
     ut.report();
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
     return num_failed;
 }
+
+
+// /* Get 7-point stencil for 3D Poisson. */
+// std::vector<double> PoissonOp::getStencil3D() {
+    
+//     auto epsy = d_db->getScalar<double>( "epsy" );
+//     auto epsz = d_db->getScalar<double>( "epsz" );
+
+//     double D  = -1.0*epsz;
+//     double S  = -1.0*epsy;
+//     double W  = -1.0; 
+//     double O  = +2.0 + 2.0*epsy + 2.0*epsz; 
+//     double E  = -1.0;
+//     double N  = -1.0*epsy;
+//     double U  = -1.0*epsz;
+
+//     // Populate stencil
+//     std::vector<double> stencil = { O, D, S, W, E, N, U };
+
+//     // Introduce 1/h^2 scaling 
+//     auto h = d_db->getScalar<double>( "h" );
+//     for ( auto &s : stencil ) {
+//         s *= 1.0/(h*h);
+//     }
+
+//     return stencil;
+// }
+
+
+// /* Get 9-point stencil for upwind FD disretization of rotated anisotropic 2D Poisson. */
+// std::vector<double> PoissonOp::getStencil2D() {
+    
+//     double eps   = this->d_db->getScalar<double>( "eps" );
+//     double theta = this->d_db->getScalar<double>( "theta" );
+
+//     AMP_INSIST( theta >= 0.0 && theta <= M_PI/2.0, "Upwind discretization only valid for theta in [0,pi/2]" );
+
+//     double c     = cos(theta);
+//     double s     = sin(theta);
+
+//     // PDE coefficients
+//     double alpha = c*c + eps * s*s;
+//     double beta  = eps * c*c + s*s;
+//     double gamma = 2*(1 - eps) * c * s;
+//     gamma *= 0.5; // gamma only ever appears multiplied by 1/2, except at O.
+//     double NW = 0.0;
+//     double N  =           -   beta +   gamma; 
+//     double NE =                    -   gamma; 
+//     double W  = -   alpha          +   gamma; 
+//     double O  = + 2*alpha + 2*beta - 2*gamma; 
+//     double E  = -   alpha          +   gamma;
+//     double SW =                    -   gamma;
+//     double S  =           -   beta +   gamma;
+//     double SE = 0.0; 
+
+//     // Populate stencil
+//     std::vector<double> stencil = { O, SW, S, SE, W, E, NW, N, NE };
+
+//     // Introduce 1/h^2 scaling 
+//     auto h = d_db->getScalar<double>( "h" );
+//     for ( auto &s : stencil ) {
+//         s *= 1.0/(h*h);
+//     }
+
+//     return stencil;
+// }
