@@ -11,6 +11,10 @@ COPY_TEST_FILE( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
 COPY_TEST_FILE( inputIDATimeIntegrator )
 COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
 
+IF ( USE_PETSC )
+    ADD_AMP_TEST( test-linearODE )
+ENDIF()
+
 # Add the tests
 INITIALIZE_TESTBUILDER()
 ADD_TB_TEST( testSimpleTimeIntegration )
