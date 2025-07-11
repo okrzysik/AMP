@@ -12,6 +12,10 @@ COPY_TEST_FILE( inputIDATimeIntegrator )
 COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
 COPY_TEST_FILE( input_testImplicitIntegrationWithUserOperator )
 
+IF ( USE_PETSC )
+    ADD_AMP_TEST( test-linearODE )
+ENDIF()
+
 # Add the tests
 ADD_AMP_TEST( testImplicitIntegrationWithUserOperator )
 
