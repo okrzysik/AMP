@@ -92,6 +92,7 @@ void AMP::FactoryStrategy<
     d_factories["BDF4"]               = BDFIntegrator::createTimeIntegrator;
     d_factories["BDF5"]               = BDFIntegrator::createTimeIntegrator;
     d_factories["BDF6"]               = BDFIntegrator::createTimeIntegrator;
+    d_factories["CN"]                 = BDFIntegrator::createTimeIntegrator;
     d_factories["RK2"]  = AMP::TimeIntegrator::RK2TimeIntegrator::createTimeIntegrator;
     d_factories["RK4"]  = AMP::TimeIntegrator::RK4TimeIntegrator::createTimeIntegrator;
     d_factories["RK12"] = AMP::TimeIntegrator::RK12TimeIntegrator::createTimeIntegrator;

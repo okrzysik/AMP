@@ -66,11 +66,6 @@ void TimeOperator::applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x
 {
     AMP_INSIST( d_pRhsOperator, "RHS Operator is NULL" );
     d_pRhsOperator->apply( x, f );
-
-    // this is already in the time integrator
-    //    if ( d_pSourceTerm ) {
-    //        f->add( *d_pSourceTerm, *f );
-    //    }
 }
 
 void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
@@ -128,11 +123,6 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
         r->axpy( -d_dGamma, *r, *d_pScratchVector );
     }
 
-    // add in source terms coming from time history variables
-    if ( d_pIntegratorSourceTerm ) {
-        r->add( *r, *d_pIntegratorSourceTerm );
-    }
-
     if ( d_iDebugPrintInfoLevel > 5 ) {
         AMP::pout << "Output of M * yp-fRhs(y,t) in TimeOperator" << std::endl;
         AMP::pout << r << std::endl;
@@ -155,8 +145,6 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
         AMP::pout << std::endl;
     }
 
-    r->scale( -1.0, *r );
-
     if ( d_pFunctionScaling ) {
         r->divide( *r, *d_pFunctionScaling );
     }
@@ -174,8 +162,9 @@ void TimeOperator::residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     apply( u, r );
 
     // this has to be consistent with the sign of the apply() call
-    if ( f )
-        r->add( *r, *f );
+    if ( f ) {
+        r->subtract( *f, *r );
+    }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "Scaled residual component norms: ";
