@@ -82,8 +82,12 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
     REGISTER_OPERATOR( DirichletVectorCorrection, "DirichletVectorCorrection" );
     REGISTER_OPERATOR( NeutronicsRhs, "NeutronicsRhsOperator" );
     REGISTER_OPERATOR_LIBMESH( MapSurface, "MapSurface" );
+    REGISTER_OPERATOR_LIBMESH( VolumeIntegralOperator, "VolumeIntegralOperator" );
+    REGISTER_OPERATOR_LIBMESH( MassLinearFEOperator, "MassLinearFEOperator" );
     REGISTER_OPERATOR_LIBMESH( DiffusionLinearFEOperator, "DiffusionLinearFEOperator" );
+    REGISTER_OPERATOR_LIBMESH( DiffusionNonlinearFEOperator, "DiffusionNonlinearFEOperator" );
     REGISTER_OPERATOR_LIBMESH( MechanicsLinearFEOperator, "MechanicsLinearFEOperator" );
+    REGISTER_OPERATOR_LIBMESH( MechanicsNonlinearFEOperator, "MechanicsNonlinearFEOperator" );
     REGISTER_OPERATOR_LIBMESH( RobinMatrixCorrection, "RobinMatrixCorrection" );
     REGISTER_OPERATOR_LIBMESH( RobinVectorCorrection, "RobinVectorCorrection" );
     REGISTER_OPERATOR_LIBMESH( FlowFrapconJacobian, "FlowFrapconJacobian" );
@@ -95,4 +99,6 @@ void AMP::FactoryStrategy<AMP::Operator::Operator,
     REGISTER_OPERATOR_LIBMESH( SubchannelFourEqNonlinearOperator,
                                "SubchannelFourEqNonlinearOperator" );
     REGISTER_OPERATOR_LIBMESH( PressureBoundaryOperator, "PressureBoundaryOperator" );
+    REGISTER_OPERATOR_LIBMESH( MassMatrixCorrection, "MassMatrixCorrection" );
+    REGISTER_OPERATOR_LIBMESH( NeumannVectorCorrection, "NeumannVectorCorrection" );
 }

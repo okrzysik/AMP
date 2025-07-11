@@ -14,8 +14,7 @@ namespace AMP::Operator {
 class DiffusionNonlinearFEOperator : public NonlinearFEOperator
 {
 public:
-    explicit DiffusionNonlinearFEOperator(
-        std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params );
+    explicit DiffusionNonlinearFEOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~DiffusionNonlinearFEOperator() {}
 
@@ -104,6 +103,9 @@ private:
     std::string d_PrincipalVariable;
 
     void resetFrozen( std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params );
+
+    explicit DiffusionNonlinearFEOperator(
+        std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params, bool );
 };
 } // namespace AMP::Operator
 

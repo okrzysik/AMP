@@ -1,16 +1,51 @@
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/operators/ElementOperationFactory.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 
 namespace AMP::Operator {
 
-MechanicsLinearFEOperator::MechanicsLinearFEOperator(
-    std::shared_ptr<const OperatorParameters> inParams )
-    : LinearFEOperator( inParams )
+
+static std::shared_ptr<const MechanicsLinearFEOperatorParameters>
+convert( std::shared_ptr<const OperatorParameters> params )
 {
-    auto params = std::dynamic_pointer_cast<const MechanicsLinearFEOperatorParameters>( inParams );
+    if ( std::dynamic_pointer_cast<const MechanicsLinearFEOperatorParameters>( params ) )
+        return std::dynamic_pointer_cast<const MechanicsLinearFEOperatorParameters>( params );
+    auto db = params->d_db;
+    // first create a MechanicsMaterialModel
+    auto model_db = db->getDatabase( "LocalModel" );
+    auto model    = std::dynamic_pointer_cast<MechanicsMaterialModel>(
+        ElementPhysicsModelFactory::createElementPhysicsModel( model_db ) );
+    // next create a ElementOperation object
+    auto elem_db       = db->getDatabase( "MechanicsElement" );
+    auto mechanicsElem = ElementOperationFactory::createElementOperation( elem_db );
+    // now create the linear mechanics operator parameters
+    AMP_ASSERT( db->getString( "name" ) == "MechanicsLinearFEOperator" );
+    auto dofManager = AMP::Discretization::simpleDOFManager::create(
+        params->d_Mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto myparams             = std::make_shared<MechanicsLinearFEOperatorParameters>( db );
+    myparams->d_Mesh          = params->d_Mesh;
+    myparams->d_materialModel = model;
+    myparams->d_elemOp        = mechanicsElem;
+    myparams->d_inDofMap      = dofManager;
+    myparams->d_outDofMap     = dofManager;
+    return myparams;
+}
+
+
+MechanicsLinearFEOperator::MechanicsLinearFEOperator(
+    std::shared_ptr<const OperatorParameters> params )
+    : MechanicsLinearFEOperator( convert( params ), true )
+{
+}
+MechanicsLinearFEOperator::MechanicsLinearFEOperator(
+    std::shared_ptr<const MechanicsLinearFEOperatorParameters> params, bool )
+    : LinearFEOperator( params )
+{
     AMP_INSIST( params, "NULL parameter" );
     d_useUpdatedLagrangian = params->d_db->getWithDefault<bool>( "USE_UPDATED_LAGRANGIAN", false );
     if ( d_useUpdatedLagrangian ) {
@@ -59,7 +94,7 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
                     d_refXYZ->setValuesByGlobalID(
                         1, &d_dofIndices[j][i], &elementRefXYZ[( 3 * j ) + i] );
                 } // end of i
-            }     // end of j
+            } // end of j
 
             destroyCurrentLibMeshElement();
         } // end of el
@@ -126,7 +161,7 @@ void MechanicsLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
         for ( size_t c = 0; c < num_local_dofs; c++ ) {
             d_elementStiffnessMatrix[r][c] = 0.0;
         } // end for c
-    }     // end for r
+    } // end for r
 
     if ( d_useUpdatedLagrangian ) {
         std::vector<std::vector<double>> elementInputVectors(
@@ -144,7 +179,7 @@ void MechanicsLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
                 }
                 elementRefXYZ[( 3 * r ) + d] = d_refXYZ->getValueByGlobalID( d_dofIndices[r][d] );
             } // end for d
-        }     // end for r
+        } // end for r
         d_mechLinULElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
         d_mechLinULElem->setElementVectors( elementInputVectors );
         d_mechLinULElem->setElementStiffnessMatrix( d_elementStiffnessMatrix );
@@ -168,9 +203,9 @@ void MechanicsLinearFEOperator::postElementOperation()
                         d_dofIndices[c][dc],
                         d_elementStiffnessMatrix[( 3 * r ) + dr][( 3 * c ) + dc] );
                 } // end for dc
-            }     // end for c
-        }         // end for dr
-    }             // end for r
+            } // end for c
+        } // end for dr
+    } // end for r
     destroyCurrentLibMeshElement();
 }
 
@@ -206,7 +241,7 @@ void MechanicsLinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vector
             for ( size_t d = 0; d < 3; d++ ) {
                 elementInputVector[( 3 * r ) + d] = disp->getValueByGlobalID( d_dofIndices[r][d] );
             } // end for d
-        }     // end for r
+        } // end for r
 
         d_mechLinElem->initializeForCurrentElement( d_currElemPtr, d_materialModel );
         d_mechLinElem->printStressAndStrain( fp, elementInputVector );

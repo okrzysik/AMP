@@ -1,12 +1,16 @@
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
+#include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementOperationParameters.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "AMP/utils/Database.h"
+#include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
+
 #include "ProfilerApp.h"
 
 #include <cstring>
@@ -99,8 +103,49 @@ void DiffusionNonlinearFEOperator::setVector( const std::string &name,
 }
 
 
+static std::shared_ptr<const DiffusionNonlinearFEOperatorParameters>
+convert( std::shared_ptr<const OperatorParameters> params )
+{
+    if ( std::dynamic_pointer_cast<const DiffusionNonlinearFEOperatorParameters>( params ) )
+        return std::dynamic_pointer_cast<const DiffusionNonlinearFEOperatorParameters>( params );
+    auto db = params->d_db;
+    // first create a DiffusionTransportModel
+    auto model_db            = db->getDatabase( "LocalModel" );
+    auto elementPhysicsModel = ElementPhysicsModelFactory::createElementPhysicsModel( model_db );
+    auto transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
+    AMP_INSIST( transportModel, "NULL transport model" );
+    // next create a ElementOperation object
+    auto diffusionElem =
+        ElementOperationFactory::createElementOperation( db->getDatabase( "DiffusionElement" ) );
+    // now create the nonlinear diffusion operator parameters
+    AMP_ASSERT( db->getString( "name" ) == "DiffusionNonlinearFEOperator" );
+    auto diffusionOpParams    = std::make_shared<DiffusionNonlinearFEOperatorParameters>( db );
+    diffusionOpParams->d_Mesh = params->d_Mesh;
+    diffusionOpParams->d_transportModel = transportModel;
+    diffusionOpParams->d_elemOp         = diffusionElem;
+    // populate the parameters with frozen active variable vectors
+    diffusionOpParams->d_FrozenVecs.clear();
+    auto scalarDOF = AMP::Discretization::simpleDOFManager::create(
+        params->d_Mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    for ( auto name : getActiveVariables( db, "ActiveInputVariables" ) ) {
+        auto var    = std::make_shared<AMP::LinearAlgebra::Variable>( name );
+        auto memLoc = AMP::Utilities::memoryLocationFromString(
+            db->getWithDefault<std::string>( "MemoryLocation", "host" ) );
+        auto vec = AMP::LinearAlgebra::createVector( scalarDOF, var, true, memLoc );
+        if ( db->getWithDefault<bool>( "Freeze" + name, false ) )
+            diffusionOpParams->d_FrozenVecs[name] = vec;
+    }
+    return diffusionOpParams;
+}
+
+
 DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
-    std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params )
+    std::shared_ptr<const OperatorParameters> params )
+    : DiffusionNonlinearFEOperator( convert( params ), true )
+{
+}
+DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
+    std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params, bool )
     : NonlinearFEOperator( params )
 {
     AMP_INSIST( params, "NULL parameter!" );

@@ -93,7 +93,9 @@ public:
 
 protected:
     void getDofIndicesForCurrentElement();
+    MechanicsLinearFEOperator( std::shared_ptr<const MechanicsLinearFEOperatorParameters>, bool );
 
+protected:
     std::vector<std::vector<size_t>> d_dofIndices; /**< DOF indices */
 
     std::vector<std::vector<double>> d_elementStiffnessMatrix; /**< Element stiffness matrix. */

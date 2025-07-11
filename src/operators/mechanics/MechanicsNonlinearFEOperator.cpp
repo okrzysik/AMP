@@ -2,19 +2,60 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/ElementOperationFactory.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/mechanics/MechanicsLinearElement.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperatorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
+
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"
 
+
 namespace AMP::Operator {
 
+
+static std::shared_ptr<const MechanicsNonlinearFEOperatorParameters>
+convert( std::shared_ptr<const OperatorParameters> params )
+{
+    if ( std::dynamic_pointer_cast<const MechanicsNonlinearFEOperatorParameters>( params ) )
+        return std::dynamic_pointer_cast<const MechanicsNonlinearFEOperatorParameters>( params );
+    auto db = params->d_db;
+    // first create a MechanicsMaterialModel
+    auto model_db = db->getDatabase( "LocalModel" );
+    auto model    = std::dynamic_pointer_cast<MechanicsMaterialModel>(
+        ElementPhysicsModelFactory::createElementPhysicsModel( model_db ) );
+    // next create a ElementOperation object
+    auto elem_db       = db->getDatabase( "MechanicsElement" );
+    auto mechanicsElem = ElementOperationFactory::createElementOperation( elem_db );
+    // now create the nonlinear mechanics operator parameters
+    AMP_ASSERT( db->getString( "name" ) == "MechanicsNonlinearFEOperator" );
+    auto scalarDofs = AMP::Discretization::simpleDOFManager::create(
+        params->d_Mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto vecDofs = AMP::Discretization::simpleDOFManager::create(
+        params->d_Mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto myparams             = std::make_shared<MechanicsNonlinearFEOperatorParameters>( db );
+    myparams->d_Mesh          = params->d_Mesh;
+    myparams->d_materialModel = model;
+    myparams->d_elemOp        = mechanicsElem;
+    myparams->d_dofMap[Mechanics::DISPLACEMENT]         = vecDofs;
+    myparams->d_dofMap[Mechanics::TEMPERATURE]          = scalarDofs;
+    myparams->d_dofMap[Mechanics::BURNUP]               = scalarDofs;
+    myparams->d_dofMap[Mechanics::OXYGEN_CONCENTRATION] = scalarDofs;
+    myparams->d_dofMap[Mechanics::LHGR]                 = scalarDofs;
+    return myparams;
+}
+
+
 MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
-    std::shared_ptr<const MechanicsNonlinearFEOperatorParameters> params )
+    std::shared_ptr<const OperatorParameters> params )
+    : MechanicsNonlinearFEOperator( convert( params ), true )
+{
+}
+MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
+    std::shared_ptr<const MechanicsNonlinearFEOperatorParameters> params, bool )
     : NonlinearFEOperator( params )
 {
     AMP_INSIST( params, "NULL parameter!" );

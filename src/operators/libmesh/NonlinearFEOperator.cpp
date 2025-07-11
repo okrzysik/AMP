@@ -9,9 +9,12 @@
 namespace AMP::Operator {
 
 
-NonlinearFEOperator::NonlinearFEOperator( std::shared_ptr<const FEOperatorParameters> params )
-    : Operator( params ), d_elemOp( params->d_elemOp )
+NonlinearFEOperator::NonlinearFEOperator( std::shared_ptr<const OperatorParameters> in )
+    : Operator( in )
 {
+    auto params = std::dynamic_pointer_cast<const FEOperatorParameters>( in );
+    AMP_INSIST( params, "NULL parameter!" );
+    d_elemOp = params->d_elemOp;
     createLibMeshElementList();
     d_currElemIdx = static_cast<unsigned int>( -1 );
 }
@@ -67,7 +70,7 @@ void NonlinearFEOperator::createLibMeshElementList()
             auto pt                          = currNodes[j].coord();
             d_currElemPtrs[i]->set_node( j ) = new libMesh::Node( pt[0], pt[1], pt[2], j );
         } // end for j
-    }     // end for i
+    } // end for i
 }
 
 
