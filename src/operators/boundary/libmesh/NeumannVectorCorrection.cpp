@@ -1,6 +1,7 @@
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
@@ -29,12 +30,37 @@ using AMP::Utilities::stringf;
 namespace AMP::Operator {
 
 
-// Constructor
+/****************************************************************
+ * Create the appropriate parameters                             *
+ ****************************************************************/
+static std::shared_ptr<const NeumannVectorCorrectionParameters>
+convert( std::shared_ptr<const OperatorParameters> inParams )
+{
+    AMP_ASSERT( inParams );
+    if ( std::dynamic_pointer_cast<const NeumannVectorCorrectionParameters>( inParams ) )
+        return std::dynamic_pointer_cast<const NeumannVectorCorrectionParameters>( inParams );
+    auto bndParams = std::dynamic_pointer_cast<const BoundaryOperatorParameters>( inParams );
+    AMP_ASSERT( bndParams );
+    auto params        = std::make_shared<NeumannVectorCorrectionParameters>( inParams->d_db );
+    params->d_Mesh     = inParams->d_Mesh;
+    params->d_variable = bndParams->d_volumeOperator->getOutputVariable();
+    if ( params->d_db->keyExists( "LocalModel" ) ) {
+        auto model_db = params->d_db->getDatabase( "LocalModel" );
+        auto model    = ElementPhysicsModelFactory::createElementPhysicsModel( model_db );
+        params->d_robinPhysicsModel = std::dynamic_pointer_cast<RobinPhysicsModel>( model );
+    }
+    return params;
+}
+
+
+/****************************************************************
+ * Constructor                                                   *
+ ****************************************************************/
 NeumannVectorCorrection::NeumannVectorCorrection(
     std::shared_ptr<const OperatorParameters> inParams )
     : BoundaryOperator( inParams )
 {
-    auto params = std::dynamic_pointer_cast<const NeumannVectorCorrectionParameters>( inParams );
+    auto params = convert( inParams );
     AMP_ASSERT( params );
     d_params = params;
 

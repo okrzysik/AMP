@@ -109,7 +109,7 @@ static void myTest( AMP::UnitTest *ut )
                     innerInput_db->getDatabase( testOp_db->getString( "VolumeOperator" ) );
                 if ( ( volOp_db->getName() == "DiffusionNonlinearFEOperator" ) ||
                      ( volOp_db->getName() == "DiffusionLinearFEOperator" ) ) {
-                    model_db = innerInput_db->getDatabase( volOp_db->getString( "LocalModel" ) );
+                    model_db = innerInput_db->getDatabase( "LocalModel" );
                 }
             }
 

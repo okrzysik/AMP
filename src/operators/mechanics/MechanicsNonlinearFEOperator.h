@@ -58,8 +58,7 @@ public:
       will be ignored if the corresponding variable is not active.
       5) OutputVariable (No default value) - Name of the output variable
       */
-    explicit MechanicsNonlinearFEOperator(
-        std::shared_ptr<const MechanicsNonlinearFEOperatorParameters> params );
+    explicit MechanicsNonlinearFEOperator( std::shared_ptr<const OperatorParameters> params );
 
     /**
       Destructor.
@@ -184,6 +183,11 @@ protected:
 
     void getDofIndicesForCurrentElement( int varId, std::vector<std::vector<size_t>> &dofIds );
 
+    MechanicsNonlinearFEOperator( std::shared_ptr<const MechanicsNonlinearFEOperatorParameters>,
+                                  bool );
+
+
+protected:
     std::vector<double> d_elementOutputVector; /**< Element output vector. */
 
     std::shared_ptr<MechanicsNonlinearElement> d_mechNonlinElem; /**< Element operation. */

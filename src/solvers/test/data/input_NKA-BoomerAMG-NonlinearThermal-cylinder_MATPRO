@@ -12,6 +12,27 @@ surfaceIds = 4, 4, 4, 4, 1, 2
 static = TRUE
 }
 
+SourcePhysicsModel {
+  name = "SourcePhysicsModel"
+    Material = "UO2_MSRZC_09"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+    Default_Concentration = .1
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+}
+
+DiffusionTransportModel1{
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+} 
+
+
 NeutronicsOperator{
   name="NeutronicsRhsOperator"
     type               = "Power"
@@ -34,7 +55,7 @@ VolumeIntegralOperator{
     }
   OutputVariable = "heatsource"
     print_info_level = 0
-    LocalModel = "SourcePhysicsModel"
+    LocalModel = SourcePhysicsModel
     SourceElement {
       name="SourceNonlinearElement"
         print_info_level = 3
@@ -43,17 +64,6 @@ VolumeIntegralOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }
-}
-
-SourcePhysicsModel {
-  name = "SourcePhysicsModel"
-    Material = "UO2_MSRZC_09"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    Equation = "ThermalSource"
-    USE_MATERIALS_LIBRARY = TRUE 
-    Default_Concentration = .1
-    Default_Temperature   = 557.2
-    Default_Burnup   = 0.0
 }
 
 
@@ -84,7 +94,7 @@ DiffusionNonlinearFEOperator1 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 DirichletVectorCorrection1 {
@@ -99,15 +109,6 @@ DirichletVectorCorrection1 {
     dof_0_0          =   0
     value_0_0        = 557.2
 }
-
-DiffusionTransportModel1{
-  name = "DiffusionTransportModel"
-    Material = "UO2_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 557.2
-    Default_Burnup   = 0.0
-} 
 
 testLinearThermalOperator {
   name = "LinearBVPOperator"
@@ -134,7 +135,7 @@ DiffusionLinearFEOperator2 {
         QRULE_ORDER = "DEFAULT"
     }    
 
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 DirichletMatrixCorrection2 {

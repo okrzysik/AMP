@@ -10,6 +10,28 @@ Mesh {
     static = TRUE
 }
 
+
+ThermalDiffusionTransportModel {
+	     name = "DiffusionTransportModel"
+	     Material = "UO2_MSRZC_09"
+	     Property = "ThermalConductivity"
+	     print_info_level = 3 
+	     Default_Concentration = .1
+	     Default_Temperature   = 300.
+	     Default_Burnup   = 0.0
+	   }
+
+OxygenDiffusionTransportModel {
+	     name = "DiffusionTransportModel"
+	     Material = "Ox_MSRZC_09"
+	     Property = "FickCoefficient"
+	     print_info_level = 3 
+	     Default_Concentration = .1
+	     Default_Temperature   = 300.
+	     Default_Burnup   = 0.0
+	   }
+
+   
 testNonlinearThermalOperator {
    name="NonlinearBVPOperator"
    print_info_level = 1
@@ -58,7 +80,7 @@ ThermalDiffusionNonlinearFEOperator{
 	 PrincipalVariable = "temperature"
 	 Freezeconcentration = FALSE
 
-         LocalModel = "ThermalDiffusionTransportModel"
+         LocalModel = ThermalDiffusionTransportModel
 	
 	 DiffusionElement {
 	      name = "DiffusionNonlinearElement"
@@ -95,7 +117,7 @@ ThermalDiffusionLinearFEOperator{
        QRULE_ORDER = "DEFAULT"
      }
 
-     LocalModel = "ThermalDiffusionTransportModel"
+     LocalModel = ThermalDiffusionTransportModel
   }
 
 ThermalDirichletMatrixCorrection{
@@ -112,16 +134,6 @@ ThermalDirichletMatrixCorrection{
     value_0_0        = 300.
   }
 
-ThermalDiffusionTransportModel {
-	     name = "DiffusionTransportModel"
-	     Material = "UO2_MSRZC_09"
-	     Property = "ThermalConductivity"
-	     print_info_level = 3 
-	     Default_Concentration = .1
-	     Default_Temperature   = 300.
-	     Default_Burnup   = 0.0
-	   }
-
 OxygenDiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
 	 InputVariable="concentration"
@@ -135,7 +147,7 @@ OxygenDiffusionNonlinearFEOperator{
 	 PrincipalVariable = "concentration"
                 Freezetemperature = FALSE
 
-         LocalModel = "OxygenDiffusionTransportModel"
+         LocalModel = OxygenDiffusionTransportModel
 	
 	 DiffusionElement {
 	      name = "DiffusionNonlinearElement"
@@ -173,7 +185,7 @@ OxygenDiffusionLinearFEOperator{
        QRULE_ORDER = "DEFAULT"
      }
 
-     LocalModel = "OxygenDiffusionTransportModel"
+     LocalModel = OxygenDiffusionTransportModel
 
   }
 
@@ -190,14 +202,4 @@ OxygenDirichletMatrixCorrection{
     value_0_0        = .1
   }
 
-OxygenDiffusionTransportModel {
-	     name = "DiffusionTransportModel"
-	     Material = "Ox_MSRZC_09"
-	     Property = "FickCoefficient"
-	     print_info_level = 3 
-	     Default_Concentration = .1
-	     Default_Temperature   = 300.
-	     Default_Burnup   = 0.0
-	   }
 
-   

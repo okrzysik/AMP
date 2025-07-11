@@ -7,6 +7,14 @@ Mesh{
     Range = -5.12, 5.12, -5.12, 5.12, -5.12, 5.12
 }
 
+FlowTransportModel{ //ElementPhysicsModel Database
+  name="FlowTransportModel"
+    USE_MATERIALS_LIBRARY = FALSE
+    DENSITY = 1000
+    VISCOSITY = 8.9e-7
+    print_info_level = 1 
+}
+
 ConsMassLinearBVPOperator {
     name = "LinearBVPOperator"
     print_info_level = 1
@@ -37,7 +45,7 @@ ConsMassLinearFEOperator{
      }
    }
 
-   LocalModel = "FlowTransportModel"
+   LocalModel = FlowTransportModel
 }
 
 DirichletMatrixCorrection1 {
@@ -83,7 +91,7 @@ ConsMomentumLinearFEOperator {
 
    }
 
-   LocalModel = "FlowTransportModel"
+   LocalModel = FlowTransportModel
 
 }
 
@@ -96,14 +104,6 @@ DirichletMatrixCorrection2 {
     id_0          = 4
     number_of_dofs_0 =  1
     dof_0_0          =  0
-}
-
-FlowTransportModel{ //ElementPhysicsModel Database
-  name="FlowTransportModel"
-    USE_MATERIALS_LIBRARY = FALSE
-    DENSITY = 1000
-    VISCOSITY = 8.9e-7
-    print_info_level = 1 
 }
 
 LinearSolver{

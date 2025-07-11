@@ -84,16 +84,15 @@ static void myTest( AMP::UnitTest *ut )
     }
     finalTempVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    ( std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-          nonlinBvpOperator->getVolumeOperator() ) )
+    std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+        nonlinBvpOperator->getVolumeOperator() )
         ->setReferenceTemperature( initTempVec );
-    ( std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
-          nonlinBvpOperator->getVolumeOperator() ) )
+    std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
+        nonlinBvpOperator->getVolumeOperator() )
         ->setVector( AMP::Operator::Mechanics::TEMPERATURE, finalTempVec );
 
-    auto linBvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "linearMechanicsBVPOperator", input_db, elementPhysicsModel ) );
+    auto linBvpOperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinBvpOperator->getParameters( "Jacobian", nullptr ) );
 
     // For RHS (Point Forces)
     auto dirichletLoadVecOp = std::dynamic_pointer_cast<AMP::Operator::DirichletVectorCorrection>(

@@ -199,21 +199,17 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     volumeOperator->setReferenceTemperature( referenceTemperatureVec );
     // now construct the linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "testLinearMechanicsOperator" ), "key missing!" );
-    auto linearMechanicsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testLinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
-
+    auto linearMechanicsOperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinearMechanicsOperator->getParameters( "Jacobian", nullptr ) );
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
-    auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testLinearThermalOperator", input_db, thermalTransportModel ) );
+    auto linearThermalOperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinearThermalOperator->getParameters( "Jacobian", nullptr ) );
 
     // now construct the linear BVP operator for oxygen
     AMP_INSIST( input_db->keyExists( "testLinearOxygenOperator" ), "key missing!" );
-    auto linearOxygenOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testLinearOxygenOperator", input_db, oxygenTransportModel ) );
+    auto linearOxygenOperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinearOxygenOperator->getParameters( "Jacobian", nullptr ) );
 
     // create a column operator object for linear thermomechanics
     auto linearThermalOxygenDiffusionMechanicsOperator =

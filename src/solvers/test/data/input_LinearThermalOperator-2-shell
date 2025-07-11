@@ -26,6 +26,23 @@ DiffusionBVPOperator {
    BoundaryOperator = "DirichletMatrixCorrection1"
 }
 
+DiffusionTransportModel1 {
+     name="DiffusionTransportModel"
+     Material = "Independent"
+     Property = "ThermalConductivity"
+     Default_Concentration = .1
+     Default_Temperature   = 300.
+     Default_Burnup   = 0.0
+}
+
+SourcePhysicsModel {
+    name = "SourcePhysicsModel"
+    Material = "Independent"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+  }
+
 DiffusionLinearFEOperator1{
    name="DiffusionLinearFEOperator"
    FixedTemperature = TRUE
@@ -41,7 +58,7 @@ DiffusionLinearFEOperator1{
      QRULE_TYPE = "QGAUSS"
      QRULE_ORDER = "DEFAULT"
    }
-   LocalModel = "DiffusionTransportModel1"
+   LocalModel = DiffusionTransportModel1
 }
 
 DirichletMatrixCorrection1 {
@@ -60,14 +77,6 @@ DirichletMatrixCorrection1 {
    value_1_0        = 500.
  }
 
-DiffusionTransportModel1 {
-     name="DiffusionTransportModel"
-     Material = "Independent"
-     Property = "ThermalConductivity"
-     Default_Concentration = .1
-     Default_Temperature   = 300.
-     Default_Burnup   = 0.0
-}
 
 VolumeIntegralOperator{
   name="VolumeIntegralOperator"
@@ -79,7 +88,7 @@ VolumeIntegralOperator{
     ActiveVariable_0 = "SpecificPowerInWattsPerKg" 
   }
   OutputVariable = "heatsource"
-  LocalModel = "SourcePhysicsModel"
+  LocalModel = SourcePhysicsModel
   SourceElement {
     name="SourceNonlinearElement"
       FE_ORDER = "FIRST"  
@@ -89,11 +98,4 @@ VolumeIntegralOperator{
   }
 }
 
-SourcePhysicsModel {
-    name = "SourcePhysicsModel"
-    Material = "Independent"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    Equation = "ThermalSource"
-    USE_MATERIALS_LIBRARY = TRUE 
-  }
 

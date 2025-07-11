@@ -42,6 +42,29 @@ testLinearMechanicsOperator {
    BoundaryOperator = "MechanicsDirichletMatrixCorrection"
 }
 
+DiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "UO2_MSRZC_09"
+        Property = "ThermalConductivity"
+        Default_Concentration = .1
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+     } 
+
+MechanicsMaterialModel { 
+      name="ThermalStrainMaterialModel"
+      USE_MATERIALS_LIBRARY = FALSE
+      Material = "UO2_MSRZC_09"
+      Youngs_Modulus = 2.08e11
+      Poissons_Ratio = 0.23
+      THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
+      THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
+      Default_Oxygen_Concentration = .1
+      Default_Temperature = 300.0
+      Default_Burnup = 0.0
+     }
+
+
 DiffusionNonlinearFEOperator{
      name = "DiffusionNonlinearFEOperator" 
      print_info_level = 1
@@ -60,7 +83,7 @@ DiffusionNonlinearFEOperator{
         QRULE_ORDER = "DEFAULT"
      }    
 
-     LocalModel = "DiffusionTransportModel"
+     LocalModel = DiffusionTransportModel
 
    }
 
@@ -112,14 +135,7 @@ ThermalDirichletMatrixCorrection{
      dof_1_0 = 0
    }
 
-DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "UO2_MSRZC_09"
-        Property = "ThermalConductivity"
-        Default_Concentration = .1
-        Default_Temperature   = 300.
-        Default_Burnup   = 0.0
-     } 
+
 
 LinearMechanicsElement {
     name="MechanicsLinearElement"
@@ -152,7 +168,7 @@ MechanicsNonlinearFEOperator{
      }
 
      MechanicsLinearElement = LinearMechanicsElement
-     LocalModel = "MechanicsMaterialModel"
+     LocalModel = MechanicsMaterialModel
    }
 
 MechanicsDirichletVectorCorrection{
@@ -205,18 +221,5 @@ MechanicsDirichletMatrixCorrection{
      dof_1_1 = 1
      dof_1_2 = 2
    }
-
-MechanicsMaterialModel { 
-      name="ThermalStrainMaterialModel"
-      USE_MATERIALS_LIBRARY = FALSE
-      Material = "UO2_MSRZC_09"
-      Youngs_Modulus = 2.08e11
-      Poissons_Ratio = 0.23
-      THERMAL_STRAIN_AS_SOURCE_TERM = FALSE
-      THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
-      Default_Oxygen_Concentration = .1
-      Default_Temperature = 300.0
-      Default_Burnup = 0.0
-     }
 
 

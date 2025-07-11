@@ -28,6 +28,19 @@ testLinearMechanicsOperator {
 
 }
 
+MechanicsMaterialModel { 
+   USE_MATERIALS_LIBRARY = TRUE
+   Material = "UO2_MSRZC_09"
+   name="FrapconThermalRelocationModel"
+   LinearHeatGenerationRate=35.5
+   ConstantNodalBurnup=0.88
+   ColdPelletDiameter=0.055
+   ColdGapDistance=0.001
+   Default_Temperature = 310.0
+   Default_Burnup = 0.5
+   Default_Oxygen_Concentration = 0.01
+}
+
 MechanicsNonlinearFEOperator{
      name = "MechanicsNonlinearFEOperator"
      print_info_level = 1
@@ -51,7 +64,7 @@ MechanicsNonlinearFEOperator{
        QRULE_ORDER = "DEFAULT"
      }
 
-     LocalModel = "MechanicsMaterialModel"
+     LocalModel = MechanicsMaterialModel
 
    }
    
@@ -113,15 +126,3 @@ DirichletMatrixCorrection{
      dof_1_2 = 2
 }
 
-MechanicsMaterialModel { 
-       USE_MATERIALS_LIBRARY = TRUE
-       Material = "UO2_MSRZC_09"
-       name="FrapconThermalRelocationModel"
-       LinearHeatGenerationRate=35.5
-       ConstantNodalBurnup=0.88
-       ColdPelletDiameter=0.055
-       ColdGapDistance=0.001
-       Default_Temperature = 310.0
-       Default_Burnup = 0.5
-       Default_Oxygen_Concentration = 0.01
-     }

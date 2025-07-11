@@ -106,7 +106,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         ->setVector( AMP::Operator::Mechanics::TEMPERATURE, curTempVec );
 
     // Create a Linear BVP operator for mechanics
-    AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
     auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             mesh, "LinearMechanicsOperator", input_db ) );
@@ -120,8 +119,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     double epsilon =
         1.0e-13 *
-        static_cast<double>(
-            ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+        static_cast<double>( linearMechanicsBVPoperator->getMatrix()->extractDiagonal()->L1Norm() );
 
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );

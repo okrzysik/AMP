@@ -12,6 +12,24 @@ Mesh{
 LengthScale = 13.e-3
 InitialValue = 0.03
 
+FickDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+          Material = "Ox_MSRZC_09"
+          Property = "FickCoefficient"
+          Default_Concentration = .1
+          Default_Temperature   = 300.
+          Default_Burnup   = 0.0
+      } 
+
+SoretDiffusionTransportModel{
+        name = "DiffusionTransportModel"
+        Material = "Ox_MSRZC_09"
+        Property = "ThermalDiffusionCoefficient"
+        Default_Concentration = .1
+        Default_Temperature   = 300.
+        Default_Burnup   = 0.0
+      } 
+
 testNonlinearFickSoretBVPOperator {
   name="NonlinearBVPOperator"
   print_info_level = 3
@@ -46,7 +64,7 @@ FickDiffusionNonlinearFEOperator{
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }    
-	LocalModel = "FickDiffusionTransportModel"
+	LocalModel = FickDiffusionTransportModel
     }
   
   
@@ -70,7 +88,7 @@ FickDiffusionNonlinearFEOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
       }    
-      LocalModel = "SoretDiffusionTransportModel"
+      LocalModel = SoretDiffusionTransportModel
 
    }
 
@@ -111,7 +129,7 @@ DiffusionLinearFEOperator2 {
             QRULE_ORDER = "DEFAULT"
         }    
 
-	LocalModel = "FickDiffusionTransportModel"
+	LocalModel = FickDiffusionTransportModel
     }
 
 DirichletMatrixCorrection2 {
@@ -165,20 +183,4 @@ NonlinearSolver{
     }
 }
 
-FickDiffusionTransportModel{
-        name = "DiffusionTransportModel"
-          Material = "Ox_MSRZC_09"
-          Property = "FickCoefficient"
-          Default_Concentration = .1
-          Default_Temperature   = 300.
-          Default_Burnup   = 0.0
-      } 
 
-SoretDiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "Ox_MSRZC_09"
-        Property = "ThermalDiffusionCoefficient"
-        Default_Concentration = .1
-        Default_Temperature   = 300.
-        Default_Burnup   = 0.0
-      } 

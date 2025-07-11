@@ -26,6 +26,16 @@ ThermalLinearBVPOperator {
 
 }
 
+DiffusionTransportModel {
+	     name = "DiffusionTransportModel"
+	     Material = "Ox_MSRZC_09"
+	     Property = "FickCoefficient"
+	     print_info_level = 3 
+	     Default_Concentration = .15
+	     Default_Temperature   = 300.
+	     Default_Burnup   = 0.0
+	   }
+
 DiffusionLinearFEOperator{
       name="DiffusionLinearFEOperator"
       InputVariable="Linear"
@@ -41,7 +51,7 @@ DiffusionLinearFEOperator{
        QRULE_ORDER = "DEFAULT"
      }
 
-     LocalModel = "DiffusionTransportModel"
+     LocalModel = DiffusionTransportModel
 
 }
 
@@ -55,7 +65,7 @@ DiffusionNonlinearFEOperator{
 		concentration = "concentration"
 	 }
 	 PrincipalVariable = "concentration"
-         LocalModel="DiffusionTransportModel"
+         LocalModel=DiffusionTransportModel
 
          DiffusionElement {
 	      name = "DiffusionNonlinearElement"
@@ -90,12 +100,3 @@ DirichletMatrixCorrection{
     value_0_0        = 300.
 }
 
-DiffusionTransportModel {
-	     name = "DiffusionTransportModel"
-	     Material = "Ox_MSRZC_09"
-	     Property = "FickCoefficient"
-	     print_info_level = 3 
-	     Default_Concentration = .15
-	     Default_Temperature   = 300.
-	     Default_Burnup   = 0.0
-	   }

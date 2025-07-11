@@ -31,6 +31,35 @@ Mesh{
     } 
 }
 
+DiffusionTransportModel1{
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+} 
+
+DiffusionTransportModel2{
+  name = "DiffusionTransportModel"
+    Material = "Steel316_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 513.2
+    Default_Burnup   = 0.0
+}
+
+SourcePhysicsModel {
+  name = "SourcePhysicsModel"
+    Material = "UO2_MSRZC_09"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+    Default_Concentration = .1
+    Default_Temperature   = 557.2 
+    Default_Burnup   = 0.0
+}
+
 NeutronicsOperator{
   name="NeutronicsRhsOperator"
     type               = "Power"
@@ -78,7 +107,7 @@ VolumeIntegralOperator{
     }
   OutputVariable = "heatsource"
     print_info_level = 3
-    LocalModel = "SourcePhysicsModel"
+    LocalModel = SourcePhysicsModel
 
     SourceElement {
       name="SourceNonlinearElement"
@@ -188,23 +217,6 @@ FlowFrapconOperator{
     value_0        = 300. 
 }
 
-DiffusionTransportModel1{
-  name = "DiffusionTransportModel"
-    Material = "UO2_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 557.2
-    Default_Burnup   = 0.0
-} 
-DiffusionTransportModel2{
-  name = "DiffusionTransportModel"
-    Material = "Steel316_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 513.2
-    Default_Burnup   = 0.0
-}
-
 DiffusionNonlinearFEOperator1{
   name = "DiffusionNonlinearFEOperator" 
     print_info_level = 1
@@ -222,8 +234,7 @@ DiffusionNonlinearFEOperator1{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }    
-    LocalModel = "DiffusionTransportModel1"
-    DiffusionTransportModel = DiffusionTransportModel1
+    LocalModel = DiffusionTransportModel1
 }
 
 RobinVectorCorrection1{
@@ -264,7 +275,7 @@ DiffusionLinearFEOperator1{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }    
-    DiffusionTransportModel = DiffusionTransportModel1
+    LocalModel = DiffusionTransportModel1
 }
 
 RobinMatrixCorrection1{
@@ -304,8 +315,7 @@ DiffusionLinearFEOperator2{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }    
-    LocalModel = "DiffusionTransportModel2"
-    DiffusionTransportModel = DiffusionTransportModel2
+    LocalModel = DiffusionTransportModel2
 }
 
 
@@ -335,13 +345,3 @@ RobinMatrixCorrection2 {
     IsFluxGaussPtVector = false
 }
 
-SourcePhysicsModel {
-  name = "SourcePhysicsModel"
-    Material = "UO2_MSRZC_09"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    Equation = "ThermalSource"
-    USE_MATERIALS_LIBRARY = TRUE 
-    Default_Concentration = .1
-    Default_Temperature   = 557.2 
-    Default_Burnup   = 0.0
-}

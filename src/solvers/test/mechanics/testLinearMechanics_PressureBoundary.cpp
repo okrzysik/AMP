@@ -142,8 +142,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         ut->passes( exeName );
     }
 
-    double epsilon = 1.0e-13 * static_cast<double>(
-                                   ( ( bvpOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
+    double epsilon =
+        1.0e-13 * static_cast<double>( bvpOperator->getMatrix()->extractDiagonal()->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
     mesh->displaceMesh( mechSolVec );

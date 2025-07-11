@@ -41,7 +41,7 @@ SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
       d_Q( 0 ),
       d_numSubchannels( 0 )
 {
-    auto params = std::dynamic_pointer_cast<const SubchannelOperatorParameters>( inparams );
+    auto params = Subchannel::convert( inparams );
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
     std::string inpVar = params->d_db->getString( "InputVariable" );
     d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );

@@ -1,6 +1,8 @@
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/boundary/BoundaryOperatorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -12,13 +14,34 @@ namespace AMP::Operator {
 
 
 /****************************************************************
+ * Create the appropriate parameters                             *
+ ****************************************************************/
+static std::shared_ptr<const DirichletMatrixCorrectionParameters>
+convert( std::shared_ptr<const OperatorParameters> inParams )
+{
+    AMP_ASSERT( inParams );
+    if ( std::dynamic_pointer_cast<const DirichletMatrixCorrectionParameters>( inParams ) )
+        return std::dynamic_pointer_cast<const DirichletMatrixCorrectionParameters>( inParams );
+    auto bndParams = std::dynamic_pointer_cast<const BoundaryOperatorParameters>( inParams );
+    AMP_ASSERT( bndParams );
+    auto linearOperator = std::dynamic_pointer_cast<LinearOperator>( bndParams->d_volumeOperator );
+    auto matrixCorrectionParameters =
+        std::make_shared<DirichletMatrixCorrectionParameters>( inParams->d_db );
+    matrixCorrectionParameters->d_Mesh        = inParams->d_Mesh;
+    matrixCorrectionParameters->d_variable    = linearOperator->getOutputVariable();
+    matrixCorrectionParameters->d_inputMatrix = linearOperator->getMatrix();
+    return matrixCorrectionParameters;
+}
+
+
+/****************************************************************
  * Constructors                                                  *
  ****************************************************************/
 DirichletMatrixCorrection::DirichletMatrixCorrection(
     std::shared_ptr<const OperatorParameters> inParams )
     : BoundaryOperator( inParams )
 {
-    auto params = std::dynamic_pointer_cast<const DirichletMatrixCorrectionParameters>( inParams );
+    auto params = convert( inParams );
     AMP_ASSERT( params );
     d_variable                 = params->d_variable;
     d_computedAddRHScorrection = false;

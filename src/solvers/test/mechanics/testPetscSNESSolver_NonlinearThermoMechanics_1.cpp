@@ -107,15 +107,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // now construct the linear BVP operator for mechanics
     AMP_INSIST( input_db->keyExists( "testLinearMechanicsOperator" ), "key missing!" );
-    auto linearMechanicsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testLinearMechanicsOperator", input_db, thermalTransportModel ) );
+    auto linearMechanicsOperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinearMechanicsOperator->getParameters( "Jacobian", nullptr ) );
 
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
-    auto linearThermalOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testLinearThermalOperator", input_db, thermalTransportModel ) );
+    auto linearThermalOperator = std::make_shared<AMP::Operator::LinearBVPOperator>(
+        nonlinearThermalOperator->getParameters( "Jacobian", nullptr ) );
 
     // create a column operator object for linear thermomechanics
     auto linearThermoMechanicsOperator = std::make_shared<AMP::Operator::ColumnOperator>();

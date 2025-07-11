@@ -111,17 +111,6 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
     rhsVec->setToScalar( 0.0 );
 
     // Fill in manufactured solution
-    // auto source_db = input_db->getDatabase("ManufacturedSourceOperator");
-    // auto sourceModelName = source_db->getString("LocalModel");
-    // auto sourceModel_db = input_db->getDatabase(sourceModelName);
-    // auto mfgSolution_db = sourceModel_db->getDatabase("ManufacturedSolution");
-    /*bool isCylindrical = false;
-    if (mfgSolution_db->keyExists("Geometry")) {
-        auto geom = mfgSolution_db->getString("Geometry");
-        size_t pos = geom.find("Cylindrical");
-        size_t len = geom.size();
-        isCylindrical = (pos < len);
-    }*/
     auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     auto mfgName  = mfgSolution->get_name();
     if ( mfgName.find( "Cylindrical" ) < mfgName.size() ) {

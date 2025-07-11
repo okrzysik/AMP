@@ -1,16 +1,51 @@
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/operators/ElementOperationFactory.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 
 namespace AMP::Operator {
 
-MechanicsLinearFEOperator::MechanicsLinearFEOperator(
-    std::shared_ptr<const OperatorParameters> inParams )
-    : LinearFEOperator( inParams )
+
+static std::shared_ptr<const MechanicsLinearFEOperatorParameters>
+convert( std::shared_ptr<const OperatorParameters> params )
 {
-    auto params = std::dynamic_pointer_cast<const MechanicsLinearFEOperatorParameters>( inParams );
+    if ( std::dynamic_pointer_cast<const MechanicsLinearFEOperatorParameters>( params ) )
+        return std::dynamic_pointer_cast<const MechanicsLinearFEOperatorParameters>( params );
+    auto db = params->d_db;
+    // first create a MechanicsMaterialModel
+    auto model_db = db->getDatabase( "LocalModel" );
+    auto model    = std::dynamic_pointer_cast<MechanicsMaterialModel>(
+        ElementPhysicsModelFactory::createElementPhysicsModel( model_db ) );
+    // next create a ElementOperation object
+    auto elem_db       = db->getDatabase( "MechanicsElement" );
+    auto mechanicsElem = ElementOperationFactory::createElementOperation( elem_db );
+    // now create the linear mechanics operator parameters
+    AMP_ASSERT( db->getString( "name" ) == "MechanicsLinearFEOperator" );
+    auto dofManager = AMP::Discretization::simpleDOFManager::create(
+        params->d_Mesh, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto myparams             = std::make_shared<MechanicsLinearFEOperatorParameters>( db );
+    myparams->d_Mesh          = params->d_Mesh;
+    myparams->d_materialModel = model;
+    myparams->d_elemOp        = mechanicsElem;
+    myparams->d_inDofMap      = dofManager;
+    myparams->d_outDofMap     = dofManager;
+    return myparams;
+}
+
+
+MechanicsLinearFEOperator::MechanicsLinearFEOperator(
+    std::shared_ptr<const OperatorParameters> params )
+    : MechanicsLinearFEOperator( convert( params ), true )
+{
+}
+MechanicsLinearFEOperator::MechanicsLinearFEOperator(
+    std::shared_ptr<const MechanicsLinearFEOperatorParameters> params, bool )
+    : LinearFEOperator( params )
+{
     AMP_INSIST( params, "NULL parameter" );
     d_useUpdatedLagrangian = params->d_db->getWithDefault<bool>( "USE_UPDATED_LAGRANGIAN", false );
     if ( d_useUpdatedLagrangian ) {

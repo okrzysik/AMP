@@ -16,8 +16,8 @@ namespace AMP::Operator {
 
 // Constructor
 SubchannelTwoEqNonlinearOperator::SubchannelTwoEqNonlinearOperator(
-    std::shared_ptr<const SubchannelOperatorParameters> params )
-    : Operator( params ),
+    std::shared_ptr<const OperatorParameters> inparams )
+    : Operator( inparams ),
       d_Pout( 0 ),
       d_Tin( 0 ),
       d_mass( 0 ),
@@ -31,6 +31,7 @@ SubchannelTwoEqNonlinearOperator::SubchannelTwoEqNonlinearOperator(
       d_NGrid( 0 ),
       d_numSubchannels( 0 )
 {
+    auto params = Subchannel::convert( inparams );
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
     std::string inpVar = params->d_db->getString( "InputVariable" );
     d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );

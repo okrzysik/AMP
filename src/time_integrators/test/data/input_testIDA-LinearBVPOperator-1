@@ -9,6 +9,39 @@ Mesh{
     static = TRUE
 }
 
+SourcePhysicsModel {
+    name = "SourcePhysicsModel"
+    Material = "Independent"
+    Equation="ThermalSource"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    USE_MATERIALS_LIBRARY = TRUE 
+    BilogScaleCoefficient = FALSE
+}
+
+DiffusionTransportModel{
+    name = "DiffusionTransportModel"
+    Material = "Independent"
+    Property = "ThermalConductivity"
+    Default_Concentration = .15
+    Default_Temperature   = 750.
+    Default_Burnup   = 0.0
+    BilogScaleCoefficient = FALSE
+} 
+
+MassDensityModel{
+    name = "MassDensityModel"
+    Material = "UO2_MSRZC_09"
+    Equation = "Thermal"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 750.
+    Default_Burnup   = 0.0
+    // UseBilogScaling = TRUE
+    // BilogVariable = "concentration"
+    BilogScaleCoefficient = FALSE
+    print_info_level = 3
+} 
+
 NeutronicsOperator{
     name="NeutronicsRhsOperator"
     type               = "Power"
@@ -32,7 +65,7 @@ VolumeIntegralOperator{
     OutputVariable = "temperature"
     print_info_level = 3
 
-    LocalModel = "SourcePhysicsModel"
+    LocalModel = SourcePhysicsModel
 
     SourceElement {
         name="SourceNonlinearElement"
@@ -71,7 +104,7 @@ DiffusionLinearFEOperator{
         QRULE_ORDER = "DEFAULT"
     }    
 
-    LocalModel = "DiffusionTransportModel"
+    LocalModel = DiffusionTransportModel
 }
 
 DirichletMatrixCorrection{
@@ -114,7 +147,7 @@ MassLinearFEOperator{
         QRULE_ORDER = "DEFAULT"
     }    
 
-    LocalModel = "MassDensityModel"
+    LocalModel = MassDensityModel
 }
 
 MassMatrixCorrection{
@@ -129,40 +162,6 @@ MassMatrixCorrection{
     dof_0_0          =   0
     value_0_0        = 0.
 }
-
-SourcePhysicsModel {
-    name = "SourcePhysicsModel"
-    Material = "Independent"
-    Equation="ThermalSource"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    USE_MATERIALS_LIBRARY = TRUE 
-    BilogScaleCoefficient = FALSE
-}
-
-DiffusionTransportModel{
-    name = "DiffusionTransportModel"
-    Material = "Independent"
-    Property = "ThermalConductivity"
-    Default_Concentration = .15
-    Default_Temperature   = 750.
-    Default_Burnup   = 0.0
-    BilogScaleCoefficient = FALSE
-} 
-
-
-MassDensityModel{
-    name = "MassDensityModel"
-    Material = "UO2_MSRZC_09"
-    Equation = "Thermal"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 750.
-    Default_Burnup   = 0.0
-    // UseBilogScaling = TRUE
-    // BilogVariable = "concentration"
-    BilogScaleCoefficient = FALSE
-    print_info_level = 3
-} 
 
 IDATimeIntegrator{
     name = "IDATimeIntegrator"

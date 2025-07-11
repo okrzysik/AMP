@@ -73,12 +73,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
     auto mechanicsMaterialModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
-    // Create a Linear BVP operator for mechanics
-    AMP_INSIST( input_db->keyExists( "LinearMechanicsOperator" ), "key missing!" );
-    auto linearMechanicsBVPoperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "LinearMechanicsOperator", input_db, mechanicsMaterialModel ) );
-
     // Create the variables
     auto mechanicsNonlinearVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
@@ -98,7 +92,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the DOFManagers
     auto NodalVectorDOF =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 3 );
-
     auto NodalScalarDOF =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
 

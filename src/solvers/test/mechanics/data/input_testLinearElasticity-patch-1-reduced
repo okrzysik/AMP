@@ -27,6 +27,14 @@ LinearSolver{
     PDE_equations = 3
 }
 
+MechanicsMaterialModel {
+    USE_MATERIALS_LIBRARY = FALSE
+    Material = "UO2_MSRZC_09"
+    name="IsotropicElasticModel"
+    Youngs_Modulus = 1.0e6
+    Poissons_Ratio = 0.25
+  }
+
 MechanicsLinearFEOperator{
       name="MechanicsLinearFEOperator"
         print_info_level = 1
@@ -43,7 +51,7 @@ MechanicsLinearFEOperator{
             QRULE_TYPE = "QGAUSS"
             QRULE_ORDER = "DEFAULT"
         }
-	LocalModel = "MechanicsMaterialModel"
+	LocalModel = MechanicsMaterialModel
     }
 
 DirichletMatrixCorrection{	
@@ -62,10 +70,3 @@ DirichletMatrixCorrection{
       value_0_2 = 0.0
   }
 
-MechanicsMaterialModel {
-        USE_MATERIALS_LIBRARY = FALSE
-          Material = "UO2_MSRZC_09"
-          name="IsotropicElasticModel"
-          Youngs_Modulus = 1.0e6
-          Poissons_Ratio = 0.25
-      }

@@ -18,8 +18,8 @@ namespace AMP::Operator {
 
 // Constructor
 SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
-    std::shared_ptr<const SubchannelOperatorParameters> params )
-    : Operator( params ),
+    std::shared_ptr<const OperatorParameters> inparams )
+    : Operator( inparams ),
       d_forceNoConduction( false ),
       d_forceNoTurbulence( false ),
       d_forceNoHeatSource( false ),
@@ -40,6 +40,7 @@ SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
       d_Q( 0 ),
       d_numSubchannels( 0 )
 {
+    auto params = Subchannel::convert( inparams );
     AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "Key 'InputVariable' does not exist" );
     std::string inpVar = params->d_db->getString( "InputVariable" );
     d_inpVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );

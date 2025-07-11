@@ -800,8 +800,9 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat B, void *ct
         }
     }
 
-    auto pSolution     = PETSC::getAMP( x );
-    auto op            = pSNESSolver->getOperator();
+    auto pSolution = PETSC::getAMP( x );
+    auto op        = pSNESSolver->getOperator();
+    pSolution->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     auto op_parameters = op->getParameters( "Jacobian", pSolution );
     auto pKrylovSolver = pSNESSolver->getKrylovSolver();
     pKrylovSolver->resetOperator( op_parameters );

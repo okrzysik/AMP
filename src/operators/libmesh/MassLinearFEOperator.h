@@ -15,7 +15,7 @@ namespace AMP::Operator {
 class MassLinearFEOperator : public LinearFEOperator
 {
 public:
-    explicit MassLinearFEOperator( std::shared_ptr<const MassLinearFEOperatorParameters> params );
+    explicit MassLinearFEOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~MassLinearFEOperator() {}
 
@@ -34,6 +34,9 @@ public:
     std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() const override;
 
     std::shared_ptr<MassDensityModel> getDensityModel() { return d_densityModel; };
+
+protected:
+    explicit MassLinearFEOperator( std::shared_ptr<const MassLinearFEOperatorParameters>, bool );
 
 protected:
     bool d_useConstantTemperature;

@@ -18,28 +18,45 @@ NonlinearMechanicsOperator {
     BoundaryOperator = "DirichletVectorCorrection1"
 }
 
+VonMisesElastoPlasticModel1 {
+    USE_MATERIALS_LIBRARY = FALSE
+    USE_UPDATED_LAGRANGIAN = TRUE
+    USE_JAUMANN_RATE = TRUE
+    print_info_level = 6
+    Material = ""
+    //name = "VonMisesElastoPlasticModel"
+    name = "IsotropicElasticModel"
+    Youngs_Modulus = 1.0e2
+    Poissons_Ratio = 0.3
+    Linear_Strain_Hardening = 5.0
+    Elastic_Yield_Stress = 1.0
+    Default_Temperature = 0.0
+    Default_Burnup = 0.0
+    Default_Oxygen_Concentration = 0.0
+}
+
 MechanicsNonlinearFEOperator1 {
-      name = "MechanicsNonlinearFEOperator"
-        print_info_level = 3
-        ActiveInputVariables {
-          DISPLACEMENT = "displacement"
-        }
-      OutputVariable = "displacement"
-        RESET_REUSES_RADIAL_RETURN = TRUE
-        JACOBIAN_REUSES_RADIAL_RETURN = TRUE
-        USE_UPDATED_LAGRANGIAN = TRUE
+    name = "MechanicsNonlinearFEOperator"
+    print_info_level = 3
+    ActiveInputVariables {
+      DISPLACEMENT = "displacement"
+    }
+    OutputVariable = "displacement"
+    RESET_REUSES_RADIAL_RETURN = TRUE
+    JACOBIAN_REUSES_RADIAL_RETURN = TRUE
+    USE_UPDATED_LAGRANGIAN = TRUE
 
-        MechanicsElement {
-          name="MechanicsNonlinearUpdatedLagrangianElement"
-            USE_REDUCED_INTEGRATION = FALSE 
-            USE_JAUMANN_RATE = TRUE
-            FE_ORDER = "FIRST"  
-            FE_FAMILY = "LAGRANGE"
-            QRULE_TYPE = "QGAUSS"
-            QRULE_ORDER = "DEFAULT"
-        }
+    MechanicsElement {
+      name="MechanicsNonlinearUpdatedLagrangianElement"
+        USE_REDUCED_INTEGRATION = FALSE 
+        USE_JAUMANN_RATE = TRUE
+        FE_ORDER = "FIRST"  
+        FE_FAMILY = "LAGRANGE"
+        QRULE_TYPE = "QGAUSS"
+        QRULE_ORDER = "DEFAULT"
+    }
 
-	LocalModel = "VonMisesElastoPlasticModel1"
+	LocalModel = VonMisesElastoPlasticModel1
 }
 
 DirichletVectorCorrection1 {
@@ -62,23 +79,6 @@ DirichletVectorCorrection1 {
       value_1_0 = 0.0
       value_1_1 = 0.0
 }
-
-VonMisesElastoPlasticModel1 {
-        USE_MATERIALS_LIBRARY = FALSE
-          USE_UPDATED_LAGRANGIAN = TRUE
-          USE_JAUMANN_RATE = TRUE
-          print_info_level = 6
-          Material = ""
-          //name = "VonMisesElastoPlasticModel"
-          name = "IsotropicElasticModel"
-          Youngs_Modulus = 1.0e2
-          Poissons_Ratio = 0.3
-          Linear_Strain_Hardening = 5.0
-          Elastic_Yield_Stress = 1.0
-          Default_Temperature = 0.0
-          Default_Burnup = 0.0
-          Default_Oxygen_Concentration = 0.0
-      }
 
 LinearMechanicsOperator {
   name="LinearBVPOperator"

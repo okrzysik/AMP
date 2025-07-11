@@ -9,6 +9,15 @@ testOperator {
    BoundaryOperator="RobinMatrixCorrection"
 }
 
+DiffusionTransportModel{
+    name = "DiffusionTransportModel"
+    Material = "Independent"
+    Property = "ThermalDiffusionCoefficient"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+} 
+
 DiffusionLinearFEOperator{
     name = "DiffusionLinearFEOperator"
     InputVariable = "temperature"
@@ -27,7 +36,7 @@ DiffusionLinearFEOperator{
         QRULE_ORDER = "DEFAULT"
     }    
 
-    LocalModel="DiffusionTransportModel"
+    LocalModel=DiffusionTransportModel
 }
 
 
@@ -49,11 +58,3 @@ RobinMatrixCorrection{
    value_0_0        = 101.
   }
 
-DiffusionTransportModel{
-    name = "DiffusionTransportModel"
-    Material = "Independent"
-    Property = "ThermalDiffusionCoefficient"
-    Default_Concentration = .1
-    Default_Temperature   = 300.
-    Default_Burnup   = 0.0
-} 

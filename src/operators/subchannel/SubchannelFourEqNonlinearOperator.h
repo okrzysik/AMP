@@ -17,8 +17,7 @@ class SubchannelFourEqNonlinearOperator : public Operator
 {
 public:
     //! Constructor
-    explicit SubchannelFourEqNonlinearOperator(
-        std::shared_ptr<const SubchannelOperatorParameters> params );
+    explicit SubchannelFourEqNonlinearOperator( std::shared_ptr<const OperatorParameters> params );
 
     //! Destructor
     virtual ~SubchannelFourEqNonlinearOperator() {}

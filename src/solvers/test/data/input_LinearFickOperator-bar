@@ -9,6 +9,16 @@ Mesh{
     static = TRUE
 }
 
+DiffusionTransportModel1 {
+     name="DiffusionTransportModel"
+     Material = "Independent"
+     Property = "FickCoefficient"
+        Default_Concentration = .1
+     Default_Temperature   = 300.
+     Default_Burnup   = 0.0
+     Parameters = 1.0
+   }
+
 DiffusionBVPOperator {
    name="LinearBVPOperator"
    print_info_level = 1
@@ -31,7 +41,7 @@ DiffusionLinearFEOperator1{
      QRULE_TYPE = "QGAUSS"
      QRULE_ORDER = "DEFAULT"
    }
-   LocalModel = "DiffusionTransportModel1"
+   LocalModel = DiffusionTransportModel1
 }
 
 DirichletMatrixCorrection1 {
@@ -50,15 +60,6 @@ DirichletMatrixCorrection1 {
    value_1_0        = .1
 }
 
-DiffusionTransportModel1 {
-     name="DiffusionTransportModel"
-     Material = "Independent"
-     Property = "FickCoefficient"
-        Default_Concentration = .1
-     Default_Temperature   = 300.
-     Default_Burnup   = 0.0
-     Parameters = 1.0
-   }
 
 LinearSolver{
   max_iterations = 10

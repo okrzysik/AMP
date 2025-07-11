@@ -14,6 +14,14 @@ MechanicsBVPOperator {
     BoundaryOperator="DirichletMatrixCorrection"
 }
 
+MechanicsMaterialModel {
+  USE_MATERIALS_LIBRARY = FALSE
+    Material = ""
+    name="IsotropicElasticModel"
+    Youngs_Modulus = 1.0e6
+    Poissons_Ratio = 0.2
+}
+
 MechanicsLinearFEOperator{
     name="MechanicsLinearFEOperator"
     reset_reuses_matrix = TRUE
@@ -28,7 +36,7 @@ MechanicsLinearFEOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }
-  LocalModel = "MechanicsMaterialModel"
+  LocalModel = MechanicsMaterialModel
 }
 
 DirichletMatrixCorrection{
@@ -66,14 +74,6 @@ DirichletMatrixCorrection{
     number_of_dofs_3 = 1
     dof_3_0 = 1
     value_3_0 = 0.0
-}
-
-MechanicsMaterialModel {
-  USE_MATERIALS_LIBRARY = FALSE
-    Material = ""
-    name="IsotropicElasticModel"
-    Youngs_Modulus = 1.0e6
-    Poissons_Ratio = 0.2
 }
 
 TemperatureRHS {

@@ -42,6 +42,15 @@ Mesh{
     }
 }
 
+PelletMechanicsMaterialModel {
+  name="ThermalVonMisesMatModel" 
+    Youngs_Modulus = 2.08e11
+    Poissons_Ratio = 0.23  
+    THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
+    Linear_Strain_Hardening = 5.10e10   
+    Elastic_Yield_Stress = 3.45e9  
+}
+
 PointLoad {
   name = "DirichletVectorCorrection"
     number_of_ids = 1
@@ -86,7 +95,7 @@ PelletMechanicsLinearBVPOperator {
 
 PelletMechanicsNonlinearFEOperator {
   name = "MechanicsNonlinearFEOperator"
-    LocalModel = "PelletMechanicsMaterialModel"
+    LocalModel = PelletMechanicsMaterialModel
     MechanicsElement {
       name="MechanicsNonlinearElement"
     }
@@ -153,14 +162,6 @@ PelletMechanicsLinearBC {
     value_0_2 = 0.0
 }
 
-PelletMechanicsMaterialModel {
-  name="ThermalVonMisesMatModel" 
-    Youngs_Modulus = 2.08e11
-    Poissons_Ratio = 0.23  
-    THERMAL_EXPANSION_COEFFICIENT = 2.0e-6
-    Linear_Strain_Hardening = 5.10e10   
-    Elastic_Yield_Stress = 3.45e9  
-}
 
 NonlinearSolver {
     name = "PetscSNESSolver"

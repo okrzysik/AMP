@@ -1,9 +1,11 @@
-#include "RobinMatrixCorrection.h"
+#include "AMP/operators/boundary/libmesh/RobinMatrixCorrection.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
+#include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/boundary/libmesh/RobinMatrixCorrectionParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "RobinMatrixCorrectionParameters.h"
 
 // Libmesh files
 DISABLE_WARNINGS
@@ -26,6 +28,35 @@ using AMP::Utilities::stringf;
 
 namespace AMP::Operator {
 
+
+/****************************************************************
+ * Create the appropriate parameters                             *
+ ****************************************************************/
+static std::shared_ptr<const RobinMatrixCorrectionParameters>
+convert( std::shared_ptr<const OperatorParameters> inParams )
+{
+    AMP_ASSERT( inParams );
+    if ( std::dynamic_pointer_cast<const RobinMatrixCorrectionParameters>( inParams ) )
+        return std::dynamic_pointer_cast<const RobinMatrixCorrectionParameters>( inParams );
+    auto bndParams = std::dynamic_pointer_cast<const BoundaryOperatorParameters>( inParams );
+    AMP_ASSERT( bndParams );
+    auto linearOperator = std::dynamic_pointer_cast<LinearOperator>( bndParams->d_volumeOperator );
+    auto params         = std::make_shared<RobinMatrixCorrectionParameters>( inParams->d_db );
+    params->d_Mesh      = inParams->d_Mesh;
+    params->d_variable  = linearOperator->getOutputVariable();
+    params->d_inputMatrix = linearOperator->getMatrix();
+    if ( params->d_db->keyExists( "LocalModel" ) ) {
+        auto model_db = params->d_db->getDatabase( "LocalModel" );
+        auto model    = ElementPhysicsModelFactory::createElementPhysicsModel( model_db );
+        params->d_robinPhysicsModel = std::dynamic_pointer_cast<RobinPhysicsModel>( model );
+    }
+    return params;
+}
+
+
+/****************************************************************
+ * Constructors                                                  *
+ ****************************************************************/
 RobinMatrixCorrection::RobinMatrixCorrection( std::shared_ptr<const OperatorParameters> inParams )
     : BoundaryOperator( inParams ),
       d_hef( 0 ),
@@ -35,7 +66,7 @@ RobinMatrixCorrection::RobinMatrixCorrection( std::shared_ptr<const OperatorPara
       d_JxW( nullptr ),
       d_phi( nullptr )
 {
-    auto params = std::dynamic_pointer_cast<const RobinMatrixCorrectionParameters>( inParams );
+    auto params = convert( inParams );
     AMP_ASSERT( params );
 
     d_alpha = params->d_db->getWithDefault<double>( "alpha", 0 );

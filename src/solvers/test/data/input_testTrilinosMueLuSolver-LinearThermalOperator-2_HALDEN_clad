@@ -9,6 +9,23 @@ Mesh{
     static = TRUE
 }
 
+DiffusionTransportModel1 {
+  name="DiffusionTransportModel"
+    Material = "Clad_Zr_MATPRO.h"
+    Property = "ThermalConductivity"
+      Default_Concentration = .1
+    Default_Temperature   = 557.16
+    Default_Burnup   = 0.0
+}
+
+SourcePhysicsModel {	
+  name = "SourcePhysicsModel"
+    Material = "Independent"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+}
+
 NeutronicsOperator{
   name="NeutronicsRhsOperator"
     type               = "Power"
@@ -40,7 +57,7 @@ DiffusionLinearFEOperator1{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 DirichletMatrixCorrection1{
@@ -53,15 +70,6 @@ DirichletMatrixCorrection1{
     number_of_dofs_0 =   1
     dof_0_0          =   0
     value_0_0        = 557.16
-}
-
-DiffusionTransportModel1 {
-  name="DiffusionTransportModel"
-    Material = "Clad_Zr_MATPRO.h"
-    Property = "ThermalConductivity"
-      Default_Concentration = .1
-    Default_Temperature   = 557.16
-    Default_Burnup   = 0.0
 }
 
 LinearSolver{
@@ -81,7 +89,7 @@ VolumeIntegralOperator{
       ActiveVariable_0 = "SpecificPowerInWattsPerKg" 
     }
   OutputVariable = "heatsource"
-      LocalModel = "SourcePhysicsModel"
+      LocalModel = SourcePhysicsModel
     SourceElement {
       name="SourceNonlinearElement"
               FE_ORDER = "FIRST"  
@@ -89,14 +97,6 @@ VolumeIntegralOperator{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }
-}
-
-SourcePhysicsModel {	
-  name = "SourcePhysicsModel"
-    Material = "Independent"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    Equation = "ThermalSource"
-    USE_MATERIALS_LIBRARY = TRUE 
 }
 
 

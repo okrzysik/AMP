@@ -2,6 +2,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
+#include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
@@ -11,6 +12,24 @@
 #include <cmath>
 
 namespace AMP::Operator::Subchannel {
+
+
+// Convert the operator parameters
+std::shared_ptr<const SubchannelOperatorParameters>
+convert( std::shared_ptr<const OperatorParameters> params )
+{
+    if ( std::dynamic_pointer_cast<const SubchannelOperatorParameters>( params ) )
+        return std::dynamic_pointer_cast<const SubchannelOperatorParameters>( params );
+    auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( params->d_db );
+    subchannelParams->d_Mesh = params->d_Mesh;
+    if ( params->d_db->keyExists( "LocalModel" ) ) {
+        auto model_db = params->d_db->getDatabase( "LocalModel" );
+        auto model    = ElementPhysicsModelFactory::createElementPhysicsModel( model_db );
+        subchannelParams->d_subchannelPhysicsModel =
+            std::dynamic_pointer_cast<SubchannelPhysicsModel>( model );
+    }
+    return subchannelParams;
+}
 
 
 // Get the number of subchannels from the mesh

@@ -30,6 +30,35 @@ Mesh{
     }  
 }
 
+DiffusionTransportModel1{
+  name = "DiffusionTransportModel"
+    Material = "UO2_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 557.2
+    Default_Burnup   = 0.0
+} 
+
+DiffusionTransportModel2{
+  name = "DiffusionTransportModel"
+    Material = "Steel316_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 513.2
+    Default_Burnup   = 0.0
+} 
+
+SourcePhysicsModel {
+  name = "SourcePhysicsModel"
+    Material = "UO2_MSRZC_09"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+    Default_Concentration = .1
+    Default_Temperature   = 557.2 
+    Default_Burnup   = 0.0
+}
+
 PowerNeutronicsOperator{
   name="NeutronicsRhsOperator"
     type               = "Power"
@@ -83,7 +112,7 @@ VolumeIntegralOperator{
       ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
     }
   OutputVariable = "heatsource"
-      LocalModel = "SourcePhysicsModel"
+      LocalModel = SourcePhysicsModel
 
     SourceElement {
       name="SourceNonlinearElement"
@@ -146,7 +175,7 @@ DiffusionLinearFEOperator1{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }    
-  LocalModel = "DiffusionTransportModel1"
+  LocalModel = DiffusionTransportModel1
 }
 
 ColumnBoundaryOperator1{
@@ -173,14 +202,7 @@ RobinMatrixCorrection1{
     value_0_0        =  100.
 }
 
-DiffusionTransportModel1{
-  name = "DiffusionTransportModel"
-    Material = "UO2_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 557.2
-    Default_Burnup   = 0.0
-} 
+
 
 DiffusionLinearFEOperator2{
   name = "DiffusionLinearFEOperator"
@@ -198,7 +220,7 @@ DiffusionLinearFEOperator2{
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
     }    
-  LocalModel = "DiffusionTransportModel2"
+  LocalModel = DiffusionTransportModel2
 }
 
 ColumnBoundaryOperator2{
@@ -238,23 +260,3 @@ DirichletMatrixCorrection{
     value_0_0        = 513.15
 }
 
-
-DiffusionTransportModel2{
-  name = "DiffusionTransportModel"
-    Material = "Steel316_MSRZC_09"
-    Property = "ThermalConductivity"
-    Default_Concentration = .1
-    Default_Temperature   = 513.2
-    Default_Burnup   = 0.0
-} 
-
-SourcePhysicsModel {
-  name = "SourcePhysicsModel"
-    Material = "UO2_MSRZC_09"
-    USE_ELEMENT_PHYSICS = "MassDensityModel"
-    Equation = "ThermalSource"
-    USE_MATERIALS_LIBRARY = TRUE 
-    Default_Concentration = .1
-    Default_Temperature   = 557.2 
-    Default_Burnup   = 0.0
-}

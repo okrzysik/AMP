@@ -25,6 +25,43 @@ ThermalLinearBVPOperator {
    BoundaryOperator = "DirichletMatrixCorrection"
 }
 
+DiffusionTransportModel {
+	     name = "DiffusionTransportModel"
+	     Material = "Ox_MSRZC_09"
+	     Property = "FickCoefficient"
+	     print_info_level = 3 
+	     Default_Concentration = .15
+	     Default_Temperature   = 300.
+	     Default_Burnup   = 0.0
+	   }
+
+MassDensityModel{
+    name = "MassDensityModel"
+    Material = "Ox_MSRZC_09"
+	Equation = "ManufacturedSource"
+	ManufacturedSourceEquation = "Fick"
+	ManufacturedVariable = "Concentration"
+    Property = "FickCoefficient"
+    Default_Concentration = .1
+    Default_Temperature   = 750.
+    Default_Burnup   = 0.0
+    print_info_level = 3
+ 	ManufacturedSolution {
+ 		Geometry = "Brick"
+ 		Order = "Cubic"
+ 		BoundaryType = "Dirichlet-2"
+ 		Coefficients = 1.53134e-8, -2.08796e-8, 5.24854e-9, -3.28194e-8, 4.84696e-9, 2.81328e-9, -1.62165e-8, 1.12203e-9
+ 		//Coefficients = 1.53134e-8, 2.08796e-8, 5.24854e-9, 3.28194e-8, 4.84696e-9, 2.81328e-9, 1.62165e-8, 1.12203e-9
+ 		BoundaryData = 0.0501413, 0.0498752
+ 		MinX = -5.12000000001
+ 		MinY = -5.12000000001
+ 		MinZ = -5.12000000001
+ 		MaxX = 5.12000000001
+ 		MaxY = 5.12000000001
+ 		MaxZ = 5.12000000001
+ 	}
+}  
+
 DiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
 	 InputVariable="concentration"
@@ -35,7 +72,7 @@ DiffusionNonlinearFEOperator{
 	   concentration = "concentration"
 	 }
 	 PrincipalVariable = "concentration"
-	 LocalModel =  "DiffusionTransportModel"
+	 LocalModel =  DiffusionTransportModel
 	
 	 DiffusionElement {
 	      name = "DiffusionNonlinearElement"
@@ -61,7 +98,7 @@ DiffusionLinearFEOperator{
        QRULE_ORDER = "DEFAULT"
      }
 
-     LocalModel =  "DiffusionTransportModel"
+     LocalModel = DiffusionTransportModel
 }
    
 
@@ -95,16 +132,6 @@ DirichletMatrixCorrection{
      value_1_0        =  0.0498752
 }
 
-DiffusionTransportModel {
-	     name = "DiffusionTransportModel"
-	     Material = "Ox_MSRZC_09"
-	     Property = "FickCoefficient"
-	     print_info_level = 3 
-	     Default_Concentration = .15
-	     Default_Temperature   = 300.
-	     Default_Burnup   = 0.0
-	   }
-
 ManufacturedSourceOperator {
     name = "MassLinearFEOperator"
     InputVariable = "concentration"
@@ -125,32 +152,6 @@ ManufacturedSourceOperator {
         QRULE_ORDER = "DEFAULT"
     }    
 
-    LocalModel =  "MassDensityModel"
+    LocalModel = MassDensityMode
 }
 
-MassDensityModel{
-        name = "MassDensityModel"
-        Material = "Ox_MSRZC_09"
-		Equation = "ManufacturedSource"
-		ManufacturedSourceEquation = "Fick"
-		ManufacturedVariable = "Concentration"
-        Property = "FickCoefficient"
-        Default_Concentration = .1
-        Default_Temperature   = 750.
-        Default_Burnup   = 0.0
-	    print_info_level = 3
-     	ManufacturedSolution {
-     		Geometry = "Brick"
-     		Order = "Cubic"
-     		BoundaryType = "Dirichlet-2"
-     		Coefficients = 1.53134e-8, -2.08796e-8, 5.24854e-9, -3.28194e-8, 4.84696e-9, 2.81328e-9, -1.62165e-8, 1.12203e-9
-     		//Coefficients = 1.53134e-8, 2.08796e-8, 5.24854e-9, 3.28194e-8, 4.84696e-9, 2.81328e-9, 1.62165e-8, 1.12203e-9
-     		BoundaryData = 0.0501413, 0.0498752
-     		MinX = -5.12000000001
-     		MinY = -5.12000000001
-     		MinZ = -5.12000000001
-     		MaxX = 5.12000000001
-     		MaxY = 5.12000000001
-     		MaxZ = 5.12000000001
-     	}
-}  

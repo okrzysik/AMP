@@ -43,9 +43,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP_INSIST( input_db->keyExists( "testLinearMechanicsOperator" ), "key missing!" );
 
-    auto testLinOperator = std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
-        AMP::Operator::OperatorBuilder::createOperator(
-            mesh, "testLinearMechanicsOperator", input_db, elementPhysicsModel ) );
+    auto testLinOperator = std::make_shared<AMP::Operator::MechanicsLinearFEOperator>(
+        testNonlinOperator->getParameters( "Jacobian", nullptr ) );
 
     ut->passes( exeName + " : create" );
 
