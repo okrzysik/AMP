@@ -20,6 +20,9 @@ ImplicitIntegrator::ImplicitIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::TimeIntegrator( params )
 {
+    AMP_ASSERT( params );
+    auto db                      = d_pParameters->d_db;
+    d_user_managed_time_operator = db->getWithDefault<bool>( "user_managed_time_operator", false );
     registerOperator( d_operator );
 }
 
@@ -83,10 +86,12 @@ void ImplicitIntegrator::registerOperator( std::shared_ptr<AMP::Operator::Operat
     d_operator = op;
     AMP_INSIST( d_operator, "Operator is null" );
 
-    // check if the operator is a TimeOperator
-    bool isTimeOperator = ( std::dynamic_pointer_cast<TimeOperator>( d_operator ) != nullptr );
+    if ( d_user_managed_time_operator ) {
+        d_operator = op;
+    } else {
+        // user supplied operators cannot be TimeOperators for now
+        AMP_ASSERT( std::dynamic_pointer_cast<TimeOperator>( d_operator ) == nullptr );
 
-    if ( !isTimeOperator ) {
         auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
         timeOperator_db->putScalar( "name", "TimeOperator" );
         timeOperator_db->putScalar( "print_info_level", d_iDebugPrintInfoLevel );
@@ -95,11 +100,9 @@ void ImplicitIntegrator::registerOperator( std::shared_ptr<AMP::Operator::Operat
             std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
         timeOperatorParameters->d_pSourceTerm  = d_pSourceTerm;
         timeOperatorParameters->d_pRhsOperator = d_operator;
-        timeOperatorParameters->d_Mesh         = d_operator->getMesh();
 
         d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
     }
-
     if ( !d_solver )
         createSolver();
 }
@@ -342,18 +345,6 @@ void ImplicitIntegrator::printStatistics( std::ostream &os )
  *************************************************************************
  */
 
-double ImplicitIntegrator::getGamma( void )
-{
-    if ( !d_time_history_initialized ) {
-        setTimeHistoryScalings();
-        d_time_history_initialized = true;
-    }
-
-    auto op = std::dynamic_pointer_cast<TimeOperator>( d_operator );
-    AMP_ASSERT( op );
-    return op->getGamma();
-}
-
 void ImplicitIntegrator::setComponentScalings( std::shared_ptr<AMP::LinearAlgebra::Vector> s,
                                                std::shared_ptr<AMP::LinearAlgebra::Vector> f )
 {
@@ -361,8 +352,13 @@ void ImplicitIntegrator::setComponentScalings( std::shared_ptr<AMP::LinearAlgebr
     d_function_scaling = f;
     AMP_INSIST( d_operator, "Operator must be registered prior to calling setComponentScalings" );
     auto timeOperator = std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
-    AMP_INSIST( timeOperator, "setComponentScalings only works with TimeOperator" );
-    timeOperator->setComponentScalings( s, f );
+    if ( timeOperator ) {
+        timeOperator->setComponentScalings( s, f );
+    } else {
+        if ( d_fComponentScalingFnPtr )
+            d_fComponentScalingFnPtr( s, f );
+    }
+
     AMP_ASSERT( d_solver );
     d_solver->setComponentScalings( s, f );
 }
