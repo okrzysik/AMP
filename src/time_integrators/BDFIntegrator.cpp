@@ -313,6 +313,15 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool )
     }
 }
 
+double BDFIntegrator::getGamma( void )
+{
+    if ( !d_time_history_initialized ) {
+        setTimeHistoryScalings();
+        d_time_history_initialized = true;
+    }
+    return d_gamma;
+}
+
 std::vector<double> BDFIntegrator::getTimeHistoryScalings( void )
 {
     if ( !d_time_history_initialized ) {
@@ -510,10 +519,8 @@ void BDFIntegrator::setTimeHistoryScalings( void )
     if ( timeOperator ) {
         timeOperator->setTimeOperatorScaling( d_gamma );
     } else {
-        AMP_INSIST( d_fTimeScalingFnPtr,
-                    "Error: BDFIntegrator -- a function pointer must be set to enable scaling of "
-                    "the operator by gamma" );
-        d_fTimeScalingFnPtr( d_gamma );
+        if ( d_fTimeScalingFnPtr )
+            d_fTimeScalingFnPtr( d_gamma );
     }
 }
 
@@ -548,10 +555,6 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
         // set the source term to -( u^{n}+(dt/2-\eps)f(u^n) )
         f->axpy( -beta, *d_prev_function_vector, *f );
     }
-
-    auto timeOperator = std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
-    AMP_INSIST( timeOperator, "TimeOperator is NULL" );
-    timeOperator->registerIntegratorSourceTerms( f );
 }
 
 void BDFIntegrator::printVectorComponentNorms(
@@ -870,7 +873,11 @@ void BDFIntegrator::evaluateForwardEulerPredictor()
         if ( timeOperator ) {
             timeOperator->applyRhs( d_scratch_vector, d_current_function_vector );
         } else {
+            // it is assumed the user supplied operator is calculating (u^{n+1}-\gamma
+            // f(u^{n+1}) so we do the necessary operations to back calculate f(u^{n+1})
             d_operator->apply( d_scratch_vector, d_current_function_vector );
+            d_current_function_vector->subtract( *d_current_function_vector, *d_scratch_vector );
+            d_current_function_vector->scale( -1.0 / d_gamma );
         }
 
         d_timederivative_vector->copyVector( d_current_function_vector );
@@ -923,12 +930,18 @@ void BDFIntegrator::setInitialGuess( const bool first_step,
             AMP_ASSERT( d_prev_solutions[0] );
             AMP_ASSERT( d_prev_function_vector );
             d_scratch_vector->copyVector( d_prev_solutions[0] );
+            d_scratch_vector->makeConsistent();
+
             auto timeOperator =
                 std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
             if ( timeOperator ) {
                 timeOperator->applyRhs( d_scratch_vector, d_prev_function_vector );
             } else {
+                // it is assumed the user supplied operator is calculating (u^{n+1}-\gamma
+                // f(u^{n+1}) so we do the necessary operations to back calculate f(u^{n+1})
                 d_operator->apply( d_scratch_vector, d_prev_function_vector );
+                d_prev_function_vector->subtract( *d_prev_function_vector, *d_scratch_vector );
+                d_prev_function_vector->scale( -1.0 / d_gamma );
             }
             //	    AMP::pout << "applyRhs: L2Norm " << d_prev_function_vector->L2Norm() <<
             // std::endl;
@@ -974,6 +987,7 @@ void BDFIntegrator::setInitialGuess( const bool first_step,
              */
             d_solution_vector->copyVector( d_prev_solutions[0] );
         }
+        d_solution_vector->makeConsistent();
     }
 
     computeIntegratorSourceTerm();
@@ -1906,7 +1920,11 @@ void BDFIntegrator::reset(
                 if ( timeOperator ) {
                     timeOperator->applyRhs( d_scratch_vector, d_old_td_vector );
                 } else {
+                    // it is assumed the user supplied operator is calculating (u^{n+1}-\gamma
+                    // f(u^{n+1}) so we do the necessary operations to back calculate f(u^{n+1})
                     d_operator->apply( d_scratch_vector, d_old_td_vector );
+                    d_old_td_vector->subtract( *d_old_td_vector, *d_scratch_vector );
+                    d_old_td_vector->scale( -1.0 / d_gamma );
                 }
             }
 
@@ -1933,9 +1951,6 @@ void BDFIntegrator::setMultiPhysicsScalings( void )
             d_scratch_function_vector = d_function_scaling->clone();
         d_scratch_function_vector->zero();
 
-        auto op = std::dynamic_pointer_cast<TimeOperator>( d_operator );
-        AMP_ASSERT( op );
-
         auto mv = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_solution_vector );
         if ( d_iDebugPrintInfoLevel >= 2 ) {
             if ( mv ) {
@@ -1950,9 +1965,15 @@ void BDFIntegrator::setMultiPhysicsScalings( void )
                 }
             }
         }
-        // this should be only called after a call to setInitialGuess for a timestep
-        op->applyRhs( d_solution_vector, d_function_scaling );
-        d_function_scaling->axpy( -d_gamma, *d_function_scaling, *d_solution_vector );
+
+        auto op = std::dynamic_pointer_cast<TimeOperator>( d_operator );
+        if ( op ) {
+            // this should be only called after a call to setInitialGuess for a timestep
+            op->applyRhs( d_solution_vector, d_function_scaling );
+            d_function_scaling->axpy( -d_gamma, *d_function_scaling, *d_solution_vector );
+        } else {
+            d_operator->apply( d_solution_vector, d_function_scaling );
+        }
         d_function_scaling->add( *d_function_scaling, *d_integrator_source_vector );
 
         auto mf = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( d_function_scaling );
@@ -2029,6 +2050,8 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     } else {
         d_scratch_vector->copyVector( d_solution_vector );
     }
+
+    d_scratch_vector->makeConsistent();
 
     if ( !d_scratch_function_vector )
         d_scratch_function_vector = in->clone();

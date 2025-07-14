@@ -77,8 +77,6 @@ Operator::getParameters( const std::string &type,
                          std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
                          std::shared_ptr<OperatorParameters> )
 {
-    if ( u )
-        AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     if ( type == "Jacobian" ) {
         auto params = getJacobianParameters( u );
         if ( params ) {

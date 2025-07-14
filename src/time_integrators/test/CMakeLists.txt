@@ -10,8 +10,11 @@ COPY_TEST_FILE( input_testIDA-TO-Preprocessor )
 COPY_TEST_FILE( input_testIDA-NonlinearThermalOxygenDiffusion-1 )
 COPY_TEST_FILE( inputIDATimeIntegrator )
 COPY_TEST_FILE( input_testOxideTimeIntegrator-1 )
+COPY_TEST_FILE( input_testImplicitIntegrationWithUserOperator )
 
 # Add the tests
+ADD_AMP_TEST( testImplicitIntegrationWithUserOperator )
+
 INITIALIZE_TESTBUILDER()
 ADD_TB_TEST( testSimpleTimeIntegration )
 ADD_TB_TEST_1_2_4( testTimeIntegratorParameters )

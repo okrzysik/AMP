@@ -38,7 +38,7 @@ public:
     using AMP::TimeIntegrator::TimeIntegrator::getInitialDt;
     double getInitialDt() override;
 
-    //! return the factor d_current_dt*getGamma() used to scale the rhs operator
+    //! return the factor getGamma() used to scale the rhs operator
     double getTimeOperatorScaling( void );
 
     /**
@@ -91,6 +91,8 @@ public:
     }
 
     void registerVectorsForMemoryManagement( void );
+
+    double getGamma( void ) override;
 
     std::vector<double> getTimeHistoryScalings( void ) override;
 
