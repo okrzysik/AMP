@@ -1855,7 +1855,8 @@ void BDFIntegrator::reset(
     PROFILE( "BDFIntegrator::reset" );
     ImplicitIntegrator::reset( params );
 
-    BDFIntegrator::getFromInput( params->d_db, true );
+    if ( params )
+        BDFIntegrator::getFromInput( params->d_db, true );
 
     registerVectorsForMemoryManagement();
 
