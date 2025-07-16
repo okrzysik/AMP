@@ -34,7 +34,7 @@ using AMP::Utilities::stringf;
 #ifdef AMP_USE_MPI
 bool useMPI = true;
 #else
-bool useMPI   = false;
+bool useMPI = false;
 #endif
 #ifdef __APPLE__
 bool useApple = true;
@@ -1012,8 +1012,7 @@ void testCommDup( UnitTest &ut )
     }
     #if defined( AMP_USE_PETSC ) && !defined( AMP_USE_MPI )
     ut.expected_failure( "Skipping dup tests, PETSc (no-mpi) has a limit of 128 unique comms" );
-    return;
-    #endif
+    #else
     const int N_comm_try = 2000; // Maximum number of comms to try and create
     std::vector<MPI_CLASS> comms;
     comms.reserve( N_comm_try );
@@ -1063,6 +1062,7 @@ void testCommDup( UnitTest &ut )
         AMP::pout << "Maximum number of communicators created with destruction: " << N_dup
                   << std::endl;
     }
+    #endif
 #endif
 }
 
@@ -1121,17 +1121,17 @@ void testBasicCommCreatePerformance()
         return;
     int N_it = 5000;
     auto t1  = MPI_CLASS::time();
-    for ( int i = 0; i < N_it; i++ )
-        [[maybe_unused]] AMP::AMP_MPI comm;
+    for ( int i = 0; i < N_it; i++ ) [[maybe_unused]]
+        AMP::AMP_MPI comm;
     auto t2 = MPI_CLASS::time();
-    for ( int i = 0; i < N_it; i++ )
-        [[maybe_unused]] AMP::AMP_MPI comm( AMP_COMM_NULL );
+    for ( int i = 0; i < N_it; i++ ) [[maybe_unused]]
+        AMP::AMP_MPI comm( AMP_COMM_NULL );
     auto t3 = MPI_CLASS::time();
-    for ( int i = 0; i < N_it; i++ )
-        [[maybe_unused]] AMP::AMP_MPI comm( AMP_COMM_SELF );
+    for ( int i = 0; i < N_it; i++ ) [[maybe_unused]]
+        AMP::AMP_MPI comm( AMP_COMM_SELF );
     auto t4 = MPI_CLASS::time();
-    for ( int i = 0; i < N_it; i++ )
-        [[maybe_unused]] AMP::AMP_MPI comm( AMP_COMM_WORLD );
+    for ( int i = 0; i < N_it; i++ ) [[maybe_unused]]
+        AMP::AMP_MPI comm( AMP_COMM_WORLD );
     auto t5 = MPI_CLASS::time();
     printf( "Time to create empty comm: %i ns\n", (int) ( 1e9 * ( t2 - t1 ) / N_it ) );
     printf( "Time to create AMP_COMM_NULL: %i ns\n", (int) ( 1e9 * ( t3 - t2 ) / N_it ) );
