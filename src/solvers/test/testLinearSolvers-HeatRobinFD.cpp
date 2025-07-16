@@ -771,41 +771,6 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
 }
 
 
-void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> integrator_db, std::shared_ptr<AMP::Database> solver_db )
-{
-    AMP_ASSERT( integrator_db );
-    AMP_ASSERT( solver_db );
-    auto imp_ti      = { "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
-    auto name        = integrator_db->getScalar<std::string>( "name" );
-    auto is_implicit = ( std::find( imp_ti.begin(), imp_ti.end(), name ) != imp_ti.end() );
-    integrator_db->putScalar<bool>( "is_implicit", is_implicit );
-    if ( is_implicit ) {
-        integrator_db->putScalar<bool>( "user_managed_time_operator", true );
-        integrator_db->putScalar<std::string>( "implicit_integrator", name );
-        integrator_db->putScalar<std::string>( "solver_name", "Solver" );
-        integrator_db->putScalar<std::string>( "timestep_selection_strategy", "constant" );
-        integrator_db->putScalar<bool>( "use_predictor", false );
-        
-        // Turn off component scaling for multi-physics
-        integrator_db->putScalar<bool>( "auto_component_scaling", false );
-        // int print_info_level = 1;
-        // // if (implicitSolverName == "CGSolver") 
-        // //     print_info_level = 0;
-        // auto solver_db = AMP::Database::create( "name",
-        //                                         implicitSolverName,
-        //                                         "print_info_level",
-        //                                         print_info_level,
-        //                                         "max_iterations",
-        //                                         256,
-        //                                         "absolute_tolerance",
-        //                                         1.0e-8,
-        //                                         "relative_tolerance",
-        //                                         1.0e-8 );
-        integrator_db->putDatabase( "Solver", solver_db->cloneDatabase() );
-    }
-}
-
-
 void driver(AMP::AMP_MPI comm, 
             AMP::UnitTest *ut,
             const std::string &exeName ) {
@@ -820,10 +785,12 @@ void driver(AMP::AMP_MPI comm,
 
     // Unpack databases from the input file
     auto PDE_db    = input_db->getDatabase( "PDE" );
-    auto solver_db = input_db->getDatabase( "LinearSolver" );
+    //auto solver_db = input_db->getDatabase( "LinearSolver" );
+    auto ti_db     = input_db->getDatabase( "TimeIntegrator" );
 
     AMP_INSIST( PDE_db,    "A PDE database must be provided" );
-    AMP_INSIST( solver_db, "A LinearSolver database must be provided" );
+    //AMP_INSIST( solver_db, "A LinearSolver database must be provided" );
+    AMP_INSIST( ti_db, "A TimeIntegrator database must be provided" );
 
 
     /****************************************************************
@@ -874,22 +841,14 @@ void driver(AMP::AMP_MPI comm,
     auto numSolVec    = myPoissonOp->getRightVector();
     auto manSolVec    = myPoissonOp->getRightVector();
     auto errorVec     = myPoissonOp->getRightVector();
-    auto manSourceVec = myPoissonOp->getRightVector();
+    auto BDFSourceVec = myPoissonOp->getRightVector();
 
-    // // Create a MyOperator
-    // const auto opDB = std::make_shared<AMP::Database>( "OperatorDB" );
-    // opDB->putScalar<std::string>( "name", "MyOperator" );  
-    // auto opParams = std::make_shared<AMP::Operator::OperatorParameters>( opDB );
-    // auto myOp = std::make_shared<MyOperator>( opParams );
-    // myOp->setDOFManager( comm );
 
-    // Parameters for time integraor
-    double finalTime       = 0.5;
-    double dt              = 0.001;
-    int maxIntegratorSteps = 300;
-    auto integratorName = "BDF2";
-    //auto integratorName = "BDF3";
-    //auto integratorName = "ExplicitEuler";
+    /****************************************************************
+    * Set up implicit time integrator                               *
+    ****************************************************************/
+    // Parameters for time integrator
+    double dt = PDE_db->getScalar<double>( "h" );
 
     // Create initial condition vector
     auto ic = myPoissonOp->getRightVector();
@@ -902,26 +861,12 @@ void driver(AMP::AMP_MPI comm,
     sol_old->copyVector( ic ); 
     auto sol_new = ic->clone( );
     sol_new->copyVector( ic ); 
-
-    // Create Database to construct TimeIntegratorParameters from
-    std::shared_ptr<AMP::Database> db = AMP::Database::create( "name",
-                                                               integratorName,
-                                                               "initial_time",
-                                                               0.0,
-                                                               "final_time",
-                                                               finalTime,
-                                                               "max_integrator_steps",
-                                                               maxIntegratorSteps,
-                                                               "print_info_level",
-                                                               2 );
-    auto tiParams           = std::make_shared<AMP::TimeIntegrator::TimeIntegratorParameters>( db );
+    
+    auto tiParams           = std::make_shared<AMP::TimeIntegrator::TimeIntegratorParameters>( ti_db );
     tiParams->d_ic_vector   = ic;
-    //tiParams->d_operator    = myPoissonOp;
     tiParams->d_operator    = myBEOp;
     // Create a source vector
-    tiParams->d_pSourceTerm = manSourceVec;
-    
-    updateDatabaseIfImplicit( db, solver_db );
+    tiParams->d_pSourceTerm = BDFSourceVec;
 
     // Create timeIntegrator from factory
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegrator> timeIntegrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( tiParams );
@@ -964,33 +909,27 @@ void driver(AMP::AMP_MPI comm,
 
 
     // Integrate!
+    double finalTime = timeIntegrator->getFinalTime();
     double T = 0.0;
     timeIntegrator->setInitialDt( dt );
     while ( T < finalTime ) {
 
-        // Set the solution-independent source term; note that this approach can only work for multistep methods
-        if ( db->getScalar<bool>( "is_implicit" ) ) {
-            myManufacturedHeat->setCurrentTime( T + dt ); // Set source to new time...
-        } else {
-            myManufacturedHeat->setCurrentTime( T ); // Set source to current time...
-        }
-
+        // Set the solution-independent source term; note that this approach only works for implicit multistep methods
+        myManufacturedHeat->setCurrentTime( T + dt ); // Set source to new time...
         // Fill vector with PDE source term
-        myManufacturedHeat->fillWith_fsource( manSourceVec );
+        myManufacturedHeat->fillWith_fsource( BDFSourceVec );
         // Get exact Robin coefficients at T + dt
         auto robinCoeffs = myManufacturedHeat->getRobinValues( PDE_db );
         // Reset Robin coefficients in Poisson operator
         myPoissonOp->resetRobinValues( robinCoeffs[0], robinCoeffs[1] );
         // Apply Robin correction to source vector
-        myPoissonOp->ApplyRobinCorrectionToVector( manSourceVec );
+        myPoissonOp->ApplyRobinCorrectionToVector( BDFSourceVec );
 
         // Advance the solution
         timeIntegrator->advanceSolution( dt, T == 0, sol_old, sol_new );
         if ( timeIntegrator->checkNewSolution() ) {
             timeIntegrator->updateSolution();
-            sol_new->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             sol_old->copyVector( sol_new );
-            
         } else {
             AMP_ERROR( "Solution didn't converge" );
         }
