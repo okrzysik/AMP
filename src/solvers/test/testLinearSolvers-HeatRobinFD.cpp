@@ -152,8 +152,11 @@ std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, std::share
     mesh_db->putScalar<std::string>( "MeshName", "AMP::cube" );
     mesh_db->putScalar<std::string>( "Generator", "cube" );
     if ( dim == 1 ) {
-        mesh_db->putVector<int>( "Size", { n-3 } ); // mesh has n-2 points
-        mesh_db->putVector<double>( "Range", { h + 0.5*h, 1.0 - (h + 0.5*h) } );
+        //mesh_db->putVector<int>( "Size", { n-3 } ); // mesh has n-2 points
+        //mesh_db->putVector<double>( "Range", { h + 0.5*h, 1.0 - (h + 0.5*h) } );
+
+        mesh_db->putVector<int>( "Size", { n-1 } ); // mesh has n points
+        mesh_db->putVector<double>( "Range", { 0.5*h, 1.0 - 0.5*h } );
     }
 
     // Create MeshParameters
@@ -227,6 +230,221 @@ std::vector<double> getDiscreteNorms(double h,
 }
 
 
+/* ------------------------------------------------
+    Class implementing manufactured solution 
+------------------------------------------------- */
+/* Abstract class representing an exact solution of a linear diffusion problem:
+        u'(t) - grad \dot ( \grad u ) = s(t), u(0) = u_0
+    over the spatial domain [0,1]^d.
+
+    Robin boudary conditions are avaliable in the form of:
+        a0 * u + b0 * n \dot grad u = r0 at x = 0...
+        a1 * u + b1 * n \dot grad u = r1 at x = 1...
+*/
+class ManufacturedHeatModel {
+
+public:
+
+    AMP::Mesh::GeomType                              d_geomType = AMP::Mesh::GeomType::Vertex;
+    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFMan;
+    std::shared_ptr<AMP::Mesh::BoxMesh>              d_BoxMesh;
+    // The current time of the solution
+    double currentTime = 0.0;
+
+    ManufacturedHeatModel( 
+        std::shared_ptr<AMP::Discretization::DOFManager> DOFMan_,
+        std::shared_ptr<AMP::Mesh::BoxMesh> BoxMesh_ ) : d_DOFMan(DOFMan_), d_BoxMesh(BoxMesh_) { 
+
+        AMP_INSIST( DOFMan_,  "Non-null DOFManager required!" );
+        AMP_INSIST( BoxMesh_, "Non-null BoxMesh required!" );
+    }
+
+    // Exact solution, its gradient and corresponding source term
+    double exactSolution(double x);
+    double exactSolutionGradient(double x);
+    double sourceTerm(double x);
+
+    // Populate vectors with exact PDE solution and corresponing source term
+    void fillWith_uexact( std::shared_ptr<AMP::LinearAlgebra::Vector> uexact  );
+    void fillWith_fsource( std::shared_ptr<AMP::LinearAlgebra::Vector> fsource );
+
+    inline double getCurrentTime() { return currentTime; };
+    inline void setCurrentTime(double currentTime_) { currentTime = currentTime_; };
+    
+    // TODO: Make this a function where the a and b coefficients are specified, and the boundary, and the spatial location...
+    inline std::vector<double> getRobinValues( std::shared_ptr<const AMP::Database> db_ ) {
+        // Get Robin BC values for manufactured solution 
+        // Note that the Robin BCs evaluate the solution exactly at x = 0 and x = 1, even though these are not computational vertices (they are half way between a ghost vertex and the first interior vertex, which ultimately is eliminated from the system)
+
+        // Unpack constants from the database
+        double a0 = db_->getScalar<double>( "a0" );
+        double b0 = db_->getScalar<double>( "b0" );
+        double a1 = db_->getScalar<double>( "a1" );
+        double b1 = db_->getScalar<double>( "b1" );
+        
+        double u0    = exactSolution( 0.0 );
+        double u1    = exactSolution( 1.0 );
+        double dudx0 = exactSolutionGradient( 0.0 );
+        double dudx1 = exactSolutionGradient( 1.0 );
+        
+        double r0 = a0 * u0 + b0 * dudx0;
+        double r1 = a1 * u1 + b1 * dudx1;
+
+        std::vector<double> r = { r0, r1 };
+        return r;
+    };
+};
+
+
+double ManufacturedHeatModel::exactSolution(double x) {
+    double t = this->getCurrentTime();
+    return std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t);
+}
+
+double ManufacturedHeatModel::exactSolutionGradient(double x) {
+    double t = this->getCurrentTime();
+    return (3.0/2.0)*M_PI*std::cos(2*M_PI*t)*std::cos((3.0/2.0)*M_PI*x);
+}
+
+double ManufacturedHeatModel::sourceTerm(double x) {
+    double t = this->getCurrentTime();
+    //double cxx = d_c.xx;
+    double cxx = 1.0; // todo: make consistent
+    return (1.0/4.0)*M_PI*(9*M_PI*cxx*std::cos(2*M_PI*t) - 8*std::sin(2*M_PI*t))*std::sin((3.0/2.0)*M_PI*x);
+}
+
+/* Populate exact solution vector.  */
+void ManufacturedHeatModel::fillWith_uexact( std::shared_ptr<AMP::LinearAlgebra::Vector> uexact ) {
+
+    auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
+    auto meshDim = d_BoxMesh->getDim(); // Dimension
+
+    // Fill in exact solution and source term vectors
+    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
+        
+        std::vector<double> u;
+
+        if ( meshDim == 1 ) {
+            double x = ( elem->coord() )[0];
+            u.push_back(exactSolution(x));
+        } 
+
+        std::vector<size_t> i;
+        d_DOFMan->getDOFs( elem->globalID(), i );
+        uexact->setValuesByGlobalID( 1, &i[0], &u[0] );
+    }
+    uexact->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+}
+
+
+/* Populate source-term vector */
+void ManufacturedHeatModel::fillWith_fsource( std::shared_ptr<AMP::LinearAlgebra::Vector> fsource ) {
+
+    auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
+    auto meshDim = d_BoxMesh->getDim(); // Dimension
+
+    // Fill in exact solution and source term vectors
+    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
+        
+        std::vector<double> f;
+        if ( meshDim == 1 ) {
+            double x = ( elem->coord() )[0];
+            f.push_back(sourceTerm( x ));
+        } 
+
+        std::vector<size_t> i;
+        d_DOFMan->getDOFs( elem->globalID(), i );
+        fsource->setValuesByGlobalID( 1, &i[0], &f[0] );
+    }
+    fsource->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+}
+
+
+/* ------------------------------------------------
+    Class implementing a backward Euler operator 
+------------------------------------------------- */
+/* Implements the linearOperator I + gamma*L, corresponding to linear systems arising from the application of BDF methods to the linear ODEs u'(t) + L*u = s(t) */ 
+class BELinearOp : public AMP::Operator::LinearOperator {
+
+public:
+    double                                         d_gamma;
+    std::shared_ptr<AMP::Operator::LinearOperator> d_L;
+
+    bool d_matrixRequired; // Does this operator have to construct a matrix?
+    bool d_gammaChanged;   // Has the value of gamma been changed since the matrix was last constructed?
+    
+    // Constructor call's base class's constructor
+    BELinearOp( std::shared_ptr<const AMP::Operator::OperatorParameters> params_ ) : 
+            AMP::Operator::LinearOperator( params_ ) {
+
+        d_gamma = -1.0; // Initialize with some dummy value
+        d_matrixRequired = params_->d_db->getWithDefault<bool>( "matrixRequired", false );
+
+    }
+
+    /* Build the matrix A = I + gamma*L */
+    void buildAndSetMatrix() {
+
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> L_mat = d_L->getMatrix();
+        AMP_INSIST( L_mat, "Setting the matrix requires L to have a non-null matrix" );
+
+        AMP_INSIST( !(this->getMatrix()), "The case of changing gamma is not implemented yet..." );
+
+        // Should use a clone and then copy if creating a new matrix rather than this copy
+        // auto A_mat = AMP::LinearAlgebra::Matrix( *L_mat ); // Copy constructor
+        
+        auto A_mat = L_mat;
+        A_mat->scale( d_gamma ); // A <- gamma*A
+
+        // A <- A + I
+        auto DOFMan = A_mat->getRightDOFManager();
+        for ( auto dof = DOFMan->beginDOF(); dof != DOFMan->endDOF(); dof++ ) {
+            A_mat->addValueByGlobalID(dof, dof, 1.0);
+        }
+        
+        // Set the matrix
+        this->setMatrix( A_mat );
+    }
+
+    // Set the LinearOperator L
+    void setRHSOperator( std::shared_ptr<AMP::Operator::LinearOperator> L_ ) { d_L = L_; };
+
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getRightVector() const override {
+        AMP_INSIST( d_L, "RHS operator not set!" );
+        return d_L->getRightVector();
+    }
+
+    // Used to register this operator in a factory
+    std::string type() const override {
+        return "BELinearOp";
+    }
+
+    // Set the time-step size in the operator
+    void setGamma( AMP::Scalar gamma_ ) { 
+        double gamma = double( gamma_ );
+
+        d_gammaChanged = !(AMP::Utilities::approx_equal( gamma, d_gamma, 1e-10 ));
+
+        // Build matrix if: 1. gamma has changed, and 2. one is required.
+        if (d_gammaChanged) {
+            d_gamma = gamma;
+            if (d_matrixRequired) {
+                buildAndSetMatrix();
+            }
+        }
+    }
+
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
+                AMP::LinearAlgebra::Vector::shared_ptr r ) override
+    {
+        AMP_INSIST( d_L, "RHS operator not set!" );
+
+        // Compute r <- (I + gamma*A)*u
+        d_L->apply( u_in, r );
+        r->axpby (1.0, d_gamma, *u_in); // r <- 1.0*u + d_gamma * r
+    }
+};
+
 
 /* ------------------------------------------------
     Class implementing a discrete Poisson problem 
@@ -235,37 +453,31 @@ class PoissonOp : public AMP::Operator::LinearOperator {
 
 private:
     
-    std::shared_ptr<AMP::Mesh::BoxMesh> d_BoxMesh;
     PDECoefficients                     d_c;
     AMP::Mesh::GeomType                 d_geomType = AMP::Mesh::GeomType::Vertex;
 
     void setPDECoefficients();
     std::shared_ptr<AMP::LinearAlgebra::Matrix> getLaplacianMatrix();
-    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_APoisson;
+    //std::shared_ptr<AMP::LinearAlgebra::Matrix> d_APoisson;
     
     double d  = 1.0; // diffusion coefficient... make consistent with c.xx
     
-    double a0 = 0.25, b0 = -1.0/6.0;
-    double a1 = 0.25, b1 = +1.0/6.0;
-
-    // Dirichlet BCs
-    // double a0 = 1.0, b0 = 0.0;
-    // double a1 = 1.0, b1 = 0.0;
-
-    mutable double r0 = std::nan(""), r1 = std::nan("");
-
-    void ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> A );
-
-
+    // Constants in Robin BCs
+    double d_a0, d_b0, d_r0;
+    double d_a1, d_b1, d_r1;
+    
 public:
 
-    
+    /* Set Robin values */
+    void resetRobinValues( double r0_, double r1_ ) { d_r0 = r0_; d_r1 = r1_; };
+
+    void ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> A );
     void ApplyRobinCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
 
-    mutable double currentTime = 0.0;
     std::shared_ptr<AMP::Database>                   d_db;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFMan;
-    double d_gamma;
+    std::shared_ptr<AMP::Mesh::BoxMesh>              d_BoxMesh;
+
     
     // Constructor call's base class's constructor
     PoissonOp(std::shared_ptr<const AMP::Operator::OperatorParameters> params_) : 
@@ -277,6 +489,14 @@ public:
 
         // Set my database
         d_db = params_->d_db->getDatabase( "PDE_db" );
+
+        // Unpack constants from the database
+        d_a0 = d_db->getScalar<double>( "a0" );
+        d_b0 = d_db->getScalar<double>( "b0" );
+        d_r0 = d_db->getScalar<double>( "r0" );
+        d_a1 = d_db->getScalar<double>( "a1" );
+        d_b1 = d_db->getScalar<double>( "b1" );
+        d_r1 = d_db->getScalar<double>( "r0" );
 
         // Set DOFManager
         this->set_DOFManager();
@@ -292,8 +512,8 @@ public:
         ApplyRobinCorrectionToMatrix( A );
         
         // Set linear operator's matrix
-        //this->setMatrix( A );
-        d_APoisson = A;
+        this->setMatrix( A );
+        //d_APoisson = A;
     }
 
     // Used by OperatorFactory to create a PoissonOp
@@ -310,13 +530,8 @@ public:
         return "PoissonOp";
     }
 
-    // Populate vectors with exact PDE solution and corresponing source term
-    void fillWith_uexact( std::shared_ptr<AMP::LinearAlgebra::Vector> uexact  );
-    void fillWith_fsource( std::shared_ptr<AMP::LinearAlgebra::Vector> fsource );
-   
 
 private:
-
 
     /* Build and set d_DOFMan */
     void set_DOFManager() {
@@ -327,11 +542,6 @@ private:
 
     // Coefficients defining the PDE
     std::vector<double> getPDECoefficients1D();
-
-    // Exact solution and corresponding source term
-    double exactSolution(double x);
-    double exactSolutionGradient(double x);
-    double sourceTerm(double x);
     
     // FD stencils
     std::vector<double> getStencil1D();
@@ -348,71 +558,6 @@ private:
         d_DOFMan->getDOFs(id, dof);
         return dof[0];
     };
-
-public:
-    inline double getCurrentTime() { return currentTime; };
-    inline void setCurrentTime(double currentTime_) { currentTime = currentTime_; 
-    
-        // Set Robin BC values for manufactured solution 
-        // Note that the Robin BCs evaluate the solution exactly at x = 0 and x = 1, even though these are not computational vertices (they are half way between a ghost vertex and the first interior vertex, which ultimately is eliminated from the system)
-        double E0    = exactSolution( 0.0 );
-        double E1    = exactSolution( 1.0 );
-        double dEdx0 = exactSolutionGradient( 0.0 );
-        double dEdx1 = exactSolutionGradient( 1.0 );
-        r0 = a0 * E0 + b0 * dEdx0;
-        r1 = a1 * E1 + b1 * dEdx1;
-    };
-
-    // Set the time-step size in the operator
-    void setGamma( AMP::Scalar gamma )
-    {
-        d_gamma = double( gamma );
-    }
-
-    // only required if we are doing multi-physics and scaling of components needed
-    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
-                AMP::LinearAlgebra::Vector::shared_ptr r ) override
-    {
-        AMP::LinearAlgebra::Vector::const_shared_ptr u;
-
-        if ( d_pSolutionScaling ) {
-
-            AMP_ASSERT( d_pFunctionScaling );
-
-            if ( !d_pScratchSolVector ) {
-                d_pScratchSolVector = u_in->clone();
-            }
-
-            d_pScratchSolVector->multiply( *u_in, *d_pSolutionScaling );
-            d_pScratchSolVector->makeConsistent();
-            u = d_pScratchSolVector;
-
-        } else {
-            u = u_in;
-        }
-
-        // Compute r <- (I + gamma*A)*u
-        d_APoisson->mult( u, r ); // r <- A*u
-        r->axpby (1.0, d_gamma, *u); // r <- 1.0*u + d_gamma * r
- 	
-        if ( d_pFunctionScaling ) {
-            r->divide( *r, *d_pFunctionScaling );
-        }
-    }
-
-    // only required if we are doing multi-physics and scaling of components needed
-    void setComponentScalings( std::shared_ptr<AMP::LinearAlgebra::Vector> s,
-                               std::shared_ptr<AMP::LinearAlgebra::Vector> f )
-    {
-        d_pSolutionScaling = s;
-        d_pFunctionScaling = f;
-    }
-
-    // only required if we are doing multi-physics and scaling of components needed
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionScaling;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pFunctionScaling;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchSolVector;
-
 }; 
 
 
@@ -423,31 +568,12 @@ void PoissonOp::setPDECoefficients() {
     }
 }
 
-
 std::vector<double> PoissonOp::getPDECoefficients1D() {
     // PDE coefficients
     double cxx = 1.0;
     std::vector<double> c = { cxx };
     return c;
 }
-
-
-double PoissonOp::exactSolution(double x) {
-    double t = this->getCurrentTime();
-    return std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t);
-}
-
-double PoissonOp::exactSolutionGradient(double x) {
-    double t = this->getCurrentTime();
-    return (3.0/2.0)*M_PI*std::cos(2*M_PI*t)*std::cos((3.0/2.0)*M_PI*x);
-}
-
-double PoissonOp::sourceTerm(double x) {
-    double t = this->getCurrentTime();
-    double cxx = d_c.xx;
-    return (1.0/4.0)*M_PI*(9*M_PI*cxx*std::cos(2*M_PI*t) - 8*std::sin(2*M_PI*t))*std::sin((3.0/2.0)*M_PI*x);
-}
-
 
 /* Get 3-point stencil for 1D Poisson. */
 std::vector<double> PoissonOp::getStencil1D() {
@@ -479,12 +605,9 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData1D() {
     auto localBox  = getLocalNodeBox( d_BoxMesh );
     auto globalBox = getGlobalNodeBox( d_BoxMesh );
 
-    
-
     // Create a map from the DOF to a pair a vectors
     // Map from a DOF to vector of col inds and associated data
     std::map<size_t, colsDataPair> localCSRData;
-
 
     // Iterate over local interior box
     for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
@@ -507,7 +630,6 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData1D() {
             continue;
         }
 
-
         // Copy of stencil
         std::vector<double> vals = stencil; 
         // Column indices, ordered consistently with the stencil
@@ -522,79 +644,22 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData1D() {
 }
 
 
+/* This correction only depends on the constants a_i and b_i; it does not depend on the constants r_i!  
 
-/* Populate exact solution vector.  */
-void PoissonOp::fillWith_uexact( std::shared_ptr<AMP::LinearAlgebra::Vector> uexact ) {
-
-    auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
-    auto meshDim = d_BoxMesh->getDim(); // Dimension
-
-    // Fill in exact solution and source term vectors
-    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
-        
-        std::vector<double> u;
-
-        if ( meshDim == 1 ) {
-            double x = ( elem->coord() )[0];
-            u.push_back(exactSolution(x));
-        } 
-
-        std::vector<size_t> i;
-        d_DOFMan->getDOFs( elem->globalID(), i );
-        uexact->setValuesByGlobalID( 1, &i[0], &u[0] );
-    }
-    uexact->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-}
-
-
-/* Populate source-term vector */
-void PoissonOp::fillWith_fsource( std::shared_ptr<AMP::LinearAlgebra::Vector> fsource ) {
-
-    auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
-    auto meshDim = d_BoxMesh->getDim(); // Dimension
-
-    // Fill in exact solution and source term vectors
-    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
-        
-        std::vector<double> f;
-        if ( meshDim == 1 ) {
-            double x = ( elem->coord() )[0];
-            f.push_back(sourceTerm( x ));
-        } 
-
-        std::vector<size_t> i;
-        d_DOFMan->getDOFs( elem->globalID(), i );
-        fsource->setValuesByGlobalID( 1, &i[0], &f[0] );
-    }
-    fsource->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-}
-
-/* 
-Robin set up. Use cell centered discretization. One ghost cell is used. The boundary condition explicitly uses the ghost cell and the first interior cell. The boundary condition is used as the equation for the first interior cell, and this equation is eliminated.
-
-There are n-1 active computational vertices, 0, 1, ..., n-2. There are two ghost vertices, and the first interior vertices are eliminated.
+Robin set up. Use cell centered discretization, with one ghost cell. The stencil for the first interior point uses the value in the ghost cell. The discretized boundary condition is solved for the ghost value as a function of the first interior DOF, which is then substituted into the stencil for the first interior DOF.
 
 at x = 0, the BC is
 a0 * E - b0 * d_E * dE/dx = r0
 
-We solve this as:
-    E0 = alpha1*E1 + alpha2*E2 + beta0
-    1/h^2*( - E0 + 2*E1 - E2 ) = 1/h^2*( [2-alpha1]*E1 - [1+alpha2]*E2 ) - 1/h^2 * beta0
-
 at x = 1, the BC is
 a1 * E - b1 * d_E * dE/dx = r1.
-
-Suppose the last interior point is E3, then, we solve this as:
-    beta1 + alpha1*E1 + alpha2*E2 = E3
-The stencil at the last active interior vertex is:
-    1/h^2*( - E1 + 2*E2 - E3 ) = 1/h^2*( - [1+alpha1]*E1 + [2-alpha2]*E2 ) - 1/h^2 * beta1
-
 */
 void PoissonOp::ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> A ) {
 
     auto localBox  = getLocalNodeBox( d_BoxMesh );
     auto globalBox = getGlobalNodeBox( d_BoxMesh );
     auto h = d_db->getScalar<double>("h");
+    double d = d_c.xx;
 
     // West boundary
     if ( localBox.first[0] == globalBox.first[0] ) {
@@ -602,20 +667,18 @@ void PoissonOp::ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra
         int i = localBox.first[0];
         size_t dof = gridIndsToDOF( i );
 
-        double alpha1 = (3*a0*h - 6*b0*d)/(4*a0*h - 4*b0*d);
-        double alpha2 = (-a0*h + 2*b0*d)/(4*a0*h - 4*b0*d);
+        double alpha0 = (2*d*d_b0 + d_a0*h)/(2*d*d_b0 - d_a0*h);
 
-        //     We solve this as:
-        // E0 = alpha1*E1 + alpha2*E2 + beta0
-        // 1/h^2*( - E0 + 2*E1 - E2 ) = 1/h^2*( [2-alpha1]*E1 - [1+alpha2]*E2 ) - 1/h^2 * beta0
+        // We solve for the ghost value as:
+        // Eg = alpha0*E0 + beta0
+        // 1/h^2*( - Eg + 2*E0 - E1 ) = 1/h^2*( [2-alpha0]*E0 - E1 ) - 1/h^2 * beta0
         std::vector<size_t> cols = { dof, gridIndsToDOF( i+1 ) };
-        std::vector<double> vals = { 1.0/(h*h) * ( 2.0 - alpha1 ), -1.0/(h*h) * ( 1.0 + alpha2 ) };
+        std::vector<double> vals = { 1.0/(h*h) * ( 2.0 - alpha0 ), -1.0/(h*h) };
 
         // Set values by grid indices
         int nrows = 1;
         int ncols = 2;
         A->setValuesByGlobalID<double>( nrows, ncols, &dof, cols.data(), vals.data() );
-        A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
 
     // East boundary
@@ -623,71 +686,58 @@ void PoissonOp::ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra
         int i = localBox.last[0];
         size_t dof  = gridIndsToDOF( i );
 
-        double alpha1 = (-a1*h - 2*b1*d)/(4*a1*h + 4*b1*d);
-        double alpha2 = (3*a1*h + 6*b1*d)/(4*a1*h + 4*b1*d);
+        double alpha1 = (2*d*d_b1 - d_a1*h)/(2*d*d_b1 + d_a1*h);
 
-        // beta1 + alpha1*E1 + alpha2*E2 = E3
-        // The stencil at the last active interior vertex is:
-        //     1/h^2*( - E1 + 2*E2 - E3 ) = 1/h^2*( - [1+alpha1]*E1 + [2-alpha2]*E2 ) - 1/h^2 * beta1
+        // We solve for the ghost value as:
+        // Eg = alpha1*E1 + beta1
+        // 1/h^2*( - E0 + 2*E1 - Eg ) = 1/h^2*( - E0 + [2-alpha1]*E1 ) - 1/h^2 * beta1
         std::vector<size_t> cols = { gridIndsToDOF( i-1 ), dof };
-        std::vector<double> vals = { -1.0/(h*h) * ( 1.0 + alpha1 ), 1.0/(h*h) * ( 2.0 - alpha2 ) };
+        std::vector<double> vals = { -1.0/(h*h), 1.0/(h*h) * ( 2.0 - alpha1 ) };
 
         // Set values by grid indices
         int nrows = 1;
         int ncols = 2;
-        
         A->setValuesByGlobalID<double>( nrows, ncols, &dof, cols.data(), vals.data() );
-        A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
+
+    A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
-/* Correctly set values in boundary points of vector */
+/* Applies corrections to vector f that arise from the elimination of the first set of interior vertices. This correction depends on all of the constants a_i, b_i, and r_i  */
 void PoissonOp::ApplyRobinCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f ) {
+
+    AMP_INSIST( f, "Non-null f required!" );
 
     auto localBox  = getLocalNodeBox( d_BoxMesh );
     auto globalBox = getGlobalNodeBox( d_BoxMesh );
     auto h = d_db->getScalar<double>("h");
+    double d = d_c.xx;
 
-    
     // West boundary
     if ( localBox.first[0] == globalBox.first[0] ) {
-
-        int i     = localBox.first[0];
-        int dof   = gridIndsToDOF( i );
-        AMP::Mesh::BoxMesh::MeshElementIndex ind(
-                        AMP::Mesh::GeomType::Vertex, 0, i);
-        auto elem = d_BoxMesh->getElement( ind );
-
-        double x0 = ( elem.coord() )[0];
-        double f0 = sourceTerm( x0 );
-
-        double beta0  = h*r0/(2*a0*h - 2*b0*d);
-        double val    = 1.0/(h*h) * beta0 + f0;
+        int i             = localBox.first[0];
+        int dof           = gridIndsToDOF( i );
+        double beta0      = -2*d_r0*h/(2*d*d_b0 - d_a0*h);
+        double correction = 1.0/(h*h) * beta0;
         
-        // Set values
-        f->setValueByGlobalID<double>( dof, val );
-        f->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        // Add correction to existing value of f
+        double f0 = f->getValueByGlobalID( dof ) + correction;
+        f->setValueByGlobalID<double>( dof, f0 );
     }
 
     // East boundary
     if ( localBox.last[0] == globalBox.last[0] ) {
+        int i             = localBox.last[0];
+        int dof           = gridIndsToDOF( i );
+        double beta1      = 2*d_r1*h/(2*d*d_b1 + d_a1*h);
+        double correction = 1.0/(h*h) * beta1;
         
-        int i     = localBox.last[0];
-        int dof   = gridIndsToDOF( i );
-        AMP::Mesh::BoxMesh::MeshElementIndex ind(
-                        AMP::Mesh::GeomType::Vertex, 0, i);
-        auto elem = d_BoxMesh->getElement( ind );
-
-        double x1 = ( elem.coord() )[0];
-        double f1 = sourceTerm( x1 );
-
-        double beta1  = h*r1/(2*a1*h + 2*b1*d);
-        double val    = 1.0/(h*h) * beta1 + f1;
-        
-        // Set values by grid indices
-        f->setValueByGlobalID<double>( dof, val );
-        f->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        // Add correction to existing value of f
+        double f1 = f->getValueByGlobalID( dof ) + correction;
+        f->setValueByGlobalID<double>( dof, f1 );
     }
+
+    f->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 /* Return a constructed CSR matrix corresponding to the discretized Laplacian on the mesh */
@@ -721,38 +771,40 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
 }
 
 
-/* Linear system we'll have to solve is [I - gamma*dt]*u = f. For gamma*dt < 1 the matrix is SPD. */
-void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db, std::string implicitSolverName )
+void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> integrator_db, std::shared_ptr<AMP::Database> solver_db )
 {
-    AMP_ASSERT( db );
+    AMP_ASSERT( integrator_db );
+    AMP_ASSERT( solver_db );
     auto imp_ti      = { "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
-    auto name        = db->getScalar<std::string>( "name" );
+    auto name        = integrator_db->getScalar<std::string>( "name" );
     auto is_implicit = ( std::find( imp_ti.begin(), imp_ti.end(), name ) != imp_ti.end() );
-    db->putScalar<bool>( "is_implicit", is_implicit );
+    integrator_db->putScalar<bool>( "is_implicit", is_implicit );
     if ( is_implicit ) {
-        db->putScalar<bool>( "user_managed_time_operator", true );
-        db->putScalar<std::string>( "implicit_integrator", name );
-        db->putScalar<std::string>( "solver_name", "Solver" );
-        db->putScalar<std::string>( "timestep_selection_strategy", "constant" );
-        db->putScalar<bool>( "use_predictor", false );
-        // add the next line to turn off component scaling for multi-physics
-        //        db->putScalar<bool>( "auto_component_scaling", false );
-        int print_info_level = 1;
-        // if (implicitSolverName == "CGSolver") 
-        //     print_info_level = 0;
-        auto solver_db = AMP::Database::create( "name",
-                                                implicitSolverName,
-                                                "print_info_level",
-                                                print_info_level,
-                                                "max_iterations",
-                                                256,
-                                                "absolute_tolerance",
-                                                1.0e-8,
-                                                "relative_tolerance",
-                                                1.0e-8 );
-        db->putDatabase( "Solver", std::move( solver_db ) );
+        integrator_db->putScalar<bool>( "user_managed_time_operator", true );
+        integrator_db->putScalar<std::string>( "implicit_integrator", name );
+        integrator_db->putScalar<std::string>( "solver_name", "Solver" );
+        integrator_db->putScalar<std::string>( "timestep_selection_strategy", "constant" );
+        integrator_db->putScalar<bool>( "use_predictor", false );
+        
+        // Turn off component scaling for multi-physics
+        integrator_db->putScalar<bool>( "auto_component_scaling", false );
+        // int print_info_level = 1;
+        // // if (implicitSolverName == "CGSolver") 
+        // //     print_info_level = 0;
+        // auto solver_db = AMP::Database::create( "name",
+        //                                         implicitSolverName,
+        //                                         "print_info_level",
+        //                                         print_info_level,
+        //                                         "max_iterations",
+        //                                         256,
+        //                                         "absolute_tolerance",
+        //                                         1.0e-8,
+        //                                         "relative_tolerance",
+        //                                         1.0e-8 );
+        integrator_db->putDatabase( "Solver", solver_db->cloneDatabase() );
     }
 }
+
 
 void driver(AMP::AMP_MPI comm, 
             AMP::UnitTest *ut,
@@ -768,10 +820,11 @@ void driver(AMP::AMP_MPI comm,
 
     // Unpack databases from the input file
     auto PDE_db    = input_db->getDatabase( "PDE" );
-    //auto solver_db = input_db->getDatabase( "LinearSolver" );
+    auto solver_db = input_db->getDatabase( "LinearSolver" );
 
     AMP_INSIST( PDE_db,    "A PDE database must be provided" );
-    //AMP_INSIST( solver_db, "A LinearSolver database must be provided" );
+    AMP_INSIST( solver_db, "A LinearSolver database must be provided" );
+
 
     /****************************************************************
     * Create a mesh                                                 *
@@ -801,27 +854,27 @@ void driver(AMP::AMP_MPI comm,
     OpParameters->d_name = "PoissonOp";
     OpParameters->d_Mesh = mesh;
 
-    // There are two different methods for creating a PoissonOp
-    // This is method 1, using directly the PoissonOp constructor
-    //auto AOp             = std::make_shared<PoissonOp>( OpParameters );    
+    // Create PoissonOp 
+    auto myPoissonOp = std::make_shared<PoissonOp>( OpParameters );    
+    // Create BEOp based on Poisson Op
+    auto myBEOp      = std::make_shared<BELinearOp>( OpParameters );  
+    myBEOp->setRHSOperator( myPoissonOp );
     
-    // This is method 2, using an operator factory. In this particular example, method 2 is more complicated, but in general having the factory infrastructure set up allows for more flexibility because then solvers, etc. can create a PoissonOp on their own.
-    // Create an OperatorFactory and register PoissonOp in it 
-    auto & operatorFactory = AMP::Operator::OperatorFactory::getFactory();
-    operatorFactory.registerFactory( "PoissonOp", PoissonOp::create );
-    std::shared_ptr<AMP::Operator::Operator> AOp_ = AMP::Operator::OperatorFactory::create( OpParameters );
-    auto AOp = std::dynamic_pointer_cast<PoissonOp>( AOp_ );
 
+    /****************************************************************
+    * Set up maunfactured solution                                  *
+    ****************************************************************/
+    // Create required vectors over the mesh
+    auto myManufacturedHeat = std::make_shared<ManufacturedHeatModel>( myPoissonOp->d_DOFMan, myPoissonOp->d_BoxMesh );
 
     /****************************************************************
     * Set up relevant vectors over the mesh                         *
     ****************************************************************/
     // Create required vectors over the mesh
-    auto unumVec    = AOp->getRightVector();
-    auto umanVec    = AOp->getRightVector();
-    auto fsourceVec = AOp->getRightVector();
-
-
+    auto numSolVec    = myPoissonOp->getRightVector();
+    auto manSolVec    = myPoissonOp->getRightVector();
+    auto errorVec     = myPoissonOp->getRightVector();
+    auto manSourceVec = myPoissonOp->getRightVector();
 
     // // Create a MyOperator
     // const auto opDB = std::make_shared<AMP::Database>( "OperatorDB" );
@@ -834,25 +887,21 @@ void driver(AMP::AMP_MPI comm,
     double finalTime       = 0.5;
     double dt              = 0.001;
     int maxIntegratorSteps = 300;
-    //auto integratorName = "BDF2";
-    auto integratorName = "BDF3";
+    auto integratorName = "BDF2";
+    //auto integratorName = "BDF3";
     //auto integratorName = "ExplicitEuler";
-    //auto implicitSolverName ="CGSolver";
-    auto implicitSolverName ="GMRESSolver";
 
     // Create initial condition vector
-    auto ic = AOp->getRightVector();
-    AOp->setCurrentTime( 0.0 );
-    AOp->fillWith_uexact( ic );
+    auto ic = myPoissonOp->getRightVector();
+    myManufacturedHeat->setCurrentTime( 0.0 );
+    myManufacturedHeat->fillWith_uexact( ic );
     ic->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Create vectors to hold current and new solutions
     auto sol_old = ic->clone( );
     sol_old->copyVector( ic ); 
-    //sol_old->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     auto sol_new = ic->clone( );
     sol_new->copyVector( ic ); 
-    //sol_new->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Create Database to construct TimeIntegratorParameters from
     std::shared_ptr<AMP::Database> db = AMP::Database::create( "name",
@@ -867,11 +916,12 @@ void driver(AMP::AMP_MPI comm,
                                                                2 );
     auto tiParams           = std::make_shared<AMP::TimeIntegrator::TimeIntegratorParameters>( db );
     tiParams->d_ic_vector   = ic;
-    tiParams->d_operator    = AOp;
+    //tiParams->d_operator    = myPoissonOp;
+    tiParams->d_operator    = myBEOp;
     // Create a source vector
-    tiParams->d_pSourceTerm = AOp->getRightVector();
+    tiParams->d_pSourceTerm = manSourceVec;
     
-    updateDatabaseIfImplicit( db, implicitSolverName );
+    updateDatabaseIfImplicit( db, solver_db );
 
     // Create timeIntegrator from factory
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegrator> timeIntegrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( tiParams );
@@ -881,15 +931,9 @@ void driver(AMP::AMP_MPI comm,
 
     // required to set gamma for the user operator at each timestep
     implicitIntegrator->setTimeScalingFunction(
-        std::bind( &PoissonOp::setGamma, &( *AOp ), std::placeholders::_1 ) );
+        std::bind( &BELinearOp::setGamma, &( *myBEOp ), std::placeholders::_1 ) );
 
-    // required only if a user operator is being used which is multi-physics
-    implicitIntegrator->setComponentScalingFunction(
-        std::bind( &PoissonOp::setComponentScalings,
-                    &( *AOp ),
-                    std::placeholders::_1,
-                    std::placeholders::_2 ) );
-
+    #if 0
     int step = 0;
     int n = PDE_db->getScalar<int>( "n" );
     std::string out_dir = "out/n" + std::to_string(n) + "/";
@@ -908,7 +952,7 @@ void driver(AMP::AMP_MPI comm,
         double T = 0.0;
         AMP::IO::AsciiWriter vecWriter_man;
         std::string name = std::to_string( T );
-        umanVec->setName( name );
+        manSolVec->setName( name );
         sol_new->setName( name );
         vecWriter_man.registerVector( ic );
         vecWriter_man.writeFile( man_dir, step, T  );
@@ -916,6 +960,7 @@ void driver(AMP::AMP_MPI comm,
         vecWriter_num.registerVector( sol_new );
         vecWriter_num.writeFile( num_dir, step, T  );
     }
+    #endif
 
 
     // Integrate!
@@ -923,14 +968,21 @@ void driver(AMP::AMP_MPI comm,
     timeIntegrator->setInitialDt( dt );
     while ( T < finalTime ) {
 
-        // Set the solution-independent source term; note that this approach can only work for multistep methods, since then the new solution 
+        // Set the solution-independent source term; note that this approach can only work for multistep methods
         if ( db->getScalar<bool>( "is_implicit" ) ) {
-            AOp->setCurrentTime( T + dt ); // Set source to new time...
+            myManufacturedHeat->setCurrentTime( T + dt ); // Set source to new time...
         } else {
-            AOp->setCurrentTime( T ); // Set source to current time...
+            myManufacturedHeat->setCurrentTime( T ); // Set source to current time...
         }
-        AOp->fillWith_fsource( tiParams->d_pSourceTerm );
-        AOp->ApplyRobinCorrectionToVector( tiParams->d_pSourceTerm );
+
+        // Fill vector with PDE source term
+        myManufacturedHeat->fillWith_fsource( manSourceVec );
+        // Get exact Robin coefficients at T + dt
+        auto robinCoeffs = myManufacturedHeat->getRobinValues( PDE_db );
+        // Reset Robin coefficients in Poisson operator
+        myPoissonOp->resetRobinValues( robinCoeffs[0], robinCoeffs[1] );
+        // Apply Robin correction to source vector
+        myPoissonOp->ApplyRobinCorrectionToVector( manSourceVec );
 
         // Advance the solution
         timeIntegrator->advanceSolution( dt, T == 0, sol_old, sol_new );
@@ -946,32 +998,29 @@ void driver(AMP::AMP_MPI comm,
         // Update time
         T += dt;
 
-        // Print exact vs approximate solution 
-        AOp->setCurrentTime( T );
-        AOp->fillWith_uexact( umanVec );
+        /* Compare numerical solution with manufactured solution */
+        myManufacturedHeat->setCurrentTime( T );
+        myManufacturedHeat->fillWith_uexact( manSolVec );
+        errorVec->subtract( *sol_new, *manSolVec );
+        AMP::pout << "Discretization error norms:" << std::endl;
+        auto enorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), errorVec );
+        AMP::pout << "||e||=(" << enorms[0] << "," << enorms[1] << "," << enorms[2] << ")" << std::endl;
+        AMP::pout << "----------------------" << std::endl;
+
         
+        // Write manufactured and numerical solution to file.
+        #if 0
         step++;
         std::string name = std::to_string( T );
-        umanVec->setName( name );
+        manSolVec->setName( name );
         sol_new->setName( name );
         AMP::IO::AsciiWriter vecWriter_man;
-        vecWriter_man.registerVector( umanVec );
+        vecWriter_man.registerVector( manSolVec );
         vecWriter_man.writeFile( man_dir, step, T+dt  );
         AMP::IO::AsciiWriter vecWriter_num;
         vecWriter_num.registerVector( sol_new );
         vecWriter_num.writeFile( num_dir, step, T+dt  );
-        
-        
-        umanVec->subtract( *sol_new, *umanVec );
-
-        AMP::pout << "Discretization error norms:" << std::endl;
-        auto enorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), umanVec );
-        AMP::pout << "||e||=(" << enorms[0] << "," << enorms[1] << "," << enorms[2] << ")" << std::endl;
-        AMP::pout << "----------------------" << std::endl;
-
-        //auto e = umanVec->maxNorm();
-        //AMP::pout << "t=" << T << ": error=" << e << std::endl;
-
+        #endif
         
 
         // Drop out if we've exceeded max steps
