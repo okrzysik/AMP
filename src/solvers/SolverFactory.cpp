@@ -19,6 +19,8 @@ responsibility for the use of this software.
 
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/AMP_TPLs.h"
+#include "AMP/matrices/CSRConfig.h"
+#include "AMP/matrices/CSRMatrix.h"
 #include "AMP/solvers/BandedSolver.h"
 #include "AMP/solvers/BiCGSTABSolver.h"
 #include "AMP/solvers/CGSolver.h"
@@ -31,6 +33,8 @@ responsibility for the use of this software.
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/TFQMRSolver.h"
+#include "AMP/solvers/amg/SASolver.h"
+#include "AMP/utils/memory.h"
 
 #ifdef AMP_USE_PETSC
     #include "AMP/solvers/petsc/PetscKrylovSolver.h"
@@ -42,6 +46,10 @@ responsibility for the use of this software.
     #include "AMP/solvers/hypre/HypreBiCGSTABSolver.h"
     #include "AMP/solvers/hypre/HypreGMRESSolver.h"
     #include "AMP/solvers/hypre/HyprePCGSolver.h"
+
+    #include "HYPRE.h"
+    #include "HYPRE_IJ_mv.h"
+    #include "HYPRE_utilities.h"
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML
@@ -138,4 +146,8 @@ void AMP::FactoryStrategy<AMP::Solver::SolverStrategy,
     d_factories["BandedSolver"] = BandedSolver::createSolver;
 
     d_factories["ColumnSolver"] = ColumnSolver::createSolver;
+
+    d_factories["SASolver"] = AMG::SASolver::createSolver;
+    d_factories["HybridGS"] = AMG::HybridGS::createSolver;
+    d_factories["JacobiL1"] = AMG::JacobiL1::createSolver;
 }

@@ -41,6 +41,22 @@ public:
      */
     virtual void scale( AMP::Scalar alpha, MatrixData &A ) = 0;
 
+    /** \brief  Scale the matrix by a scalar and diagonal matrix
+     * \param[in] alpha  The value to scale by
+     * \param[in] D  A vector representing the diagonal matrix
+     * \param[in] A The input matrix A
+     * \details  Compute \f$\mathbf{A} = \alpha\mathbf{D}\mathbf{A}\f$
+     */
+    virtual void scale( AMP::Scalar alpha, std::shared_ptr<const Vector> D, MatrixData &A ) = 0;
+
+    /** \brief  Scale the matrix by a scalar and inverse of diagonal matrix
+     * \param[in] alpha  The value to scale by
+     * \param[in] D  A vector representing the diagonal matrix
+     * \param[in] A The input matrix A
+     * \details  Compute \f$\mathbf{A} = \alpha\mathbf{D}^{-1}\mathbf{A}\f$
+     */
+    virtual void scaleInv( AMP::Scalar alpha, std::shared_ptr<const Vector> D, MatrixData &A ) = 0;
+
     /** \brief  Compute the product of two matrices
      * \param[in] A  A multiplicand
      * \param[in] B  A multiplicand
@@ -80,6 +96,18 @@ public:
      * \param[in] buf Vector to store the diagonal to
      */
     virtual void extractDiagonal( MatrixData const &A, std::shared_ptr<Vector> buf ) = 0;
+
+    /** \brief Extract the row sums into a vector
+     * \param[in] A The matrix to get the row sums from
+     * \param[in] buf Vector to store the row sums to
+     */
+    virtual void getRowSums( MatrixData const &A, std::shared_ptr<Vector> buf ) = 0;
+
+    /** \brief Extract the absolute row sums into a vector
+     * \param[in] A The matrix to get the row sums from
+     * \param[in] buf Vector to store the row sums to
+     */
+    virtual void getRowSumsAbsolute( MatrixData const &A, std::shared_ptr<Vector> buf ) = 0;
 
     /** \brief  Set the matrix to the identity matrix
      */
