@@ -28,7 +28,9 @@ RK12TimeIntegrator::RK12TimeIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
     : AMP::TimeIntegrator::TimeIntegrator( parameters )
 {
+    d_initialized = false;
     initialize( parameters );
+    d_initialized = true;
 }
 
 /*
@@ -50,6 +52,7 @@ RK12TimeIntegrator::~RK12TimeIntegrator() = default;
 void RK12TimeIntegrator::initialize(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
+    d_initialized = false;
 
     AMP::TimeIntegrator::TimeIntegrator::initialize( parameters );
 
@@ -59,13 +62,14 @@ void RK12TimeIntegrator::initialize(
      * Initialize data members from input.
      */
     getFromInput( parameters->d_db );
+    d_initialized = true;
 }
 
 void RK12TimeIntegrator::reset(
     std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
     if ( parameters ) {
-        TimeIntegrator::getFromInput( parameters->d_db, true );
+        TimeIntegrator::getFromInput( parameters->d_db );
         d_pParameters =
             std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( parameters );
         AMP_ASSERT( parameters->d_db );
@@ -280,7 +284,9 @@ void RK12TimeIntegrator::writeRestart( int64_t fid ) const { TimeIntegrator::wri
 RK12TimeIntegrator::RK12TimeIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : TimeIntegrator( fid, manager )
 {
+    d_initialized = false;
     RK12TimeIntegrator::initialize( d_pParameters );
+    d_initialized = true;
 }
 
 } // namespace AMP::TimeIntegrator
