@@ -141,7 +141,7 @@ protected:
     /**
      * read in parameters from input database
      */
-    void getFromInput( std::shared_ptr<AMP::Database> input_db, bool is_from_restart );
+    void getFromInput( std::shared_ptr<AMP::Database> input_db );
 
     /**
      * Return the next time increment through which to advance the solution.
@@ -364,6 +364,9 @@ protected:
 
     //! double containing t_{n+1}
     double d_new_time = std::numeric_limits<double>::signaling_NaN();
+
+    //! double storing the first dt before any restart
+    double d_first_initial_dt;
 
     //! ratio of current to previous timestep
     double d_alpha = 1.0;
