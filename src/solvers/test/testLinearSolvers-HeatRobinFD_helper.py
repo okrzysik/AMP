@@ -2,79 +2,71 @@ import sympy as sym
 
 def main():
 
-    solveForGhosts2D()
+    
+    solveForGhosts1D()
+    #solveForGhosts2D()
 
-    #west()
-    #east()
 
-    #solveForGhostWest1D()
-    #solveForGhostEast1D()
+def solveForGhosts1D():
+    """The continuous BCs are:
+        a1 * u - b1 * cxx * du/dx = r1 @ x = 0
+        a2 * u + b2 * cxx * du/dx = r2 @ x = 1
 
-def solveForGhostWest1D():
-    """The continuous BC is:
-        a0 * u + b0 * d * du/dx = r0 @ x = 0
+    The boundary lies exactly half way between an interior node and a ghost node. The u on the boundary is the average of this ghost node and the interior node. The derivative on the boundary is approximated by a finite difference of these quantities
 
-    Which is discretized as
-        a0 * (ug + u0)/2 + b0 * d * ( u0 - ug )/h = r0
-
-    We solve this as ug = alpha0 * u0 + beta0
+    On boundary k, we solve for u^k_{ghost} = alpha^k * u^k_{interior} + beta^k
     """
 
-    print("West boundary")
+    print("2D boundaries")
     print("-------------")
-    a0, b0, r0, h, d, Eg, E0 = sym.symbols("d_a0, d_b0, d_r0, h, d, Eg, E0")   
+    
+    # First interior point on west, and east boundaries
+    E1,   E2   = sym.symbols("E1,   E2")
+    # Ghost point on west, east, south, and north boundaries
+    Eg_1, Eg_2 = sym.symbols("Eg_1, Eg_2")
+    # PDE coefficients
+    h, cxx = sym.symbols("h, cxx")
+    # Robin values
+    a1, b1, r1  = sym.symbols("d_a1, d_b1, r1")
+    a2, b2, r2  = sym.symbols("d_a2, d_b2, r2") 
 
-    eqn0 = sym.Eq(a0 * (Eg + E0)/2 + b0 * d * (E0 - Eg)/h, r0 )
-    sol0 = sym.solve(eqn0, Eg)[0]
-    print(f"Solution: Eg = {sol0}")
-
-    sol0_poly = sym.Poly( sol0, E0 )
-
-    coeff_0  = sol0_poly.coeff_monomial(1)  
-    coeff_E1 = sol0_poly.coeff_monomial(E0)  
-
-    print( "Constant term: beta0  = {}".format(coeff_0) )
-    print( "      E1 term: alpha0 = {}".format(coeff_E1) )
-
-
-def solveForGhostEast1D():
-    """The continuous BC is:
-        a1 * u + b1 * d * du/dx = r1 @ x = 1
-
-    Which is discretized as
-        a1 * (u1 + ug)/2 + b1 * d * ( ug - u1 )/h = r1
-
-    We solve this as ug = alpha1 * u1 + beta1
-    """
-
-    print("East boundary")
+    # 1
+    print("\n-------------")
+    print("Boundary 1")
     print("-------------")
-    a1, b1, r1, h, d, E1, Eg = sym.symbols("d_a1, d_b1, d_r1, h, d, E1, Eg")   
-
-    eqn1 = sym.Eq(a1 * (E1 + Eg)/2 + b1 * d * (Eg - E1)/h, r1 )
-    sol1 = sym.solve(eqn1, Eg)[0]
+    eqn1 = sym.Eq(a1 * (Eg_1 + E1)/2 - b1 * cxx * (E1 - Eg_1)/h, r1 )
+    sol1 = sym.solve(eqn1, Eg_1)[0]
     print(f"Solution: Eg = {sol1}")
-
-    sol0_poly = sym.Poly( sol1, E1 )
-
-    coeff_0  = sol0_poly.coeff_monomial(1)  
-    coeff_E1 = sol0_poly.coeff_monomial(E1)  
-
-    print( "Constant term: beta1  = {}".format(coeff_0) )
+    sol1_poly = sym.Poly( sol1, E1 )
+    coeff_1   = sol1_poly.coeff_monomial(1)  
+    coeff_E1  = sol1_poly.coeff_monomial(E1)  
+    print( "Constant term: beta1  = {}".format(coeff_1) )
     print( "      E1 term: alpha1 = {}".format(coeff_E1) )
 
-
-
+    # 2
+    print("\n-------------")
+    print("Boundary 2")
+    print("-------------")
+    eqn2 = sym.Eq(a2 * (E2 + Eg_2)/2 + b2 * cxx * (Eg_2 - E2)/h, r2 )
+    sol2 = sym.solve(eqn2, Eg_2)[0]
+    print(f"Solution: Eg = {sol2}")
+    sol2_poly = sym.Poly( sol2, E2 )
+    coeff_2   = sol2_poly.coeff_monomial(1)  
+    coeff_E2  = sol2_poly.coeff_monomial(E2)  
+    print( "Constant term: beta2  = {}".format(coeff_2) )
+    print( "      E2 term: alpha2 = {}".format(coeff_E2) )
 
 
 def solveForGhosts2D():
-    """The continuous BC is:
-        a1 * u + b1 * d * du/dx = r1 @ x = 1
+    """The continuous BCs are:
+        a1 * u - b1 * cxx * du/dx = r1 @ x = 0
+        a2 * u + b2 * cxx * du/dx = r2 @ x = 1
+        a3 * u - b3 * cyy * du/dy = r3 @ y = 0
+        a4 * u + b4 * cyy * du/dy = r4 @ y = 1
 
-    Which is discretized as
-        a1 * (u1 + ug)/2 + b1 * d * ( ug - u1 )/h = r1
+    The boundary lies exactly half way between an interior node and a ghost node. The u on the boundary is the average of this ghost node and the interior node. The derivative on the boundary is approximated by a finite difference of these quantities
 
-    We solve this as ug = alpha1 * u1 + beta1
+    On boundary k, we solve for u^k_{ghost} = alpha^k * u^k_{interior} + beta^k
     """
 
     print("2D boundaries")
