@@ -19,7 +19,6 @@ void CSRMatrixCommunicator<Config>::sendMatrices(
     countSources( matrices );
 
     // post all of the sends for the matrices
-    AMP_ASSERT( d_send_requests.size() == 0 );
     for ( auto it : matrices ) {
         const int dest     = it.first;
         auto matrix        = it.second;

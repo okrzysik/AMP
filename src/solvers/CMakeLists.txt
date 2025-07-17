@@ -1,6 +1,11 @@
 BEGIN_PACKAGE_CONFIG( solvers )
 ADD_PACKAGE_SUBDIRECTORY( testHelpers )
 ADD_PACKAGE_SUBDIRECTORY( newFrozenVectorDesign )
+
+# AMG solver package set apart from main solvers due to complexity
+ADD_PACKAGE_SUBDIRECTORY( amg )
+ADD_PACKAGE_SUBDIRECTORY( amg/default )
+
 IF( USE_PETSC )
     ADD_PACKAGE_SUBDIRECTORY( petsc )
 ENDIF()

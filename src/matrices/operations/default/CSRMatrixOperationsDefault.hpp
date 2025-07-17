@@ -1,6 +1,7 @@
 #include "AMP/matrices/CSRConfig.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/operations/default/CSRMatrixOperationsDefault.h"
+#include "AMP/utils/Algorithms.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/typeid.h"
 #include "AMP/vectors/Vector.h"
@@ -138,6 +139,56 @@ void CSRMatrixOperationsDefault<Config>::scale( AMP::Scalar alpha_in, MatrixData
     d_localops_diag->scale( alpha, diagMatrix );
     if ( csrData->hasOffDiag() ) {
         d_localops_offd->scale( alpha, offdMatrix );
+    }
+}
+
+template<typename Config>
+void CSRMatrixOperationsDefault<Config>::scale( AMP::Scalar alpha_in,
+                                                std::shared_ptr<const Vector> D,
+                                                MatrixData &A )
+{
+    // constrain to one data block
+    AMP_DEBUG_ASSERT( D && D->numberOfDataBlocks() == 1 && D->isType<scalar_t>( 0 ) );
+    auto D_data                  = D->getVectorData();
+    const scalar_t *D_data_block = D_data->getRawDataBlock<scalar_t>( 0 );
+
+    auto csrData = getCSRMatrixData<Config>( const_cast<MatrixData &>( A ) );
+    AMP_DEBUG_ASSERT( csrData );
+    auto diagMatrix = csrData->getDiagMatrix();
+    auto offdMatrix = csrData->getOffdMatrix();
+    AMP_DEBUG_ASSERT( diagMatrix );
+    AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
+
+    auto alpha = static_cast<scalar_t>( alpha_in );
+    d_localops_diag->scale( alpha, D_data_block, diagMatrix );
+    if ( csrData->hasOffDiag() ) {
+        d_localops_offd->scale( alpha, D_data_block, offdMatrix );
+    }
+}
+
+template<typename Config>
+void CSRMatrixOperationsDefault<Config>::scaleInv( AMP::Scalar alpha_in,
+                                                   std::shared_ptr<const Vector> D,
+                                                   MatrixData &A )
+{
+    // constrain to one data block
+    AMP_DEBUG_ASSERT( D && D->numberOfDataBlocks() == 1 && D->isType<scalar_t>( 0 ) );
+    auto D_data                  = D->getVectorData();
+    const scalar_t *D_data_block = D_data->getRawDataBlock<scalar_t>( 0 );
+
+    auto csrData = getCSRMatrixData<Config>( const_cast<MatrixData &>( A ) );
+    AMP_DEBUG_ASSERT( csrData );
+    auto diagMatrix = csrData->getDiagMatrix();
+    auto offdMatrix = csrData->getOffdMatrix();
+    AMP_DEBUG_ASSERT( diagMatrix );
+    AMP_DEBUG_INSIST( csrData->d_memory_location != AMP::Utilities::MemoryType::device,
+                      "CSRMatrixOperationsDefault is not implemented for device memory" );
+
+    auto alpha = static_cast<scalar_t>( alpha_in );
+    d_localops_diag->scaleInv( alpha, D_data_block, diagMatrix );
+    if ( csrData->hasOffDiag() ) {
+        d_localops_offd->scaleInv( alpha, D_data_block, offdMatrix );
     }
 }
 
@@ -297,6 +348,56 @@ void CSRMatrixOperationsDefault<Config>::extractDiagonal( MatrixData const &A,
 }
 
 template<typename Config>
+void CSRMatrixOperationsDefault<Config>::getRowSums( MatrixData const &A,
+                                                     std::shared_ptr<Vector> buf )
+{
+    auto csrData = getCSRMatrixData<Config>( const_cast<MatrixData &>( A ) );
+
+    AMP_ASSERT( buf && buf->numberOfDataBlocks() == 1 );
+    AMP_ASSERT( buf->isType<scalar_t>( 0 ) );
+
+    auto *rawVecData = buf->getRawDataBlock<scalar_t>();
+    auto memTypeV    = AMP::Utilities::getMemoryType( rawVecData );
+    AMP_INSIST( memTypeV < AMP::Utilities::MemoryType::device &&
+                    csrData->d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsDefault::extractDiagonal not implemented for device memory" );
+
+    // zero out buffer so that the next two calls can accumulate into it
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
+    AMP::Utilities::Algorithms<scalar_t>::fill_n( rawVecData, nRows, 0.0 );
+
+    d_localops_diag->getRowSums( csrData->getDiagMatrix(), rawVecData );
+    if ( csrData->hasOffDiag() ) {
+        d_localops_offd->getRowSums( csrData->getOffdMatrix(), rawVecData );
+    }
+}
+
+template<typename Config>
+void CSRMatrixOperationsDefault<Config>::getRowSumsAbsolute( MatrixData const &A,
+                                                             std::shared_ptr<Vector> buf )
+{
+    auto csrData = getCSRMatrixData<Config>( const_cast<MatrixData &>( A ) );
+
+    AMP_ASSERT( buf && buf->numberOfDataBlocks() == 1 );
+    AMP_ASSERT( buf->isType<scalar_t>( 0 ) );
+
+    auto *rawVecData = buf->getRawDataBlock<scalar_t>();
+    auto memTypeV    = AMP::Utilities::getMemoryType( rawVecData );
+    AMP_INSIST( memTypeV < AMP::Utilities::MemoryType::device &&
+                    csrData->d_memory_location < AMP::Utilities::MemoryType::device,
+                "CSRMatrixOperationsDefault::extractDiagonal not implemented for device memory" );
+
+    // zero out buffer so that the next two calls can accumulate into it
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
+    AMP::Utilities::Algorithms<scalar_t>::fill_n( rawVecData, nRows, 0.0 );
+
+    d_localops_diag->getRowSumsAbsolute( csrData->getDiagMatrix(), rawVecData );
+    if ( csrData->hasOffDiag() ) {
+        d_localops_offd->getRowSumsAbsolute( csrData->getOffdMatrix(), rawVecData );
+    }
+}
+
+template<typename Config>
 AMP::Scalar CSRMatrixOperationsDefault<Config>::LinfNorm( MatrixData const &A ) const
 {
     auto csrData = getCSRMatrixData<Config>( const_cast<MatrixData &>( A ) );
@@ -307,9 +408,9 @@ AMP::Scalar CSRMatrixOperationsDefault<Config>::LinfNorm( MatrixData const &A ) 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
     std::vector<scalar_t> rowSums( nRows, 0.0 );
 
-    d_localops_diag->LinfNorm( csrData->getDiagMatrix(), rowSums.data() );
+    d_localops_diag->getRowSumsAbsolute( csrData->getDiagMatrix(), rowSums.data() );
     if ( csrData->hasOffDiag() ) {
-        d_localops_offd->LinfNorm( csrData->getOffdMatrix(), rowSums.data() );
+        d_localops_offd->getRowSumsAbsolute( csrData->getOffdMatrix(), rowSums.data() );
     }
 
     // Reduce row sums to get global Linf norm

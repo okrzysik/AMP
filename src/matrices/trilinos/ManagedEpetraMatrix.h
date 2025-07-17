@@ -67,6 +67,14 @@ public:
 
     Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
+    Vector::shared_ptr getRowSums( Vector::shared_ptr ) const override
+    {
+        AMP_ERROR( "Not implemented" );
+    }
+    Vector::shared_ptr getRowSumsAbsolute( Vector::shared_ptr ) const override
+    {
+        AMP_ERROR( "Not implemented" );
+    }
     std::shared_ptr<Matrix> clone() const override;
     Vector::shared_ptr getRightVector() const override;
     Vector::shared_ptr getLeftVector() const override;

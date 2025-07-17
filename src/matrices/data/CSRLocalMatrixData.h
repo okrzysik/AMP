@@ -19,7 +19,7 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
-// Forward declare CSRMatrix{Data.Communicator> to make them friends
+// Forward declare CSRMatrix{Data,Communicator} to make them friends
 template<typename C>
 class CSRMatrixData;
 template<typename C>
@@ -176,7 +176,7 @@ public:
     void getColPtrs( std::vector<gidx_t *> &col_ptrs );
 
     //! Print information about matrix block
-    void printStats( bool show_zeros ) const
+    void printStats( bool verbose, bool show_zeros ) const
     {
         std::cout << ( d_is_diag ? "  diag block:" : "  offd block:" ) << std::endl;
         if ( d_is_empty ) {
@@ -185,20 +185,23 @@ public:
         }
         std::cout << "    first | last row: " << d_first_row << " | " << d_last_row << std::endl;
         std::cout << "    first | last col: " << d_first_col << " | " << d_last_col << std::endl;
+        std::cout << "    num unique: " << d_ncols_unq << std::endl;
         auto tot_nnz     = d_row_starts[d_num_rows];
         scalar_t avg_nnz = static_cast<scalar_t>( tot_nnz ) / static_cast<scalar_t>( d_num_rows );
         std::cout << "    avg nnz per row: " << avg_nnz << std::endl;
         std::cout << "    tot nnz: " << tot_nnz << std::endl;
-        std::cout << "    row 0: ";
-        for ( auto n = d_row_starts[0]; n < d_row_starts[1]; ++n ) {
-            if ( d_coeffs[n] != 0 || show_zeros ) {
-                std::cout << "(" << d_cols[n] << "," << d_coeffs[n] << "), ";
+        if ( verbose ) {
+            std::cout << "    row 0: ";
+            for ( auto n = d_row_starts[0]; n < d_row_starts[1]; ++n ) {
+                if ( d_coeffs[n] != 0 || show_zeros ) {
+                    std::cout << "(" << d_cols[n] << "," << d_coeffs[n] << "), ";
+                }
             }
-        }
-        std::cout << "    row last: ";
-        for ( auto n = d_row_starts[d_num_rows - 1]; n < d_row_starts[d_num_rows]; ++n ) {
-            if ( d_coeffs[n] != 0 || show_zeros ) {
-                std::cout << "(" << d_cols[n] << "," << d_coeffs[n] << "), ";
+            std::cout << "    row last: ";
+            for ( auto n = d_row_starts[d_num_rows - 1]; n < d_row_starts[d_num_rows]; ++n ) {
+                if ( d_coeffs[n] != 0 || show_zeros ) {
+                    std::cout << "(" << d_cols[n] << "," << d_coeffs[n] << "), ";
+                }
             }
         }
         std::cout << std::endl << std::endl;
