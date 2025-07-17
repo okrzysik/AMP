@@ -142,7 +142,7 @@ void CSRMatrixSpGEMMHelperDefault<Config>::numericMultiply_NonOverlapped()
     }
 
     C->globalToLocalColumns();
-    C->resetDOFManagers();
+    C->resetDOFManagers( true );
 
     // set that comms need to be refreshed
     // assumes that user will only call multiply again if they have changed
@@ -186,7 +186,7 @@ void CSRMatrixSpGEMMHelperDefault<Config>::numericMultiply_Overlapped()
     }
 
     C->globalToLocalColumns();
-    C->resetDOFManagers();
+    C->resetDOFManagers( true );
 
     // set that comms need to be refreshed
     // assumes that user will only call multiply again if they have changed
@@ -239,7 +239,7 @@ void CSRMatrixSpGEMMHelperDefault<Config>::numericMultiplyReuse()
     }
 
     C->globalToLocalColumns();
-    C->resetDOFManagers();
+    C->resetDOFManagers( true );
 
     // set that comms need to be refreshed
     // assumes that user will only call multiply again if they have changed
@@ -840,6 +840,13 @@ void CSRMatrixSpGEMMHelperDefault<Config>::startBRemoteComm()
 
     // subset matrices by rows that other ranks need and send them out
     for ( auto it = d_dest_info.begin(); it != d_dest_info.end(); ++it ) {
+        if ( false ) {
+            AMP::pout << "\nSubsetting over: ";
+            for ( const auto &rid : it->second.rowids ) {
+                AMP::pout << rid << " ";
+            }
+            AMP::pout << std::endl;
+        }
         auto block = B->subsetRows( it->second.rowids );
         d_send_matrices.insert( { it->first, block } );
     }

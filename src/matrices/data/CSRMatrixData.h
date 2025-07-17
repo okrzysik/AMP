@@ -253,14 +253,16 @@ public:
      * \details  This is necessary for matrices not created from pairs of vectors,
      * e.g. result matrices from SpGEMM and prolongators in AMG
      */
-    void resetDOFManagers();
+    void resetDOFManagers( bool force_right = false );
 
     //! Print information about matrix blocks
-    void printStats( bool show_zeros ) const
+    void printStats( bool verbose, bool show_zeros ) const
     {
-        AMP::pout << "CSRMatrixData stats:" << std::endl;
-        d_diag_matrix->printStats( show_zeros );
-        d_offd_matrix->printStats( show_zeros );
+        std::cout << "CSRMatrixData stats:" << std::endl;
+        std::cout << "  Global size: (" << numGlobalRows() << " x " << numGlobalColumns() << ")"
+                  << std::endl;
+        d_diag_matrix->printStats( verbose, show_zeros );
+        d_offd_matrix->printStats( verbose, show_zeros );
     }
 
     /** \brief  Extract subset of locally owned rows into new local matrix

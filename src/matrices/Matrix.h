@@ -72,6 +72,20 @@ public:
      */
     void scale( AMP::Scalar alpha );
 
+    /** \brief  Diagonally scale matrix
+     * \param[in] alpha  Scaling applied to all rows
+     * \param[in] D  Vector of scales, one for each row
+     * \details  Compute \f$\mathbf{A} = \alpha\mathbf{D}\mathbf{A}\f$
+     */
+    void scale( AMP::Scalar alpha, Vector::const_shared_ptr D );
+
+    /** \brief  Scale matrix by inverse of diagonal matrix
+     * \param[in] alpha  Scaling applied to all rows
+     * \param[in] D  Array of inverse scales, one for each row
+     * \details  Compute \f$\mathbf{A} = \alpha\mathbf{D}^{-1}\mathbf{A}\f$
+     */
+    void scaleInv( AMP::Scalar alpha, Vector::const_shared_ptr D );
+
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar
      * \param[in] X matrix
@@ -150,6 +164,20 @@ public:
      */
     virtual Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const = 0;
+
+    /** \brief  Get sum of each row in matrix
+     * \param[in]  buf  An optional vector to use as a buffer
+     * \return  A vector of the sums
+     */
+    virtual Vector::shared_ptr
+    getRowSums( Vector::shared_ptr buf = Vector::shared_ptr() ) const = 0;
+
+    /** \brief  Get absolute sum of each row in matrix
+     * \param[in]  buf  An optional vector to use as a buffer
+     * \return  A vector of the sums
+     */
+    virtual Vector::shared_ptr
+    getRowSumsAbsolute( Vector::shared_ptr buf = Vector::shared_ptr() ) const = 0;
 
     /** \brief Get a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a
      * right vector ) \return  A newly created right vector

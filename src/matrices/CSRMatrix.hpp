@@ -56,7 +56,7 @@ CSRMatrix<Config>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params ) : M
         d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Config>>();
     }
 
-    d_matrixData = std::make_shared<matrixdata_type>( params );
+    d_matrixData = std::make_shared<matrixdata_t>( params );
 }
 
 template<typename Config>
@@ -123,8 +123,8 @@ void CSRMatrix<Config>::multiply( std::shared_ptr<Matrix> other_op,
 {
     PROFILE( "CSRMatrix<Config>::multiply" );
     // pull out matrix data objects and ensure they are of correct type
-    auto thisData  = std::dynamic_pointer_cast<matrixdata_type>( d_matrixData );
-    auto otherData = std::dynamic_pointer_cast<matrixdata_type>( other_op->getMatrixData() );
+    auto thisData  = std::dynamic_pointer_cast<matrixdata_t>( d_matrixData );
+    auto otherData = std::dynamic_pointer_cast<matrixdata_t>( other_op->getMatrixData() );
     AMP_DEBUG_INSIST( thisData && otherData,
                       "CSRMatrix::multiply received invalid MatrixData types" );
 
@@ -140,7 +140,7 @@ void CSRMatrix<Config>::multiply( std::shared_ptr<Matrix> other_op,
             std::function<std::vector<size_t>( size_t )>() );
 
         // Create the matrix
-        auto newData = std::make_shared<matrixdata_type>( params );
+        auto newData = std::make_shared<matrixdata_t>( params );
         std::shared_ptr<Matrix> newMatrix =
             std::make_shared<AMP::LinearAlgebra::CSRMatrix<Config>>( newData );
         AMP_ASSERT( newMatrix );
@@ -148,7 +148,7 @@ void CSRMatrix<Config>::multiply( std::shared_ptr<Matrix> other_op,
 
         d_matrixOps->matMatMult( thisData, otherData, newData );
     } else {
-        auto resultData = std::dynamic_pointer_cast<matrixdata_type>( result->getMatrixData() );
+        auto resultData = std::dynamic_pointer_cast<matrixdata_t>( result->getMatrixData() );
         d_matrixOps->matMatMult( thisData, otherData, resultData );
     }
 }
@@ -169,12 +169,39 @@ Vector::shared_ptr CSRMatrix<Config>::extractDiagonal( Vector::shared_ptr buf ) 
 }
 
 /********************************************************
+ * Additional scaling operations                         *
+ ********************************************************/
+template<typename Config>
+Vector::shared_ptr CSRMatrix<Config>::getRowSums( Vector::shared_ptr buf ) const
+{
+    Vector::shared_ptr out = buf;
+    if ( !buf )
+        out = this->getRightVector();
+
+    d_matrixOps->getRowSums( *getMatrixData(), out );
+
+    return out;
+}
+
+template<typename Config>
+Vector::shared_ptr CSRMatrix<Config>::getRowSumsAbsolute( Vector::shared_ptr buf ) const
+{
+    Vector::shared_ptr out = buf;
+    if ( !buf )
+        out = this->getRightVector();
+
+    d_matrixOps->getRowSumsAbsolute( *getMatrixData(), out );
+
+    return out;
+}
+
+/********************************************************
  * Get the left/right vectors and DOFManagers            *
  ********************************************************/
 template<typename Config>
 Vector::shared_ptr CSRMatrix<Config>::getRightVector() const
 {
-    auto var = std::dynamic_pointer_cast<matrixdata_type>( d_matrixData )->getRightVariable();
+    auto var          = std::dynamic_pointer_cast<matrixdata_t>( d_matrixData )->getRightVariable();
     const auto memloc = AMP::Utilities::getAllocatorMemoryType<allocator_type>();
     return createVector( getRightDOFManager(), var, true, memloc );
 }
@@ -182,7 +209,7 @@ Vector::shared_ptr CSRMatrix<Config>::getRightVector() const
 template<typename Config>
 Vector::shared_ptr CSRMatrix<Config>::getLeftVector() const
 {
-    auto var = std::dynamic_pointer_cast<matrixdata_type>( d_matrixData )->getLeftVariable();
+    auto var          = std::dynamic_pointer_cast<matrixdata_t>( d_matrixData )->getLeftVariable();
     const auto memloc = AMP::Utilities::getAllocatorMemoryType<allocator_type>();
     return createVector( getLeftDOFManager(), var, true, memloc );
 }

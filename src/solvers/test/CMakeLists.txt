@@ -89,6 +89,9 @@ COPY_TEST_FILE( input_testBoomerAMGSolver-LinearFickOperator-bar )
 COPY_TEST_FILE( input_testBoomerAMGSolver-LinearElasticityOperator-1 )
 COPY_TEST_FILE( input_testSolversForUserMatrix-BoomerAMG )
 
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-SASolver-HybridGS )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-SASolver-HybridGS-FCG )
+
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-CG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-IPCG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-FCG )
@@ -153,6 +156,7 @@ COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-HypreGMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreBiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-DiagonalPC-HypreBiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-HypreBiCGSTAB )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-SASolver-BoomerAMG )
 
 COPY_TEST_FILE( input_testLinearSolvers-PL-AmpMesh-BoomerAMG )
 COPY_TEST_FILE( input_testLinearSolvers-PL-CylMesh-BoomerAMG )

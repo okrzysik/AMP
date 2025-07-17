@@ -21,9 +21,9 @@ template<class Config>
 class CSRMatrix : public Matrix
 {
 public:
-    using config_type     = Config;
-    using allocator_type  = typename Config::allocator_type;
-    using matrixdata_type = CSRMatrixData<Config>;
+    using config_type    = Config;
+    using allocator_type = typename Config::allocator_type;
+    using matrixdata_t   = CSRMatrixData<Config>;
     static_assert( std::is_same_v<typename allocator_type::value_type, void> );
 
     CSRMatrix() = delete;
@@ -72,6 +72,20 @@ public:
      */
     Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
+
+    /** \brief  Get sum of each row in matrix
+     * \param[in]  buf  An optional vector to use as a buffer
+     * \return  A vector of the sums
+     */
+    virtual Vector::shared_ptr
+    getRowSums( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
+
+    /** \brief  Get absolute sum of each row in matrix
+     * \param[in]  buf  An optional vector to use as a buffer
+     * \return  A vector of the sums
+     */
+    virtual Vector::shared_ptr
+    getRowSumsAbsolute( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
 
     /** \brief Get a right vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$ is a right
      * vector )
