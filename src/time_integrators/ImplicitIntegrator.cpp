@@ -20,10 +20,12 @@ ImplicitIntegrator::ImplicitIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::TimeIntegrator( params )
 {
+    d_initialized = false;
     AMP_ASSERT( params );
     auto db                      = d_pParameters->d_db;
     d_user_managed_time_operator = db->getWithDefault<bool>( "user_managed_time_operator", false );
     registerOperator( d_operator );
+    d_initialized = true;
 }
 
 ImplicitIntegrator::~ImplicitIntegrator() = default;
@@ -300,7 +302,7 @@ void ImplicitIntegrator::reset(
         d_pParameters =
             std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( parameters );
         AMP_ASSERT( parameters->d_db );
-        TimeIntegrator::getFromInput( parameters->d_db, true );
+        TimeIntegrator::getFromInput( parameters->d_db );
     }
 }
 
