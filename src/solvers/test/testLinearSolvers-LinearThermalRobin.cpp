@@ -41,6 +41,12 @@ void linearThermalTest( AMP::UnitTest *ut,
               << ",  backend: " << accelerationBackend << ",  memory: " << memoryLocation
               << ", repetitions: " << nReps << std::endl;
 
+    // SASolver does not support any type of device memory yet
+    if ( inputFileName.find( "SASolver" ) != std::string::npos && memoryLocation != "host" ) {
+        ut->expected_failure( "Skipping SASolver on non-host memory" );
+        return;
+    }
+
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
     neutronicsOp_db->putScalar( "AccelerationBackend", accelerationBackend );
     neutronicsOp_db->putScalar( "MemoryLocation", memoryLocation );
@@ -144,6 +150,8 @@ int main( int argc, char *argv[] )
             "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-GMRESR-TFQMR" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-SASolver-HybridGS" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-SASolver-HybridGS-FCG" );
 #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-DiagonalSolver-PetscCG" );
         files.emplace_back(
@@ -181,6 +189,7 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-HypreBiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-SASolver-BoomerAMG" );
     #ifdef AMP_USE_PETSC
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscCG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );

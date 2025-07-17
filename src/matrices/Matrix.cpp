@@ -118,6 +118,16 @@ void Matrix::multTranspose( AMP::LinearAlgebra::Vector::const_shared_ptr in,
 
 void Matrix::scale( AMP::Scalar alpha ) { d_matrixOps->scale( alpha, *getMatrixData() ); }
 
+void Matrix::scale( AMP::Scalar alpha, Vector::const_shared_ptr D )
+{
+    d_matrixOps->scale( alpha, D, *getMatrixData() );
+}
+
+void Matrix::scaleInv( AMP::Scalar alpha, Vector::const_shared_ptr D )
+{
+    d_matrixOps->scaleInv( alpha, D, *getMatrixData() );
+}
+
 void Matrix::axpy( AMP::Scalar alpha, const Matrix &X )
 {
     if ( this->type() == X.type() )

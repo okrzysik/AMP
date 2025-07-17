@@ -215,6 +215,7 @@ std::shared_ptr<MatrixData> CSRMatrixData<Config>::transpose() const
     // matrix blocks will not have correct ordering within rows and still
     // have their global indices present. Call g2l to fix that.
     transposeData->globalToLocalColumns();
+    transposeData->resetDOFManagers( true );
 
     return transposeData;
 }
@@ -279,6 +280,12 @@ CSRMatrixData<Config>::transposeOffd( std::shared_ptr<MatrixParametersBase> para
     // swap this ranks row/col extents to get transpose's extents
     auto recv_blocks = mat_comm.recvMatrices( d_first_col, d_last_col, d_first_row, d_last_row );
 
+    // handle edge case of no recv'd matrices (e.g. parallel matrix is block diagonal)
+    if ( recv_blocks.size() == 0 ) {
+        return std::make_shared<localmatrixdata_t>(
+            params, d_memory_location, d_first_row, d_last_row, d_first_col, d_last_col, false );
+    }
+
     // return horizontal concatenation of recv'd blocks
     return localmatrixdata_t::ConcatHorizontal( params, recv_blocks );
 }
@@ -327,7 +334,7 @@ void CSRMatrixData<Config>::globalToLocalColumns()
 }
 
 template<typename Config>
-void CSRMatrixData<Config>::resetDOFManagers()
+void CSRMatrixData<Config>::resetDOFManagers( bool force_right )
 {
     PROFILE( "CSRMatrixData::resetDOFManagers" );
 
@@ -351,7 +358,7 @@ void CSRMatrixData<Config>::resetDOFManagers()
     // poor side effects and is only done if necessary. The CommList on the other
     // hand must contain only the minimal set of remote DOFs to avoid useless
     // communication
-    bool need_right_dm = !d_rightDOFManager;
+    bool need_right_dm = !d_rightDOFManager || force_right;
     if ( d_rightDOFManager ) {
         auto dm_rdofs = d_rightDOFManager->getRemoteDOFs();
         if ( static_cast<size_t>( d_offd_matrix->numUniqueColumns() ) > dm_rdofs.size() ) {
@@ -361,7 +368,7 @@ void CSRMatrixData<Config>::resetDOFManagers()
             // test if needed DOFs contained in DOFManagers remotes?
         }
     }
-    bool need_right_cl = !d_rightCommList;
+    bool need_right_cl = !d_rightCommList || force_right;
     if ( d_rightCommList ) {
         // right CL does exist, get remote dofs and test them
         auto cl_rdofs = d_rightCommList->getGhostIDList();
@@ -419,6 +426,10 @@ CSRMatrixData<Config>::subsetRows( const std::vector<gidx_t> &rows ) const
 
     // call setNNZ with accumulation on to convert counts and allocate internally
     sub_matrix->setNNZ( true );
+    if ( sub_matrix->d_nnz == 0 ) {
+        std::cout << "Got zero nnz" << std::endl;
+        return sub_matrix;
+    }
 
     // Loop back over diag/offd and copy in marked rows
     for ( size_t n = 0; n < rows.size(); ++n ) {

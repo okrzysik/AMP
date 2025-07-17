@@ -42,6 +42,22 @@ public:
      */
     static void scale( scalar_t alpha, std::shared_ptr<localmatrixdata_t> A );
 
+    /** \brief  Scale the matrix by a scalar and diagonal matrix
+     * \param[in] alpha  The value to scale by
+     * \param[in] D  Vector holding diagonal matrix entries
+     * \param[in,out] A The matrix A
+     * \details  Compute \f$\mathbf{A} = \alpha\mathbf{A}\f$
+     */
+    static void scale( scalar_t alpha, const scalar_t *D, std::shared_ptr<localmatrixdata_t> A );
+
+    /** \brief  Scale the matrix by a scalar and inverse of diagonal matrix
+     * \param[in] alpha  The value to scale by
+     * \param[in] D  Vector holding diagonal matrix entries
+     * \param[in,out] A The matrix A
+     * \details  Compute \f$\mathbf{A} = \alpha\mathbf{A}\f$
+     */
+    static void scaleInv( scalar_t alpha, const scalar_t *D, std::shared_ptr<localmatrixdata_t> A );
+
     /** \brief  Compute the linear combination of two matrices
      * \param[in] alpha  scalar
      * \param[in] X matrix
@@ -71,21 +87,27 @@ public:
     static void setDiagonal( const scalar_t *in, std::shared_ptr<localmatrixdata_t> A );
 
     /** \brief Extract the diagonal values into a vector
-     * \param[in] in The values to set the diagonal to
-     * \param[in] A The matrix to set
+     * \param[in] A The matrix to read from
+     * \param[out] buf Buffer to write diagonal into
      */
     static void extractDiagonal( std::shared_ptr<localmatrixdata_t> A, scalar_t *buf );
+
+    /** \brief Extract the row sums into a vector
+     * \param[in] A The matrix to read from
+     * \param[out] buf Buffer to write row sums into
+     */
+    static void getRowSums( std::shared_ptr<localmatrixdata_t> A, scalar_t *buf );
+
+    /** \brief Extract the absolute row sums into a vector
+     * \param[in] A The matrix to read from
+     * \param[out] buf Buffer to write row sums into
+     */
+    static void getRowSumsAbsolute( std::shared_ptr<localmatrixdata_t> A, scalar_t *buf );
 
     /** \brief  Set the matrix to the identity matrix
      * \param[out] A The matrix to set
      */
     static void setIdentity( std::shared_ptr<localmatrixdata_t> A );
-
-    /** \brief Compute the maximum row sum
-     * \return  The L-infinity norm of the matrix
-     * \param[in] A Data for the input matrix
-     */
-    static void LinfNorm( std::shared_ptr<localmatrixdata_t> A, scalar_t *rowSums );
 
     /** \brief  Set <i>this</i> matrix with the same non-zero and distributed structure
      * as x and copy the coefficients

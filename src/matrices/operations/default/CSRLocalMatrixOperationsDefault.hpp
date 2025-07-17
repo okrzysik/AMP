@@ -64,6 +64,36 @@ void CSRLocalMatrixOperationsDefault<Config>::scale( typename Config::scalar_t a
 }
 
 template<typename Config>
+void CSRLocalMatrixOperationsDefault<Config>::scale( typename Config::scalar_t alpha,
+                                                     const typename Config::scalar_t *D,
+                                                     std::shared_ptr<localmatrixdata_t> A )
+{
+    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
+
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
+            coeffs[c] *= alpha * D[row];
+        }
+    }
+}
+
+template<typename Config>
+void CSRLocalMatrixOperationsDefault<Config>::scaleInv( typename Config::scalar_t alpha,
+                                                        const typename Config::scalar_t *D,
+                                                        std::shared_ptr<localmatrixdata_t> A )
+{
+    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
+
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
+            coeffs[c] *= alpha / D[row];
+        }
+    }
+}
+
+template<typename Config>
 void CSRLocalMatrixOperationsDefault<Config>::axpy( typename Config::scalar_t alpha,
                                                     std::shared_ptr<localmatrixdata_t> X,
                                                     std::shared_ptr<localmatrixdata_t> Y )
@@ -137,16 +167,29 @@ void CSRLocalMatrixOperationsDefault<Config>::extractDiagonal( std::shared_ptr<l
 }
 
 template<typename Config>
-void CSRLocalMatrixOperationsDefault<Config>::LinfNorm( std::shared_ptr<localmatrixdata_t> A,
-                                                        typename Config::scalar_t *rowSums )
+void CSRLocalMatrixOperationsDefault<Config>::getRowSums( std::shared_ptr<localmatrixdata_t> A,
+                                                          typename Config::scalar_t *buf )
 {
     auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
-
-    const auto nRows = static_cast<lidx_t>( A->numLocalRows() );
+    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
 
     for ( lidx_t row = 0; row < nRows; ++row ) {
         for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
-            rowSums[row] += std::abs( coeffs[c] );
+            buf[row] += coeffs[c];
+        }
+    }
+}
+
+template<typename Config>
+void CSRLocalMatrixOperationsDefault<Config>::getRowSumsAbsolute(
+    std::shared_ptr<localmatrixdata_t> A, typename Config::scalar_t *buf )
+{
+    auto [rs, cols, cols_loc, coeffs] = A->getDataFields();
+    const auto nRows                  = static_cast<lidx_t>( A->numLocalRows() );
+
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        for ( lidx_t c = rs[row]; c < rs[row + 1]; ++c ) {
+            buf[row] += std::abs( coeffs[c] );
         }
     }
 }

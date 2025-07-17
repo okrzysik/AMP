@@ -71,6 +71,28 @@ public:
      */
     void scale( AMP::Scalar alpha, MatrixData &A ) override;
 
+    /** \brief  Scale the matrix by a scalar and diagonal matrix
+     * \param[in] alpha  The value to scale by
+     * \param[in] D  A vector representing the diagonal matrix
+     * \param[in] A The input matrix A
+     * \details  Compute \f$\mathbf{A} = \alpha\mathbf{D}\mathbf{A}\f$
+     */
+    void scale( AMP::Scalar, std::shared_ptr<const Vector>, MatrixData & ) override
+    {
+        AMP_ERROR( "Not implemented" );
+    }
+
+    /** \brief  Scale the matrix by a scalar and inverse of diagonal matrix
+     * \param[in] alpha  The value to scale by
+     * \param[in] D  A vector representing the diagonal matrix
+     * \param[in] A The input matrix A
+     * \details  Compute \f$\mathbf{A} = \alpha\mathbf{D}^{-1}\mathbf{A}\f$
+     */
+    void scaleInv( AMP::Scalar, std::shared_ptr<const Vector>, MatrixData & ) override
+    {
+        AMP_ERROR( "Not implemented" );
+    }
+
     /** \brief  Compute the product of two matrices
      * \param[in] A  A multiplicand
      * \param[in] B  A multiplicand
@@ -107,10 +129,28 @@ public:
     void setIdentity( MatrixData &A ) override;
 
     /** \brief Extract the diagonal values into a vector
-     * \param[in] in The values to set the diagonal to
-     * \param[in] A The matrix to set
+     * \param[in] A The matrix to read from
+     * \param[out] buf Buffer to write diagonal into
      */
     void extractDiagonal( MatrixData const &A, std::shared_ptr<Vector> buf ) override;
+
+    /** \brief Extract the row sums into a vector
+     * \param[in] A The matrix to read from
+     * \param[out] buf Buffer to write row sums into
+     */
+    void getRowSums( MatrixData const &, std::shared_ptr<Vector> ) override
+    {
+        AMP_ERROR( "Not implemented" );
+    }
+
+    /** \brief Extract the absolute row sums into a vector
+     * \param[in] A The matrix to read from
+     * \param[out] buf Buffer to write row sums into
+     */
+    void getRowSumsAbsolute( MatrixData const &, std::shared_ptr<Vector> ) override
+    {
+        AMP_ERROR( "Not implemented" );
+    }
 
     /** \brief Compute the maximum column sum
      * \return  The L1 norm of the matrix
