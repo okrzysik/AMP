@@ -41,25 +41,17 @@ In 1D:
     cxx*u_xx
 In 2D:
     cxx*u_xx + cyy*u_yy + cxy*u_xy
-In 3D:
-    cxx*u_xx + cyy*u_yy + czz*u_zz + cxy*u_xy + cxz*u_xz + cyz*u_yz
 */
 struct PDECoefficients {
     double xx = std::nan("");
     double yy = std::nan("");
-    double zz = std::nan("");
-    double xy = std::nan("");
-    double xz = std::nan("");
-    double yz = std::nan("");
 
     PDECoefficients() {};
     PDECoefficients( int dim, std::vector<double> c ) {
         if ( dim == 1 ) {
             xx = c[0];
         } else if ( dim == 2 ) {
-            xx = c[0], yy = c[1], xy = c[2];
-        } else if ( dim == 3 ) {
-            xx = c[0], yy = c[1], zz = c[2], xy = c[3], xz = c[4], yz = c[5];
+            xx = c[0], yy = c[1];
         }
     }
 };
@@ -152,11 +144,11 @@ std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, std::share
     mesh_db->putScalar<std::string>( "MeshName", "AMP::cube" );
     mesh_db->putScalar<std::string>( "Generator", "cube" );
     if ( dim == 1 ) {
-        //mesh_db->putVector<int>( "Size", { n-3 } ); // mesh has n-2 points
-        //mesh_db->putVector<double>( "Range", { h + 0.5*h, 1.0 - (h + 0.5*h) } );
-
         mesh_db->putVector<int>( "Size", { n-1 } ); // mesh has n points
         mesh_db->putVector<double>( "Range", { 0.5*h, 1.0 - 0.5*h } );
+    } else if ( dim == 2 ) {
+        mesh_db->putVector<int>( "Size", { n-1, n-1 } ); // mesh has n x n points
+        mesh_db->putVector<double>( "Range", { 0.5*h, 1.0 - 0.5*h, 0.5*h, 1.0 - 0.5*h } );
     }
 
     // Create MeshParameters
@@ -203,7 +195,7 @@ std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, std::share
     #endif
 
     // Check vertices are where I think they are
-    #if 1
+    #if 0
         auto iter = boxMesh->getIterator( AMP::Mesh::GeomType::Vertex );
         std::cout << "mesh spacing is h=" << h << std::endl;
         std::cout << "mesh vertices are:" << std::endl;
@@ -230,134 +222,6 @@ std::vector<double> getDiscreteNorms(double h,
 }
 
 
-/* ------------------------------------------------
-    Class implementing manufactured solution 
-------------------------------------------------- */
-/* Abstract class representing an exact solution of a linear diffusion problem:
-        u'(t) - grad \dot ( \grad u ) = s(t), u(0) = u_0
-    over the spatial domain [0,1]^d.
-
-    Robin boudary conditions are avaliable in the form of:
-        a0 * u + b0 * n \dot grad u = r0 at x = 0...
-        a1 * u + b1 * n \dot grad u = r1 at x = 1...
-*/
-class ManufacturedHeatModel {
-
-public:
-
-    AMP::Mesh::GeomType                              d_geomType = AMP::Mesh::GeomType::Vertex;
-    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFMan;
-    std::shared_ptr<AMP::Mesh::BoxMesh>              d_BoxMesh;
-    // The current time of the solution
-    double currentTime = 0.0;
-
-    ManufacturedHeatModel( 
-        std::shared_ptr<AMP::Discretization::DOFManager> DOFMan_,
-        std::shared_ptr<AMP::Mesh::BoxMesh> BoxMesh_ ) : d_DOFMan(DOFMan_), d_BoxMesh(BoxMesh_) { 
-
-        AMP_INSIST( DOFMan_,  "Non-null DOFManager required!" );
-        AMP_INSIST( BoxMesh_, "Non-null BoxMesh required!" );
-    }
-
-    // Exact solution, its gradient and corresponding source term
-    double exactSolution(double x);
-    double exactSolutionGradient(double x);
-    double sourceTerm(double x);
-
-    // Populate vectors with exact PDE solution and corresponing source term
-    void fillWith_uexact( std::shared_ptr<AMP::LinearAlgebra::Vector> uexact  );
-    void fillWith_fsource( std::shared_ptr<AMP::LinearAlgebra::Vector> fsource );
-
-    inline double getCurrentTime() { return currentTime; };
-    inline void setCurrentTime(double currentTime_) { currentTime = currentTime_; };
-    
-    // TODO: Make this a function where the a and b coefficients are specified, and the boundary, and the spatial location...
-    inline std::vector<double> getRobinValues( std::shared_ptr<const AMP::Database> db_ ) {
-        // Get Robin BC values for manufactured solution 
-        // Note that the Robin BCs evaluate the solution exactly at x = 0 and x = 1, even though these are not computational vertices (they are half way between a ghost vertex and the first interior vertex, which ultimately is eliminated from the system)
-
-        // Unpack constants from the database
-        double a0 = db_->getScalar<double>( "a0" );
-        double b0 = db_->getScalar<double>( "b0" );
-        double a1 = db_->getScalar<double>( "a1" );
-        double b1 = db_->getScalar<double>( "b1" );
-        
-        double u0    = exactSolution( 0.0 );
-        double u1    = exactSolution( 1.0 );
-        double dudx0 = exactSolutionGradient( 0.0 );
-        double dudx1 = exactSolutionGradient( 1.0 );
-        
-        double r0 = a0 * u0 + b0 * dudx0;
-        double r1 = a1 * u1 + b1 * dudx1;
-
-        std::vector<double> r = { r0, r1 };
-        return r;
-    };
-};
-
-
-double ManufacturedHeatModel::exactSolution(double x) {
-    double t = this->getCurrentTime();
-    return std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t);
-}
-
-double ManufacturedHeatModel::exactSolutionGradient(double x) {
-    double t = this->getCurrentTime();
-    return (3.0/2.0)*M_PI*std::cos(2*M_PI*t)*std::cos((3.0/2.0)*M_PI*x);
-}
-
-double ManufacturedHeatModel::sourceTerm(double x) {
-    double t = this->getCurrentTime();
-    //double cxx = d_c.xx;
-    double cxx = 1.0; // todo: make consistent
-    return (1.0/4.0)*M_PI*(9*M_PI*cxx*std::cos(2*M_PI*t) - 8*std::sin(2*M_PI*t))*std::sin((3.0/2.0)*M_PI*x);
-}
-
-/* Populate exact solution vector.  */
-void ManufacturedHeatModel::fillWith_uexact( std::shared_ptr<AMP::LinearAlgebra::Vector> uexact ) {
-
-    auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
-    auto meshDim = d_BoxMesh->getDim(); // Dimension
-
-    // Fill in exact solution and source term vectors
-    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
-        
-        std::vector<double> u;
-
-        if ( meshDim == 1 ) {
-            double x = ( elem->coord() )[0];
-            u.push_back(exactSolution(x));
-        } 
-
-        std::vector<size_t> i;
-        d_DOFMan->getDOFs( elem->globalID(), i );
-        uexact->setValuesByGlobalID( 1, &i[0], &u[0] );
-    }
-    uexact->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-}
-
-
-/* Populate source-term vector */
-void ManufacturedHeatModel::fillWith_fsource( std::shared_ptr<AMP::LinearAlgebra::Vector> fsource ) {
-
-    auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
-    auto meshDim = d_BoxMesh->getDim(); // Dimension
-
-    // Fill in exact solution and source term vectors
-    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
-        
-        std::vector<double> f;
-        if ( meshDim == 1 ) {
-            double x = ( elem->coord() )[0];
-            f.push_back(sourceTerm( x ));
-        } 
-
-        std::vector<size_t> i;
-        d_DOFMan->getDOFs( elem->globalID(), i );
-        fsource->setValuesByGlobalID( 1, &i[0], &f[0] );
-    }
-    fsource->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-}
 
 
 /* ------------------------------------------------
@@ -384,6 +248,8 @@ public:
 
     /* Build the matrix A = I + gamma*L */
     void buildAndSetMatrix() {
+
+        AMP::pout << "BELinearOp::buildAndSetMatrix" << std::endl;
 
         std::shared_ptr<AMP::LinearAlgebra::Matrix> L_mat = d_L->getMatrix();
         AMP_INSIST( L_mat, "Setting the matrix requires L to have a non-null matrix" );
@@ -421,6 +287,8 @@ public:
 
     // Set the time-step size in the operator
     void setGamma( AMP::Scalar gamma_ ) { 
+        AMP::pout << "BELinearOp::setGamma" << std::endl;
+
         double gamma = double( gamma_ );
 
         d_gammaChanged = !(AMP::Utilities::approx_equal( gamma, d_gamma, 1e-10 ));
@@ -453,26 +321,42 @@ class PoissonOp : public AMP::Operator::LinearOperator {
 
 private:
     
-    PDECoefficients                     d_c;
-    AMP::Mesh::GeomType                 d_geomType = AMP::Mesh::GeomType::Vertex;
-
     void setPDECoefficients();
     std::shared_ptr<AMP::LinearAlgebra::Matrix> getLaplacianMatrix();
     //std::shared_ptr<AMP::LinearAlgebra::Matrix> d_APoisson;
     
-    double d  = 1.0; // diffusion coefficient... make consistent with c.xx
-    
     // Constants in Robin BCs
-    double d_a0, d_b0, d_r0;
-    double d_a1, d_b1, d_r1;
+    double d_a1, d_b1; // West boundary,  x = 0
+    double d_a2, d_b2; // East boundary,  x = 1
+    double d_a3, d_b3; // South boundary, y = 0
+    double d_a4, d_b4; // North boundary, y = 1
     
 public:
 
     /* Set Robin values */
-    void resetRobinValues( double r0_, double r1_ ) { d_r0 = r0_; d_r1 = r1_; };
+    std::function<double(int boundary, double a, double b)> robinFun1D;
+    std::function<double(int boundary, double a, double b, double point)> robinFun2D;
+    void setRobinFunction1D( std::function<double(int, double, double)> fn_ ) { robinFun1D = fn_; };
+    void setRobinFunction2D( std::function<double(int, double, double, double)> fn_ ) { robinFun2D = fn_; };
 
-    void ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> A );
-    void ApplyRobinCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
+    AMP::Mesh::GeomType d_geomType = AMP::Mesh::GeomType::Vertex;
+    PDECoefficients     d_c;
+
+
+    void ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> A ) {
+        if ( d_BoxMesh->getDim() == 1 ) {
+            ApplyRobinCorrectionToMatrix1D( A );
+        } else if ( d_BoxMesh->getDim() == 2 ) {
+            ApplyRobinCorrectionToMatrix2D( A );
+        }
+    }
+    void ApplyRobinCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f ) {
+        if ( d_BoxMesh->getDim() == 1 ) {
+            ApplyRobinCorrectionToVector1D( f );
+        } else if ( d_BoxMesh->getDim() == 2 ) {
+            ApplyRobinCorrectionToVector2D( f );
+        }
+    }
 
     std::shared_ptr<AMP::Database>                   d_db;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFMan;
@@ -491,13 +375,18 @@ public:
         d_db = params_->d_db->getDatabase( "PDE_db" );
 
         // Unpack constants from the database
-        d_a0 = d_db->getScalar<double>( "a0" );
-        d_b0 = d_db->getScalar<double>( "b0" );
-        d_r0 = d_db->getScalar<double>( "r0" );
         d_a1 = d_db->getScalar<double>( "a1" );
         d_b1 = d_db->getScalar<double>( "b1" );
-        d_r1 = d_db->getScalar<double>( "r0" );
-
+        d_a2 = d_db->getScalar<double>( "a2" );
+        d_b2 = d_db->getScalar<double>( "b2" );
+        //
+        if ( d_BoxMesh->getDim() == 2 ) {
+            d_a3 = d_db->getScalar<double>( "a3" );
+            d_b3 = d_db->getScalar<double>( "b3" );
+            d_a4 = d_db->getScalar<double>( "a4" );
+            d_b4 = d_db->getScalar<double>( "b4" );
+        }
+        
         // Set DOFManager
         this->set_DOFManager();
         AMP_INSIST(  d_DOFMan, "Requires non-null DOF" );
@@ -530,6 +419,25 @@ public:
         return "PoissonOp";
     }
 
+    /* Populate vector */
+    void fillWithFunction( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, std::function<double(double)> fun ) {
+
+        auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
+        auto meshDim = d_BoxMesh->getDim(); // Dimension
+        
+        // Fill in source term
+        for ( auto elem = it.begin(); elem != it.end(); elem++ ) {    
+            std::vector<double> val;
+            if ( meshDim == 1 ) {
+                double x = ( elem->coord() )[0];
+                val.push_back( fun( x ) );
+            } 
+            std::vector<size_t> i;
+            d_DOFMan->getDOFs( elem->globalID(), i );
+            vec->setValuesByGlobalID( 1, &i[0], &val[0] );
+        }
+        vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    }
 
 private:
 
@@ -542,12 +450,15 @@ private:
 
     // Coefficients defining the PDE
     std::vector<double> getPDECoefficients1D();
+    std::vector<double> getPDECoefficients2D();
     
     // FD stencils
     std::vector<double> getStencil1D();
+    std::vector<double> getStencil2D();
 
     // Map from row index to col+data in that row
     std::map<size_t, colsDataPair> getCSRData1D();
+    std::map<size_t, colsDataPair> getCSRData2D();
 
     // Map from grid index i, or i,j, or i,j,k to a MeshElementIndex to a MeshElementId and then to the corresponding DOF
     size_t gridIndsToDOF( int i, int j = 0, int k = 0 ) {
@@ -558,6 +469,14 @@ private:
         d_DOFMan->getDOFs(id, dof);
         return dof[0];
     };
+
+    void ApplyRobinCorrectionToMatrix1D( std::shared_ptr<AMP::LinearAlgebra::Matrix> A );
+    void ApplyRobinCorrectionToMatrix2D( std::shared_ptr<AMP::LinearAlgebra::Matrix> A ); 
+    void ApplyRobinCorrectionToVector1D( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
+    void ApplyRobinCorrectionToVector2D( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
+
+    double RobinCorrectionMatrixCoefficient2D( int boundary );
+    double RobinCorrectionVectorCoefficient2D( int boundary, double x, double y );
 }; 
 
 
@@ -565,6 +484,8 @@ void PoissonOp::setPDECoefficients() {
     int dim = this->getMesh()->getDim();
     if ( dim == 1 ) {
         d_c = PDECoefficients( 1, getPDECoefficients1D() );
+    } else if ( dim == 2 ) {
+        d_c = PDECoefficients( 2, getPDECoefficients2D() );
     }
 }
 
@@ -572,6 +493,16 @@ std::vector<double> PoissonOp::getPDECoefficients1D() {
     // PDE coefficients
     double cxx = 1.0;
     std::vector<double> c = { cxx };
+    return c;
+}
+
+
+std::vector<double> PoissonOp::getPDECoefficients2D() {
+    // PDE coefficients
+    double cxx = 1.0;
+    double cyy = 1.0;
+    //double cyy = 0.0;
+    std::vector<double> c = { cxx, cyy };
     return c;
 }
 
@@ -588,6 +519,41 @@ std::vector<double> PoissonOp::getStencil1D() {
 
     // Introduce 1/h^2 scaling 
     auto h = d_db->getScalar<double>("h");
+    for ( auto &s : stencil ) {
+        s *= 1.0/(h*h);
+    }
+
+    return stencil;
+}
+
+
+/* Get 9-point stencil for 2D Poisson that discretizes the operator
+    -cxx*u_xx
+    -cyy*u_yy
+
+Standard 3-point differences are used for the _ii terms.
+*/
+std::vector<double> PoissonOp::getStencil2D() {
+    
+    // Unpack PDE coefficients
+    double cxx = d_c.xx;
+    double cyy = d_c.yy;
+
+    double O = 0.0;
+    // -cxx*u_xx
+    double W  = -1.0*cxx; 
+           O += +2.0*cxx;  
+    double E  = -1.0*cxx;
+    // -cyy =*u_yy
+    double S  = -1.0*cyy;
+           O += +2.0*cyy;
+    double N  = -1.0*cyy;
+
+    // Populate stencil
+    std::vector<double> stencil = { S, W, O, E, N };
+
+    // Introduce 1/h^2 scaling 
+    auto h = d_db->getScalar<double>( "h" );
     for ( auto &s : stencil ) {
         s *= 1.0/(h*h);
     }
@@ -643,6 +609,137 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData1D() {
     return localCSRData;
 }
 
+/* Get CSR structure of rotated anisotropic 2D Laplacian */
+std::map<size_t, colsDataPair> PoissonOp::getCSRData2D() {    
+
+    // Get 9-point stencil 
+    auto stencil = getStencil2D( );
+    
+    // Get local grid index box w/ zero ghosts
+    auto localBox  = getLocalNodeBox( d_BoxMesh );
+    auto globalBox = getGlobalNodeBox( d_BoxMesh );
+
+    // Create a map from the DOF to a pair a vectors
+    // Map from a DOF to vector of col inds and associated data
+    std::map<size_t, colsDataPair> localCSRData;
+
+    // Iterate over local box
+    for (auto j = localBox.first[1]; j <= localBox.last[1]; j++) {
+        for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
+        
+            // The current row
+            size_t dof = gridIndsToDOF( i, j );
+
+            // At a boundary DOF Set connections to interior DOFs in boundary rows
+            if (j == globalBox.first[1] || j == globalBox.last[1] || i == globalBox.first[0] || i == globalBox.last[0]) {
+
+                size_t DOF_O = dof; // O
+                // Unpack stencil connections for readability
+                double val_S = stencil[0];
+                double val_W = stencil[1];
+                double val_O = stencil[2];
+                double val_E = stencil[3];
+                double val_N = stencil[4];
+                
+                // WEST boundary. No connection to WEST
+                if ( i == globalBox.first[0] ) {
+                    size_t DOF_E = gridIndsToDOF( i+1, j   ); // E
+                    
+                    // WEST boundary, SW corner. No connection to SOUTH or WEST
+                    if ( j == globalBox.first[1] ) {
+                        size_t DOF_N = gridIndsToDOF( i ,  j+1 ); // N
+                        std::vector<size_t> cols = { DOF_O, DOF_E, DOF_N };
+                        std::vector<double> vals = { val_O, val_E, val_N };
+                        localCSRData[dof] = { cols, vals };
+
+                    // WEST boundary, NW corner. No connection to NORTH or WEST
+                    } else if ( j == globalBox.last[1] ) {
+                        size_t DOF_S = gridIndsToDOF( i ,  j-1 ); // S
+                        std::vector<size_t> cols = { DOF_S, DOF_O, DOF_E };
+                        std::vector<double> vals = { val_S, val_O, val_E };
+                        localCSRData[dof] = { cols, vals };
+                    
+                    // WEST boundary, non-corner DOF. No connection to WEST
+                    } else {
+                        size_t DOF_S = gridIndsToDOF( i ,  j-1 ); // S
+                        size_t DOF_N = gridIndsToDOF( i ,  j+1 ); // N
+                        std::vector<size_t> cols = { DOF_S, DOF_O, DOF_E, DOF_N };
+                        std::vector<double> vals = { val_S, val_O, val_E, val_N };
+                        localCSRData[dof] = { cols, vals };
+                    }
+
+                // EAST boundary. No connection to EAST
+                } else if ( i == globalBox.last[0] ) {
+                    size_t DOF_W = gridIndsToDOF( i-1, j   ); // W
+                    
+                    // EAST boundary, SE corner. No connection to SOUTH or EAST
+                    if ( j == globalBox.first[1] ) {
+                        size_t DOF_N = gridIndsToDOF( i ,  j+1 ); // N
+                        std::vector<size_t> cols = { DOF_W, DOF_O, DOF_N };
+                        std::vector<double> vals = { val_W, val_O, val_N };
+                        localCSRData[dof] = { cols, vals };
+
+                    // EAST boundary, NE corner. No connection to NORTH or EAST
+                    } else if ( j == globalBox.last[1] ) {
+                        size_t DOF_S = gridIndsToDOF( i ,  j-1 ); // S
+                        std::vector<size_t> cols = { DOF_S, DOF_W, DOF_O };
+                        std::vector<double> vals = { val_S, val_W, val_O };
+                        localCSRData[dof] = { cols, vals };
+
+                    // EAST boundary, non-corner DOF. No connection to EAST 
+                    } else {
+                        size_t DOF_S = gridIndsToDOF( i ,  j-1 ); // S
+                        size_t DOF_N = gridIndsToDOF( i ,  j+1 ); // N
+                        std::vector<size_t> cols = { DOF_S, DOF_W, DOF_O, DOF_N };
+                        std::vector<double> vals = { val_S, val_W, val_O, val_N };
+                        localCSRData[dof] = { cols, vals };
+                    }
+
+                // SOUTH boundary, non-corner DOF. No connection to SOUTH
+                } else if ( j == globalBox.first[1] ) {
+                    size_t DOF_W = gridIndsToDOF( i-1, j   ); // W
+                    size_t DOF_O = dof;                       // O
+                    size_t DOF_E = gridIndsToDOF( i+1, j   ); // E
+                    size_t DOF_N = gridIndsToDOF( i ,  j+1 ); // N
+
+                    std::vector<size_t> cols = { DOF_W, DOF_O, DOF_E, DOF_N };
+                    std::vector<double> vals = { val_W, val_O, val_E, val_N };
+                    localCSRData[dof] = { cols, vals };
+                    
+                // NORTH boundary, non-corner DOF. No connection to NORTH
+                } else if ( j == globalBox.last[1] ) {
+                    size_t DOF_S = gridIndsToDOF( i ,  j-1 ); // S
+                    size_t DOF_W = gridIndsToDOF( i-1, j   ); // W
+                    size_t DOF_O = dof;                       // O
+                    size_t DOF_E = gridIndsToDOF( i+1, j   ); // E
+
+                    std::vector<size_t> cols = { DOF_S, DOF_W, DOF_O, DOF_E };
+                    std::vector<double> vals = { val_S, val_W, val_O, val_E };
+                    localCSRData[dof] = { cols, vals };
+                }
+            
+                // Dealt with boundary DOF, move to next one    
+                continue;
+            }
+            
+            // Copy of stencil
+            std::vector<double> vals = stencil; 
+            // Column indices, ordered consistently with the stencil
+            std::vector<size_t> cols = { 
+                gridIndsToDOF( i ,  j-1 ), // S
+                gridIndsToDOF( i-1, j   ), // W
+                dof,                       // O
+                gridIndsToDOF( i+1, j   ), // E
+                gridIndsToDOF( i ,  j+1 ), // N
+            };
+
+            localCSRData[dof] = { cols, vals };
+        }
+    }   
+
+    return localCSRData;
+}
+
 
 /* This correction only depends on the constants a_i and b_i; it does not depend on the constants r_i!  
 
@@ -654,7 +751,7 @@ a0 * E - b0 * d_E * dE/dx = r0
 at x = 1, the BC is
 a1 * E - b1 * d_E * dE/dx = r1.
 */
-void PoissonOp::ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> A ) {
+void PoissonOp::ApplyRobinCorrectionToMatrix1D( std::shared_ptr<AMP::LinearAlgebra::Matrix> A ) {
 
     auto localBox  = getLocalNodeBox( d_BoxMesh );
     auto globalBox = getGlobalNodeBox( d_BoxMesh );
@@ -667,7 +764,7 @@ void PoissonOp::ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra
         int i = localBox.first[0];
         size_t dof = gridIndsToDOF( i );
 
-        double alpha0 = (2*d*d_b0 + d_a0*h)/(2*d*d_b0 - d_a0*h);
+        double alpha0 = (2*d*d_b1 + d_a1*h)/(2*d*d_b1 - d_a1*h);
 
         // We solve for the ghost value as:
         // Eg = alpha0*E0 + beta0
@@ -686,7 +783,7 @@ void PoissonOp::ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra
         int i = localBox.last[0];
         size_t dof  = gridIndsToDOF( i );
 
-        double alpha1 = (2*d*d_b1 - d_a1*h)/(2*d*d_b1 + d_a1*h);
+        double alpha1 = (2*d*d_b2 - d_a2*h)/(2*d*d_b2 + d_a2*h);
 
         // We solve for the ghost value as:
         // Eg = alpha1*E1 + beta1
@@ -703,8 +800,113 @@ void PoissonOp::ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra
     A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
+
+
+
+/* We write u_ghost = alpha_{} * u_interior + beta_{} 
+ This function returns the coefficient alpha on the given boundary
+*/
+double PoissonOp::RobinCorrectionMatrixCoefficient2D( int boundary ) {
+    double cxx = d_c.xx;
+    double cyy = d_c.yy;
+    double h   = d_db->getScalar<double>( "h" );
+    if ( boundary == 1 ) {
+        double alpha1j = (2*cxx*d_b1 - d_a1*h)/(2*cxx*d_b1 + d_a1*h);
+        return alpha1j;
+    } else if ( boundary == 2 ) {
+        double alpha2j = (2*cxx*d_b2 - d_a2*h)/(2*cxx*d_b2 + d_a2*h);
+        return alpha2j;
+    } else if ( boundary == 3 ) {
+        double alphai3 = (2*cyy*d_b3 - d_a3*h)/(2*cyy*d_b3 + d_a3*h);
+        return alphai3;
+    } else if ( boundary == 4 ) {
+        double alphai4 = (2*cyy*d_b4 - d_a4*h)/(2*cyy*d_b4 + d_a4*h);
+        return alphai4;
+    } else {
+        AMP_ERROR( "Invalid boundary" );
+        return 0.0;
+    }
+}
+
+/* Equation for u_{ij} is: 1/h^2 * (-u_{ghost} + 4*u_{ij} + ... ) = f_{ij} 
+
+We write u_{ghost} = alpha * u_{ij} + beta, so the equation becomes
+    1/h^2 * ( [4-alpha]*u_{ij} + ... ) = f_{ij} + beta/h^2
+
+So the correction in the matrix is -alpha/h^2 on the diagonal
+So the correction on the RHS +beta/h^2.
+
+Note that on a given boundary alpha is constant across that boundary
+
+Note that interior corner points have two ghost points, such that they are doubly corrected 
+*/
+void PoissonOp::ApplyRobinCorrectionToMatrix2D( std::shared_ptr<AMP::LinearAlgebra::Matrix> A ) {
+
+    auto h = d_db->getScalar<double>("h");
+    std::vector<int> boundary_ids = { 1, 2, 3, 4 };
+    //std::vector<int> boundary_ids = { 4 };
+
+    // Iterate across the 4 boundaries
+    for ( auto boundary_id : boundary_ids ) {
+
+        // Get on-process iterator over current boundary
+        auto it = d_BoxMesh->getBoundaryIDIterator( d_geomType, 1 );
+
+        // AMP::pout << "Boundary " << boundary_id << std::endl;
+        // if (it.empty()) {
+        //     std::cout << "P" << d_BoxMesh->getComm().getRank() << ": owns no boundary DOFs..." << std::endl;
+        // } else {
+        //     std::cout << "P" << d_BoxMesh->getComm().getRank() << ": owns boundary DOFs..." << std::endl;
+        // }
+        
+        // Get correction on current boundary
+        double alpha      = RobinCorrectionMatrixCoefficient2D( boundary_id );
+        double correction = -alpha / (h*h);
+
+        //std::cout << "diag=" << 4 - alpha << std::endl;
+        
+        // Add correction to all nodes on current boundary; if there are none then "it" is empty
+        for ( auto node = it.begin(); node != it.end(); node++ ) {
+            std::vector<size_t> dof;
+            d_DOFMan->getDOFs( node->globalID(), dof);
+            A->addValueByGlobalID( dof[0], dof[0], correction );
+        }
+    }
+    A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+}
+
 /* Applies corrections to vector f that arise from the elimination of the first set of interior vertices. This correction depends on all of the constants a_i, b_i, and r_i  */
-void PoissonOp::ApplyRobinCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f ) {
+void PoissonOp::ApplyRobinCorrectionToVector2D( std::shared_ptr<AMP::LinearAlgebra::Vector> f ) {
+
+    auto h = d_db->getScalar<double>("h");
+    std::vector<int> boundary_ids = { 1, 2, 3, 4 };
+    //std::vector<int> boundary_ids = { 4 };
+
+    // Iterate across the 4 boundaries
+    for ( auto boundary_id : boundary_ids ) {
+
+        // Get on-process iterator over current boundary
+        auto it = d_BoxMesh->getBoundaryIDIterator( d_geomType, 1 );
+        
+        // Add correction to all nodes on current boundary; if there are none then "it" is empty
+        for ( auto node = it.begin(); node != it.end(); node++ ) {
+            double x = ( node->coord() )[0];
+            double y = ( node->coord() )[1];
+            // Get correction at current point on current boundary
+            double beta       = RobinCorrectionVectorCoefficient2D( boundary_id, x, y );
+            double correction = beta / (h*h);
+
+            std::vector<size_t> dof;
+            d_DOFMan->getDOFs( node->globalID(), dof);
+            f->addValuesByGlobalID<double>( 1, &dof[0], &correction );
+        }
+    }
+    f->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+}
+
+
+/* Applies corrections to vector f that arise from the elimination of the first set of interior vertices. This correction depends on all of the constants a_i, b_i, and r_i  */
+void PoissonOp::ApplyRobinCorrectionToVector1D( std::shared_ptr<AMP::LinearAlgebra::Vector> f ) {
 
     AMP_INSIST( f, "Non-null f required!" );
 
@@ -715,29 +917,64 @@ void PoissonOp::ApplyRobinCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra
 
     // West boundary
     if ( localBox.first[0] == globalBox.first[0] ) {
-        int i             = localBox.first[0];
-        int dof           = gridIndsToDOF( i );
-        double beta0      = -2*d_r0*h/(2*d*d_b0 - d_a0*h);
-        double correction = 1.0/(h*h) * beta0;
+        int boundary      = 1;
+        double   r1       = robinFun1D(boundary, d_a1, d_b1);
+        double beta1      = -2*r1*h/(2*d*d_b1 - d_a1*h);
+        double correction = 1.0/(h*h) * beta1;
         
         // Add correction to existing value of f
+        int i     = localBox.first[0];
+        int dof   = gridIndsToDOF( i );
         double f0 = f->getValueByGlobalID( dof ) + correction;
         f->setValueByGlobalID<double>( dof, f0 );
     }
 
     // East boundary
     if ( localBox.last[0] == globalBox.last[0] ) {
-        int i             = localBox.last[0];
-        int dof           = gridIndsToDOF( i );
-        double beta1      = 2*d_r1*h/(2*d*d_b1 + d_a1*h);
-        double correction = 1.0/(h*h) * beta1;
+        int boundary      = 2;
+        double   r2       = robinFun1D(boundary, d_a2, d_b2);
+        double beta2      = 2*r2*h/(2*d*d_b2 + d_a2*h);
+        double correction = 1.0/(h*h) * beta2;
         
         // Add correction to existing value of f
+        int i     = localBox.last[0];
+        int dof   = gridIndsToDOF( i );
         double f1 = f->getValueByGlobalID( dof ) + correction;
         f->setValueByGlobalID<double>( dof, f1 );
     }
 
     f->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+}
+
+/* We write u_ghost = alpha_{} * u_interior + beta_{} 
+ This function returns the coefficient beta on the given boundary
+*/
+double PoissonOp::RobinCorrectionVectorCoefficient2D( int boundary, double x, double y ) {
+    double cxx = d_c.xx;
+    double cyy = d_c.yy;
+    double h   = d_db->getScalar<double>( "h" );
+
+    //double(int boundary, double a, double b, double point)> robinFun2D;
+    if ( boundary == 1 ) {
+        double r1    = robinFun2D( boundary, d_a1, d_b1, y );
+        double beta1 = 2*r1*h/(2*cxx*d_b1 + d_a1*h);
+        return beta1;
+    } else if ( boundary == 2 ) {
+        double r2    = robinFun2D( boundary, d_a2, d_b2, y );
+        double beta2 = 2*r2*h/(2*cxx*d_b2 + d_a2*h);
+        return beta2;
+    } else if ( boundary == 3 ) {
+        double r3    = robinFun2D( boundary, d_a3, d_b3, x );
+        double beta3 = 2*r3*h/(2*cyy*d_b3 + d_a3*h);
+        return beta3;
+    } else if ( boundary == 4 ) {
+        double r4    = robinFun2D( boundary, d_a4, d_b4, x );
+        double beta4 = 2*r4*h/(2*cyy*d_b4 + d_a4*h);
+        return beta4;
+    } else {
+        AMP_ERROR( "Invalid boundary" );
+        return 0.0;
+    }
 }
 
 /* Return a constructed CSR matrix corresponding to the discretized Laplacian on the mesh */
@@ -750,6 +987,8 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
     std::map<size_t, colsDataPair> localCSRData;
     if ( meshDim == 1 ) {
         localCSRData = this->getCSRData1D( );
+    } else if ( meshDim == 2 ) {
+        localCSRData = this->getCSRData2D( );
     }
 
     // Create Lambda to return col inds from a given row ind
@@ -769,6 +1008,200 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
     #endif
     return A;
 }
+
+
+
+/* ------------------------------------------------
+    Class implementing manufactured solution 
+------------------------------------------------- */
+/* Abstract class representing an exact solution of a linear diffusion problem:
+        u'(t) - grad \dot ( \grad u ) = s(t), u(0) = u_0
+    over the spatial domain [0,1]^d.
+
+    Is constructed using a PoissonOp
+
+    1D. Robin boudary conditions are avaliable in the form of:
+        a1 * u + b1 * +cxx * du/dx = r1 at x = 0...
+        a2 * u + b2 * +cyy * du/dy = r2 at x = 1...
+
+    2D. Robin boudary conditions are avaliable in the form of:
+        a1 * u + b1 * -cxx * du/dx = r1 at x = 0...
+        a2 * u + b2 * +cxx * du/dx = r2 at x = 1...
+        a3 * u + b3 * -cyy * du/dy = r3 at y = 0...
+        a4 * u + b4 * +cyy * du/dy = r4 at y = 1...
+*/
+class ManufacturedHeatModel {
+
+public:
+
+    std::shared_ptr<PoissonOp> d_PoissonOp;
+
+    // The current time of the solution
+    double currentTime = 0.0;
+
+    ManufacturedHeatModel( std::shared_ptr<PoissonOp> PoissonOp_) : 
+        d_PoissonOp(PoissonOp_){ 
+
+        AMP_INSIST( d_PoissonOp,  "Non-null PoissonOp required!" );
+    }
+
+    // Exact solution, its gradient and corresponding source term
+    double exactSolution(double x);
+    double exactSolutionGradient(double x);
+    double sourceTerm(double x);
+    //
+    double exactSolution(double x, double y);
+    double exactSolutionGradient(double x, double y, std::string component);
+    double sourceTerm(double x, double y);
+
+    // Populate vectors with exact PDE solution and corresponing source term
+    void fillWith_uexact( std::shared_ptr<AMP::LinearAlgebra::Vector> uexact  );
+    void fillWith_fsource( std::shared_ptr<AMP::LinearAlgebra::Vector> fsource );
+
+    inline double getCurrentTime() { return currentTime; };
+    inline void setCurrentTime(double currentTime_) { currentTime = currentTime_; };
+
+
+    /* 1D */
+    double getRobinValue1D( int boundary, double a, double b ) {
+        double x = -1.0;
+        if ( boundary == 1 ) { // West
+            x = 0.0;
+        } else if ( boundary == 2 ) { // East
+            x = 1.0;
+        }
+        double u    = exactSolution( x );
+        double dudx = exactSolutionGradient( x );
+        return a * u + b * dudx;
+    };
+
+    /* 2D. point is the value of the variable not on the boundary. The boundaries of 0 and 1 are hard coded here. */
+    double getRobinValue2D( int boundary, double a, double b, double point ) {
+        double x = -1.0, y = -1.0;
+        std::string normal_direction = "";
+        double normal_sign = 0.0;
+        if ( boundary == 1 ) { // West
+            x = 0.0;
+            y = point;
+            // Normal vector is -hat{x}
+            normal_direction = "x";
+            normal_sign      = -1.0;
+        } else if ( boundary == 2 ) { // East
+            x = 1.0;
+            y = point;
+            // Normal vector is +hat{x}
+            normal_direction = "x";
+            normal_sign      = +1.0;
+        } else if ( boundary == 3 ) { // South
+            x = point;
+            y = 0.0;
+            // Normal vector is -hat{y}
+            normal_direction = "y";
+            normal_sign      = -1.0;
+        } else if ( boundary == 4 ) { // North
+            x = point;
+            y = 1.0;
+            // Normal vector is +hat{y}
+            normal_direction = "y";
+            normal_sign      = +1.0;
+        }
+        double u    = exactSolution( x, y );
+        double dudx = exactSolutionGradient( x, y, normal_direction );
+        return a * u + normal_sign * b * dudx;
+    }
+};
+
+
+double ManufacturedHeatModel::exactSolution(double x) {
+    double t = this->getCurrentTime();
+    return std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t);
+}
+
+double ManufacturedHeatModel::exactSolutionGradient(double x) {
+    double t = this->getCurrentTime();
+    return (3.0/2.0)*M_PI*std::cos(2*M_PI*t)*std::cos((3.0/2.0)*M_PI*x);
+}
+
+double ManufacturedHeatModel::sourceTerm(double x) {
+    double t = this->getCurrentTime();
+    double cxx = d_PoissonOp->d_c.xx;
+    return (1.0/4.0)*M_PI*(9*M_PI*cxx*std::cos(2*M_PI*t) - 8*std::sin(2*M_PI*t))*std::sin((3.0/2.0)*M_PI*x);
+}
+
+double ManufacturedHeatModel::exactSolution(double x, double y) {
+    double t = this->getCurrentTime();
+    return std::sin((3.0/2.0)*M_PI*x)*std::sin((3.0/2.0)*M_PI*y)*std::cos(2*M_PI*t);
+}
+
+double ManufacturedHeatModel::exactSolutionGradient(double x, double y, std::string component) {
+    double t = this->getCurrentTime();
+    double grad = 0.0;
+    if ( component == "x" ) {
+        grad = (3.0/2.0)*M_PI*std::sin((3.0/2.0)*M_PI*y)*std::cos(2*M_PI*t)*std::cos((3.0/2.0)*M_PI*x);
+    } else if ( component == "y" ) {
+        grad = (3.0/2.0)*M_PI*std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t)*std::cos((3.0/2.0)*M_PI*y);
+    } else {
+        AMP_ERROR( "Component not recognised" );
+    }
+    return grad;
+}
+
+double ManufacturedHeatModel::sourceTerm(double x, double y) {
+    double t = this->getCurrentTime();
+    double cxx = d_PoissonOp->d_c.xx;
+    double cyy = d_PoissonOp->d_c.yy;
+    return (1.0/4.0)*M_PI*(9*M_PI*cxx*std::cos(2*M_PI*t) + 9*M_PI*cyy*std::cos(2*M_PI*t) - 8*std::sin(2*M_PI*t))*std::sin((3.0/2.0)*M_PI*x)*std::sin((3.0/2.0)*M_PI*y);
+}
+
+/* Populate exact solution vector.  */
+void ManufacturedHeatModel::fillWith_uexact( std::shared_ptr<AMP::LinearAlgebra::Vector> uexact ) {
+
+    auto it      = d_PoissonOp->d_BoxMesh->getIterator(d_PoissonOp->d_geomType); // Mesh iterator
+    auto meshDim = d_PoissonOp->d_BoxMesh->getDim(); // Dimension
+
+    // Fill in exact solution vector
+    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
+        std::vector<double> u;
+        if ( meshDim == 1 ) {
+            double x = ( elem->coord() )[0];
+            u.push_back( exactSolution( x ) );
+        }  else if ( meshDim == 2 ) {
+            double x = ( elem->coord() )[0];
+            double y = ( elem->coord() )[1];
+            u.push_back( exactSolution( x, y ) );
+        }
+        std::vector<size_t> i;
+        d_PoissonOp->d_DOFMan->getDOFs( elem->globalID(), i );
+        uexact->setValuesByGlobalID( 1, &i[0], &u[0] );
+    }
+    uexact->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+}
+
+
+/* Populate source-term vector */
+void ManufacturedHeatModel::fillWith_fsource( std::shared_ptr<AMP::LinearAlgebra::Vector> fsource ) {
+
+    auto it      = d_PoissonOp->d_BoxMesh->getIterator(d_PoissonOp->d_geomType); // Mesh iterator
+    auto meshDim = d_PoissonOp->d_BoxMesh->getDim(); // Dimension
+    
+    // Fill in source term
+    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {    
+        std::vector<double> f;
+        if ( meshDim == 1 ) {
+            double x = ( elem->coord() )[0];
+            f.push_back( sourceTerm( x ) );
+        } else if ( meshDim == 2 ) {
+            double x = ( elem->coord() )[0];
+            double y = ( elem->coord() )[1];
+            f.push_back( sourceTerm( x, y ) );
+        }
+        std::vector<size_t> i;
+        d_PoissonOp->d_DOFMan->getDOFs( elem->globalID(), i );
+        fsource->setValuesByGlobalID( 1, &i[0], &f[0] );
+    }
+    fsource->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+}
+
 
 
 void driver(AMP::AMP_MPI comm, 
@@ -832,7 +1265,16 @@ void driver(AMP::AMP_MPI comm,
     * Set up maunfactured solution                                  *
     ****************************************************************/
     // Create required vectors over the mesh
-    auto myManufacturedHeat = std::make_shared<ManufacturedHeatModel>( myPoissonOp->d_DOFMan, myPoissonOp->d_BoxMesh );
+    auto myManufacturedHeat = std::make_shared<ManufacturedHeatModel>( myPoissonOp );
+
+    //myPoissonOp->setRobinFunction( &ManufacturedHeatModel::getRobinValue );
+
+    if ( mesh->getDim() == 1 ) {
+        myPoissonOp->setRobinFunction1D( std::bind( &ManufacturedHeatModel::getRobinValue1D, &( *myManufacturedHeat ), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 ) );
+    } else if ( mesh->getDim() == 2 ) {
+        myPoissonOp->setRobinFunction2D( std::bind( &ManufacturedHeatModel::getRobinValue2D, &( *myManufacturedHeat ), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ) );
+    }
+    
 
     /****************************************************************
     * Set up relevant vectors over the mesh                         *
@@ -848,7 +1290,7 @@ void driver(AMP::AMP_MPI comm,
     * Set up implicit time integrator                               *
     ****************************************************************/
     // Parameters for time integrator
-    double dt = PDE_db->getScalar<double>( "h" );
+    double dt = 0.05*PDE_db->getScalar<double>( "h" );
 
     // Create initial condition vector
     auto ic = myPoissonOp->getRightVector();
@@ -878,7 +1320,7 @@ void driver(AMP::AMP_MPI comm,
     implicitIntegrator->setTimeScalingFunction(
         std::bind( &BELinearOp::setGamma, &( *myBEOp ), std::placeholders::_1 ) );
 
-    #if 0
+    #if 1
     int step = 0;
     int n = PDE_db->getScalar<int>( "n" );
     std::string out_dir = "out/n" + std::to_string(n) + "/";
@@ -915,13 +1357,9 @@ void driver(AMP::AMP_MPI comm,
     while ( T < finalTime ) {
 
         // Set the solution-independent source term; note that this approach only works for implicit multistep methods
-        myManufacturedHeat->setCurrentTime( T + dt ); // Set source to new time...
+        myManufacturedHeat->setCurrentTime( T + dt ); // Set manufactured solution to new time---this ensures the source term and Robin values are sampled at the new time.
         // Fill vector with PDE source term
         myManufacturedHeat->fillWith_fsource( BDFSourceVec );
-        // Get exact Robin coefficients at T + dt
-        auto robinCoeffs = myManufacturedHeat->getRobinValues( PDE_db );
-        // Reset Robin coefficients in Poisson operator
-        myPoissonOp->resetRobinValues( robinCoeffs[0], robinCoeffs[1] );
         // Apply Robin correction to source vector
         myPoissonOp->ApplyRobinCorrectionToVector( BDFSourceVec );
 
@@ -948,7 +1386,7 @@ void driver(AMP::AMP_MPI comm,
 
         
         // Write manufactured and numerical solution to file.
-        #if 0
+        #if 1
         step++;
         std::string name = std::to_string( T );
         manSolVec->setName( name );
@@ -1018,68 +1456,3 @@ int main( int argc, char **argv )
     return num_failed;
 }
 
-
-// /* Get 7-point stencil for 3D Poisson. */
-// std::vector<double> PoissonOp::getStencil3D() {
-    
-//     auto epsy = d_db->getScalar<double>( "epsy" );
-//     auto epsz = d_db->getScalar<double>( "epsz" );
-
-//     double D  = -1.0*epsz;
-//     double S  = -1.0*epsy;
-//     double W  = -1.0; 
-//     double O  = +2.0 + 2.0*epsy + 2.0*epsz; 
-//     double E  = -1.0;
-//     double N  = -1.0*epsy;
-//     double U  = -1.0*epsz;
-
-//     // Populate stencil
-//     std::vector<double> stencil = { O, D, S, W, E, N, U };
-
-//     // Introduce 1/h^2 scaling 
-//     auto h = d_db->getScalar<double>( "h" );
-//     for ( auto &s : stencil ) {
-//         s *= 1.0/(h*h);
-//     }
-
-//     return stencil;
-// }
-
-
-// /* Get 9-point stencil for upwind FD disretization of rotated anisotropic 2D Poisson. */
-// std::vector<double> PoissonOp::getStencil2D() {
-    
-//     double eps   = this->d_db->getScalar<double>( "eps" );
-//     double theta = this->d_db->getScalar<double>( "theta" );
-
-//     AMP_INSIST( theta >= 0.0 && theta <= M_PI/2.0, "Upwind discretization only valid for theta in [0,pi/2]" );
-
-//     double c     = cos(theta);
-//     double s     = sin(theta);
-
-//     // PDE coefficients
-//     double alpha = c*c + eps * s*s;
-//     double beta  = eps * c*c + s*s;
-//     double gamma = 2*(1 - eps) * c * s;
-//     gamma *= 0.5; // gamma only ever appears multiplied by 1/2, except at O.
-//     double NW = 0.0;
-//     double N  =           -   beta +   gamma; 
-//     double NE =                    -   gamma; 
-//     double W  = -   alpha          +   gamma; 
-//     double O  = + 2*alpha + 2*beta - 2*gamma; 
-//     double E  = -   alpha          +   gamma;
-//     double SW =                    -   gamma;
-//     double S  =           -   beta +   gamma;
-//     double SE = 0.0; 
-
-//     // Populate stencil
-//     std::vector<double> stencil = { O, SW, S, SE, W, E, NW, N, NE };
-
-//     // Introduce 1/h^2 scaling 
-//     auto h = d_db->getScalar<double>( "h" );
-//     for ( auto &s : stencil ) {
-//         s *= 1.0/(h*h);
-//     }
-
-//     return stencil;
-// }
