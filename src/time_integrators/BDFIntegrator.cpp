@@ -2051,12 +2051,9 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
         d_scratch_vector = in->clone();
 
     if ( d_solution_scaling ) {
-        d_scratch_vector->divide( *d_solution_vector, *d_solution_scaling );
-    } else {
-        d_scratch_vector->copyVector( d_solution_vector );
+        d_solution_vector->divide( *d_solution_vector, *d_solution_scaling );
+        d_solution_vector->makeConsistent();
     }
-
-    d_scratch_vector->makeConsistent();
 
     if ( !d_scratch_function_vector )
         d_scratch_function_vector = in->clone();
@@ -2084,8 +2081,16 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
         AMP::pout << std::endl;
     }
 
+    if ( !d_solver ) {
+        createSolver();
+        d_solver->setComponentScalings( d_solution_scaling, d_function_scaling );
+    } else {
+        d_solver->reset( {} );
+    }
+
     d_scratch_function_vector->scale( -1.0 );
-    d_solver->apply( d_scratch_function_vector, d_scratch_vector );
+
+    d_solver->apply( d_scratch_function_vector, d_solution_vector );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "Scaled outgoing TI solution component norms: ";
@@ -2107,11 +2112,8 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     d_solver_retcode =
         convStatus <= AMP::Solver::SolverStrategy::SolverStatus::ConvergedUserCondition ? 1 : 0;
 
-    if ( d_solution_scaling ) {
-        d_solution_vector->multiply( *d_scratch_vector, *d_solution_scaling );
-    } else {
-        d_solution_vector->copyVector( d_scratch_vector );
-    }
+    if ( d_solution_scaling )
+        d_solution_vector->multiply( *d_solution_vector, *d_solution_scaling );
 
     out->copyVector( d_solution_vector );
 

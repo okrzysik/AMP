@@ -48,8 +48,6 @@ void HypreSolver::initialize( std::shared_ptr<const SolverStrategyParameters> pa
     if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
-
-    setParameters();
 }
 
 void HypreSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
@@ -216,59 +214,46 @@ void HypreSolver::copyFromHypre( HYPRE_IJVector hypre_v,
     }
 }
 
-void HypreSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
+void HypreSolver::setupHypreMatrixAndRhs()
 {
-
-    d_pOperator = op;
-    AMP_INSIST( d_pOperator, "ERROR: HypreSolver::registerOperator() operator cannot be NULL" );
-
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
-
     auto matrix = linearOperator->getMatrix();
-    AMP_INSIST( matrix, "matrix cannot be NULL" );
+    // a user can choose to set the Operator without initializing the matrix
+    // so check whether a valid matrix exists
+    if ( matrix ) {
 
-    // set the comm for this solver based on the comm for the matrix
-    const auto &dofManager = matrix->getLeftDOFManager();
-    d_comm                 = dofManager->getComm();
+        // set the comm for this solver based on the comm for the matrix
+        const auto &dofManager = matrix->getLeftDOFManager();
+        d_comm                 = dofManager->getComm();
 
-    // set the hypre memory and execution spaces from the operator
-    if ( linearOperator->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
-        d_memory_location = HYPRE_MEMORY_DEVICE;
-        d_exec_policy     = HYPRE_EXEC_DEVICE;
-    } else {
-        d_memory_location = HYPRE_MEMORY_HOST;
-        d_exec_policy     = HYPRE_EXEC_HOST;
+        // set the hypre memory and execution spaces from the operator
+        if ( linearOperator->getMemoryLocation() > AMP::Utilities::MemoryType::host ) {
+            d_memory_location = HYPRE_MEMORY_DEVICE;
+            d_exec_policy     = HYPRE_EXEC_DEVICE;
+        } else {
+            d_memory_location = HYPRE_MEMORY_HOST;
+            d_exec_policy     = HYPRE_EXEC_HOST;
+        }
+
+        createHYPREMatrix( matrix );
+        createHYPREVectors();
+        d_bMatrixInitialized = true;
     }
-
-    createHYPREMatrix( matrix );
-    createHYPREVectors();
 }
 
-void HypreSolver::setParameters()
+void HypreSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
-    // int ierr;
-    // HYPRE_Int use_vendor = 0, spgemm_alg = 1, spgemm_binned = 0, spgemm_rowest_mtd = 3;
-    // ierr = HYPRE_SetSpGemmUseVendor( use_vendor );
-    // AMP_ASSERT( ierr == 0 );
-    // ierr = hypre_SetSpGemmAlgorithm( spgemm_alg );
-    // AMP_ASSERT( ierr == 0 );
-    // ierr = hypre_SetSpGemmAlgorithm( spgemm_alg );
-    // AMP_ASSERT( ierr == 0 );
-    // ierr = hypre_SetSpGemmBinned( spgemm_binned );
-    // AMP_ASSERT( ierr == 0 );
-    // ierr = hypre_SetSpGemmRownnzEstimateMethod( spgemm_rowest_mtd );
-    // AMP_ASSERT( ierr == 0 );
-    // ierr = HYPRE_SetSpGemmUseCusparse( false );
-    // AMP_ASSERT( ierr == 0 );
-    // ierr = HYPRE_SetUseGpuRand( true );
-    // AMP_ASSERT( ierr == 0 );
+    d_pOperator = op;
+    AMP_INSIST( d_pOperator, "ERROR: HypreSolver::registerOperator() operator cannot be NULL" );
+    setupHypreMatrixAndRhs();
 }
 
 void HypreSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     PROFILE( "resetOperator" );
     AMP_INSIST( ( d_pOperator ), "ERROR: HypreSolver::resetOperator() operator cannot be NULL" );
+    d_bMatrixInitialized = false;
     d_pOperator->reset( params );
     reset( std::shared_ptr<SolverStrategyParameters>() );
 }
