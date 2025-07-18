@@ -1012,8 +1012,7 @@ void testCommDup( UnitTest &ut )
     }
     #if defined( AMP_USE_PETSC ) && !defined( AMP_USE_MPI )
     ut.expected_failure( "Skipping dup tests, PETSc (no-mpi) has a limit of 128 unique comms" );
-    return;
-    #endif
+    #else
     const int N_comm_try = 2000; // Maximum number of comms to try and create
     std::vector<MPI_CLASS> comms;
     comms.reserve( N_comm_try );
@@ -1063,6 +1062,7 @@ void testCommDup( UnitTest &ut )
         AMP::pout << "Maximum number of communicators created with destruction: " << N_dup
                   << std::endl;
     }
+    #endif
 #endif
 }
 

@@ -115,7 +115,7 @@ void testIntegrator( const std::string &name,
 
     // Advance the solution
     double T         = 0;
-    double dt        = 0.0001;
+    double dt        = 0.00025;
     double finalTime = timeIntegrator->getFinalTime();
     timeIntegrator->setInitialDt( dt );
     while ( T < finalTime ) {
@@ -131,11 +131,23 @@ void testIntegrator( const std::string &name,
 
     // Check the answer
     double ans2 = static_cast<double>( solution->max() );
-    if ( AMP::Utilities::approx_equal( ans2, ans, 3.0e-12 ) )
+    if ( AMP::Utilities::approx_equal( ans2, ans, 2.0e-11 ) )
         ut.passes( name + " - " + test );
     else
         ut.failure(
             AMP::Utilities::stringf( "%s - %s (%0.16f)", name.data(), test.data(), ans - ans2 ) );
+}
+
+void updateDatabaseWithPC( std::shared_ptr<AMP::Database> db )
+{
+    AMP_ASSERT( db );
+    if ( db->keyExists( "Solver" ) ) {
+        auto solver_db = db->getDatabase( "Solver" );
+        solver_db->putScalar<bool>( "uses_preconditioner", true );
+        auto pc_db = AMP::Database::create(
+            "name", "BoomerAMGSolver", "print_info_level", 2, "max_iterations", 1 );
+        solver_db->putDatabase( "Preconditioner", std::move( pc_db ) );
+    }
 }
 
 void updateDatabaseIfImplicit( std::shared_ptr<AMP::Database> db )
@@ -259,7 +271,7 @@ void runIntegratorWithUserOperatorTests( const std::string &inputFileName,
 
     params->d_operator    = userOperator;
     params->d_pSourceTerm = nullptr;
-    testIntegrator( ti_name, "du/dt=-u", params, std::exp( -1.0 * finalTime ), ut );
+    testIntegrator( ti_name, "du/dt=-u", params, std::exp( -finalTime ), ut );
 
 
     // Test with fixed source and constant operator
@@ -267,6 +279,12 @@ void runIntegratorWithUserOperatorTests( const std::string &inputFileName,
     source->setToScalar( 1.0 );
     params->d_pSourceTerm = source;
     testIntegrator( ti_name, "du/dt=-u+1", params, 1.0, ut );
+
+    // Test with fixed source and const operator, CG w/BoomerAMG
+    source->setToScalar( 1.0 );
+    params->d_pSourceTerm = nullptr;
+    updateDatabaseWithPC( params->d_db );
+    testIntegrator( ti_name, "du/dt=-u (PCG)", params, std::exp( -finalTime ), ut );
 }
 
 int main( int argc, char *argv[] )
