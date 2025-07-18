@@ -105,8 +105,6 @@ void ImplicitIntegrator::registerOperator( std::shared_ptr<AMP::Operator::Operat
 
         d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
     }
-    if ( !d_solver )
-        createSolver();
 }
 
 /*
@@ -361,8 +359,8 @@ void ImplicitIntegrator::setComponentScalings( std::shared_ptr<AMP::LinearAlgebr
             d_fComponentScalingFnPtr( s, f );
     }
 
-    AMP_ASSERT( d_solver );
-    d_solver->setComponentScalings( s, f );
+    if ( d_solver )
+        d_solver->setComponentScalings( s, f );
 }
 
 

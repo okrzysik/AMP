@@ -128,6 +128,10 @@ protected:
 
     void setParameters( void ); //! set parameters based on internally set variables
 
+    void setupHypreMatrixAndRhs();
+
+    bool d_bMatrixInitialized = false;
+
     AMP_MPI d_comm;
 
     std::shared_ptr<AMP::LinearAlgebra::HypreMatrixAdaptor> d_HypreMatrixAdaptor;
