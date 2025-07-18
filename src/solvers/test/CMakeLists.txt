@@ -193,22 +193,22 @@ COPY_TEST_FILE( input_testPetscSNESSolver-NonlinearThermalOxygenDiffusion-2 )
 
 ADD_AMP_TEST( testSolversWithRhsOptions )
 
-ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 1 )
-ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 2 )
-ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 4 )
+ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 1 GPU )
+ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 2 GPU )
+ADD_AMP_TEST( testLinearSolvers-PseudoLaplacian PROCS 4 GPU )
 
 IF ( USE_LIBMESH )
-    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 1 )
-    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 2 )
-    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 4 )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 1 GPU )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 2 GPU )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 4 GPU )
 
     ADD_AMP_TEST( testSolversForUserMatrix PROCS 1 )
     ADD_AMP_TEST( testSolversForUserMatrix PROCS 2 )
     ADD_AMP_TEST( testSolversForUserMatrix PROCS 4 )
 
-    ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-2 PROCS 1 )
-    ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-2 PROCS 2 )
-    ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-2 PROCS 4 )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-2 PROCS 1 GPU )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-2 PROCS 2 GPU )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-2 PROCS 4 GPU )
 
     ADD_AMP_TEST( testLinearSolvers-LinearElasticityOperator-1 PROCS 1 )	
     ADD_AMP_TEST( testLinearSolvers-LinearElasticityOperator-1 PROCS 2 )	
@@ -222,7 +222,7 @@ IF ( USE_LIBMESH )
     ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-bar PROCS 2 )	
     ADD_AMP_TEST( testLinearSolvers-LinearThermalOperator-bar PROCS 4 )	
 
-    ADD_AMP_TEST( testNonlinearSolvers-NonlinearThermal-1 PROCS 1 )
+    ADD_AMP_TEST( testNonlinearSolvers-NonlinearThermal-1 PROCS 1  )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearThermal-1 PROCS 2 )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearThermal-1 PROCS 4 )
 
@@ -234,9 +234,9 @@ IF ( USE_LIBMESH )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 2 )
     ADD_AMP_TEST( testNonlinearSolvers-NonlinearFick PROCS 4 )
 
-    ADD_AMP_TEST( testLinearSolversWithIdentity )
-    ADD_AMP_TEST( testLinearSolversWithIdentity PROCS 2)
-    ADD_AMP_TEST( testLinearSolversWithIdentity PROCS 4)
+    ADD_AMP_TEST( testLinearSolversWithIdentity GPU )
+    ADD_AMP_TEST( testLinearSolversWithIdentity PROCS 2 GPU )
+    ADD_AMP_TEST( testLinearSolversWithIdentity PROCS 4 GPU )
 
     ADD_AMP_PROVISIONAL_TEST( testNonlinearSolvers-NonlinearThermalOxygenDiffusion )
 
