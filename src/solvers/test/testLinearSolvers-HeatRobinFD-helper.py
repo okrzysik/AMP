@@ -1,13 +1,81 @@
 import sympy as sym
 
+"""
+Python helper script for implementing heat equation
+"""
+
 def main():
 
+    # Manufactured solutions translated into cxx code
+    #manufacturedSol1D()
+    manufacturedSol2D()
+
+    # Functions for solving for ghost values using the discretized Robin BCs
+    #solveForGhostsFromRobinBC1D()
+    #solveForGhostsFromRobinBC2D()
+
+
+ 
+
+def cxx_print_sol_and_rhs(u, f):
+    print("-----------------")
+    print("exact solution u:")
+    print("-----------------")
+    print( "u = ", sym.cxxcode( sym.simplify(u) ), ";" , sep = "")
+    print("")
     
-    solveForGhosts1D()
-    #solveForGhosts2D()
+    print("--------------")
+    print("source term f:")
+    print("--------------")
+    print( "f = ", sym.cxxcode( sym.simplify(f) ), ";", sep = "" )
 
 
-def solveForGhosts1D():
+
+# eqn in 1D
+def manufacturedSol1D():
+    x, t, cxx = sym.symbols('x, t, cxx')
+
+    # Exact solution
+    u = sym.sin(1.5 * sym.pi * x) * sym.cos( 2 * sym.pi * t )
+
+    # Differential operator applied to exact solution
+    LU = sym.diff(u, t) - sym.diff( cxx*sym.diff(u, x), x) 
+    
+    print("\n\n1D Heat problem:")
+    cxx_print_sol_and_rhs(u, LU)
+
+    print("-----------------------------")
+    print("exact solution gradient dudx:")
+    print("-----------------------------")
+    print( "dudx = ", sym.cxxcode( sym.simplify( sym.diff(u, x) ) ), ";", sep = "" )
+
+
+# eqn in 2D
+def manufacturedSol2D():
+    x, y, t, cxx, cyy = sym.symbols('x, y, t, cxx, cyy')
+
+    # Exact solution
+    u = sym.sin(1.5 * sym.pi * x) * sym.cos(3 * sym.pi * y) * sym.cos( 2 * sym.pi * t )
+
+    # Differential operator applied to exact solution
+    LU = sym.diff(u, t) - sym.diff( cxx*sym.diff(u, x), x) - sym.diff( cyy*sym.diff(u, y), y) 
+    
+    print("\n\n2D Heat problem:")
+    cxx_print_sol_and_rhs(u, LU)
+
+    print("-----------------------------")
+    print("exact solution gradient dudx:")
+    print("-----------------------------")
+    print( "dudx = ", sym.cxxcode( sym.simplify( sym.diff(u, x) ) ), ";", sep = "" )
+
+    print("-----------------------------")
+    print("exact solution gradient dudy:")
+    print("-----------------------------")
+    print( "dudy = ", sym.cxxcode( sym.simplify( sym.diff(u, y) ) ), ";", sep = "" )
+
+
+
+def solveForGhostsFromRobinBC1D():
     """The continuous BCs are:
         a1 * u - b1 * cxx * du/dx = r1 @ x = 0
         a2 * u + b2 * cxx * du/dx = r2 @ x = 1
@@ -17,7 +85,7 @@ def solveForGhosts1D():
     On boundary k, we solve for u^k_{ghost} = alpha^k * u^k_{interior} + beta^k
     """
 
-    print("2D boundaries")
+    print("12D boundaries")
     print("-------------")
     
     # First interior point on west, and east boundaries
@@ -57,16 +125,14 @@ def solveForGhosts1D():
     print( "      E2 term: alpha2 = {}".format(coeff_E2) )
 
 
-def solveForGhosts2D():
+def solveForGhostsFromRobinBC2D():
     """The continuous BCs are:
         a1 * u - b1 * cxx * du/dx = r1 @ x = 0
         a2 * u + b2 * cxx * du/dx = r2 @ x = 1
         a3 * u - b3 * cyy * du/dy = r3 @ y = 0
         a4 * u + b4 * cyy * du/dy = r4 @ y = 1
 
-    The boundary lies exactly half way between an interior node and a ghost node. The u on the boundary is the average of this ghost node and the interior node. The derivative on the boundary is approximated by a finite difference of these quantities
-
-    On boundary k, we solve for u^k_{ghost} = alpha^k * u^k_{interior} + beta^k
+    Otherwise, this is the same as the 1D case
     """
 
     print("2D boundaries")
@@ -153,59 +219,63 @@ def solveForGhosts2D():
 
 
 
-def west():
-    """Eliminate Eg, then solve for the first interior DOF E0 in terms of E1 and E2
-    
-    The continuous BC is:
-        a0 * u + b0 * du/dx = r0 @ x = 0
-    """
-
-    print("West boundary")
-    print("-------------")
-    a0, b0, r0, h, d, Eg, E0, E1, E2 = sym.symbols("d_a0, d_b0, d_r0, h, d, Eg, E0, E1, E2")   
-
-    Eg = 3*E0 - 3*E1 + E2
-    eqn0 = sym.Eq(a0 * (Eg + E0)/2 + b0 * d * (E0 - Eg)/h, r0 )
-    sol0 = sym.solve(eqn0, E0)[0]
-    print(f"Solution: E0 = {sol0}")
-
-    sol0_poly = sym.Poly( sol0, E1, E2 )
-
-    coeff_0  = sol0_poly.coeff_monomial(1)  
-    coeff_E1 = sol0_poly.coeff_monomial(E1)  
-    coeff_E2 = sol0_poly.coeff_monomial(E2)  
-
-    print( "Constant term: beta0  = {}".format(coeff_0) )
-    print( "      E1 term: alpha1 = {}".format(coeff_E1) )
-    print( "      E2 term: alpha2 = {}".format(coeff_E2) )
-
-
-def east():
-    """Eliminate Eg, then solve for the last interior DOF E3 in terms of E2 and E1.
-    
-    The continuous BC is:
-        a1 * u + b1 * du/dx = r1 @ x = 1
-    """
-
-    print("East boundary")
-    print("-------------")
-    a1, b1, r1, h, d, E1, E2, E3, Eg = sym.symbols("d_a1, d_b1, d_r1, h, d, E1, E2, E3, Eg")   
-
-    Eg = 3*E3 - 3*E2 + E1
-    eqn1 = sym.Eq(a1 * (Eg + E3)/2 + b1 * d * (Eg - E3)/h, r1 )
-    sol1 = sym.solve(eqn1, E3)[0]
-    print(f"Solution: E0 = {sol1}")
-
-    sol0_poly = sym.Poly( sol1, E1, E2 )
-
-    coeff_0  = sol0_poly.coeff_monomial(1)  
-    coeff_E1 = sol0_poly.coeff_monomial(E1)  
-    coeff_E2 = sol0_poly.coeff_monomial(E2)  
-
-    print( "Constant term: beta1  = {}".format(coeff_0) )
-    print( "      E1 term: alpha1 = {}".format(coeff_E1) )
-    print( "      E2 term: alpha2 = {}".format(coeff_E2) )
-
 # Call the main method!
 if __name__ == "__main__":
     main()
+
+
+
+## The below is old junk
+
+# def west():
+#     """Eliminate Eg, then solve for the first interior DOF E0 in terms of E1 and E2
+    
+#     The continuous BC is:
+#         a0 * u + b0 * du/dx = r0 @ x = 0
+#     """
+
+#     print("West boundary")
+#     print("-------------")
+#     a0, b0, r0, h, d, Eg, E0, E1, E2 = sym.symbols("d_a0, d_b0, d_r0, h, d, Eg, E0, E1, E2")   
+
+#     Eg = 3*E0 - 3*E1 + E2
+#     eqn0 = sym.Eq(a0 * (Eg + E0)/2 + b0 * d * (E0 - Eg)/h, r0 )
+#     sol0 = sym.solve(eqn0, E0)[0]
+#     print(f"Solution: E0 = {sol0}")
+
+#     sol0_poly = sym.Poly( sol0, E1, E2 )
+
+#     coeff_0  = sol0_poly.coeff_monomial(1)  
+#     coeff_E1 = sol0_poly.coeff_monomial(E1)  
+#     coeff_E2 = sol0_poly.coeff_monomial(E2)  
+
+#     print( "Constant term: beta0  = {}".format(coeff_0) )
+#     print( "      E1 term: alpha1 = {}".format(coeff_E1) )
+#     print( "      E2 term: alpha2 = {}".format(coeff_E2) )
+
+
+# def east():
+#     """Eliminate Eg, then solve for the last interior DOF E3 in terms of E2 and E1.
+    
+#     The continuous BC is:
+#         a1 * u + b1 * du/dx = r1 @ x = 1
+#     """
+
+#     print("East boundary")
+#     print("-------------")
+#     a1, b1, r1, h, d, E1, E2, E3, Eg = sym.symbols("d_a1, d_b1, d_r1, h, d, E1, E2, E3, Eg")   
+
+#     Eg = 3*E3 - 3*E2 + E1
+#     eqn1 = sym.Eq(a1 * (Eg + E3)/2 + b1 * d * (Eg - E3)/h, r1 )
+#     sol1 = sym.solve(eqn1, E3)[0]
+#     print(f"Solution: E0 = {sol1}")
+
+#     sol0_poly = sym.Poly( sol1, E1, E2 )
+
+#     coeff_0  = sol0_poly.coeff_monomial(1)  
+#     coeff_E1 = sol0_poly.coeff_monomial(E1)  
+#     coeff_E2 = sol0_poly.coeff_monomial(E2)  
+
+#     print( "Constant term: beta1  = {}".format(coeff_0) )
+#     print( "      E1 term: alpha1 = {}".format(coeff_E1) )
+#     print( "      E2 term: alpha2 = {}".format(coeff_E2) )

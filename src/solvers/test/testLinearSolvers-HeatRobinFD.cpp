@@ -35,12 +35,15 @@
 #include <iomanip>
 #include <filesystem>
 
+/* Numerical implementation of the heat equation with finite difference spatial discretization and Robin boundary conditions.
 
-/* Representation of constant coefficients in front of derivatives in second-order PDE
-In 1D:
-    cxx*u_xx
-In 2D:
-    cxx*u_xx + cyy*u_yy + cxy*u_xy
+    Some of the code is generated in the associated -helper.py file.
+*/
+
+
+/* Representation of constant coefficients in front of derivatives in second-order differential operator
+In 1D: cxx*u_xx
+In 2D: cxx*u_xx + cyy*u_yy 
 */
 struct PDECoefficients {
     double xx = std::nan("");
@@ -128,8 +131,8 @@ void fillMatWithLocalCSRData( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix
 The n cells look like:
     [0, 1]*h, [1, 2]*h, ..., [n-1, n]*h.
 Since there are n cells in [0,1], the width of each must be 1/n
-The computational vertices are the mid points of each cell, but note that we eliminate the first and last vertices 0.5*h and 1 - 0.5*h, so we actually have n-2 active vertices:
-        h + 0.5*h, ..., 1 - (h + 0.5*). 
+The computational vertices are the mid points of each cell, and we have n active vertices:
+        0.5*h, h + 0.5*h, ..., 1 - (h + 0.5*), 1 - 0.5*h. 
 
     */
 std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, std::shared_ptr<AMP::Database> PDE_db )
@@ -222,8 +225,6 @@ std::vector<double> getDiscreteNorms(double h,
 }
 
 
-
-
 /* ------------------------------------------------
     Class implementing a backward Euler operator 
 ------------------------------------------------- */
@@ -287,7 +288,7 @@ public:
 
     // Set the time-step size in the operator
     void setGamma( AMP::Scalar gamma_ ) { 
-        AMP::pout << "BELinearOp::setGamma" << std::endl;
+        //AMP::pout << "BELinearOp::setGamma" << std::endl;
 
         double gamma = double( gamma_ );
 
@@ -323,34 +324,20 @@ private:
     
     void setPDECoefficients();
     std::shared_ptr<AMP::LinearAlgebra::Matrix> getLaplacianMatrix();
-    //std::shared_ptr<AMP::LinearAlgebra::Matrix> d_APoisson;
-    
+  
     // Constants in Robin BCs
-    double d_a1, d_b1; // West boundary,  x = 0
-    double d_a2, d_b2; // East boundary,  x = 1
-    double d_a3, d_b3; // South boundary, y = 0
-    double d_a4, d_b4; // North boundary, y = 1
-    
-    // Value of Robin BC
-    std::function<double( int boundary, double a, double b, AMP::Mesh::MeshElement & node )> robinFunction;
+    double d_a1, d_b1, d_r1; // West boundary,  x = 0
+    double d_a2, d_b2, d_r2; // East boundary,  x = 1
+    double d_a3, d_b3, d_r3; // South boundary, y = 0
+    double d_a4, d_b4, d_r4; // North boundary, y = 1
 
 public:
-
-    // Set Robin function
-    void setRobinFunction( std::function<double(int, double, double, AMP::Mesh::MeshElement &)> fn_ ) { robinFunction = fn_; };
-
-    AMP::Mesh::GeomType d_geomType = AMP::Mesh::GeomType::Vertex;
-    PDECoefficients     d_c;
-
-    void fillWithFunction( std::shared_ptr<AMP::LinearAlgebra::Vector> u, std::function<double(AMP::Mesh::MeshElement &)> fun );
-
-    void ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> A );
-    void ApplyRobinCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
-
+    
+    AMP::Mesh::GeomType                              d_geomType = AMP::Mesh::GeomType::Vertex;
+    PDECoefficients                                  d_c;
     std::shared_ptr<AMP::Database>                   d_db;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFMan;
     std::shared_ptr<AMP::Mesh::BoxMesh>              d_BoxMesh;
-
     
     // Constructor call's base class's constructor
     PoissonOp(std::shared_ptr<const AMP::Operator::OperatorParameters> params_) : 
@@ -366,15 +353,23 @@ public:
         // Unpack constants from the database
         d_a1 = d_db->getScalar<double>( "a1" );
         d_b1 = d_db->getScalar<double>( "b1" );
+        d_r1 = d_db->getScalar<double>( "r1" );
         d_a2 = d_db->getScalar<double>( "a2" );
         d_b2 = d_db->getScalar<double>( "b2" );
+        d_r2 = d_db->getScalar<double>( "r2" );
         //
         if ( d_BoxMesh->getDim() == 2 ) {
             d_a3 = d_db->getScalar<double>( "a3" );
             d_b3 = d_db->getScalar<double>( "b3" );
+            d_r3 = d_db->getScalar<double>( "r3" );
             d_a4 = d_db->getScalar<double>( "a4" );
             d_b4 = d_db->getScalar<double>( "b4" );
+            d_r4 = d_db->getScalar<double>( "r4" );
         }
+
+        // Specify Robin return function as the default
+        std::function<double( int, double, double, AMP::Mesh::MeshElement & )> wrapper = [&]( int boundary, double, double, AMP::Mesh::MeshElement & ) { return robinFunctionDefault( boundary ); };
+        this->setRobinFunction( wrapper );
         
         // Set DOFManager
         this->set_DOFManager();
@@ -408,6 +403,13 @@ public:
         return "PoissonOp";
     }
 
+    // The user can specify any Robin return function with this signature; if they do then this will overwrite the default.
+    void setRobinFunction( std::function<double(int, double, double, AMP::Mesh::MeshElement &)> fn_ ) { d_robinFunction = fn_; };
+
+    // Populate a vector with the given function
+    void fillWithFunction( std::shared_ptr<AMP::LinearAlgebra::Vector> u, std::function<double(AMP::Mesh::MeshElement &)> fun );
+
+    void ApplyRobinCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
 
 private:
 
@@ -441,9 +443,30 @@ private:
     };
 
 
+    
+    // Relating to Robin BCs
+
+    // Prototype of function returning value of Robin BC on given boundary at given node. The user can specify any function with this signature
+    std::function<double( int boundary, double a, double b, AMP::Mesh::MeshElement & node )> d_robinFunction;
+
+    // Default function for returning Robin values; this can be overridden by the user
+    double robinFunctionDefault( int boundary ) {
+        if ( boundary == 1 ) {
+            return d_r1;
+        } else if ( boundary == 2 ) {
+            return d_r2;
+        } else if ( boundary == 3 ) {
+            return d_r3;
+        } else if ( boundary == 4 ) {
+            return d_r4;
+        } else { 
+            AMP_ERROR( "Invalid boundary" );
+        }
+    }
+
+    void ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> A );
     double RobinCorrectionMatrixCoefficient( int boundary );
     double RobinCorrectionVectorCoefficient( int boundary, AMP::Mesh::MeshElement & node );
-
 
 }; 
 
@@ -822,22 +845,22 @@ double PoissonOp::RobinCorrectionVectorCoefficient( int boundary, AMP::Mesh::Mes
     
     if ( boundary == 1 ) {
         double cxx   = d_c.xx;
-        double r1    = robinFunction( boundary, d_a1, d_b1, node );
+        double r1    = d_robinFunction( boundary, d_a1, d_b1, node );
         double beta1 = 2*r1*h/(2*cxx*d_b1 + d_a1*h);
         return beta1;
     } else if ( boundary == 2 ) {
         double cxx   = d_c.xx;
-        double r2    = robinFunction( boundary, d_a2, d_b2, node );
+        double r2    = d_robinFunction( boundary, d_a2, d_b2, node );
         double beta2 = 2*r2*h/(2*cxx*d_b2 + d_a2*h);
         return beta2;
     } else if ( boundary == 3 ) {
         double cyy   = d_c.yy;
-        double r3    = robinFunction( boundary, d_a3, d_b3, node );
+        double r3    = d_robinFunction( boundary, d_a3, d_b3, node );
         double beta3 = 2*r3*h/(2*cyy*d_b3 + d_a3*h);
         return beta3;
     } else if ( boundary == 4 ) {
         double cyy   = d_c.yy;
-        double r4    = robinFunction( boundary, d_a4, d_b4, node );
+        double r4    = d_robinFunction( boundary, d_a4, d_b4, node );
         double beta4 = 2*r4*h/(2*cyy*d_b4 + d_a4*h);
         return beta4;
     } else {
@@ -895,10 +918,106 @@ void PoissonOp::fillWithFunction( std::shared_ptr<AMP::LinearAlgebra::Vector> ve
     vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
+
+
+/* ------------------------------------------------
+    Class implementing heat equation 
+------------------------------------------------- */
+/* Abstract base class representing a linear heat problem:
+        u'(t) - grad \dot ( D * \grad u ) = s(t), u(0) = u_0
+    over the spatial domain [0,1]^d, for d = 1 or d = 2.
+*/
+class HeatModel {
+
+public:
+
+    // The current time of the solution
+    double d_currentTime = 0.0;
+
+    bool d_exactSolutionAvailable = false;
+
+    // PoissonOperator on which this is built
+    std::shared_ptr<PoissonOp> d_PoissonOp;
+
+    HeatModel( std::shared_ptr<PoissonOp> PoissonOp_) : 
+        d_PoissonOp( PoissonOp_ ){ 
+
+        AMP_INSIST( d_PoissonOp,  "Non-null PoissonOp required!" );
+    }
+
+    inline double getCurrentTime() { return d_currentTime; };
+    inline void setCurrentTime(double currentTime_) { d_currentTime = currentTime_; };
+
+    /* Pure virtual functions */
+    virtual double sourceTerm( AMP::Mesh::MeshElement &node ) = 0;
+    virtual double initialCondition( AMP::Mesh::MeshElement &node ) = 0;
+
+    /* Virtual functions */
+    virtual double exactSolution( AMP::Mesh::MeshElement & ) {
+        AMP_ERROR( "Base class cannot provide an implementation of this function" );
+    }
+};
+
+
 /* ------------------------------------------------
     Class implementing manufactured heat equation 
 ------------------------------------------------- */
-/* Abstract class representing an exact solution of a linear heat problem:
+/* Abstract class representing a linear heat problem:
+        u'(t) - grad \dot ( D * \grad u ) = s(t), u(0) = u_0
+    over the spatial domain [0,1]^d, for d = 1 or d = 2.
+
+    With a zero source s(t) = 0 and some specific initial condition
+*/
+class BasicHeatModel : public HeatModel {
+
+public:
+
+    // Call base class' constructor
+    BasicHeatModel( std::shared_ptr<PoissonOp> PoissonOp_) : HeatModel( PoissonOp_ ) { }
+    
+    // Implementation of pure virtual function
+    // Dimesionless wrapper around the exact source term functions
+    double sourceTerm( AMP::Mesh::MeshElement & ) override {
+        return 0.0;
+    }
+
+    // Implementation of pure virtual function
+    double initialCondition( AMP::Mesh::MeshElement &node ) override {
+        return initialCondition_( node );
+    }
+
+private:
+
+    // Dimesionless wrapper around the exact solution functions
+    double initialCondition_( AMP::Mesh::MeshElement &node ) {
+        int meshDim = d_PoissonOp->getMesh()->getDim();
+        if ( meshDim == 1 ) {
+            double x = ( node.coord() )[0];
+            return initialCondition_( x );
+        } else if ( meshDim == 2 ) {
+            double x = ( node.coord() )[0];
+            double y = ( node.coord() )[1];
+            return initialCondition_( x, y );
+        } else {
+            AMP_ERROR( "Invalid dimension" );
+        }
+    }
+    double initialCondition_(double x) {
+        double t = 0.0;
+        return std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t);
+    }
+    double initialCondition_(double x, double y) {
+        double t = 0.0;
+        return std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t)*std::cos(3*M_PI*y);
+    }
+
+};
+
+
+/* ------------------------------------------------
+    Class implementing manufactured heat equation 
+------------------------------------------------- */
+/* Abstract class representing a linear heat problem:
         u'(t) - grad \dot ( D * \grad u ) = s(t), u(0) = u_0
     over the spatial domain [0,1]^d, for d = 1 or d = 2.
 
@@ -916,56 +1035,19 @@ void PoissonOp::fillWithFunction( std::shared_ptr<AMP::LinearAlgebra::Vector> ve
         a3 * u + b3 * -cyy * du/dy = r3 at y = 0...
         a4 * u + b4 * +cyy * du/dy = r4 at y = 1...
 */
-class ManufacturedHeatModel {
+class ManufacturedHeatModel : public HeatModel {
 
 public:
 
-    std::shared_ptr<PoissonOp> d_PoissonOp;
-
-    // The current time of the solution
-    double currentTime = 0.0;
-
-    ManufacturedHeatModel( std::shared_ptr<PoissonOp> PoissonOp_) : 
-        d_PoissonOp(PoissonOp_){ 
-
-        AMP_INSIST( d_PoissonOp,  "Non-null PoissonOp required!" );
+    // Call base class' constructor
+    ManufacturedHeatModel( std::shared_ptr<PoissonOp> PoissonOp_) : HeatModel( PoissonOp_ ) { 
+        // Set flag indicating this class does provide an implementation of exactSolution
+        d_exactSolutionAvailable = true;
     }
-
-
-    inline double getCurrentTime() { return currentTime; };
-    inline void setCurrentTime(double currentTime_) { currentTime = currentTime_; };
     
-    // Dimesionless wrapper around the Robin functions
-    double getRobinValue( int boundary, double a, double b, AMP::Mesh::MeshElement & node ) {
-        int meshDim = d_PoissonOp->getMesh()->getDim();
-        if ( meshDim == 1 ) {
-            return getRobinValue1D( boundary, a, b );
-        } else if ( meshDim == 2 ) {
-            double x = ( node.coord() )[0];
-            double y = ( node.coord() )[1];
-            return getRobinValue2D( boundary, a, b, x, y );
-        } else {
-            AMP_ERROR( "Invalid dimension" );
-        }
-    }
-
-    // Dimesionless wrapper around the exact solution functions
-    double exactSolution( AMP::Mesh::MeshElement &node ) {
-        int meshDim = d_PoissonOp->getMesh()->getDim();
-        if ( meshDim == 1 ) {
-            double x = ( node.coord() )[0];
-            return exactSolution_( x );
-        } else if ( meshDim == 2 ) {
-            double x = ( node.coord() )[0];
-            double y = ( node.coord() )[1];
-            return exactSolution_( x, y );
-        } else {
-            AMP_ERROR( "Invalid dimension" );
-        }
-    }
-
+    // Implementation of pure virtual function
     // Dimesionless wrapper around the exact source term functions
-    double sourceTerm( AMP::Mesh::MeshElement &node ) {
+    double sourceTerm( AMP::Mesh::MeshElement &node ) override {
         int meshDim = d_PoissonOp->getMesh()->getDim();
         if ( meshDim == 1 ) {
             double x = ( node.coord() )[0];
@@ -979,6 +1061,44 @@ public:
         }
     }
 
+    // Implementation of pure virtual function
+    double initialCondition( AMP::Mesh::MeshElement &node ) override {
+        double currentTime_ = this->getCurrentTime();
+        this->setCurrentTime( 0.0 );
+        double ic = exactSolution( node );
+        this->setCurrentTime( currentTime_ );
+        return ic;
+    }
+
+    // Dimesionless wrapper around the exact solution functions
+    double exactSolution( AMP::Mesh::MeshElement &node ) override {
+        int meshDim = d_PoissonOp->getMesh()->getDim();
+        if ( meshDim == 1 ) {
+            double x = ( node.coord() )[0];
+            return exactSolution_( x );
+        } else if ( meshDim == 2 ) {
+            double x = ( node.coord() )[0];
+            double y = ( node.coord() )[1];
+            return exactSolution_( x, y );
+        } else {
+            AMP_ERROR( "Invalid dimension" );
+        }
+    }
+
+    // Dimesionless wrapper around the Robin functions
+    double getRobinValue( int boundary, double a, double b, AMP::Mesh::MeshElement & node ) {
+        int meshDim = d_PoissonOp->getMesh()->getDim();
+        if ( meshDim == 1 ) {
+            return getRobinValue1D( boundary, a, b );
+        } else if ( meshDim == 2 ) {
+            double x = ( node.coord() )[0];
+            double y = ( node.coord() )[1];
+            return getRobinValue2D( boundary, a, b, x, y );
+        } else {
+            AMP_ERROR( "Invalid dimension" );
+        }
+    }
+    
 private:
     // Exact solution, its gradient and corresponding source term
     double exactSolution_(double x);
@@ -1059,16 +1179,16 @@ double ManufacturedHeatModel::sourceTerm_(double x) {
 
 double ManufacturedHeatModel::exactSolution_(double x, double y) {
     double t = this->getCurrentTime();
-    return std::sin((3.0/2.0)*M_PI*x)*std::sin((3.0/2.0)*M_PI*y)*std::cos(2*M_PI*t);
+    return std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t)*std::cos(3*M_PI*y);
 }
 
 double ManufacturedHeatModel::exactSolutionGradient(double x, double y, std::string component) {
     double t = this->getCurrentTime();
     double grad = 0.0;
     if ( component == "x" ) {
-        grad = (3.0/2.0)*M_PI*std::sin((3.0/2.0)*M_PI*y)*std::cos(2*M_PI*t)*std::cos((3.0/2.0)*M_PI*x);
+        grad = (3.0/2.0)*M_PI*std::cos(2*M_PI*t)*std::cos((3.0/2.0)*M_PI*x)*std::cos(3*M_PI*y);
     } else if ( component == "y" ) {
-        grad = (3.0/2.0)*M_PI*std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t)*std::cos((3.0/2.0)*M_PI*y);
+        grad = -3*M_PI*std::sin((3.0/2.0)*M_PI*x)*std::sin(3*M_PI*y)*std::cos(2*M_PI*t);
     } else {
         AMP_ERROR( "Component not recognised" );
     }
@@ -1079,7 +1199,7 @@ double ManufacturedHeatModel::sourceTerm_(double x, double y) {
     double t = this->getCurrentTime();
     double cxx = d_PoissonOp->d_c.xx;
     double cyy = d_PoissonOp->d_c.yy;
-    return (1.0/4.0)*M_PI*(9*M_PI*cxx*std::cos(2*M_PI*t) + 9*M_PI*cyy*std::cos(2*M_PI*t) - 8*std::sin(2*M_PI*t))*std::sin((3.0/2.0)*M_PI*x)*std::sin((3.0/2.0)*M_PI*y);
+    return (1.0/4.0)*M_PI*(9*M_PI*cxx*std::cos(2*M_PI*t) + 36*M_PI*cyy*std::cos(2*M_PI*t) - 8*std::sin(2*M_PI*t))*std::sin((3.0/2.0)*M_PI*x)*std::cos(3*M_PI*y);
 }
 
 
@@ -1127,9 +1247,8 @@ void driver(AMP::AMP_MPI comm,
     const auto OpDB = std::make_shared<AMP::Database>( "linearOperatorDB" );
     OpDB->putDatabase( "PDE_db", PDE_db->cloneDatabase() );
     OpDB->putScalar<int>( "print_info_level", 0 );
-    OpDB->putScalar<std::string>( "name", "PoissonOp" ); // Operator factory requires the db contain a "name" key providing the name of the operator   
+    OpDB->putScalar<std::string>( "name", "PoissonOp" );  
     auto OpParameters = std::make_shared<AMP::Operator::OperatorParameters>( OpDB );
-    
     OpParameters->d_name = "PoissonOp";
     OpParameters->d_Mesh = mesh;
 
@@ -1141,20 +1260,33 @@ void driver(AMP::AMP_MPI comm,
     
 
     /****************************************************************
-    * Set up maunfactured solution                                  *
+    * Create heat equation model                                    *
     ****************************************************************/
-    // Create required vectors over the mesh
-    auto myManufacturedHeat = std::make_shared<ManufacturedHeatModel>( myPoissonOp );
+    std::shared_ptr<HeatModel> myHeatModel;
+    auto useManufacturedModel = PDE_db->getWithDefault<bool>( "manufacturedModel", false );
+    auto useBasicModel = !useManufacturedModel;
 
-    // Point the Robin BC values in the PoissonOp to those given by the manufactured problem
-    myPoissonOp->setRobinFunction( std::bind( &ManufacturedHeatModel::getRobinValue, &( *myManufacturedHeat ), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ) );
+    if ( useBasicModel ) {
+        auto myHeatModel_ = std::make_shared<BasicHeatModel>( myPoissonOp );
+        myHeatModel        = myHeatModel_;
 
-    auto uexactFun    = std::bind( &ManufacturedHeatModel::exactSolution, &( *myManufacturedHeat), std::placeholders::_1 );
-    auto PDESourceFun = std::bind( &ManufacturedHeatModel::sourceTerm, &( *myManufacturedHeat), std::placeholders::_1 );
+    } else {
+        AMP::pout << "Manufactured heat model is being used" << std::endl;
+        auto myHeatModel_ = std::make_shared<ManufacturedHeatModel>( myPoissonOp );
+        
+        // Point the Robin BC values in the PoissonOp to those given by the manufactured problem
+        myPoissonOp->setRobinFunction( std::bind( &ManufacturedHeatModel::getRobinValue, &( *myHeatModel_ ), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ) );
+        myHeatModel = myHeatModel_;        
+    }
+
+    // Create hassle-free wrappers around ic, source term and exact solution
+    auto icFun        = std::bind( &HeatModel::initialCondition, &( *myHeatModel ), std::placeholders::_1 );
+    auto PDESourceFun = std::bind( &HeatModel::sourceTerm, &( *myHeatModel ), std::placeholders::_1 );
+    auto uexactFun    = std::bind( &HeatModel::exactSolution, &( *myHeatModel ), std::placeholders::_1 );
 
 
     /****************************************************************
-    * Set up relevant vectors over the mesh                         *
+    * Set up relevant vectors                                       *
     ****************************************************************/
     // Create required vectors over the mesh
     auto numSolVec    = myPoissonOp->getRightVector();
@@ -1162,38 +1294,41 @@ void driver(AMP::AMP_MPI comm,
     auto errorVec     = myPoissonOp->getRightVector();
     auto BDFSourceVec = myPoissonOp->getRightVector();
 
-
-    /****************************************************************
-    * Set up implicit time integrator                               *
-    ****************************************************************/
-    // Parameters for time integrator
-    double dt = 0.1*PDE_db->getScalar<double>( "h" );
-
     // Create initial condition vector
     auto ic = myPoissonOp->getRightVector();
-    myManufacturedHeat->setCurrentTime( 0.0 );
-    myPoissonOp->fillWithFunction( ic, uexactFun );
+    myPoissonOp->fillWithFunction( ic, icFun );
     ic->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
-    // Create vectors to hold current and new solutions
+    // Create vectors to hold current and new solution (when integrating)
     auto sol_old = ic->clone( );
     sol_old->copyVector( ic ); 
     auto sol_new = ic->clone( );
     sol_new->copyVector( ic ); 
-    
+
+    /****************************************************************
+    * Set up implicit time integrator                               *
+    ****************************************************************/
+    // Ensure BDF integrator is being used
+    auto bdf_ti = { "Backward Euler", "BDF1", "BDF2", "BDF3", "BDF4", "BDF5", "BDF6" };
+    auto ti_name   = ti_db->getScalar<std::string>( "name" );
+    auto is_bdf = ( std::find( bdf_ti.begin(), bdf_ti.end(), ti_name ) != bdf_ti.end() );
+    AMP_INSIST( is_bdf, "Implementation assumes BDF integrator" );
+
+    // Parameters for time integrator
+    double dt = 0.5*PDE_db->getScalar<double>( "h" );
     auto tiParams           = std::make_shared<AMP::TimeIntegrator::TimeIntegratorParameters>( ti_db );
     tiParams->d_ic_vector   = ic;
     tiParams->d_operator    = myBEOp;
-    // Create a source vector
-    tiParams->d_pSourceTerm = BDFSourceVec;
+    tiParams->d_pSourceTerm = BDFSourceVec; // Point source vector to our source vector
 
     // Create timeIntegrator from factory
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegrator> timeIntegrator = AMP::TimeIntegrator::TimeIntegratorFactory::create( tiParams );
     
+    // Cast to implicit integrator
     auto implicitIntegrator =
             std::dynamic_pointer_cast<AMP::TimeIntegrator::ImplicitIntegrator>( timeIntegrator );
 
-    // required to set gamma for the user operator at each timestep
+    // Tell implicitIntegrator how to tell our operator what the time step is
     implicitIntegrator->setTimeScalingFunction(
         std::bind( &BELinearOp::setGamma, &( *myBEOp ), std::placeholders::_1 ) );
 
@@ -1234,9 +1369,8 @@ void driver(AMP::AMP_MPI comm,
     while ( T < finalTime ) {
 
         // Set the solution-independent source term; note that this approach only works for implicit multistep methods
-        myManufacturedHeat->setCurrentTime( T + dt ); // Set manufactured solution to new time---this ensures the source term and Robin values are sampled at the new time.
+        myHeatModel->setCurrentTime( T + dt ); // Set manufactured solution to new time---this ensures the source term and Robin values are sampled at the new time.
         // Fill vector with PDE source term
-        //myManufacturedHeat->fillWith_fsource( BDFSourceVec );
         myPoissonOp->fillWithFunction( BDFSourceVec, PDESourceFun );
         // Apply Robin correction to source vector
         myPoissonOp->ApplyRobinCorrectionToVector( BDFSourceVec );
@@ -1254,28 +1388,30 @@ void driver(AMP::AMP_MPI comm,
         T += dt;
 
         /* Compare numerical solution with manufactured solution */
-        myManufacturedHeat->setCurrentTime( T );
-        myPoissonOp->fillWithFunction( manSolVec, uexactFun );
-        errorVec->subtract( *sol_new, *manSolVec );
-        AMP::pout << "Discretization error norms:" << std::endl;
-        auto enorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), errorVec );
-        AMP::pout << "||e||=(" << enorms[0] << "," << enorms[1] << "," << enorms[2] << ")" << std::endl;
-        AMP::pout << "----------------------" << std::endl;
+        if ( myHeatModel->d_exactSolutionAvailable ) {
+            myHeatModel->setCurrentTime( T );
+            myPoissonOp->fillWithFunction( manSolVec, uexactFun );
+            errorVec->subtract( *sol_new, *manSolVec );
+            AMP::pout << "----------------------------------------" << std::endl;
+            AMP::pout << "Manufactured discretization error norms:" << std::endl;
+            auto enorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), errorVec );
+            AMP::pout << "||e||=(" << enorms[0] << "," << enorms[1] << "," << enorms[2] << ")" << std::endl;
+            AMP::pout << "----------------------------------------" << std::endl;
 
-        
-        // Write manufactured and numerical solution to file.
-        #if 0
-        step++;
-        std::string name = std::to_string( T );
-        manSolVec->setName( name );
-        sol_new->setName( name );
-        AMP::IO::AsciiWriter vecWriter_man;
-        vecWriter_man.registerVector( manSolVec );
-        vecWriter_man.writeFile( man_dir, step, T+dt  );
-        AMP::IO::AsciiWriter vecWriter_num;
-        vecWriter_num.registerVector( sol_new );
-        vecWriter_num.writeFile( num_dir, step, T+dt  );
-        #endif
+            // Write manufactured and numerical solution to file.
+            #if 0
+            step++;
+            std::string name = std::to_string( T );
+            manSolVec->setName( name );
+            sol_new->setName( name );
+            AMP::IO::AsciiWriter vecWriter_man;
+            vecWriter_man.registerVector( manSolVec );
+            vecWriter_man.writeFile( man_dir, step, T  );
+            AMP::IO::AsciiWriter vecWriter_num;
+            vecWriter_num.registerVector( sol_new );
+            vecWriter_num.writeFile( num_dir, step, T  );
+            #endif
+        }
         
 
         // Drop out if we've exceeded max steps
@@ -1286,30 +1422,36 @@ void driver(AMP::AMP_MPI comm,
     }
 
     
-    // // No specific solution is implemented for this problem, so this will just check that the solver converged. 
-    // checkConvergence( linearSolver.get(), input_db, input_file, *ut );
+    // No specific solution is implemented for this problem, so this will just check that the solver converged. 
+    //checkConvergence( linearSolver.get(), input_db, input_file, *ut );
 
 }
 // end of driver()
 
 
 
-/*  The input file must contain a "PDE" database, which has 
+/* Numerical implementation of the heat equation with finite difference spatial discretization and Robin boundary conditions.
 
-    dim : the dimension of the problem (1, 2, or 3)
-    n   : the number of mesh points (plus 1) in each grid dimension
-    
-    - In 1D, the PDE is -u_xx = f. Standard 3-point finite differences are used. 
-    - In 2D, the PDE is -u_xx -eps*u_yy = f, but rotated an angle of theta radians counter clockwise from the positive x axis. 9-point finite differences are used.
-    - In 3D, the PDE is -u_xx -epsy*u_yy - epsz*u_zz = f, but rotated according in 3D according the the so-called "extrinsic" 3-1-3 Euler angles (see https://en.wikipedia.org/wiki/Euler_angles#Definition_by_extrinsic_rotations) gamma, beta, and alpha. A new coordinate system XYZ is obtained from rotating the xyz coordinate system by: 1. first rotating gamma radians around the z axis, 2. then beta radians about the x axis, 3. then alpha radians about the z axis. 19-point finite differences are used. 
-    
-    - In 2D, the PDE database must also specify the constants "eps", and "theta"
-    - In 2D, the PDE database must also specify the constants "epsy", "epsz", "gamma", "beta", and "alpha"
+    Some of the code is generated in the associated -helper.py file.
 
-    - Mixed derivatives are discretized with central finite differences (as opposed to upwind)
+    In 1D, the PDE is u_t - cxx*u_xx = f
+    In 2D, the PDE is u_t - (cxx*u_xx - cyy*u_yy) = f
 
-    - Note that for eps = epsy = epsz = 1, the PDEs are isotropic and grid aligned (the rotation angles have no impact in this case), and moreover, in these cases the discretizations reduce to the standard 5- and 7-point stencils in 2D and 3D, respectively.
+    The input file must contain the following databases:
+    1. PDE
+    2. TimeIntergrator
+        2.1 LinearSolver
 
+    The PDE database must contains the following keys:
+        dim - PDE dimension, 1 or 2.
+        n   - number of grid points in each spatial dimension
+        aj, bj, rj for j = 1,2 in 1D, and j = 1,2,3,4 in 2D. On the jth spatial boundary a Robin condition is imposed of the form aj*u + bj*du/dn = rj, with constants specified in the input file.
+
+    Optional keys in the PDE database are:
+        manufacturedModel - Boolean specifying whether to use a manufactured source and Robin BC values with corresponding exact solution implemented. If this is boolean is true then the Robin constants rj are ignored, and the numerical solution is compared against the manufactured solution at each time point. If this key is flase/not provided then a zero source term is used with some initial condition.
+
+
+    The TimeIntegrator must be of BDF type.
 */
 int main( int argc, char **argv )
 {
@@ -1322,7 +1464,7 @@ int main( int argc, char **argv )
     AMP::AMP_MPI comm( AMP_COMM_WORLD );
     
     std::vector<std::string> exeNames;
-    exeNames.emplace_back( "heat" );
+    exeNames.emplace_back( "testLinearSolvers-HeatRobinFD-CG" );
 
     for ( auto &exeName : exeNames ) {
         driver( comm, &ut, exeName );

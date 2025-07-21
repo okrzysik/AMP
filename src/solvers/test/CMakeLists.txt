@@ -162,6 +162,7 @@ COPY_TEST_FILE( input_testLinearSolvers-PL-AmpMesh-BoomerAMG )
 COPY_TEST_FILE( input_testLinearSolvers-PL-CylMesh-BoomerAMG )
 
 COPY_TEST_FILE( input_testLinearSolvers-PoissonFD-BoomerAMG-CG )
+COPY_TEST_FILE( input_testLinearSolvers-HeatRobinFD-CG )
 
 IF( USE_PETSC )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscCG )
@@ -204,7 +205,7 @@ IF ( USE_PETSC )
 ENDIF()
 IF ( USE_HYPRE )
     ADD_AMP_TEST( testLinearSolvers-PoissonFD )
-    ADD_AMP_TEST( testHeat-FD-example )
+    ADD_AMP_TEST( testLinearSolvers-HeatRobinFD )
 ENDIF()
 
 IF ( USE_LIBMESH )
