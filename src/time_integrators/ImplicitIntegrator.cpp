@@ -20,10 +20,12 @@ ImplicitIntegrator::ImplicitIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::TimeIntegrator( params )
 {
+    d_initialized = false;
     AMP_ASSERT( params );
     auto db                      = d_pParameters->d_db;
     d_user_managed_time_operator = db->getWithDefault<bool>( "user_managed_time_operator", false );
     registerOperator( d_operator );
+    d_initialized = true;
 }
 
 ImplicitIntegrator::~ImplicitIntegrator() = default;
@@ -103,8 +105,6 @@ void ImplicitIntegrator::registerOperator( std::shared_ptr<AMP::Operator::Operat
 
         d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
     }
-    if ( !d_solver )
-        createSolver();
 }
 
 /*
@@ -300,7 +300,7 @@ void ImplicitIntegrator::reset(
         d_pParameters =
             std::const_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( parameters );
         AMP_ASSERT( parameters->d_db );
-        TimeIntegrator::getFromInput( parameters->d_db, true );
+        TimeIntegrator::getFromInput( parameters->d_db );
     }
 }
 
@@ -359,8 +359,8 @@ void ImplicitIntegrator::setComponentScalings( std::shared_ptr<AMP::LinearAlgebr
             d_fComponentScalingFnPtr( s, f );
     }
 
-    AMP_ASSERT( d_solver );
-    d_solver->setComponentScalings( s, f );
+    if ( d_solver )
+        d_solver->setComponentScalings( s, f );
 }
 
 

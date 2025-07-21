@@ -21,19 +21,19 @@ BDFIntegrator::BDFIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::ImplicitIntegrator( params )
 {
+    d_initialized = false;
     d_object_name = "BDFIntegrator";
     auto parameters =
         std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
 
     auto input_db = params->d_db;
-    // used to be SAMRAI, eventually bring in new restart capabilities
-    bool is_from_restart = false;
 
     // read parameters from input
-    getFromInput( input_db, is_from_restart );
+    getFromInput( input_db );
 
     initialize();
+    d_initialized = true;
 }
 
 BDFIntegrator::~BDFIntegrator() {}
@@ -152,9 +152,12 @@ void BDFIntegrator::integratorSpecificInitialize( void )
     params->d_vectors.push_back( d_solution_vector );
 }
 
-void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool )
+void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     if ( db ) {
+        if ( !d_initialized )
+            d_first_initial_dt = db->getWithDefault<double>( "first_initial_dt", d_initial_dt );
+
         if ( db->keyExists( "variable_names" ) ) {
             d_var_names = db->getVector<std::string>( "variable_names" );
         } else {
@@ -264,8 +267,9 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool )
                 d_DtCutLowerBound =
                     db->getWithDefault<double>( "dt_cut_lower_bound", 0.9 ); // to match old for now
                 d_DtGrowthUpperBound = db->getWithDefault<double>( "dt_growth_upper_bound", 1.702 );
-                d_final_constant_timestep_current_step =
-                    db->getWithDefault<int>( "final_constant_timestep_current_step", 1 );
+                if ( !d_initialized )
+                    d_final_constant_timestep_current_step =
+                        db->getWithDefault<int>( "final_constant_timestep_current_step", 1 );
             }
 
             if ( !d_calculateTimeTruncError ) {
@@ -690,9 +694,9 @@ double BDFIntegrator::getNextDtFinalConstant( const bool, const int )
     } else if ( d_final_constant_timestep_current_step <
                 d_number_of_time_intervals + d_number_initial_fixed_steps ) {
         d_current_dt =
-            d_initial_dt +
+            d_first_initial_dt +
             ( (double) d_final_constant_timestep_current_step - d_number_initial_fixed_steps ) /
-                ( (double) d_number_of_time_intervals ) * ( d_max_dt - d_initial_dt );
+                ( (double) d_number_of_time_intervals ) * ( d_max_dt - d_first_initial_dt );
         ++d_final_constant_timestep_current_step;
     } else {
         d_current_dt = d_max_dt;
@@ -1856,7 +1860,7 @@ void BDFIntegrator::reset(
     ImplicitIntegrator::reset( params );
 
     if ( params )
-        BDFIntegrator::getFromInput( params->d_db, true );
+        BDFIntegrator::getFromInput( params->d_db );
 
     registerVectorsForMemoryManagement();
 
@@ -2047,12 +2051,9 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
         d_scratch_vector = in->clone();
 
     if ( d_solution_scaling ) {
-        d_scratch_vector->divide( *d_solution_vector, *d_solution_scaling );
-    } else {
-        d_scratch_vector->copyVector( d_solution_vector );
+        d_solution_vector->divide( *d_solution_vector, *d_solution_scaling );
+        d_solution_vector->makeConsistent();
     }
-
-    d_scratch_vector->makeConsistent();
 
     if ( !d_scratch_function_vector )
         d_scratch_function_vector = in->clone();
@@ -2080,8 +2081,16 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
         AMP::pout << std::endl;
     }
 
+    if ( !d_solver ) {
+        createSolver();
+        d_solver->setComponentScalings( d_solution_scaling, d_function_scaling );
+    } else {
+        d_solver->reset( {} );
+    }
+
     d_scratch_function_vector->scale( -1.0 );
-    d_solver->apply( d_scratch_function_vector, d_scratch_vector );
+
+    d_solver->apply( d_scratch_function_vector, d_solution_vector );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "Scaled outgoing TI solution component norms: ";
@@ -2103,11 +2112,8 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     d_solver_retcode =
         convStatus <= AMP::Solver::SolverStrategy::SolverStatus::ConvergedUserCondition ? 1 : 0;
 
-    if ( d_solution_scaling ) {
-        d_solution_vector->multiply( *d_scratch_vector, *d_solution_scaling );
-    } else {
-        d_solution_vector->copyVector( d_scratch_vector );
-    }
+    if ( d_solution_scaling )
+        d_solution_vector->multiply( *d_solution_vector, *d_solution_scaling );
 
     out->copyVector( d_solution_vector );
 
@@ -2128,15 +2134,19 @@ void BDFIntegrator::writeRestart( int64_t fid ) const
                                          d_final_constant_timestep_current_step,
                                          {},
                                          AMP::Database::Check::Overwrite );
+    d_pParameters->d_db->putScalar<double>(
+        "first_initial_dt", d_first_initial_dt, {}, AMP::Database::Check::Overwrite );
     ImplicitIntegrator::writeRestart( fid );
 }
 
 BDFIntegrator::BDFIntegrator( int64_t fid, AMP::IO::RestartManager *manager )
     : ImplicitIntegrator( fid, manager )
 {
+    d_initialized = false;
     d_object_name = "BDFIntegrator";
-    BDFIntegrator::getFromInput( d_pParameters->d_db, true );
+    BDFIntegrator::getFromInput( d_pParameters->d_db );
     BDFIntegrator::initialize();
+    d_initialized = true;
 }
 
 } // namespace AMP::TimeIntegrator

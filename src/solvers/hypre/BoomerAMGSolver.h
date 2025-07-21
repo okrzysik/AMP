@@ -87,6 +87,8 @@ public:
     void getFromInput( std::shared_ptr<const AMP::Database> db );
 
 private:
+    void setupBoomerAMG( void );
+
     int d_num_functions        = 1;
     int d_min_iterations       = 0;
     int d_max_coarse_size      = 800;

@@ -19,8 +19,9 @@ namespace AMP::TimeIntegrator {
 OxideTimeIntegrator::OxideTimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
     AMP_INSIST( parameters, "Null parameter" );
-
+    d_initialized = false;
     initialize( parameters );
+    d_initialized = true;
 }
 
 OxideTimeIntegrator::~OxideTimeIntegrator() = default;

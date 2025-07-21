@@ -33,14 +33,19 @@ BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> para
     AMP_ASSERT( parameters );
     BoomerAMGSolver::initialize( parameters );
 
-    HYPRE_ParCSRMatrix parcsr_A;
+    if ( d_bMatrixInitialized && d_bSetupSolver ) {
+        setupBoomerAMG();
+    }
+}
 
+void BoomerAMGSolver::setupBoomerAMG()
+{
+    AMP_ASSERT( d_bMatrixInitialized );
+    HYPRE_ParCSRMatrix parcsr_A;
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
     hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
-    if ( d_bSetupSolver ) {
-        PROFILE( "BoomerAMGSolver::BoomerAMGSolver(setup)" );
-        HYPRE_BoomerAMGSetup( d_solver, parcsr_A, nullptr, nullptr );
-    }
+    PROFILE( "BoomerAMGSolver::BoomerAMGSolver(setup)" );
+    HYPRE_BoomerAMGSetup( d_solver, parcsr_A, nullptr, nullptr );
 }
 
 BoomerAMGSolver::~BoomerAMGSolver() { HYPRE_BoomerAMGDestroy( d_solver ); }
@@ -312,7 +317,10 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE( "BoomerAMGSolver::apply" );
-
+    if ( !d_bMatrixInitialized ) {
+        setupHypreMatrixAndRhs();
+        setupBoomerAMG();
+    }
     // Always zero before checking stopping criteria for any reason
     d_iNumberIterations = 0;
 
