@@ -80,12 +80,12 @@ public:
      */
     inline void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override
     {
-        d_pPreconditioner = pc;
+        d_pNestedSolver = pc;
     }
 
     inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver() override
     {
-        return d_pPreconditioner;
+        return d_pNestedSolver;
     }
 
     void getFromInput( std::shared_ptr<const AMP::Database> db );
@@ -98,7 +98,7 @@ private:
     bool d_bUsesPreconditioner = false;
     bool d_bDiagScalePC        = false; //! use diagonal scaled preconditioner
 
-    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pNestedSolver;
 };
 } // namespace AMP::Solver
 

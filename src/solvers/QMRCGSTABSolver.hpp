@@ -34,7 +34,7 @@ void QMRCGSTABSolver<T>::initialize( std::shared_ptr<const SolverStrategyParamet
     getFromInput( db );
 
     if ( parameters->d_pNestedSolver ) {
-        d_pPreconditioner = parameters->d_pNestedSolver;
+        d_pNestedSolver = parameters->d_pNestedSolver;
     } else {
         if ( d_bUsesPreconditioner ) {
             auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
@@ -45,8 +45,8 @@ void QMRCGSTABSolver<T>::initialize( std::shared_ptr<const SolverStrategyParamet
                     std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
                 innerParameters->d_global_db = parameters->d_global_db;
                 innerParameters->d_pOperator = d_pOperator;
-                d_pPreconditioner = AMP::Solver::SolverFactory::create( innerParameters );
-                AMP_ASSERT( d_pPreconditioner );
+                d_pNestedSolver = AMP::Solver::SolverFactory::create( innerParameters );
+                AMP_ASSERT( d_pNestedSolver );
             }
         }
     }
@@ -161,7 +161,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     x2->zero();
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-        d_pPreconditioner->apply( p, z );
+        d_pNestedSolver->apply( p, z );
     } else {
         z = p;
     }
@@ -203,7 +203,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         x2->axpy( eta2, *d2, *x );
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-            d_pPreconditioner->apply( s, z );
+            d_pNestedSolver->apply( s, z );
         } else {
             z = s;
         }
@@ -265,7 +265,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         p->axpy( beta, *p, *r );
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-            d_pPreconditioner->apply( p, z );
+            d_pNestedSolver->apply( p, z );
         } else {
             z = p;
         }
@@ -283,7 +283,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         // unwind the preconditioner if necessary
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
             z->copyVector( x );
-            d_pPreconditioner->apply( z, x );
+            d_pNestedSolver->apply( z, x );
         }
     }
 
@@ -323,8 +323,8 @@ void QMRCGSTABSolver<T>::resetOperator(
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator
     // though it's unclear where this might be necessary
-    if ( d_pPreconditioner ) {
-        d_pPreconditioner->resetOperator( params );
+    if ( d_pNestedSolver ) {
+        d_pNestedSolver->resetOperator( params );
     }
 }
 } // namespace AMP::Solver

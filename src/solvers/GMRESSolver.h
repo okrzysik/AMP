@@ -88,12 +88,12 @@ public:
      */
     inline void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override
     {
-        d_pPreconditioner = pc;
+        d_pNestedSolver = pc;
     }
 
     inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver() override
     {
-        return d_pPreconditioner;
+        return d_pNestedSolver;
     }
 
     /**
@@ -223,7 +223,7 @@ private:
     std::vector<T> d_dy;
 
     //! shared pointer to preconditioner if it exists
-    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pNestedSolver;
 
     //! stores the orthonormal basis for the Krylov space
     //! we do not preallocate by default
