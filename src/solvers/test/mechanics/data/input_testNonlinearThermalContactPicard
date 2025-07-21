@@ -267,16 +267,9 @@ NonlinearSolver{
     maximumFunctionEvals = 100
     usesJacobian=FALSE
     linear_solver_type               =  "fgmres"
-//    differencing_parameter_strategy  =  "ds"
-    differencing_parameter_strategy  =  "ds"
     forcing_term_strategy            =  "EWCHOICE3"
     EW_choice2_alpha = 2.0
     EW_choice2_gamma = 0.9
-//    constant_forcing_term            =  0.01
-    constant_forcing_term            =  0.01
-//    constant_forcing_term            =  0.1
-
-#    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_maxstep 10000.0 -snes_ls_alpha 1.0e-4"
 
     LinearSolver{
         print_info_level = 0
