@@ -167,7 +167,7 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
 
         if ( d_sPcType != "shell" ) {
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
-            AMP_ASSERT( d_pPreconditioner.get() == nullptr );
+            AMP_ASSERT( d_pNestedSolver.get() == nullptr );
             PCSetType( pc, d_sPcType.c_str() );
         } else {
             // for a shell preconditioner the user context is set to an instance of this class
@@ -417,8 +417,8 @@ void PetscKrylovSolver::resetOperator(
 
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator though it's unclear where this might be necessary
-    if ( d_pPreconditioner ) {
-        d_pPreconditioner->resetOperator( params );
+    if ( d_pNestedSolver ) {
+        d_pNestedSolver->resetOperator( params );
     }
 }
 
@@ -432,17 +432,17 @@ void PetscKrylovSolver::setZeroInitialGuess( bool use_zero_guess )
 void PetscKrylovSolver::initializePreconditioner(
     std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    d_pPreconditioner = parameters->d_pNestedSolver;
+    d_pNestedSolver = parameters->d_pNestedSolver;
 
-    if ( d_pPreconditioner ) {
+    if ( d_pNestedSolver ) {
 
         // if the operator has not been initialized
         // attempt to initialize and register and operator
         if ( d_pOperator ) {
-            auto op = d_pPreconditioner->getOperator();
+            auto op = d_pNestedSolver->getOperator();
             if ( !op ) {
                 auto pcOperator = createPCOperator();
-                d_pPreconditioner->registerOperator( pcOperator );
+                d_pNestedSolver->registerOperator( pcOperator );
             }
         }
 
@@ -458,8 +458,8 @@ void PetscKrylovSolver::initializePreconditioner(
                 auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
                 parameters->d_pOperator = d_pOperator;
                 parameters->d_comm      = d_comm;
-                d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
-                AMP_ASSERT( d_pPreconditioner );
+                d_pNestedSolver         = AMP::Solver::SolverFactory::create( parameters );
+                AMP_ASSERT( d_pNestedSolver );
             }
         }
     }

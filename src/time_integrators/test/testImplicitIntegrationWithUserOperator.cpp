@@ -1,3 +1,4 @@
+#include "AMP/AMP_TPLs.h"
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
@@ -280,11 +281,13 @@ void runIntegratorWithUserOperatorTests( const std::string &inputFileName,
     params->d_pSourceTerm = source;
     testIntegrator( ti_name, "du/dt=-u+1", params, 1.0, ut );
 
+#ifdef AMP_USE_HYPRE
     // Test with fixed source and const operator, CG w/BoomerAMG
     source->setToScalar( 1.0 );
     params->d_pSourceTerm = nullptr;
     updateDatabaseWithPC( params->d_db );
     testIntegrator( ti_name, "du/dt=-u (PCG)", params, std::exp( -finalTime ), ut );
+#endif
 }
 
 int main( int argc, char *argv[] )

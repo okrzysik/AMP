@@ -71,7 +71,7 @@ void HypreBiCGSTABSolver::setupHypreSolver(
                                       (HYPRE_PtrToSolverFcn) HYPRE_ParCSRDiagScaleSetup,
                                       bicgstab_precond );
         } else {
-            auto pc = std::dynamic_pointer_cast<HypreSolver>( d_pPreconditioner );
+            auto pc = std::dynamic_pointer_cast<HypreSolver>( d_pNestedSolver );
             if ( pc ) {
 
                 auto bicgstab_precond = pc->getHYPRESolver();
@@ -107,7 +107,7 @@ void HypreBiCGSTABSolver::initialize( std::shared_ptr<const SolverStrategyParame
     HypreBiCGSTABSolver::getFromInput( db );
 
     if ( parameters->d_pNestedSolver ) {
-        d_pPreconditioner = parameters->d_pNestedSolver;
+        d_pNestedSolver = parameters->d_pNestedSolver;
     } else {
         if ( d_bUsesPreconditioner && !d_bDiagScalePC ) {
             auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
@@ -123,8 +123,8 @@ void HypreBiCGSTABSolver::initialize( std::shared_ptr<const SolverStrategyParame
                 }
                 auto parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
                 parameters->d_pOperator = d_pOperator;
-                d_pPreconditioner       = AMP::Solver::SolverFactory::create( parameters );
-                AMP_ASSERT( d_pPreconditioner );
+                d_pNestedSolver         = AMP::Solver::SolverFactory::create( parameters );
+                AMP_ASSERT( d_pNestedSolver );
             }
         }
     }

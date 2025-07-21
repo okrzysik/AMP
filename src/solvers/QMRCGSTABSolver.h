@@ -82,12 +82,12 @@ public:
      */
     inline void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override
     {
-        d_pPreconditioner = pc;
+        d_pNestedSolver = pc;
     }
 
     inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver() override
     {
-        return d_pPreconditioner;
+        return d_pNestedSolver;
     }
 
     /**
@@ -105,7 +105,7 @@ private:
 
     std::string d_preconditioner_side;
 
-    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pNestedSolver;
 };
 } // namespace AMP::Solver
 
