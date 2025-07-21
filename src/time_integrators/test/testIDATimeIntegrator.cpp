@@ -90,7 +90,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             std::make_shared<AMP::TimeIntegrator::IDATimeIntegratorParameters>( ida_db );
         time_Params->d_pMassOperator   = massOperator;
         time_Params->d_operator        = IDARhsOperator;
-        time_Params->d_pPreconditioner = pcSolver;
+        time_Params->d_pNestedSolver   = pcSolver;
         time_Params->d_ic_vector       = initialCondition;
         time_Params->d_ic_vector_prime = initialConditionPrime;
         time_Params->d_name            = "IDATimeIntegratorParameters";

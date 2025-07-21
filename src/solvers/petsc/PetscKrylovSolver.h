@@ -125,7 +125,7 @@ public:
      */
     inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver( void ) override
     {
-        return d_pPreconditioner;
+        return d_pNestedSolver;
     }
 
     /**
@@ -135,7 +135,7 @@ public:
      */
     inline void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override
     {
-        d_pPreconditioner = pc;
+        d_pNestedSolver = pc;
     }
 
     /**
@@ -194,7 +194,7 @@ private:
 
     KSP d_KrylovSolver;
 
-    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pNestedSolver;
 
     Mat d_Mat;
 };

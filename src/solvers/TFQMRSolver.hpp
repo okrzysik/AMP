@@ -38,7 +38,7 @@ void TFQMRSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
     registerOperator( d_pOperator );
 
     if ( parameters->d_pNestedSolver ) {
-        d_pPreconditioner = parameters->d_pNestedSolver;
+        d_pNestedSolver = parameters->d_pNestedSolver;
     } else {
         if ( d_bUsesPreconditioner ) {
             auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
@@ -49,8 +49,8 @@ void TFQMRSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
                     std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
                 innerParameters->d_global_db = parameters->d_global_db;
                 innerParameters->d_pOperator = d_pOperator;
-                d_pPreconditioner = AMP::Solver::SolverFactory::create( innerParameters );
-                AMP_ASSERT( d_pPreconditioner );
+                d_pNestedSolver = AMP::Solver::SolverFactory::create( innerParameters );
+                AMP_ASSERT( d_pNestedSolver );
             }
         }
     }
@@ -182,7 +182,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     d_y[0]->copyVector( d_r );
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-        d_pPreconditioner->apply( d_y[0], d_z );
+        d_pNestedSolver->apply( d_y[0], d_z );
     } else {
         d_z->copyVector( d_y[0] );
     }
@@ -215,7 +215,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             if ( j == 1 ) {
                 d_y[1]->axpy( -alpha, *d_v, *d_y[0] );
                 if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-                    d_pPreconditioner->apply( d_y[1], d_z );
+                    d_pNestedSolver->apply( d_y[1], d_z );
                 } else {
                     d_z->copyVector( d_y[1] );
                 }
@@ -276,7 +276,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_y[0]->axpy( beta, *d_y[1], *d_w );
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-            d_pPreconditioner->apply( d_y[0], d_z );
+            d_pNestedSolver->apply( d_y[0], d_z );
         } else {
             d_z->copyVector( d_y[0] );
         }
@@ -297,7 +297,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // unwind the preconditioner if necessary
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-        d_pPreconditioner->apply( d_delta, d_z );
+        d_pNestedSolver->apply( d_delta, d_z );
     } else {
         d_z->copyVector( d_delta );
     }
@@ -337,8 +337,8 @@ void TFQMRSolver<T>::resetOperator(
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator
     // though it's unclear where this might be necessary
-    if ( d_pPreconditioner ) {
-        d_pPreconditioner->resetOperator( params );
+    if ( d_pNestedSolver ) {
+        d_pNestedSolver->resetOperator( params );
     }
 }
 } // namespace AMP::Solver

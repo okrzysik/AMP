@@ -96,12 +96,12 @@ public:
      */
     inline void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override
     {
-        d_pPreconditioner = pc;
+        d_pNestedSolver = pc;
     }
 
     inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver() override
     {
-        return d_pPreconditioner;
+        return d_pNestedSolver;
     }
 
     /**
@@ -136,7 +136,7 @@ private:
     //! variant being used, can be one of "pcg", "ipcg", or "fcg"
     std::string d_sVariant = "pcg";
 
-    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pNestedSolver;
 
     //! scratch vectors required for PCG
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_r;
