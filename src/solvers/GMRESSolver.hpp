@@ -52,7 +52,7 @@ void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
     d_dy.resize( max_dim, 0.0 );
 
     if ( parameters->d_pNestedSolver ) {
-        d_pPreconditioner = parameters->d_pNestedSolver;
+        d_pNestedSolver = parameters->d_pNestedSolver;
     } else {
         if ( d_bUsesPreconditioner ) {
             auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
@@ -63,8 +63,8 @@ void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
                     std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
                 innerParameters->d_global_db = parameters->d_global_db;
                 innerParameters->d_pOperator = d_pOperator;
-                d_pPreconditioner = AMP::Solver::SolverFactory::create( innerParameters );
-                AMP_ASSERT( d_pPreconditioner );
+                d_pNestedSolver = AMP::Solver::SolverFactory::create( innerParameters );
+                AMP_ASSERT( d_pNestedSolver );
             }
         }
     }
@@ -209,13 +209,13 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             if ( d_preconditioner_side == "left" ) {
                 d_vBasis[k]->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                 d_pOperator->apply( d_vBasis[k], d_z );
-                d_pPreconditioner->apply( d_z, v );
+                d_pNestedSolver->apply( d_z, v );
             } else if ( d_preconditioner_side == "right" ) {
                 if ( !d_bFlexibleGMRES ) {
-                    d_pPreconditioner->apply( d_vBasis[k], d_z );
+                    d_pNestedSolver->apply( d_vBasis[k], d_z );
                     d_pOperator->apply( d_z, v );
                 } else {
-                    d_pPreconditioner->apply( d_vBasis[k], zb );
+                    d_pNestedSolver->apply( d_vBasis[k], zb );
                     d_pOperator->apply( zb, v );
                 }
             } else {
@@ -498,8 +498,8 @@ void GMRESSolver<T>::resetOperator(
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator
     // though it's unclear where this might be necessary
-    if ( d_pPreconditioner ) {
-        d_pPreconditioner->resetOperator( params );
+    if ( d_pNestedSolver ) {
+        d_pNestedSolver->resetOperator( params );
     }
 }
 
@@ -513,7 +513,7 @@ void GMRESSolver<T>::computeInitialResidual( bool use_zero_guess,
     PROFILE( "GMRESSolver<T>::compute initial residual" );
     if ( use_zero_guess ) {
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
-            d_pPreconditioner->apply( f, res );
+            d_pNestedSolver->apply( f, res );
         } else {
             res->copyVector( f );
         }
@@ -522,7 +522,7 @@ void GMRESSolver<T>::computeInitialResidual( bool use_zero_guess,
         u->makeConsistent();
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
             d_pOperator->residual( f, u, tmp );
-            d_pPreconditioner->apply( tmp, res );
+            d_pNestedSolver->apply( tmp, res );
         } else {
             // this computes res = f - L(u)
             d_pOperator->residual( f, u, res );
@@ -548,7 +548,7 @@ void GMRESSolver<T>::addCorrection( const int nr,
             }
 
             // this solves M z1 = V_m * y_m (so z1= inv(M) * V_m * y_m)
-            d_pPreconditioner->apply( z, z1 );
+            d_pNestedSolver->apply( z, z1 );
         } else {
             z1->setToScalar( static_cast<T>( 0.0 ) );
             for ( int i = 0; i <= nr; ++i ) {

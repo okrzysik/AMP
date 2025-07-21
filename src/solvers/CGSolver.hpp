@@ -36,7 +36,7 @@ void CGSolver<T>::initialize(
     registerOperator( d_pOperator );
 
     if ( parameters->d_pNestedSolver ) {
-        d_pPreconditioner = parameters->d_pNestedSolver;
+        d_pNestedSolver = parameters->d_pNestedSolver;
     } else {
         if ( d_bUsesPreconditioner ) {
             auto pcName  = db->getWithDefault<std::string>( "pc_solver_name", "Preconditioner" );
@@ -47,8 +47,8 @@ void CGSolver<T>::initialize(
                     std::make_shared<AMP::Solver::SolverStrategyParameters>( pcDB );
                 innerParameters->d_global_db = parameters->d_global_db;
                 innerParameters->d_pOperator = d_pOperator;
-                d_pPreconditioner = AMP::Solver::SolverFactory::create( innerParameters );
-                AMP_ASSERT( d_pPreconditioner );
+                d_pNestedSolver = AMP::Solver::SolverFactory::create( innerParameters );
+                AMP_ASSERT( d_pNestedSolver );
             }
         }
     }
@@ -174,7 +174,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // apply the preconditioner if it exists
     if ( d_bUsesPreconditioner ) {
         PROFILE( "CGSolver<T>:: z = M^{-1}r (initial)" );
-        d_pPreconditioner->apply( d_r, d_z );
+        d_pNestedSolver->apply( d_r, d_z );
     } else {
         d_z = d_r;
     }
@@ -265,7 +265,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
             PROFILE( "CGSolver<T>:: z = M^{-1}r" );
-            d_pPreconditioner->apply( d_r, d_z );
+            d_pNestedSolver->apply( d_r, d_z );
         }
 
         rho_0 = rho_1;
@@ -359,8 +359,8 @@ void CGSolver<T>::resetOperator( std::shared_ptr<const AMP::Operator::OperatorPa
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator
     // though it's unclear where this might be necessary
-    if ( d_pPreconditioner ) {
-        d_pPreconditioner->resetOperator( params );
+    if ( d_pNestedSolver ) {
+        d_pNestedSolver->resetOperator( params );
     }
 }
 } // namespace AMP::Solver
