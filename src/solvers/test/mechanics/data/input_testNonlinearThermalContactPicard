@@ -68,7 +68,7 @@ NeutronicsOperator{
     timeSteps          = .1
     useFixedValue      = TRUE
     fixedValues        = 4045.3147905 
-    print_info_level   = 3
+    print_info_level   = 1
 }
 
 NonlinearThermalOperator1 {
@@ -108,7 +108,7 @@ RobinVectorCorrection1 {
     alpha          = 1.0
     beta           = 2920
     gamma          = 1.0
-    print_info_level = 3
+    print_info_level = 1
     skip_params = FALSE
     number_of_ids = 1
     id_0         =   4
@@ -119,7 +119,7 @@ RobinVectorCorrection1 {
 
 LinearThermalOperator1 {
   name = "LinearBVPOperator"
-    print_info_level = 3
+    print_info_level = 1
     VolumeOperator = "DiffusionLinearFEOperator1"
     BoundaryOperator = "RobinMatrixCorrection1"
 }
@@ -154,7 +154,7 @@ RobinMatrixCorrection1 {
     alpha          = 1.0
     beta           = 2920
     gamma          = 1.0
-    print_info_level = 3
+    print_info_level = 1
     skip_params = FALSE
     number_of_ids = 1
     id_0         =   4
@@ -165,7 +165,7 @@ RobinMatrixCorrection1 {
 
 LinearThermalOperator2 {
   name = "LinearBVPOperator"
-    print_info_level = 3
+    print_info_level = 1
     VolumeOperator = "DiffusionLinearFEOperator2"
     BoundaryOperator = "ColumnBoundaryOperator2"
 }
@@ -209,7 +209,7 @@ RobinMatrixCorrection {
     alpha          = 1.0
     beta           = 2920
     gamma          = 1.0
-    print_info_level = 3
+    print_info_level = 1
     skip_params = FALSE
     number_of_ids = 1
     id_0         =   8
@@ -224,7 +224,7 @@ DirichletMatrixCorrection{
     skip_params = FALSE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    print_info_level = 3
+    print_info_level = 1
     number_of_ids = 1
     id_0             =   4
     number_of_dofs_0 =   1
@@ -243,12 +243,12 @@ VolumeIntegralOperator{
       ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
     }
   OutputVariable = "heatsource"
-    print_info_level = 3
+    print_info_level = 1
     LocalModel = SourcePhysicsModel
 
     SourceElement {
       name="SourceNonlinearElement"
-        print_info_level = 3
+        print_info_level = 1
         FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
@@ -257,24 +257,31 @@ VolumeIntegralOperator{
 }
 
 NonlinearSolver{
-    print_info_level = 7
+    print_info_level = 2
     name = "PetscSNESSolver"
     max_iterations = 500
-    max_error = 1e-10
 
     absolute_tolerance = 1e-10
     relative_tolerance = 1e-10
     stepTolerance = 1e-10
     maximumFunctionEvals = 100
     usesJacobian=FALSE
+    linear_solver_type               =  "fgmres"
+//    differencing_parameter_strategy  =  "ds"
+    differencing_parameter_strategy  =  "ds"
+    forcing_term_strategy            =  "EWCHOICE3"
+    EW_choice2_alpha = 2.0
+    EW_choice2_gamma = 0.9
+//    constant_forcing_term            =  0.01
+    constant_forcing_term            =  0.01
+//    constant_forcing_term            =  0.1
 
-    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_maxstep 10000.0 -snes_ls_alpha 1.0e-4"
+#    SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_maxstep 10000.0 -snes_ls_alpha 1.0e-4"
 
     LinearSolver{
         print_info_level = 0
         name = "PetscKrylovSolver"
         max_iterations = 100
-        max_error = 1e-10
         ksp_type = "fgmres"
         absolute_tolerance = 1e-9
         relative_tolerance = 1e-3

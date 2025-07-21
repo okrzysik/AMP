@@ -383,11 +383,11 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
                 AMP::pout << "for iteration cnt = " << cnt << " --> " << vecLag->L2Norm() << " "
                           << resVec->L2Norm() << std::endl;
 
-            AMP::pout << "Intermediate Flow Solution " << std::endl;
-            for ( unsigned int i = 0; i < flowVecSize; i++ ) {
-                AMP::pout << " @i : " << i << " is " << resVec->getValueByLocalID( i );
-            }
-            AMP::pout << std::endl;
+            // AMP::pout << "Intermediate Flow Solution " << std::endl;
+            // for ( unsigned int i = 0; i < flowVecSize; i++ ) {
+            //     AMP::pout << " @i : " << i << " is " << resVec->getValueByLocalID( i );
+            // }
+            // AMP::pout << std::endl;
             vecLag->copyVector( resVec );
         }
 
