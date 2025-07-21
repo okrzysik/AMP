@@ -1,4 +1,4 @@
-# # 1D Example
+# 1D Example
 # PDE{
 #     dim = 1
 #     n   = 128
