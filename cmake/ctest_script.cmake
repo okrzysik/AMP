@@ -242,13 +242,12 @@ CTEST_CONFIGURE(
     SOURCE  ${CTEST_SOURCE_DIRECTORY}
     OPTIONS "${CTEST_OPTIONS}"
 )
-CTEST_SUBMIT( PARTS Configure )
+#CTEST_SUBMIT( PARTS Configure )
 
 
 # Run the configure/build/test
 CTEST_BUILD()
-CTEST_SUBMIT( PARTS Build )
-EXECUTE_PROCESS( COMMAND ${CMAKE_MAKE_PROGRAM} install )
+#CTEST_SUBMIT( PARTS Build )
 IF ( SKIP_TESTS )
     # Do not run tests
     SET( CTEST_COVERAGE_COMMAND )
@@ -261,10 +260,18 @@ ENDIF()
 IF( CTEST_COVERAGE_COMMAND )
     CTEST_COVERAGE()
 ENDIF()
-CTEST_SUBMIT( PARTS Test )
-CTEST_SUBMIT( PARTS Coverage )
-CTEST_SUBMIT( PARTS MemCheck )
-CTEST_SUBMIT( PARTS Done )
+#CTEST_SUBMIT( PARTS Test )
+#CTEST_SUBMIT( PARTS Coverage )
+#CTEST_SUBMIT( PARTS MemCheck )
+#CTEST_SUBMIT( PARTS Done )
+
+
+# Submit the results to CDash
+CTEST_SUBMIT()
+
+
+# Make sure install was run
+EXECUTE_PROCESS( COMMAND ${CMAKE_MAKE_PROGRAM} install )
 
 
 # Write a message to test for success in the ctest-builder
