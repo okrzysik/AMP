@@ -122,6 +122,49 @@ private:
     std::string d_type;
 };
 template<class TYPE>
+static void printIntArray( int level, const AMP::Array<TYPE> &data )
+{
+    if ( data.length() == 1 ) {
+        printf( ": %i\n", static_cast<int>( data( 0 ) ) );
+    } else if ( data.length() <= 4 || level >= 4 ) {
+        printf( " [ %i", static_cast<int>( data( 0 ) ) );
+        for ( size_t i = 1; i < data.length(); i++ )
+            printf( ", %i", static_cast<int>( data( i ) ) );
+        printf( " ]\n" );
+    } else {
+        printf( " (%i", (int) data.size( 0 ) );
+        for ( int d = 1; d < data.ndim(); d++ )
+            printf( ",%i", (int) data.size( d ) );
+        printf( ")\n" );
+    }
+}
+template<class TYPE>
+static void printArray( int level, const AMP::Array<TYPE> &data )
+{
+    if constexpr ( std::is_same_v<TYPE, char> ) {
+        if ( data.min() >= 32 && data.max() < 127 )
+            printf( " '%s'\n", data.data() );
+        else
+            printIntArray( level, data );
+    } else if constexpr ( std::is_integral_v<TYPE> ) {
+        printIntArray( level, data );
+    } else {
+        if ( data.length() == 1 ) {
+            AMP::pout << ": " << data( 0 ) << std::endl;
+        } else if ( data.length() <= 4 || level >= 4 ) {
+            AMP::pout << " [ " << data( 0 );
+            for ( size_t i = 1; i < data.length(); i++ )
+                AMP::pout << ", " << data( i );
+            AMP::pout << " ]" << std::endl;
+        } else {
+            printf( " (%i", (int) data.size( 0 ) );
+            for ( int d = 1; d < data.ndim(); d++ )
+                printf( ",%i", (int) data.size( d ) );
+            printf( ")\n" );
+        }
+    }
+}
+template<class TYPE>
 class HDF5_primitive final : public HDF5data
 {
 public:
@@ -169,30 +212,10 @@ public:
     {
         auto type = getTypeID<TYPE>();
         printf( "%s%s (%s)", prefix.data(), d_name.data(), type.name );
-        if ( d_data.empty() ) {
+        if ( d_data.empty() )
             printf( " []\n" );
-        } else if ( d_data.length() == 1 ) {
-            AMP::pout << ": " << d_data( 0 ) << std::endl;
-        } else if ( std::is_same_v<TYPE, char> && d_data.ndim() == 1 && d_data.length() < 128 ) {
-            AMP::pout << ": '" << d_data.data() << "'" << std::endl;
-        } else if ( d_data.length() <= 4 || level >= 4 ) {
-            AMP::pout << " [";
-            if constexpr ( std::is_same_v<TYPE, unsigned char> ) {
-                AMP::pout << " " << static_cast<int>( d_data( 0 ) );
-                for ( size_t i = 1; i < d_data.length(); i++ )
-                    AMP::pout << ", " << static_cast<int>( d_data( i ) );
-            } else {
-                AMP::pout << " " << d_data( 0 );
-                for ( size_t i = 1; i < d_data.length(); i++ )
-                    AMP::pout << ", " << d_data( i );
-            }
-            AMP::pout << " ]" << std::endl;
-        } else {
-            printf( " (%i", (int) d_data.size( 0 ) );
-            for ( int d = 1; d < d_data.ndim(); d++ )
-                printf( ",%i", (int) d_data.size( d ) );
-            printf( ")\n" );
-        }
+        else
+            printArray( level, d_data );
     }
 
 private:
