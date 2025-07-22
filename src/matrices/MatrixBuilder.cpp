@@ -35,10 +35,7 @@ namespace AMP::LinearAlgebra {
  * Set the default matrix type                           *
  * Definition set by CMake variable DEFAULT_MATRIX       *
  ********************************************************/
-std::string getDefaultMatrixType()
-{
-    return DEFAULT_MATRIX;
-}
+std::string getDefaultMatrixType() { return DEFAULT_MATRIX; }
 
 
 /********************************************************
