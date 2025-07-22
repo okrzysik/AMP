@@ -121,6 +121,13 @@ public:
 private:
     std::string d_type;
 };
+static void printSize( const AMP::ArraySize &size )
+{
+    printf( " (%i", (int) size[0] );
+    for ( int d = 1; d < size.ndim(); d++ )
+        printf( ",%i", (int) size[d] );
+    printf( ")\n" );
+}
 template<class TYPE>
 static void printIntArray( int level, const AMP::Array<TYPE> &data )
 {
@@ -132,20 +139,21 @@ static void printIntArray( int level, const AMP::Array<TYPE> &data )
             printf( ", %i", static_cast<int>( data( i ) ) );
         printf( " ]\n" );
     } else {
-        printf( " (%i", (int) data.size( 0 ) );
-        for ( int d = 1; d < data.ndim(); d++ )
-            printf( ",%i", (int) data.size( d ) );
-        printf( ")\n" );
+        printSize( data.size() );
     }
 }
 template<class TYPE>
 static void printArray( int level, const AMP::Array<TYPE> &data )
 {
     if constexpr ( std::is_same_v<TYPE, char> ) {
-        if ( data.min() >= 32 && data.max() < 127 )
-            printf( " '%s'\n", data.data() );
-        else
+        if ( data.min() >= 32 && data.max() < 127 && data.ndim() == 1 && data.length() < 128 ) {
+            printf( " '" );
+            for ( size_t i = 0; i < data.length(); i++ )
+                printf( "%c", data( i ) );
+            printf( "'\n" );
+        } else {
             printIntArray( level, data );
+        }
     } else if constexpr ( std::is_integral_v<TYPE> ) {
         printIntArray( level, data );
     } else {
@@ -157,10 +165,7 @@ static void printArray( int level, const AMP::Array<TYPE> &data )
                 AMP::pout << ", " << data( i );
             AMP::pout << " ]" << std::endl;
         } else {
-            printf( " (%i", (int) data.size( 0 ) );
-            for ( int d = 1; d < data.ndim(); d++ )
-                printf( ",%i", (int) data.size( d ) );
-            printf( ")\n" );
+            printSize( data.size() );
         }
     }
 }
