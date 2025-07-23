@@ -327,7 +327,7 @@ void MechanicsNonlinearFEOperator::postElementOperation()
             d_outVec->addValuesByGlobalID(
                 1, &d_dofIndices[r][d], &d_elementOutputVector[( 3 * r ) + d] );
         } // end for d
-    }     // end for r
+    } // end for r
 }
 
 void MechanicsNonlinearFEOperator::init()
@@ -386,7 +386,7 @@ void MechanicsNonlinearFEOperator::init()
                     d_refXYZ->setValuesByGlobalID(
                         1, &d_dofIndices[j][i], &elementRefXYZ[( 3 * j ) + i] );
                 } // end for i
-            }     // end for j
+            } // end for j
         }
 
     } // end for el
@@ -451,11 +451,11 @@ void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
         d_materialModel->preNonlinearReset();
 
         for ( d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx ) {
+            auto RESET = MechanicsNonlinearElement::MaterialUpdateType::RESET;
             if ( d_useUpdatedLagrangian ) {
-                updateMaterialForUpdatedLagrangianElement<
-                    MechanicsNonlinearUpdatedLagrangianElement::RESET>( *el );
+                updateMaterialForUpdatedLagrangianElement( RESET, *el );
             } else {
-                updateMaterialForElement<MechanicsNonlinearElement::RESET>( *el );
+                updateMaterialForElement( RESET, *el );
             }
         } // end for el
         d_currElemIdx = static_cast<unsigned int>( -1 );
@@ -575,11 +575,11 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
         auto end_el = el.end();
 
         for ( d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx ) {
+            auto JACOBIAN = MechanicsNonlinearElement::MaterialUpdateType::JACOBIAN;
             if ( d_useUpdatedLagrangian ) {
-                updateMaterialForUpdatedLagrangianElement<
-                    MechanicsNonlinearUpdatedLagrangianElement::JACOBIAN>( *el );
+                updateMaterialForUpdatedLagrangianElement( JACOBIAN, *el );
             } else {
-                updateMaterialForElement<MechanicsNonlinearElement::JACOBIAN>( *el );
+                updateMaterialForElement( JACOBIAN, *el );
             }
         } // end for el
         d_currElemIdx = static_cast<unsigned int>( -1 );
@@ -699,7 +699,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain(
                     }
                 }
             } // end for i
-        }     // end for r
+        } // end for r
 
         d_mechNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                        d_materialModel );
@@ -776,7 +776,7 @@ void MechanicsNonlinearFEOperator::updateMaterialForElementCommonFunction(
                 }
             }
         } // end for i
-    }     // end for r
+    } // end for r
 
     if ( d_useUpdatedLagrangian ) {
         d_mechNULElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
@@ -849,4 +849,31 @@ MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_
         return vec->subsetVectorForVariable( var );
     }
 }
+
+void MechanicsNonlinearFEOperator::updateMaterialForElement(
+    MechanicsNonlinearElement::MaterialUpdateType updateType, const AMP::Mesh::MeshElement &elem )
+{
+    std::vector<std::vector<double>> elementInputVectors1( Mechanics::TOTAL_NUMBER_OF_VARIABLES );
+    std::vector<std::vector<double>> elementInputVectors_pre1(
+        Mechanics::TOTAL_NUMBER_OF_VARIABLES );
+
+    updateMaterialForElementCommonFunction( elem, elementInputVectors1, elementInputVectors_pre1 );
+
+    d_mechNonlinElem->updateMaterialModel( updateType, elementInputVectors1 );
+}
+
+void MechanicsNonlinearFEOperator::updateMaterialForUpdatedLagrangianElement(
+    MechanicsNonlinearElement::MaterialUpdateType updateType, const AMP::Mesh::MeshElement &elem )
+{
+    std::vector<std::vector<double>> elementInputVectors2( Mechanics::TOTAL_NUMBER_OF_VARIABLES );
+    std::vector<std::vector<double>> elementInputVectors_pre2(
+        Mechanics::TOTAL_NUMBER_OF_VARIABLES );
+
+    updateMaterialForElementCommonFunction( elem, elementInputVectors2, elementInputVectors_pre2 );
+
+    d_mechNULElem->updateMaterialModel(
+        updateType, elementInputVectors2, elementInputVectors_pre2 );
+}
+
+
 } // namespace AMP::Operator
