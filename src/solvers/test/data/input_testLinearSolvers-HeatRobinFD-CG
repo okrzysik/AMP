@@ -55,8 +55,6 @@ PDE{
     //a4 = 1.0
     //b4 = 0.0
     //r4 = 1.0
-
-    matrixRequired = TRUE // Force a spatial discretization matrix to be built
 }
 
 TimeIntegrator{
@@ -70,34 +68,33 @@ TimeIntegrator{
     auto_component_scaling = FALSE // Turn off component scaling for multi-physics
     max_integrator_steps = 300
     initial_time = 0.0
-    final_time = 0.5
-    print_info_level = 2
+    final_time = 1
+    print_info_level = 1
     solver_name = "LinearSolver"
 
     LinearSolver{
         name = "CGSolver"
-        //name = "GMRESSolver"
-        //uses_preconditioner = TRUE
-        uses_preconditioner = FALSE
+        uses_preconditioner = TRUE
+        //uses_preconditioner = FALSE
         absolute_tolerance  = 1.0e-8
         relative_tolerance  = 1.0e-8
-        max_iterations      = 128
-        print_info_level    = 0 
+        max_iterations      = 10
+        print_info_level    = 1
 
-        // Preconditioner{
-        //     name = "BoomerAMGSolver"
-        //     print_info_level   = 0
-        //     min_coarse_size    = 5
-        //     relax_type         = 6 // Hybrid GS/Jacobi
-        //     coarsen_type       = 10
-        //     interp_type        = 17 // distance-two
-        //     cycle_type         = 1
-        //     relax_order        = 0
-        //     strong_threshold   = 0.5
-        //     absolute_tolerance = 0.0
-        //     relative_tolerance = 0.0
-        //     max_iterations     = 1
-        // }
+        Preconditioner{
+            name = "BoomerAMGSolver"
+            print_info_level   = 0
+            min_coarse_size    = 5
+            relax_type         = 6 // Hybrid GS/Jacobi
+            coarsen_type       = 10
+            interp_type        = 17 // distance-two
+            cycle_type         = 1
+            relax_order        = 0
+            strong_threshold   = 0.5
+            absolute_tolerance = 0.0
+            relative_tolerance = 0.0
+            max_iterations     = 1
+        }
     }
 }
 

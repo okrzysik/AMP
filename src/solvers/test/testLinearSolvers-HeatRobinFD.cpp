@@ -130,7 +130,7 @@ void fillMatWithLocalCSRData( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix
 /* In 1D: We want the computational vertices at the mid points of each cell. 
 The n cells look like:
     [0, 1]*h, [1, 2]*h, ..., [n-1, n]*h.
-Since there are n cells in [0,1], the width of each must be 1/n
+Since there are n cells in [0, 1], the width of each must be 1/n
 The computational vertices are the mid points of each cell, and we have n active vertices:
         0.5*h, h + 0.5*h, ..., 1 - (h + 0.5*), 1 - 0.5*h. 
 
@@ -237,40 +237,15 @@ public:
 
     bool d_matrixRequired; // Does this operator have to construct a matrix?
     bool d_gammaChanged;   // Has the value of gamma been changed since the matrix was last constructed?
+    int d_print_info_level;
     
     // Constructor call's base class's constructor
     BELinearOp( std::shared_ptr<const AMP::Operator::OperatorParameters> params_ ) : 
             AMP::Operator::LinearOperator( params_ ) {
 
-        d_gamma = -1.0; // Initialize with some dummy value
-        d_matrixRequired = params_->d_db->getWithDefault<bool>( "matrixRequired", false );
-
-    }
-
-    /* Build the matrix A = I + gamma*L */
-    void buildAndSetMatrix() {
-
-        AMP::pout << "BELinearOp::buildAndSetMatrix" << std::endl;
-
-        std::shared_ptr<AMP::LinearAlgebra::Matrix> L_mat = d_L->getMatrix();
-        AMP_INSIST( L_mat, "Setting the matrix requires L to have a non-null matrix" );
-
-        AMP_INSIST( !(this->getMatrix()), "The case of changing gamma is not implemented yet..." );
-
-        // Should use a clone and then copy if creating a new matrix rather than this copy
-        // auto A_mat = AMP::LinearAlgebra::Matrix( *L_mat ); // Copy constructor
-        
-        auto A_mat = L_mat;
-        A_mat->scale( d_gamma ); // A <- gamma*A
-
-        // A <- A + I
-        auto DOFMan = A_mat->getRightDOFManager();
-        for ( auto dof = DOFMan->beginDOF(); dof != DOFMan->endDOF(); dof++ ) {
-            A_mat->addValueByGlobalID(dof, dof, 1.0);
-        }
-        
-        // Set the matrix
-        this->setMatrix( A_mat );
+        d_gamma = -1.0; // Initialize with dummy value
+        d_matrixRequired   = params_->d_db->getScalar<bool>( "matrixRequired" );
+        d_print_info_level = params_->d_db->getWithDefault<int>( "print_info_level", 0 );
     }
 
     // Set the LinearOperator L
@@ -288,14 +263,16 @@ public:
 
     // Set the time-step size in the operator
     void setGamma( AMP::Scalar gamma_ ) { 
-        //AMP::pout << "BELinearOp::setGamma" << std::endl;
+        if ( d_print_info_level > 0 )
+            AMP::pout << "BELinearOp::setGamma() ";
 
         double gamma = double( gamma_ );
-
         d_gammaChanged = !(AMP::Utilities::approx_equal( gamma, d_gamma, 1e-10 ));
 
         // Build matrix if: 1. gamma has changed, and 2. one is required.
         if (d_gammaChanged) {
+            if ( d_print_info_level > 0 )
+                AMP::pout << "gamma has changed: gamma_old=" << d_gamma << ", gamma_new=" << gamma << std::endl;
             d_gamma = gamma;
             if (d_matrixRequired) {
                 buildAndSetMatrix();
@@ -311,6 +288,41 @@ public:
         // Compute r <- (I + gamma*A)*u
         d_L->apply( u_in, r );
         r->axpby (1.0, d_gamma, *u_in); // r <- 1.0*u + d_gamma * r
+
+        // AMP::Operator::LinearOperator::apply( u_in, r );
+    }
+
+private:
+    /* Build the matrix A = I + gamma*L. Note that we create A from a copy of the matrix L; this is the simplest way to handle if gamma has changed... */
+    void buildAndSetMatrix() {
+
+        if ( d_print_info_level > 0 )
+            AMP::pout << "BELinearOp::buildAndSetMatrix()" << std::endl;
+
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> L_mat = d_L->getMatrix();
+        AMP_INSIST( L_mat, "Setting the matrix requires L to have a non-null matrix" );
+
+        //AMP_INSIST( !(this->getMatrix()), "The case of changing gamma is not implemented yet..." );
+        //auto A_mat = L_mat;
+        
+        // A <- L
+        auto A_mat = L_mat->clone();
+        A_mat->copy( L_mat );
+
+        // A <- gamma*A
+        A_mat->scale( d_gamma ); 
+
+        // A <- A + I
+        auto DOFMan = A_mat->getRightDOFManager(  );
+        for ( auto dof = DOFMan->beginDOF(); dof != DOFMan->endDOF(); dof++ ) {
+            A_mat->addValueByGlobalID(dof, dof, 1.0);
+        }
+        A_mat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        
+        // Set the matrix
+        this->setMatrix( A_mat );
+
+        AMP_INSIST( this->getMatrix(), "Why is matrix null?" );
     }
 };
 
@@ -319,17 +331,6 @@ public:
     Class implementing a discrete Poisson problem 
 ------------------------------------------------- */
 class PoissonOp : public AMP::Operator::LinearOperator {
-
-private:
-    
-    void setPDECoefficients();
-    std::shared_ptr<AMP::LinearAlgebra::Matrix> getLaplacianMatrix();
-  
-    // Constants in Robin BCs
-    double d_a1, d_b1, d_r1; // West boundary,  x = 0
-    double d_a2, d_b2, d_r2; // East boundary,  x = 1
-    double d_a3, d_b3, d_r3; // South boundary, y = 0
-    double d_a4, d_b4, d_r4; // North boundary, y = 1
 
 public:
     
@@ -413,12 +414,23 @@ public:
 
 private:
 
+    // Constants in Robin BCs
+    double d_a1, d_b1, d_r1; // West boundary,  x = 0
+    double d_a2, d_b2, d_r2; // East boundary,  x = 1
+    double d_a3, d_b3, d_r3; // South boundary, y = 0
+    double d_a4, d_b4, d_r4; // North boundary, y = 1
+      
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> getLaplacianMatrix();
+  
     /* Build and set d_DOFMan */
     void set_DOFManager() {
         int DOFsPerElement = 1; 
         int gcw  = 1; // Ghost-cell width (stencils are at most 3-point in each direction)
         d_DOFMan = AMP::Discretization::boxMeshDOFManager::create(this->getMesh(), d_geomType, gcw, DOFsPerElement);
     }
+
+
+    void setPDECoefficients();
 
     // Coefficients defining the PDE
     std::vector<double> getPDECoefficients1D();
@@ -442,8 +454,6 @@ private:
         return dof[0];
     };
 
-
-    
     // Relating to Robin BCs
 
     // Prototype of function returning value of Robin BC on given boundary at given node. The user can specify any function with this signature
@@ -467,7 +477,6 @@ private:
     void ApplyRobinCorrectionToMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> A );
     double RobinCorrectionMatrixCoefficient( int boundary );
     double RobinCorrectionVectorCoefficient( int boundary, AMP::Mesh::MeshElement & node );
-
 }; 
 
 
@@ -811,62 +820,53 @@ void PoissonOp::ApplyRobinCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra
 
 /* We write u_ghost = alpha_{} * u_interior + beta_{} 
     This function returns the coefficient alpha on the given boundary.
-    Note that the 2D formulas for the WEST and EAST boundaries also hold in the 1D case. */
+    Note that up to the constants in the BC changing, the formula is the same on all boundaries.
+    The formulae are also dimension-agnostic, in that they hold for 1D, 2D, 3D, etc.. */
 double PoissonOp::RobinCorrectionMatrixCoefficient( int boundary ) {
-    double h   = d_db->getScalar<double>( "h" );
+    
+    // Get constants a, b, c
+    double a, b, c;
     if ( boundary == 1 ) {
-        double cxx     = d_c.xx;
-        double alpha1j = (2*cxx*d_b1 - d_a1*h)/(2*cxx*d_b1 + d_a1*h);
-        return alpha1j;
+        a = d_a1, b = d_b1, c = d_c.xx;
     } else if ( boundary == 2 ) {
-        double cxx     = d_c.xx;
-        double alpha2j = (2*cxx*d_b2 - d_a2*h)/(2*cxx*d_b2 + d_a2*h);
-        return alpha2j;
+        a = d_a2, b = d_b2, c = d_c.xx;
     } else if ( boundary == 3 ) {
-        double cyy     = d_c.yy;
-        double alphai3 = (2*cyy*d_b3 - d_a3*h)/(2*cyy*d_b3 + d_a3*h);
-        return alphai3;
+        a = d_a3, b = d_b3, c = d_c.yy;
     } else if ( boundary == 4 ) {
-        double cyy     = d_c.yy;
-        double alphai4 = (2*cyy*d_b4 - d_a4*h)/(2*cyy*d_b4 + d_a4*h);
-        return alphai4;
+        a = d_a4, b = d_b4, c = d_c.yy;
     } else {
         AMP_ERROR( "Invalid boundary" );
-        return 0.0;
     }
+
+    double h     = d_db->getScalar<double>( "h" );
+    double alpha = (2*c*b - a*h)/(2*c*b + a*h);
+    return alpha;
 }
 
 /* We write u_ghost = alpha_{} * u_interior + beta_{} 
-    This function returns the coefficient beta on the given boundary 
-    Note that the 2D formulas for the WEST and EAST boundaries also hold in the 1D case. */
+    This function returns the coefficient beta on the given boundary. 
+    Note that up to the constants in the BC changing, the formula is the same on all boundaries.
+    The formulae are also dimension-agnostic, in that they hold for 1D, 2D, 3D, etc.. */
 double PoissonOp::RobinCorrectionVectorCoefficient( int boundary, AMP::Mesh::MeshElement &node ) {
     
-    double h = d_db->getScalar<double>( "h" );
-    
+    // Get constants a, b, c
+    double a, b, c;
     if ( boundary == 1 ) {
-        double cxx   = d_c.xx;
-        double r1    = d_robinFunction( boundary, d_a1, d_b1, node );
-        double beta1 = 2*r1*h/(2*cxx*d_b1 + d_a1*h);
-        return beta1;
+        a = d_a1, b = d_b1, c = d_c.xx;
     } else if ( boundary == 2 ) {
-        double cxx   = d_c.xx;
-        double r2    = d_robinFunction( boundary, d_a2, d_b2, node );
-        double beta2 = 2*r2*h/(2*cxx*d_b2 + d_a2*h);
-        return beta2;
+        a = d_a2, b = d_b2, c = d_c.xx;
     } else if ( boundary == 3 ) {
-        double cyy   = d_c.yy;
-        double r3    = d_robinFunction( boundary, d_a3, d_b3, node );
-        double beta3 = 2*r3*h/(2*cyy*d_b3 + d_a3*h);
-        return beta3;
+        a = d_a3, b = d_b3, c = d_c.yy;
     } else if ( boundary == 4 ) {
-        double cyy   = d_c.yy;
-        double r4    = d_robinFunction( boundary, d_a4, d_b4, node );
-        double beta4 = 2*r4*h/(2*cyy*d_b4 + d_a4*h);
-        return beta4;
+        a = d_a4, b = d_b4, c = d_c.yy;
     } else {
         AMP_ERROR( "Invalid boundary" );
-        return 0.0;
     }
+
+    double h    = d_db->getScalar<double>( "h" );
+    double r    = d_robinFunction( boundary, a, b, node );
+    double beta = 2*r*h/(2*c*b + a*h);
+    return beta;
 }
 
 /* Return a constructed CSR matrix corresponding to the discretized Laplacian on the mesh */
@@ -905,7 +905,7 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
 /* Populate vector with function that takes a reference to a MeshElement and returns a double.  */
 void PoissonOp::fillWithFunction( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, std::function<double(AMP::Mesh::MeshElement &)> fun ) {
 
-    auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
+    auto it = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
 
     // Fill in exact solution vector
     for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
@@ -1010,7 +1010,6 @@ private:
         double t = 0.0;
         return std::sin((3.0/2.0)*M_PI*x)*std::cos(2*M_PI*t)*std::cos(3*M_PI*y);
     }
-
 };
 
 
@@ -1246,7 +1245,7 @@ void driver(AMP::AMP_MPI comm,
     ****************************************************************/
     const auto OpDB = std::make_shared<AMP::Database>( "linearOperatorDB" );
     OpDB->putDatabase( "PDE_db", PDE_db->cloneDatabase() );
-    OpDB->putScalar<int>( "print_info_level", 0 );
+    OpDB->putScalar<int>( "print_info_level", 1 );
     OpDB->putScalar<std::string>( "name", "PoissonOp" );  
     auto OpParameters = std::make_shared<AMP::Operator::OperatorParameters>( OpDB );
     OpParameters->d_name = "PoissonOp";
@@ -1255,6 +1254,7 @@ void driver(AMP::AMP_MPI comm,
     // Create PoissonOp 
     auto myPoissonOp = std::make_shared<PoissonOp>( OpParameters );    
     // Create BEOp based on Poisson Op
+    OpDB->putScalar<bool>( "matrixRequired", true );
     auto myBEOp      = std::make_shared<BELinearOp>( OpParameters );  
     myBEOp->setRHSOperator( myPoissonOp );
     
@@ -1423,7 +1423,7 @@ void driver(AMP::AMP_MPI comm,
 
     
     // No specific solution is implemented for this problem, so this will just check that the solver converged. 
-    //checkConvergence( linearSolver.get(), input_db, input_file, *ut );
+    checkConvergence( implicitIntegrator->getSolver().get(), input_db, input_file, *ut );
 
 }
 // end of driver()
