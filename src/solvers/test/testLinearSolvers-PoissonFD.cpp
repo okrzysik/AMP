@@ -123,7 +123,7 @@ void fillMatWithLocalCSRData( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix
 }
 
 
-/* Create a d-dimensional BoxMesh over [0,1]^d with n+1 points in each direction. Also store the mesh spacing h in the provided database */
+/* Create a d-dimensional BoxMesh over [0,1]^d with n+1 points in each direction. Also store the mesh spacing h in the provided database. */
 std::shared_ptr<AMP::Mesh::BoxMesh> createBoxMesh( AMP::AMP_MPI comm, std::shared_ptr<AMP::Database> PDE_db )
 {
     auto n   = PDE_db->getScalar<int>( "n" );
@@ -216,7 +216,6 @@ class PoissonOp : public AMP::Operator::LinearOperator {
 private:
     
     std::shared_ptr<AMP::Mesh::BoxMesh> d_BoxMesh;
-    PDECoefficients                     d_c;
     AMP::Mesh::GeomType                 d_geomType = AMP::Mesh::GeomType::Vertex;
 
     void setPDECoefficients();
@@ -224,7 +223,7 @@ private:
     
 public:
 
-    
+    PDECoefficients                                  d_c;
     std::shared_ptr<AMP::Database>                   d_db;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFMan;
     
@@ -239,6 +238,23 @@ public:
 
         // Set my database
         d_db = params_->d_db->getDatabase( "PDE_db" );
+
+        // Unpack constants from the database
+        d_u1 = d_db->getScalar<double>( "u1" );
+        d_u2 = d_db->getScalar<double>( "u2" );
+        //
+        if ( d_BoxMesh->getDim() >= 2 ) {
+            d_u3 = d_db->getScalar<double>( "u3" );
+            d_u4 = d_db->getScalar<double>( "u4" );
+        }
+        if ( d_BoxMesh->getDim() >= 3 ) {
+            d_u5 = d_db->getScalar<double>( "u5" );
+            d_u6 = d_db->getScalar<double>( "u6" );
+        }
+
+        // Specify Dirichlet return function as the default
+        std::function<double( int, AMP::Mesh::MeshElement & )> wrapper = [&]( int boundary, AMP::Mesh::MeshElement & ) { return dirichletFunctionDefault( boundary ); };
+        this->setDirichletFunction( wrapper );
 
         // Set DOFManager
         this->set_DOFManager();
@@ -268,14 +284,22 @@ public:
         return "PoissonOp";
     }
 
-    // Populate vectors with exact PDE solution and corresponing source term
-    void fill_uexact_and_fsource( 
-        std::shared_ptr<AMP::LinearAlgebra::Vector> uexact, 
-        std::shared_ptr<AMP::LinearAlgebra::Vector> fsource );
     
+    // Populate a vector with the given function
+    void fillWithFunction( std::shared_ptr<AMP::LinearAlgebra::Vector> u, std::function<double(AMP::Mesh::MeshElement &)> fun );
+
+    // The user can specify any Dirichlet return function with this signature; if they do then this will overwrite the default.
+    void setDirichletFunction( std::function<double(int, AMP::Mesh::MeshElement &)> fn_ ) { d_dirichletFunction = fn_; };
+
+    void applyDirichletCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
 
 private:
 
+    // Constants in Dirichlet BCs
+    double d_u1, d_u2, d_u3, d_u4, d_u5, d_u6; 
+
+      // Prototype of function returning value of Robin BC on given boundary at given node. The user can specify any function with this signature
+    std::function<double( int boundary, AMP::Mesh::MeshElement & node )> d_dirichletFunction;
 
     /* Build and set d_DOFMan */
     void set_DOFManager() {
@@ -288,14 +312,6 @@ private:
     std::vector<double> getPDECoefficients1D();
     std::vector<double> getPDECoefficients2D();
     std::vector<double> getPDECoefficients3D();
-
-    // Exact solution and corresponding source term
-    double exactSolution(double x);
-    double exactSolution(double z, double y);
-    double exactSolution(double x, double y, double z);
-    double sourceTerm(double x);
-    double sourceTerm(double x, double y);
-    double sourceTerm(double x, double y, double z);
     
     // FD stencils
     std::vector<double> getStencil1D();
@@ -316,7 +332,79 @@ private:
         d_DOFMan->getDOFs(id, dof);
         return dof[0];
     };
+
+    // Default function for returning Dirichlet values; this can be overridden by the user
+    double dirichletFunctionDefault( int boundary ) {
+        if ( boundary == 1 ) {
+            return d_u1;
+        } else if ( boundary == 2 ) {
+            return d_u2;
+        } else if ( boundary == 3 ) {
+            return d_u3;
+        } else if ( boundary == 4 ) {
+            return d_u4;
+        } else if ( boundary == 5 ) {
+            return d_u5;
+        } else if ( boundary == 6 ) {
+            return d_u6;
+        } else { 
+            AMP_ERROR( "Invalid boundary" );
+        }
+    }
 }; 
+
+/* Applies corrections to vector f for non-eliminated boundary points; this amounts to putting the given Dirichlet boundary values in the corresponding rows of f  */
+void PoissonOp::applyDirichletCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f ) {
+
+    AMP_INSIST( f, "Non-null f required!" );
+
+    // Select boundaries we need to iterate over
+    std::vector<int> boundary_ids = { 1, 2 };
+    if ( this->getMesh()->getDim() >= 2 ) {
+        boundary_ids.push_back( 3 );
+        boundary_ids.push_back( 4 );
+    }
+    if ( this->getMesh()->getDim() >= 3 ) {
+        boundary_ids.push_back( 5 );
+        boundary_ids.push_back( 6 );
+    }
+
+    // Placeholder for function value on boundary
+    double boundaryValue;
+
+    // Iterate across all boundaries
+    for ( auto boundary_id : boundary_ids ) {
+
+        // Get on-process iterator over current boundary
+        auto it = d_BoxMesh->getBoundaryIDIterator( d_geomType, boundary_id );
+        
+        // Add correction to all nodes on current boundary; if there are none then "it" is empty
+        for ( auto node = it.begin(); node != it.end(); node++ ) {
+            // Get function at current point on current boundary
+            boundaryValue = d_dirichletFunction( boundary_id, *node );
+
+            std::vector<size_t> dof;
+            d_DOFMan->getDOFs( node->globalID(), dof);
+            f->setValueByGlobalID<double>( dof[0], boundaryValue );
+        }
+    }
+}
+
+
+/* Populate vector with function that takes a reference to a MeshElement and returns a double.  */
+void PoissonOp::fillWithFunction( std::shared_ptr<AMP::LinearAlgebra::Vector> vec, std::function<double(AMP::Mesh::MeshElement &)> fun ) {
+
+    double u; // Placeholder for funcation evaluation
+    
+    // Fill in exact solution vector
+    auto it = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
+    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
+        u = fun( *elem );
+        std::vector<size_t> i;
+        d_DOFMan->getDOFs( elem->globalID(), i );
+        vec->setValueByGlobalID( i[0], u );
+    }
+}
 
 
 void PoissonOp::setPDECoefficients() {
@@ -390,33 +478,6 @@ std::vector<double> PoissonOp::getPDECoefficients3D() {
     return c;
 }
 
-double PoissonOp::exactSolution(double x) {
-    return sin(2.0 * M_PI * x);
-}
-
-double PoissonOp::sourceTerm(double x) {
-    double cxx = d_c.xx;
-    return 4*std::pow(M_PI, 2)*cxx*std::sin(2*M_PI*x);
-}
-
-double PoissonOp::exactSolution(double x, double y) {
-    double u = sin(2.0 * M_PI * x) * sin(4.0 * M_PI * y);
-    return u;
-}
-
-double PoissonOp::sourceTerm(double x, double y) {
-    double cxx = d_c.xx, cyy = d_c.yy, cxy = d_c.xy; 
-    return 4*std::pow(M_PI, 2)*(cxx*std::sin(2*M_PI*x)*std::sin(4*M_PI*y) - 2*cxy*std::cos(2*M_PI*x)*std::cos(4*M_PI*y) + 4*cyy*std::sin(2*M_PI*x)*std::sin(4*M_PI*y));
-}
-
-double PoissonOp::exactSolution(double x, double y, double z) {
-    return std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z);
-}
-
-double PoissonOp::sourceTerm(double x, double y, double z) {
-    double cxx = d_c.xx, cyy = d_c.yy, czz = d_c.zz, cxy = d_c.xy, cxz = d_c.xz, cyz = d_c.yz; 
-    return 4*std::pow(M_PI, 2)*(cxx*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) - 2*cxy*std::sin(6*M_PI*z)*std::cos(2*M_PI*x)*std::cos(4*M_PI*y) - 3*cxz*std::sin(4*M_PI*y)*std::cos(2*M_PI*x)*std::cos(6*M_PI*z) + 4*cyy*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z) - 6*cyz*std::sin(2*M_PI*x)*std::cos(4*M_PI*y)*std::cos(6*M_PI*z) + 9*czz*std::sin(2*M_PI*x)*std::sin(4*M_PI*y)*std::sin(6*M_PI*z));
-}
 
 
 /* Get 3-point stencil for 1D Poisson. */
@@ -459,7 +520,7 @@ std::vector<double> PoissonOp::getStencil2D() {
     double W  = -1.0*cxx; 
            O += +2.0*cxx;  
     double E  = -1.0*cxx;
-    // -czz =*u_yy
+    // -cyy =*u_yy
     double S  = -1.0*cyy;
            O += +2.0*cyy;
     double N  = -1.0*cyy;
@@ -572,7 +633,6 @@ std::vector<double> PoissonOp::getStencil3D() {
     return stencil;
 }
 
-    
 
 
 /* Get CSR structure of 1D Laplacian */
@@ -590,7 +650,7 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData1D() {
     std::map<size_t, colsDataPair> localCSRData;
 
     // Iterate over local box
-    for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
+    for ( auto i = localBox.first[0]; i <= localBox.last[0]; i++ ) {
         
         // The current row
         size_t dof = gridIndsToDOF( i );
@@ -629,8 +689,8 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData2D() {
     std::map<size_t, colsDataPair> localCSRData;
 
     // Iterate over local box
-    for (auto j = localBox.first[1]; j <= localBox.last[1]; j++) {
-        for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
+    for ( auto j = localBox.first[1]; j <= localBox.last[1]; j++ ) {
+        for ( auto i = localBox.first[0]; i <= localBox.last[0]; i++ ) {
         
             // The current row
             size_t dof = gridIndsToDOF( i, j );
@@ -678,9 +738,9 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData3D( ) {
     std::map<size_t, colsDataPair> localCSRData;
 
     // Iterate over local box
-    for (auto k = localBox.first[2]; k <= localBox.last[2]; k++) {
-        for (auto j = localBox.first[1]; j <= localBox.last[1]; j++) {
-            for (auto i = localBox.first[0]; i <= localBox.last[0]; i++) {
+    for ( auto k = localBox.first[2]; k <= localBox.last[2]; k++ ) {
+        for ( auto j = localBox.first[1]; j <= localBox.last[1]; j++ ) {
+            for ( auto i = localBox.first[0]; i <= localBox.last[0]; i++ ) {
 
                 // The current row
                 size_t dof = gridIndsToDOF( i, j, k );
@@ -730,66 +790,6 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData3D( ) {
 
 
 
-/* Populate exact solution and RHS source-term vectors. 
-    Note that zero values are put into boundary rows of the 
-    RHS vector f since the problem is posed with zero Dirichlet BCs */
-void PoissonOp::fill_uexact_and_fsource( 
-        std::shared_ptr<AMP::LinearAlgebra::Vector> uexact, 
-        std::shared_ptr<AMP::LinearAlgebra::Vector> fsource ) {
-
-    auto it      = d_BoxMesh->getIterator(d_geomType); // Mesh iterator
-    auto meshDim = d_BoxMesh->getDim(); // Dimension
-
-    // Fill in exact solution and source term vectors
-    for ( auto elem = it.begin(); elem != it.end(); elem++ ) {
-        
-        std::vector<double> u;
-        std::vector<double> f;
-
-        if ( meshDim == 1 ) {
-            double x = ( elem->coord() )[0];
-            u.push_back(exactSolution(x));
-            
-            if (!(elem->isOnSurface())) {
-                f.push_back(sourceTerm( x ));
-            } else {
-                f.push_back(0.0);
-            }
-
-        } else if ( meshDim == 2 ) {
-            double x = ( elem->coord() )[0];
-            double y = ( elem->coord() )[1];
-            u.push_back( exactSolution( x, y ) );
-
-            if (!(elem->isOnSurface())) {
-                f.push_back( sourceTerm( x, y ) );
-            } else {
-                f.push_back( 0.0 );
-            }
-
-        } else if (meshDim == 3) {
-            double x = ( elem->coord() )[0];
-            double y = ( elem->coord() )[1];
-            double z = ( elem->coord() )[2];
-            u.push_back( exactSolution( x, y, z ) );
-
-            if (!(elem->isOnSurface())) {
-                f.push_back( sourceTerm( x, y, z ) );
-            } else {
-                f.push_back( 0.0 );
-            }
-        }
-
-        std::vector<size_t> i;
-        d_DOFMan->getDOFs( elem->globalID(), i );
-        uexact->setValuesByGlobalID( 1, &i[0], &u[0] );
-        fsource->setValuesByGlobalID( 1, &i[0], &f[0] );
-    }
-    uexact->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    fsource->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-}
-
-
 /* Return a constructed CSR matrix corresponding to the discretized Laplacian on the mesh */
 std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
 
@@ -813,7 +813,7 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
     fillMatWithLocalCSRData( A, d_DOFMan, localCSRData );
     
     // Finalize A
-    A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
+    A->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     // Print statistics of A
     #if 0
     size_t nGlobalRows = A->numGlobalRows();
@@ -823,6 +823,205 @@ std::shared_ptr<AMP::LinearAlgebra::Matrix> PoissonOp::getLaplacianMatrix( ) {
     #endif
     return A;
 }
+
+
+/* --------------------------------------------------------------
+    Implementation of a class describing a diffusion equation 
+--------------------------------------------------------------- */
+/* Abstract base class representing a linear diffusion problem:
+        - grad \dot ( D * grad u ) = s.
+
+    This class is built on top of a PoissonOperator which is a discretization of the term 
+        - grad \dot ( D * grad u )
+*/
+class DiffusionModel {
+
+public:
+    bool d_exactSolutionAvailable = false;
+
+    // PoissonOperator on which this class is built
+    std::shared_ptr<PoissonOp> d_PoissonOp;
+
+    DiffusionModel( std::shared_ptr<PoissonOp> PoissonOp_) : 
+        d_PoissonOp( PoissonOp_ ){ 
+        AMP_INSIST( d_PoissonOp,  "Non-null PoissonOp required!" );
+    }
+
+    /* Pure virtual functions */
+    virtual double sourceTerm( AMP::Mesh::MeshElement &node ) = 0;
+
+    /* Virtual functions */
+    virtual double exactSolution( AMP::Mesh::MeshElement & ) {
+        AMP_ERROR( "Base class cannot provide an implementation of this function" );
+    }
+};
+
+
+/* ------------------------------------------------
+    Class implementing basic diffusion equation 
+------------------------------------------------- */
+/* A zero source term, and no exact solution */
+class BasicDiffusionModel : public DiffusionModel {
+
+public:
+    // Call base class' constructor
+    BasicDiffusionModel( std::shared_ptr<PoissonOp> PoissonOp_) : DiffusionModel( PoissonOp_ ) { }
+    
+    // Implementation of pure virtual function
+    double sourceTerm( AMP::Mesh::MeshElement & ) override {
+        return 0.0;
+    }
+};
+
+
+/* -------------------------------------------------------
+    Class implementing manufactured diffusion equation 
+------------------------------------------------------- */
+/* A source term and corresponding exact solution are provided */
+class ManufacturedDiffusionModel : public DiffusionModel {
+
+public:
+
+    // Call base class' constructor
+    ManufacturedDiffusionModel( std::shared_ptr<PoissonOp> PoissonOp_) : DiffusionModel( PoissonOp_ ) { 
+        // Set flag indicating this class does provide an implementation of exactSolution
+        d_exactSolutionAvailable = true;
+    }
+    
+    // Implementation of pure virtual function
+    // Dimesion-agnostic wrapper around the exact source term functions
+    double sourceTerm( AMP::Mesh::MeshElement &node ) override {
+        int meshDim = d_PoissonOp->getMesh()->getDim();
+        if ( meshDim == 1 ) {
+            double x = ( node.coord() )[0];
+            return sourceTerm_( x );
+        } else if ( meshDim == 2 ) {
+            double x = ( node.coord() )[0];
+            double y = ( node.coord() )[1];
+            return sourceTerm_( x, y );
+        } else if ( meshDim == 2 ) {
+            double x = ( node.coord() )[0];
+            double y = ( node.coord() )[1];
+            double z = ( node.coord() )[2];
+            return sourceTerm_( x, y, z );
+        } else {
+            AMP_ERROR( "Invalid dimension" );
+        }
+    }
+
+    // Dimesion-agnostic wrapper around the exact solution functions
+    double exactSolution( AMP::Mesh::MeshElement &node ) override {
+        int meshDim = d_PoissonOp->getMesh()->getDim();
+        if ( meshDim == 1 ) {
+            double x = ( node.coord() )[0];
+            return exactSolution_( x );
+        } else if ( meshDim == 2 ) {
+            double x = ( node.coord() )[0];
+            double y = ( node.coord() )[1];
+            return exactSolution_( x, y );
+        } else if ( meshDim == 3 ) {
+            double x = ( node.coord() )[0];
+            double y = ( node.coord() )[1];
+            double z = ( node.coord() )[2];
+            return exactSolution_( x, y, z );
+        } else {
+            AMP_ERROR( "Invalid dimension" );
+        }
+    }
+
+    // Dimesion-agnostic wrapper around the Dirichlet functions
+    double getDirichletValue( int boundary, AMP::Mesh::MeshElement & node ) {
+        int meshDim = d_PoissonOp->getMesh()->getDim();
+        if ( meshDim == 1 ) {
+            return getDirichletValue1D( boundary );
+        } else if ( meshDim == 2 ) {
+            double x = ( node.coord() )[0];
+            double y = ( node.coord() )[1];
+            return getDirichletValue2D( boundary, x, y );
+        } else if ( meshDim == 3 ) {
+            double x = ( node.coord() )[0];
+            double y = ( node.coord() )[1];
+            double z = ( node.coord() )[2];
+            return getDirichletValue3D( boundary, x, y, z );
+        } else {
+            AMP_ERROR( "Invalid dimension" );
+        }
+    }
+
+    
+private:
+    // Exact solution, and corresponding source term
+    // 1D
+    double exactSolution_(double x) {
+        return std::sin(2*M_PI*x - 0.65400000000000003);
+    }
+    double sourceTerm_(double x) {
+        auto d_c   = d_PoissonOp->d_c;
+        double cxx = d_c.xx;
+        return 4*std::pow(M_PI, 2)*cxx*std::sin(2*M_PI*x - 0.65400000000000003);
+    }
+    // 2D
+    double exactSolution_(double x, double y) {
+        return std::sin(2*M_PI*x - 0.32500000000000001)*std::sin(4*M_PI*y + 0.98699999999999999);
+    }
+    double sourceTerm_(double x, double y) {
+        auto d_c   = d_PoissonOp->d_c;
+        double cxx = d_c.xx, cyy = d_c.yy, cxy = d_c.xy; 
+        return 4*std::pow(M_PI, 2)*(cxx*std::sin(2*M_PI*x - 0.32500000000000001)*std::sin(4*M_PI*y + 0.98699999999999999) - 2*cxy*std::cos(2*M_PI*x - 0.32500000000000001)*std::cos(4*M_PI*y + 0.98699999999999999) + 4*cyy*std::sin(2*M_PI*x - 0.32500000000000001)*std::sin(4*M_PI*y + 0.98699999999999999));
+    }
+    // 3D
+    double exactSolution_(double x, double y, double z) {
+        return std::sin(2*M_PI*x - 0.98699999999999999)*std::sin(4*M_PI*y - 0.22500000000000001)*std::sin(6*M_PI*z - 0.47799999999999998);
+    }
+    double sourceTerm_(double x, double y, double z) {
+        auto d_c   = d_PoissonOp->d_c;
+        double cxx = d_c.xx, cyy = d_c.yy, czz = d_c.zz, cxy = d_c.xy, cxz = d_c.xz, cyz = d_c.yz; 
+        return 4*std::pow(M_PI, 2)*(cxx*std::sin(2*M_PI*x - 0.98699999999999999)*std::sin(4*M_PI*y - 0.22500000000000001)*std::sin(6*M_PI*z - 0.47799999999999998) - 2*cxy*std::sin(6*M_PI*z - 0.47799999999999998)*std::cos(2*M_PI*x - 0.98699999999999999)*std::cos(4*M_PI*y - 0.22500000000000001) - 3*cxz*std::sin(4*M_PI*y - 0.22500000000000001)*std::cos(2*M_PI*x - 0.98699999999999999)*std::cos(6*M_PI*z - 0.47799999999999998) + 4*cyy*std::sin(2*M_PI*x - 0.98699999999999999)*std::sin(4*M_PI*y - 0.22500000000000001)*std::sin(6*M_PI*z - 0.47799999999999998) - 6*cyz*std::sin(2*M_PI*x - 0.98699999999999999)*std::cos(4*M_PI*y - 0.22500000000000001)*std::cos(6*M_PI*z - 0.47799999999999998) + 9*czz*std::sin(2*M_PI*x - 0.98699999999999999)*std::sin(4*M_PI*y - 0.22500000000000001)*std::sin(6*M_PI*z - 0.47799999999999998));
+    }
+
+    /* 1D. The boundaries of 0 and 1 are hard coded here. */
+    double getDirichletValue1D( int boundary ) {
+        if ( boundary == 1 ) { // West
+            return exactSolution_( 0.0 );
+        } else if ( boundary == 2 ) { // East
+            return exactSolution_( 1.0 );
+        } else {
+            AMP_ERROR( "Inavlid boundary" );
+        }
+    }
+    /* 2D. The boundaries of 0 and 1 are hard coded here. */
+    double getDirichletValue2D( int boundary, double x, double y ) {
+        if ( boundary == 1 ) {        // West
+            return exactSolution_( 0.0, y );
+        } else if ( boundary == 2 ) { // East
+            return exactSolution_( 1.0, y );
+        } else if ( boundary == 3 ) { // South
+            return exactSolution_( x, 0.0 );
+        } else if ( boundary == 4 ) { // North
+            return exactSolution_( x, 1.0 );
+        } else {
+            AMP_ERROR( "Inavlid boundary" );
+        }
+    }
+    /* 3D. The boundaries of 0 and 1 are hard coded here. */
+    double getDirichletValue3D( int boundary, double x, double y, double z ) {
+        if ( boundary == 1 ) {        // West
+            return exactSolution_( 0.0, y, z );
+        } else if ( boundary == 2 ) { // East
+            return exactSolution_( 1.0, y, z );
+        } else if ( boundary == 3 ) { // South
+            return exactSolution_( x, 0.0, z );
+        } else if ( boundary == 4 ) { // North
+            return exactSolution_( x, 1.0, z );
+        } else if ( boundary == 5 ) { // Bottom
+            return exactSolution_( x, y, 0.0 );
+        } else if ( boundary == 6 ) { // Top
+            return exactSolution_( x, y, 1.0 );
+        } else {
+            AMP_ERROR( "Inavlid boundary" );
+        }
+    }
+};
 
 
 
@@ -869,34 +1068,57 @@ void driver(AMP::AMP_MPI comm,
     OpDB->putScalar<int>( "print_info_level", 0 );
     OpDB->putScalar<std::string>( "name", "PoissonOp" ); // Operator factory requires the db contain a "name" key providing the name of the operator   
     auto OpParameters = std::make_shared<AMP::Operator::OperatorParameters>( OpDB );
-    
     OpParameters->d_name = "PoissonOp";
     OpParameters->d_Mesh = mesh;
 
-    // There are two different methods for creating a PoissonOp
-    // This is method 1, using directly the PoissonOp constructor
-    //auto AOp             = std::make_shared<PoissonOp>( OpParameters );    
+    auto myPoissonOp = std::make_shared<PoissonOp>( OpParameters );    
     
-    // This is method 2, using an operator factory. In this particular example, method 2 is more complicated, but in general having the factory infrastructure set up allows for more flexibility because then solvers, etc. can create a PoissonOp on their own.
-    // Create an OperatorFactory and register PoissonOp in it 
-    auto & operatorFactory = AMP::Operator::OperatorFactory::getFactory();
-    operatorFactory.registerFactory( "PoissonOp", PoissonOp::create );
-    std::shared_ptr<AMP::Operator::Operator> AOp_ = AMP::Operator::OperatorFactory::create( OpParameters );
-    auto AOp = std::dynamic_pointer_cast<PoissonOp>( AOp_ );
+
+    /****************************************************************
+    * Create diffusion equation model                               *
+    ****************************************************************/
+    std::shared_ptr<DiffusionModel> myDiffusionModel;
+    auto model = PDE_db->getWithDefault<std::string>( "model", "" );
+
+    if ( model == "basic" ) {
+        AMP::pout << "Using BASIC diffusion model: No exact solution available" << std::endl;
+        auto myDiffusionModel_ = std::make_shared<BasicDiffusionModel>( myPoissonOp );
+        myDiffusionModel        = myDiffusionModel_;
+
+    } else if ( model == "manufactured" ) {
+        AMP::pout << "Using MANUFACTURED diffusion model: Exact solution is available" << std::endl;
+        auto myDiffusionModel_ = std::make_shared<ManufacturedDiffusionModel>( myPoissonOp );
+        
+        // Point the Dirichlet BC values in the PoissonOp to those given by the manufactured problem
+        myPoissonOp->setDirichletFunction( std::bind( &ManufacturedDiffusionModel::getDirichletValue, &( *myDiffusionModel_ ), std::placeholders::_1, std::placeholders::_2 ) );
+        myDiffusionModel = myDiffusionModel_;        
+    } else  {
+        AMP_ERROR( "Model not recognised" );
+    }
+
+    // Create hassle-free wrappers around source term and exact solution
+    auto PDESourceFun = std::bind( &DiffusionModel::sourceTerm, &( *myDiffusionModel ), std::placeholders::_1 );
+    auto uexactFun    = std::bind( &DiffusionModel::exactSolution, &( *myDiffusionModel ), std::placeholders::_1 );
 
 
     /****************************************************************
     * Set up relevant vectors over the mesh                         *
     ****************************************************************/
     // Create required vectors over the mesh
-    auto unumVec    = AOp->getRightVector();
-    auto uexactVec  = AOp->getRightVector();
-    auto rexactVec  = AOp->getRightVector();
-    auto fsourceVec = AOp->getRightVector();
+    auto unumVec    = myPoissonOp->getRightVector();
+    auto uexactVec  = myPoissonOp->getRightVector();
+    auto rexactVec  = myPoissonOp->getRightVector();
+    auto fsourceVec = myPoissonOp->getRightVector();
 
-    // Set exact solution and RHS vector
-    AOp->fill_uexact_and_fsource( uexactVec, fsourceVec );
+    // Set exact solution 
+    myPoissonOp->fillWithFunction( uexactVec, uexactFun );
+    uexactVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
+    // Set RHS vector
+    myPoissonOp->fillWithFunction( fsourceVec, PDESourceFun );
+    myPoissonOp->applyDirichletCorrectionToVector( fsourceVec );
+    fsourceVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    
     // Initialize unum to random values
     unumVec->setRandomValues();
     unumVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
@@ -905,32 +1127,37 @@ void driver(AMP::AMP_MPI comm,
     /****************************************************************
     * Compute discrete residual norm on continuous solution (truncation error) *
     ****************************************************************/
-    AMP::pout << "\nDiscrete residual of continuous manufactured solution: ";
-    AOp->residual( fsourceVec, uexactVec, rexactVec );
-    auto rnorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), rexactVec );
-    // Print residual norms
-    AMP::pout << "||r|| = (" << rnorms[0] << ", " << rnorms[1] << ", " << rnorms[2] << ")" << std::endl << std::endl;
+    /* Compare numerical solution with manufactured solution */
+    if ( myDiffusionModel->d_exactSolutionAvailable ) {
+        AMP::pout << "\nDiscrete residual of continuous manufactured solution: ";
+        myPoissonOp->residual( fsourceVec, uexactVec, rexactVec );
+        auto rnorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), rexactVec );
+        // Print residual norms
+        AMP::pout << "||r|| = (" << rnorms[0] << ", " << rnorms[1] << ", " << rnorms[2] << ")" << std::endl << std::endl;
+    }
 
     
     /****************************************************************
     * Construct linear solver of the LinearOperator and apply it    *
     ****************************************************************/
-    // Get the linear solver for operator AOp
+    // Get the linear solver for operator myPoissonOp
     auto solverStratParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( solver_db );
     solverStratParams->d_comm      = comm;
-    solverStratParams->d_pOperator = AOp;
+    solverStratParams->d_pOperator = myPoissonOp;
     auto linearSolver = AMP::Solver::SolverFactory::create( solverStratParams );
     
     // Use zero initial iterate and apply solver
-    linearSolver->setZeroInitialGuess( true );
+    //linearSolver->setZeroInitialGuess( true );
     linearSolver->apply(fsourceVec, unumVec);
     
     // Compute disretization error
-    AMP::pout << "\nDiscretization error post linear solve: "; 
-    auto e = uexactVec->clone();
-    e->axpy(-1.0, *unumVec, *uexactVec); 
-    auto enorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), e );
-    AMP::pout << "||e|| = (" << enorms[0] << ", " << enorms[1] << ", " << enorms[2] << ")" << std::endl;
+    if ( myDiffusionModel->d_exactSolutionAvailable ) {
+        AMP::pout << "\nDiscretization error post linear solve: "; 
+        auto e = uexactVec->clone();
+        e->axpy(-1.0, *unumVec, *uexactVec); 
+        auto enorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), e );
+        AMP::pout << "||e|| = (" << enorms[0] << ", " << enorms[1] << ", " << enorms[2] << ")" << std::endl;
+    }
 
     // No specific solution is implemented for this problem, so this will just check that the solver converged. 
     checkConvergence( linearSolver.get(), input_db, input_file, *ut );
@@ -945,6 +1172,12 @@ void driver(AMP::AMP_MPI comm,
     dim : the dimension of the problem (1, 2, or 3)
     n   : the number of mesh points (plus 1) in each grid dimension
     
+    uj  : j=1,2 for 1D; j=1,2,3,4 for 2D; j=1,2,3,4,5,6 for 3D are Dirichlet boundary conditions on boundary j. Note that the Dirichlet boundaries are not eliminated from the system, with the matrix having identity entries in the corresponding rows.
+
+    model : either 1. "basic" or 2. "manufactured"
+        1. A zero source term is used in the PDE
+        2. A manufactured solution are corresponinding source term are available; note that in this case the Dirichlet constants uj in the input file (while still required) are ignored, with the boundary conditions set to the manufactured solution on the boundary.
+
     - In 1D, the PDE is -u_xx = f. Standard 3-point finite differences are used. 
     - In 2D, the PDE is -u_xx -eps*u_yy = f, but rotated an angle of theta radians counter clockwise from the positive x axis. 9-point finite differences are used.
     - In 3D, the PDE is -u_xx -epsy*u_yy - epsz*u_zz = f, but rotated according in 3D according the the so-called "extrinsic" 3-1-3 Euler angles (see https://en.wikipedia.org/wiki/Euler_angles#Definition_by_extrinsic_rotations) gamma, beta, and alpha. A new coordinate system XYZ is obtained from rotating the xyz coordinate system by: 1. first rotating gamma radians around the z axis, 2. then beta radians about the x axis, 3. then alpha radians about the z axis. 19-point finite differences are used. 

@@ -359,7 +359,7 @@ public:
         d_b2 = d_db->getScalar<double>( "b2" );
         d_r2 = d_db->getScalar<double>( "r2" );
         //
-        if ( d_BoxMesh->getDim() == 2 ) {
+        if ( d_BoxMesh->getDim() >= 2 ) {
             d_a3 = d_db->getScalar<double>( "a3" );
             d_b3 = d_db->getScalar<double>( "b3" );
             d_r3 = d_db->getScalar<double>( "r3" );

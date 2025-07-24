@@ -17,9 +17,9 @@ I think there is this - sign difference because the 3D roration matrices being u
 def main():
 
     # Just uncomment whichever one you want to use.
-    #poisson_1D()
+    poisson_1D()
     poisson_2D()
-    #poisson_3D()
+    poisson_3D()
     
     #_symbolic_rotation_helper2D()
     #_diffusionTensor_2D()
@@ -47,7 +47,7 @@ def poisson_1D():
     x, cxx = sym.symbols('x cxx')
 
     # Exact solution
-    u = sym.sin(2 * sym.pi * x) 
+    u = sym.sin(2 * sym.pi * x - 0.654) 
 
     # Differential operator applied to exact solution
     LU = -cxx*sym.diff( sym.diff(u, x), x) 
@@ -61,7 +61,7 @@ def poisson_2D():
     x, y, cxx, cyy, cxy = sym.symbols('x y cxx cyy cxy')
 
     # Exact solution
-    u = ( sym.sin(2 * sym.pi * x) * sym.sin(4 * sym.pi * y) )
+    u = ( sym.sin(2 * sym.pi * x - 0.325) * sym.sin(4 * sym.pi * y + 0.987) )
 
     # Differential operator applied to exact solution
     LU = -cxx*sym.diff( sym.diff(u, x), x) \
@@ -77,7 +77,7 @@ def poisson_3D():
     x, y, z, cxx, cyy, czz, cxy, cxz, cyz = sym.symbols('x y z cxx cyy czz cxy cxz cyz')
 
     # Exact solution
-    u = ( sym.sin(2 * sym.pi * x) * sym.sin(4 * sym.pi * y) * sym.sin(6 * sym.pi * z) )
+    u = ( sym.sin(2 * sym.pi * x - 0.987) * sym.sin(4 * sym.pi * y - 0.225) * sym.sin(6 * sym.pi * z - 0.478) )
 
     # Differential operator applied to exact solution
     LU = -cxx*sym.diff( sym.diff(u, x), x) \
