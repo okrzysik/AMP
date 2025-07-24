@@ -1,52 +1,52 @@
-# 1D Example
+// 1D Example
+// PDE{
+//     dim   = 1
+//     n     = 128
+//     model = "manufactured"
+//     #model = "basic"
+
+//     u1 = 0.5
+//     u2 = 3
+// }
+
+// 2D Example
 PDE{
-    dim   = 1
-    n     = 128
+    dim   = 2
+    n     = 32
+
     model = "manufactured"
     #model = "basic"
 
+    eps   = 1e-2
+    theta = 0.523598775
+
     u1 = 0.5
     u2 = 3
+    u3 = -0.5
+    u4 = 2
 }
 
-# # 2D Example
-# PDE{
-#     dim   = 2
-#     n     = 32
-#
-#     model = "manufactured"
-#     #model = "basic"
-#
-#     eps   = 1e-2
-#     theta = 0.523598775
-#
-#     u1 = 0.5
-#     u2 = 3
-#     u3 = -0.5
-#     u4 = 2
-# }
+// 3D Example
+// PDE{
+//     dim   = 3
+//     n     = 64
 
-# # 3D Example
-# PDE{
-#     dim   = 3
-#     n     = 64
-#
-#     model = "manufactured"
-#     #model = "basic"
-#
-#     alpha = 0.1234
-#     beta  = 0.5462
-#     gamma = 0.9843
-#     epsy  = 1e-2
-#     epsz  = 1e-1
-#
-#     u1 = 0.5
-#     u2 = 3
-#     u3 = -0.5
-#     u4 = 2
-#     u5 = -0.75
-#     u6 = 2.2
-# }
+//     model = "manufactured"
+//     #model = "basic"
+
+//     alpha = 0.1234
+//     beta  = 0.5462
+//     gamma = 0.9843
+//     epsy  = 1e-2
+//     epsz  = 1e-1
+
+//     u1 = 0.5
+//     u2 = 3
+//     u3 = -0.5
+//     u4 = 2
+//     u5 = -0.75
+//     u6 = 2.2
+// }
 
 LinearSolver{
     name = "CGSolver"

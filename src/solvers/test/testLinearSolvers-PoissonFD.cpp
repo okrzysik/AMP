@@ -1,6 +1,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/IO/AsciiWriter.h"
 
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/Vector.h"
@@ -70,6 +71,14 @@ struct colsDataPair {
 // CSR structure for identity row
 colsDataPair localCSR_identity(size_t dof) { 
     std::vector<double> vals = { 1.0 };  // data
+    std::vector<size_t> cols = { dof };  // Column index
+    colsDataPair identity    = { cols, vals }; 
+    return identity;
+}
+
+// CSR structure for identity row scaled by constant c
+colsDataPair localCSR_scaledIdentity(size_t dof, double c) { 
+    std::vector<double> vals = { c };  // data
     std::vector<size_t> cols = { dof };  // Column index
     colsDataPair identity    = { cols, vals }; 
     return identity;
@@ -298,7 +307,7 @@ private:
     // Constants in Dirichlet BCs
     double d_u1, d_u2, d_u3, d_u4, d_u5, d_u6; 
 
-      // Prototype of function returning value of Robin BC on given boundary at given node. The user can specify any function with this signature
+      // Prototype of function returning value of Dirichlet BC on given boundary at given node. The user can specify any function with this signature
     std::function<double( int boundary, AMP::Mesh::MeshElement & node )> d_dirichletFunction;
 
     /* Build and set d_DOFMan */
@@ -353,7 +362,9 @@ private:
     }
 }; 
 
-/* Applies corrections to vector f for non-eliminated boundary points; this amounts to putting the given Dirichlet boundary values in the corresponding rows of f  */
+/* Applies corrections to vector f for non-eliminated boundary points; this amounts to putting the given Dirichlet boundary values in the corresponding rows of f (and scaling them by whatever is in the diagonal entry of A).
+Note that corner points are set multiple times since they're owned by multiple boundaries.
+*/
 void PoissonOp::applyDirichletCorrectionToVector( std::shared_ptr<AMP::LinearAlgebra::Vector> f ) {
 
     AMP_INSIST( f, "Non-null f required!" );
@@ -380,11 +391,15 @@ void PoissonOp::applyDirichletCorrectionToVector( std::shared_ptr<AMP::LinearAlg
         
         // Add correction to all nodes on current boundary; if there are none then "it" is empty
         for ( auto node = it.begin(); node != it.end(); node++ ) {
-            // Get function at current point on current boundary
-            boundaryValue = d_dirichletFunction( boundary_id, *node );
-
+            // Get DOF
             std::vector<size_t> dof;
             d_DOFMan->getDOFs( node->globalID(), dof);
+            
+            // Get function at current point on current boundary
+            boundaryValue = d_dirichletFunction( boundary_id, *node );
+            // Scale it by diagonal entry of A
+            boundaryValue *= this->getMatrix()->getValueByGlobalID( dof[0], dof[0] );
+
             f->setValueByGlobalID<double>( dof[0], boundaryValue );
         }
     }
@@ -657,7 +672,8 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData1D() {
 
         // Set identity in boundary rows
         if (i == globalBox.first[0] || i == globalBox.last[0]) {
-            localCSRData[dof] = localCSR_identity( dof );
+            //localCSRData[dof] = localCSR_identity( dof );
+            localCSRData[dof] = localCSR_scaledIdentity( dof, stencil[1] );
             continue;
         }
 
@@ -697,7 +713,8 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData2D() {
 
             // Set identity in boundary rows
             if (j == globalBox.first[1] || j == globalBox.last[1] || i == globalBox.first[0] || i == globalBox.last[0]) {
-                localCSRData[dof] = localCSR_identity( dof );
+                //localCSRData[dof] = localCSR_identity( dof );
+                localCSRData[dof] = localCSR_scaledIdentity( dof, stencil[4] );
                 continue;
             }
             
@@ -747,7 +764,8 @@ std::map<size_t, colsDataPair> PoissonOp::getCSRData3D( ) {
 
                 // Set identity in boundary rows
                 if (k == globalBox.first[2] || k == globalBox.last[2] || j == globalBox.first[1] || j == globalBox.last[1] || i == globalBox.first[0] || i == globalBox.last[0]) {
-                    localCSRData[dof] = localCSR_identity( dof );
+                    //localCSRData[dof] = localCSR_identity( dof );
+                    localCSRData[dof] = localCSR_scaledIdentity( dof, stencil[9] );
                     continue;
                 }
 
@@ -899,7 +917,7 @@ public:
             double x = ( node.coord() )[0];
             double y = ( node.coord() )[1];
             return sourceTerm_( x, y );
-        } else if ( meshDim == 2 ) {
+        } else if ( meshDim == 3 ) {
             double x = ( node.coord() )[0];
             double y = ( node.coord() )[1];
             double z = ( node.coord() )[2];
@@ -929,20 +947,21 @@ public:
         }
     }
 
-    // Dimesion-agnostic wrapper around the Dirichlet functions
-    double getDirichletValue( int boundary, AMP::Mesh::MeshElement & node ) {
+    // Note that the nodes are atually on the boundary, so just retrun the exact solution evaluate there. 
+    double getDirichletValue( int, AMP::Mesh::MeshElement & node ) {
         int meshDim = d_PoissonOp->getMesh()->getDim();
         if ( meshDim == 1 ) {
-            return getDirichletValue1D( boundary );
+            double x = ( node.coord() )[0];
+            return exactSolution_( x );
         } else if ( meshDim == 2 ) {
             double x = ( node.coord() )[0];
             double y = ( node.coord() )[1];
-            return getDirichletValue2D( boundary, x, y );
+            return exactSolution_( x, y );
         } else if ( meshDim == 3 ) {
             double x = ( node.coord() )[0];
             double y = ( node.coord() )[1];
             double z = ( node.coord() )[2];
-            return getDirichletValue3D( boundary, x, y, z );
+            return exactSolution_( x, y, z );
         } else {
             AMP_ERROR( "Invalid dimension" );
         }
@@ -977,49 +996,6 @@ private:
         auto d_c   = d_PoissonOp->d_c;
         double cxx = d_c.xx, cyy = d_c.yy, czz = d_c.zz, cxy = d_c.xy, cxz = d_c.xz, cyz = d_c.yz; 
         return 4*std::pow(M_PI, 2)*(cxx*std::sin(2*M_PI*x - 0.98699999999999999)*std::sin(4*M_PI*y - 0.22500000000000001)*std::sin(6*M_PI*z - 0.47799999999999998) - 2*cxy*std::sin(6*M_PI*z - 0.47799999999999998)*std::cos(2*M_PI*x - 0.98699999999999999)*std::cos(4*M_PI*y - 0.22500000000000001) - 3*cxz*std::sin(4*M_PI*y - 0.22500000000000001)*std::cos(2*M_PI*x - 0.98699999999999999)*std::cos(6*M_PI*z - 0.47799999999999998) + 4*cyy*std::sin(2*M_PI*x - 0.98699999999999999)*std::sin(4*M_PI*y - 0.22500000000000001)*std::sin(6*M_PI*z - 0.47799999999999998) - 6*cyz*std::sin(2*M_PI*x - 0.98699999999999999)*std::cos(4*M_PI*y - 0.22500000000000001)*std::cos(6*M_PI*z - 0.47799999999999998) + 9*czz*std::sin(2*M_PI*x - 0.98699999999999999)*std::sin(4*M_PI*y - 0.22500000000000001)*std::sin(6*M_PI*z - 0.47799999999999998));
-    }
-
-    /* 1D. The boundaries of 0 and 1 are hard coded here. */
-    double getDirichletValue1D( int boundary ) {
-        if ( boundary == 1 ) { // West
-            return exactSolution_( 0.0 );
-        } else if ( boundary == 2 ) { // East
-            return exactSolution_( 1.0 );
-        } else {
-            AMP_ERROR( "Inavlid boundary" );
-        }
-    }
-    /* 2D. The boundaries of 0 and 1 are hard coded here. */
-    double getDirichletValue2D( int boundary, double x, double y ) {
-        if ( boundary == 1 ) {        // West
-            return exactSolution_( 0.0, y );
-        } else if ( boundary == 2 ) { // East
-            return exactSolution_( 1.0, y );
-        } else if ( boundary == 3 ) { // South
-            return exactSolution_( x, 0.0 );
-        } else if ( boundary == 4 ) { // North
-            return exactSolution_( x, 1.0 );
-        } else {
-            AMP_ERROR( "Inavlid boundary" );
-        }
-    }
-    /* 3D. The boundaries of 0 and 1 are hard coded here. */
-    double getDirichletValue3D( int boundary, double x, double y, double z ) {
-        if ( boundary == 1 ) {        // West
-            return exactSolution_( 0.0, y, z );
-        } else if ( boundary == 2 ) { // East
-            return exactSolution_( 1.0, y, z );
-        } else if ( boundary == 3 ) { // South
-            return exactSolution_( x, 0.0, z );
-        } else if ( boundary == 4 ) { // North
-            return exactSolution_( x, 1.0, z );
-        } else if ( boundary == 5 ) { // Bottom
-            return exactSolution_( x, y, 0.0 );
-        } else if ( boundary == 6 ) { // Top
-            return exactSolution_( x, y, 1.0 );
-        } else {
-            AMP_ERROR( "Inavlid boundary" );
-        }
     }
 };
 
@@ -1073,6 +1049,12 @@ void driver(AMP::AMP_MPI comm,
 
     auto myPoissonOp = std::make_shared<PoissonOp>( OpParameters );    
     
+    // auto A = myPoissonOp->getMatrix();
+    // AMP::IO::AsciiWriter matWriter;
+    // matWriter.registerMatrix( A );
+    // matWriter.writeFile( "Aout", 0  );
+
+
 
     /****************************************************************
     * Create diffusion equation model                               *
@@ -1110,13 +1092,10 @@ void driver(AMP::AMP_MPI comm,
     auto rexactVec  = myPoissonOp->getRightVector();
     auto fsourceVec = myPoissonOp->getRightVector();
 
-    // Set exact solution 
-    myPoissonOp->fillWithFunction( uexactVec, uexactFun );
-    uexactVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-
     // Set RHS vector
     myPoissonOp->fillWithFunction( fsourceVec, PDESourceFun );
     myPoissonOp->applyDirichletCorrectionToVector( fsourceVec );
+    //fsourceVec->setToScalar( 1.0 );
     fsourceVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     
     // Initialize unum to random values
@@ -1129,11 +1108,24 @@ void driver(AMP::AMP_MPI comm,
     ****************************************************************/
     /* Compare numerical solution with manufactured solution */
     if ( myDiffusionModel->d_exactSolutionAvailable ) {
+        // Set exact solution 
+        myPoissonOp->fillWithFunction( uexactVec, uexactFun );
+        uexactVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+
         AMP::pout << "\nDiscrete residual of continuous manufactured solution: ";
         myPoissonOp->residual( fsourceVec, uexactVec, rexactVec );
         auto rnorms = getDiscreteNorms( PDE_db->getScalar<double>( "h" ), rexactVec );
         // Print residual norms
         AMP::pout << "||r|| = (" << rnorms[0] << ", " << rnorms[1] << ", " << rnorms[2] << ")" << std::endl << std::endl;
+
+        #if 0
+        for ( size_t row = 0; row < myPoissonOp->getMatrix()->numLocalRows(); row++ ) {
+            auto f = fsourceVec->getValueByLocalID( row );
+            auto u = uexactVec->getValueByLocalID( row );
+            auto r = rexactVec->getValueByLocalID( row );
+            std::cout << "i=" << row << ": f,u,r=" << f << "," << u << "," << r << std::endl;
+        }
+        #endif
     }
 
     
@@ -1172,7 +1164,7 @@ void driver(AMP::AMP_MPI comm,
     dim : the dimension of the problem (1, 2, or 3)
     n   : the number of mesh points (plus 1) in each grid dimension
     
-    uj  : j=1,2 for 1D; j=1,2,3,4 for 2D; j=1,2,3,4,5,6 for 3D are Dirichlet boundary conditions on boundary j. Note that the Dirichlet boundaries are not eliminated from the system, with the matrix having identity entries in the corresponding rows.
+    uj  : j=1,2 for 1D; j=1,2,3,4 for 2D; j=1,2,3,4,5,6 for 3D are Dirichlet boundary conditions on boundary j. Note that the Dirichlet boundaries are not eliminated from the system, with the matrix having scaled identity entries in the corresponding rows. Specifically, each boundary row is scaled by the diagonal connection from the stencil; this is to help with ill-conditioning of the resulting matrix.
 
     model : either 1. "basic" or 2. "manufactured"
         1. A zero source term is used in the PDE
@@ -1188,7 +1180,6 @@ void driver(AMP::AMP_MPI comm,
     - Mixed derivatives are discretized with central finite differences (as opposed to upwind)
 
     - Note that for eps = epsy = epsz = 1, the PDEs are isotropic and grid aligned (the rotation angles have no impact in this case), and moreover, in these cases the discretizations reduce to the standard 5- and 7-point stencils in 2D and 3D, respectively.
-
 */
 int main( int argc, char **argv )
 {
